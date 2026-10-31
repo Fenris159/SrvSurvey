@@ -214,7 +214,7 @@
       <StackPanel Spacing="8">
         <TextBlock Classes="muted" Text="{Binding StatusMessage}" TextWrapping="Wrap" FontSize="12" />
         <TextBlock IsVisible="{Binding HasUnavailableJourney}" Classes="muted" TextWrapping="Wrap"
-                   Text="Clear the unavailable journey's active selection to start another. Its saved file will be kept." />
+                   Text="An unavailable active selection does not block a new journey. Its saved file will be kept." />
         <WrapPanel HorizontalAlignment="Right">
           <Button Classes="secondary" Margin="0,0,8,0" Command="{Binding ClearUnavailableJourneyCommand}"
                   IsVisible="{Binding HasUnavailableJourney}" Content="Clear unavailable journey" />
@@ -310,7 +310,7 @@
               <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding StartStatus}" />
               <StackPanel Spacing="6" IsVisible="{Binding HasUnavailableJourney}">
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="Clear the unavailable journey's active selection to start another. Its saved file will be kept." />
+                           Text="An unavailable active selection does not block a new journey. Its saved file will be kept." />
                 <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding ClearUnavailableJourneyCommand}"
                         Content="Clear unavailable journey" />
               </StackPanel>

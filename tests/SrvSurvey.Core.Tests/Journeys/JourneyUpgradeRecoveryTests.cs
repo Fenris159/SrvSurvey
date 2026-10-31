@@ -5,7 +5,7 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Tests.Journeys;
 
-public sealed class JourneyUpgradeRecoveryTests : IDisposable
+public sealed partial class JourneyUpgradeRecoveryTests : IDisposable
 {
     private const string LegacyName = "2026-07-01T000500";
     private const string StartingJournal = "Journal.2026-07-01T000000.01.log";

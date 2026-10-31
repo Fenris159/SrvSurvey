@@ -7,6 +7,32 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed partial class JourneyWorkspaceViewModelTests
 {
     [Fact]
+    public async Task RefreshKeepsCatalogAccessErrorsVisibleAlongsideTheActiveJourney()
+    {
+        if (OperatingSystem.IsWindows() || string.Equals(Environment.UserName, "root", StringComparison.Ordinal))
+        {
+            return;
+        }
+        JourneyDocument saved = await SeedHistoricalJourneyAsync(1, complete: false);
+        await new CommanderProfileStore(DataDirectory).SaveActiveJourneyAsync("F123", "Drew", true, saved.FileName);
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        string folder = Path.GetDirectoryName(saved.FilePath)!;
+        UnixFileMode permissions = File.GetUnixFileMode(folder);
+        try
+        {
+            File.SetUnixFileMode(folder, UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            await model.RefreshAsync();
+            Assert.True(model.HasActiveJourney);
+            Assert.Contains("Journey history could not be loaded", model.StatusMessage, StringComparison.Ordinal);
+        }
+        finally
+        {
+            File.SetUnixFileMode(folder, permissions);
+        }
+    }
+
+    [Fact]
     public async Task AnOlderJourneyStaysVisibleAndCanBeCompletedWithoutItsOriginalJournals()
     {
         JourneyDocument original = await SeedHistoricalJourneyAsync(1, complete: false);

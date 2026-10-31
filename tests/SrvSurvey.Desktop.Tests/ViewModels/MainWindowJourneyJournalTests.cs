@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
@@ -79,19 +80,26 @@ public sealed class MainWindowJourneyJournalTests : IDisposable
         Assert.Equal(1, Assert.Single(model.Journey.VisitedSystems).Visit.Counts.Screenshots);
     }
 
-    [Fact]
-    public async Task FreshStartupWithNullAndAbsentReferencesInTwoProfilesCanStartAJourney()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FreshStartupWithNullOrAbsentSelectedReferenceCanStartAJourney(bool omitActiveReference)
     {
         string journals = Path.Combine(directory, "journals");
         string data = Path.Combine(directory, "data");
         Directory.CreateDirectory(journals);
         Directory.CreateDirectory(data);
-        await File.WriteAllTextAsync(
-            Path.Combine(data, TestFrontierId + "-live.json"),
-            $$"""
-            {"fid":"{{TestFrontierId}}","commander":"Current","isOdyssey":true,"activeJourney":null}
-            """
-        );
+        var selectedProfile = new JsonObject
+        {
+            ["fid"] = TestFrontierId,
+            ["commander"] = "Current",
+            ["isOdyssey"] = true,
+        };
+        if (!omitActiveReference)
+        {
+            selectedProfile["activeJourney"] = null;
+        }
+        await File.WriteAllTextAsync(Path.Combine(data, TestFrontierId + "-live.json"), selectedProfile.ToJsonString());
         await File.WriteAllTextAsync(
             Path.Combine(data, "F999-live.json"),
             """

@@ -4317,6 +4317,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDispatcherTimer.cs"
   },
   {
+    "Text": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
     "Text": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11931,14 +11939,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
-  },
-  {
-    "Text": "Clear the unavailable journey\u0027s active selection to start another. Its saved file will be kept.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
     "Text": "Clear unavailable journey",

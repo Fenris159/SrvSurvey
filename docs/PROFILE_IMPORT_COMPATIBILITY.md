@@ -117,6 +117,15 @@ required. Diagnostics record the
 commander ID, galaxy mode, actual profile path, and in-memory Journey identity;
 they do not dump profile contents or service keys.
 
+Participating writers coordinate profile and Journey changes across application
+instances. Creation publishes without replacing an existing record; metadata
+upgrades read the latest saved data before conversion. Reference replacement
+compares the observed selection while holding the profile lease, and missing
+files are checked again under the Journey lease before detaching their selection.
+Clearing an unavailable selection does not stop a different Journey that is
+already recording. Catalog-access failures remain visible after an active
+Journey refresh.
+
 ## Backup, merge, and recovery contract
 
 Imports add missing data and retain current values. Global and regional Codex

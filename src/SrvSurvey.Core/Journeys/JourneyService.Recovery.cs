@@ -41,8 +41,13 @@ public sealed partial class JourneyService
         JourneyLoadResult load = await journeyStore
             .UpgradeAsync(frontierId, fileName, cancellationToken)
             .ConfigureAwait(false);
-        if (load.Journey is not { } journey)
+        if (!load.Exists)
         {
+            LogState("recheck-missing", frontierId, isOdyssey, profile.ActiveJourneyFileName);
+            await using FileStream lease = await journeyStore
+                .AcquireMutationAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
+            load = await journeyStore.LoadAsync(frontierId, fileName, cancellationToken).ConfigureAwait(false);
             if (!load.Exists)
             {
                 activeProcessor = null;
@@ -66,6 +71,9 @@ public sealed partial class JourneyService
                     0
                 );
             }
+        }
+        if (load.Journey is not { } journey)
+        {
             return Unavailable(
                 frontierId,
                 isOdyssey,
@@ -178,6 +186,7 @@ public sealed partial class JourneyService
     {
         ArgumentNullException.ThrowIfNull(expected);
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        FileStream? lease = null;
         try
         {
             CommanderProfileLoadResult profile = await profileStore
@@ -188,14 +197,15 @@ public sealed partial class JourneyService
                 return false;
             }
             JourneyLoadResult? load = null;
+            string? fileName = null;
             try
             {
+                fileName = JourneyStore.NormalizeReference(expected.FileName);
+                lease = await journeyStore
+                    .AcquireMutationAsync(expected.FrontierId, cancellationToken)
+                    .ConfigureAwait(false);
                 load = await journeyStore
-                    .LoadAsync(
-                        expected.FrontierId,
-                        JourneyStore.NormalizeReference(expected.FileName),
-                        cancellationToken
-                    )
+                    .LoadAsync(expected.FrontierId, fileName, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (ArgumentException)
@@ -220,7 +230,11 @@ public sealed partial class JourneyService
             {
                 return false;
             }
-            if (activeProcessor?.Journey.FrontierId == expected.FrontierId && activeIsOdyssey == expected.IsOdyssey)
+            if (
+                activeProcessor?.Journey.FrontierId == expected.FrontierId
+                && activeProcessor.Journey.FileName == fileName
+                && activeIsOdyssey == expected.IsOdyssey
+            )
             {
                 activeProcessor = null;
             }
@@ -232,7 +246,17 @@ public sealed partial class JourneyService
         }
         finally
         {
-            operationLock.Release();
+            try
+            {
+                if (lease is not null)
+                {
+                    await lease.DisposeAsync().ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                operationLock.Release();
+            }
         }
     }
 
@@ -272,14 +296,7 @@ public sealed partial class JourneyService
             {
                 throw new InvalidOperationException("A completed journey cannot be resumed.");
             }
-            string? expectedReference =
-                RecoveryReference is not null || string.IsNullOrWhiteSpace(data.ActiveJourneyFileName)
-                    ? data.ActiveJourneyFileName
-                    : null;
-            if (current.Journey?.IsActive == true)
-            {
-                expectedReference = current.Journey.FileName;
-            }
+            string? expectedReference = GetResolvedReference(data, current);
             if (
                 !await profileStore
                     .TryReplaceActiveJourneyAsync(
@@ -319,6 +336,15 @@ public sealed partial class JourneyService
             ["The active journey selection changed while loading. Refresh Journeys to load the latest selection."],
             0
         );
+    }
+
+    private string? GetResolvedReference(CommanderProfileData profile, JourneyServiceResult current)
+    {
+        if (RecoveryReference is not null || string.IsNullOrWhiteSpace(profile.ActiveJourneyFileName))
+        {
+            return profile.ActiveJourneyFileName;
+        }
+        return current.Journey is { IsActive: true } journey ? journey.FileName : null;
     }
 
     private void LogState(string action, string frontierId, bool isOdyssey, string? reference) =>

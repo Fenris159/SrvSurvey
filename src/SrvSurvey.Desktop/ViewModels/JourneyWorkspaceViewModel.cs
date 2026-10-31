@@ -791,6 +791,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
             if (version == contextVersion)
             {
                 StatusMessage = "Journey history could not be loaded: " + exception.Message;
+                catalogErrors = [StatusMessage];
             }
         }
         finally

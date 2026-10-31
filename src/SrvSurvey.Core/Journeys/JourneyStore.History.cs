@@ -15,6 +15,8 @@ public sealed partial class JourneyStore
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            await using FileStream lease = await AcquireMutationAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
             (JsonObject root, JourneyDocument journey) = await ReadHistoricalJourneyAsync(
                     frontierId,
                     fileName,
@@ -38,6 +40,8 @@ public sealed partial class JourneyStore
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            await using FileStream lease = await AcquireMutationAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
             (_, JourneyDocument journey) = await ReadHistoricalJourneyAsync(frontierId, fileName, cancellationToken)
                 .ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();

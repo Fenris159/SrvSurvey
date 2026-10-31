@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Journeys;
 
@@ -21,6 +22,15 @@ public sealed partial class JourneyStore(string dataDirectory)
 
     private readonly string dataDirectory = GetFullPath(dataDirectory);
     private readonly SemaphoreSlim saveLock = new(1, 1);
+
+    internal Task<FileStream> AcquireMutationAsync(string frontierId, CancellationToken cancellationToken)
+    {
+        ValidateFolderName(frontierId, nameof(frontierId));
+        return FileMutationLease.AcquireAsync(
+            Path.Combine(GetJourneyDirectory(frontierId), ".journey"),
+            cancellationToken
+        );
+    }
 
     public async Task<JourneyCatalogResult> LoadAllAsync(
         string frontierId,
@@ -112,6 +122,8 @@ public sealed partial class JourneyStore(string dataDirectory)
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            await using FileStream lease = await AcquireMutationAsync(request.FrontierId, cancellationToken)
+                .ConfigureAwait(false);
             JourneyLoadResult existing = await LoadPathAsync(request.FrontierId, path, cancellationToken)
                 .ConfigureAwait(false);
             if (existing.Exists)
@@ -122,7 +134,24 @@ public sealed partial class JourneyStore(string dataDirectory)
                 journey = journey with { FileName = fileName, FilePath = path };
             }
 
-            await WriteJourneyAsync(path, [], journey, cancellationToken).ConfigureAwait(false);
+            while (true)
+            {
+                try
+                {
+                    await WriteJourneyAsync(path, [], journey, cancellationToken, overwrite: false)
+                        .ConfigureAwait(false);
+                    break;
+                }
+                catch (IOException) when (File.Exists(path))
+                {
+                    fileName =
+                        request.StartingEventTimestamp.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture)
+                        + "_"
+                        + Guid.NewGuid().ToString("N");
+                    path = Path.Combine(GetJourneyDirectory(request.FrontierId), fileName + JsonFileExtension);
+                    journey = journey with { FileName = fileName, FilePath = path };
+                }
+            }
         }
         finally
         {
@@ -141,6 +170,8 @@ public sealed partial class JourneyStore(string dataDirectory)
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            await using FileStream lease = await AcquireMutationAsync(journey.FrontierId, cancellationToken)
+                .ConfigureAwait(false);
             JsonObject root;
             JsonObjectReadResult readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
             if (readResult.Exists && readResult.Root is null)
@@ -369,7 +400,8 @@ public sealed partial class JourneyStore(string dataDirectory)
         string path,
         JsonObject root,
         JourneyDocument journey,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool overwrite = true
     )
     {
         if (GetSchemaVersion(root, path) == 0 && root.Count > 0)
@@ -398,7 +430,7 @@ public sealed partial class JourneyStore(string dataDirectory)
             root[VisitedSystemsPropertyName] as JsonArray,
             journey.VisitedSystems
         );
-        await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
+        await WriteObjectAsync(path, root, cancellationToken, overwrite).ConfigureAwait(false);
     }
 
     private static JsonArray MergeVisits(JsonArray? existing, IReadOnlyList<JourneySystemVisit> visits)
@@ -729,7 +761,12 @@ public sealed partial class JourneyStore(string dataDirectory)
         }
     }
 
-    private static async Task WriteObjectAsync(string path, JsonObject root, CancellationToken cancellationToken)
+    private static async Task WriteObjectAsync(
+        string path,
+        JsonObject root,
+        CancellationToken cancellationToken,
+        bool overwrite = true
+    )
     {
         string directory =
             Path.GetDirectoryName(path)
@@ -755,7 +792,7 @@ public sealed partial class JourneyStore(string dataDirectory)
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            File.Move(temporaryPath, path, true);
+            File.Move(temporaryPath, path, overwrite);
         }
         finally
         {

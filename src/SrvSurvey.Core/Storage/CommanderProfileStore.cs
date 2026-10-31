@@ -358,13 +358,14 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         bool isOdyssey,
         string? expected,
         string? replacement,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        string? commanderName = null
     )
     {
         bool matched = false;
         await SaveFieldsAsync(
                 frontierId,
-                null,
+                commanderName,
                 isOdyssey,
                 root =>
                 {
@@ -402,6 +403,9 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         try
         {
             string path = GetProfilePath(frontierId, isOdyssey);
+            await using FileStream lease = await FileMutationLease
+                .AcquireAsync(path, cancellationToken)
+                .ConfigureAwait(false);
             JsonObject root;
             if (File.Exists(path))
             {

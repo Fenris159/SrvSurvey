@@ -15,6 +15,8 @@ public sealed partial class JourneyStore
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            await using FileStream lease = await AcquireMutationAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
             JsonObjectReadResult read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
             if (read.Root is not { } root)
             {
@@ -54,6 +56,17 @@ public sealed partial class JourneyStore
                     $"The saved journey remains usable, but its format upgrade could not be saved: {path}. {exception.Message}"
                 );
             }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            JourneyLoadResult saved = await LoadPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+            return saved.Journey is null
+                ? saved
+                : saved with
+                {
+                    Error =
+                        $"The saved journey remains usable, but its format upgrade could not be saved: {path}. {exception.Message}",
+                };
         }
         finally
         {

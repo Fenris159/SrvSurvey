@@ -175,6 +175,8 @@ public sealed partial class JourneyService
                 );
             }
 
+            string? expectedReference = GetResolvedReference(data, active);
+
             JourneyDocument journey = await journeyStore
                 .CreateAsync(
                     new JourneyCreationRequest(
@@ -190,15 +192,26 @@ public sealed partial class JourneyService
                 .ConfigureAwait(false);
             JourneyServiceResult result = await CatchUpAndActivateAsync(journey, request.IsOdyssey, cancellationToken)
                 .ConfigureAwait(false);
-            await profileStore
-                .SaveActiveJourneyAsync(
+            bool selected = await profileStore
+                .TryReplaceActiveJourneyAsync(
                     request.FrontierId,
-                    request.CommanderName,
                     request.IsOdyssey,
+                    expectedReference,
                     result.Journey!.FileName,
-                    cancellationToken
+                    cancellationToken,
+                    request.CommanderName
                 )
                 .ConfigureAwait(false);
+            if (!selected)
+            {
+                return SelectionChanged() with
+                {
+                    Errors =
+                    [
+                        "The journey was saved, but the active journey selection changed. Refresh Journeys to load the latest selection.",
+                    ],
+                };
+            }
             RecoveryReference = null;
             return result with { Errors = [.. active.Errors, .. catalog.Errors, .. result.Errors] };
         }
