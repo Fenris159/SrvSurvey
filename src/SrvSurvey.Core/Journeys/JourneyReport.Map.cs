@@ -41,7 +41,15 @@ public static partial class JourneyReport
         html.Append("<div class=\"map-references\"><span><strong>Sol</strong> X 0, Z 0 ly</span>")
             .Append("<span><strong>Sagittarius A*</strong> X 25.21875, Z 25899.96875 ly</span></div>")
             .Append(
-                "<figcaption>Galactic X/Z projection, with equal distance scale on both axes. Galactic context centers on Sagittarius A* and includes Sol. Route detail fits the recorded visits. Select a point to open its history entry. Return visits and systems at different heights can overlap.</figcaption></figure>"
+                "<figcaption>Galactic X/Z projection, with equal distance scale on both axes. Galactic context centers on Sagittarius A* and includes Sol. Route detail fits the recorded visits. Select a point to open its history entry. Coincident points offer a visit chooser, including return visits and systems at different heights.</figcaption></figure>"
+            )
+            .Append(
+                """
+                <dialog id="map-visit-picker" aria-labelledby="map-visit-picker-title">
+                  <div class="map-picker-heading"><h2 id="map-visit-picker-title">Visits at this position</h2><button type="button" data-close-map-picker>Close</button></div>
+                  <p>Choose the recorded visit to open in the history.</p><div id="map-visit-options"></div>
+                </dialog>
+                """
             );
     }
 
@@ -197,9 +205,10 @@ public static partial class JourneyReport
         string kind = (index == 0 ? " departure" : "") + (index == count - 1 ? " arrival" : "");
         int radius = index == 0 || index == count - 1 ? 5 : 3;
         string label = $"Visit {index + 1}: {visit.StarSystem.Name}";
+        string arrived = visit.Arrived.UtcDateTime.ToString("dd MMM yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture);
         Svg(
             html,
-            $"""<a class="route-stop-link" href="#visit-{index + 1}" data-visit="visit-{index + 1}" aria-label="{E(label)}" tabindex="0"><title>{E(label)}; X {visit.StarSystem.Position.X:R}, Z {visit.StarSystem.Position.Z:R} ly</title><circle class="route-stop-hit" cx="{point.X:0.###}" cy="{point.Y:0.###}" r="12"/><circle class="route-stop{kind}" cx="{point.X:0.###}" cy="{point.Y:0.###}" r="{radius}"/></a>"""
+            $"""<a class="route-stop-link" href="#visit-{index + 1}" data-visit="visit-{index + 1}" data-arrived="{E(arrived)}" aria-label="{E(label)}" tabindex="0"><title>{E(label)}; X {visit.StarSystem.Position.X:R}, Z {visit.StarSystem.Position.Z:R} ly</title><circle class="route-stop-hit" cx="{point.X:0.###}" cy="{point.Y:0.###}" r="12"/><circle class="route-stop{kind}" cx="{point.X:0.###}" cy="{point.Y:0.###}" r="{radius}"/></a>"""
         );
     }
 
@@ -235,8 +244,9 @@ public static partial class JourneyReport
         .route-map-scroll{overflow-x:auto}.route-map{display:block;width:100%;min-width:640px;height:auto;max-height:none;margin:0}.map-frame{fill:none;stroke:var(--line);stroke-width:1}.route-grid{stroke:var(--line);stroke-width:.6;opacity:.45;fill:none}.map-origin{opacity:.9;stroke-width:1.1}.map-tick,.map-axis-title{fill:var(--muted);font:12px "Segoe UI",Arial,sans-serif}.map-axis-title{font-size:14px}.route-path{stroke-width:1.6}
         .route-stop-link{cursor:pointer}.route-stop-hit{fill:transparent;stroke:none}.route-stop{fill:var(--accent);stroke:var(--surface);stroke-width:1.2}.route-stop.departure{fill:var(--surface);stroke:var(--text);stroke-width:2}.route-stop.arrival{fill:var(--accent);stroke:var(--text);stroke-width:2}.route-stop-link:hover .route-stop,.route-stop-link:focus .route-stop{r:6;fill:var(--text);stroke:var(--accent);stroke-width:2}
         .map-reference circle{fill:var(--surface);stroke:var(--muted);stroke-width:1.2}.map-reference-name,.map-reference-detail{fill:var(--text);font:600 15px Bahnschrift,"Trebuchet MS",sans-serif;paint-order:stroke fill;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}.map-reference-detail{fill:var(--muted);font:12px "Segoe UI",Arial,sans-serif}.map-references{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:13px;color:var(--muted);margin:0 0 12px}.map-references strong{color:var(--text);font-weight:500;margin-right:8px}.visit:target{border-left-color:var(--accent);background:var(--surface)}
+        #map-visit-picker{box-sizing:border-box;color:var(--text);background:var(--surface);border:1px solid var(--accent);border-radius:8px;width:min(480px,calc(100vw - 40px));max-height:75vh;overflow:auto;padding:20px}#map-visit-picker::backdrop{background:rgba(0,0,12,.8)}.map-picker-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.map-picker-heading h2{margin:0;font-size:22px}#map-visit-picker p{color:var(--muted);font-size:14px}.map-visit-option{display:block;color:var(--text);padding:14px 4px;border-top:1px solid var(--line);text-decoration:none}.map-visit-option:hover,.map-visit-option:focus{color:var(--accent)}.map-visit-date{display:block;color:var(--muted);font-size:13px;margin-top:4px}
         @media(max-width:700px){.map-heading{align-items:start}.map-heading h2{font-size:20px}.map-references{flex-direction:column;gap:5px}}
-        @media print{.route{--surface:#f1f6fa;--text:#152331;--muted:#425568;--line:#a6bdcf;--accent:#164c7d;--instrument:#e4ecf3}.route-map{min-width:0;max-height:460px}.route-map-scroll{overflow:visible}.map-views{display:none}}
+        @media print{.route{--surface:#f1f6fa;--text:#152331;--muted:#425568;--line:#a6bdcf;--accent:#164c7d;--instrument:#e4ecf3}.route-map{min-width:0;max-height:460px}.route-map-scroll{overflow:visible}.map-views{display:none}#map-visit-picker{display:none!important}}
         """;
 
     private const string RouteMapScript = """
@@ -245,11 +255,37 @@ public static partial class JourneyReport
           document.querySelectorAll('[data-map-panel]').forEach(panel=>panel.hidden=panel.dataset.mapPanel!==view);
           document.querySelectorAll('[data-map-view]').forEach(control=>control.setAttribute('aria-pressed',String(control===button)));
         }));
-        document.querySelectorAll('.route-stop-link').forEach(link=>link.addEventListener('click',()=>{
+        const mapVisitPicker=document.getElementById('map-visit-picker');
+        mapVisitPicker?.querySelector('[data-close-map-picker]').addEventListener('click',()=>mapVisitPicker.close());
+        function openMapVisit(link){
           const row=document.getElementById(link.dataset.visit);
           if(!row)return;
           search.value='';search.dispatchEvent(new Event('input'));
           row.querySelector('details').open=true;row.tabIndex=-1;row.focus({preventScroll:true});
-        }));
+        }
+        document.querySelectorAll('.route-map').forEach(map=>{
+          const positions=new Map();
+          map.querySelectorAll('.route-stop-link').forEach(link=>{
+            const dot=link.querySelector('.route-stop');
+            const key=dot.getAttribute('cx')+','+dot.getAttribute('cy');
+            if(!positions.has(key))positions.set(key,[]);
+            positions.get(key).push(link);
+          });
+          positions.forEach(visits=>visits.forEach(link=>link.addEventListener('click',event=>{
+            if(visits.length===1||event.detail===0){openMapVisit(link);return;}
+            event.preventDefault();
+            const options=mapVisitPicker.querySelector('#map-visit-options');
+            options.replaceChildren();
+            visits.forEach(visit=>{
+              const option=document.createElement('a');
+              option.className='map-visit-option';option.href=visit.getAttribute('href');
+              option.textContent=visit.getAttribute('aria-label');
+              const date=document.createElement('span');date.className='map-visit-date';date.textContent=visit.dataset.arrived;option.append(date);
+              option.addEventListener('click',()=>{mapVisitPicker.close();openMapVisit(visit);});
+              options.append(option);
+            });
+            mapVisitPicker.showModal();
+          })));
+        });
         """;
 }

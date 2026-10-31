@@ -337,6 +337,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         {
             await RefreshCoreAsync();
             StatusMessage = "The route import could not be completed: " + exception.Message;
+            await workspace.RefreshSharedCarrierCatalogAsync();
         }
         finally
         {

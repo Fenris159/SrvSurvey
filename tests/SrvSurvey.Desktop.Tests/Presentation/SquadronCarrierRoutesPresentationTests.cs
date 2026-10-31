@@ -184,6 +184,102 @@ public sealed class SquadronCarrierRoutesPresentationTests : IDisposable
     }
 
     [AvaloniaFact]
+    public async Task PartialImportRefreshesBothCarrierLibraries()
+    {
+        using MainWindowViewModel main = CreateMain();
+        await main.FleetCarrierRoute.UpdateContextAsync("F1", "Sol", 1, null);
+        await main.SquadronCarrierRoute.UpdateContextAsync("F1", "Sol", 1, null);
+        await main.FleetCarrierRouteManager.UpdateContextAsync("F1");
+        await main.SquadronCarrierRouteManager.UpdateContextAsync("F1");
+        var incoming = new FollowRouteStore(Path.Combine(directory, "incoming"), FollowRouteKind.FleetCarrier);
+        FollowRouteDocument saved = await incoming.SaveAsAsync(
+            (await incoming.CreateNewAsync("F1")) with
+            {
+                Hops = [new("Sol", 1, null, null, false, false), new("Lave", 2, null, null, false, false)],
+            },
+            "Imported carrier route"
+        );
+        await main.FleetCarrierRouteManager.ImportAsync([saved.FilePath, Path.Combine(directory, "missing.json")]);
+        Assert.Contains(
+            "could not be completed",
+            main.FleetCarrierRouteManager.StatusMessage,
+            StringComparison.Ordinal
+        );
+        Assert.Single(main.FleetCarrierRouteManager.Routes);
+        Assert.Single(main.FleetCarrierRoute.SavedRoutes);
+        Assert.Single(main.SquadronCarrierRoute.SavedRoutes);
+    }
+
+    [AvaloniaFact]
+    public async Task DefaultSquadronPlacementReservesTheScaledPersonalPanelWidth()
+    {
+        RouteWorkspaceViewModel fc = CreateCarrier(FollowRouteCarrierKind.Personal);
+        RouteWorkspaceViewModel sc = CreateCarrier(FollowRouteCarrierKind.Squadron);
+        await fc.UpdateContextAsync("F1", "Sol", 1, null);
+        await sc.UpdateContextAsync("F1", "Sol", 1, null);
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotFleetCarrierRoute"] = OverlayLayoutCatalog
+                    .GetRequired("PlotFleetCarrierRoute")
+                    .DefaultPlacement with
+                {
+                    ScaleIndex = OverlayScaleCatalog.GetIndex(50),
+                },
+                ["PlotSquadronCarrierRoute"] = OverlayLayoutCatalog
+                    .GetRequired("PlotSquadronCarrierRoute")
+                    .DefaultPlacement,
+            },
+            null,
+            null
+        );
+        var registry = new OverlayWindowRegistry();
+        using var host = new HostedOverlayTestHarness(registry, overlayLayout: layout);
+        using var personal = new FleetCarrierRouteOverlayCoordinator(fc, host.Session);
+        using var squadron = new FleetCarrierRouteOverlayCoordinator(sc, host.Session);
+        JournalEventEnvelope[] requests =
+        [
+            Event(
+                $$"""{"event":"CarrierJumpRequest","CarrierID":1,"CarrierType":"FleetCarrier","SystemName":"Lave","DepartureTime":"{{DateTimeOffset.UtcNow.AddMinutes(15):O}}"}"""
+            ),
+            Event(
+                $$"""{"event":"CarrierJumpRequest","CarrierID":2,"CarrierType":"SquadronCarrier","SystemName":"Achenar","DepartureTime":"{{DateTimeOffset.UtcNow.AddMinutes(15):O}}"}"""
+            ),
+        ];
+        fc.ApplyFleetCarrierJumpEvents(requests);
+        sc.ApplyFleetCarrierJumpEvents(requests);
+        host.Tick();
+        RegisteredOverlayWindow own = registry
+            .Snapshot()
+            .Single(window => window.PlotterName == "PlotFleetCarrierRoute");
+        RegisteredOverlayWindow other = registry
+            .Snapshot()
+            .Single(window => window.PlotterName == "PlotSquadronCarrierRoute");
+        Assert.True(OverlayWindowMetrics.GetPixelSize(own).Width > OverlayWindowMetrics.GetPixelSize(other).Width);
+        Assert.True(
+            other.Window.Position.X + OverlayWindowMetrics.GetPixelSize(other).Width + 16 <= own.Window.Position.X
+        );
+        LegacyOverlayPlacement custom = layout.Placements["PlotSquadronCarrierRoute"] with
+        {
+            HorizontalOffset = 700,
+            VerticalOffset = 220,
+            PositionReference = new(1920, 1080),
+        };
+        layout.SetPlacement("PlotSquadronCarrierRoute", custom);
+        host.Tick();
+        Assert.Equal(
+            layout.GetPosition(
+                "PlotSquadronCarrierRoute",
+                HostedOverlayTestHarness.AvailableGameWindow.ClientBounds,
+                OverlayWindowMetrics.GetPixelSize(other)
+            ),
+            other.Window.Position
+        );
+        await fc.FlushWorkspaceAsync();
+        await sc.FlushWorkspaceAsync();
+    }
+
+    [AvaloniaFact]
     public async Task BothPassiveOverlaysTrackTheirOwnRequestsAndCancellationWithoutRoutes()
     {
         RouteWorkspaceViewModel fc = CreateCarrier(FollowRouteCarrierKind.Personal);

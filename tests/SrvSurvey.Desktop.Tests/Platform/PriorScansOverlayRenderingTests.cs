@@ -22,6 +22,49 @@ public sealed class PriorScansOverlayRenderingTests
     [AvaloniaTheory]
     [InlineData(true)]
     [InlineData(false)]
+    public void MissingPanelAvailabilityPreservesTheSavedCanonnPreference(bool enabled)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-prior-migration-{Guid.NewGuid():N}");
+        var paths = new AppDataPaths(
+            Path.Combine(directory, "config"),
+            Path.Combine(directory, "data"),
+            Path.Combine(directory, "cache"),
+            []
+        );
+        try
+        {
+            new SystemSurveySettingsStore(paths.UiSettingsPath).Save(
+                SystemSurveyPreferences.Default with
+                {
+                    ShowCanonnSignalsOnRadar = enabled,
+                }
+            );
+            using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+                null,
+                builder => builder.WithAppDataPaths(paths)
+            );
+            Assert.Equal(enabled, main.SystemSurvey.ShowCanonnSignalsOnRadar);
+            Assert.Equal(
+                enabled,
+                main.OverlayPanelVisibility.Panels.Single(panel => panel.PlotterName == "PlotPriorScans").IsEnabled
+            );
+            Assert.Equal(
+                enabled,
+                new OverlayPanelVisibilitySettingsStore(paths.UiSettingsPath).Load()["PlotPriorScans"]
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanonnCheckboxSharesAvailabilityShortcutAndPersistedState(bool available)
     {
         string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-prior-availability-{Guid.NewGuid():N}");

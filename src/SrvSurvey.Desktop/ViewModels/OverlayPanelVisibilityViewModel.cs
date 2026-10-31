@@ -66,6 +66,8 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
 
     public bool HasPersistenceStatus => PersistenceStatus.Length > 0;
 
+    internal bool HasSavedVisibility(string plotterName) => store.HasSavedVisibility(plotterName);
+
     public IReadOnlyList<OverlayPanelVisibilityEntryViewModel> ForCategory(OverlaySettingsCategory category)
     {
         return Panels.Where(panel => panel.SettingsCategories.Contains(category)).ToArray();

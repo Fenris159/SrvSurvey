@@ -189,6 +189,8 @@ public sealed class CarrierRouteWorkspaceStoreTests : IDisposable
         await personal.RenameAsync("F1", "Renamed.json", false, "Renamed");
         await personal.DeleteNamedAsync("F1", "Renamed.json", false);
         Assert.Empty(await squadron.ListAsync("F1"));
+        Assert.Null((await personal.LoadAsync("F1")).WorkspaceDraft);
+        Assert.Null((await squadron.LoadAsync("F1")).WorkspaceDraft);
         await personal.SaveAsAsync(fc, "Renamed");
         FollowRouteDocument reopened = (await squadron.LoadNamedAsync("F1", "Renamed.json", false)).Route!;
         Assert.Equal(-1, reopened.LastReachedIndex);

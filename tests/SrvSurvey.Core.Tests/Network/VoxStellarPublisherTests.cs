@@ -667,8 +667,10 @@ public sealed class VoxStellarPublisherTests
             return timer;
         }
 
+        // This observes worker scheduling, not elapsed batching time. Instrumented CI can
+        // delay the worker; fake time still advances only when the test fires a timer.
         public Task<ManualTimer> NextTimerAsync() =>
-            timers.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+            timers.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(30));
     }
 
     private sealed class ManualTimer(TimerCallback callback, object? state) : ITimer

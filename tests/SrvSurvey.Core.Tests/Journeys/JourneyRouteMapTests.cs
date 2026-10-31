@@ -64,7 +64,9 @@ public sealed class JourneyRouteMapTests
             }
         )
         {
-            foreach (XElement map in Maps(JourneyReport.Html(WithPositions(positions))))
+            string html = JourneyReport.Html(WithPositions(positions));
+            Assert.Contains("id=\"map-visit-picker\"", html, StringComparison.Ordinal);
+            foreach (XElement map in Maps(html))
             {
                 Assert.Equal(positions.Length, Stops(map).Length);
                 foreach (XElement point in Stops(map))
@@ -74,6 +76,14 @@ public sealed class JourneyRouteMapTests
                 }
                 Assert.DoesNotContain("NaN", map.ToString(), StringComparison.Ordinal);
                 Assert.DoesNotContain("Infinity", map.ToString(), StringComparison.Ordinal);
+                Assert.All(
+                    map.Descendants("a"),
+                    link => Assert.False(string.IsNullOrWhiteSpace(link.Attribute("data-arrived")?.Value))
+                );
+                Assert.All(
+                    map.Descendants("a"),
+                    link => Assert.DoesNotContain('<', link.Attribute("data-arrived")!.Value)
+                );
             }
         }
     }
@@ -182,7 +192,7 @@ public sealed class JourneyRouteMapTests
             new(-5_000, -200, 35_000),
             new(6_400, 150, 30_000),
             new(12_000, -100, 12_000),
-            new(4_000, 20, 6_000),
+            new(-9_000, 20, 6_000),
         ]) with
         {
             Name = "The galactic crossing",
@@ -192,7 +202,7 @@ public sealed class JourneyRouteMapTests
         string html = JourneyReport.Html(journey);
         Assert.Equal(6, Stops(Maps(html)[0]).Length);
         string? path = Environment.GetEnvironmentVariable("SRVSURVEY_JOURNEY_MAP_OUTPUT");
-        if (path is not null)
+        if (!string.IsNullOrWhiteSpace(path))
         {
             File.WriteAllText(path, html);
         }

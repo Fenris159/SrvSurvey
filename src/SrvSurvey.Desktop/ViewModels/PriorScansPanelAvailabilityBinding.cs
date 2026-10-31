@@ -19,8 +19,14 @@ internal sealed class PriorScansPanelAvailabilityBinding : IDisposable
         this.survey = survey;
         this.availability = availability;
         panel = availability.Panels.Single(item => item.PlotterName == "PlotPriorScans");
-        // Availability remains authoritative when migrating the former radar-only preference.
-        survey.ShowCanonnSignalsOnRadar = panel.IsEnabled;
+        if (availability.HasSavedVisibility(panel.PlotterName))
+        {
+            survey.ShowCanonnSignalsOnRadar = panel.IsEnabled;
+        }
+        else
+        {
+            panel.IsEnabled = survey.ShowCanonnSignalsOnRadar;
+        }
         survey.PropertyChanged += OnSurveyChanged;
         availability.AvailabilityChanged += OnPanelChanged;
     }

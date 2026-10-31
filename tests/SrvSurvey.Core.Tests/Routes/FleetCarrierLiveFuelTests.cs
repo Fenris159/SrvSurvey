@@ -16,6 +16,26 @@ public sealed class FleetCarrierLiveFuelTests
     );
 
     [Fact]
+    public void UnknownCarrierStatsCannotCreatePersonalOrSquadronIdentity()
+    {
+        var journal = new FleetCarrierFuelJournal();
+        journal.Observe([
+            Event(1, "CarrierStats", "\"CarrierID\":2,\"Callsign\":\"OTH-002\",\"FuelLevel\":900"),
+            Event(2, "CarrierLocation", "\"CarrierID\":2,\"StarSystem\":\"B\""),
+        ]);
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Personal, []));
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Squadron, []));
+        journal.Observe([
+            Event(3, "CarrierStats", "\"CarrierID\":2,\"CarrierType\":\"Unknown\",\"Callsign\":\"OTH-002\""),
+        ]);
+        Assert.Null(journal.GetKnownCarrierKind(2));
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Personal, []));
+        journal.Observe([Event(4, "CarrierJumpRequest", "\"CarrierID\":2,\"CarrierType\":\"SquadronCarrier\"")]);
+        Assert.Equal(900, journal.Read(null, FollowRouteCarrierKind.Squadron, [])!.TankTonnes);
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Personal, []));
+    }
+
+    [Fact]
     public void TypedSquadronRequestsKeepLaterUntypedStatsOutOfThePersonalCarrier()
     {
         var journal = new FleetCarrierFuelJournal();
@@ -49,8 +69,16 @@ public sealed class FleetCarrierLiveFuelTests
         journal.Reset();
         Assert.Null(journal.GetKnownCarrierKind(2));
         journal.Observe([Event(2, "CarrierStats", "\"CarrierID\":2,\"Callsign\":\"OWN-002\",\"FuelLevel\":900")]);
-        Assert.Equal(900, journal.Read(null, FollowRouteCarrierKind.Personal, [])!.TankTonnes);
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Personal, []));
         Assert.Null(journal.Read(null, FollowRouteCarrierKind.Squadron, []));
+        journal.Observe([
+            Event(
+                3,
+                "CarrierStats",
+                "\"CarrierID\":2,\"CarrierType\":\"FleetCarrier\",\"Callsign\":\"OWN-002\",\"FuelLevel\":900"
+            ),
+        ]);
+        Assert.Equal(900, journal.Read(null, FollowRouteCarrierKind.Personal, [])!.TankTonnes);
     }
 
     [Theory]
@@ -361,7 +389,11 @@ public sealed class FleetCarrierLiveFuelTests
     {
         var journal = new FleetCarrierFuelJournal();
         journal.Observe([
-            Event(1, "CarrierStats", "\"CarrierID\":1,\"Callsign\":\"OWN-001\",\"FuelLevel\":300"),
+            Event(
+                1,
+                "CarrierStats",
+                "\"CarrierID\":1,\"CarrierType\":\"FleetCarrier\",\"Callsign\":\"OWN-001\",\"FuelLevel\":300"
+            ),
             Event(2, "CarrierLocation", "\"CarrierID\":1,\"StarSystem\":\"Unknown\""),
         ]);
         FrontierCarrierSnapshot carrier = Carrier(1, "OWN-001", 1000, 500, 1000);
@@ -383,7 +415,7 @@ public sealed class FleetCarrierLiveFuelTests
             Event(
                 1,
                 "CarrierStats",
-                "\"CarrierID\":1,\"Callsign\":\"OWN-001\",\"FuelLevel\":600,\"SpaceUsage\":{\"TotalCapacity\":25000,\"FreeSpace\":24000,\"Cargo\":500}"
+                "\"CarrierID\":1,\"CarrierType\":\"FleetCarrier\",\"Callsign\":\"OWN-001\",\"FuelLevel\":600,\"SpaceUsage\":{\"TotalCapacity\":25000,\"FreeSpace\":24000,\"Cargo\":500}"
             ),
             Event(
                 2,

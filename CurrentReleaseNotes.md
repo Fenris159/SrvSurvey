@@ -58,8 +58,8 @@ from RC77.
   equal-scale X/Z map, including negative coordinates, with Sol and Sagittarius
   A* as fixed position references. Reference markers do not add travel legs.
   Switch between Galactic context and Route detail, and select any visit point
-  to open its history entry. Return visits retain their own links, and reference
-  labels remain readable near the map's edges.
+  to open its history entry. Return visits at the same map position offer a
+  dated visit chooser, and reference labels remain readable near the map's edges.
 - **Journey journal reliability:** Starting a Journey uses the selected
   commander's journals across all available folders, regardless of folder order.
   Current starts use the latest matching location. Catch-up and reprocessing

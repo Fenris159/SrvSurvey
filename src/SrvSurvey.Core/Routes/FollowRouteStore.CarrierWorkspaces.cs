@@ -127,6 +127,10 @@ public sealed partial class FollowRouteStore
         }
         WriteOptional(root, SelectedFilePropertyName, replacement);
         root.Remove("legacy");
+        if (replacement is null)
+        {
+            root.Remove(DraftPropertyName);
+        }
         if (name is not null && root[DraftPropertyName] is JsonObject draft)
         {
             draft["name"] = name;

@@ -56,8 +56,16 @@ public sealed class FleetCarrierFuelJournal
         {
             return;
         }
-        knownCarrierKinds[number] =
-            type.GetString() == "SquadronCarrier" ? FollowRouteCarrierKind.Squadron : FollowRouteCarrierKind.Personal;
+        FollowRouteCarrierKind? kind = type.GetString() switch
+        {
+            "SquadronCarrier" => FollowRouteCarrierKind.Squadron,
+            "FleetCarrier" => FollowRouteCarrierKind.Personal,
+            _ => null,
+        };
+        if (kind is { } known)
+        {
+            knownCarrierKinds[number] = known;
+        }
     }
 
     public FleetCarrierFuelSnapshot? Read(
@@ -132,7 +140,7 @@ public sealed class FleetCarrierFuelJournal
             {
                 continue;
             }
-            if ((GetKnownCarrierKind(number) ?? FollowRouteCarrierKind.Personal) != kind)
+            if (GetKnownCarrierKind(number) != kind)
             {
                 continue;
             }
