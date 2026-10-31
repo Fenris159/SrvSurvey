@@ -67,7 +67,7 @@ below; raw source files always remain in the verified backup.
 | [`F{FID}-codex.json` / `F{FID}-codex-{region}.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/CommanderCodex.cs) | Compatible global and regional ledgers. Upstream `CodexFirst` writes `timestamp_systemAddress_bodyId` strings; XP reads those strings and its supported object form. Regression assertions cover discoveries, precise 64-bit system addresses above 2^53, body IDs, and manual entries with `-1` locations. |
 | [`systems/{FID}/*.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/SystemData.cs) | Recursively copied with original names and bytes; the existing legacy system readers retain survey and biology history. |
 | Retired `organic/{FID}/*.json` and `scannedOrganics` | Preserved in the backup and imported tree. `LegacyOrganicProfileMigrator` translates retired claims and body files into the existing system-data format. Its existing import and migration tests cover this separate conversion. |
-| [`journey/{FID}/*.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/CommanderJourney.cs) | Copied unchanged; the audit test loads the imported active journey through `JourneyStore`. |
+| [`journey/{FID}/*.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/CommanderJourney.cs) | Copied unchanged; the audit test loads the imported active journey through `JourneyStore`. The Journeys workspace upgrades legacy metadata on first use, retaining the original file as a `.pre-upgrade.bak` backup. |
 | [`routes/{FID}.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/FollowRoute.cs) | Retained; `FollowRouteStore` recognizes the original lowercase directory and compact hop representation. |
 | [`guardian/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/GuardianSiteData.cs), [`human/{FID}/`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/HumanSiteData.cs), and their `legacy` subdirectories | Retained recursively, including Guardian beacons and surveys. Existing activity-specific readers and tests cover their interpretation. |
 | [`F{FID}-colony.json`](https://github.com/njthomson/SrvSurvey/blob/1a734c1412cb78cef6ff7e2e20ea8af7b5ccd7cc/SrvSurvey/game/ColonyData.cs), quest state, bookmarks, caches, and unrecognized files | Retained recursively. `LegacyColonizationProfileStore` and `LegacyQuestStateStore` retain the original formats; unknown files are not discarded. |
@@ -78,6 +78,53 @@ below; raw source files always remain in the verified backup.
 The new player/Codex regression compares every imported file with both the
 source and its verified backup. It checks the readable data, not just a
 successful file copy. The fixtures use synthetic player names and keys.
+
+### Journey upgrades and recovery
+
+The original and earlier XP Journey layouts remain readable, including compact
+and object star references and both timestamp-based filename conventions. On
+first use, the Journeys workspace adds schema version 1 and converts saved
+Windows or Unix journal paths to portable filenames. The conversion retains the
+Journey filename, timestamps, visits, statistics, notes counts, and unknown JSON
+fields. It keeps an exact `.pre-upgrade.bak` copy beside the original before
+atomically replacing metadata; repeat loads do not rewrite the backup. A failed
+upgrade leaves readable saved history available and reports the write failure.
+
+A readable active Journey remains available to continue or complete when its
+original journals are missing or cannot be replayed. This recovery does not
+rebuild or discard its saved visits. Confirmed missing Journey files have their
+stale active references cleared automatically. Malformed, inaccessible, foreign
+commander, or newer unsupported files remain untouched and produce warnings
+instead of blocking a new Journey. Beginning or resuming a readable Journey
+replaces the unavailable selection without changing its saved file. The workspace
+also offers **Clear unavailable journey** to detach the selection independently.
+Recovery rechecks the file and selection before clearing anything.
+Refresh retries initialization after a file is restored or repaired.
+Saved active Journeys whose profile selection was already cleared can be
+selected in the library and resumed explicitly. Neither a completed Journey nor
+a preserved unavailable record reserves the filename for a new Journey at the
+same starting visit; the new record receives a separate filename without
+changing the old file.
+
+Journey starts reconcile the active selection for the requested commander and
+galaxy profile, then read the same commander's Journey catalog. Only a readable
+record marked **Active** in that catalog blocks a new start, even if its profile
+selection was cleared; it can be resumed and completed from the list. The New
+Journey and Begin commands use the same catalog rule. An old in-memory snapshot
+or an unavailable selection cannot block an otherwise empty catalog. A named
+Journey, a valid starting visit, and writable Journey/profile storage remain
+required. Diagnostics record the
+commander ID, galaxy mode, actual profile path, and in-memory Journey identity;
+they do not dump profile contents or service keys.
+
+Participating writers coordinate profile and Journey changes across application
+instances. Creation publishes without replacing an existing record; metadata
+upgrades read the latest saved data before conversion. Reference replacement
+compares the observed selection while holding the profile lease, and missing
+files are checked again under the Journey lease before detaching their selection.
+Clearing an unavailable selection does not stop a different Journey that is
+already recording. Catalog-access failures remain visible after an active
+Journey refresh.
 
 ## Backup, merge, and recovery contract
 

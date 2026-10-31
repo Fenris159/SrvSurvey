@@ -8,12 +8,29 @@ namespace SrvSurvey.Core.Journeys;
 
 public sealed class JourneyJournalHistoryReader
 {
-    private readonly string journalDirectory;
+    private static readonly StringComparer PathComparer = OperatingSystem.IsWindows()
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal;
+
+    private readonly string[] journalDirectories;
 
     public JourneyJournalHistoryReader(string journalDirectory)
+        : this([journalDirectory]) { }
+
+    public JourneyJournalHistoryReader(IReadOnlyList<string> journalDirectories)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
-        this.journalDirectory = Path.GetFullPath(journalDirectory);
+        ArgumentNullException.ThrowIfNull(journalDirectories);
+        var paths = new HashSet<string>(PathComparer);
+        foreach (string path in journalDirectories)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            paths.Add(Path.GetFullPath(path));
+        }
+        if (paths.Count == 0)
+        {
+            throw new ArgumentException("At least one journal folder is required.", nameof(journalDirectories));
+        }
+        this.journalDirectories = paths.ToArray();
     }
 
     public Task<JourneyJournalSystemSearchResult> FindLatestFsdJumpAsync(
@@ -66,22 +83,19 @@ public sealed class JourneyJournalHistoryReader
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
-        EnsureDirectoryExists();
+        EnsureDirectoriesExist();
 
-        var errors = new List<string>();
+        var diagnostics = new ReadDiagnostics();
         var entries = new List<JourneyJournalSystemEntry>();
-        foreach (FileInfo file in EnumerateJournalFiles(descending: true))
+        foreach (FileInfo file in EnumerateJournalFiles(descending: true, diagnostics))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (
-                onOrAfter is { } minimum
-                && await EndsBeforeAsync(file, minimum, cancellationToken).ConfigureAwait(false)
-            )
+            JournalFileReadResult? read = await TryReadFileAsync(file, onOrAfter, diagnostics, cancellationToken)
+                .ConfigureAwait(false);
+            if (read is null)
             {
                 continue;
             }
-            JournalFileReadResult read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
-            errors.AddRange(read.Errors);
             entries.AddRange(MatchingSystems(read, frontierId, isOdyssey, matches, onOrAfter, includeLocations: false));
         }
 
@@ -91,7 +105,7 @@ public sealed class JourneyJournalHistoryReader
                 .ThenBy(entry => entry.JournalFileName, StringComparer.Ordinal)
                 .DistinctBy(entry => (entry.System.SystemAddress, entry.Event.Timestamp))
                 .ToArray(),
-            errors
+            diagnostics.Errors
         );
     }
 
@@ -138,13 +152,21 @@ public sealed class JourneyJournalHistoryReader
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
-        EnsureDirectoryExists();
-        var errors = new List<string>();
-        foreach (FileInfo file in EnumerateJournalFiles(descending: true))
+        EnsureDirectoriesExist();
+        var diagnostics = new ReadDiagnostics();
+        JourneyJournalSystemEntry? latest = null;
+        foreach (FileInfo file in EnumerateJournalFiles(descending: true, diagnostics))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            JournalFileReadResult read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
-            errors.AddRange(read.Errors);
+            DateOnly? minimum = latest?.Event.Timestamp is { } timestamp
+                ? DateOnly.FromDateTime(timestamp.UtcDateTime)
+                : null;
+            JournalFileReadResult? read = await TryReadFileAsync(file, minimum, diagnostics, cancellationToken)
+                .ConfigureAwait(false);
+            if (read is null)
+            {
+                continue;
+            }
             JourneyJournalSystemEntry? location = MatchingSystems(
                     read,
                     frontierId,
@@ -156,15 +178,15 @@ public sealed class JourneyJournalHistoryReader
                 .Where(entry => !fsdJumpsOnly || entry.Event.EventName == "FSDJump")
                 .OrderByDescending(entry => entry.Event.Timestamp)
                 .FirstOrDefault();
-            if (location is not null)
+            if (location is not null && (latest is null || location.Event.Timestamp > latest.Event.Timestamp))
             {
-                return new(location, errors);
+                latest = location;
             }
         }
-        return new(null, errors);
+        return new(latest, diagnostics.Errors);
     }
 
-    private static async Task<bool> EndsBeforeAsync(
+    private static async Task<bool> IsEntirelyBeforeAsync(
         FileInfo file,
         DateOnly minimum,
         CancellationToken cancellationToken
@@ -183,25 +205,21 @@ public sealed class JourneyJournalHistoryReader
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             16 * 1024,
-            FileOptions.Asynchronous
+            FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        long offset = Math.Max(0, stream.Length - 16 * 1024);
-        stream.Seek(offset, SeekOrigin.Begin);
-        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: offset == 0);
-        string[] lines = (await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false)).Split('\n');
-        // The first line can be a fragment when the read starts partway through the file.
-        for (int index = lines.Length - 1; index >= (offset == 0 ? 0 : 1); index--)
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             if (
-                JournalEventEnvelope.TryParse(lines[index], out JournalEventEnvelope? entry, out _)
+                JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? entry, out _)
                 && entry?.Timestamp is { } timestamp
+                && DateOnly.FromDateTime(timestamp.UtcDateTime) >= minimum
             )
             {
-                return DateOnly.FromDateTime(timestamp.UtcDateTime) < minimum;
+                return false;
             }
         }
-        // A large, incomplete, or undated final record cannot prove that this journal is old.
-        return false;
+        return true;
     }
 
     private static IEnumerable<JournalEventEnvelope> CommanderEvents(
@@ -239,72 +257,175 @@ public sealed class JourneyJournalHistoryReader
         }
     }
 
+    public Task<JourneyJournalReadResult> ReadFromAsync(
+        string startingJournal,
+        string frontierId,
+        bool isOdyssey,
+        CancellationToken cancellationToken = default
+    ) => ReadFromAsync(startingJournal, frontierId, isOdyssey, null, cancellationToken);
+
     public async Task<JourneyJournalReadResult> ReadFromAsync(
         string startingJournal,
         string frontierId,
         bool isOdyssey,
+        DateTimeOffset? startingTimestamp,
         CancellationToken cancellationToken = default
     )
     {
         ValidateJournalFileName(startingJournal);
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
-        EnsureDirectoryExists();
-
-        FileInfo[] files = EnumerateJournalFiles(descending: false).ToArray();
-        int startIndex = Array.FindIndex(
-            files,
-            file =>
-                string.Equals(
-                    file.Name,
-                    startingJournal,
-                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
-                )
-        );
-        if (startIndex < 0)
-        {
-            throw new FileNotFoundException(
-                $"The starting journal was not found: {startingJournal}",
-                Path.Combine(journalDirectory, startingJournal)
-            );
-        }
+        EnsureDirectoriesExist();
 
         var events = new List<JournalEventEnvelope>();
-        var errors = new List<string>();
-        for (int index = startIndex; index < files.Length; index++)
+        var diagnostics = new ReadDiagnostics();
+        var seen = new HashSet<(string Journal, int Occurrence, string Json)>();
+        FileInfo[] files = EnumerateJournalFiles(descending: false, diagnostics).ToArray();
+        string missingMessage = $"The starting journal was not found for this commander: {startingJournal}";
+        FileInfo startingFile =
+            files.FirstOrDefault(file => PathComparer.Equals(file.Name, startingJournal))
+            ?? throw new FileNotFoundException(missingMessage, startingJournal);
+        DateTimeOffset boundary = startingTimestamp ?? JournalOrder(startingFile);
+        var minimum = DateOnly.FromDateTime(boundary.UtcDateTime);
+        bool foundStartingJournal = false;
+        foreach (FileInfo file in files)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            FileInfo file = files[index];
-            JournalFileReadResult read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
-            errors.AddRange(read.Errors);
-            events.AddRange(CommanderEvents(read, frontierId, isOdyssey));
+            JournalFileReadResult? read = await TryReadFileAsync(file, minimum, diagnostics, cancellationToken)
+                .ConfigureAwait(false);
+            if (read is null)
+            {
+                continue;
+            }
+            JournalEventEnvelope[] owned = CommanderEvents(read, frontierId, isOdyssey).ToArray();
+            bool isStartingFile = PathComparer.Equals(file.Name, startingJournal);
+            foundStartingJournal |= isStartingFile && HasStartingArrival(owned, startingTimestamp);
+            AddUniqueEvents(owned, read.FileName, isStartingFile, boundary, seen, events);
         }
-
-        return new JourneyJournalReadResult(events, errors);
-    }
-
-    private void EnsureDirectoryExists()
-    {
-        if (!Directory.Exists(journalDirectory))
+        if (!foundStartingJournal)
         {
-            throw new DirectoryNotFoundException($"The journal folder does not exist: {journalDirectory}");
+            throw new FileNotFoundException(missingMessage, startingJournal);
+        }
+
+        return new JourneyJournalReadResult(events.OrderBy(entry => entry.Timestamp).ToArray(), diagnostics.Errors)
+        {
+            IsComplete = !diagnostics.HasSkippedSources,
+        };
+    }
+
+    private static void AddUniqueEvents(
+        JournalEventEnvelope[] owned,
+        string fileName,
+        bool isStartingFile,
+        DateTimeOffset boundary,
+        HashSet<(string Journal, int Occurrence, string Json)> seen,
+        List<JournalEventEnvelope> events
+    )
+    {
+        // Match occurrence counts rather than positions, since copied files can contain extra records.
+        var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (JournalEventEnvelope entry in owned)
+        {
+            int occurrence = occurrences.GetValueOrDefault(entry.RawJson);
+            occurrences[entry.RawJson] = occurrence + 1;
+            // Keep the starting preamble for scan context; overlapping files contribute from the time boundary.
+            if ((isStartingFile || entry.Timestamp >= boundary) && seen.Add((fileName, occurrence, entry.RawJson)))
+            {
+                events.Add(entry);
+            }
         }
     }
 
-    private IEnumerable<FileInfo> EnumerateJournalFiles(bool descending)
+    // JourneyStore saves the start 10 milliseconds before the selected arrival.
+    private static bool HasStartingArrival(JournalEventEnvelope[] owned, DateTimeOffset? startingTimestamp) =>
+        startingTimestamp is not { } boundary
+            ? owned.Length > 0
+            : owned.Any(entry =>
+                IsSystemEvent(entry, includeLocations: true)
+                && entry.Timestamp >= boundary
+                && entry.Timestamp <= boundary.AddMilliseconds(10)
+                && TryGetSystemReference(entry.Payload, out _)
+            );
+
+    private sealed class ReadDiagnostics
     {
-        IEnumerable<FileInfo> files = new DirectoryInfo(journalDirectory).EnumerateFiles(
-            "Journal.*.log",
-            SearchOption.TopDirectoryOnly
-        );
+        public List<string> Errors { get; } = [];
+        public bool HasSkippedSources { get; private set; }
+
+        public void RecordSkippedSource(string error)
+        {
+            HasSkippedSources = true;
+            Errors.Add(error);
+        }
+    }
+
+    private void EnsureDirectoriesExist()
+    {
+        if (!journalDirectories.Any(Directory.Exists))
+        {
+            throw new DirectoryNotFoundException(
+                $"The journal folders do not exist: {string.Join(", ", journalDirectories)}"
+            );
+        }
+    }
+
+    private IEnumerable<FileInfo> EnumerateJournalFiles(bool descending, ReadDiagnostics diagnostics)
+    {
+        var files = new List<FileInfo>();
+        foreach (string directory in journalDirectories)
+        {
+            try
+            {
+                files.AddRange(
+                    new DirectoryInfo(directory).EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+                );
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                diagnostics.RecordSkippedSource($"Could not read journal folder {directory}: {exception.Message}");
+            }
+        }
         return descending
-            ? files.OrderByDescending(JournalOrder).ThenByDescending(file => file.Name, StringComparer.Ordinal)
-            : files.OrderBy(JournalOrder).ThenBy(file => file.Name, StringComparer.Ordinal);
+            ? files
+                .OrderByDescending(JournalOrder)
+                .ThenByDescending(file => file.Name, StringComparer.Ordinal)
+                .ThenBy(file => file.FullName, PathComparer)
+            : files
+                .OrderBy(JournalOrder)
+                .ThenBy(file => file.Name, StringComparer.Ordinal)
+                .ThenBy(file => file.FullName, PathComparer);
     }
 
     private static DateTime JournalOrder(FileInfo file) =>
         JournalHistoryAnalyzer.TryGetJournalTimestamp(file.Name, out DateTimeOffset timestamp)
             ? timestamp.UtcDateTime
             : file.LastWriteTimeUtc;
+
+    private static async Task<JournalFileReadResult?> TryReadFileAsync(
+        FileInfo file,
+        DateOnly? onOrAfter,
+        ReadDiagnostics diagnostics,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            if (
+                onOrAfter is { } minimum
+                && await IsEntirelyBeforeAsync(file, minimum, cancellationToken).ConfigureAwait(false)
+            )
+            {
+                return null;
+            }
+            JournalFileReadResult read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
+            diagnostics.Errors.AddRange(read.Errors);
+            return read;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            diagnostics.RecordSkippedSource($"Could not read journal {file.FullName}: {exception.Message}");
+            return null;
+        }
+    }
 
     private static async Task<JournalFileReadResult> ReadFileAsync(FileInfo file, CancellationToken cancellationToken)
     {
@@ -442,4 +563,7 @@ public sealed record JourneyJournalSystemVisitsResult(
     IReadOnlyList<string> Errors
 );
 
-public sealed record JourneyJournalReadResult(IReadOnlyList<JournalEventEnvelope> Events, IReadOnlyList<string> Errors);
+public sealed record JourneyJournalReadResult(IReadOnlyList<JournalEventEnvelope> Events, IReadOnlyList<string> Errors)
+{
+    public bool IsComplete { get; init; } = true;
+}

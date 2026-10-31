@@ -1,11 +1,15 @@
 namespace SrvSurvey.Core.Tests.Network;
 
-/// <summary>Hosts the isolated writer killed by journal upload crash-recovery scenarios.</summary>
+/// <summary>Hosts isolated writers for crash recovery and cross-process persistence scenarios.</summary>
 internal static class JournalUploadCrashWorker
 {
-    /// <summary>Runs only the explicit crash-worker command; ordinary tests execute through VSTest.</summary>
+    /// <summary>Runs explicit persistence-worker commands; ordinary tests execute through VSTest.</summary>
     public static async Task<int> Main(string[] args)
     {
+        if (args.Length == 3 && args[0] == "--journey-profile-cas-worker")
+        {
+            return await Journeys.JourneyUpgradeRecoveryTests.RunProfileSelectionWorkerAsync(args[1], args[2]);
+        }
         if (args.Length != 3 || args[0] != "--journal-upload-crash-worker")
         {
             return 2;

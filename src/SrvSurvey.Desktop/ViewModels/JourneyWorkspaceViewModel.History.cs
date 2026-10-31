@@ -270,6 +270,8 @@ public sealed partial class JourneyWorkspaceViewModel
         {
             isUpdatingLibrary = false;
         }
+        newJourneyCommand.RaiseCanExecuteChanged();
+        beginJourneyCommand.RaiseCanExecuteChanged();
     }
 
     private void RaiseHistoryCommands()

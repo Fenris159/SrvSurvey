@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using SrvSurvey.Desktop;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -12,13 +13,23 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed partial class GamescopeX11ConnectionTests
 {
-    [Fact]
+    [AvaloniaFact]
     public async Task ReviewRegressionScalingReconcilesLateSubscriptionAndSameNameServerRestart()
     {
         if (!OperatingSystem.IsLinux() || !File.Exists("/usr/bin/Xvfb"))
         {
             return;
         }
+        // Keep failed-display detection and cleanup on the same dispatcher thread across awaits.
+        for (int iteration = 0; iteration < 10; iteration++)
+        {
+            await ExerciseServerRestartAsync();
+        }
+    }
+
+    private static async Task ExerciseServerRestartAsync()
+    {
+        Dispatcher.UIThread.VerifyAccess();
         await using ScalingServer primary = await ScalingServer.StartAsync();
         await using ScalingServer game = await ScalingServer.StartAsync(
             ":" + RandomNumberGenerator.GetInt32(20000, 30000)
@@ -114,6 +125,7 @@ public sealed partial class GamescopeX11ConnectionTests
                 throw new InvalidOperationException("Private scaling X server did not acknowledge startup.");
             }
             string name = ":" + parsed;
+            Dispatcher.UIThread.VerifyAccess();
             nint display = nint.Zero;
             nint pointer = Marshal.StringToCoTaskMemUTF8(name);
             try
@@ -152,6 +164,7 @@ public sealed partial class GamescopeX11ConnectionTests
             disposed = true;
             if (Display != nint.Zero)
             {
+                Dispatcher.UIThread.VerifyAccess();
                 X11OverlayPlatformService.UnregisterErrorHandledDisplay(Display);
                 _ = X11Native.XCloseDisplay(Display);
                 Display = nint.Zero;

@@ -620,6 +620,67 @@ public sealed class JourneysPresentationTests : IDisposable
         }
     }
 
+    [AvaloniaTheory]
+    [InlineData(640)]
+    [InlineData(1100)]
+    public async Task JourneyRecoveryControlsAreAvailableWithoutEditingProfileFiles(int width)
+    {
+        using MainWindowViewModel main = await CreateModelAsync();
+        string data = main.AppDataPaths.DataDirectory;
+        string unavailable = Path.Combine(data, "journey", "F123", "unavailable.json");
+        await File.WriteAllTextAsync(unavailable, "{broken");
+        await new CommanderProfileStore(data).SaveActiveJourneyAsync("F123", "Drew", true, "unavailable");
+        await main.Journey.RefreshAsync();
+        var view = new JourneysView { DataContext = main.Journey };
+        var window = new Window
+        {
+            Content = view,
+            Width = width,
+            Height = 900,
+        };
+        try
+        {
+            window.Show();
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            Button clear = Assert.Single(
+                view.GetVisualDescendants().OfType<Button>(),
+                button => Equals(button.Content, "Clear unavailable journey") && button.IsEffectivelyVisible
+            );
+            Assert.True(clear.IsEnabled);
+            Assert.Same(main.Journey.ClearUnavailableJourneyCommand, clear.Command);
+            await main.Journey.ClearUnavailableJourneyAsync();
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            Assert.False(clear.IsEffectivelyVisible);
+            Assert.Equal("{broken", await File.ReadAllTextAsync(unavailable));
+            JourneyDocument saved = main.Journey.SelectedJourney!.Document;
+            await new JourneyStore(data).SaveAsync(saved with { EndTime = null });
+            await main.Journey.RefreshAsync();
+            using (WriteableBitmap? frame = window.CaptureRenderedFrame())
+            {
+                Assert.NotNull(frame);
+            }
+            Button resume = Assert.Single(
+                view.GetVisualDescendants().OfType<Button>(),
+                button => Equals(button.Content, "Resume journey") && button.IsEffectivelyVisible
+            );
+            Assert.True(resume.IsEnabled);
+            Assert.Same(main.Journey.ResumeJourneyCommand, resume.Command);
+            await main.Journey.ResumeJourneyAsync();
+            Assert.True(main.Journey.HasActiveJourney);
+            Assert.True(main.Journey.RequestConcludeCommand.CanExecute(null));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private async Task<MainWindowViewModel> CreateModelAsync(
         string? journals = null,
         IScreenshotProcessingService? processor = null

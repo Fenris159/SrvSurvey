@@ -18,6 +18,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
 {
     private const string ExplorationRewardsBySystemProperty = "explRewardsBySystem";
     private const string ActiveProperty = "active";
+    private const string ActiveJourneyPropertyName = "activeJourney";
     private const string RadiusProperty = "radius";
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
@@ -85,7 +86,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             ReadRamTah(root),
             ReadCombat(root),
             GetString(root, "rccApiKey"),
-            GetString(root, "activeJourney"),
+            GetString(root, ActiveJourneyPropertyName),
             GetString(root, "inaraApiKey"),
             GetString(root, "edsmCommanderName"),
             GetString(root, "edsmApiKey")
@@ -340,11 +341,11 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 {
                     if (normalized is null)
                     {
-                        root.Remove("activeJourney");
+                        root.Remove(ActiveJourneyPropertyName);
                     }
                     else
                     {
-                        root["activeJourney"] = normalized;
+                        root[ActiveJourneyPropertyName] = normalized;
                     }
                 },
                 cancellationToken
@@ -352,18 +353,59 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             .ConfigureAwait(false);
     }
 
+    internal async Task<bool> TryReplaceActiveJourneyAsync(
+        string frontierId,
+        bool isOdyssey,
+        string? expected,
+        string? replacement,
+        CancellationToken cancellationToken,
+        string? commanderName = null
+    )
+    {
+        bool matched = false;
+        await SaveFieldsAsync(
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root =>
+                {
+                    if (replacement is null)
+                    {
+                        root.Remove(ActiveJourneyPropertyName);
+                    }
+                    else
+                    {
+                        root[ActiveJourneyPropertyName] = replacement;
+                    }
+                },
+                cancellationToken,
+                root =>
+                    matched = string.Equals(
+                        GetString(root, ActiveJourneyPropertyName),
+                        expected,
+                        StringComparison.Ordinal
+                    )
+            )
+            .ConfigureAwait(false);
+        return matched;
+    }
+
     private async Task SaveFieldsAsync(
         string frontierId,
         string? commanderName,
         bool isOdyssey,
         Action<JsonObject> update,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        Func<JsonObject, bool>? condition = null
     )
     {
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             string path = GetProfilePath(frontierId, isOdyssey);
+            await using FileStream lease = await FileMutationLease
+                .AcquireAsync(path, cancellationToken)
+                .ConfigureAwait(false);
             JsonObject root;
             if (File.Exists(path))
             {
@@ -379,6 +421,10 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 root = [];
             }
 
+            if (condition?.Invoke(root) == false)
+            {
+                return;
+            }
             root["fid"] = frontierId;
             if (!string.IsNullOrWhiteSpace(commanderName))
             {

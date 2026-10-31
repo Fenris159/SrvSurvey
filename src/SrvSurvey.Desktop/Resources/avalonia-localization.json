@@ -2157,6 +2157,10 @@
       "translation": "Ein Overlay-Timer erfordert ein positives Intervall."
     },
     {
+      "source": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+      "translation": "Eine nicht verfügbare aktive Auswahl blockiert keine neue Reise. Die gespeicherte Datei bleibt erhalten."
+    },
+    {
       "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
       "translation": "Ein nicht schraffierter PIP bedeutet, dass Journaldaten Canonn oder Spansh den Organismus oder die Gattung bestätigen. Jedes ausgefüllte Segment erreicht einen bestätigten Belohnungsschwellenwert. Es kann ein dunkleres mögliches Segment verbleiben, wenn die genaue Art oder der First Logged-Bonus noch ungewiss ist. Schwarze leere Felder zeigen Schwellenwerte an, die die Belohnung nicht erreicht. Der gepunktete Außenrahmen und die durchgezogenen Segmentumrisse sind unabhängig thematisch anpassbar."
     },
@@ -5963,6 +5967,10 @@
     {
       "source": "Clear the active search to use the other search.",
       "translation": "Löschen Sie die aktive Suche, um die andere Suche zu verwenden."
+    },
+    {
+      "source": "Clear unavailable journey",
+      "translation": "Löschen Sie die nicht verfügbare Reise"
     },
     {
       "source": "Clear unclaimed",
@@ -13997,10 +14005,6 @@
       "translation": "{0} ungültige zwischengespeicherte Elemente ignoriert."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "{0} fehlerhafte Journalzeile(n) ignoriert."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "{0} fehlerhafte Zeile(n) ignoriert."
     },
@@ -14761,6 +14765,10 @@
       "translation": "Journal-Puls"
     },
     {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Warnung(en) zum Lesen des Journals: {0}. {1}"
+    },
+    {
       "source": "Journal scan context is not loaded.",
       "translation": "Der Journal-Scan-Kontext wird nicht geladen."
     },
@@ -14815,6 +14823,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Reisedaten konnten nicht initialisiert werden: {0}"
+    },
+    {
+      "source": "Journey data could not be refreshed: {0}",
+      "translation": "Reisedaten konnten nicht aktualisiert werden: {0}"
     },
     {
       "source": "Journey description (optional)",
@@ -24625,6 +24637,10 @@
       "translation": "Setzen Sie eine ältere Suche fort oder organisieren Sie Suchen, die Sie erneut aufrufen möchten."
     },
     {
+      "source": "Resume journey",
+      "translation": "Reise fortsetzen"
+    },
+    {
       "source": "Resume paused quest",
       "translation": "Angehaltene Quest fortsetzen"
     },
@@ -30909,6 +30925,14 @@
       "translation": "Die aktive Bootstrap-Quelle und die auf dieser Plattform überprüften Speicherorte."
     },
     {
+      "source": "The active journey selection could not be cleared: {0}",
+      "translation": "Die aktive Fahrtauswahl konnte nicht gelöscht werden: {0}"
+    },
+    {
+      "source": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+      "translation": "Die aktive Auswahl hat sich geändert oder die gespeicherte Fahrt ist wieder lesbar. Es wurde nichts geklärt."
+    },
+    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "Die aktive Siedlung hat sich geändert, sodass ihr nicht exportierter Autorenentwurf verworfen wurde."
     },
@@ -31173,8 +31197,8 @@
       "translation": "Der aktuelle Breiten- und Längengrad wurde kopiert."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "Der aktuelle Standort konnte nicht gefunden werden. Laden Sie das aktuelle Journal oder wählen Sie einen früheren Besuch."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "Der aktuelle Standort konnte nicht gefunden werden. Laden Sie das aktuelle Journal oder wählen Sie einen früheren Besuch.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -32217,6 +32241,10 @@
       "translation": "Die gespeicherten Boxel-Suchen konnten nicht aktualisiert werden: {0}"
     },
     {
+      "source": "The saved journey could not be resumed: {0}",
+      "translation": "Die gespeicherte Fahrt konnte nicht fortgesetzt werden: {0}"
+    },
+    {
       "source": "The saved overlay theme state was not deleted: {0}",
       "translation": "Der gespeicherte Status des Overlay-Designs wurde nicht gelöscht: {0}"
     },
@@ -32619,6 +32647,10 @@
     {
       "source": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
       "translation": "Das oberste aktuelle System ist der Ort, an dem sich der Kommandant tatsächlich befindet. es ist nicht das erste System in der Sequenz. Das nächste unvollständige System ist das nächste Arbeitselement, das aus dem gespeicherten Abschlussstatus berechnet wird."
+    },
+    {
+      "source": "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey.",
+      "translation": "Die aktive Auswahl der nicht verfügbaren Fahrt wurde gelöscht. Die gespeicherte Datei wurde beibehalten. Sie können eine neue Reise beginnen."
     },
     {
       "source": "The unhealthy replacement process did not exit for rollback.",
@@ -43003,6 +43035,10 @@
       "translation": "Un temporizador de superposición requiere un intervalo positivo."
     },
     {
+      "source": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+      "translation": "Una selección activa no disponible no bloquea un nuevo viaje. Su archivo guardado se mantendrá."
+    },
+    {
       "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
       "translation": "Un PIP sin eclosionar significa que los datos del diario Canonn o Spansh confirman el organismo o género. Cada segmento completado supera un umbral de recompensa confirmado; Es posible que quede un segmento más oscuro cuando la especie exacta o la bonificación por primer registro aún sean inciertas. Las ranuras negras vacías muestran umbrales que la recompensa no alcanza. El marco exterior punteado y los contornos de los segmentos sólidos se pueden tematizar de forma independiente."
     },
@@ -46809,6 +46845,10 @@
     {
       "source": "Clear the active search to use the other search.",
       "translation": "Borre la búsqueda activa para utilizar la otra búsqueda."
+    },
+    {
+      "source": "Clear unavailable journey",
+      "translation": "Borrar viaje no disponible"
     },
     {
       "source": "Clear unclaimed",
@@ -54843,10 +54883,6 @@
       "translation": "Se ignoraron {0} elementos almacenados en caché no válidos."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "Se ignoraron {0} líneas de diario con formato incorrecto."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "Se ignoraron {0} líneas con formato incorrecto."
     },
@@ -55607,6 +55643,10 @@
       "translation": "Pulso diario"
     },
     {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Advertencias de lectura del diario: {0}. {1}"
+    },
+    {
       "source": "Journal scan context is not loaded.",
       "translation": "El contexto del escaneo del diario no está cargado."
     },
@@ -55661,6 +55701,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "No se pudieron inicializar los datos del viaje: {0}"
+    },
+    {
+      "source": "Journey data could not be refreshed: {0}",
+      "translation": "No se pudieron actualizar los datos del viaje: {0}"
     },
     {
       "source": "Journey description (optional)",
@@ -65471,6 +65515,10 @@
       "translation": "Reanude una búsqueda anterior u organice las búsquedas que desea volver a visitar."
     },
     {
+      "source": "Resume journey",
+      "translation": "Reanudar viaje"
+    },
+    {
       "source": "Resume paused quest",
       "translation": "Reanudar la misión pausada"
     },
@@ -71755,6 +71803,14 @@
       "translation": "La fuente de arranque activa y las ubicaciones marcadas en esta plataforma."
     },
     {
+      "source": "The active journey selection could not be cleared: {0}",
+      "translation": "No se pudo borrar la selección de viaje activa: {0}"
+    },
+    {
+      "source": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+      "translation": "La selección activa cambió o su viaje guardado se puede leer nuevamente. No se aclaró nada."
+    },
+    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "El acuerdo activo cambió, por lo que se descartó el borrador de autoría no exportado."
     },
@@ -72019,8 +72075,8 @@
       "translation": "Se copiaron la latitud y longitud actuales."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "No se pudo encontrar la ubicación actual. Cargue la revista actual o elija una visita anterior."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "No se pudo encontrar la ubicación actual. Cargue la revista actual o elija una visita anterior.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -73063,6 +73119,10 @@
       "translation": "No se pudieron actualizar las búsquedas de boxel guardadas: {0}"
     },
     {
+      "source": "The saved journey could not be resumed: {0}",
+      "translation": "No se pudo reanudar el viaje guardado: {0}"
+    },
+    {
       "source": "The saved overlay theme state was not deleted: {0}",
       "translation": "El estado del tema de superposición guardado no se eliminó: {0}"
     },
@@ -73465,6 +73525,10 @@
     {
       "source": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
       "translation": "El sistema actual superior es donde realmente se encuentra el Comandante; No es el primer sistema de la secuencia. El siguiente sistema incompleto es el siguiente elemento de trabajo calculado a partir del estado de finalización guardado."
+    },
+    {
+      "source": "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey.",
+      "translation": "Se borró la selección activa del viaje no disponible. Su archivo guardado se mantuvo. Puedes comenzar un nuevo viaje."
     },
     {
       "source": "The unhealthy replacement process did not exit for rollback.",
@@ -83849,6 +83913,10 @@
       "translation": "Une minuterie de superposition nécessite un intervalle positif."
     },
     {
+      "source": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+      "translation": "Une sélection active indisponible ne bloque pas un nouveau trajet. Son fichier enregistré sera conservé."
+    },
+    {
       "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
       "translation": "Un PIP non hachuré signifie que les données du journal Canonn ou Spansh confirment l'organisme ou le genre. Chaque segment rempli efface un seuil de récompense confirmé ; un segment plus sombre peut subsister lorsque l'espèce exacte ou le bonus de première connexion est encore incertain. Les emplacements noirs vides indiquent les seuils que la récompense n'atteint pas. Le cadre extérieur en pointillés et les contours des segments pleins peuvent être thématiques indépendamment."
     },
@@ -87655,6 +87723,10 @@
     {
       "source": "Clear the active search to use the other search.",
       "translation": "Effacez la recherche active pour utiliser l'autre recherche."
+    },
+    {
+      "source": "Clear unavailable journey",
+      "translation": "Effacer le trajet indisponible"
     },
     {
       "source": "Clear unclaimed",
@@ -95689,10 +95761,6 @@
       "translation": "{0} élément(s) mis en cache non valide(s) ignoré(s)."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "{0} ligne(s) de journal mal formée(s) ignorée(s)."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "{0} ligne(s) malformée(s) ignorée(s)."
     },
@@ -96453,6 +96521,10 @@
       "translation": "Pouls du journal"
     },
     {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Avertissement(s) de lecture du journal : {0}. {1}"
+    },
+    {
       "source": "Journal scan context is not loaded.",
       "translation": "Le contexte d'analyse du journal n'est pas chargé."
     },
@@ -96507,6 +96579,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Les données du trajet n'ont pas pu être initialisées : {0}"
+    },
+    {
+      "source": "Journey data could not be refreshed: {0}",
+      "translation": "Les données du trajet n'ont pas pu être actualisées : {0}"
     },
     {
       "source": "Journey description (optional)",
@@ -106317,6 +106393,10 @@
       "translation": "Reprenez une recherche plus ancienne ou organisez les recherches que vous souhaitez revisiter."
     },
     {
+      "source": "Resume journey",
+      "translation": "Reprendre le voyage"
+    },
+    {
       "source": "Resume paused quest",
       "translation": "Reprendre la quête interrompue"
     },
@@ -112601,6 +112681,14 @@
       "translation": "La source d'amorçage active et les emplacements vérifiés sur cette plateforme."
     },
     {
+      "source": "The active journey selection could not be cleared: {0}",
+      "translation": "La sélection de trajet active n'a pas pu être effacée : {0}"
+    },
+    {
+      "source": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+      "translation": "La sélection active a changé ou son trajet enregistré est à nouveau lisible. Rien n'a été effacé."
+    },
+    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "Le règlement actif a changé, donc son brouillon de création non exporté a été rejeté."
     },
@@ -112865,8 +112953,8 @@
       "translation": "La latitude et la longitude actuelles ont été copiées."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "L'emplacement actuel est introuvable. Chargez le journal actuel ou choisissez une visite précédente."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "L'emplacement actuel est introuvable. Chargez le journal actuel ou choisissez une visite précédente.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -113909,6 +113997,10 @@
       "translation": "Les recherches boxel enregistrées n'ont pas pu être actualisées : {0}"
     },
     {
+      "source": "The saved journey could not be resumed: {0}",
+      "translation": "Le trajet enregistré n'a pas pu être repris : {0}"
+    },
+    {
       "source": "The saved overlay theme state was not deleted: {0}",
       "translation": "L'état du thème de superposition enregistré n'a pas été supprimé : {0}"
     },
@@ -114311,6 +114403,10 @@
     {
       "source": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
       "translation": "Le système actuel supérieur est l'endroit où se trouve réellement le commandant ; ce n'est pas le premier système de la séquence. Le prochain système incomplet est l'élément de travail suivant calculé à partir de l'état d'achèvement enregistré."
+    },
+    {
+      "source": "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey.",
+      "translation": "La sélection active du trajet indisponible a été effacée. Son fichier sauvegardé a été conservé. Vous pouvez commencer un nouveau voyage."
     },
     {
       "source": "The unhealthy replacement process did not exit for rollback.",
@@ -124695,6 +124791,10 @@
       "translation": "Um temporizador de sobreposição requer um intervalo positivo."
     },
     {
+      "source": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+      "translation": "Uma seleção ativa indisponível não bloqueia uma nova viagem. Seu arquivo salvo será mantido."
+    },
+    {
       "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
       "translation": "Um PIP não hachurado significa diário, Canonn ou Spansh dados que confirmam o organismo ou gênero. Cada segmento preenchido atinge um limite de recompensa confirmado; um possível segmento mais escuro pode permanecer quando a espécie exata ou o bônus de primeira captura ainda for incerto. Os slots pretos vazios mostram limites que a recompensa não atinge. A moldura externa pontilhada e os contornos dos segmentos sólidos podem ser tematizados de forma independente."
     },
@@ -128501,6 +128601,10 @@
     {
       "source": "Clear the active search to use the other search.",
       "translation": "Limpe a pesquisa ativa para usar a outra pesquisa."
+    },
+    {
+      "source": "Clear unavailable journey",
+      "translation": "Limpar jornada indisponível"
     },
     {
       "source": "Clear unclaimed",
@@ -136535,10 +136639,6 @@
       "translation": "Ignorados {0} itens inválidos em cache."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "Ignoradas {0} linha(s) de diário malformadas."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "{0} linhas malformadas ignoradas."
     },
@@ -137299,6 +137399,10 @@
       "translation": "Pulso do diário"
     },
     {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Aviso(s) de leitura de diário: {0}. {1}"
+    },
+    {
       "source": "Journal scan context is not loaded.",
       "translation": "O contexto de verificação do diário não está carregado."
     },
@@ -137353,6 +137457,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Não foi possível inicializar os dados da viagem: {0}"
+    },
+    {
+      "source": "Journey data could not be refreshed: {0}",
+      "translation": "Não foi possível atualizar os dados da viagem: {0}"
     },
     {
       "source": "Journey description (optional)",
@@ -147163,6 +147271,10 @@
       "translation": "Retome uma pesquisa antiga ou organize as pesquisas que deseja revisitar."
     },
     {
+      "source": "Resume journey",
+      "translation": "Retomar viagem"
+    },
+    {
       "source": "Resume paused quest",
       "translation": "Retomar missão pausada"
     },
@@ -153447,6 +153559,14 @@
       "translation": "A fonte de bootstrap ativa e os locais verificados nesta plataforma."
     },
     {
+      "source": "The active journey selection could not be cleared: {0}",
+      "translation": "A seleção da jornada ativa não pôde ser apagada: {0}"
+    },
+    {
+      "source": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+      "translation": "A seleção ativa foi alterada ou a viagem salva pode ser lida novamente. Nada foi esclarecido."
+    },
+    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "A liquidação ativa foi alterada, portanto seu rascunho de autoria não exportado foi descartado."
     },
@@ -153711,8 +153831,8 @@
       "translation": "A latitude e longitude atuais foram copiadas."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "A localização atual não foi encontrada. Carregue o diário atual ou escolha uma visita anterior."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "A localização atual não foi encontrada. Carregue o diário atual ou escolha uma visita anterior.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -154755,6 +154875,10 @@
       "translation": "As pesquisas de boxel salvas não puderam ser atualizadas: {0}"
     },
     {
+      "source": "The saved journey could not be resumed: {0}",
+      "translation": "A jornada salva não pôde ser retomada: {0}"
+    },
+    {
       "source": "The saved overlay theme state was not deleted: {0}",
       "translation": "O estado do tema de sobreposição salvo não foi excluído: {0}"
     },
@@ -155157,6 +155281,10 @@
     {
       "source": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
       "translation": "O sistema atual superior é onde o Comandante realmente está; não é o primeiro sistema da sequência. O próximo sistema incompleto é o próximo item de trabalho calculado a partir do estado de conclusão salvo."
+    },
+    {
+      "source": "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey.",
+      "translation": "A seleção ativa da jornada indisponível foi apagada. Seu arquivo salvo foi mantido. Você pode começar uma nova jornada."
     },
     {
       "source": "The unhealthy replacement process did not exit for rollback.",
@@ -165541,6 +165669,10 @@
       "translation": "Таймер наложения требует положительного интервала."
     },
     {
+      "source": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+      "translation": "Недоступный активный выбор не блокирует новое путешествие. Его сохраненный файл будет сохранен."
+    },
+    {
       "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
       "translation": "Незаштрихованный PIP означает, что журнальные данные Canonn или Spansh подтверждают организм или род. Каждый заполненный сегмент очищает подтвержденный порог вознаграждения; более темный возможный сегмент может остаться, если точный вид или бонус за первую регистрацию все еще неизвестен. Черные пустые слоты обозначают пороговые значения, которых не достигает награда. Пунктирную внешнюю рамку и сплошные контуры сегментов можно независимо темизировать."
     },
@@ -169347,6 +169479,10 @@
     {
       "source": "Clear the active search to use the other search.",
       "translation": "Очистите активный поиск, чтобы использовать другой поиск."
+    },
+    {
+      "source": "Clear unavailable journey",
+      "translation": "Очистить недоступное путешествие"
     },
     {
       "source": "Clear unclaimed",
@@ -177381,10 +177517,6 @@
       "translation": "Игнорируются {0} недопустимые кэшированные элементы."
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "Игнорируются {0} некорректные строки журнала."
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "Игнорируются {0} неверные строки."
     },
@@ -178145,6 +178277,10 @@
       "translation": "Журнал пульса"
     },
     {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "Предупреждения о прочтении журнала: {0}. {1}"
+    },
+    {
       "source": "Journal scan context is not loaded.",
       "translation": "Контекст сканирования журнала не загружен."
     },
@@ -178199,6 +178335,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "Не удалось инициализировать данные о поездке: {0}"
+    },
+    {
+      "source": "Journey data could not be refreshed: {0}",
+      "translation": "Не удалось обновить данные о поездке: {0}."
     },
     {
       "source": "Journey description (optional)",
@@ -188009,6 +188149,10 @@
       "translation": "Возобновите предыдущий поиск или организуйте поиски, к которым вы хотите вернуться."
     },
     {
+      "source": "Resume journey",
+      "translation": "Возобновить путешествие"
+    },
+    {
       "source": "Resume paused quest",
       "translation": "Возобновить приостановленный квест"
     },
@@ -194293,6 +194437,14 @@
       "translation": "Активный источник начальной загрузки и местоположения, проверенные на этой платформе."
     },
     {
+      "source": "The active journey selection could not be cleared: {0}",
+      "translation": "Не удалось удалить активный выбор поездки: {0}."
+    },
+    {
+      "source": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+      "translation": "Активный выбор изменен, или его сохраненное путешествие снова можно прочитать. Ничего не очистилось."
+    },
+    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "Активное поселение изменилось, поэтому его неэкспортированный авторский проект был удален."
     },
@@ -194557,8 +194709,8 @@
       "translation": "Текущие широта и долгота были скопированы."
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "Текущее местоположение не найдено. Загрузите текущий журнал или выберите предыдущий визит."
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "Текущее местоположение не найдено. Загрузите текущий журнал или выберите предыдущее посещение.{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -195601,6 +195753,10 @@
       "translation": "Не удалось обновить сохраненные поисковые запросы по боксам: {0}"
     },
     {
+      "source": "The saved journey could not be resumed: {0}",
+      "translation": "Сохраненное путешествие не удалось возобновить: {0}."
+    },
+    {
       "source": "The saved overlay theme state was not deleted: {0}",
       "translation": "Сохраненное состояние темы наложения не было удалено: {0}"
     },
@@ -196003,6 +196159,10 @@
     {
       "source": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
       "translation": "Верхняя текущая система — это то место, где на самом деле находится командир; это не первая система в последовательности. Следующая неполная система — это следующий рабочий элемент, рассчитанный на основе сохраненного состояния завершения."
+    },
+    {
+      "source": "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey.",
+      "translation": "Активный выбор недоступной поездки был очищен. Его сохраненный файл был сохранен. Вы можете начать новое путешествие."
     },
     {
       "source": "The unhealthy replacement process did not exit for rollback.",
@@ -206387,6 +206547,10 @@
       "translation": "覆盖计时器需要正间隔。"
     },
     {
+      "source": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+      "translation": "不可用的活动选择不会阻止新的旅程。其保存的文件将被保留。"
+    },
+    {
       "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
       "translation": "未划线的 PIP 表示期刊、Canonn 或 Spansh 数据确认生物体或属。每个填充的段都清除了已确认的奖励阈值；当确切的物种或首次登录奖励仍不确定时，可能会保留较暗的部分。黑色空槽显示奖励未达到的阈值。虚线外框和实线段轮廓可独立主题化。"
     },
@@ -210193,6 +210357,10 @@
     {
       "source": "Clear the active search to use the other search.",
       "translation": "清除当前搜索以使用其他搜索。"
+    },
+    {
+      "source": "Clear unavailable journey",
+      "translation": "清除不可用的旅程"
     },
     {
       "source": "Clear unclaimed",
@@ -218227,10 +218395,6 @@
       "translation": "忽略了 {0} 无效的缓存项目。"
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "忽略了 {0} 格式错误的日志行。"
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "忽略了 {0} 格式错误的行。"
     },
@@ -218991,6 +219155,10 @@
       "translation": "期刊脉搏"
     },
     {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "日志读取警告：{0}。 {1}"
+    },
+    {
       "source": "Journal scan context is not loaded.",
       "translation": "日志扫描上下文未加载。"
     },
@@ -219045,6 +219213,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "旅程数据无法初始化：{0}"
+    },
+    {
+      "source": "Journey data could not be refreshed: {0}",
+      "translation": "行程数据无法刷新：{0}"
     },
     {
       "source": "Journey description (optional)",
@@ -228855,6 +229027,10 @@
       "translation": "恢复较旧的搜索或组织您想要重新访问的搜索。"
     },
     {
+      "source": "Resume journey",
+      "translation": "继续旅程"
+    },
+    {
       "source": "Resume paused quest",
       "translation": "恢复暂停的任务"
     },
@@ -235139,6 +235315,14 @@
       "translation": "在此平台上检查的活动引导源和位置。"
     },
     {
+      "source": "The active journey selection could not be cleared: {0}",
+      "translation": "无法清除活动行程选择：{0}"
+    },
+    {
+      "source": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+      "translation": "活动选择已更改或其保存的旅程可再次读取。什么都没有被清除。"
+    },
+    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "活动结算发生变化，因此其未导出的创作草稿被丢弃。"
     },
@@ -235403,8 +235587,8 @@
       "translation": "复制了当前的纬度和经度。"
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "无法找到当前位置。加载当前日志或选择之前的访问。"
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "无法找到当前位置。加载当前日志或选择以前的访问。{0}"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -236447,6 +236631,10 @@
       "translation": "无法刷新已保存的框搜索：{0}"
     },
     {
+      "source": "The saved journey could not be resumed: {0}",
+      "translation": "无法恢复已保存的旅程：{0}"
+    },
+    {
       "source": "The saved overlay theme state was not deleted: {0}",
       "translation": "未删除保存的叠加主题状态：{0}"
     },
@@ -236849,6 +237037,10 @@
     {
       "source": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
       "translation": "当前系统的顶层是指挥官实际所在的位置；它不是序列中的第一个系统。下一个不完整系统是根据保存的完成状态计算出的下一个工作项。"
+    },
+    {
+      "source": "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey.",
+      "translation": "不可用旅程的活动选择已被清除。其保存的文件被保留。你可以开始新的旅程了。"
     },
     {
       "source": "The unhealthy replacement process did not exit for rollback.",
@@ -247233,6 +247425,10 @@
       "translation": "* AN OVERLAY TIMER REQUIRES A POSITIVE INTERVAL. >>>!"
     },
     {
+      "source": "An unavailable active selection does not block a new journey. Its saved file will be kept.",
+      "translation": "* AN UNAVAILABLE ACTIVE SELECTION DOES NOT BLOCK A NEW JOURNEY. ITS SAVED FILE WILL BE KEPT. >>>!"
+    },
+    {
       "source": "An unhatched PIP means journal, Canonn, or Spansh data confirms the organism or genus. Each filled segment clears a confirmed reward threshold; a darker possible segment may remain when the exact species or First Logged bonus is still uncertain. Black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
       "translation": "* AN UNHATCHED PIP MEANS JOURNAL, CANONN, OR SPANSH DATA CONFIRMS THE ORGANISM OR GENUS. EACH FILLED SEGMENT CLEARS A CONFIRMED REWARD THRESHOLD; A DARKER POSSIBLE SEGMENT MAY REMAIN WHEN THE EXACT SPECIES OR FIRST LOGGED BONUS IS STILL UNCERTAIN. BLACK EMPTY SLOTS SHOW THRESHOLDS THE REWARD DOES NOT REACH. THE DOTTED OUTER FRAME AND SOLID SEGMENT OUTLINES ARE INDEPENDENTLY THEMEABLE. >>>!"
     },
@@ -251039,6 +251235,10 @@
     {
       "source": "Clear the active search to use the other search.",
       "translation": "* CLEAR THE ACTIVE SEARCH TO USE THE OTHER SEARCH. >>>!"
+    },
+    {
+      "source": "Clear unavailable journey",
+      "translation": "* CLEAR UNAVAILABLE JOURNEY >>>!"
     },
     {
       "source": "Clear unclaimed",
@@ -259073,10 +259273,6 @@
       "translation": "* IGNORED {0} INVALID CACHED ITEM(S). >>>!"
     },
     {
-      "source": "Ignored {0} malformed journal line(s).",
-      "translation": "* IGNORED {0} MALFORMED JOURNAL LINE(S). >>>!"
-    },
-    {
       "source": "Ignored {0} malformed line(s).",
       "translation": "* IGNORED {0} MALFORMED LINE(S). >>>!"
     },
@@ -259837,6 +260033,10 @@
       "translation": "* JOURNAL PULSE >>>!"
     },
     {
+      "source": "Journal read warning(s): {0}. {1}",
+      "translation": "* JOURNAL READ WARNING(S): {0}. {1} >>>!"
+    },
+    {
       "source": "Journal scan context is not loaded.",
       "translation": "* JOURNAL SCAN CONTEXT IS NOT LOADED. >>>!"
     },
@@ -259891,6 +260091,10 @@
     {
       "source": "Journey data could not be initialized: {0}",
       "translation": "* JOURNEY DATA COULD NOT BE INITIALIZED: {0} >>>!"
+    },
+    {
+      "source": "Journey data could not be refreshed: {0}",
+      "translation": "* JOURNEY DATA COULD NOT BE REFRESHED: {0} >>>!"
     },
     {
       "source": "Journey description (optional)",
@@ -269701,6 +269905,10 @@
       "translation": "* RESUME AN OLDER SEARCH OR ORGANIZE SEARCHES YOU WANT TO REVISIT. >>>!"
     },
     {
+      "source": "Resume journey",
+      "translation": "* RESUME JOURNEY >>>!"
+    },
+    {
       "source": "Resume paused quest",
       "translation": "* RESUME PAUSED QUEST >>>!"
     },
@@ -275985,6 +276193,14 @@
       "translation": "* THE ACTIVE BOOTSTRAP SOURCE AND THE LOCATIONS CHECKED ON THIS PLATFORM. >>>!"
     },
     {
+      "source": "The active journey selection could not be cleared: {0}",
+      "translation": "* THE ACTIVE JOURNEY SELECTION COULD NOT BE CLEARED: {0} >>>!"
+    },
+    {
+      "source": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
+      "translation": "* THE ACTIVE SELECTION CHANGED OR ITS SAVED JOURNEY IS READABLE AGAIN. NOTHING WAS CLEARED. >>>!"
+    },
+    {
       "source": "The active settlement changed, so its unexported authoring draft was discarded.",
       "translation": "* THE ACTIVE SETTLEMENT CHANGED, SO ITS UNEXPORTED AUTHORING DRAFT WAS DISCARDED. >>>!"
     },
@@ -276249,8 +276465,8 @@
       "translation": "* THE CURRENT LATITUDE AND LONGITUDE WERE COPIED. >>>!"
     },
     {
-      "source": "The current location could not be found. Load the current journal or choose a previous visit.",
-      "translation": "* THE CURRENT LOCATION COULD NOT BE FOUND. LOAD THE CURRENT JOURNAL OR CHOOSE A PREVIOUS VISIT. >>>!"
+      "source": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+      "translation": "* THE CURRENT LOCATION COULD NOT BE FOUND. LOAD THE CURRENT JOURNAL OR CHOOSE A PREVIOUS VISIT.{0} >>>!"
     },
     {
       "source": "The current market is not a Fleet Carrier market.",
@@ -277293,6 +277509,10 @@
       "translation": "* THE SAVED BOXEL SEARCHES COULD NOT BE REFRESHED: {0} >>>!"
     },
     {
+      "source": "The saved journey could not be resumed: {0}",
+      "translation": "* THE SAVED JOURNEY COULD NOT BE RESUMED: {0} >>>!"
+    },
+    {
       "source": "The saved overlay theme state was not deleted: {0}",
       "translation": "* THE SAVED OVERLAY THEME STATE WAS NOT DELETED: {0} >>>!"
     },
@@ -277695,6 +277915,10 @@
     {
       "source": "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
       "translation": "* THE TOP CURRENT SYSTEM IS WHERE THE COMMANDER ACTUALLY IS; IT IS NOT THE FIRST SYSTEM IN THE SEQUENCE. NEXT INCOMPLETE SYSTEM IS THE NEXT WORK ITEM CALCULATED FROM SAVED COMPLETION STATE. >>>!"
+    },
+    {
+      "source": "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey.",
+      "translation": "* THE UNAVAILABLE JOURNEY'S ACTIVE SELECTION WAS CLEARED. ITS SAVED FILE WAS KEPT. YOU CAN BEGIN A NEW JOURNEY. >>>!"
     },
     {
       "source": "The unhealthy replacement process did not exit for rollback.",
