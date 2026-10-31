@@ -41,6 +41,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private bool isBusy;
     private string statusMessage = "Waiting for a commander profile.";
     private IReadOnlyList<JourneyListItemViewModel> journeys = [];
+    private IReadOnlyList<string> catalogErrors = [];
     private JourneyListItemViewModel? selectedJourney;
     private JourneyDocument? selectedDocument;
     private IReadOnlyList<JourneyStatisticViewModel> quickStatistics = [];
@@ -92,7 +93,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
         newJourneyCommand = new AsyncCommand(
             StartNewJourneyAsync,
-            () => HasProfileAndNotBusy() && !HasActiveJourney && !IsDirty
+            () => HasProfileAndNotBusy() && !HasListedActiveJourney && !IsDirty
         );
         cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
@@ -121,9 +122,9 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
-    public bool HasActiveJourney =>
-        journeyService.ActiveJourney is { } active
-        && string.Equals(active.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase);
+    public bool HasActiveJourney => journeyService.IsActiveFor(frontierId, isOdyssey);
+
+    private bool HasListedActiveJourney => Journeys.Any(journey => journey.Document.IsActive);
 
     private JourneyDocument? CurrentActiveJourney => HasActiveJourney ? journeyService.ActiveJourney : null;
 
@@ -523,6 +524,8 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         }
 
         initializedProfileKey = profileKey;
+        CaptureRecoveryReference(null);
+        catalogErrors = [];
         int version = ++contextVersion;
         selectedJourney = null;
         OnPropertyChanged(nameof(SelectedJourney));
@@ -561,6 +564,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 return true;
             }
 
+            CaptureRecoveryReference(active.Recovery);
             SetInitializationStatus(active);
             if (profileKey is not null)
             {
@@ -590,9 +594,12 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private void SetInitializationStatus(JourneyServiceResult active)
     {
-        if (active.Errors.Count > 0)
+        if (active.Errors.Count > 0 || catalogErrors.Count > 0)
         {
-            StatusMessage = string.Join(Environment.NewLine, active.Errors);
+            StatusMessage = string.Join(
+                Environment.NewLine,
+                active.Errors.Concat(catalogErrors).Distinct(StringComparer.Ordinal)
+            );
         }
         else if (active.Journey is null)
         {
@@ -638,14 +645,49 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
-    public Task RefreshAsync()
+    public async Task RefreshAsync()
     {
         if (IsDirty)
         {
             StatusMessage = "Save or discard changes before refreshing journeys.";
-            return Task.CompletedTask;
+            return;
         }
-        return RefreshCatalogAsync(selectedDocument?.FileName);
+        if (frontierId is null)
+        {
+            return;
+        }
+        int version = contextVersion;
+        try
+        {
+            IsBusy = true;
+            JourneyServiceResult active = await journeyService.InitializeActiveAsync(frontierId, isOdyssey);
+            if (version != contextVersion)
+            {
+                return;
+            }
+            await RefreshCatalogAsync(selectedDocument?.FileName ?? active.Journey?.FileName);
+            if (version != contextVersion)
+            {
+                return;
+            }
+            CaptureRecoveryReference(active.Recovery);
+            SetInitializationStatus(active);
+            RaiseActiveState();
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            if (version == contextVersion)
+            {
+                StatusMessage = "Journey data could not be refreshed: " + exception.Message;
+            }
+        }
+        finally
+        {
+            if (version == contextVersion)
+            {
+                IsBusy = false;
+            }
+        }
     }
 
     public async Task SetPreferencesAsync(bool nextAlwaysOnTop, bool nextUseGalacticTime)
@@ -709,6 +751,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 return;
             }
 
+            catalogErrors = result.Errors;
             Journeys = result
                 .Journeys.Select(journey => new JourneyListItemViewModel(
                     journey,
@@ -824,13 +867,21 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 result.Errors.Count > 0
                     ? string.Join(Environment.NewLine, result.Errors)
                     : $"Journey {result.Journey!.Name} is active and caught up.";
+            CaptureRecoveryReference(result.Recovery);
             RaiseActiveState();
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
             if (version == contextVersion)
             {
+                CaptureRecoveryReference(journeyService.RecoveryReference);
+                await RefreshCatalogAsync(journeyService.ActiveJourney?.FileName);
+                if (version != contextVersion)
+                {
+                    return;
+                }
                 StartStatus = "The journey was not started: " + exception.Message;
+                RaiseActiveState();
             }
         }
         finally
@@ -951,7 +1002,8 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private bool CanConclude()
     {
-        return selectedDocument is { IsActive: true } document
+        return HasActiveJourney
+            && selectedDocument is { IsActive: true } document
             && journeyService.ActiveJourney is { } active
             && active.FileName == document.FileName
             && string.Equals(active.FrontierId, document.FrontierId, StringComparison.OrdinalIgnoreCase)
@@ -1295,6 +1347,9 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private void RaiseDirtyState()
     {
+        clearUnavailableJourneyCommand?.RaiseCanExecuteChanged();
+        resumeJourneyCommand?.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(CanResumeJourney));
         OnPropertyChanged(nameof(IsDirty));
         newJourneyCommand.RaiseCanExecuteChanged();
         beginJourneyCommand.RaiseCanExecuteChanged();
@@ -1308,6 +1363,9 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private void RaiseCommands()
     {
+        clearUnavailableJourneyCommand?.RaiseCanExecuteChanged();
+        resumeJourneyCommand?.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(CanResumeJourney));
         openWorkspaceCommand.RaiseCanExecuteChanged();
         refreshCommand.RaiseCanExecuteChanged();
         newJourneyCommand.RaiseCanExecuteChanged();

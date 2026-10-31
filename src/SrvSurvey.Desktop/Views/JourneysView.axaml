@@ -213,7 +213,13 @@
     <Border Grid.Row="2" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,12,0,0">
       <StackPanel Spacing="8">
         <TextBlock Classes="muted" Text="{Binding StatusMessage}" TextWrapping="Wrap" FontSize="12" />
+        <TextBlock IsVisible="{Binding HasUnavailableJourney}" Classes="muted" TextWrapping="Wrap"
+                   Text="Clear the unavailable journey's active selection to start another. Its saved file will be kept." />
         <WrapPanel HorizontalAlignment="Right">
+          <Button Classes="secondary" Margin="0,0,8,0" Command="{Binding ClearUnavailableJourneyCommand}"
+                  IsVisible="{Binding HasUnavailableJourney}" Content="Clear unavailable journey" />
+          <Button Classes="secondary" Margin="0,0,8,0" Command="{Binding ResumeJourneyCommand}"
+                  IsVisible="{Binding CanResumeJourney}" Content="Resume journey" />
           <Button Classes="secondary" Margin="0,0,8,0" Command="{Binding RequestConcludeCommand}" IsVisible="{Binding IsSelectedActiveJourney}" Content="Complete journey" />
           <Button Classes="secondary" Margin="0,0,8,0" Command="{Binding DiscardCommand}" IsVisible="{Binding IsDirty}" Content="Discard changes" />
           <Button Classes="primary" Command="{Binding SaveCommand}" IsVisible="{Binding IsDirty}" Content="Save changes" />
@@ -302,6 +308,12 @@
 
               </StackPanel>
               <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding StartStatus}" />
+              <StackPanel Spacing="6" IsVisible="{Binding HasUnavailableJourney}">
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Clear the unavailable journey's active selection to start another. Its saved file will be kept." />
+                <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding ClearUnavailableJourneyCommand}"
+                        Content="Clear unavailable journey" />
+              </StackPanel>
 
               <StackPanel Spacing="6" IsEnabled="{Binding !IsBusy}">
                 <TextBlock Classes="muted" Text="Journey name" />

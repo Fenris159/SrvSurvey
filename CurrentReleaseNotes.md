@@ -1,4 +1,14 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.2
+# SrvSurvey-XP 2.1.3.0-rc.77.3
+
+RC77.3 fixes older Journey files leaving an empty workspace unable to begin a
+new Journey. Older metadata is upgraded with an original-file backup, and saved
+history remains available when its original journals can no longer be replayed.
+Unreferenced active Journeys can be resumed and completed from the library.
+
+Only a readable Journey marked Active in the selected commander's list blocks
+another start. Unavailable active selections now show warnings while keeping
+their saved files intact. A completed Journey no longer prevents starting again
+from the same visit; the new Journey receives its own saved file.
 
 RC77.2 fixes Journey starts when Steam, Epic, or other Elite installations keep
 journals in different folders. It also improves replay when journal sessions
