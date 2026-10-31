@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-10-29
+Last updated: 2026-10-31
 
 ## Branch purpose
 
@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.77.2**. Its development tag
-is `xp2-v2.1.3.0-rc.77.2`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.77.2`. The assembly
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.77.4**. Its development tag
+is `xp2-v2.1.3.0-rc.77.4`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.77.4`. The assembly
 `FileVersion` remains numeric at `2.1.3.0` for Windows compatibility.
 
 RC51 is the permanent legacy update anchor. Its release index is schema 1 and

@@ -1,4 +1,10 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.3
+# SrvSurvey-XP 2.1.3.0-rc.77.4
+
+RC77.4 adds dedicated Squadron Carrier routes, clearer Canonn Prior Scans,
+persistent mining search results and galactic Journey report maps. Personal and
+squadron carriers can be tracked together while keeping their progress, fuel
+and jump readouts separate. This release also retains the Journey recovery,
+workspace and reliability improvements described below.
 
 RC77.3 fixes older Journey files leaving an empty workspace unable to begin a
 new Journey. Older metadata is upgraded with an original-file backup, and saved
@@ -22,6 +28,38 @@ from RC77.
 
 ## What's changed
 
+- **Squadron Carrier routes:** SC Routes sits beside FC Routes with its own
+  workspace, overlay, panel shortcut and next-jump settings. Both carriers share
+  saved itinerary bookmarks while keeping their selected routes, progress and
+  preferences separate. Both overlays can track scheduled jumps, cancellations
+  and arrivals even without an active itinerary.
+- **Carrier route auto-copy:** Enable auto-copy for both FC Routes and SC Routes.
+  Opening the Galaxy Map copies one destination from the selected active
+  carrier, falling back to the other when the selected route is paused or
+  complete. Selecting auto-copy in Route Manager or Boxel Search disables both
+  carrier selections, so competing tools cannot replace the destination.
+- **Carrier tracking and bookmark safety:** Carrier identity checks keep jump
+  progress, countdowns, fuel and location updates on the correct carrier.
+  Ambiguous arrivals do not update both carriers just because their destinations
+  match. Tracking changes preserve shared bookmark notes, favorites and
+  waypoints. Notes saved from a route workspace update the other carrier's
+  readout without discarding its unsaved edits.
+- **Mining search persistence:** Surface Mining and Powerplay merit search
+  results retain their chosen reference when you jump to another system.
+  Force include if viable no longer causes an arrival to reset the results,
+  including when a search is still running. Reset or search again to replace
+  the results.
+- **Canonn Prior Scans:** The live panel keeps its compact preview layout and
+  wraps long species names instead of expanding across the screen. Existing
+  custom sizes remain available. The radar stays visible whenever the panel is
+  shown. Show bio signals from Canonn on the radar now controls the whole panel
+  and stays synchronized with panel availability and its shortcut.
+- **Galactic Journey maps:** HTML exports plot every recorded visit on an
+  equal-scale X/Z map, including negative coordinates, with Sol and Sagittarius
+  A* as fixed position references. Reference markers do not add travel legs.
+  Switch between Galactic context and Route detail, and select any visit point
+  to open its history entry. Return visits retain their own links, and reference
+  labels remain readable near the map's edges.
 - **Journey journal reliability:** Starting a Journey uses the selected
   commander's journals across all available folders, regardless of folder order.
   Current starts use the latest matching location. Catch-up and reprocessing
