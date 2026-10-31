@@ -101,11 +101,58 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         clock.Now += TimeSpan.FromHours(1);
         var acknowledged = new ProviderHandler(provider, HttpStatusCode.OK);
         using var finalHttp = new HttpClient(acknowledged);
-        await Run(provider, finalHttp, await new JournalDirectoryMonitor(directory, "F123").PollAsync(), null);
+        await Run(
+            provider,
+            finalHttp,
+            await new JournalDirectoryMonitor(directory, "F123").PollAsync(),
+            null,
+            expectVoxStellarDelivery: false
+        );
         Assert.DoesNotContain(
             acknowledged.Posts,
             body => body.Contains(ExpectedEvent(provider), StringComparison.Ordinal)
         );
+    }
+
+    /// <summary>A delayed transport must finish before a recovery scenario disposes its publisher.</summary>
+    [Fact]
+    public async Task VoxStellarScenarioAwaitsDeliveryBeforeDisposingThePublisher()
+    {
+        Directory.CreateDirectory(directory);
+        string journal = Path.Combine(directory, "Journal.delayed-voxstellar.log");
+        await File.WriteAllTextAsync(
+            journal,
+            "{\"timestamp\":\"2026-10-12T12:00:00Z\",\"event\":\"LoadGame\",\"Commander\":\"Explorer\",\"FID\":\"F123\",\"Odyssey\":true}\n"
+        );
+        var monitor = new JournalDirectoryMonitor(directory, "F123");
+        JournalMonitorUpdate bootstrap = await monitor.PollAsync();
+        await File.AppendAllTextAsync(
+            journal,
+            "{\"timestamp\":\"2026-10-12T12:00:01Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Sol\",\"SystemAddress\":1,\"StarPos\":[0,0,0],\"JumpDist\":1}\n"
+        );
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var released = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handler = new ProviderHandler("VoxStellar", HttpStatusCode.OK)
+        {
+            BeforePost = async cancellationToken =>
+            {
+                started.TrySetResult();
+                await released.Task.WaitAsync(cancellationToken);
+            },
+        };
+        using var http = new HttpClient(handler);
+        Task scenario = Run("VoxStellar", http, bootstrap, await monitor.PollAsync());
+        try
+        {
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            Assert.False(scenario.IsCompleted, "The scenario must await delivery before shutdown can cancel it.");
+        }
+        finally
+        {
+            released.TrySetResult();
+            await scenario.WaitAsync(TimeSpan.FromSeconds(30));
+        }
+        Assert.Single(handler.Posts);
     }
 
     /// <summary>Names the provider's expected mapping of the captured live record independently of the sender implementation.</summary>
@@ -142,7 +189,13 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         clock.Now += TimeSpan.FromHours(1);
         var recovered = new ProviderHandler("VoxStellar", HttpStatusCode.OK);
         using var recoveredHttp = new HttpClient(recovered);
-        await Run("VoxStellar", recoveredHttp, await new JournalDirectoryMonitor(directory, "F123").PollAsync(), null);
+        await Run(
+            "VoxStellar",
+            recoveredHttp,
+            await new JournalDirectoryMonitor(directory, "F123").PollAsync(),
+            null,
+            expectVoxStellarDelivery: false
+        );
         Assert.Empty(recovered.Posts);
     }
 
@@ -179,7 +232,7 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         clock.Now += TimeSpan.FromHours(1);
         var reread = new ProviderHandler(provider, HttpStatusCode.OK);
         using var repeatedHttp = new HttpClient(reread);
-        await Run(provider, repeatedHttp, bootstrap, live);
+        await Run(provider, repeatedHttp, bootstrap, live, expectVoxStellarDelivery: false);
         Assert.DoesNotContain(reread.Posts, body => body.Contains(ExpectedEvent(provider), StringComparison.Ordinal));
     }
 
@@ -191,7 +244,8 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         JournalMonitorUpdate? live,
         bool crashWorker = false,
         bool missingCredentials = false,
-        bool discardRetainedReports = false
+        bool discardRetainedReports = false,
+        bool expectVoxStellarDelivery = true
     )
     {
         string storage = Path.Combine(directory, "uploads");
@@ -316,6 +370,7 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         }
         else if (provider == "VoxStellar")
         {
+            var batchCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             using var publisher = new VoxStellarPublisher(
                 "2.1.3.0",
                 "signing-key",
@@ -325,6 +380,13 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
                     TimeProvider = clock,
                     BatchInterval = TimeSpan.Zero,
                     OutboxDirectory = storage,
+                    Log = message =>
+                    {
+                        if (message.StartsWith("VoxStellar upload batch:", StringComparison.Ordinal))
+                        {
+                            batchCompleted.TrySetResult();
+                        }
+                    },
                 }
             );
             await publisher.ApplyAsync(
@@ -349,6 +411,11 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
                 );
             }
             await AwaitCrash(crashWorker);
+            if (expectVoxStellarDelivery)
+            {
+                // Await the checkpointed outcome, not the bounded application shutdown drain.
+                await batchCompleted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+            }
         }
         else
         {
