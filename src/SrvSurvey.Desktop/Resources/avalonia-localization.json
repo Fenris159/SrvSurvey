@@ -7349,6 +7349,10 @@
       "translation": "Steuert die gesamte PlotPulse-Überlagerung: die ~10-sekündige Journal-/Statusimpulsleiste und die Supercruise-Overdrive-Abklingzeitanzeige. Für beide gibt es eine einzige Aktivierungseinstellung."
     },
     {
+      "source": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+      "translation": "Steuert das gesamte Bedienfeld „Vorherige Scans“. Das Radar wird immer angezeigt, wenn das Panel sichtbar ist."
+    },
+    {
       "source": "Convert .bmp screenshots into .png files",
       "translation": "Konvertieren Sie .bmp-Screenshots in .png-Dateien"
     },
@@ -30101,16 +30105,16 @@
       "translation": "SystemSurvey.AutoShowMiniTrack"
     },
     {
-      "source": "SystemSurvey.AutoShowPriorScans",
-      "translation": "SystemSurvey.AutoShowPriorScans"
-    },
-    {
       "source": "SystemSurvey.AutoShowSurfaceRadar",
       "translation": "SystemSurvey.AutoShowSurfaceRadar"
     },
     {
       "source": "SystemSurvey.AutoShowSystemStatus",
       "translation": "SystemSurvey.AutoShowSystemStatus"
+    },
+    {
+      "source": "SystemSurvey.ShowCanonnSignalsOnRadar",
+      "translation": "SystemSurvey.ShowCanonnSignalsOnRadar"
     },
     {
       "source": "Systems",
@@ -48189,6 +48193,10 @@
     {
       "source": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
       "translation": "Controla la superposición completa de PlotPulse: la barra de pulso de estado/diario de ~10 segundos y el indicador de enfriamiento de Supercruise Overdrive. Hay una única preferencia de habilitación para ambos."
+    },
+    {
+      "source": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+      "translation": "Controla todo el panel de Escaneos anteriores. El radar siempre se muestra cuando el panel está visible."
     },
     {
       "source": "Convert .bmp screenshots into .png files",
@@ -70943,16 +70951,16 @@
       "translation": "SystemSurvey.AutoShowMiniTrack"
     },
     {
-      "source": "SystemSurvey.AutoShowPriorScans",
-      "translation": "SystemSurvey.AutoShowPriorScans"
-    },
-    {
       "source": "SystemSurvey.AutoShowSurfaceRadar",
       "translation": "SystemSurvey.AutoShowSurfaceRadar"
     },
     {
       "source": "SystemSurvey.AutoShowSystemStatus",
       "translation": "SystemSurvey.AutoShowSystemStatus"
+    },
+    {
+      "source": "SystemSurvey.ShowCanonnSignalsOnRadar",
+      "translation": "SystemSurvey.ShowCanonnSignalsOnRadar"
     },
     {
       "source": "Systems",
@@ -89031,6 +89039,10 @@
     {
       "source": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
       "translation": "Contrôle la superposition complète de PlotPulse : la barre d'impulsions de journal/statut d'environ 10 secondes et l'indicateur de temps de recharge de Supercruise Overdrive. Il existe une seule préférence d’activation pour les deux."
+    },
+    {
+      "source": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+      "translation": "Contrôle l’ensemble du panneau Analyses antérieures. Le radar est toujours affiché lorsque le panneau est visible."
     },
     {
       "source": "Convert .bmp screenshots into .png files",
@@ -111785,16 +111797,16 @@
       "translation": "SystemSurvey.AutoShowMiniTrack"
     },
     {
-      "source": "SystemSurvey.AutoShowPriorScans",
-      "translation": "SystemSurvey.AutoShowPriorScans"
-    },
-    {
       "source": "SystemSurvey.AutoShowSurfaceRadar",
       "translation": "SystemSurvey.AutoShowSurfaceRadar"
     },
     {
       "source": "SystemSurvey.AutoShowSystemStatus",
       "translation": "SystemSurvey.AutoShowSystemStatus"
+    },
+    {
+      "source": "SystemSurvey.ShowCanonnSignalsOnRadar",
+      "translation": "SystemSurvey.ShowCanonnSignalsOnRadar"
     },
     {
       "source": "Systems",
@@ -129873,6 +129885,10 @@
     {
       "source": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
       "translation": "Controla a sobreposição completa do PlotPulse: a barra de pulso de diário/status de aproximadamente 10 segundos e o indicador de resfriamento do Supercruise Overdrive. Há uma única preferência de ativação para ambos."
+    },
+    {
+      "source": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+      "translation": "Controla todo o painel Prior Scans. O radar é sempre mostrado quando o painel está visível."
     },
     {
       "source": "Convert .bmp screenshots into .png files",
@@ -152627,16 +152643,16 @@
       "translation": "SystemSurvey.AutoShowMiniTrack"
     },
     {
-      "source": "SystemSurvey.AutoShowPriorScans",
-      "translation": "SystemSurvey.AutoShowPriorScans"
-    },
-    {
       "source": "SystemSurvey.AutoShowSurfaceRadar",
       "translation": "SystemSurvey.AutoShowSurfaceRadar"
     },
     {
       "source": "SystemSurvey.AutoShowSystemStatus",
       "translation": "SystemSurvey.AutoShowSystemStatus"
+    },
+    {
+      "source": "SystemSurvey.ShowCanonnSignalsOnRadar",
+      "translation": "SystemSurvey.ShowCanonnSignalsOnRadar"
     },
     {
       "source": "Systems",
@@ -170715,6 +170731,10 @@
     {
       "source": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
       "translation": "Управляет всем наложением PlotPulse: ~10-секундной полосой журнала/импульса состояния и индикатором перезарядки Supercruise Overdrive. Для обоих существует одно предпочтение включения."
+    },
+    {
+      "source": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+      "translation": "Управляет всей панелью предыдущих сканирований. Радар всегда отображается, когда панель видна."
     },
     {
       "source": "Convert .bmp screenshots into .png files",
@@ -193469,16 +193489,16 @@
       "translation": "SystemSurvey.AutoShowMiniTrack"
     },
     {
-      "source": "SystemSurvey.AutoShowPriorScans",
-      "translation": "SystemSurvey.AutoShowPriorScans"
-    },
-    {
       "source": "SystemSurvey.AutoShowSurfaceRadar",
       "translation": "SystemSurvey.AutoShowSurfaceRadar"
     },
     {
       "source": "SystemSurvey.AutoShowSystemStatus",
       "translation": "SystemSurvey.AutoShowSystemStatus"
+    },
+    {
+      "source": "SystemSurvey.ShowCanonnSignalsOnRadar",
+      "translation": "SystemSurvey.ShowCanonnSignalsOnRadar"
     },
     {
       "source": "Systems",
@@ -211557,6 +211577,10 @@
     {
       "source": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
       "translation": "控制完整的 PlotPulse 覆盖：约 10 秒的日志/状态脉冲条和 Supercruise Overdrive 冷却指示器。两者都有一个启用首选项。"
+    },
+    {
+      "source": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+      "translation": "控制整个先前扫描面板。当面板可见时，雷达始终会显示。"
     },
     {
       "source": "Convert .bmp screenshots into .png files",
@@ -234311,16 +234335,16 @@
       "translation": "系统调查.AutoShowMiniTrack"
     },
     {
-      "source": "SystemSurvey.AutoShowPriorScans",
-      "translation": "系统调查.AutoShowPriorScans"
-    },
-    {
       "source": "SystemSurvey.AutoShowSurfaceRadar",
       "translation": "系统测量.AutoShowSurfaceRadar"
     },
     {
       "source": "SystemSurvey.AutoShowSystemStatus",
       "translation": "系统调查.AutoShowSystemStatus"
+    },
+    {
+      "source": "SystemSurvey.ShowCanonnSignalsOnRadar",
+      "translation": "SystemSurvey.ShowCanonnSignalsOnRadar"
     },
     {
       "source": "Systems",
@@ -252399,6 +252423,10 @@
     {
       "source": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
       "translation": "* CONTROLS THE COMPLETE PLOTPULSE OVERLAY: THE ~10-SECOND JOURNAL/STATUS PULSE BAR AND THE SUPERCRUISE OVERDRIVE COOLDOWN INDICATOR. THERE IS A SINGLE ENABLE PREFERENCE FOR BOTH. >>>!"
+    },
+    {
+      "source": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+      "translation": "* CONTROLS THE ENTIRE PRIOR SCANS PANEL. THE RADAR IS ALWAYS SHOWN WHEN THE PANEL IS VISIBLE. >>>!"
     },
     {
       "source": "Convert .bmp screenshots into .png files",
@@ -275153,16 +275181,16 @@
       "translation": "* SYSTEMSURVEY.AUTOSHOWMINITRACK >>>!"
     },
     {
-      "source": "SystemSurvey.AutoShowPriorScans",
-      "translation": "* SYSTEMSURVEY.AUTOSHOWPRIORSCANS >>>!"
-    },
-    {
       "source": "SystemSurvey.AutoShowSurfaceRadar",
       "translation": "* SYSTEMSURVEY.AUTOSHOWSURFACERADAR >>>!"
     },
     {
       "source": "SystemSurvey.AutoShowSystemStatus",
       "translation": "* SYSTEMSURVEY.AUTOSHOWSYSTEMSTATUS >>>!"
+    },
+    {
+      "source": "SystemSurvey.ShowCanonnSignalsOnRadar",
+      "translation": "* SYSTEMSURVEY.SHOWCANONNSIGNALSONRADAR >>>!"
     },
     {
       "source": "Systems",

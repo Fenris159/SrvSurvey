@@ -379,7 +379,7 @@ public static class OverlayLayoutCatalog
         Define(
             "PlotPriorScans",
             "Prior scans",
-            "SystemSurvey.AutoShowPriorScans",
+            "SystemSurvey.ShowCanonnSignalsOnRadar",
             OverlayLayoutCategory.BiologyAndSurface,
             OverlaySettingsCategory.Exobiology,
             new(308, 300),

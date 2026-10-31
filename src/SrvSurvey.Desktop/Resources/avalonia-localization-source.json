@@ -14741,6 +14741,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Convert .bmp screenshots into .png files",
     "IsFormat": false,
     "SourceKinds": [
@@ -60401,14 +60409,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
-    "Text": "SystemSurvey.AutoShowPriorScans",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
-  },
-  {
     "Text": "SystemSurvey.AutoShowSurfaceRadar",
     "IsFormat": false,
     "SourceKinds": [
@@ -60418,6 +60418,14 @@
   },
   {
     "Text": "SystemSurvey.AutoShowSystemStatus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "SystemSurvey.ShowCanonnSignalsOnRadar",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

@@ -496,7 +496,15 @@ public sealed class OverlayPresentationContractTests
                 "src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml",
                 "src/SrvSurvey.Desktop/PriorScansOverlayPresentation.axaml",
             ],
-            ["DisplayName", "RewardText", "BearingText", "DistanceText", "ApproachText", "Targets", "ShowRadar"]
+            [
+                "DisplayName",
+                "RewardText",
+                "BearingText",
+                "DistanceText",
+                "ApproachText",
+                "Targets",
+                "PriorScanRadarControl",
+            ]
         ),
         Contract(
             "PlotRamTah",
@@ -1081,7 +1089,7 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
-    public void OverlaySettingsDisableInactiveDssAndCanonnDependencies()
+    public void OverlaySettingsKeepCanonnAvailabilityEditableAndDisableInactiveDependencies()
     {
         string root = FindRepositoryRoot();
         var document = XDocument.Load(
@@ -1101,8 +1109,10 @@ public sealed class OverlayPresentationContractTests
         Assert.Equal("{Binding SystemSurvey.UseExternalData}", priorScans.Parent?.Attribute("IsEnabled")?.Value);
 
         XElement radar = BoundControl("CheckBox", "IsChecked", "SystemSurvey.ShowCanonnSignalsOnRadar");
-        Assert.Equal("{Binding SystemSurvey.AutoShowPriorScans}", radar.Parent?.Attribute("IsEnabled")?.Value);
-        Assert.Equal("{Binding SystemSurvey.UseExternalData}", radar.Parent?.Parent?.Attribute("IsEnabled")?.Value);
+        Assert.Null(radar.Parent?.Attribute("IsEnabled"));
+        Assert.Null(radar.Parent?.Parent?.Attribute("IsEnabled"));
+        XElement circles = BoundControl("RadioButton", "IsChecked", "SystemSurvey.UseSmallCanonnRadarCircles");
+        Assert.Equal("{Binding SystemSurvey.ShowCanonnSignalsOnRadar}", circles.Parent?.Attribute("IsEnabled")?.Value);
 
         XElement miniTrack = BoundControl("CheckBox", "IsChecked", "SystemSurvey.AutoShowMiniTrack");
         XElement samplerGate = BoundControl(

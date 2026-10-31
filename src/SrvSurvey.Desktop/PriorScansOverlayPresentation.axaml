@@ -7,6 +7,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:PriorScansOverlayViewModel"
              mc:Ignorable="d"
+             Width="308"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -17,17 +18,18 @@
           RowSpacing="5">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="3">
-          <TextBlock Classes="overlay-header type-header" Text="CANONN PRIOR SCANS" />
+          <TextBlock Classes="overlay-header type-header" TextWrapping="Wrap" Text="CANONN PRIOR SCANS" />
           <TextBlock FontSize="14" Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}"
                      FontWeight="SemiBold"
                      Text="{Binding BodyName}"
                      TextTrimming="CharacterEllipsis" />
-          <StackPanel Orientation="Horizontal" Spacing="8">
+          <WrapPanel Orientation="Horizontal">
             <TextBlock FontSize="10" Classes="monospace type-detail"
+                       Margin="0,0,8,0"
                        Text="{Binding HeadingText}" />
             <TextBlock FontSize="10" Classes="muted type-detail"
                        Text="{Binding SpeciesCountText}" />
-          </StackPanel>
+          </WrapPanel>
         </StackPanel>
       </Grid>
 
@@ -37,8 +39,7 @@
 
       <Border Grid.Row="2"
               ClipToBounds="True"
-              CornerRadius="4"
-              IsVisible="{Binding ShowRadar}">
+              CornerRadius="4">
         <controls:PriorScanRadarControl
             Height="180"
             ClipToBounds="True"
@@ -68,11 +69,11 @@
                       Opacity="{Binding RowOpacity}">
                 <StackPanel Spacing="7">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
-                    <StackPanel Orientation="Horizontal" Spacing="7">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="7">
                       <TextBlock Classes="type-body" FontWeight="SemiBold"
                                  Text="{Binding DisplayName}"
-                                 TextTrimming="CharacterEllipsis" />
-                      <LayoutTransformControl Classes="type-icon" IsVisible="{Binding IsActive}">
+                                 TextWrapping="Wrap" />
+                      <LayoutTransformControl Grid.Column="1" Classes="type-icon" IsVisible="{Binding IsActive}">
                         <Border Classes="badge overlay-state-pill" Height="24" Padding="0">
                           <TextBlock FontSize="8" Foreground="{DynamicResource RavenAccentBrush}"
                                      FontWeight="Bold"
@@ -80,7 +81,7 @@
                                      Text="ACTIVE" />
                         </Border>
                       </LayoutTransformControl>
-                      <LayoutTransformControl Classes="type-icon" IsVisible="{Binding IsAnalyzed}">
+                      <LayoutTransformControl Grid.Column="2" Classes="type-icon" IsVisible="{Binding IsAnalyzed}">
                         <Border Classes="badge overlay-state-pill" Height="24" Padding="0">
                           <TextBlock FontSize="8" Foreground="{DynamicResource RavenSuccessBrush}"
                                      FontWeight="Bold"
@@ -88,7 +89,7 @@
                                      Text="ANALYZED" />
                         </Border>
                       </LayoutTransformControl>
-                    </StackPanel>
+                    </Grid>
                     <StackPanel Grid.Column="1"
                                 HorizontalAlignment="Right"
                                 Spacing="2">
@@ -170,6 +171,7 @@
       <Grid Grid.Row="4" ColumnDefinitions="*,Auto" ColumnSpacing="5">
         <StackPanel Spacing="2">
           <TextBlock FontSize="9" Classes="muted type-detail"
+                     TextWrapping="Wrap"
                      Text="{Binding FilterText}" />
           <TextBlock FontSize="9" Classes="muted type-detail"
                      Text="{Binding StatusText}"

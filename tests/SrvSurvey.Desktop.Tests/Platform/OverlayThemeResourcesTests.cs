@@ -106,7 +106,7 @@ public sealed class OverlayThemeResourcesTests
         ["PlotMassacre"] = "Combat.AutoShowMassacreMissions",
         ["PlotMiniTrack"] = "SystemSurvey.AutoShowMiniTrack",
         ["PlotMultiGameCommander"] = "OverlayBehavior.HideMultiGameCommanderOverlay",
-        ["PlotPriorScans"] = "SystemSurvey.AutoShowPriorScans",
+        ["PlotPriorScans"] = "SystemSurvey.ShowCanonnSignalsOnRadar",
         ["PlotPulse"] = "PulseOverlay.Enabled",
         ["PlotQuestMini"] = "QuestWorkspace.IsEnabled",
         ["PlotRamTah"] = "Guardian.AutoShowRamTah",

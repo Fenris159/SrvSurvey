@@ -462,6 +462,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         set => SetPreference(ref hideOwnCanonnSignals, value);
     }
 
+    /// <summary>Controls Prior Scans panel availability; a visible panel always includes its radar.</summary>
     public bool ShowCanonnSignalsOnRadar
     {
         get => showCanonnSignalsOnRadar;

@@ -109,6 +109,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     )]
     private CancellationTokenSource? systemBodyDataCancellation;
     private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
+    private readonly PriorScansPanelAvailabilityBinding priorScansPanelAvailability;
     private readonly BoxelSearchSession boxelSearchSession;
     private readonly BoxelSurveyStatsCoordinator boxelSurveyStats;
 #pragma warning restore CA2213, S2930
@@ -764,6 +765,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 biologyCriteria: legacyReferences.BiologyCriteria,
                 regionalCodexCandidates: regionalCodexCandidates
             );
+            priorScansPanelAvailability = new PriorScansPanelAvailabilityBinding(SystemSurvey, OverlayPanelVisibility);
+            rollback.Add(priorScansPanelAvailability.Dispose);
             ExplorationPois = new ExplorationPoiViewModel(
                 exploration.ExplorationPoiClient
                     ?? new EdAstroPoiClient(AppDataPaths.CacheDirectory, externalNetworkClient),
@@ -4782,6 +4785,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         await TryDisposeAsync(DiscordCarrierAnnouncements.DisposeAsync);
         TryDispose(journalUpdateGate.Dispose);
         TryDispose(routeAutoCopyCoordinator.Dispose);
+        TryDispose(priorScansPanelAvailability.Dispose);
         TryDispose(Route.SpanshSearch!.Dispose);
         TryDispose(FleetCarrierRoute.SpanshSearch!.Dispose);
         TryDispose(FleetCarrierRoute.CancelCarrierDestinationLookup);

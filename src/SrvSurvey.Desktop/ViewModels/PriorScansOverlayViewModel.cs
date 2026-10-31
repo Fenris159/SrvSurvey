@@ -109,8 +109,6 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     public bool HasRadarTargets => RadarTargets.Count > 0;
 
-    public bool ShowRadar => editorForceVisible || survey.ShowCanonnSignalsOnRadar;
-
     public bool UseSmallRadarCircles => survey.UseSmallCanonnRadarCircles;
 
     public string SpeciesCountText => Species.Count == 1 ? "1 known species" : $"{Species.Count:N0} known species";
@@ -153,7 +151,8 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         }
     }
 
-    public bool ShouldShow => editorForceVisible || (survey.ShouldLoadPriorScans && HasSpecies);
+    public bool ShouldShow =>
+        editorForceVisible || (survey.ShouldLoadPriorScans && survey.ShowCanonnSignalsOnRadar && HasSpecies);
 
     /// <summary>
     /// Installs representative Canonn prior-scan content for the position editor.
@@ -179,7 +178,6 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         OnPropertyChanged(nameof(BodyName));
         OnPropertyChanged(nameof(HeadingText));
         OnPropertyChanged(nameof(FilterText));
-        OnPropertyChanged(nameof(ShowRadar));
         OnPropertyChanged(nameof(ShouldShow));
     }
 
@@ -531,7 +529,6 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         OnPropertyChanged(nameof(BodyName));
         OnPropertyChanged(nameof(HeadingText));
         OnPropertyChanged(nameof(FilterText));
-        OnPropertyChanged(nameof(ShowRadar));
         OnPropertyChanged(nameof(UseSmallRadarCircles));
         OnPropertyChanged(nameof(ShouldShow));
     }

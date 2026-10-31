@@ -1621,12 +1621,12 @@
               </StackPanel>
 
               <StackPanel Grid.Column="1"
-                          Spacing="12"
-                          IsEnabled="{Binding SystemSurvey.UseExternalData}">
-                <StackPanel Spacing="12"
-                            IsEnabled="{Binding SystemSurvey.AutoShowPriorScans}">
-                  <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
+                          Spacing="12">
+                <StackPanel Spacing="12">
+                  <CheckBox x:Name="CanonnPriorScansEnabledToggle" IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
                             Content="Show bio signals from Canonn on the radar" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Controls the entire Prior Scans panel. The radar is always shown when the panel is visible." />
                   <StackPanel Spacing="8"
                               IsEnabled="{Binding SystemSurvey.ShowCanonnSignalsOnRadar}">
                     <RadioButton GroupName="CanonnRadarCircleStyle"
