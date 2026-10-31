@@ -176,9 +176,12 @@ public static partial class JourneyReport
         {
             return;
         }
+        bool labelOnLeft = point.X > MapRight - 180;
+        double labelX = point.X + (labelOnLeft ? -15 : 15);
+        string anchor = labelOnLeft ? "end" : "start";
         Svg(
             html,
-            $"""<g class="map-reference" data-reference="{E(name)}" data-x="{position.X:R}" data-z="{position.Z:R}"><title>{E(name)}: X {position.X:R}, Z {position.Z:R} light-years</title><circle cx="{point.X:0.###}" cy="{point.Y:0.###}" r="9"/><text class="map-reference-name" x="{point.X + 15:0.###}" y="{point.Y - 7:0.###}">{E(name)}</text><text class="map-reference-detail" x="{point.X + 15:0.###}" y="{point.Y + 11:0.###}">{E(description)}</text></g>"""
+            $"""<g class="map-reference" data-reference="{E(name)}" data-x="{position.X:R}" data-z="{position.Z:R}"><title>{E(name)}: X {position.X:R}, Z {position.Z:R} light-years</title><circle cx="{point.X:0.###}" cy="{point.Y:0.###}" r="9"/><text class="map-reference-name" x="{labelX:0.###}" y="{point.Y - 7:0.###}" text-anchor="{anchor}">{E(name)}</text><text class="map-reference-detail" x="{labelX:0.###}" y="{point.Y + 11:0.###}" text-anchor="{anchor}">{E(description)}</text></g>"""
         );
     }
 

@@ -6,6 +6,8 @@ public sealed partial class FollowRouteStore
 {
     private readonly FollowRouteCarrierKind? carrierWorkspace;
 
+    internal bool HasDedicatedCarrierWorkspace => carrierWorkspace is not null;
+
     private FollowRouteStore(FollowRouteStore library, FollowRouteCarrierKind? carrier)
     {
         dataDirectory = library.dataDirectory;

@@ -64,7 +64,8 @@ public sealed class FleetCarrierFuelJournal
         FrontierAccountSnapshot? account,
         FollowRouteCarrierKind kind,
         IReadOnlyList<FollowRouteHop> hops,
-        JournalEventEnvelope? through = null
+        JournalEventEnvelope? through = null,
+        Func<JournalEventEnvelope, FleetCarrierFuelSnapshot, bool>? movementMatches = null
     )
     {
         ArgumentNullException.ThrowIfNull(hops);
@@ -86,7 +87,8 @@ public sealed class FleetCarrierFuelJournal
                 ObservedAt = observed,
                 Position = initial.Position ?? FindPosition(hops, initial.SystemName),
             },
-            hops
+            hops,
+            movementMatches
         );
         foreach (JournalEventEnvelope entry in observations)
         {
@@ -166,7 +168,11 @@ public sealed class FleetCarrierFuelJournal
     private static GalacticCoordinate? FindPosition(IReadOnlyList<FollowRouteHop> hops, string system) =>
         hops.FirstOrDefault(hop => string.Equals(hop.Name, system, StringComparison.OrdinalIgnoreCase))?.Position;
 
-    private sealed class Replay(FleetCarrierFuelSnapshot initial, IReadOnlyList<FollowRouteHop> hops)
+    private sealed class Replay(
+        FleetCarrierFuelSnapshot initial,
+        IReadOnlyList<FollowRouteHop> hops,
+        Func<JournalEventEnvelope, FleetCarrierFuelSnapshot, bool>? movementMatches
+    )
     {
         private DateTimeOffset fuelAt = initial.ObservedAt;
         private DateTimeOffset cargoAt = initial.ObservedAt;
@@ -209,11 +215,11 @@ public sealed class FleetCarrierFuelJournal
                 case "CarrierJumpCancelled" when Matches(data):
                     pendingJump = null;
                     break;
-                case "CarrierJump" when Matches(data) || MatchesRequestedJump(data, at):
+                case "CarrierJump" when MatchesMovement(entry, at, allowRequestedJump: true):
                     ApplyJump(data, at);
                     pendingJump = null;
                     break;
-                case "CarrierLocation" when Matches(data):
+                case "CarrierLocation" when MatchesMovement(entry, at, allowRequestedJump: false):
                     ApplyLocation(data, at);
                     break;
                 case "CargoTransfer" when dockedCarrier == Current.CarrierId && dockedCarrier is not null:
@@ -230,6 +236,11 @@ public sealed class FleetCarrierFuelJournal
 
         private bool Matches(JsonElement data) =>
             Current.CarrierId is { } id && (Id(data, CarrierIdField) ?? Id(data, MarketIdField)) == id;
+
+        // Dedicated workspaces supply their shared identity rule; legacy callers retain request-only inference.
+        private bool MatchesMovement(JournalEventEnvelope entry, DateTimeOffset at, bool allowRequestedJump) =>
+            movementMatches?.Invoke(entry, Current)
+            ?? (Matches(entry.Payload) || (allowRequestedJump && MatchesRequestedJump(entry.Payload, at)));
 
         private bool MatchesRequestedJump(JsonElement data, DateTimeOffset at) =>
             Id(data, CarrierIdField) is null

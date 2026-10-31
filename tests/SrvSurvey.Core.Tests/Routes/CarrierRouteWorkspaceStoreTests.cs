@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Routes;
 
 namespace SrvSurvey.Core.Tests.Routes;
@@ -39,6 +40,60 @@ public sealed class CarrierRouteWorkspaceStoreTests : IDisposable
         await personal.SetFavoriteAsync("F1", "Shared itinerary.json", false, true);
         Assert.True(Assert.Single(await squadron.ListAsync("F1")).IsFavorite);
         Assert.Equal("Shared itinerary", Assert.Single(await personal.ListAsync("F1")).Name);
+    }
+
+    [Theory]
+    [InlineData("arrival")]
+    [InlineData("active")]
+    [InlineData("autoCopy")]
+    [InlineData("progress")]
+    public async Task StaleCarrierTrackingCannotOverwriteSharedLibraryMetadataOrWaypoints(string operation)
+    {
+        var library = new FollowRouteStore(directory, FollowRouteKind.FleetCarrier);
+        FollowRouteStore personal = library.ForCarrier(FollowRouteCarrierKind.Personal);
+        FollowRouteStore squadron = library.ForCarrier(FollowRouteCarrierKind.Squadron);
+        FollowRouteDocument fc = await personal.SaveAsAsync(Itinerary(personal.GetPath("F1")), "Shared");
+        FollowRouteDocument sc = (await squadron.LoadNamedAsync("F1", "Shared.json", false)).Route! with
+        {
+            LastReachedIndex = 0,
+        };
+        await squadron.SaveProgressAsync(sc);
+        FollowRouteDocument changed = fc with
+        {
+            Notes = "New shared supply instructions",
+            IsFavorite = true,
+            Hops = [fc.Hops[0], new("Changed destination", 4, null, null, false, false), fc.Hops[2]],
+        };
+        await library.SaveAsync(changed);
+        string savedLibrary = await File.ReadAllTextAsync(fc.FilePath);
+        var service = new FollowRouteService(squadron);
+        FollowRouteDocument updated = operation switch
+        {
+            "arrival" => (await service.ApplyArrivalAsync(sc, "Lave", 2)).Route,
+            "active" => await service.SetActiveAsync(sc, false),
+            "autoCopy" => await service.SetAutoCopyAsync(sc, true),
+            _ => await service.SetProgressAsync(sc, 1),
+        };
+        Assert.Equal(savedLibrary, await File.ReadAllTextAsync(fc.FilePath));
+        string progressPath = Path.Combine(
+            directory,
+            "Routes",
+            "FleetCarrier",
+            "F1",
+            ".workspaces",
+            "Squadron",
+            "Progress",
+            "Shared.json"
+        );
+        using var progress = JsonDocument.Parse(await File.ReadAllTextAsync(progressPath));
+        Assert.Equal(updated.LastReachedIndex, progress.RootElement.GetProperty("last").GetInt32());
+        Assert.Equal(updated.IsActive, progress.RootElement.GetProperty("active").GetBoolean());
+        Assert.Equal(updated.AutoCopy, progress.RootElement.GetProperty("autoCopy").GetBoolean());
+        FollowRouteDocument own = (await personal.LoadNamedAsync("F1", "Shared.json", false)).Route!;
+        Assert.Equal(fc.LastReachedIndex, own.LastReachedIndex);
+        Assert.Equal(changed.Notes, own.Notes);
+        Assert.True(own.IsFavorite);
+        Assert.Equal("Changed destination", own.Hops[1].Name);
     }
 
     [Theory]

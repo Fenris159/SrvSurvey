@@ -114,14 +114,14 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
 
     /// <summary>One map opening writes one destination even when both carrier auto-copy settings are enabled.</summary>
     public bool CanAutoCopyOnMapOpen(RouteWorkspaceViewModel route) =>
-        CanOwnAutoCopy(route)
+        route.ShouldAutoCopyNextHop
         && (
             ReferenceEquals(route, standardRoute)
             || ReferenceEquals(
                 route,
-                preferredCarrier is not null && CanOwnAutoCopy(preferredCarrier)
+                preferredCarrier is { ShouldAutoCopyNextHop: true }
                     ? preferredCarrier
-                    : carrierRoutes.FirstOrDefault(CanOwnAutoCopy)
+                    : carrierRoutes.FirstOrDefault(carrier => carrier.ShouldAutoCopyNextHop)
             )
         );
 

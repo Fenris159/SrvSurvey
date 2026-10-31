@@ -1755,8 +1755,9 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             StatusMessage = HasSavedRoute
                 ? "Route notes saved."
                 : "Notes added to the draft. Use Save As... to keep them.";
-            if (HasSavedRoute)
+            if (HasSavedRoute && loadedRoute is { } saved)
             {
+                await ApplySharedCarrierNotesAsync(saved.FilePath, saved.Notes);
                 CatalogChanged?.Invoke(this, EventArgs.Empty);
             }
             await RetainWorkspaceAsync();

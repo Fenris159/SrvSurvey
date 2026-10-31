@@ -11,11 +11,18 @@ public sealed partial class RouteWorkspaceViewModel
     public bool CanSelectCarrier => IsFleetCarrierWorkspace && dedicatedCarrier is null;
     public string CarrierIdentityLabel => IsSquadronCarrierWorkspace ? "Squadron carrier" : "Personal fleet carrier";
     private const string CarrierIdPropertyName = "CarrierID";
+    private const string CarrierTypePropertyName = "CarrierType";
+    private const string PersonalCarrierType = "FleetCarrier";
+    private const string SquadronCarrierType = "SquadronCarrier";
     private readonly FleetCarrierFuelJournal carrierFuelJournal = new();
     private readonly Dictionary<FollowRouteCarrierKind, long> observedCarrierIds = [];
     private readonly Func<FrontierAccountSnapshot?>? carrierSnapshotSource;
     private readonly Func<Task>? refreshCarrierSnapshot;
     private FollowRouteCarrierKind selectedCarrierKind;
+    private FollowRouteCarrierKind OtherCarrierKind =>
+        selectedCarrierKind == FollowRouteCarrierKind.Personal
+            ? FollowRouteCarrierKind.Squadron
+            : FollowRouteCarrierKind.Personal;
     private FleetCarrierFuelSnapshot? latestCarrierFuel;
     private FrontierAccountSnapshot? carrierAccountBaseline;
     private FleetCarrierFuelSnapshot? passFuel;
@@ -133,7 +140,13 @@ public sealed partial class RouteWorkspaceViewModel
 
     private FleetCarrierFuelSnapshot? ReadObservedCarrierFuel(JournalEventEnvelope? through = null)
     {
-        latestCarrierFuel = carrierFuelJournal.Read(carrierAccountBaseline, selectedCarrierKind, draftHops, through);
+        latestCarrierFuel = carrierFuelJournal.Read(
+            carrierAccountBaseline,
+            selectedCarrierKind,
+            draftHops,
+            through,
+            dedicatedCarrier is null ? null : MatchesDedicatedCarrierMovement
+        );
         if (!string.Equals(latestCarrierFuel?.SystemName, carrierArrivedFuelSystem, StringComparison.OrdinalIgnoreCase))
         {
             carrierArrivedFuelEstimate = null;
@@ -228,6 +241,18 @@ public sealed partial class RouteWorkspaceViewModel
 
     private void ObserveCarrierFuel(IReadOnlyList<JournalEventEnvelope> events)
     {
+        if (dedicatedCarrier is not null)
+        {
+            // Unsupported types must not teach the personal workspace an unrelated carrier's identity.
+            events = events
+                .Where(entry =>
+                    GetString(entry.Payload, CarrierTypePropertyName)
+                        is null
+                            or PersonalCarrierType
+                            or SquadronCarrierType
+                )
+                .ToArray();
+        }
         carrierFuelJournal.Observe(events);
         foreach (
             System.Text.Json.JsonElement data in events
@@ -235,9 +260,11 @@ public sealed partial class RouteWorkspaceViewModel
                 .Select(entry => entry.Payload)
         )
         {
-            if (GetInt64(data, CarrierIdPropertyName) is { } observedId)
+            if (
+                GetInt64(data, CarrierIdPropertyName) is { } observedId
+                && GetObservedCarrierKind(observedId, GetString(data, CarrierTypePropertyName)) is { } kind
+            )
             {
-                FollowRouteCarrierKind kind = GetObservedCarrierKind(observedId, GetString(data, "CarrierType"));
                 observedCarrierIds[kind] = observedId;
             }
             if (
@@ -250,11 +277,11 @@ public sealed partial class RouteWorkspaceViewModel
         }
     }
 
-    private FollowRouteCarrierKind GetObservedCarrierKind(long id, string? type)
+    private FollowRouteCarrierKind? GetObservedCarrierKind(long id, string? type)
     {
         if (type is not null)
         {
-            return type == "SquadronCarrier" ? FollowRouteCarrierKind.Squadron : FollowRouteCarrierKind.Personal;
+            return type == SquadronCarrierType ? FollowRouteCarrierKind.Squadron : FollowRouteCarrierKind.Personal;
         }
         if (carrierFuelJournal.GetKnownCarrierKind(id) is { } observed)
         {
@@ -264,9 +291,13 @@ public sealed partial class RouteWorkspaceViewModel
         {
             return known.Kind;
         }
-        return carrierAccountBaseline?.SquadronCarrier?.FuelData?.CarrierId == id
-            ? FollowRouteCarrierKind.Squadron
-            : FollowRouteCarrierKind.Personal;
+        if (carrierAccountBaseline?.SquadronCarrier?.FuelData?.CarrierId == id)
+        {
+            return FollowRouteCarrierKind.Squadron;
+        }
+        return dedicatedCarrier is null || carrierAccountBaseline?.Carrier?.FuelData?.CarrierId == id
+            ? FollowRouteCarrierKind.Personal
+            : null;
     }
 
     private bool MatchesSelectedCarrier(JournalEventEnvelope entry)
@@ -280,6 +311,10 @@ public sealed partial class RouteWorkspaceViewModel
         if (selectedId is null && observedCarrierIds.TryGetValue(selectedCarrierKind, out long observed))
         {
             selectedId = observed;
+        }
+        if (dedicatedCarrier is not null)
+        {
+            return MatchesDedicatedCarrier(entry, id, selectedId);
         }
         if (selectedId is { } selected)
         {
@@ -298,16 +333,107 @@ public sealed partial class RouteWorkspaceViewModel
         {
             return false;
         }
-        string? type = GetString(entry.Payload, "CarrierType");
+        string? type = GetString(entry.Payload, CarrierTypePropertyName);
         return type is null
             ? selectedCarrierKind == FollowRouteCarrierKind.Personal
-            : (type == "SquadronCarrier") == (selectedCarrierKind == FollowRouteCarrierKind.Squadron);
+            : (type == SquadronCarrierType) == (selectedCarrierKind == FollowRouteCarrierKind.Squadron);
     }
+
+    private bool MatchesDedicatedCarrierMovement(JournalEventEnvelope entry, FleetCarrierFuelSnapshot current)
+    {
+        long? id = GetInt64(entry.Payload, CarrierIdPropertyName) ?? GetInt64(entry.Payload, "MarketID");
+        long? selectedId = current.CarrierId;
+        if (selectedId is null && observedCarrierIds.TryGetValue(selectedCarrierKind, out long observed))
+        {
+            selectedId = observed;
+        }
+        return MatchesDedicatedCarrier(entry, id, selectedId, current.Callsign);
+    }
+
+    private bool MatchesDedicatedCarrier(
+        JournalEventEnvelope entry,
+        long? id,
+        long? selectedId,
+        string? observedCallsign = null
+    )
+    {
+        string? type = GetString(entry.Payload, CarrierTypePropertyName);
+        string expectedType =
+            selectedCarrierKind == FollowRouteCarrierKind.Squadron ? SquadronCarrierType : PersonalCarrierType;
+        if (type is not null && !string.Equals(type, expectedType, StringComparison.Ordinal))
+        {
+            return false;
+        }
+        FrontierCarrierSnapshot? accountCarrier =
+            selectedCarrierKind == FollowRouteCarrierKind.Squadron
+                ? carrierAccountBaseline?.SquadronCarrier
+                : carrierAccountBaseline?.Carrier;
+        string? knownCallsign = observedCallsign ?? latestCarrierFuel?.Callsign ?? accountCarrier?.Callsign;
+        string? callsign = GetString(entry.Payload, "Callsign");
+        string? station = GetString(entry.Payload, "StationName");
+        bool? callsignMatches = MatchesKnownCarrierCallsign(callsign, knownCallsign);
+        bool? stationMatches = MatchesKnownCarrierCallsign(station, knownCallsign);
+        if (
+            callsignMatches == false
+            || stationMatches == false
+            || (string.IsNullOrWhiteSpace(knownCallsign) && MatchesOtherCarrierCallsign(callsign, station))
+        )
+        {
+            return false;
+        }
+        if (id is { } candidate)
+        {
+            if (selectedId is { } selected)
+            {
+                return candidate == selected;
+            }
+            if (IsKnownOtherCarrier(candidate))
+            {
+                return false;
+            }
+        }
+        // A destination, even one in an outstanding request, does not identify which carrier arrived.
+        return type is not null || callsignMatches == true || stationMatches == true;
+    }
+
+    private bool IsKnownOtherCarrier(long candidate)
+    {
+        FollowRouteCarrierKind other = OtherCarrierKind;
+        FrontierCarrierSnapshot? accountCarrier =
+            other == FollowRouteCarrierKind.Squadron
+                ? carrierAccountBaseline?.SquadronCarrier
+                : carrierAccountBaseline?.Carrier;
+        return accountCarrier?.FuelData?.CarrierId == candidate
+            || (observedCarrierIds.TryGetValue(other, out long observed) && candidate == observed);
+    }
+
+    private bool MatchesOtherCarrierCallsign(string? callsign, string? station)
+    {
+        if (string.IsNullOrWhiteSpace(callsign) && string.IsNullOrWhiteSpace(station))
+        {
+            return false;
+        }
+        FrontierCarrierSnapshot? other =
+            OtherCarrierKind == FollowRouteCarrierKind.Squadron
+                ? carrierAccountBaseline?.SquadronCarrier
+                : carrierAccountBaseline?.Carrier;
+        string? known =
+            carrierFuelJournal.Read(carrierAccountBaseline, OtherCarrierKind, draftHops)?.Callsign ?? other?.Callsign;
+        return MatchesKnownCarrierCallsign(callsign, known) == true
+            || MatchesKnownCarrierCallsign(station, known) == true;
+    }
+
+    // Null means the event and current carrier do not supply comparable callsigns.
+    private static bool? MatchesKnownCarrierCallsign(string? candidate, string? known) =>
+        string.IsNullOrWhiteSpace(candidate) || string.IsNullOrWhiteSpace(known)
+            ? null
+            : string.Equals(candidate.Trim(), known.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private bool MatchesCarrierArrival(JournalEventEnvelope entry, FollowRouteHop? nextHop)
     {
         if (
-            !IsFleetCarrierWorkspace
+            dedicatedCarrier is not null
+            || !IsFleetCarrierWorkspace
             || GetInt64(entry.Payload, CarrierIdPropertyName) is not null
             || GetInt64(entry.Payload, "MarketID") is not null
         )
@@ -323,8 +449,11 @@ public sealed partial class RouteWorkspaceViewModel
         {
             return false;
         }
-        string? type = GetString(entry.Payload, "CarrierType");
-        if (type is not null && (type == "SquadronCarrier") != (selectedCarrierKind == FollowRouteCarrierKind.Squadron))
+        string? type = GetString(entry.Payload, CarrierTypePropertyName);
+        if (
+            type is not null
+            && (type == SquadronCarrierType) != (selectedCarrierKind == FollowRouteCarrierKind.Squadron)
+        )
         {
             return false;
         }

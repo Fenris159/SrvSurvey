@@ -92,6 +92,60 @@ public sealed class JourneyRouteMapTests
     }
 
     [Fact]
+    public void DetailReferenceLabelsFaceInwardNearTheRightEdge()
+    {
+        XElement detail = Maps(
+            JourneyReport.Html(WithPositions([new(-864.78125, 0, 25899.96875), new(-264.78125, 0, 25899.96875)]))
+        )[1];
+        XElement center = Reference(detail, "Sagittarius A*");
+        XElement marker = center.Element("circle")!;
+        Assert.InRange(Coordinate(marker, "cx"), 900, 926);
+        foreach (XElement label in center.Elements("text"))
+        {
+            Assert.Equal("end", label.Attribute("text-anchor")?.Value);
+            Assert.True(Coordinate(label, "x") < Coordinate(marker, "cx"));
+        }
+        XElement galactic = Maps(JourneyReport.Html(WithPositions([new(0, 0, 0)])))[0];
+        foreach (XElement label in Reference(galactic, "Sagittarius A*").Elements("text"))
+        {
+            Assert.Equal("start", label.Attribute("text-anchor")?.Value);
+        }
+    }
+
+    [Fact]
+    public void UnvisitedReferenceSystemsAreNeverAddedToTheJourneyLine()
+    {
+        JourneyDocument journey = WithPositions([
+            new(-9_000, 200, 6_000),
+            new(-16_000, 300, 16_000),
+            new(-5_000, -200, 35_000),
+        ]);
+        XElement[] maps = Maps(JourneyReport.Html(journey));
+        Assert.Equal(2, maps[0].Descendants("g").Count(group => group.Attribute("data-reference") is not null));
+        foreach (XElement map in maps)
+        {
+            string[] route = map.Descendants("polyline").Single().Attribute("points")!.Value.Split(' ');
+            XElement[] stops = Stops(map);
+            Assert.Equal(3, route.Length);
+            Assert.Equal(3, stops.Length);
+            for (int index = 0; index < stops.Length; index++)
+            {
+                Assert.Equal(
+                    $"{stops[index].Attribute("cx")!.Value},{stops[index].Attribute("cy")!.Value}",
+                    route[index]
+                );
+            }
+            foreach (
+                XElement reference in map.Descendants("g").Where(group => group.Attribute("data-reference") is not null)
+            )
+            {
+                XElement marker = reference.Element("circle")!;
+                Assert.DoesNotContain($"{marker.Attribute("cx")!.Value},{marker.Attribute("cy")!.Value}", route);
+            }
+        }
+    }
+
+    [Fact]
     public void MapTitlesEncodeSystemNamesAndCoordinatesUseInvariantFormatting()
     {
         CultureInfo original = CultureInfo.CurrentCulture;
@@ -123,16 +177,17 @@ public sealed class JourneyRouteMapTests
     public void CanRenderAnOfflineGalacticRouteExample()
     {
         JourneyDocument journey = WithPositions([
-            new(0, 0, 0),
-            new(6_400, 150, 11_000),
-            new(25.21875, -20.90625, 25899.96875),
-            new(-5_000, -200, 35_000),
+            new(-9_000, 200, 6_000),
             new(-16_000, 300, 16_000),
-            new(0, 0, 0),
+            new(-5_000, -200, 35_000),
+            new(6_400, 150, 30_000),
+            new(12_000, -100, 12_000),
+            new(4_000, 20, 6_000),
         ]) with
         {
             Name = "The galactic crossing",
-            Description = "A route across the galactic plane, returning to Sol.",
+            Description =
+                "A journey visiting neither Sol nor Sagittarius A*. Both are shown only as position references.",
         };
         string html = JourneyReport.Html(journey);
         Assert.Equal(6, Stops(Maps(html)[0]).Length);
@@ -154,7 +209,7 @@ public sealed class JourneyRouteMapTests
                     (position, index) =>
                         first with
                         {
-                            StarSystem = new(index == 0 ? "Sol" : $"Waypoint {index}", index + 1, position),
+                            StarSystem = new($"Waypoint {index + 1}", index + 1, position),
                             Arrived = first.Arrived.AddMinutes(index),
                             Departed = first.Arrived.AddMinutes(index + 1),
                         }

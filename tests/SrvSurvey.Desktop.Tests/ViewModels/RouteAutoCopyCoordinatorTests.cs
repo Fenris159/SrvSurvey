@@ -106,6 +106,78 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PausedOrCompletedCarrierDoesNotBlockTheOtherCarriersMapOpenCopy()
+    {
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel fc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Personal
+        );
+        RouteWorkspaceViewModel sc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Squadron
+        );
+        using var coordinator = new RouteAutoCopyCoordinator(standard, fc, CreateInactiveBoxel().Session, sc);
+        var copies = new List<string>();
+        fc.SetClipboardWriter(text =>
+        {
+            copies.Add("FC:" + text);
+            return Task.CompletedTask;
+        });
+        sc.SetClipboardWriter(text =>
+        {
+            copies.Add("SC:" + text);
+            return Task.CompletedTask;
+        });
+        await coordinator.ClaimAsync(fc);
+        fc.IsActive = false;
+        await AssertCopiesOnlyAsync(sc, "SC:");
+        fc.IsActive = true;
+        await coordinator.ClaimAsync(sc);
+        sc.SetProgressThrough(sc.RouteCount - 1, true);
+        Assert.True(sc.IsComplete);
+        await AssertCopiesOnlyAsync(fc, "FC:");
+        fc.IsActive = false;
+        Assert.False(coordinator.CanAutoCopyOnMapOpen(fc));
+        Assert.False(coordinator.CanAutoCopyOnMapOpen(sc));
+        Assert.True(fc.AutoCopy);
+        Assert.True(sc.AutoCopy);
+
+        async Task AssertCopiesOnlyAsync(RouteWorkspaceViewModel expected, string prefix)
+        {
+            Assert.True(coordinator.CanAutoCopyOnMapOpen(expected));
+            var open = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+            copies.Clear();
+            await fc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(fc));
+            await sc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(sc));
+            Assert.StartsWith(prefix, Assert.Single(copies));
+            var closed = new EliteStatus { GuiFocus = GuiFocus.NoFocus };
+            await fc.UpdateStatusAsync(closed);
+            await sc.UpdateStatusAsync(closed);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultCarrierMapCopySkipsPausedFleetCarrierWithoutChangingItsSelection()
+    {
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel fc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Personal
+        );
+        RouteWorkspaceViewModel sc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Squadron
+        );
+        standard.AutoCopy = false;
+        fc.IsActive = false;
+        using var coordinator = new RouteAutoCopyCoordinator(standard, fc, CreateInactiveBoxel().Session, sc);
+        Assert.False(coordinator.CanAutoCopyOnMapOpen(fc));
+        Assert.True(coordinator.CanAutoCopyOnMapOpen(sc));
+        Assert.True(fc.AutoCopy);
+    }
+
+    [Fact]
     public async Task ClaimingClipboardDisablesAndPersistsTheCompetingRoute()
     {
         RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
