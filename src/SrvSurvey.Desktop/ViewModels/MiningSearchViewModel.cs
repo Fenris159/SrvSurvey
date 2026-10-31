@@ -3340,8 +3340,13 @@ public sealed class MiningSearchViewModel(
         return session;
     }
 
-    private Task Run(Func<CancellationToken, Task> action, bool cacheSearch = false) =>
-        Session.RunAsync(
+    private Task Run(Func<CancellationToken, Task> action, bool cacheSearch = false)
+    {
+        if (!string.IsNullOrWhiteSpace(Reference))
+        {
+            Session.Reference.Pin();
+        }
+        return Session.RunAsync(
             token =>
             {
                 token.ThrowIfCancellationRequested();
@@ -3350,6 +3355,7 @@ public sealed class MiningSearchViewModel(
             outcome => ReportSearch(outcome, cacheSearch),
             new MiningSearchRunOptions(SearchTimeout(), InvalidOperationFails: true)
         );
+    }
 
     private void ReportSearch(MiningSearchOutcome outcome, bool cacheSearch)
     {

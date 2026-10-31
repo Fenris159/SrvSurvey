@@ -14,7 +14,8 @@ public sealed record RouteWorkspaceOptions(
     CurrentShipExportViewModel? CurrentShip = null,
     Func<FrontierAccountSnapshot?>? CarrierSnapshotSource = null,
     Func<Task>? RefreshCarrierSnapshot = null,
-    CarrierNextJumpDependencies? CarrierNextJump = null
+    CarrierNextJumpDependencies? CarrierNextJump = null,
+    FollowRouteCarrierKind? DedicatedCarrier = null
 );
 
 public sealed record CarrierNextJumpDependencies(

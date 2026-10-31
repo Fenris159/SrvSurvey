@@ -12,6 +12,9 @@ namespace SrvSurvey.Core.Tests.Network;
 [Trait("Category", "JournalUploadScenario")]
 public sealed class VoxStellarPublisherTests
 {
+    // Worker scheduling may be delayed by instrumentation; shutdown deadlines are asserted separately.
+    private static readonly TimeSpan WorkerSchedulingTimeout = TimeSpan.FromSeconds(30);
+
     [Fact]
     public async Task EventBurstProducesOneAcceptedSummary()
     {
@@ -94,7 +97,7 @@ public sealed class VoxStellarPublisherTests
             }
         );
 
-        RecordedRequest request = await handler.Request.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        RecordedRequest request = await handler.Request.Task.WaitAsync(WorkerSchedulingTimeout);
         Assert.Equal(["Scan"], result.QueuedEventNames);
         Assert.Empty(result.Warnings);
         Assert.Equal(HttpMethod.Post, request.Method);
@@ -202,7 +205,7 @@ public sealed class VoxStellarPublisherTests
                 AllowPublishing = true,
             }
         );
-        await handler.FirstRequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await handler.FirstRequestStarted.Task.WaitAsync(WorkerSchedulingTimeout);
 
         publisher.SetEnabled(false);
         handler.ReleaseFirstRequest.TrySetResult();
@@ -332,12 +335,12 @@ public sealed class VoxStellarPublisherTests
         );
         Assert.Empty(handler.Requests);
         firstTimer.Fire();
-        string firstSummary = await summaries.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+        string firstSummary = await summaries.Reader.ReadAsync().AsTask().WaitAsync(WorkerSchedulingTimeout);
         Assert.Contains("100 accepted", firstSummary, StringComparison.Ordinal);
         Assert.Equal(100, handler.Requests.Count);
         ManualTimer secondTimer = await clock.NextTimerAsync();
         secondTimer.Fire();
-        string secondSummary = await summaries.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+        string secondSummary = await summaries.Reader.ReadAsync().AsTask().WaitAsync(WorkerSchedulingTimeout);
         Assert.Contains("5 accepted", secondSummary, StringComparison.Ordinal);
         Assert.Equal(105, handler.Requests.Count);
         RecordedRequest[] requests = handler.Requests.ToArray();
@@ -369,7 +372,7 @@ public sealed class VoxStellarPublisherTests
         );
         await publisher.ApplyAsync(CreateRequest(Enumerable.Repeat(Parse("""{"event":"Scan"}"""), 4).ToArray()));
         (await clock.NextTimerAsync()).Fire();
-        string message = await summary.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        string message = await summary.Task.WaitAsync(WorkerSchedulingTimeout);
         Assert.Equal(4, handler.CallCount);
         Assert.Contains("1 accepted, 2 rejected, 1 failed", message, StringComparison.Ordinal);
         Assert.Contains("HTTP 400: 2", message, StringComparison.Ordinal);
@@ -396,7 +399,7 @@ public sealed class VoxStellarPublisherTests
         publisher.SetEnabled(false);
         await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan","BodyID":2}""")]));
         timer.Fire();
-        Assert.Contains("1 accepted", await summary.Task.WaitAsync(TimeSpan.FromSeconds(2)), StringComparison.Ordinal);
+        Assert.Contains("1 accepted", await summary.Task.WaitAsync(WorkerSchedulingTimeout), StringComparison.Ordinal);
         using var body = JsonDocument.Parse(Assert.Single(handler.Requests).Body);
         Assert.Equal(2, body.RootElement.GetProperty("data").GetProperty("BodyID").GetInt32());
     }
@@ -441,7 +444,7 @@ public sealed class VoxStellarPublisherTests
             batchInterval: TimeSpan.Zero
         );
         await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}""")]));
-        _ = await handler.Request.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        _ = await handler.Request.Task.WaitAsync(WorkerSchedulingTimeout);
         publisher.Dispose();
         Assert.Single(handler.Requests);
     }
@@ -474,7 +477,7 @@ public sealed class VoxStellarPublisherTests
         using var client = new HttpClient(handler);
         using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client, batchInterval: TimeSpan.Zero);
         await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")]));
-        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await handler.Started.Task.WaitAsync(WorkerSchedulingTimeout);
         await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(5));
         Assert.True(handler.RequestCancellation.IsCancellationRequested);
         Assert.Equal(1, handler.CallCount);
@@ -510,7 +513,7 @@ public sealed class VoxStellarPublisherTests
                 CreateRequest([Parse("""{"event":"Scan"}"""), Parse("""{"event":"FSDJump"}""")])
             );
             (await clock.NextTimerAsync()).Fire();
-            await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(2));
+            await handler.Started.Task.WaitAsync(WorkerSchedulingTimeout);
             await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(10));
             Assert.True(handler.RequestCancellation.IsCancellationRequested);
             Assert.Equal(2, handler.CallCount);
@@ -614,7 +617,7 @@ public sealed class VoxStellarPublisherTests
         Assert.Single(fresh.QueuedEventNames);
         timer.Fire();
         Task winner = await Task.WhenAny(summary.Task, clock.SecondTimerCreated.Task)
-            .WaitAsync(TimeSpan.FromSeconds(2));
+            .WaitAsync(WorkerSchedulingTimeout);
         Assert.Same(summary.Task, winner);
         using var body = JsonDocument.Parse(Assert.Single(handler.Requests).Body);
         Assert.Equal(2, body.RootElement.GetProperty("data").GetProperty("BodyID").GetInt32());
@@ -667,8 +670,10 @@ public sealed class VoxStellarPublisherTests
             return timer;
         }
 
+        // This observes worker scheduling, not elapsed batching time. Instrumented CI can
+        // delay the worker; fake time still advances only when the test fires a timer.
         public Task<ManualTimer> NextTimerAsync() =>
-            timers.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(2));
+            timers.Reader.ReadAsync().AsTask().WaitAsync(WorkerSchedulingTimeout);
     }
 
     private sealed class ManualTimer(TimerCallback callback, object? state) : ITimer

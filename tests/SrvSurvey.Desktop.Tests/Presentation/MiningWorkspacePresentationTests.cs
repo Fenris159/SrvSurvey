@@ -578,7 +578,7 @@ public sealed class MiningWorkspacePresentationTests
             TabControl travel = ((Views.TravelView)window.Content).FindControl<TabControl>("TravelModeTabs")!;
             Assert.Equal("Distance", travel.Items.OfType<TabItem>().Last().Header);
             model.MiningWorkspace.Status = "Save failed: test status";
-            travel.SelectedIndex = 3;
+            travel.SelectedItem = travel.Items.OfType<TabItem>().Single(item => Equals(item.Header, "Distance"));
             using WriteableBitmap? distanceFrame = window.CaptureRenderedFrame();
             Assert.Contains(
                 ((Control)window.Content).GetVisualDescendants().OfType<TextBlock>(),

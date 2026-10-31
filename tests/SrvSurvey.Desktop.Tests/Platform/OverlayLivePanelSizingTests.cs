@@ -252,6 +252,7 @@ public sealed class OverlayLivePanelSizingTests
         ["PlotHumanSite"] = typeof(HumanSiteOverlayWindow),
         ["PlotJumpInfo"] = typeof(JumpInfoOverlayWindow),
         ["PlotFleetCarrierRoute"] = typeof(FleetCarrierRouteOverlayWindow),
+        ["PlotSquadronCarrierRoute"] = typeof(FleetCarrierRouteOverlayWindow),
         ["PlotRouteBio"] = typeof(RouteBioOverlayWindow),
         ["PlotMassacre"] = typeof(MassacreMissionsOverlayWindow),
         ["PlotMiniTrack"] = typeof(MiniTrackOverlayWindow),

@@ -80,21 +80,23 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public bool IsFleetCarrierManager => workspace.IsFleetCarrierWorkspace;
 
-    public string PanelTitle => IsFleetCarrierManager ? "FC Routes" : "Route Manager";
+    public string PanelTitle => IsFleetCarrierManager ? workspace.CarrierRouteLabel : "Route Manager";
 
     public string PanelDescription =>
-        IsFleetCarrierManager
-            ? "Open the FC route workspace and organize this commander's saved fleet-carrier routes."
-            : "Open the route workspace and organize this commander's saved route files.";
-
-    public string OpenWorkspaceLabel => IsFleetCarrierManager ? "Open FC Route Workspace" : "Open Route Workspace";
-
-    public string CurrentRouteLabel => IsFleetCarrierManager ? "CURRENT FC ROUTE" : "CURRENT ROUTE";
-
+        workspace.WorkspaceText(
+            "Open the route workspace and organize this commander's saved route files.",
+            "Open the FC route workspace and organize this commander's saved fleet-carrier routes.",
+            "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes."
+        );
+    public string OpenWorkspaceLabel =>
+        workspace.WorkspaceText("Open Route Workspace", "Open FC Route Workspace", "Open SC Route Workspace");
+    public string CurrentRouteLabel => workspace.WorkspaceText("CURRENT ROUTE", "Current FC route", "Current SC route");
     public string EmptyLibraryMessage =>
-        IsFleetCarrierManager
-            ? "Import a fleet-carrier route or create one in FC Route Workspace."
-            : "Import a JSON route or create one in Route Workspace.";
+        workspace.WorkspaceText(
+            "Import a JSON route or create one in Route Workspace.",
+            "Import a fleet-carrier route or create one in FC Route Workspace.",
+            "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes."
+        );
 
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
@@ -327,6 +329,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
                 imported++;
             }
 
+            await workspace.RefreshSharedCarrierCatalogAsync();
             await RefreshCoreAsync();
             StatusMessage = $"Imported {imported:N0} route file{(imported == 1 ? string.Empty : "s")}.";
         }
@@ -334,6 +337,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         {
             await RefreshCoreAsync();
             StatusMessage = "The route import could not be completed: " + exception.Message;
+            await workspace.RefreshSharedCarrierCatalogAsync();
         }
         finally
         {
@@ -554,7 +558,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             return;
         }
 
-        IReadOnlyList<FollowRouteCatalogEntry> entries = await routeService.ListAsync(frontierId);
+        string commander = frontierId;
+        IReadOnlyList<FollowRouteCatalogEntry> entries = await routeService.ListAsync(commander);
+        if (!string.Equals(commander, frontierId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
         var existing = Routes.ToDictionary(route => route.FilePath, PathComparer);
         var seen = new HashSet<string>(PathComparer);
         foreach (FollowRouteCatalogEntry entry in entries)
@@ -609,6 +618,8 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             );
             route.SetFavorite(saved.IsFavorite);
             workspace.ApplyExternalFavorite(route.FilePath, saved.IsFavorite);
+            workspace.ApplySharedCarrierFavorite(route.FilePath, saved.IsFavorite);
+            await workspace.RefreshSharedCarrierCatalogAsync();
             ReorderRoutes();
             StatusMessage = saved.IsFavorite
                 ? $"Added {route.Name} to favorites."
@@ -689,6 +700,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             route.SetNotes(saved.Notes);
             workspace.ApplyExternalNotes(route.FilePath, saved.Notes);
             await workspace.FlushWorkspaceAsync();
+            await workspace.ApplySharedCarrierNotesAsync(route.FilePath, saved.Notes);
             StatusMessage = $"Saved notes for {route.Name}.";
             CloseDialogs();
         }
@@ -729,6 +741,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             foreach (RouteManagerItemViewModel? route in selected)
             {
                 await routeService.DeleteNamedAsync(frontierId, route.FileName, route.IsLegacy);
+                await workspace.NotifySharedCarrierRouteDeletedAsync(route.FilePath);
             }
 
             if (deletedLoadedRoute)
@@ -851,7 +864,10 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         // Route-manager operations already reconcile their own results. Ignoring
         // a nested workspace notification prevents a second refresh from racing
         // the active file operation and rebuilding UI state out of order.
-        if (IsBusy)
+        if (
+            IsBusy
+            || !string.Equals(frontierId, workspace.CreateSnapshot()?.FrontierId, StringComparison.OrdinalIgnoreCase)
+        )
         {
             return;
         }

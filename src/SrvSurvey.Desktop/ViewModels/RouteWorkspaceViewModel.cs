@@ -128,6 +128,8 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         this.nameImporter = nameImporter ?? throw new ArgumentNullException(nameof(nameImporter));
         this.spanshClient = spanshClient ?? throw new ArgumentNullException(nameof(spanshClient));
         routeKind = options.Kind;
+        dedicatedCarrier = options.DedicatedCarrier;
+        selectedCarrierKind = dedicatedCarrier ?? FollowRouteCarrierKind.Personal;
         carrierSnapshotSource = options.CarrierSnapshotSource;
         refreshCarrierSnapshot = options.RefreshCarrierSnapshot;
         carrierNextJump = options.CarrierNextJump;
@@ -189,16 +191,30 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public bool IsFleetCarrierWorkspace => routeKind == FollowRouteKind.FleetCarrier;
 
-    public string WindowTitle => IsFleetCarrierWorkspace ? "FC Route Workspace" : "Route Workspace";
+    public bool IsSquadronCarrierWorkspace =>
+        IsFleetCarrierWorkspace && dedicatedCarrier == FollowRouteCarrierKind.Squadron;
 
-    public string WorkspaceEyebrow => IsFleetCarrierWorkspace ? "FLEET CARRIER ROUTE" : "FOLLOWED ROUTE";
+    public string CarrierRouteLabel => IsSquadronCarrierWorkspace ? "SC Routes" : "FC Routes";
 
-    public string WorkspaceHeading => IsFleetCarrierWorkspace ? "Fleet carrier itinerary" : "Navigation itinerary";
-
+    public string WindowTitle => WorkspaceText("Route Workspace", "FC Route Workspace", "SC Route Workspace");
+    public string WorkspaceEyebrow => WorkspaceText("FOLLOWED ROUTE", "FLEET CARRIER ROUTE", "SQUADRON CARRIER ROUTE");
+    public string WorkspaceHeading =>
+        WorkspaceText("Navigation itinerary", "Fleet carrier itinerary", "Squadron carrier itinerary");
     public string WorkspaceDescription =>
-        IsFleetCarrierWorkspace
-            ? "Import a fleet-carrier route, track each carrier jump, and keep the next destination ready."
-            : "Import a route, track each arrival, and keep the next system ready for the Galaxy Map.";
+        WorkspaceText(
+            "Import a route, track each arrival, and keep the next system ready for the Galaxy Map.",
+            "Import a fleet-carrier route, track each carrier jump, and keep the next destination ready.",
+            "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier."
+        );
+
+    internal string WorkspaceText(string standard, string fleetCarrier, string squadron)
+    {
+        if (!IsFleetCarrierWorkspace)
+        {
+            return standard;
+        }
+        return IsSquadronCarrierWorkspace ? squadron : fleetCarrier;
+    }
 
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
@@ -803,21 +819,25 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         loadedRoute = loadedRoute with { IsFavorite = isFavorite };
     }
 
-    public async Task HandleRouteRenamedAsync(FollowRouteRenameResult result)
+    public async Task HandleRouteRenamedAsync(FollowRouteRenameResult result, bool notifyPeer = true)
     {
         ArgumentNullException.ThrowIfNull(result);
-        if (IsLoadedSavedRoute(result.PreviousPath))
+        await workspaceSave;
+        if (IsLoadedSavedRoute(result.PreviousPath) && loadedRoute is { } current)
         {
-            loadedRoute = result.Route;
-            draftNotes = result.Route.Notes;
+            loadedRoute = current with { FilePath = result.Route.FilePath, Name = result.Route.Name };
             RaiseRouteMetadataProperties();
         }
 
-        await RefreshCatalogAsync();
+        await RefreshCatalogAsync(refreshPeer: false);
         if (IsLoadedSavedRoute(result.Route.FilePath))
         {
             SelectCatalogPath(result.Route.FilePath);
             await RetainWorkspaceAsync();
+        }
+        if (notifyPeer)
+        {
+            await NotifySharedCarrierRenameAsync(result);
         }
     }
 
@@ -1191,7 +1211,11 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task UpdateStatusAsync(EliteStatus nextStatus, string? nextMusicTrack = null)
+    public async Task UpdateStatusAsync(
+        EliteStatus nextStatus,
+        string? nextMusicTrack = null,
+        bool allowAutoCopy = true
+    )
     {
         ArgumentNullException.ThrowIfNull(nextStatus);
         bool wasGalaxyMapOpen = IsGalaxyMapOpen;
@@ -1206,7 +1230,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
 
         RaiseOverlayProperties();
-        if (enteredGalaxyMap && ShouldAutoCopyNextHop)
+        if (enteredGalaxyMap && ShouldAutoCopyNextHop && allowAutoCopy)
         {
             await CopyNextHopAsync();
         }
@@ -1326,13 +1350,13 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
 
         if (IsFleetCarrierWorkspace && reference.Kind != SpanshRouteKind.FleetCarrier)
         {
-            StatusMessage = "FC Routes accepts Spansh Fleet Carrier Router result URLs only.";
+            StatusMessage = $"{CarrierRouteLabel} accepts Spansh Fleet Carrier Router result URLs only.";
             return;
         }
 
         if (!IsFleetCarrierWorkspace && reference.Kind == SpanshRouteKind.FleetCarrier)
         {
-            StatusMessage = "Import Fleet Carrier Router results from the FC Routes tab.";
+            StatusMessage = "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.";
             return;
         }
 
@@ -1731,8 +1755,9 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             StatusMessage = HasSavedRoute
                 ? "Route notes saved."
                 : "Notes added to the draft. Use Save As... to keep them.";
-            if (HasSavedRoute)
+            if (HasSavedRoute && loadedRoute is { } saved)
             {
+                await ApplySharedCarrierNotesAsync(saved.FilePath, saved.Notes);
                 CatalogChanged?.Invoke(this, EventArgs.Empty);
             }
             await RetainWorkspaceAsync();
@@ -1759,7 +1784,9 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
+            string deletedPath = loadedRoute.FilePath;
             await routeService.DeleteAsync(loadedRoute);
+            await NotifySharedCarrierRouteDeletedAsync(deletedPath);
             HasSavedRoute = false;
             FollowRouteDocument route = await routeService.CreateNewAsync(frontierId);
             ApplyDocument(route);
@@ -2227,6 +2254,14 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         await OpenWorkspaceAsync();
     }
 
+    internal void SelectCarrierAutoCopyTarget()
+    {
+        if (IsFleetCarrierWorkspace && HasRoute && AutoCopy)
+        {
+            AutoCopySelected?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     private void ApplyImportedHops(IReadOnlyList<FollowRouteHop> importedHops, SpanshRouteKind? sourceKind = null)
     {
         if (loadedRoute is not null)
@@ -2281,7 +2316,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task RefreshCatalogAsync()
+    private async Task RefreshCatalogAsync(bool refreshPeer = true)
     {
         if (frontierId is null)
         {
@@ -2290,7 +2325,12 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
+        int revision = profileRevision;
         IReadOnlyList<FollowRouteCatalogEntry> entries = await routeService.ListAsync(frontierId);
+        if (revision != profileRevision)
+        {
+            return;
+        }
         SavedRoutes = entries
             .Select(entry => new SavedRouteItemViewModel(
                 entry.Name,
@@ -2310,6 +2350,10 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
 
         CatalogChanged?.Invoke(this, EventArgs.Empty);
+        if (refreshPeer && SharedCarrierWorkspace is { } peer)
+        {
+            await peer.RefreshCatalogAsync(refreshPeer: false);
+        }
     }
 
     private void SelectCatalogPath(string path)

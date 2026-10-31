@@ -238,6 +238,7 @@ public sealed class CarrierNextJumpTests
                 {
                     @event = "CarrierStats",
                     CarrierID = 1,
+                    CarrierType = "FleetCarrier",
                     Callsign = "OWN-001",
                     FuelLevel = 260,
                     SpaceUsage = new
@@ -463,6 +464,7 @@ public sealed class CarrierNextJumpTests
                     {
                         @event = "CarrierStats",
                         CarrierID = 1,
+                        CarrierType = "FleetCarrier",
                         Callsign = "OWN-001",
                         FuelLevel = fuel,
                         SpaceUsage = new

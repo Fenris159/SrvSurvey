@@ -14,6 +14,8 @@ public sealed class OverlaySettingsCategoryCatalogTests
                 OverlaySettingsCategory.Exploration,
                 OverlaySettingsCategory.Exobiology,
                 OverlaySettingsCategory.Travel,
+                OverlaySettingsCategory.FleetCarrierRoutes,
+                OverlaySettingsCategory.SquadronCarrierRoutes,
                 OverlaySettingsCategory.Boxel,
                 OverlaySettingsCategory.Mining,
                 OverlaySettingsCategory.MineMap,
@@ -29,6 +31,8 @@ public sealed class OverlaySettingsCategoryCatalogTests
                 "exploration",
                 "exobiology",
                 "travel",
+                "fc-routes",
+                "sc-routes",
                 "boxel",
                 "mining",
                 "mine-map",
@@ -39,12 +43,29 @@ public sealed class OverlaySettingsCategoryCatalogTests
             ],
             categories.Select(category => category.NavigationKey).ToArray()
         );
+        Assert.Equal(
+            [
+                "EXPLORATION",
+                "EXOBIOLOGY",
+                "TRAVEL",
+                "FLEET CARRIER",
+                "SQUADRON CARRIER",
+                "BOXEL",
+                "MINING",
+                "SURFACE MINING",
+                "GUARDIAN",
+                "QUESTS",
+                "COLONIZATION",
+                "FIREGROUPS",
+            ],
+            categories.Select(category => category.Eyebrow).ToArray()
+        );
         Assert.All(
             categories,
             definition =>
             {
                 Assert.False(string.IsNullOrWhiteSpace(definition.DisplayName));
-                Assert.Equal(definition.DisplayName.ToUpperInvariant(), definition.Eyebrow);
+                Assert.Equal(definition.Eyebrow.ToUpperInvariant(), definition.Eyebrow);
                 Assert.StartsWith("Configure ", definition.Description);
             }
         );

@@ -284,9 +284,9 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Star", "K | scoopable", glyph: "☀", glyphTone: OverlayPreviewGlyphTone.Gold),
                 Row("Traffic", "42 ships in 24 h")
             ),
-            "PlotFleetCarrierRoute" => Content(
+            "PlotFleetCarrierRoute" or "PlotSquadronCarrierRoute" => Content(
                 "Col 359 Sector EE-X b16-1",
-                "Fleet carrier route",
+                definition.Name == "PlotSquadronCarrierRoute" ? "Squadron carrier route" : "Fleet carrier route",
                 "HOP 2 / 46 | JUMP COOLDOWN 4:32",
                 Row("Jump", "499.76 LY | 21,502.09 LY remaining"),
                 Row("Tritium", "1,000 t fuel | 2,799 t market | 93 t jump"),

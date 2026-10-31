@@ -79,6 +79,7 @@ public enum GlobalInputAction
     PauseResumeMiningSession,
     EndMiningSession,
     ToggleMiningMissionsVisibility,
+    ToggleSquadronCarrierRouteVisibility,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -495,6 +496,12 @@ public static class GlobalInputActionCatalog
             "toggleFleetCarrierRouteVisibility",
             "Fleet carrier route",
             "PlotFleetCarrierRoute"
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleSquadronCarrierRouteVisibility,
+            "toggleSquadronCarrierRouteVisibility",
+            "Squadron carrier route",
+            "PlotSquadronCarrierRoute"
         ),
         DefineOverlayToggle(
             GlobalInputAction.ToggleRouteBodiesVisibility,

@@ -199,7 +199,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
             {
                 IsActive = false,
             };
-        await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+        await SaveTrackingAsync(updated, cancellationToken).ConfigureAwait(false);
         return updated;
     }
 
@@ -211,7 +211,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
     {
         ArgumentNullException.ThrowIfNull(route);
         FollowRouteDocument updated = route with { AutoCopy = autoCopy };
-        await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+        await SaveTrackingAsync(updated, cancellationToken).ConfigureAwait(false);
         return updated;
     }
 
@@ -223,7 +223,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
     {
         ArgumentNullException.ThrowIfNull(route);
         FollowRouteDocument updated = FollowRouteProgression.SetProgress(route, lastReachedIndex);
-        await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+        await SaveTrackingAsync(updated, cancellationToken).ConfigureAwait(false);
         return updated;
     }
 
@@ -301,10 +301,15 @@ public sealed class FollowRouteService(FollowRouteStore store)
         bool restarted = reachedIndex == route.Hops.Count - 1 && updated.IsActive;
         if (persist)
         {
-            await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+            await SaveTrackingAsync(updated, cancellationToken).ConfigureAwait(false);
         }
         return new FollowRouteArrivalResult(updated, true, reachedIndex, restarted);
     }
+
+    private Task SaveTrackingAsync(FollowRouteDocument route, CancellationToken cancellationToken) =>
+        store.HasDedicatedCarrierWorkspace
+            ? store.SaveProgressAsync(route, cancellationToken)
+            : store.SaveAsync(route, cancellationToken);
 
     private static FollowRouteDocument PrepareActivation(FollowRouteDocument route, long? currentSystemAddress)
     {

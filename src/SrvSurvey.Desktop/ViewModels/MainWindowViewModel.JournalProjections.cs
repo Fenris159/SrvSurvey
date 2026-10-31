@@ -35,6 +35,8 @@ public sealed partial class MainWindowViewModel
                     RouteManager = RouteManager,
                     FleetCarrierRoute = FleetCarrierRoute,
                     FleetCarrierRouteManager = FleetCarrierRouteManager,
+                    SquadronCarrierRoute = SquadronCarrierRoute,
+                    SquadronCarrierRouteManager = SquadronCarrierRouteManager,
                     JumpInfo = JumpInfo,
                     StationInfo = StationInfo,
                     HumanSite = HumanSite,

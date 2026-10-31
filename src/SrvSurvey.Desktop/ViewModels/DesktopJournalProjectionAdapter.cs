@@ -321,22 +321,37 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             );
         operations[JournalProjectionOperation.RouteManagerContext] = (_, _) =>
             dependencies.RouteManager.UpdateContextAsync(state.Session.FrontierId);
-        operations[JournalProjectionOperation.FleetCarrierRouteContext] = (_, _) =>
-            dependencies.FleetCarrierRoute.UpdateContextAsync(
+        operations[JournalProjectionOperation.FleetCarrierRouteContext] = async (_, _) =>
+        {
+            await dependencies.FleetCarrierRoute.UpdateContextAsync(
                 state.Session.FrontierId,
                 state.Session.SystemName,
                 state.Session.SystemAddress,
                 state.Session.StarPosition
             );
-        operations[JournalProjectionOperation.FleetCarrierManagerContext] = (_, _) =>
-            dependencies.FleetCarrierRouteManager.UpdateContextAsync(state.Session.FrontierId);
+            await dependencies.SquadronCarrierRoute.UpdateContextAsync(
+                state.Session.FrontierId,
+                state.Session.SystemName,
+                state.Session.SystemAddress,
+                state.Session.StarPosition
+            );
+        };
+        operations[JournalProjectionOperation.FleetCarrierManagerContext] = async (_, _) =>
+        {
+            await dependencies.FleetCarrierRouteManager.UpdateContextAsync(state.Session.FrontierId);
+            await dependencies.SquadronCarrierRouteManager.UpdateContextAsync(state.Session.FrontierId);
+        };
         operations[JournalProjectionOperation.RouteAutoCopy] = (_, _) =>
             dependencies.routeAutoCopyCoordinator.ReconcileAsync();
         operations[JournalProjectionOperation.RouteEvents] = (context, tick) => ApplyRouteJournalEventsAsync(context);
         operations[JournalProjectionOperation.FleetCarrierEvents] = (context, tick) =>
             ApplyFleetCarrierRouteJournalEventsAsync(context);
         operations[JournalProjectionOperation.FleetCarrierBootstrapEvents] = Sync(
-            (context, tick) => dependencies.FleetCarrierRoute.ApplyFleetCarrierJumpEvents(context.JournalEvents)
+            (context, tick) =>
+            {
+                dependencies.FleetCarrierRoute.ApplyFleetCarrierJumpEvents(context.JournalEvents);
+                dependencies.SquadronCarrierRoute.ApplyFleetCarrierJumpEvents(context.JournalEvents);
+            }
         );
         operations[JournalProjectionOperation.CarrierAnnouncements] = Sync(
             (context, tick) =>
@@ -358,7 +373,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                         ? account
                         : null,
                     dependencies.FleetCarrierRoute.CreateSnapshot(),
-                    new(tick.PreviousFrontierId, tick.PreviousCommanderName)
+                    new(tick.PreviousFrontierId, tick.PreviousCommanderName),
+                    dependencies.SquadronCarrierRoute.CreateSnapshot()
                 );
             }
         );
@@ -715,6 +731,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     private async Task ApplyFleetCarrierRouteJournalEventsAsync(JournalProjectionContext context)
     {
         await dependencies.FleetCarrierRoute.ApplyJournalEventsAsync(context.JournalEvents);
+        await dependencies.SquadronCarrierRoute.ApplyJournalEventsAsync(context.JournalEvents);
     }
 
     private async Task ApplyBoxelSearchRouteAsync(NavRouteSnapshot? navRoute)
@@ -785,11 +802,21 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         }
 
         await dependencies.Route.UpdateStatusAsync(state.LatestStatus, state.Session.MusicTrack);
-        await dependencies.FleetCarrierRoute.UpdateStatusAsync(state.LatestStatus, state.Session.MusicTrack);
+        await dependencies.FleetCarrierRoute.UpdateStatusAsync(
+            state.LatestStatus,
+            state.Session.MusicTrack,
+            dependencies.routeAutoCopyCoordinator.CanAutoCopyOnMapOpen(dependencies.FleetCarrierRoute)
+        );
+        await dependencies.SquadronCarrierRoute.UpdateStatusAsync(
+            state.LatestStatus,
+            state.Session.MusicTrack,
+            dependencies.routeAutoCopyCoordinator.CanAutoCopyOnMapOpen(dependencies.SquadronCarrierRoute)
+        );
         await dependencies.BoxelSearch.UpdateStatusAsync(
             state.LatestStatus,
             allowAutoCopy: !dependencies.Route.ShouldAutoCopyNextHop
-                && !dependencies.FleetCarrierRoute.ShouldAutoCopyNextHop,
+                && !dependencies.FleetCarrierRoute.ShouldAutoCopyNextHop
+                && !dependencies.SquadronCarrierRoute.ShouldAutoCopyNextHop,
             nextMusicTrack: state.Session.MusicTrack
         );
     }

@@ -11,7 +11,7 @@ namespace SrvSurvey.Core.Routes;
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The store is process-scoped and its semaphore may still have in-flight waiters."
 )]
-public sealed class FollowRouteStore
+public sealed partial class FollowRouteStore
 {
     private const string RouteFileExtension = ".json";
     private const string WorkspaceFileName = ".workspace.json";
@@ -33,12 +33,13 @@ public sealed class FollowRouteStore
 
     private readonly string dataDirectory;
     private readonly FollowRouteKind routeKind;
-    private readonly SemaphoreSlim saveLock = new(1, 1);
+    private readonly SemaphoreSlim saveLock;
 
     public FollowRouteStore(string dataDirectory, FollowRouteKind routeKind = FollowRouteKind.Standard)
     {
         this.dataDirectory = GetFullPath(dataDirectory);
         this.routeKind = routeKind;
+        saveLock = new(1, 1);
     }
 
     public async Task<FollowRouteLoadResult> LoadAsync(string frontierId, CancellationToken cancellationToken = default)
@@ -128,7 +129,13 @@ public sealed class FollowRouteStore
                 );
             }
 
-            return await LoadFromPathAsync(frontierId, selectedPath, cancellationToken).ConfigureAwait(false);
+            return await LoadCarrierWorkspaceRouteAsync(
+                    frontierId,
+                    selectedPath,
+                    selection.MigrateCarrierState,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
 
         string path = GetLegacyPaths(frontierId).FirstOrDefault(File.Exists) ?? GetPath(frontierId);
@@ -137,7 +144,7 @@ public sealed class FollowRouteStore
             return new FollowRouteLoadResult(path, false, CreateDefault(frontierId, path), null);
         }
 
-        return await LoadFromPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+        return await LoadCarrierWorkspaceRouteAsync(frontierId, path, false, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Persists the working itinerary separately from the commander's saved route library.</summary>
@@ -169,6 +176,10 @@ public sealed class FollowRouteStore
         try
         {
             await WriteObjectAsync(GetWorkspacePath(route.FrontierId), root, cancellationToken).ConfigureAwait(false);
+            if (carrierWorkspace is not null && hasSavedRoute)
+            {
+                await WriteCarrierProgressAsync(route, cancellationToken).ConfigureAwait(false);
+            }
         }
         finally
         {
@@ -249,7 +260,7 @@ public sealed class FollowRouteStore
     )
     {
         string path = ResolveCatalogPath(frontierId, fileName, isLegacy);
-        FollowRouteLoadResult result = await LoadFromPathAsync(frontierId, path, cancellationToken)
+        FollowRouteLoadResult result = await LoadCarrierWorkspaceRouteAsync(frontierId, path, false, cancellationToken)
             .ConfigureAwait(false);
         if (result.Exists && result.Route is not null)
         {
@@ -266,7 +277,7 @@ public sealed class FollowRouteStore
     {
         ArgumentNullException.ThrowIfNull(route);
         string path = ResolveWritablePath(route);
-        return LoadFromPathAsync(route.FrontierId, path, cancellationToken);
+        return LoadCarrierWorkspaceRouteAsync(route.FrontierId, path, false, cancellationToken);
     }
 
     public async Task<FollowRouteDocument> CreateNewAsync(
@@ -337,6 +348,11 @@ public sealed class FollowRouteStore
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            if (carrierWorkspace is not null)
+            {
+                await WriteCarrierProgressAsync(route, cancellationToken).ConfigureAwait(false);
+                return;
+            }
             JsonObject root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
             root["active"] = route.IsActive;
             root["autoCopy"] = route.AutoCopy;
@@ -606,6 +622,14 @@ public sealed class FollowRouteStore
                 }
             }
 
+            await SynchronizeCarrierLibraryEntryAsync(
+                    frontierId,
+                    fileName,
+                    Path.GetFileName(destination),
+                    normalizedName,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             WorkspaceSelectionReadResult selection = await ReadSelectionAsync(frontierId, cancellationToken)
                 .ConfigureAwait(false);
             if (selection.Error is not null)
@@ -676,6 +700,9 @@ public sealed class FollowRouteStore
             );
             File.Move(path, trashPath);
 
+            await SynchronizeCarrierLibraryEntryAsync(frontierId, fileName, null, null, cancellationToken)
+                .ConfigureAwait(false);
+
             WorkspaceSelectionReadResult selection = await ReadSelectionAsync(frontierId, cancellationToken)
                 .ConfigureAwait(false);
             if (
@@ -716,6 +743,14 @@ public sealed class FollowRouteStore
                     + $"{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}{RouteFileExtension}"
             );
             File.Move(path, trashPath);
+            await SynchronizeCarrierLibraryEntryAsync(
+                    route.FrontierId,
+                    Path.GetFileName(path),
+                    null,
+                    null,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             await WriteSelectionObjectAsync(route.FrontierId, fileName: null, isLegacy: false, cancellationToken)
                 .ConfigureAwait(false);
             return trashPath;
@@ -795,7 +830,7 @@ public sealed class FollowRouteStore
 
     private string GetWorkspacePath(string frontierId)
     {
-        return Path.Combine(GetNamedDirectory(frontierId), WorkspaceFileName);
+        return Path.Combine(GetWorkspaceDirectory(frontierId), WorkspaceFileName);
     }
 
     private IEnumerable<string> GetLegacyPaths(string frontierId)
@@ -962,6 +997,10 @@ public sealed class FollowRouteStore
 
         WriteRoute(root, route);
         await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
+        if (carrierWorkspace is not null)
+        {
+            await WriteCarrierProgressAsync(route, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>Writes route fields into either a saved document or a recoverable workspace snapshot.</summary>
@@ -1023,6 +1062,10 @@ public sealed class FollowRouteStore
         string path = GetWorkspacePath(frontierId);
         if (!File.Exists(path))
         {
+            if (carrierWorkspace is not null)
+            {
+                return await ReadLegacyCarrierSelectionAsync(frontierId, cancellationToken).ConfigureAwait(false);
+            }
             return new WorkspaceSelectionReadResult(false, null, false, null);
         }
 
@@ -1131,6 +1174,10 @@ public sealed class FollowRouteStore
             throw new ArgumentException("The route name must contain at least one file-safe character.", nameof(name));
         }
 
+        if (string.Equals(stem, ".workspace", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("This name is reserved for route workspace settings.", nameof(name));
+        }
         return stem + RouteFileExtension;
     }
 
@@ -1146,7 +1193,16 @@ public sealed class FollowRouteStore
 
     private FollowRouteDocument CreateDefault(string frontierId, string path)
     {
-        return new FollowRouteDocument(frontierId, path, true, true, -1, [], Kind: routeKind);
+        return new FollowRouteDocument(
+            frontierId,
+            path,
+            true,
+            true,
+            -1,
+            [],
+            Kind: routeKind,
+            CarrierKind: carrierWorkspace ?? FollowRouteCarrierKind.Personal
+        );
     }
 
     private FollowRouteDocument Parse(string frontierId, string path, JsonObject root)
@@ -1200,9 +1256,7 @@ public sealed class FollowRouteStore
             parsedKind == FollowRouteKind.FleetCarrier && GetBoolean(root, "restockOnlyWhenLow") == true,
             ParseRepeatMode(path, GetString(root, "repeatMode")),
             GetBoolean(root, "reversed") ?? false,
-            parsedKind == FollowRouteKind.FleetCarrier
-                ? ParseCarrierKind(path, GetString(root, "carrierKind"))
-                : FollowRouteCarrierKind.Personal
+            ParseWorkspaceCarrierKind(path, root, parsedKind)
         );
     }
 
@@ -1789,6 +1843,7 @@ public sealed class FollowRouteStore
         string? FileName,
         bool IsLegacy,
         string? Error,
-        JsonObject? Draft = null
+        JsonObject? Draft = null,
+        bool MigrateCarrierState = false
     );
 }

@@ -173,7 +173,8 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
         bool allowPublishing,
         FrontierAccountSnapshot? account = null,
         FollowRouteDocument? route = null,
-        CarrierJournalIdentity? initialIdentity = null
+        CarrierJournalIdentity? initialIdentity = null,
+        FollowRouteDocument? squadronRoute = null
     )
     {
         if (disposed || !networkAllowed())
@@ -186,7 +187,10 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
             {
                 continue;
             }
-            CarrierJumpAnnouncement message = WithRoute(announcement, route);
+            CarrierJumpAnnouncement message = WithRoute(
+                announcement,
+                announcement.CarrierKind == FollowRouteCarrierKind.Squadron ? squadronRoute ?? route : route
+            );
             var complete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             if (!queue.Writer.TryWrite(new Delivery(message, saved, Volatile.Read(ref revision), complete)))
             {

@@ -39,6 +39,7 @@ public sealed partial class OverlayCoverageInventoryTests
         ["PlotHumanSite"] = "HumanSiteOverlayWindow.axaml",
         ["PlotJumpInfo"] = "JumpInfoOverlayWindow.axaml",
         ["PlotFleetCarrierRoute"] = "FleetCarrierRouteOverlayWindow.axaml",
+        ["PlotSquadronCarrierRoute"] = "FleetCarrierRouteOverlayWindow.axaml",
         ["PlotRouteBio"] = "RouteBioOverlayWindow.axaml",
         ["PlotMassacre"] = "MassacreMissionsOverlayWindow.axaml",
         ["PlotMiniTrack"] = "MiniTrackOverlayWindow.axaml",
@@ -206,6 +207,11 @@ public sealed partial class OverlayCoverageInventoryTests
                 "tests/SrvSurvey.Desktop.Tests/ViewModels/FleetCarrierRouteOverlayViewModelTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/ViewModels/FleetCarrierJumpCountdownTrackerTests.cs",
             ]
+        ),
+        Map(
+            "PlotSquadronCarrierRoute",
+            ["src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml"],
+            ["tests/SrvSurvey.Desktop.Tests/Presentation/SquadronCarrierRoutesPresentationTests.cs"]
         ),
         Map(
             "PlotRouteBio",
@@ -383,7 +389,7 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(43, Mappings.Length);
+        Assert.Equal(44, Mappings.Length);
         Assert.Equal(Mappings.Length, Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
     }
 

@@ -35,6 +35,7 @@ public sealed class RouteWindowCoordinator : IDisposable
         viewModel.DismissDialogs();
         await viewModel.RefreshAsync();
         var routeWindow = new RouteWindow(viewModel);
+        routeWindow.Activated += OnWindowActivated;
         routeWindow.Closed += OnWindowClosed;
         window = routeWindow;
         routeWindow.Show(owner);
@@ -55,6 +56,7 @@ public sealed class RouteWindowCoordinator : IDisposable
         if (routeWindow is not null)
         {
             routeWindow.Closed -= OnWindowClosed;
+            routeWindow.Activated -= OnWindowActivated;
             routeWindow.Close();
         }
     }
@@ -64,10 +66,13 @@ public sealed class RouteWindowCoordinator : IDisposable
         if (sender is RouteWindow routeWindow)
         {
             routeWindow.Closed -= OnWindowClosed;
+            routeWindow.Activated -= OnWindowActivated;
             if (ReferenceEquals(window, routeWindow))
             {
                 window = null;
             }
         }
     }
+
+    private void OnWindowActivated(object? sender, EventArgs eventArgs) => viewModel.SelectCarrierAutoCopyTarget();
 }

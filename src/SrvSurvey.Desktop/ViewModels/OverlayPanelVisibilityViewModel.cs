@@ -45,6 +45,9 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>Publishes the new availability after the live registry and persistence have been updated.</summary>
+    internal event Action<OverlayPanelVisibilityEntryViewModel>? AvailabilityChanged;
+
     public string PersistenceStatus
     {
         get => persistenceStatus;
@@ -62,6 +65,8 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
     }
 
     public bool HasPersistenceStatus => PersistenceStatus.Length > 0;
+
+    internal bool HasSavedVisibility(string plotterName) => store.HasSavedVisibility(plotterName);
 
     public IReadOnlyList<OverlayPanelVisibilityEntryViewModel> ForCategory(OverlaySettingsCategory category)
     {
@@ -112,6 +117,7 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
             PersistenceStatus =
                 "Panel availability changed for this session but could not be saved: " + exception.Message;
         }
+        AvailabilityChanged?.Invoke(changed);
     }
 }
 

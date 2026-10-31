@@ -11,7 +11,7 @@ public sealed class OverlayPositionEditSessionTests
     public void CatalogGroupsEveryPositionableOverlayExactlyOnce()
     {
         Assert.Equal(8, OverlayLayoutCatalog.Categories.Count);
-        Assert.Equal(41, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(42, OverlayLayoutCatalog.Supported.Count);
         Assert.Equal(
             OverlayLayoutCatalog.Supported.Count,
             OverlayLayoutCatalog

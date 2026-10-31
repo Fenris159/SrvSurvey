@@ -12,6 +12,95 @@ public sealed class SurfaceMiningSearchViewModelTests
 {
     private const string Material = "Diamond";
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedSurfaceSearchSurvivesSystemJump(bool forceIncludeReference)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-surface-jump-" + Guid.NewGuid());
+        try
+        {
+            using var handler = new SurfaceHandler { Mode = "force-reference" };
+            using SurfaceMiningSearchViewModel model = Create(handler);
+            model.ConfigureCache(new MiningSearchResultCache(directory));
+            model.UpdateCurrentLocation("Sol");
+            model.ForceIncludeReference = forceIncludeReference;
+            model.Materials.Add(Material);
+            await model.SearchAsync();
+
+            SurfaceSellRowViewModel result = Assert.Single(model.Rows);
+            string status = model.Status;
+            int requests = handler.Requests;
+            model.UpdateCurrentLocation("Wille");
+
+            Assert.Same(result, Assert.Single(model.Rows));
+            Assert.Equal("Sol", model.Reference);
+            Assert.Equal(status, model.Status);
+            Assert.Equal(requests, handler.Requests);
+
+            model.Reset();
+            Assert.Empty(model.Rows);
+            Assert.Equal("Wille", model.Reference);
+            model.UpdateCurrentLocation("Lave");
+            Assert.Equal("Lave", model.Reference);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SystemJumpDuringSurfaceSearchKeepsItsOriginalCacheIdentity()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-surface-jump-" + Guid.NewGuid());
+        try
+        {
+            using var handler = new SurfaceHandler { Mode = "force-reference" };
+            using SurfaceMiningSearchViewModel model = Create(handler);
+            var cache = new MiningSearchResultCache(directory);
+            model.ConfigureCache(cache);
+            model.UpdateCurrentLocation("Sol");
+            model.ForceIncludeReference = true;
+            model.Materials.Add(Material);
+            bool jumped = false;
+            model.PropertyChanged += (_, args) =>
+            {
+                if (!jumped && args.PropertyName == nameof(model.Rows) && model.HasRows)
+                {
+                    Assert.True(model.IsBusy);
+                    jumped = true;
+                    model.UpdateCurrentLocation("Wille");
+                }
+            };
+
+            await model.SearchAsync();
+
+            Assert.True(jumped);
+            Assert.Equal("Sol", model.Reference);
+            Assert.Equal("Sol", Assert.Single(model.Rows).Target);
+            Assert.Equal(
+                "Sol",
+                Assert
+                    .IsType<SurfaceMiningSearchSnapshot>(cache.LoadLast<SurfaceMiningSearchSnapshot>("surface"))
+                    .Reference
+            );
+            model.UpdateCurrentLocation("Lave");
+            Assert.Single(model.Rows);
+            Assert.Equal("Sol", model.Reference);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
     [Fact]
     public async Task CompletedSearchAndDisplayPreferenceReturnWithoutProviderRequests()
     {

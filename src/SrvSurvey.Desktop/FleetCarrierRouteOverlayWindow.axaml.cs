@@ -16,6 +16,7 @@ public sealed partial class FleetCarrierRouteOverlayWindow : Window
         ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();
         DataContext = viewModel;
+        Title = viewModel.WindowTitle;
     }
 
     private static FleetCarrierRouteOverlayViewModel CreateDesignViewModel()

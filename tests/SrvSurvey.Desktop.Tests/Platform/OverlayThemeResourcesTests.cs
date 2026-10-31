@@ -51,15 +51,15 @@ public sealed class OverlayThemeResourcesTests
                 Brushes = OverlayTypographyBrushes.Default.With(role, brushKey),
             };
             OverlayTypographyResources.Apply(root, scale);
-            Assert.Equal(Colors.Red, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Red, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
             Assert.Equal(17, text.FontSize);
             window.Resources[$"LegacyTheme.{brushKey}"] = Brushes.Green;
             OverlayTypographyResources.Apply(root, scale);
-            Assert.Equal(Colors.Green, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Green, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
             OverlayTypographyResources.Apply(root, scale with { Brushes = scale.Brushes.With(role, "unknown") });
-            Assert.Equal(Colors.Blue, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Blue, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
             OverlayTypographyResources.Apply(root, OverlayTypographyScale.Default);
-            Assert.Equal(Colors.Blue, Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color);
+            Assert.Equal(Colors.Blue, Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color);
         }
         finally
         {
@@ -101,11 +101,12 @@ public sealed class OverlayThemeResourcesTests
         ["PlotHumanSite"] = "HumanSite.AutoShow",
         ["PlotJumpInfo"] = "JumpInfo.AutoShow",
         ["PlotFleetCarrierRoute"] = "FleetCarrierRoute.IsActive",
+        ["PlotSquadronCarrierRoute"] = "SquadronCarrierRoute.IsActive",
         ["PlotRouteBio"] = "Route.IsActive",
         ["PlotMassacre"] = "Combat.AutoShowMassacreMissions",
         ["PlotMiniTrack"] = "SystemSurvey.AutoShowMiniTrack",
         ["PlotMultiGameCommander"] = "OverlayBehavior.HideMultiGameCommanderOverlay",
-        ["PlotPriorScans"] = "SystemSurvey.AutoShowPriorScans",
+        ["PlotPriorScans"] = "SystemSurvey.ShowCanonnSignalsOnRadar",
         ["PlotPulse"] = "PulseOverlay.Enabled",
         ["PlotQuestMini"] = "QuestWorkspace.IsEnabled",
         ["PlotRamTah"] = "Guardian.AutoShowRamTah",
@@ -589,7 +590,7 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(41, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(42, OverlayLayoutCatalog.Supported.Count);
         Assert.All(
             OverlayLayoutCatalog.Supported,
             definition =>

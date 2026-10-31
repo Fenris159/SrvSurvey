@@ -11,6 +11,7 @@ public sealed partial class MainWindowViewModel
         GalaxyMap.ApplyPoiCatalog(ExplorationPois.Catalog);
         Route.ApplyPoiCatalog(ExplorationPois.Catalog);
         FleetCarrierRoute.ApplyPoiCatalog(ExplorationPois.Catalog);
+        SquadronCarrierRoute.ApplyPoiCatalog(ExplorationPois.Catalog);
     }
 
     /// <summary>Propagates external-data consent to catalogue browsing and selected-image loading.</summary>

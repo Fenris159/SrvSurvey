@@ -321,9 +321,24 @@ public static class OverlayLayoutCatalog
             "Fleet carrier route",
             "FleetCarrierRoute.IsActive",
             OverlayLayoutCategory.ExplorationAndNavigation,
-            OverlaySettingsCategory.Travel,
+            new OverlayLayoutSettingsCategories(
+                OverlaySettingsCategory.Travel,
+                [OverlaySettingsCategory.FleetCarrierRoutes]
+            ),
             new(260, 400),
             new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)
+        ),
+        Define(
+            "PlotSquadronCarrierRoute",
+            "Squadron carrier route",
+            "SquadronCarrierRoute.IsActive",
+            OverlayLayoutCategory.ExplorationAndNavigation,
+            new OverlayLayoutSettingsCategories(
+                OverlaySettingsCategory.SquadronCarrierRoutes,
+                [OverlaySettingsCategory.Travel]
+            ),
+            new(260, 400),
+            new(LegacyHorizontalAnchor.Right, 284, LegacyVerticalAnchor.Top, 8)
         ),
         Define(
             "PlotRouteBio",
@@ -364,7 +379,7 @@ public static class OverlayLayoutCatalog
         Define(
             "PlotPriorScans",
             "Prior scans",
-            "SystemSurvey.AutoShowPriorScans",
+            "SystemSurvey.ShowCanonnSignalsOnRadar",
             OverlayLayoutCategory.BiologyAndSurface,
             OverlaySettingsCategory.Exobiology,
             new(308, 300),

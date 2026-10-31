@@ -6,7 +6,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class RouteAutoCopyCoordinator : IDisposable
 {
     private readonly RouteWorkspaceViewModel standardRoute;
-    private readonly RouteWorkspaceViewModel fleetCarrierRoute;
+    private readonly IReadOnlyList<RouteWorkspaceViewModel> carrierRoutes;
+    private RouteWorkspaceViewModel? preferredCarrier;
     private readonly IBoxelSearchSession boxel;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -21,21 +22,25 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     public RouteAutoCopyCoordinator(
         RouteWorkspaceViewModel standardRoute,
         RouteWorkspaceViewModel fleetCarrierRoute,
-        IBoxelSearchSession boxel
+        IBoxelSearchSession boxel,
+        RouteWorkspaceViewModel? squadronCarrierRoute = null
     )
     {
         this.standardRoute = standardRoute;
-        this.fleetCarrierRoute = fleetCarrierRoute;
+        carrierRoutes = squadronCarrierRoute is null ? [fleetCarrierRoute] : [fleetCarrierRoute, squadronCarrierRoute];
         this.boxel = boxel;
         standardRoute.AutoCopySelected += OnRouteAutoCopySelected;
-        fleetCarrierRoute.AutoCopySelected += OnRouteAutoCopySelected;
+        foreach (RouteWorkspaceViewModel carrier in carrierRoutes)
+        {
+            carrier.AutoCopySelected += OnRouteAutoCopySelected;
+        }
         boxel.Changed += OnBoxelChanged;
     }
 
     public Task ClaimAsync(RouteWorkspaceViewModel source)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        if (!ReferenceEquals(source, standardRoute) && !ReferenceEquals(source, fleetCarrierRoute))
+        if (!ReferenceEquals(source, standardRoute) && !carrierRoutes.Contains(source))
         {
             throw new ArgumentException("The route workspace is not managed by this coordinator.", nameof(source));
         }
@@ -69,9 +74,13 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
             return;
         }
 
-        if (CanOwnAutoCopy(fleetCarrierRoute))
+        RouteWorkspaceViewModel? carrier =
+            preferredCarrier is not null && CanOwnAutoCopy(preferredCarrier)
+                ? preferredCarrier
+                : carrierRoutes.FirstOrDefault(CanOwnAutoCopy);
+        if (carrier is not null)
         {
-            await ClaimAsync(fleetCarrierRoute);
+            await ClaimAsync(carrier);
             return;
         }
 
@@ -79,25 +88,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         await ownershipGate.WaitAsync();
         try
         {
-            if (version != Volatile.Read(ref claimVersion))
-            {
-                return;
-            }
-
-            if (standardRoute.AutoCopy)
-            {
-                await standardRoute.DisableAutoCopyForCompetingRouteAsync();
-            }
-
-            if (version != Volatile.Read(ref claimVersion))
-            {
-                return;
-            }
-
-            if (fleetCarrierRoute.AutoCopy)
-            {
-                await fleetCarrierRoute.DisableAutoCopyForCompetingRouteAsync();
-            }
+            await DisableRoutesAsync([standardRoute, .. carrierRoutes], version);
         }
         finally
         {
@@ -114,9 +105,25 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
 
         disposed = true;
         standardRoute.AutoCopySelected -= OnRouteAutoCopySelected;
-        fleetCarrierRoute.AutoCopySelected -= OnRouteAutoCopySelected;
+        foreach (RouteWorkspaceViewModel carrier in carrierRoutes)
+        {
+            carrier.AutoCopySelected -= OnRouteAutoCopySelected;
+        }
         boxel.Changed -= OnBoxelChanged;
     }
+
+    /// <summary>One map opening writes one destination even when both carrier auto-copy settings are enabled.</summary>
+    public bool CanAutoCopyOnMapOpen(RouteWorkspaceViewModel route) =>
+        route.ShouldAutoCopyNextHop
+        && (
+            ReferenceEquals(route, standardRoute)
+            || ReferenceEquals(
+                route,
+                preferredCarrier is { ShouldAutoCopyNextHop: true }
+                    ? preferredCarrier
+                    : carrierRoutes.FirstOrDefault(carrier => carrier.ShouldAutoCopyNextHop)
+            )
+        );
 
     private async Task ClaimRouteAsync(RouteWorkspaceViewModel source, long version)
     {
@@ -133,12 +140,15 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
                 return;
             }
 
-            RouteWorkspaceViewModel other = ReferenceEquals(source, standardRoute) ? fleetCarrierRoute : standardRoute;
-            if (other.AutoCopy)
+            if (carrierRoutes.Contains(source))
             {
-                await other.DisableAutoCopyForCompetingRouteAsync();
+                preferredCarrier = source;
             }
 
+            IEnumerable<RouteWorkspaceViewModel> competingRoutes = ReferenceEquals(source, standardRoute)
+                ? carrierRoutes
+                : [standardRoute];
+            await DisableRoutesAsync(competingRoutes, version);
             if (version != Volatile.Read(ref claimVersion))
             {
                 return;
@@ -170,24 +180,26 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
                 return;
             }
 
-            if (standardRoute.AutoCopy)
-            {
-                await standardRoute.DisableAutoCopyForCompetingRouteAsync();
-            }
-
-            if (version != Volatile.Read(ref claimVersion))
-            {
-                return;
-            }
-
-            if (fleetCarrierRoute.AutoCopy)
-            {
-                await fleetCarrierRoute.DisableAutoCopyForCompetingRouteAsync();
-            }
+            await DisableRoutesAsync([standardRoute, .. carrierRoutes], version);
         }
         finally
         {
             ownershipGate.Release();
+        }
+    }
+
+    private async Task DisableRoutesAsync(IEnumerable<RouteWorkspaceViewModel> routes, long version)
+    {
+        foreach (RouteWorkspaceViewModel route in routes)
+        {
+            if (version != Volatile.Read(ref claimVersion))
+            {
+                return;
+            }
+            if (route.AutoCopy)
+            {
+                await route.DisableAutoCopyForCompetingRouteAsync();
+            }
         }
     }
 

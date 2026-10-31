@@ -523,7 +523,8 @@ internal static class OverlayEditorPreviewFactories
     /// Creates representative carrier logistics, jump timing and ETR for the overlay editor.
     /// </summary>
     public static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoute(
-        FleetCarrierRouteEditorPreviewState state = FleetCarrierRouteEditorPreviewState.Cooldown
+        FleetCarrierRouteEditorPreviewState state = FleetCarrierRouteEditorPreviewState.Cooldown,
+        bool squadron = false
     )
     {
         string temporaryDirectory = SettingsDir("fc-route");
@@ -532,7 +533,10 @@ internal static class OverlayEditorPreviewFactories
                 new FollowRouteService(new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier)),
                 new RouteNameImporter(new EmptySystemResolver()),
                 new EmptySpanshRouteClient(),
-                FollowRouteKind.FleetCarrier
+                new RouteWorkspaceOptions(
+                    FollowRouteKind.FleetCarrier,
+                    DedicatedCarrier: squadron ? FollowRouteCarrierKind.Squadron : FollowRouteCarrierKind.Personal
+                )
             ),
             Caps()
         );

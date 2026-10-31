@@ -7,6 +7,135 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class MiningSearchViewModelTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PowerplaySearchSurvivesSystemJumpBeforeAndAfterCompletion(
+        bool forceIncludeReference,
+        bool duringSearch
+    )
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-powerplay-jump-" + Guid.NewGuid());
+        try
+        {
+            var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var released = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var handler = new AcquisitionRangeHandler
+            {
+                HasSpanshMarket = true,
+                HasCommodityReport = true,
+                SearchEntered = duringSearch ? entered : null,
+                SearchReleased = duringSearch ? released : null,
+            };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(new HttpClient(handler)),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [],
+                new Resolver()
+            )
+            {
+                PledgedPower = "Archon Delaine",
+                Objective = "Acquire",
+                Mineral = "Any",
+                ForceIncludeReference = forceIncludeReference,
+            };
+            var cache = new MiningSearchResultCache(directory);
+            model.ConfigureResultCache(cache);
+            model.UpdateCurrentLocation("Sol");
+            string key = model.PowerplayCacheKey();
+            Task search = model.SearchSystemsAsync();
+            if (duringSearch)
+            {
+                await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                model.UpdateCurrentLocation("Wille");
+                string reference = model.Reference;
+                released.TrySetResult();
+                Assert.Equal("Sol", reference);
+            }
+            await search;
+            Assert.Equal(key, model.PowerplayCacheKey());
+            Assert.True(cache.Load<PowerplaySearchSnapshot>("powerplay", key) is not null, model.Status);
+
+            AcquireResultRowViewModel result = Assert.Single(model.AcquireRows);
+            string status = model.Status;
+            model.UpdateCurrentLocation("Wille");
+
+            Assert.Same(result, Assert.Single(model.AcquireRows));
+            Assert.Equal("Sol", model.Reference);
+            Assert.Equal(status, model.Status);
+
+            model.Security = "High";
+            Assert.Empty(model.AcquireRows);
+            model.Security = "";
+            Assert.Equal(key, model.PowerplayCacheKey());
+            Assert.Equal(result.Target, Assert.Single(model.AcquireRows).Target);
+            Assert.Equal("Sol", model.Reference);
+
+            model.ResetPowerplay();
+            Assert.Empty(model.AcquireRows);
+            Assert.Equal("Wille", model.Reference);
+            model.UpdateCurrentLocation("Lave");
+            Assert.Equal("Lave", model.Reference);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedPlanetaryPowerplaySearchSurvivesSystemJump(bool forceIncludeReference)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srv-powerplay-jump-" + Guid.NewGuid());
+        try
+        {
+            using var handler = new PlanetaryFilterHandler { MultipleSellSystems = true };
+            using var model = new MiningSearchViewModel(
+                new MiningSearchClient(new HttpClient(handler)),
+                new BookmarksViewModel(directory),
+                _ => { },
+                () => [],
+                new Resolver()
+            )
+            {
+                PledgedPower = "Aisling Duval",
+                Objective = "Reinforce",
+                ForceIncludeReference = forceIncludeReference,
+            };
+            model.ConfigureResultCache(new MiningSearchResultCache(directory));
+            model.UpdateCurrentLocation("Sol");
+            model.MiningTypeChips.Add(PlanetaryMiningPlan.MiningType);
+            model.MineralChips.Add("Monazite");
+            await model.SearchSystemsAsync();
+
+            SurfaceSellRowViewModel result = Assert.Single(model.PlanetarySearch.Rows);
+            string status = model.Status;
+            int bodyRequests = handler.BodyReferences.Count;
+            model.UpdateCurrentLocation("Wille");
+
+            Assert.Same(result, Assert.Single(model.PlanetarySearch.Rows));
+            Assert.Equal("Sol", model.Reference);
+            Assert.Equal("Sol", model.PlanetarySearch.Reference);
+            Assert.Equal(status, model.Status);
+            Assert.Equal(bodyRequests, handler.BodyReferences.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
     [Fact]
     public void PowerplaySearchRowsReturnFromDiskWithoutAProviderRequest()
     {
@@ -1816,7 +1945,10 @@ public sealed class MiningSearchViewModelTests
 
     private sealed class AcquisitionRangeHandler(bool failBodies = false) : HttpMessageHandler
     {
+        public TaskCompletionSource? SearchEntered { get; init; }
+        public TaskCompletionSource? SearchReleased { get; init; }
         public bool HasSpanshMarket { get; init; }
+        public bool HasCommodityReport { get; init; }
         public bool SecondTargetHasMarket { get; init; }
         public bool FourCandidates { get; init; }
         public bool SpanshMarketRequested { get; private set; }
@@ -1831,9 +1963,21 @@ public sealed class MiningSearchViewModelTests
             CancellationToken cancellationToken
         )
         {
+            if (SearchReleased is { } released)
+            {
+                SearchEntered?.TrySetResult();
+                await released.Task.WaitAsync(cancellationToken);
+            }
             if (request.Content is null)
             {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("[]") };
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        HasCommodityReport
+                            ? """[{"commodityName":"Monazite","avgSellPrice":100000,"maxSellPrice":600000}]"""
+                            : "[]"
+                    ),
+                };
             }
 
             if (failBodies && request.RequestUri!.AbsolutePath.EndsWith("/bodies/search", StringComparison.Ordinal))

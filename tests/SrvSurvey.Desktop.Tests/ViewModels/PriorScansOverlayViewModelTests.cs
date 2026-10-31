@@ -101,7 +101,7 @@ public sealed partial class PriorScansOverlayViewModelTests : IDisposable
         using PriorScansOverlayViewModel viewModel = CreateViewModel(survey, client);
 
         await viewModel.RefreshAsync();
-        Assert.True(viewModel.ShowRadar);
+        Assert.True(viewModel.ShouldShow);
         Assert.True(viewModel.UseSmallRadarCircles);
 
         survey.SkipPriorScansLowValue = true;
@@ -113,7 +113,7 @@ public sealed partial class PriorScansOverlayViewModelTests : IDisposable
         survey.ShowCanonnSignalsOnRadar = false;
         survey.UseSmallCanonnRadarCircles = false;
         Assert.Single(viewModel.Species);
-        Assert.False(viewModel.ShowRadar);
+        Assert.False(viewModel.ShouldShow);
         Assert.False(viewModel.UseSmallRadarCircles);
     }
 

@@ -48,7 +48,9 @@
                     HorizontalAlignment="Stretch"
                     ItemsSource="{Binding CarrierOptions}"
                     SelectedItem="{Binding SelectedCarrier, Mode=TwoWay}"
+                    IsVisible="{Binding CanSelectCarrier}"
                     IsEnabled="{Binding !IsBusy}" />
+          <TextBlock Grid.Column="1" IsVisible="{Binding !CanSelectCarrier}" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding CarrierIdentityLabel}" />
           <TextBlock x:Name="CarrierFuelSummaryReadout" Grid.Column="2" Classes="muted" VerticalAlignment="Center" Text="{Binding CarrierFuelSummary}" TextWrapping="Wrap" />
         </Grid>
       </Grid>

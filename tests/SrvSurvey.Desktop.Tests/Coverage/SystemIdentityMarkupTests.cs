@@ -78,6 +78,7 @@ public sealed class SystemIdentityMarkupTests
             Load("Views", "SearchView.axaml"),
             Load("Views", "GuardianView.axaml"),
             Load("Views", "TravelView.axaml"),
+            Load("Views", "CarrierRoutesView.axaml"),
             Load("Views", "ColonizationView.axaml"),
             Load("Views", "ExobiologyView.axaml"),
             Load("Views", "JourneysView.axaml"),
@@ -130,6 +131,7 @@ public sealed class SystemIdentityMarkupTests
         {
             Load("Views", "SearchView.axaml"),
             Load("Views", "TravelView.axaml"),
+            Load("Views", "CarrierRoutesView.axaml"),
             Load("Views", "BoxelView.axaml"),
             Load(null, "RouteWindow.axaml"),
         }
@@ -148,7 +150,7 @@ public sealed class SystemIdentityMarkupTests
         );
         Assert.Contains("{Binding Search.CenterSystemAddress}", values);
         Assert.Contains("{Binding Route.NextHopSystemAddress}", values);
-        Assert.Contains("{Binding FleetCarrierRoute.NextHopSystemAddress}", values);
+        Assert.Contains("{Binding Workspace.NextHopSystemAddress}", values);
     }
 
     [Fact]

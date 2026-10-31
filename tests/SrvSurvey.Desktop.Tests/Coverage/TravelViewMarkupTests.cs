@@ -11,7 +11,7 @@ public sealed class TravelViewMarkupTests
         XElement[] tabs = document.Descendants().Where(element => element.Name.LocalName == "TabItem").ToArray();
 
         Assert.Equal(
-            ["Route Manager", "Surface Navigation", "FC Routes", "Distance"],
+            ["Route Manager", "Surface Navigation", "FC Routes", "SC Routes", "Distance"],
             tabs.Select(tab => tab.Attribute("Header")?.Value ?? string.Empty).ToArray()
         );
         Assert.All(
@@ -178,63 +178,74 @@ public sealed class TravelViewMarkupTests
     /// <summary>
     /// Checks that fleet carrier tab uses independent manager workspace and file actions.
     /// </summary>
-    [Fact]
-    public void FleetCarrierTabUsesIndependentManagerWorkspaceAndFileActions()
+    [Theory]
+    [InlineData("FC Routes", "FleetCarrierRouteManager")]
+    [InlineData("SC Routes", "SquadronCarrierRouteManager")]
+    public void CarrierTabsUseIndependentManagersAndSharedWorkspacePresentation(string header, string manager)
     {
         XDocument document = LoadTravelView();
         XElement tab = document
             .Descendants()
-            .Single(element =>
-                element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == "FC Routes"
-            );
-        string[] bindings = tab.Descendants()
+            .Single(element => element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == header);
+        XElement content = Assert.Single(tab.Elements());
+        Assert.Equal("CarrierRoutesView", content.Name.LocalName);
+        Assert.Equal("{Binding " + manager + "}", content.Attribute("DataContext")?.Value);
+        document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "CarrierRoutesView.axaml")
+        );
+        XElement panel = document.Root!;
+        string[] bindings = panel
+            .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        string[] clickHandlers = tab.Descendants()
+        string[] clickHandlers = panel
+            .Descendants()
             .Select(element => element.Attribute("Click")?.Value)
             .OfType<string>()
             .ToArray();
 
-        Assert.Contains("{Binding FleetCarrierRouteManager.Routes}", bindings);
-        Assert.Contains("{Binding FleetCarrierRouteManager.ToggleAutoCopyCommand}", bindings);
-        Assert.Contains("{Binding FleetCarrierRouteManager.AutoCopy, Mode=OneWay}", bindings);
-        Assert.Contains("{Binding FleetCarrierRoute.NextHopName}", bindings);
-        Assert.Contains("{Binding FleetCarrierRoute.CarrierJumpCountdownTitle}", bindings);
-        Assert.Contains("{Binding FleetCarrierRoute.CarrierJumpCountdownValue}", bindings);
-        Assert.Contains("{Binding FleetCarrierRoute.CarrierJumpPhaseLabel}", bindings);
-        Assert.Contains("ImportFleetCarrierRoutes_Click", clickHandlers);
-        Assert.Contains("ExportFleetCarrierRoutes_Click", clickHandlers);
-        Assert.Contains("ExportSpanshFleetCarrierRoutes_Click", clickHandlers);
-        Assert.Contains("ExportCsvFleetCarrierRoutes_Click", clickHandlers);
+        Assert.Contains("{Binding Routes}", bindings);
+        Assert.Contains("{Binding ToggleAutoCopyCommand}", bindings);
+        Assert.Contains("{Binding AutoCopy, Mode=OneWay}", bindings);
+        Assert.Contains("{Binding Workspace.NextHopName}", bindings);
+        Assert.Contains("{Binding Workspace.CarrierJumpCountdownTitle}", bindings);
+        Assert.Contains("{Binding Workspace.CarrierJumpCountdownValue}", bindings);
+        Assert.Contains("{Binding Workspace.CarrierJumpPhaseLabel}", bindings);
+        Assert.Contains("ImportRoutes_Click", clickHandlers);
+        Assert.Contains("ExportRoutes_Click", clickHandlers);
+        Assert.Contains("ExportSpanshRoutes_Click", clickHandlers);
+        Assert.Contains("ExportCsvRoutes_Click", clickHandlers);
         Assert.Contains("{Binding RenameCommand}", bindings);
 
-        XElement currentRoute = tab.Descendants()
-            .First(element => element.Attribute("Text")?.Value == "{Binding FleetCarrierRoute.RouteName}");
-        XElement nextSystem = FindNamedElement(document, "FleetCarrierNextSystemReadout");
-        XElement estimate = FindNamedElement(document, "FleetCarrierEstimatedTimeRemainingReadout");
+        XElement currentRoute = panel
+            .Descendants()
+            .First(element => element.Attribute("Text")?.Value == "{Binding Workspace.RouteName}");
+        XElement nextSystem = FindNamedElement(document, "CarrierNextSystemReadout");
+        XElement estimate = FindNamedElement(document, "CarrierEstimatedTimeRemainingReadout");
         Assert.Same(currentRoute.Parent, estimate.Parent);
         Assert.Equal(3, GetSiblingIndex(estimate));
-        Assert.Equal("{Binding FleetCarrierRoute.CarrierEstimatedTimeRemaining}", estimate.Attribute("Text")?.Value);
-        XElement countdown = FindNamedElement(document, "FleetCarrierJumpCountdownReadout");
+        Assert.Equal("{Binding Workspace.CarrierEstimatedTimeRemaining}", estimate.Attribute("Text")?.Value);
+        XElement countdown = FindNamedElement(document, "CarrierJumpCountdownReadout");
         Assert.Same(currentRoute.Parent?.Parent, nextSystem.Parent);
         Assert.Same(nextSystem.Parent, countdown.Parent);
         Assert.True(GetSiblingIndex(currentRoute.Parent!) < GetSiblingIndex(nextSystem));
         Assert.True(GetSiblingIndex(nextSystem) < GetSiblingIndex(countdown));
 
-        Assert.Contains(
-            document.Descendants(),
-            element =>
-                element.Attribute("IsVisible")?.Value
-                == "{Binding FleetCarrierRouteManager.IsDeleteConfirmationVisible}"
+        document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "CarrierRouteDialogs.axaml")
         );
         Assert.Contains(
             document.Descendants(),
-            element => element.Attribute("IsVisible")?.Value == "{Binding FleetCarrierRouteManager.IsNotesVisible}"
+            element => element.Attribute("IsVisible")?.Value == "{Binding IsDeleteConfirmationVisible}"
         );
         Assert.Contains(
             document.Descendants(),
-            element => element.Attribute("IsVisible")?.Value == "{Binding FleetCarrierRouteManager.IsRenameVisible}"
+            element => element.Attribute("IsVisible")?.Value == "{Binding IsNotesVisible}"
+        );
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Attribute("IsVisible")?.Value == "{Binding IsRenameVisible}"
         );
     }
 

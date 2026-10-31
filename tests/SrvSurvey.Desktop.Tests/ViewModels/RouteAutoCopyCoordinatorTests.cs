@@ -20,6 +20,163 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         $"SrvSurvey-route-autocopy-tests-{Guid.NewGuid():N}"
     );
 
+    [AvaloniaFact]
+    public async Task CarrierAutoCopyCoexistsUntilRegularRoutesOrBoxelClaimsTheClipboard()
+    {
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel fc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Personal
+        );
+        RouteWorkspaceViewModel sc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Squadron
+        );
+        BoxelSearchViewModel boxel = await CreateConfiguredBoxelAsync(false);
+        using var coordinator = new RouteAutoCopyCoordinator(standard, fc, boxel.Session, sc);
+        await coordinator.ClaimAsync(fc);
+        await coordinator.ClaimAsync(sc);
+        Assert.True(fc.AutoCopy);
+        Assert.True(sc.AutoCopy);
+        Assert.False(standard.AutoCopy);
+        await coordinator.ReconcileAsync();
+        Assert.True(fc.AutoCopy);
+        Assert.True(sc.AutoCopy);
+        await standard.SetAutoCopyAsync(true);
+        await coordinator.ClaimAsync(standard);
+        Assert.False(fc.AutoCopy);
+        Assert.False(sc.AutoCopy);
+        var library = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
+        Assert.False((await library.ForCarrier(FollowRouteCarrierKind.Personal).LoadAsync("F123")).Route!.AutoCopy);
+        Assert.False((await library.ForCarrier(FollowRouteCarrierKind.Squadron).LoadAsync("F123")).Route!.AutoCopy);
+        await fc.SetAutoCopyAsync(true);
+        await sc.SetAutoCopyAsync(true);
+        await coordinator.ClaimAsync(sc);
+        Assert.False(standard.AutoCopy);
+        await boxel.Session.ExecuteAsync(new SetBoxelAutoCopy(true));
+        await WaitUntilAsync(() => !fc.AutoCopy && !sc.AutoCopy);
+        await coordinator.ClaimAsync(boxel.Session);
+        Assert.True(boxel.AutoCopy);
+        Assert.False(fc.AutoCopy);
+        Assert.False(sc.AutoCopy);
+        Assert.False(standard.AutoCopy);
+    }
+
+    [AvaloniaFact]
+    public async Task OneMapOpeningCopiesOnlyTheSelectedCarrierWithoutDisablingTheOther()
+    {
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel fc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Personal
+        );
+        RouteWorkspaceViewModel sc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Squadron
+        );
+        using var coordinator = new RouteAutoCopyCoordinator(standard, fc, CreateInactiveBoxel().Session, sc);
+        var copies = new List<string>();
+        fc.SetClipboardWriter(text =>
+        {
+            copies.Add("FC:" + text);
+            return Task.CompletedTask;
+        });
+        sc.SetClipboardWriter(text =>
+        {
+            copies.Add("SC:" + text);
+            return Task.CompletedTask;
+        });
+        await coordinator.ClaimAsync(sc);
+        var open = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+        await fc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(fc));
+        await sc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(sc));
+        Assert.StartsWith("SC:", Assert.Single(copies));
+        var closed = new EliteStatus { GuiFocus = GuiFocus.NoFocus };
+        await fc.UpdateStatusAsync(closed);
+        await sc.UpdateStatusAsync(closed);
+        copies.Clear();
+        fc.SelectCarrierAutoCopyTarget();
+        await coordinator.ClaimAsync(fc);
+        await coordinator.ReconcileAsync();
+        await fc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(fc));
+        await sc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(sc));
+        Assert.StartsWith("FC:", Assert.Single(copies));
+        Assert.True(fc.AutoCopy);
+        Assert.True(sc.AutoCopy);
+    }
+
+    [Fact]
+    public async Task PausedOrCompletedCarrierDoesNotBlockTheOtherCarriersMapOpenCopy()
+    {
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel fc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Personal
+        );
+        RouteWorkspaceViewModel sc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Squadron
+        );
+        using var coordinator = new RouteAutoCopyCoordinator(standard, fc, CreateInactiveBoxel().Session, sc);
+        var copies = new List<string>();
+        fc.SetClipboardWriter(text =>
+        {
+            copies.Add("FC:" + text);
+            return Task.CompletedTask;
+        });
+        sc.SetClipboardWriter(text =>
+        {
+            copies.Add("SC:" + text);
+            return Task.CompletedTask;
+        });
+        await coordinator.ClaimAsync(fc);
+        fc.IsActive = false;
+        await AssertCopiesOnlyAsync(sc, "SC:");
+        fc.IsActive = true;
+        await coordinator.ClaimAsync(sc);
+        sc.SetProgressThrough(sc.RouteCount - 1, true);
+        Assert.True(sc.IsComplete);
+        await AssertCopiesOnlyAsync(fc, "FC:");
+        fc.IsActive = false;
+        Assert.False(coordinator.CanAutoCopyOnMapOpen(fc));
+        Assert.False(coordinator.CanAutoCopyOnMapOpen(sc));
+        Assert.True(fc.AutoCopy);
+        Assert.True(sc.AutoCopy);
+
+        async Task AssertCopiesOnlyAsync(RouteWorkspaceViewModel expected, string prefix)
+        {
+            Assert.True(coordinator.CanAutoCopyOnMapOpen(expected));
+            var open = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+            copies.Clear();
+            await fc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(fc));
+            await sc.UpdateStatusAsync(open, allowAutoCopy: coordinator.CanAutoCopyOnMapOpen(sc));
+            Assert.StartsWith(prefix, Assert.Single(copies));
+            var closed = new EliteStatus { GuiFocus = GuiFocus.NoFocus };
+            await fc.UpdateStatusAsync(closed);
+            await sc.UpdateStatusAsync(closed);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultCarrierMapCopySkipsPausedFleetCarrierWithoutChangingItsSelection()
+    {
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel fc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Personal
+        );
+        RouteWorkspaceViewModel sc = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            dedicatedCarrier: FollowRouteCarrierKind.Squadron
+        );
+        standard.AutoCopy = false;
+        fc.IsActive = false;
+        using var coordinator = new RouteAutoCopyCoordinator(standard, fc, CreateInactiveBoxel().Session, sc);
+        Assert.False(coordinator.CanAutoCopyOnMapOpen(fc));
+        Assert.True(coordinator.CanAutoCopyOnMapOpen(sc));
+        Assert.True(fc.AutoCopy);
+    }
+
     [Fact]
     public async Task ClaimingClipboardDisablesAndPersistsTheCompetingRoute()
     {
@@ -272,9 +429,22 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         Assert.False(carrier.HasSavedRoute);
     }
 
-    private async Task<RouteWorkspaceViewModel> CreateWorkspaceAsync(FollowRouteKind kind, bool isActive = true)
+    private async Task<RouteWorkspaceViewModel> CreateWorkspaceAsync(
+        FollowRouteKind kind,
+        bool isActive = true,
+        FollowRouteCarrierKind? dedicatedCarrier = null
+    )
     {
         var store = new FollowRouteStore(temporaryDirectory, kind);
+        if (dedicatedCarrier is { } carrier)
+        {
+            store = store.ForCarrier(carrier);
+        }
+        string routeName = kind == FollowRouteKind.FleetCarrier ? "Carrier Route" : "Standard Route";
+        if (dedicatedCarrier == FollowRouteCarrierKind.Squadron)
+        {
+            routeName = "Squadron Route";
+        }
         await store.SaveAsAsync(
             (await store.CreateNewAsync("F123")) with
             {
@@ -287,13 +457,13 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
                     new FollowRouteHop("Achenar", 2, null, null, false, false),
                 ],
             },
-            kind == FollowRouteKind.FleetCarrier ? "Carrier Route" : "Standard Route"
+            routeName
         );
         var workspace = new RouteWorkspaceViewModel(
             new FollowRouteService(store),
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient(),
-            kind
+            new RouteWorkspaceOptions(kind, DedicatedCarrier: dedicatedCarrier)
         );
         workspaces.Add(workspace);
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);

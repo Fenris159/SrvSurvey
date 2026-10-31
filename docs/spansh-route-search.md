@@ -58,7 +58,32 @@ from the original starting balances without charging earlier jumps twice.
 This changes transfer timing using the supplied jump costs; it does not
 recalculate the carrier's mass-dependent fuel cost or assume future mining.
 
-Travel overlay settings include **Show Carrier Next-Jump Information**, enabled by default. The Fleet Carrier Route panel can follow a journal `CarrierJumpRequest` without an active route, including its destination, initiation, pad lockdown, departure, arrival and cooldown, or cancellation. An actual off-route jump temporarily takes precedence over the planned destination without changing that route. Disable this setting to hide passive tracking while retaining the usual active-route panel.
+Travel has adjacent **FC Routes** and **SC Routes** tabs for personal and squadron
+carriers. They share saved itineraries, favorites, notes, imports and exports,
+while each carrier keeps its own selected itinerary, progress, fuel plan and
+working copy. The carrier identity is fixed by the workspace.
+
+Each tab opens its own **Overlay settings** window with panel availability,
+shortcut assignment and a next-jump information switch. These shortcuts use the
+same saved bindings as Settings → Input. Both carrier overlays can appear at
+once and have independent positions and appearance overrides. The existing
+Travel overlay settings also retain access to both panels.
+
+Next-jump information is enabled by default for each carrier. Its overlay can
+follow a journal `CarrierJumpRequest` without an active route, including the
+destination, pad lockdown, departure, arrival, cooldown and cancellation. An
+off-route jump temporarily takes precedence over the planned destination
+without changing the itinerary. Turn off that carrier's next-jump switch to
+hide passive tracking while retaining its active-route overlay.
+
+FC and SC auto-copy can remain enabled together. Opening the Galaxy Map copies
+from the most recently selected enabled carrier route; each carrier's own
+arrival events advance its itinerary separately. Enabling auto-copy in Route
+Manager or Boxel turns both carrier auto-copy settings off. Enabling a carrier's
+auto-copy turns off regular-route and boxel auto-copy.
+
+
+Carrier identity learned from typed journal events is retained when later stats omit the type, keeping squadron and personal observations separate even without CAPI.
 
 Passive tritium values come from attributable carrier journal/CAPI observations. When origin and destination coordinates, tank fuel, and used capacity are known, the existing mass-dependent carrier fuel formula estimates the jump cost and remaining depot fuel; these values are labeled as estimates. **LOW TRITIUM** appears only when the projected post-jump depot falls below 200 t. Missing values and their labels are omitted. Spansh destination data can add **ICY RING**, **PRISTINE ICY RING**, and **ICY BODY** badges; pristine reserves must belong to the body with the icy ring. The editor includes a **Carrier next jump** variation using the same presentation. Departure-time expiry indicates transit; arrival requires a journal arrival event rather than being inferred from the departure timer.
 

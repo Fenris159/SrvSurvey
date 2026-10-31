@@ -26,6 +26,20 @@ public static class OverlaySettingsCategoryCatalog
             "Configure next-jump and station-information overlays."
         ),
         new(
+            OverlaySettingsCategory.FleetCarrierRoutes,
+            "fc-routes",
+            "FC Routes",
+            "FLEET CARRIER",
+            "Configure the personal carrier route overlay, shortcut, and next-jump information."
+        ),
+        new(
+            OverlaySettingsCategory.SquadronCarrierRoutes,
+            "sc-routes",
+            "SC Routes",
+            "SQUADRON CARRIER",
+            "Configure the squadron carrier route overlay, shortcut, and next-jump information."
+        ),
+        new(
             OverlaySettingsCategory.Boxel,
             "boxel",
             "Boxel",
@@ -98,6 +112,8 @@ public enum OverlaySettingsCategory
     Mining,
     MineMap,
     Firegroups,
+    FleetCarrierRoutes,
+    SquadronCarrierRoutes,
 }
 
 public sealed record OverlaySettingsCategoryDefinition(

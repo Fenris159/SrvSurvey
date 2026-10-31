@@ -23,6 +23,7 @@ public sealed partial class TravelView : UserControl
         {
             viewModel.Route.SetClipboardWriter(WriteClipboardAsync);
             viewModel.FleetCarrierRoute.SetClipboardWriter(WriteClipboardAsync);
+            viewModel.SquadronCarrierRoute.SetClipboardWriter(WriteClipboardAsync);
         }
     }
 
@@ -32,6 +33,7 @@ public sealed partial class TravelView : UserControl
         {
             viewModel.Route.SetClipboardWriter(null);
             viewModel.FleetCarrierRoute.SetClipboardWriter(null);
+            viewModel.SquadronCarrierRoute.SetClipboardWriter(null);
         }
     }
 
@@ -157,111 +159,6 @@ public sealed partial class TravelView : UserControl
                 viewModel.RouteManager,
                 "Export selected routes as CSV",
                 viewModel.RouteManager.ExportSelectedCsvAsync,
-                "CSV export"
-            );
-        }
-    }
-
-    private async void ImportFleetCarrierRoutes_Click(object? sender, RoutedEventArgs eventArgs)
-    {
-        if (
-            DataContext is not MainWindowViewModel viewModel
-            || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage
-        )
-        {
-            return;
-        }
-
-        try
-        {
-            IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
-                new FilePickerOpenOptions
-                {
-                    Title = "Import saved fleet-carrier routes",
-                    AllowMultiple = true,
-                    FileTypeFilter =
-                    [
-                        new FilePickerFileType("SrvSurvey fleet-carrier route files")
-                        {
-                            Patterns = ["*.json"],
-                            MimeTypes = ["application/json"],
-                        },
-                    ],
-                }
-            );
-            string[] paths = files
-                .Select(file => file.TryGetLocalPath())
-                .Where(path => !string.IsNullOrWhiteSpace(path))
-                .Select(path => path!)
-                .ToArray();
-            await viewModel.FleetCarrierRouteManager.ImportAsync(paths);
-        }
-        catch (Exception exception)
-            when (exception
-                    is IOException
-                        or UnauthorizedAccessException
-                        or NotSupportedException
-                        or InvalidOperationException
-            )
-        {
-            viewModel.FleetCarrierRouteManager.ReportFilePickerError("import", exception);
-        }
-    }
-
-    private async void ExportFleetCarrierRoutes_Click(object? sender, RoutedEventArgs eventArgs)
-    {
-        if (
-            DataContext is not MainWindowViewModel viewModel
-            || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage
-        )
-        {
-            return;
-        }
-
-        try
-        {
-            IReadOnlyList<IStorageFolder> folders = await storage.OpenFolderPickerAsync(
-                new FolderPickerOpenOptions { Title = "Export selected fleet-carrier routes", AllowMultiple = false }
-            );
-            string? path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
-            if (!string.IsNullOrWhiteSpace(path))
-            {
-                await viewModel.FleetCarrierRouteManager.ExportSelectedAsync(path);
-            }
-        }
-        catch (Exception exception)
-            when (exception
-                    is IOException
-                        or UnauthorizedAccessException
-                        or NotSupportedException
-                        or InvalidOperationException
-            )
-        {
-            viewModel.FleetCarrierRouteManager.ReportFilePickerError("export", exception);
-        }
-    }
-
-    private async void ExportSpanshFleetCarrierRoutes_Click(object? sender, RoutedEventArgs eventArgs)
-    {
-        if (DataContext is MainWindowViewModel viewModel)
-        {
-            await ExportWithPickerAsync(
-                viewModel.FleetCarrierRouteManager,
-                "Export selected fleet-carrier routes as Spansh JSON",
-                viewModel.FleetCarrierRouteManager.ExportSelectedSpanshAsync,
-                "Spansh export"
-            );
-        }
-    }
-
-    private async void ExportCsvFleetCarrierRoutes_Click(object? sender, RoutedEventArgs eventArgs)
-    {
-        if (DataContext is MainWindowViewModel viewModel)
-        {
-            await ExportWithPickerAsync(
-                viewModel.FleetCarrierRouteManager,
-                "Export selected fleet-carrier routes as CSV",
-                viewModel.FleetCarrierRouteManager.ExportSelectedCsvAsync,
                 "CSV export"
             );
         }

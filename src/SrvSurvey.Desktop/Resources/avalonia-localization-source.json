@@ -2951,7 +2951,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Activate a boxel search before auditing its full area.",
@@ -9294,7 +9294,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "CSV exported.",
@@ -9417,14 +9417,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
-  },
-  {
-    "Text": "CURRENT FC ROUTE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "CURRENT LIMIT",
@@ -9571,6 +9563,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
+    "Text": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Cancel",
@@ -10305,6 +10305,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierAnnouncementsViewModel.cs"
+  },
+  {
+    "Text": "Carrier route name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRouteDialogs.axaml"
+  },
+  {
+    "Text": "Carrier route notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRouteDialogs.axaml"
   },
   {
     "Text": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -11419,6 +11435,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Choose another carrier workspace to share the itinerary library.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierLibrary.cs"
   },
   {
     "Text": "Choose another commander",
@@ -13915,12 +13939,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
+  },
+  {
     "Text": "Configure the search sphere",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+  },
+  {
+    "Text": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -14710,6 +14750,14 @@
   },
   {
     "Text": "Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Controls the entire Prior Scans panel. The radar is always shown when the panel is visible.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -15784,6 +15832,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
+    "Text": "Current FC route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "Current SC route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Current Ship",
     "IsFormat": false,
     "SourceKinds": [
@@ -16519,7 +16583,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Deadline",
@@ -16851,20 +16915,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Delete selected carrier routes?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRouteDialogs.axaml"
+  },
+  {
     "Text": "Delete selected fleet-carrier routes",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
-  },
-  {
-    "Text": "Delete selected fleet-carrier routes?",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Delete selected group",
@@ -17001,6 +17065,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+  },
+  {
+    "Text": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRouteDialogs.axaml"
   },
   {
     "Text": "Deleting Nexus on Raven Colonial...",
@@ -20946,7 +21018,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Exp Spansh",
@@ -20954,7 +21026,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Expand Activities and open Surface Mining for Surface Maps, Survey map, Hotspot List, Surface Hunt, and Search.",
@@ -21275,7 +21347,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Export CSV",
@@ -21451,7 +21523,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "Export selected fleet-carrier routes as CSV",
@@ -21459,7 +21531,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "Export selected fleet-carrier routes as Spansh JSON",
@@ -21467,7 +21539,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "Export selected routes",
@@ -21783,14 +21855,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
-    "Text": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
-  },
-  {
     "Text": "FDEV-RAVEN",
     "IsFormat": false,
     "SourceKinds": [
@@ -21877,7 +21941,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "FLEET CARRIER DEFICIT",
@@ -23316,22 +23380,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
-  },
-  {
-    "Text": "Fleet-carrier route name",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
-  },
-  {
-    "Text": "Fleet-carrier route notes",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "FleetCarrier",
@@ -28156,7 +28204,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Import Canonn",
@@ -28175,7 +28223,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
   },
   {
-    "Text": "Import Fleet Carrier Router results from the FC Routes tab.",
+    "Text": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -28223,6 +28271,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -28342,7 +28398,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "Import saved routes",
@@ -37820,7 +37876,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "No saved ground target is active.",
@@ -39325,12 +39381,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Open SC Route Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Open Selected",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Open Settings \u003E Application. Enable Wayland screen capture and enable only the individual trackers you want to test; all start disabled.",
@@ -41040,6 +41104,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayScaleSettingsViewModel.cs"
   },
   {
+    "Text": "Overlay settings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
+  },
+  {
     "Text": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -42138,6 +42210,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Plan your squadron carrier\u0027s itinerary and track its jumps independently of your personal carrier.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Planet",
     "IsFormat": false,
     "SourceKinds": [
@@ -42613,6 +42693,14 @@
   },
   {
     "Text": "PlotSphericalSearch",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "PlotSquadronCarrierRoute",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -45003,7 +45091,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "READY TO SCAN",
@@ -45283,7 +45371,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "ROUTE BODIES",
@@ -48328,12 +48416,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Systems.cs"
   },
   {
+    "Text": "Rename carrier route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRouteDialogs.axaml"
+  },
+  {
     "Text": "Rename fleet-carrier route",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Rename route",
@@ -50597,6 +50693,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "SC Route Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "SC Routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
     "Text": "SCALE",
     "IsFormat": false,
     "SourceKinds": [
@@ -51044,7 +51157,23 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
+  },
+  {
+    "Text": "SQUADRON CARRIER NEXT JUMP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
+  },
+  {
+    "Text": "SQUADRON CARRIER ROUTE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "SRV",
@@ -52019,6 +52148,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/SystemNotesWindow.axaml"
+  },
+  {
+    "Text": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
     "Text": "Saved mining HUD calibration.",
@@ -55456,6 +55593,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
+    "Text": "Show squadron carrier next-jump information",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Show station/target details in left nav panel",
     "IsFormat": false,
     "SourceKinds": [
@@ -55521,6 +55666,14 @@
   },
   {
     "Text": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Show the squadron carrier\u0027s scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -56543,7 +56696,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "Spansh fallback",
@@ -56772,6 +56925,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Squadron carrier itinerary",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Squadron carrier next jump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Squadron carrier route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "SquadronAndFriends",
     "IsFormat": false,
     "SourceKinds": [
@@ -56786,6 +56963,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+  },
+  {
+    "Text": "SquadronCarrierNextJump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CarrierNextJumpSettingsStore.cs"
+  },
+  {
+    "Text": "SquadronCarrierRoute.IsActive",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
     "Text": "SquadronLogo",
@@ -57079,6 +57272,7 @@
     "Text": "SrvSurvey fleet carrier route overlay",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml"
@@ -57089,7 +57283,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "SrvSurvey found {0} matching process(es), including {1} that the operating system would not let it verify. Confirm the warning; the update will stop safely if any process remains unverified.",
@@ -57394,6 +57588,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+  },
+  {
+    "Text": "SrvSurvey squadron carrier route overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierRouteOverlayViewModel.cs"
   },
   {
     "Text": "SrvSurvey station information overlay",
@@ -60239,14 +60441,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
-    "Text": "SystemSurvey.AutoShowPriorScans",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
-  },
-  {
     "Text": "SystemSurvey.AutoShowSurfaceRadar",
     "IsFormat": false,
     "SourceKinds": [
@@ -60256,6 +60450,14 @@
   },
   {
     "Text": "SystemSurvey.AutoShowSystemStatus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "SystemSurvey.ShowCanonnSignalsOnRadar",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -64699,6 +64901,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncService.cs"
   },
   {
+    "Text": "The selected carrier supplies the Galaxy Map copy.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
+  },
+  {
     "Text": "The selected cloud backup was downloaded. Local settings are unchanged.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66676,6 +66886,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "TrackMaterialCollection",
@@ -71583,12 +71801,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/WorkspaceContinuitySettingsStore.cs"
   },
   {
-    "Text": "Write fleet-carrier route notes...",
+    "Text": "Write carrier route notes...",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRouteDialogs.axaml"
   },
   {
     "Text": "Write route notes...",
@@ -74268,7 +74486,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "exports",
@@ -74317,6 +74535,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "fc-routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "fcz",
@@ -75276,7 +75502,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml.cs"
   },
   {
     "Text": "in",
@@ -77253,6 +77479,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "sc-routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
     "Text": "scale",
@@ -79502,6 +79736,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",

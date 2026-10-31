@@ -114,11 +114,14 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
             [OverlaySettingsCategory.Travel] =
             [
                 "PlotFleetCarrierRoute",
+                "PlotSquadronCarrierRoute",
                 "PlotJumpInfo",
                 "PlotRouteBio",
                 "PlotSphericalSearch",
                 "PlotStationInfo",
             ],
+            [OverlaySettingsCategory.FleetCarrierRoutes] = ["PlotFleetCarrierRoute"],
+            [OverlaySettingsCategory.SquadronCarrierRoutes] = ["PlotSquadronCarrierRoute"],
             [OverlaySettingsCategory.Boxel] = ["PlotSphericalSearch"],
             [OverlaySettingsCategory.Guardian] =
             [

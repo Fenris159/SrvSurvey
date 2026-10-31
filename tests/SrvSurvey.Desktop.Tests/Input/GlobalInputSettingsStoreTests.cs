@@ -13,7 +13,12 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     [Fact]
     public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
     {
-        Assert.Equal(77, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(78, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(77, (int)GlobalInputAction.ToggleSquadronCarrierRouteVisibility);
+        Assert.Equal(
+            "PlotSquadronCarrierRoute",
+            GlobalInputActionCatalog.Get(GlobalInputAction.ToggleSquadronCarrierRouteVisibility).OverlayPlotterName
+        );
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
             GlobalInputActionCatalog
@@ -38,7 +43,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         GlobalInputActionDefinition[] panelToggles = GlobalInputActionCatalog
             .All.Where(definition => definition.OverlayPlotterName is not null)
             .ToArray();
-        Assert.Equal(41, panelToggles.Length);
+        Assert.Equal(42, panelToggles.Length);
         Assert.All(
             panelToggles,
             definition =>
