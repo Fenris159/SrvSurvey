@@ -114,16 +114,10 @@ public sealed partial class JourneyStore(string dataDirectory)
         {
             JourneyLoadResult existing = await LoadPathAsync(request.FrontierId, path, cancellationToken)
                 .ConfigureAwait(false);
-            if (existing.Journey is not null)
-            {
-                throw new InvalidOperationException(
-                    "A journey already starts at that journal event: " + Path.GetFileName(path)
-                );
-            }
             if (existing.Exists)
             {
-                // Keep unavailable records in place, even when a new start uses the same journal event.
-                fileName += "_recovered_" + Guid.NewGuid().ToString("N");
+                // A starting visit can be reused without overwriting any earlier saved record.
+                fileName += "_" + Guid.NewGuid().ToString("N");
                 path = Path.Combine(GetJourneyDirectory(request.FrontierId), fileName + JsonFileExtension);
                 journey = journey with { FileName = fileName, FilePath = path };
             }

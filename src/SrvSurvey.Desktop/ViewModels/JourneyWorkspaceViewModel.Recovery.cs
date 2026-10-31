@@ -17,8 +17,7 @@ public sealed partial class JourneyWorkspaceViewModel
             () => HasUnavailableJourney && !IsBusy && !IsDirty
         );
 
-    public bool CanResumeJourney =>
-        selectedDocument is { IsActive: true } && !HasActiveJourney && !HasUnavailableJourney && !IsBusy && !IsDirty;
+    public bool CanResumeJourney => selectedDocument is { IsActive: true } && !HasActiveJourney && !IsBusy && !IsDirty;
 
     public ICommand ResumeJourneyCommand =>
         resumeJourneyCommand ??= new AsyncCommand(ResumeJourneyAsync, () => CanResumeJourney);

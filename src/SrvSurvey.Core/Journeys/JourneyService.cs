@@ -164,16 +164,14 @@ public sealed partial class JourneyService
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            if (active.Journey?.IsActive == true)
+            JourneyCatalogResult catalog = await journeyStore
+                .LoadAllAsync(request.FrontierId, cancellationToken)
+                .ConfigureAwait(false);
+            JourneyDocument? blockingJourney = catalog.Journeys.FirstOrDefault(journey => journey.IsActive);
+            if (blockingJourney is not null)
             {
                 throw new InvalidOperationException(
-                    $"Conclude the active journey before beginning another one. Active journey: {active.Journey.Name} ({active.Journey.CommanderName})."
-                );
-            }
-            if (RecoveryReference is not null)
-            {
-                throw new InvalidOperationException(
-                    "The saved active journey could not be opened. Clear its active selection to begin another journey; its saved file will be kept."
+                    $"Conclude the active journey before beginning another one. Active journey: {blockingJourney.Name} ({blockingJourney.CommanderName}). Resume it from the Journeys list if it is not currently recording."
                 );
             }
 
@@ -201,7 +199,8 @@ public sealed partial class JourneyService
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            return result;
+            RecoveryReference = null;
+            return result with { Errors = [.. active.Errors, .. catalog.Errors, .. result.Errors] };
         }
         finally
         {

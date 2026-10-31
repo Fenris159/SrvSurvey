@@ -93,7 +93,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
         newJourneyCommand = new AsyncCommand(
             StartNewJourneyAsync,
-            () => HasProfileAndNotBusy() && !HasActiveJourney && !IsDirty
+            () => HasProfileAndNotBusy() && !HasListedActiveJourney && !IsDirty
         );
         cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
@@ -123,6 +123,8 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
     public bool HasActiveJourney => journeyService.IsActiveFor(frontierId, isOdyssey);
+
+    private bool HasListedActiveJourney => Journeys.Any(journey => journey.Document.IsActive);
 
     private JourneyDocument? CurrentActiveJourney => HasActiveJourney ? journeyService.ActiveJourney : null;
 
@@ -865,6 +867,7 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 result.Errors.Count > 0
                     ? string.Join(Environment.NewLine, result.Errors)
                     : $"Journey {result.Journey!.Name} is active and caught up.";
+            CaptureRecoveryReference(result.Recovery);
             RaiseActiveState();
         }
         catch (Exception exception) when (IsExpectedException(exception))

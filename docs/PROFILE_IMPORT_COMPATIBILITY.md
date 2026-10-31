@@ -94,18 +94,26 @@ A readable active Journey remains available to continue or complete when its
 original journals are missing or cannot be replayed. This recovery does not
 rebuild or discard its saved visits. Confirmed missing Journey files have their
 stale active references cleared automatically. Malformed, inaccessible, foreign
-commander, or newer unsupported files remain untouched; the workspace offers
-**Clear unavailable journey** to detach the active selection while keeping its
-saved file. Recovery rechecks the file and selection before clearing anything.
+commander, or newer unsupported files remain untouched and produce warnings
+instead of blocking a new Journey. Beginning or resuming a readable Journey
+replaces the unavailable selection without changing its saved file. The workspace
+also offers **Clear unavailable journey** to detach the selection independently.
+Recovery rechecks the file and selection before clearing anything.
 Refresh retries initialization after a file is restored or repaired.
 Saved active Journeys whose profile selection was already cleared can be
-selected in the library and resumed explicitly. A preserved unavailable record
-does not reserve the filename for a new Journey at the same starting visit;
-the new record receives a separate filename without changing the old file.
+selected in the library and resumed explicitly. Neither a completed Journey nor
+a preserved unavailable record reserves the filename for a new Journey at the
+same starting visit; the new record receives a separate filename without
+changing the old file.
 
 Journey starts reconcile the active selection for the requested commander and
-galaxy profile before checking for a blocker. A null or absent selection cannot
-be blocked by an older in-memory Journey snapshot. Diagnostics record the
+galaxy profile, then read the same commander's Journey catalog. Only a readable
+record marked **Active** in that catalog blocks a new start, even if its profile
+selection was cleared; it can be resumed and completed from the list. The New
+Journey and Begin commands use the same catalog rule. An old in-memory snapshot
+or an unavailable selection cannot block an otherwise empty catalog. A named
+Journey, a valid starting visit, and writable Journey/profile storage remain
+required. Diagnostics record the
 commander ID, galaxy mode, actual profile path, and in-memory Journey identity;
 they do not dump profile contents or service keys.
 

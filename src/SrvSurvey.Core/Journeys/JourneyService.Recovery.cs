@@ -160,7 +160,10 @@ public sealed partial class JourneyService
         log?.Invoke($"Journeys: unavailable active selection for {frontierId}: {error}");
         return new(
             null,
-            [error, "The saved journey file was kept. You can clear its active selection to begin another journey."],
+            [
+                error,
+                "The saved journey file was kept. You can begin a new journey or clear its unavailable active selection.",
+            ],
             0
         )
         {
@@ -256,14 +259,9 @@ public sealed partial class JourneyService
                 )
                 .ConfigureAwait(false);
             string selected = JourneyStore.NormalizeReference(fileName);
-            if (
-                RecoveryReference is not null
-                || (current.Journey?.IsActive == true && current.Journey.FileName != selected)
-            )
+            if (current.Journey?.IsActive == true && current.Journey.FileName != selected)
             {
-                throw new InvalidOperationException(
-                    "Complete or clear the current active journey before resuming another one."
-                );
+                throw new InvalidOperationException("Complete the current active journey before resuming another one.");
             }
             JourneyLoadResult load = await journeyStore
                 .UpgradeAsync(frontierId, selected, cancellationToken)
@@ -274,9 +272,10 @@ public sealed partial class JourneyService
             {
                 throw new InvalidOperationException("A completed journey cannot be resumed.");
             }
-            string? expectedReference = string.IsNullOrWhiteSpace(data.ActiveJourneyFileName)
-                ? data.ActiveJourneyFileName
-                : null;
+            string? expectedReference =
+                RecoveryReference is not null || string.IsNullOrWhiteSpace(data.ActiveJourneyFileName)
+                    ? data.ActiveJourneyFileName
+                    : null;
             if (current.Journey?.IsActive == true)
             {
                 expectedReference = current.Journey.FileName;
@@ -295,8 +294,16 @@ public sealed partial class JourneyService
             {
                 return SelectionChanged();
             }
-            return await ResumeSavedJourneyAsync(journey, isOdyssey, replay: true, load.Error, cancellationToken)
+            RecoveryReference = null;
+            JourneyServiceResult resumed = await ResumeSavedJourneyAsync(
+                    journey,
+                    isOdyssey,
+                    replay: true,
+                    load.Error,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
+            return resumed with { Errors = [.. current.Errors, .. resumed.Errors] };
         }
         finally
         {

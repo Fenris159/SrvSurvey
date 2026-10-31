@@ -28,7 +28,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task AnUnavailableJourneyCanBeDetachedWithoutChangingItsSavedFile(bool futureVersion)
+    public async Task AnUnavailableJourneyDoesNotBlockStartingFromAnEmptyLibrary(bool futureVersion)
     {
         await WriteJournalAsync(
             """
@@ -48,19 +48,20 @@ public sealed partial class JourneyWorkspaceViewModelTests
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         Assert.True(model.HasUnavailableJourney);
         Assert.False(model.HasActiveJourney);
+        Assert.Empty(model.Journeys);
+        Assert.True(model.NewJourneyCommand.CanExecute(null));
         Assert.True(model.ClearUnavailableJourneyCommand.CanExecute(null));
         await model.StartNewJourneyAsync();
         model.NewJourneyName = "Recovered";
+        Assert.True(model.BeginJourneyCommand.CanExecute(null));
         await model.BeginJourneyAsync();
-        Assert.True(model.HasUnavailableJourney);
-        Assert.Contains("saved file will be kept", model.StartStatus, StringComparison.Ordinal);
-        await model.ClearUnavailableJourneyAsync();
         Assert.False(model.HasUnavailableJourney);
-        Assert.Equal(original, await File.ReadAllTextAsync(path));
-        Assert.Null((await profiles.LoadAsync("F123", true)).Data!.ActiveJourneyFileName);
-        await model.BeginJourneyAsync();
         Assert.True(model.HasActiveJourney, model.StartStatus);
         Assert.Equal("Recovered", model.JourneyName);
+        Assert.Equal(
+            model.SelectedJourney!.Document.FileName,
+            (await profiles.LoadAsync("F123", true)).Data!.ActiveJourneyFileName
+        );
         Assert.Equal(original, await File.ReadAllTextAsync(path));
     }
 
@@ -82,22 +83,37 @@ public sealed partial class JourneyWorkspaceViewModelTests
         Assert.True(model.RequestConcludeCommand.CanExecute(null));
     }
 
-    [Fact]
-    public async Task AnUnreferencedSavedJourneyCanBeResumedFromTheLibraryAndCompleted()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AReadableSavedJourneyCanBeResumedFromTheLibraryAndCompleted(bool unavailableReference)
     {
         JourneyDocument original = await SeedHistoricalJourneyAsync(1, complete: false);
+        if (unavailableReference)
+        {
+            await new CommanderProfileStore(DataDirectory).SaveActiveJourneyAsync("F123", "Drew", true, ".");
+        }
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         Assert.False(model.HasActiveJourney);
+        Assert.Equal(unavailableReference, model.HasUnavailableJourney);
+        Assert.Equal("Active", Assert.Single(model.Journeys).State);
+        Assert.False(model.NewJourneyCommand.CanExecute(null));
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Another";
+        Assert.False(model.BeginJourneyCommand.CanExecute(null));
         Assert.True(model.CanResumeJourney);
         Assert.True(model.ResumeJourneyCommand.CanExecute(null));
         await model.ResumeJourneyAsync();
         Assert.True(model.HasActiveJourney);
+        Assert.False(model.HasUnavailableJourney);
         Assert.False(model.CanResumeJourney);
+        Assert.False(model.NewJourneyCommand.CanExecute(null));
         Assert.Equal(original.FileName, model.SelectedJourney!.Document.FileName);
         Assert.True(model.RequestConcludeCommand.CanExecute(null));
         await model.ConfirmConcludeAsync();
         Assert.False(model.HasActiveJourney);
         Assert.False(model.CanResumeJourney);
+        Assert.True(model.NewJourneyCommand.CanExecute(null));
     }
 }

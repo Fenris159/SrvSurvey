@@ -18,6 +18,97 @@ public sealed class JourneyUpgradeRecoveryTests : IDisposable
     private CommanderProfileStore Profiles => new(DataDirectory);
 
     [Theory]
+    [InlineData("malformed")]
+    [InlineData("future")]
+    [InlineData("foreign")]
+    [InlineData("invalid-reference")]
+    public async Task AnUnavailableSelectionDoesNotBlockANewJourneyOrChangeTheUnavailableFile(string kind)
+    {
+        await WriteJournalAsync("F123");
+        string path = await WriteLegacyJourneyAsync(StartingJournal);
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        if (kind == "future")
+        {
+            root["schemaVersion"] = 999;
+        }
+        if (kind == "foreign")
+        {
+            root["fid"] = "F456";
+        }
+        string original = kind == "malformed" ? "{broken" : root.ToJsonString();
+        // An invalid reference has no corresponding active record in this commander's library.
+        if (kind == "invalid-reference")
+        {
+            root["endTime"] = "2026-07-02T00:00:00Z";
+            original = root.ToJsonString();
+        }
+        await File.WriteAllTextAsync(path, original);
+        await Profiles.SaveActiveJourneyAsync(
+            "F123",
+            "Commander",
+            true,
+            kind == "invalid-reference" ? "." : LegacyName
+        );
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindCurrentStartAsync("F123", true, 42);
+
+        JourneyServiceResult result = await service.BeginAsync(new("F123", "Commander", true, "New", "", start.Entry!));
+
+        Assert.Equal("New", result.Journey!.Name);
+        Assert.Equal(result.Journey.FileName, (await Profiles.LoadAsync("F123", true)).Data!.ActiveJourneyFileName);
+        Assert.Null(service.RecoveryReference);
+        Assert.NotEmpty(result.Errors);
+        Assert.Equal(original, await File.ReadAllTextAsync(path));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AListedActiveJourneyBlocksANewStartEvenWhenItsProfileSelectionIsEmpty(bool missingProperty)
+    {
+        await WriteJournalAsync("F123");
+        string path = await WriteLegacyJourneyAsync(StartingJournal);
+        if (!missingProperty)
+        {
+            await Profiles.SaveActiveJourneyAsync("F123", "Commander", true, null);
+        }
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindCurrentStartAsync("F123", true, 42);
+        Assert.Null((await service.InitializeActiveAsync("F123", true)).Journey);
+
+        InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.BeginAsync(new("F123", "Commander", true, "New", "", start.Entry!))
+        );
+
+        Assert.Contains("Original expedition", error.Message, StringComparison.Ordinal);
+        Assert.True(Assert.Single((await service.LoadAllAsync("F123")).Journeys).IsActive);
+        Assert.True(File.Exists(path));
+    }
+
+    [Fact]
+    public async Task ACompletedJourneyDoesNotPreventStartingAgainAtTheSameVisit()
+    {
+        await WriteJournalAsync("F123");
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindCurrentStartAsync("F123", true, 42);
+        JourneyDocument first = (
+            await service.BeginAsync(new("F123", "Commander", true, "First", "", start.Entry!))
+        ).Journey!;
+        await service.ConcludeActiveAsync("Commander", first.StartTime.AddHours(1));
+        byte[] original = await File.ReadAllBytesAsync(first.FilePath);
+
+        JourneyDocument second = (
+            await service.BeginAsync(new("F123", "Commander", true, "Second", "", start.Entry!))
+        ).Journey!;
+
+        Assert.NotEqual(first.FileName, second.FileName);
+        Assert.Equal(original, await File.ReadAllBytesAsync(first.FilePath));
+        JourneyCatalogResult catalog = await service.LoadAllAsync("F123");
+        Assert.Equal(2, catalog.Journeys.Count);
+        Assert.Equal(second.FileName, Assert.Single(catalog.Journeys, journey => journey.IsActive).FileName);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task DeletedActiveJourneyDoesNotPreventStartingAnother(bool initializeFirst)
@@ -105,7 +196,7 @@ public sealed class JourneyUpgradeRecoveryTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task NullProfileReferenceWinsOverAServiceSnapshotFromAnEarlierJourney(bool anotherCommander)
+    public async Task ADeletedJourneyOrAnotherCommanderCannotBlockThroughAnEarlierServiceSnapshot(bool anotherCommander)
     {
         await WriteJournalAsync("F123");
         JourneyService service = CreateService();
@@ -114,13 +205,17 @@ public sealed class JourneyUpgradeRecoveryTests : IDisposable
             await service.BeginAsync(new("F123", "Commander", true, "First", "", first.Entry!))
         ).Journey!;
         string nextFid = anotherCommander ? "F456" : "F123";
+        if (!anotherCommander)
+        {
+            File.Delete(original.FilePath);
+        }
         await Profiles.SaveActiveJourneyAsync(nextFid, "Commander", true, null);
         await WriteJournalAsync(nextFid, "2026-07-02T00:05:00Z");
         JourneyJournalSystemSearchResult next = await service.FindCurrentStartAsync(nextFid, true, 42);
         JourneyServiceResult begun = await service.BeginAsync(new(nextFid, "Commander", true, "Next", "", next.Entry!));
         Assert.Equal(nextFid, begun.Journey!.FrontierId);
         Assert.Equal("Next", begun.Journey.Name);
-        Assert.True(File.Exists(original.FilePath));
+        Assert.Equal(anotherCommander, File.Exists(original.FilePath));
         if (anotherCommander)
         {
             Assert.Equal(original.FileName, (await Profiles.LoadAsync("F123", true)).Data!.ActiveJourneyFileName);
@@ -336,6 +431,7 @@ public sealed class JourneyUpgradeRecoveryTests : IDisposable
         profile["activeJourney"] = null;
         profile["inaraApiKey"] = "synthetic-private-key";
         await File.WriteAllTextAsync(profilePath, profile.ToJsonString());
+        File.Delete(service.ActiveJourney!.FilePath);
         await WriteJournalAsync("F123", "2026-07-02T00:05:00Z");
         start = await service.FindCurrentStartAsync("F123", true, 42);
         await service.BeginAsync(new("F123", "Commander", true, "Second", "", start.Entry!));
