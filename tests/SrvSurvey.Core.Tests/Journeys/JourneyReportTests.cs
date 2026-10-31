@@ -145,7 +145,7 @@ public sealed class JourneyReportTests
     }
 
     [Fact]
-    public void LargeRouteDownsamplesOnlyTheChartAndKeepsAllVisits()
+    public void LargeRouteConnectsEveryDestinationAndKeepsAllVisits()
     {
         JourneyDocument journey = SampleJourney();
         JourneySystemVisit first = journey.VisitedSystems[0];
@@ -171,7 +171,7 @@ public sealed class JourneyReportTests
         Assert.Contains("System 2099", html, StringComparison.Ordinal);
         Assert.Contains("2,100 visits", html, StringComparison.Ordinal);
         string points = html.Split("class=\"route-path\" points=\"", StringSplitOptions.None)[1].Split('"')[0];
-        Assert.Equal(701, points.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
+        Assert.Equal(2100, points.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length);
     }
 
     internal static JourneyDocument SampleJourney()

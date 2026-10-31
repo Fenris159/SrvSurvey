@@ -30,6 +30,7 @@ public static partial class JourneyReport
             .Append(" — Journey report</title><style>")
             .Append(Styles)
             .Append(GalleryStyles)
+            .Append(RouteMapStyles)
             .Append("</style></head><body><main>");
         html.Append("<header class=\"report-heading\"><p class=\"brand\">SrvSurvey-XP · Expedition report</p><h1>")
             .Append(E(journey.Name))
@@ -104,6 +105,7 @@ public static partial class JourneyReport
             .Append(ImageViewer)
             .Append("<script>")
             .Append(Script)
+            .Append(RouteMapScript)
             .Append(GalleryScript)
             .Append("</script></body></html>");
         return html.ToString();
@@ -227,60 +229,6 @@ public static partial class JourneyReport
             .Append("</h4><p class=\"identifiers\">")
             .Append(E(string.Join(", ", values.Order())))
             .Append("</p>");
-    }
-
-    private static void AppendRoute(StringBuilder html, JourneyDocument journey)
-    {
-        if (journey.VisitedSystems.Count == 0)
-        {
-            return;
-        }
-        GalacticCoordinate[] positions = journey.VisitedSystems.Select(visit => visit.StarSystem.Position).ToArray();
-        double minX = positions.Min(p => p.X),
-            maxX = positions.Max(p => p.X);
-        double minZ = positions.Min(p => p.Z),
-            maxZ = positions.Max(p => p.Z);
-        double scale = Math.Min(744 / Math.Max(1, maxX - minX), 160 / Math.Max(1, maxZ - minZ));
-        string Point(int index) =>
-            string.Create(
-                CultureInfo.InvariantCulture,
-                $"{400 + (positions[index].X - (minX + maxX) / 2) * scale:0.##},{110 - (positions[index].Z - (minZ + maxZ) / 2) * scale:0.##}"
-            );
-        var points = new StringBuilder();
-        int stride = Math.Max(1, (positions.Length + 1023) / 1024);
-        for (int index = 0; index < positions.Length; index += stride)
-        {
-            points.Append(Point(index)).Append(' ');
-        }
-        points.Append(Point(positions.Length - 1));
-        html.Append("<figure class=\"route\"><div class=\"route-endpoints\"><div><span>Departure</span><strong>")
-            .Append(E(journey.VisitedSystems[0].StarSystem.Name))
-            .Append("</strong></div><div><span>Final recorded system</span><strong>")
-            .Append(E(journey.VisitedSystems[^1].StarSystem.Name))
-            .Append("</strong></div></div>")
-            .Append(
-                "<svg viewBox=\"0 0 800 220\" role=\"img\" aria-label=\"Recorded journey route in galactic X and Z coordinates\"><path class=\"route-grid\" d=\"M0 55H800M0 110H800M0 165H800M200 0V220M400 0V220M600 0V220\"/>"
-            )
-            .Append("<polyline class=\"route-path\" points=\"")
-            .Append(points)
-            .Append("\"/>");
-        RouteMarker(html, Point(0), "departure");
-        RouteMarker(html, Point(positions.Length - 1), "arrival");
-        html.Append(
-            "</svg><figcaption>Galactic X/Z projection. The route follows recorded visits; closely spaced stops may overlap.</figcaption></figure>"
-        );
-    }
-
-    private static void RouteMarker(StringBuilder html, string point, string kind)
-    {
-        string[] coordinates = point.Split(',');
-        html.Append("<circle class=\"")
-            .Append(kind)
-            .Append("\" cx=\"")
-            .Append(coordinates[0])
-            .Append("\" cy=\"")
-            .Append(coordinates[1])
-            .Append("\" r=\"5\"/>");
     }
 
     private static void Metric(StringBuilder html, string label, string value) =>
