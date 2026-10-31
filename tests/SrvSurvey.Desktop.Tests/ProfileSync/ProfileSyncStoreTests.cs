@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.ProfileSync;
+using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -12,6 +13,59 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 
 public sealed class ProfileSyncStoreTests
 {
+    [Fact]
+    public async Task PortableBackupRetainsBothCarrierWorkspacesAndTheirSharedLibrary()
+    {
+        using var source = new ProfileSyncTestRoot();
+        using var destination = new ProfileSyncTestRoot();
+        var library = new FollowRouteStore(source.Paths.DataDirectory, FollowRouteKind.FleetCarrier);
+        FollowRouteStore fc = library.ForCarrier(FollowRouteCarrierKind.Personal);
+        FollowRouteStore sc = library.ForCarrier(FollowRouteCarrierKind.Squadron);
+        FollowRouteDocument personal = await fc.SaveAsAsync(
+            (await fc.CreateNewAsync("F123")) with
+            {
+                Hops = [new("Sol", 1, null, null, false, false), new("Lave", 2, null, null, false, false)],
+            },
+            "Shared loop"
+        );
+        FollowRouteDocument squadron = (await sc.LoadNamedAsync("F123", "Shared loop.json", false)).Route!;
+        await fc.SaveWorkspaceAsync(personal with { LastReachedIndex = 0, AutoCopy = true }, true);
+        await sc.SaveWorkspaceAsync(squadron with { LastReachedIndex = 1, AutoCopy = false }, true);
+        destination.Store.Apply(source.Store.Capture());
+        var restored = new FollowRouteStore(destination.Paths.DataDirectory, FollowRouteKind.FleetCarrier);
+        Assert.Single(await restored.ListAsync("F123"));
+        FollowRouteDocument fcState = (
+            await restored.ForCarrier(FollowRouteCarrierKind.Personal).LoadAsync("F123")
+        ).WorkspaceDraft!;
+        FollowRouteDocument scState = (
+            await restored.ForCarrier(FollowRouteCarrierKind.Squadron).LoadAsync("F123")
+        ).WorkspaceDraft!;
+        Assert.Equal(0, fcState.LastReachedIndex);
+        Assert.True(fcState.AutoCopy);
+        Assert.Equal(1, scState.LastReachedIndex);
+        Assert.False(scState.AutoCopy);
+        Assert.Equal(FollowRouteCarrierKind.Squadron, scState.CarrierKind);
+    }
+
+    [Fact]
+    public void BothCarrierNextJumpPreferencesSurvivePortableBackupAndRestore()
+    {
+        using var source = new ProfileSyncTestRoot();
+        using var destination = new ProfileSyncTestRoot();
+        new CarrierNextJumpSettingsStore(source.Paths.SharedUiSettingsPath).Save(false);
+        new CarrierNextJumpSettingsStore(source.Paths.SharedUiSettingsPath, true).Save(true);
+        new CarrierNextJumpSettingsStore(destination.Paths.SharedUiSettingsPath, true).Save(false);
+        ProfileSnapshot snapshot = source.Store.Capture();
+        Assert.Contains(snapshot.Portable.Keys, key => key.Contains("/CarrierNextJump/", StringComparison.Ordinal));
+        Assert.Contains(
+            snapshot.Portable.Keys,
+            key => key.Contains("/SquadronCarrierNextJump/", StringComparison.Ordinal)
+        );
+        destination.Store.Apply(snapshot);
+        Assert.False(new CarrierNextJumpSettingsStore(destination.Paths.SharedUiSettingsPath).Load());
+        Assert.True(new CarrierNextJumpSettingsStore(destination.Paths.SharedUiSettingsPath, true).Load());
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

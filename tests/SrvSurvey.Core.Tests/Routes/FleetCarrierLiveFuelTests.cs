@@ -15,6 +15,64 @@ public sealed class FleetCarrierLiveFuelTests
         CultureInfo.InvariantCulture
     );
 
+    [Fact]
+    public void TypedSquadronRequestsKeepLaterUntypedStatsOutOfThePersonalCarrier()
+    {
+        var journal = new FleetCarrierFuelJournal();
+        journal.Observe([
+            Event(
+                1,
+                "CarrierStats",
+                "\"CarrierID\":1,\"CarrierType\":\"FleetCarrier\",\"Callsign\":\"OWN-001\",\"FuelLevel\":100"
+            ),
+            Event(2, "CarrierJumpRequest", "\"CarrierID\":2,\"CarrierType\":\"SquadronCarrier\",\"SystemName\":\"A\""),
+            Event(3, "CarrierStats", "\"CarrierID\":2,\"Callsign\":\"SQU-002\",\"FuelLevel\":700"),
+        ]);
+        FleetCarrierFuelSnapshot personal = Assert.IsType<FleetCarrierFuelSnapshot>(
+            journal.Read(null, FollowRouteCarrierKind.Personal, [])
+        );
+        FleetCarrierFuelSnapshot squadron = Assert.IsType<FleetCarrierFuelSnapshot>(
+            journal.Read(null, FollowRouteCarrierKind.Squadron, [])
+        );
+        Assert.Equal(1, personal.CarrierId);
+        Assert.Equal(100, personal.TankTonnes);
+        Assert.Equal(2, squadron.CarrierId);
+        Assert.Equal(700, squadron.TankTonnes);
+    }
+
+    [Fact]
+    public void ClearingCommanderObservationsAlsoClearsCarrierTypeHints()
+    {
+        var journal = new FleetCarrierFuelJournal();
+        journal.Observe([Event(1, "CarrierJumpRequest", "\"CarrierID\":2,\"CarrierType\":\"SquadronCarrier\"")]);
+        Assert.Equal(FollowRouteCarrierKind.Squadron, journal.GetKnownCarrierKind(2));
+        journal.Reset();
+        Assert.Null(journal.GetKnownCarrierKind(2));
+        journal.Observe([Event(2, "CarrierStats", "\"CarrierID\":2,\"Callsign\":\"OWN-002\",\"FuelLevel\":900")]);
+        Assert.Equal(900, journal.Read(null, FollowRouteCarrierKind.Personal, [])!.TankTonnes);
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Squadron, []));
+    }
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("\"2\"")]
+    [InlineData("{}")]
+    [InlineData("true")]
+    public void MalformedCarrierIdentityHintsDoNotInterruptObservationReplay(string id)
+    {
+        var journal = new FleetCarrierFuelJournal();
+        journal.Observe([
+            Event(
+                1,
+                "CarrierStats",
+                $"\"CarrierID\":{id},\"CarrierType\":\"SquadronCarrier\",\"Callsign\":\"BAD-000\""
+            ),
+        ]);
+        Assert.Null(journal.GetKnownCarrierKind(2));
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Personal, []));
+        Assert.Null(journal.Read(null, FollowRouteCarrierKind.Squadron, []));
+    }
+
     [Theory]
     [InlineData(false, 1, 1000)]
     [InlineData(false, 2, 995)]

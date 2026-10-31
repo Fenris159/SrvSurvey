@@ -241,6 +241,14 @@ public sealed partial class MainWindow : Window
             return;
         }
 
+        OpenWorkspaceOverlaySettings(definition.Category);
+    }
+
+    public void OpenWorkspaceOverlaySettings(OverlaySettingsCategory category)
+    {
+        OverlaySettingsCategoryDefinition definition = OverlaySettingsCategoryCatalog.All.Single(item =>
+            item.Category == category
+        );
         if (overlaySettingsWindows.TryGetValue(definition.Category, out OverlayCategorySettingsWindow? existing))
         {
             existing.Activate();

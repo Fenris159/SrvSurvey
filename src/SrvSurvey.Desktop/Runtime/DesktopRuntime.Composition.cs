@@ -35,7 +35,9 @@ internal sealed partial class DesktopRuntime
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
     private RouteBioOverlayCoordinator? routeBioOverlayCoordinator;
     private FleetCarrierRouteOverlayCoordinator? fleetCarrierRouteOverlayCoordinator;
+    private FleetCarrierRouteOverlayCoordinator? squadronCarrierRouteOverlayCoordinator;
     private FleetCarrierJumpCountdownCoordinator? fleetCarrierJumpCountdownCoordinator;
+    private FleetCarrierJumpCountdownCoordinator? squadronCarrierJumpCountdownCoordinator;
     private MiningActivityOverlayCoordinator? miningActivityOverlayCoordinator;
     private SurfaceMiningOverlayCoordinator? surfaceMiningOverlayCoordinator;
     private MineMapOverlayCoordinator? mineMapOverlayCoordinator;
@@ -57,6 +59,7 @@ internal sealed partial class DesktopRuntime
     private ColonizationProjectPreviewWindowCoordinator? colonizationProjectPreviewWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
     private RouteWindowCoordinator? fleetCarrierRouteWindowCoordinator;
+    private RouteWindowCoordinator? squadronCarrierRouteWindowCoordinator;
     private BiologyPredictionsWindowCoordinator? biologyPredictionsWindowCoordinator;
     private BiologyCodexWindowCoordinator? biologyCodexWindowCoordinator;
     private BiologyCodexBingoWindowCoordinator? biologyCodexBingoWindowCoordinator;
@@ -318,6 +321,10 @@ internal sealed partial class DesktopRuntime
         routeWindowCoordinator = new RouteWindowCoordinator(viewModel.Route, mainWindow);
         fleetCarrierRouteWindowCoordinator = new RouteWindowCoordinator(viewModel.FleetCarrierRoute, mainWindow);
         fleetCarrierJumpCountdownCoordinator = new FleetCarrierJumpCountdownCoordinator(viewModel.FleetCarrierRoute);
+        squadronCarrierJumpCountdownCoordinator = new FleetCarrierJumpCountdownCoordinator(
+            viewModel.SquadronCarrierRoute
+        );
+        squadronCarrierRouteWindowCoordinator = new RouteWindowCoordinator(viewModel.SquadronCarrierRoute, mainWindow);
         biologyPredictionsWindowCoordinator = new BiologyPredictionsWindowCoordinator(
             viewModel.BiologyPredictions,
             mainWindow
@@ -362,6 +369,10 @@ internal sealed partial class DesktopRuntime
         routeBioOverlayCoordinator = new RouteBioOverlayCoordinator(viewModel.Route, overlayPresentation);
         fleetCarrierRouteOverlayCoordinator = new FleetCarrierRouteOverlayCoordinator(
             viewModel.FleetCarrierRoute,
+            overlayPresentation
+        );
+        squadronCarrierRouteOverlayCoordinator = new FleetCarrierRouteOverlayCoordinator(
+            viewModel.SquadronCarrierRoute,
             overlayPresentation
         );
         surfaceMiningOverlayCoordinator = new SurfaceMiningOverlayCoordinator(viewModel.Mining, overlayPresentation);
@@ -966,7 +977,9 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref colonizationProjectPreviewWindowCoordinator);
         DisposeResource(ref routeWindowCoordinator);
         DisposeResource(ref fleetCarrierRouteWindowCoordinator);
+        DisposeResource(ref squadronCarrierRouteWindowCoordinator);
         DisposeResource(ref fleetCarrierJumpCountdownCoordinator);
+        DisposeResource(ref squadronCarrierJumpCountdownCoordinator);
         DisposeResource(ref biologyPredictionsWindowCoordinator);
         DisposeResource(ref biologyCodexWindowCoordinator);
         DisposeResource(ref biologyCodexBingoWindowCoordinator);
@@ -974,6 +987,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref jumpInfoOverlayCoordinator);
         DisposeResource(ref routeBioOverlayCoordinator);
         DisposeResource(ref fleetCarrierRouteOverlayCoordinator);
+        DisposeResource(ref squadronCarrierRouteOverlayCoordinator);
         DisposeResource(ref miningActivityOverlayCoordinator);
         DisposeResource(ref surfaceMiningOverlayCoordinator);
         DisposeResource(ref mineMapOverlayCoordinator);
@@ -1457,6 +1471,7 @@ internal sealed partial class DesktopRuntime
         jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
+        squadronCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
         systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
         miningActivityOverlayCoordinator?.SetSuppressed(suppress);
         surfaceMiningOverlayCoordinator?.SetSuppressed(suppress);

@@ -90,7 +90,8 @@ internal static class OverlayEditorPreviewCatalog
     public static IReadOnlyList<OverlayEditorPreviewStateDefinition> GetStates(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        return PreviewStates.TryGetValue(plotterName, out OverlayEditorPreviewStateDefinition[]? states)
+        string name = plotterName == "PlotSquadronCarrierRoute" ? "PlotFleetCarrierRoute" : plotterName;
+        return PreviewStates.TryGetValue(name, out OverlayEditorPreviewStateDefinition[]? states)
             ? states
             : [DefaultState];
     }
@@ -147,6 +148,10 @@ internal static class OverlayEditorPreviewCatalog
             "PlotHumanSite" => CreateHumanSitePreview(),
             "PlotJumpInfo" => CreateJumpInfoPreview(previewState),
             "PlotFleetCarrierRoute" => CreateFleetCarrierRoutePreview(ParseFleetCarrierRouteState(previewState)),
+            "PlotSquadronCarrierRoute" => OverlayEditorPreviewFactories.CreateFleetCarrierRoute(
+                ParseFleetCarrierRouteState(previewState),
+                squadron: true
+            ),
             "PlotMultiGameCommander" => CreateMultiCommanderPreview(),
             "PlotPriorScans" => CreatePriorScansPreview(),
             "PlotPulse" => CreatePulsePreview(ParsePulseState(previewState)),

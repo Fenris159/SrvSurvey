@@ -4697,10 +4697,6 @@
       "translation": "AKTUELLE KOORDINATEN"
     },
     {
-      "source": "CURRENT FC ROUTE",
-      "translation": "AKTUELLE FC-ROUTE"
-    },
-    {
       "source": "CURRENT LIMIT",
       "translation": "AKTUELLE GRENZE"
     },
@@ -4771,6 +4767,10 @@
     {
       "source": "Can fulfill all selected needs",
       "translation": "Kann alle ausgewählten Bedürfnisse erfüllen"
+    },
+    {
+      "source": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+      "translation": "Kann neben der anderen Trägerroute laufen. Bei regulären Routen und der Boxel-Suche werden die Einstellungen für das automatische Kopieren beider Anbieter deaktiviert."
     },
     {
       "source": "Cancel",
@@ -5135,6 +5135,14 @@
     {
       "source": "Carrier route",
       "translation": "Trägerroute"
+    },
+    {
+      "source": "Carrier route name",
+      "translation": "Name der Carrier-Route"
+    },
+    {
+      "source": "Carrier route notes",
+      "translation": "Hinweise zur Transportroute"
     },
     {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -5691,6 +5699,10 @@
     {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Wählen Sie eine Überlagerung und überschreiben Sie dann optional deren geerbte Deckkraft, ohne die durch Ziehen gesteuerte Position zu ändern."
+    },
+    {
+      "source": "Choose another carrier workspace to share the itinerary library.",
+      "translation": "Wählen Sie einen anderen Spediteur-Arbeitsbereich aus, um die Reiseroutenbibliothek freizugeben."
     },
     {
       "source": "Choose another commander",
@@ -6929,8 +6941,16 @@
       "translation": "Konfigurieren Sie die passive Warenliste im Spiel und die verknüpften Flottenträgerspalten."
     },
     {
+      "source": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Konfigurieren Sie das persönliche Routen-Overlay, die Abkürzung und die Informationen zum nächsten Sprung."
+    },
+    {
       "source": "Configure the search sphere",
       "translation": "Konfigurieren Sie den Suchbereich"
+    },
+    {
+      "source": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Konfigurieren Sie das Routen-Overlay, die Abkürzung und die Informationen zum nächsten Sprung des Geschwaderträgers."
     },
     {
       "source": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -7861,6 +7881,14 @@
       "translation": "Aktuell"
     },
     {
+      "source": "Current FC route",
+      "translation": "Aktuelle FC-Route"
+    },
+    {
+      "source": "Current SC route",
+      "translation": "Aktuelle SC-Route"
+    },
+    {
       "source": "Current Ship",
       "translation": "Aktuelles Schiff"
     },
@@ -8393,12 +8421,12 @@
       "translation": "Ausgewähltes Lesezeichen löschen"
     },
     {
-      "source": "Delete selected fleet-carrier routes",
-      "translation": "Ausgewählte Flottenträgerrouten löschen"
+      "source": "Delete selected carrier routes?",
+      "translation": "Ausgewählte Carrier-Routen löschen?"
     },
     {
-      "source": "Delete selected fleet-carrier routes?",
-      "translation": "Ausgewählte Flottenträgerrouten löschen?"
+      "source": "Delete selected fleet-carrier routes",
+      "translation": "Ausgewählte Flottenträgerrouten löschen"
     },
     {
       "source": "Delete selected group",
@@ -8467,6 +8495,10 @@
     {
       "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
       "translation": "{0} gelöscht. Es wurden Tagebücher, Notizen und Screenshots geführt."
+    },
+    {
+      "source": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+      "translation": "Löscht diese Reiserouten aus der gemeinsam genutzten Bibliothek. Die Sendungsverfolgung wird für jeden Spediteur gelöscht, der einer ausgewählten Route folgt."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -10849,10 +10881,6 @@
       "translation": "FC-Routen"
     },
     {
-      "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-      "translation": "FC Routes akzeptiert nur Spansh Fleet Carrier Router-Ergebnis-URLs."
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RABE"
     },
@@ -11611,14 +11639,6 @@
     {
       "source": "Fleet value",
       "translation": "Flottenwert"
-    },
-    {
-      "source": "Fleet-carrier route name",
-      "translation": "Routenname des Flottenträgers"
-    },
-    {
-      "source": "Fleet-carrier route notes",
-      "translation": "Routennotizen der Flottenträger"
     },
     {
       "source": "FleetCarrier",
@@ -14037,8 +14057,8 @@
       "translation": "Importieren Sie EliteMining oder SrvSurvey Sitzungs-CSV"
     },
     {
-      "source": "Import Fleet Carrier Router results from the FC Routes tab.",
-      "translation": "Importieren Sie Fleet Carrier Router-Ergebnisse aus der Registerkarte „FC-Routen“."
+      "source": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
+      "translation": "Importieren Sie Fleet Carrier Router-Ergebnisse aus der Registerkarte „FC-Routen“ oder „SC-Routen“."
     },
     {
       "source": "Import Google Desktop client setup",
@@ -14059,6 +14079,10 @@
     {
       "source": "Import a Spansh route or a list of system names.",
       "translation": "Importieren Sie eine Spansh-Route oder eine Liste von Systemnamen."
+    },
+    {
+      "source": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+      "translation": "Importieren Sie eine Carrier-Route, erstellen Sie eine im SC Route Workspace oder verwenden Sie eine gespeicherte Route aus FC Routes."
     },
     {
       "source": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -19581,6 +19605,10 @@
       "translation": "Öffnen Sie den Routenarbeitsbereich"
     },
     {
+      "source": "Open SC Route Workspace",
+      "translation": "Öffnen Sie den SC Route Workspace"
+    },
+    {
       "source": "Open Selected",
       "translation": "Ausgewählte öffnen"
     },
@@ -20437,6 +20465,10 @@
       "translation": "Overlay-Maßstab wurde nicht geändert: {0}"
     },
     {
+      "source": "Overlay settings",
+      "translation": "Overlay-Einstellungen"
+    },
+    {
       "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
       "translation": "Die Overlay-Einstellungen überschreiten die unterstützte Wiederherstellungsgröße von 64 MiB. Es wurden keine Dateien geändert."
     },
@@ -20985,6 +21017,10 @@
       "translation": "Planen Sie Bergbauausflüge, verfolgen Sie Sitzungen und Missionen und behalten Sie gemeinsame Standorte und Berichte bei."
     },
     {
+      "source": "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier.",
+      "translation": "Planen Sie die Reiseroute Ihres Geschwaderträgers und verfolgen Sie seine Sprünge unabhängig von Ihrem persönlichen Träger."
+    },
+    {
       "source": "Planet",
       "translation": "Planet"
     },
@@ -21223,6 +21259,10 @@
     {
       "source": "PlotSphericalSearch",
       "translation": "PlotSphericalSearch"
+    },
+    {
+      "source": "PlotSquadronCarrierRoute",
+      "translation": "PlotSquadronCarrierRoute"
     },
     {
       "source": "PlotStationInfo",
@@ -24073,6 +24113,10 @@
       "translation": "System wird aus Nexus entfernt..."
     },
     {
+      "source": "Rename carrier route",
+      "translation": "Carrier-Route umbenennen"
+    },
+    {
       "source": "Rename fleet-carrier route",
       "translation": "Flottenträgerroute umbenennen"
     },
@@ -25201,6 +25245,14 @@
       "translation": "Gespeicherte Suchfelder"
     },
     {
+      "source": "SC Route Workspace",
+      "translation": "SC Route-Arbeitsbereich"
+    },
+    {
+      "source": "SC Routes",
+      "translation": "SC-Routen"
+    },
+    {
       "source": "SCALE",
       "translation": "Maßstab"
     },
@@ -25423,6 +25475,14 @@
     {
       "source": "SQUADRON CARRIER",
       "translation": "Geschwaderträger"
+    },
+    {
+      "source": "SQUADRON CARRIER NEXT JUMP",
+      "translation": "Nächster Sprung des Geschwaderträgers"
+    },
+    {
+      "source": "SQUADRON CARRIER ROUTE",
+      "translation": "Geschwaderträgerroute"
     },
     {
       "source": "SRV",
@@ -25907,6 +25967,10 @@
     {
       "source": "Saved in the legacy-compatible system data file.",
       "translation": "Wird in der Legacy-kompatiblen Systemdatendatei gespeichert."
+    },
+    {
+      "source": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+      "translation": "Gespeicherte Reiserouten und Favoriten werden mit FC Routes und SC Routes geteilt. Jeder Spediteur behält seinen eigenen Routenfortschritt und seine eigene Einstellung für das automatische Kopieren."
     },
     {
       "source": "Saved mining HUD calibration.",
@@ -27621,6 +27685,10 @@
       "translation": "Mangelware anzeigen"
     },
     {
+      "source": "Show squadron carrier next-jump information",
+      "translation": "Informationen zum nächsten Sprung des Geschwaderträgers anzeigen"
+    },
+    {
       "source": "Show station/target details in left nav panel",
       "translation": "Stations-/Zieldetails im linken Navigationsbereich anzeigen"
     },
@@ -27655,6 +27723,10 @@
     {
       "source": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
       "translation": "Zeigen Sie das ausgewählte Ziel, den nächsten Sprung, den Entdeckungsfortschritt, die Anzahl der biologischen Signale, die Routenentfernung und den optionalen Fraktionseinfluss an, während die Galaxiekarte geöffnet ist."
+    },
+    {
+      "source": "Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
+      "translation": "Zeigen Sie den geplanten Sprung, die Sprungphasen und das Ziel des Geschwaderträgers in einem eigenen Overlay an, auch wenn keine SC-Route aktiv ist."
     },
     {
       "source": "Show the survey-map legend",
@@ -28277,12 +28349,32 @@
       "translation": "Geschwaderträger"
     },
     {
+      "source": "Squadron carrier itinerary",
+      "translation": "Reiseroute des Geschwaderträgers"
+    },
+    {
+      "source": "Squadron carrier next jump",
+      "translation": "Nächster Sprung des Geschwaderträgers"
+    },
+    {
+      "source": "Squadron carrier route",
+      "translation": "Geschwaderträgerroute"
+    },
+    {
       "source": "SquadronAndFriends",
       "translation": "SquadronAndFriends"
     },
     {
       "source": "SquadronCarrier",
       "translation": "Geschwaderträger"
+    },
+    {
+      "source": "SquadronCarrierNextJump",
+      "translation": "SquadronCarrierNextJump"
+    },
+    {
+      "source": "SquadronCarrierRoute.IsActive",
+      "translation": "SquadronCarrierRoute.IsActive"
     },
     {
       "source": "SquadronLogo",
@@ -28587,6 +28679,10 @@
     {
       "source": "SrvSurvey route files",
       "translation": "SrvSurvey Routendateien"
+    },
+    {
+      "source": "SrvSurvey squadron carrier route overlay",
+      "translation": "SrvSurvey Routenüberlagerung für Geschwaderträger"
     },
     {
       "source": "SrvSurvey station information overlay",
@@ -32221,6 +32317,10 @@
       "translation": "Das ausgewählte Backup wurde vor dem Laden Ihrer Arbeitsbereiche wiederhergestellt."
     },
     {
+      "source": "The selected carrier supplies the Galaxy Map copy.",
+      "translation": "Der ausgewählte Anbieter stellt die Kopie der Galaxy Map bereit."
+    },
+    {
       "source": "The selected cloud backup was downloaded. Local settings are unchanged.",
       "translation": "Das ausgewählte Cloud-Backup wurde heruntergeladen. Die lokalen Einstellungen bleiben unverändert."
     },
@@ -33203,6 +33303,10 @@
     {
       "source": "Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements.",
       "translation": "Verfolgen Sie geplante Standorte und aktive Bauarbeiten, wählen Sie aus, welche Projekte in die Frachtliste aufgenommen werden, und überprüfen Sie die aktuellen Bauanforderungen."
+    },
+    {
+      "source": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+      "translation": "Verfolgen Sie Sprünge von Staffelträgern mit einer unabhängigen Reiseroute und den gespeicherten Routen, die mit FC Routes geteilt werden."
     },
     {
       "source": "TrackMaterialCollection",
@@ -35653,8 +35757,8 @@
       "translation": "Arbeitsplatz"
     },
     {
-      "source": "Write fleet-carrier route notes...",
-      "translation": "Schreiben Sie Routennotizen für Flottenbetreiber ..."
+      "source": "Write carrier route notes...",
+      "translation": "Notizen zur Route des Spediteurs schreiben..."
     },
     {
       "source": "Write route notes...",
@@ -37019,6 +37123,10 @@
     {
       "source": "fc-route",
       "translation": "fc-route"
+    },
+    {
+      "source": "fc-routes",
+      "translation": "FC-Routen"
     },
     {
       "source": "fcz",
@@ -38489,6 +38597,10 @@
       "translation": "gespeicherte Auswahl erneuert."
     },
     {
+      "source": "sc-routes",
+      "translation": "sc-Routen"
+    },
+    {
       "source": "scale",
       "translation": "Skala"
     },
@@ -39611,6 +39723,10 @@
     {
       "source": "{0} Win32 error {1}.",
       "translation": "{0} Win32-Fehler {1}."
+    },
+    {
+      "source": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+      "translation": "{0} akzeptiert nur Spansh Fleet Carrier Router-Ergebnis-URLs."
     },
     {
       "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
@@ -45423,10 +45539,6 @@
       "translation": "COORDENADAS ACTUALES"
     },
     {
-      "source": "CURRENT FC ROUTE",
-      "translation": "RUTA ACTUAL DEL FC"
-    },
-    {
       "source": "CURRENT LIMIT",
       "translation": "LÍMITE ACTUAL"
     },
@@ -45497,6 +45609,10 @@
     {
       "source": "Can fulfill all selected needs",
       "translation": "Puede satisfacer todas las necesidades seleccionadas"
+    },
+    {
+      "source": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+      "translation": "Puede circular junto a la ruta del otro transportista. Las rutas regulares y la búsqueda de casillas desactivan ambas configuraciones de copia automática del operador."
     },
     {
       "source": "Cancel",
@@ -45861,6 +45977,14 @@
     {
       "source": "Carrier route",
       "translation": "Ruta del transportista"
+    },
+    {
+      "source": "Carrier route name",
+      "translation": "Nombre de la ruta del transportista"
+    },
+    {
+      "source": "Carrier route notes",
+      "translation": "Notas de ruta del transportista"
     },
     {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -46417,6 +46541,10 @@
     {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Elija una superposición y, opcionalmente, anule su opacidad heredada sin cambiar su posición administrada por arrastre."
+    },
+    {
+      "source": "Choose another carrier workspace to share the itinerary library.",
+      "translation": "Elija otro espacio de trabajo de la aerolínea para compartir la biblioteca de itinerarios."
     },
     {
       "source": "Choose another commander",
@@ -47655,8 +47783,16 @@
       "translation": "Configure la lista pasiva de productos del juego y las columnas vinculadas de Fleet Carrier."
     },
     {
+      "source": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Configure la superposición de ruta del operador personal, el acceso directo y la información del próximo salto."
+    },
+    {
       "source": "Configure the search sphere",
       "translation": "Configurar la esfera de búsqueda"
+    },
+    {
+      "source": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Configure la superposición de la ruta del portaaviones del escuadrón, los atajos y la información del próximo salto."
     },
     {
       "source": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -48587,6 +48723,14 @@
       "translation": "Actual"
     },
     {
+      "source": "Current FC route",
+      "translation": "Ruta actual del FC"
+    },
+    {
+      "source": "Current SC route",
+      "translation": "Ruta SC actual"
+    },
+    {
       "source": "Current Ship",
       "translation": "Barco actual"
     },
@@ -49119,12 +49263,12 @@
       "translation": "Eliminar marcador seleccionado"
     },
     {
-      "source": "Delete selected fleet-carrier routes",
-      "translation": "Eliminar rutas de flotas seleccionadas"
+      "source": "Delete selected carrier routes?",
+      "translation": "¿Eliminar rutas de transportistas seleccionadas?"
     },
     {
-      "source": "Delete selected fleet-carrier routes?",
-      "translation": "¿Eliminar rutas de flotas seleccionadas?"
+      "source": "Delete selected fleet-carrier routes",
+      "translation": "Eliminar rutas de flotas seleccionadas"
     },
     {
       "source": "Delete selected group",
@@ -49193,6 +49337,10 @@
     {
       "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
       "translation": "Eliminado {0}. Se mantuvieron diarios, notas y capturas de pantalla."
+    },
+    {
+      "source": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+      "translation": "Elimina estos itinerarios de la biblioteca compartida. El seguimiento se borra para cualquiera de los transportistas que siguen una ruta seleccionada."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -51575,10 +51723,6 @@
       "translation": "Rutas FC"
     },
     {
-      "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-      "translation": "FC Routes acepta Spansh URL de resultados de Fleet Carrier Router únicamente."
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RAVEN"
     },
@@ -52337,14 +52481,6 @@
     {
       "source": "Fleet value",
       "translation": "Valor de la flota"
-    },
-    {
-      "source": "Fleet-carrier route name",
-      "translation": "Nombre de la ruta del transportista de flota"
-    },
-    {
-      "source": "Fleet-carrier route notes",
-      "translation": "Notas de ruta del transportista de flotas"
     },
     {
       "source": "FleetCarrier",
@@ -54763,8 +54899,8 @@
       "translation": "Importar sesión CSV de EliteMining o SrvSurvey"
     },
     {
-      "source": "Import Fleet Carrier Router results from the FC Routes tab.",
-      "translation": "Importe los resultados del enrutador Fleet Carrier desde la pestaña Rutas FC."
+      "source": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
+      "translation": "Importe los resultados del enrutador de flota de transporte desde la pestaña Rutas FC o Rutas SC."
     },
     {
       "source": "Import Google Desktop client setup",
@@ -54785,6 +54921,10 @@
     {
       "source": "Import a Spansh route or a list of system names.",
       "translation": "Importe una ruta Spansh o una lista de nombres de sistemas."
+    },
+    {
+      "source": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+      "translation": "Importe una ruta de transporte, cree una en SC Route Workspace o utilice una ruta guardada de FC Routes."
     },
     {
       "source": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -60307,6 +60447,10 @@
       "translation": "Espacio de trabajo de ruta abierta"
     },
     {
+      "source": "Open SC Route Workspace",
+      "translation": "Abrir espacio de trabajo de ruta SC"
+    },
+    {
       "source": "Open Selected",
       "translation": "Abrir Seleccionado"
     },
@@ -61163,6 +61307,10 @@
       "translation": "La escala de superposición no fue cambiada: {0}"
     },
     {
+      "source": "Overlay settings",
+      "translation": "Configuración de superposición"
+    },
+    {
       "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
       "translation": "La configuración de superposición supera el tamaño de recuperación admitido de 64 MiB. No se cambiaron archivos."
     },
@@ -61711,6 +61859,10 @@
       "translation": "Planifique viajes mineros, realice un seguimiento de sesiones y misiones, y mantenga ubicaciones e informes compartidos."
     },
     {
+      "source": "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier.",
+      "translation": "Planifica el itinerario de tu portaaviones de escuadrón y realiza un seguimiento de sus saltos independientemente de tu portaaviones personal."
+    },
+    {
       "source": "Planet",
       "translation": "Planeta"
     },
@@ -61949,6 +62101,10 @@
     {
       "source": "PlotSphericalSearch",
       "translation": "ParcelaEsféricaBúsqueda"
+    },
+    {
+      "source": "PlotSquadronCarrierRoute",
+      "translation": "TramaEscuadrónPortadorRuta"
     },
     {
       "source": "PlotStationInfo",
@@ -64799,6 +64955,10 @@
       "translation": "Eliminando el sistema de Nexus..."
     },
     {
+      "source": "Rename carrier route",
+      "translation": "Cambiar el nombre de la ruta del transportista"
+    },
+    {
       "source": "Rename fleet-carrier route",
       "translation": "Cambiar el nombre de la ruta del transportista de flota"
     },
@@ -65927,6 +66087,14 @@
       "translation": "CUADROS DE BÚSQUEDA GUARDADOS"
     },
     {
+      "source": "SC Route Workspace",
+      "translation": "Espacio de trabajo de ruta SC"
+    },
+    {
+      "source": "SC Routes",
+      "translation": "Rutas SC"
+    },
+    {
       "source": "SCALE",
       "translation": "ESCALA"
     },
@@ -66149,6 +66317,14 @@
     {
       "source": "SQUADRON CARRIER",
       "translation": "Portaaviones de escuadrón"
+    },
+    {
+      "source": "SQUADRON CARRIER NEXT JUMP",
+      "translation": "Próximo salto del portaaviones del escuadrón"
+    },
+    {
+      "source": "SQUADRON CARRIER ROUTE",
+      "translation": "Ruta del portaaviones del escuadrón"
     },
     {
       "source": "SRV",
@@ -66633,6 +66809,10 @@
     {
       "source": "Saved in the legacy-compatible system data file.",
       "translation": "Guardado en el archivo de datos del sistema compatible con el legado."
+    },
+    {
+      "source": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+      "translation": "Los itinerarios guardados y los favoritos se comparten con las rutas FC y SC. Cada operador mantiene su propio progreso de ruta y configuración de copia automática."
     },
     {
       "source": "Saved mining HUD calibration.",
@@ -68347,6 +68527,10 @@
       "translation": "Mostrar escasez de oferta"
     },
     {
+      "source": "Show squadron carrier next-jump information",
+      "translation": "Mostrar información del siguiente salto del portaaviones del escuadrón"
+    },
+    {
       "source": "Show station/target details in left nav panel",
       "translation": "Mostrar detalles de la estación/objetivo en el panel de navegación izquierdo"
     },
@@ -68381,6 +68565,10 @@
     {
       "source": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
       "translation": "Muestra el destino seleccionado, el siguiente salto, el progreso del descubrimiento, el recuento de señales biológicas, la distancia de la ruta y la influencia de la facción opcional mientras el mapa de la galaxia está abierto."
+    },
+    {
+      "source": "Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
+      "translation": "Muestra el salto programado, las fases de salto y el destino del portaaviones del escuadrón en su propia superposición, incluso cuando no hay ninguna ruta SC activa."
     },
     {
       "source": "Show the survey-map legend",
@@ -69003,12 +69191,32 @@
       "translation": "Portaaviones de escuadrón"
     },
     {
+      "source": "Squadron carrier itinerary",
+      "translation": "Itinerario del portaaviones del escuadrón"
+    },
+    {
+      "source": "Squadron carrier next jump",
+      "translation": "Próximo salto del portaaviones del escuadrón"
+    },
+    {
+      "source": "Squadron carrier route",
+      "translation": "Ruta del portaaviones del escuadrón"
+    },
+    {
       "source": "SquadronAndFriends",
       "translation": "escuadrónyamigos"
     },
     {
       "source": "SquadronCarrier",
       "translation": "Portaaviones de escuadrón"
+    },
+    {
+      "source": "SquadronCarrierNextJump",
+      "translation": "EscuadrónPortadorSiguienteSaltar"
+    },
+    {
+      "source": "SquadronCarrierRoute.IsActive",
+      "translation": "SquadronCarrierRoute.IsActive"
     },
     {
       "source": "SquadronLogo",
@@ -69313,6 +69521,10 @@
     {
       "source": "SrvSurvey route files",
       "translation": "SrvSurvey archivos de ruta"
+    },
+    {
+      "source": "SrvSurvey squadron carrier route overlay",
+      "translation": "SrvSurvey superposición de ruta de portaaviones de escuadrón"
     },
     {
       "source": "SrvSurvey station information overlay",
@@ -72947,6 +73159,10 @@
       "translation": "La copia de seguridad seleccionada se restauró antes de cargar sus espacios de trabajo."
     },
     {
+      "source": "The selected carrier supplies the Galaxy Map copy.",
+      "translation": "El operador seleccionado proporciona la copia del Galaxy Map."
+    },
+    {
       "source": "The selected cloud backup was downloaded. Local settings are unchanged.",
       "translation": "Se descargó la copia de seguridad en la nube seleccionada. La configuración local no se modifica."
     },
@@ -73929,6 +74145,10 @@
     {
       "source": "Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements.",
       "translation": "Realice un seguimiento de los sitios planificados y las construcciones activas, elija qué proyectos alimentan la lista de carga e inspeccione los requisitos de construcción en vivo."
+    },
+    {
+      "source": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+      "translation": "Realice un seguimiento de los saltos de los portaaviones del escuadrón con un itinerario independiente y las rutas guardadas compartidas con FC Routes."
     },
     {
       "source": "TrackMaterialCollection",
@@ -76379,8 +76599,8 @@
       "translation": "Espacio de trabajo"
     },
     {
-      "source": "Write fleet-carrier route notes...",
-      "translation": "Escribir notas de ruta del transportista de flota..."
+      "source": "Write carrier route notes...",
+      "translation": "Escribir notas de ruta del transportista..."
     },
     {
       "source": "Write route notes...",
@@ -77745,6 +77965,10 @@
     {
       "source": "fc-route",
       "translation": "ruta fc"
+    },
+    {
+      "source": "fc-routes",
+      "translation": "rutas-fc"
     },
     {
       "source": "fcz",
@@ -79215,6 +79439,10 @@
       "translation": "selección guardada renovada."
     },
     {
+      "source": "sc-routes",
+      "translation": "rutas sc"
+    },
+    {
       "source": "scale",
       "translation": "escala"
     },
@@ -80337,6 +80565,10 @@
     {
       "source": "{0} Win32 error {1}.",
       "translation": "{0} Error de Win32 {1}."
+    },
+    {
+      "source": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+      "translation": "{0} acepta Spansh URL de resultados de Fleet Carrier Router únicamente."
     },
     {
       "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
@@ -86149,10 +86381,6 @@
       "translation": "COORDONNÉES ACTUELLES"
     },
     {
-      "source": "CURRENT FC ROUTE",
-      "translation": "PARCOURS FC ACTUEL"
-    },
-    {
       "source": "CURRENT LIMIT",
       "translation": "LIMITE ACTUELLE"
     },
@@ -86223,6 +86451,10 @@
     {
       "source": "Can fulfill all selected needs",
       "translation": "Peut répondre à tous les besoins sélectionnés"
+    },
+    {
+      "source": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+      "translation": "Peut fonctionner le long de l’autre itinéraire du transporteur. Les itinéraires réguliers et la recherche de boxel désactivent les paramètres de copie automatique des deux opérateurs."
     },
     {
       "source": "Cancel",
@@ -86587,6 +86819,14 @@
     {
       "source": "Carrier route",
       "translation": "Itinéraire du transporteur"
+    },
+    {
+      "source": "Carrier route name",
+      "translation": "Nom de l'itinéraire du transporteur"
+    },
+    {
+      "source": "Carrier route notes",
+      "translation": "Notes d'itinéraire du transporteur"
     },
     {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -87143,6 +87383,10 @@
     {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Choisissez une superposition, puis remplacez éventuellement son opacité héritée sans modifier sa position gérée par le glissement."
+    },
+    {
+      "source": "Choose another carrier workspace to share the itinerary library.",
+      "translation": "Choisissez un autre espace de travail de transporteur pour partager la bibliothèque d'itinéraires."
     },
     {
       "source": "Choose another commander",
@@ -88381,8 +88625,16 @@
       "translation": "Configurez la liste des produits passifs du jeu et les colonnes Fleet Carrier liées."
     },
     {
+      "source": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Configurez la superposition de l'itinéraire du transporteur personnel, le raccourci et les informations sur le prochain saut."
+    },
+    {
       "source": "Configure the search sphere",
       "translation": "Configurer la sphère de recherche"
+    },
+    {
+      "source": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Configurez la superposition de l'itinéraire du transporteur d'escadron, les raccourcis et les informations sur le prochain saut."
     },
     {
       "source": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -89313,6 +89565,14 @@
       "translation": "Actuel"
     },
     {
+      "source": "Current FC route",
+      "translation": "Parcours actuel du FC"
+    },
+    {
+      "source": "Current SC route",
+      "translation": "Itinéraire SC actuel"
+    },
+    {
       "source": "Current Ship",
       "translation": "Navire actuel"
     },
@@ -89845,12 +90105,12 @@
       "translation": "Supprimer le favori sélectionné"
     },
     {
-      "source": "Delete selected fleet-carrier routes",
-      "translation": "Supprimer les itinéraires des transporteurs de flotte sélectionnés"
+      "source": "Delete selected carrier routes?",
+      "translation": "Supprimer les itinéraires de transporteur sélectionnés ?"
     },
     {
-      "source": "Delete selected fleet-carrier routes?",
-      "translation": "Supprimer les itinéraires de flotte de transporteurs sélectionnés ?"
+      "source": "Delete selected fleet-carrier routes",
+      "translation": "Supprimer les itinéraires des transporteurs de flotte sélectionnés"
     },
     {
       "source": "Delete selected group",
@@ -89919,6 +90179,10 @@
     {
       "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
       "translation": "{0} supprimé. Des journaux, des notes et des captures d'écran ont été conservés."
+    },
+    {
+      "source": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+      "translation": "Supprime ces itinéraires de la bibliothèque partagée. Le suivi est autorisé pour l'un ou l'autre transporteur suivant un itinéraire sélectionné."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -92301,10 +92565,6 @@
       "translation": "Itinéraires FC"
     },
     {
-      "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-      "translation": "FC Routes accepte uniquement les URL de résultats des Spansh Fleet Carrier Router."
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RAVEN"
     },
@@ -93063,14 +93323,6 @@
     {
       "source": "Fleet value",
       "translation": "Valeur de la flotte"
-    },
-    {
-      "source": "Fleet-carrier route name",
-      "translation": "Nom de l'itinéraire du transporteur-flotte"
-    },
-    {
-      "source": "Fleet-carrier route notes",
-      "translation": "Notes d'itinéraire des transporteurs de flotte"
     },
     {
       "source": "FleetCarrier",
@@ -95489,8 +95741,8 @@
       "translation": "Importer le CSV d'une session EliteMining ou SrvSurvey"
     },
     {
-      "source": "Import Fleet Carrier Router results from the FC Routes tab.",
-      "translation": "Importez les résultats du Fleet Carrier Router à partir de l’onglet FC Routes."
+      "source": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
+      "translation": "Importez les résultats du Fleet Carrier Router à partir de l’onglet FC Routes ou SC Routes."
     },
     {
       "source": "Import Google Desktop client setup",
@@ -95511,6 +95763,10 @@
     {
       "source": "Import a Spansh route or a list of system names.",
       "translation": "Importez un itinéraire Spansh ou une liste de noms de systèmes."
+    },
+    {
+      "source": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+      "translation": "Importez un itinéraire de transporteur, créez-en un dans SC Route Workspace ou utilisez un itinéraire enregistré à partir de FC Routes."
     },
     {
       "source": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -101033,6 +101289,10 @@
       "translation": "Espace de travail d'itinéraire ouvert"
     },
     {
+      "source": "Open SC Route Workspace",
+      "translation": "Espace de travail Ouvrir la route SC"
+    },
+    {
       "source": "Open Selected",
       "translation": "Ouvrir la sélection"
     },
@@ -101889,6 +102149,10 @@
       "translation": "L'échelle de superposition n'a pas été modifiée : {0}"
     },
     {
+      "source": "Overlay settings",
+      "translation": "Paramètres de superposition"
+    },
+    {
       "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
       "translation": "Les paramètres de superposition dépassent la taille de récupération prise en charge de 64 Mio. Aucun fichier n'a été modifié."
     },
@@ -102437,6 +102701,10 @@
       "translation": "Planifiez des voyages miniers, suivez les sessions et les missions, et conservez des emplacements et des rapports partagés."
     },
     {
+      "source": "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier.",
+      "translation": "Planifiez l'itinéraire de votre porte-avions d'escadron et suivez ses sauts indépendamment de votre transporteur personnel."
+    },
+    {
       "source": "Planet",
       "translation": "Planète"
     },
@@ -102675,6 +102943,10 @@
     {
       "source": "PlotSphericalSearch",
       "translation": "PlotSphericalSearch"
+    },
+    {
+      "source": "PlotSquadronCarrierRoute",
+      "translation": "TerrainEscadronTransporteurRoute"
     },
     {
       "source": "PlotStationInfo",
@@ -105525,6 +105797,10 @@
       "translation": "Suppression du système de Nexus..."
     },
     {
+      "source": "Rename carrier route",
+      "translation": "Renommer l'itinéraire du transporteur"
+    },
+    {
       "source": "Rename fleet-carrier route",
       "translation": "Renommer l'itinéraire flotte-transporteur"
     },
@@ -106653,6 +106929,14 @@
       "translation": "CASES DE RECHERCHE SAUVEGARDÉES"
     },
     {
+      "source": "SC Route Workspace",
+      "translation": "Espace de travail d'itinéraire SC"
+    },
+    {
+      "source": "SC Routes",
+      "translation": "Itinéraires SC"
+    },
+    {
       "source": "SCALE",
       "translation": "ÉCHELLE"
     },
@@ -106875,6 +107159,14 @@
     {
       "source": "SQUADRON CARRIER",
       "translation": "Transporteur d'escadron"
+    },
+    {
+      "source": "SQUADRON CARRIER NEXT JUMP",
+      "translation": "Prochain saut du porte-avions d'escadron"
+    },
+    {
+      "source": "SQUADRON CARRIER ROUTE",
+      "translation": "Itinéraire du transporteur d'escadron"
     },
     {
       "source": "SRV",
@@ -107359,6 +107651,10 @@
     {
       "source": "Saved in the legacy-compatible system data file.",
       "translation": "Enregistré dans le fichier de données système compatible avec l'ancien système."
+    },
+    {
+      "source": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+      "translation": "Les itinéraires enregistrés et les favoris sont partagés avec les itinéraires FC et SC. Chaque transporteur conserve sa propre progression de l'itinéraire et ses propres paramètres de copie automatique."
     },
     {
       "source": "Saved mining HUD calibration.",
@@ -109073,6 +109369,10 @@
       "translation": "Afficher une offre limitée"
     },
     {
+      "source": "Show squadron carrier next-jump information",
+      "translation": "Afficher les informations sur le prochain saut du porte-avions de l'escadron"
+    },
+    {
       "source": "Show station/target details in left nav panel",
       "translation": "Afficher les détails de la station/cible dans le panneau de navigation de gauche"
     },
@@ -109107,6 +109407,10 @@
     {
       "source": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
       "translation": "Affichez la destination sélectionnée, le prochain saut, la progression de la découverte, le nombre de signaux biologiques, la distance de l'itinéraire et l'influence facultative de la faction lorsque la carte de la galaxie est ouverte."
+    },
+    {
+      "source": "Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
+      "translation": "Affichez le saut programmé, les phases de saut et la destination du porte-escadron dans sa propre superposition, y compris lorsqu'aucun itinéraire SC n'est actif."
     },
     {
       "source": "Show the survey-map legend",
@@ -109729,12 +110033,32 @@
       "translation": "Transporteur d'escadron"
     },
     {
+      "source": "Squadron carrier itinerary",
+      "translation": "Itinéraire du transporteur d'escadron"
+    },
+    {
+      "source": "Squadron carrier next jump",
+      "translation": "Prochain saut du porte-avions d'escadron"
+    },
+    {
+      "source": "Squadron carrier route",
+      "translation": "Itinéraire du transporteur d'escadron"
+    },
+    {
       "source": "SquadronAndFriends",
       "translation": "EscadronEtAmis"
     },
     {
       "source": "SquadronCarrier",
       "translation": "EscadronTransporteur"
+    },
+    {
+      "source": "SquadronCarrierNextJump",
+      "translation": "EscadronCarrierSuivantSaut"
+    },
+    {
+      "source": "SquadronCarrierRoute.IsActive",
+      "translation": "SquadronCarrierRoute.IsActive"
     },
     {
       "source": "SquadronLogo",
@@ -110039,6 +110363,10 @@
     {
       "source": "SrvSurvey route files",
       "translation": "SrvSurvey fichiers d'itinéraire"
+    },
+    {
+      "source": "SrvSurvey squadron carrier route overlay",
+      "translation": "SrvSurvey superposition d'itinéraire de porte-avions d'escadron"
     },
     {
       "source": "SrvSurvey station information overlay",
@@ -113673,6 +114001,10 @@
       "translation": "La sauvegarde sélectionnée a été restaurée avant le chargement de vos espaces de travail."
     },
     {
+      "source": "The selected carrier supplies the Galaxy Map copy.",
+      "translation": "L'opérateur sélectionné fournit la copie de la Galaxy Map."
+    },
+    {
       "source": "The selected cloud backup was downloaded. Local settings are unchanged.",
       "translation": "La sauvegarde cloud sélectionnée a été téléchargée. Les paramètres locaux sont inchangés."
     },
@@ -114655,6 +114987,10 @@
     {
       "source": "Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements.",
       "translation": "Suivez les sites planifiés et les constructions actives, choisissez les projets qui alimentent la liste de fret et inspectez les exigences de construction en direct."
+    },
+    {
+      "source": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+      "translation": "Suivez les sauts des transporteurs d'escadron avec un itinéraire indépendant et les itinéraires enregistrés partagés avec FC Routes."
     },
     {
       "source": "TrackMaterialCollection",
@@ -117105,8 +117441,8 @@
       "translation": "Espace de travail"
     },
     {
-      "source": "Write fleet-carrier route notes...",
-      "translation": "Rédiger des notes d'itinéraire pour les transporteurs de flotte..."
+      "source": "Write carrier route notes...",
+      "translation": "Rédiger des notes d'itinéraires de transporteurs..."
     },
     {
       "source": "Write route notes...",
@@ -118471,6 +118807,10 @@
     {
       "source": "fc-route",
       "translation": "fc-route"
+    },
+    {
+      "source": "fc-routes",
+      "translation": "routes-fc"
     },
     {
       "source": "fcz",
@@ -119941,6 +120281,10 @@
       "translation": "sélection enregistrée renouvelée."
     },
     {
+      "source": "sc-routes",
+      "translation": "sc-routes"
+    },
+    {
       "source": "scale",
       "translation": "échelle"
     },
@@ -121063,6 +121407,10 @@
     {
       "source": "{0} Win32 error {1}.",
       "translation": "{0} Erreur Win32 {1}."
+    },
+    {
+      "source": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+      "translation": "{0} accepte uniquement les URL de résultats de routeur de transporteur de flotte Spansh."
     },
     {
       "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
@@ -126875,10 +127223,6 @@
       "translation": "COORDENADAS ATUAIS"
     },
     {
-      "source": "CURRENT FC ROUTE",
-      "translation": "ROTA FC ATUAL"
-    },
-    {
       "source": "CURRENT LIMIT",
       "translation": "LIMITE ATUAL"
     },
@@ -126949,6 +127293,10 @@
     {
       "source": "Can fulfill all selected needs",
       "translation": "Pode atender a todas as necessidades selecionadas"
+    },
+    {
+      "source": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+      "translation": "Pode circular ao lado da rota de outra transportadora. Rotas regulares e pesquisa de boxel desativam as configurações de cópia automática da operadora."
     },
     {
       "source": "Cancel",
@@ -127313,6 +127661,14 @@
     {
       "source": "Carrier route",
       "translation": "Rota da transportadora"
+    },
+    {
+      "source": "Carrier route name",
+      "translation": "Nome da rota da transportadora"
+    },
+    {
+      "source": "Carrier route notes",
+      "translation": "Notas de rota da transportadora"
     },
     {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -127869,6 +128225,10 @@
     {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Escolha uma sobreposição e, opcionalmente, substitua sua opacidade herdada sem alterar sua posição gerenciada por arrastar."
+    },
+    {
+      "source": "Choose another carrier workspace to share the itinerary library.",
+      "translation": "Escolha outro espaço de trabalho da transportadora para compartilhar a biblioteca de itinerários."
     },
     {
       "source": "Choose another commander",
@@ -129107,8 +129467,16 @@
       "translation": "Configure a lista passiva de mercadorias no jogo e as colunas vinculadas do Fleet Carrier."
     },
     {
+      "source": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Configure a sobreposição de rota da transportadora pessoal, o atalho e as informações do próximo salto."
+    },
+    {
       "source": "Configure the search sphere",
       "translation": "Configurar a esfera de pesquisa"
+    },
+    {
+      "source": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Configure a sobreposição da rota do porta-aviões do esquadrão, o atalho e as informações do próximo salto."
     },
     {
       "source": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -130039,6 +130407,14 @@
       "translation": "Atual"
     },
     {
+      "source": "Current FC route",
+      "translation": "Rota atual do FC"
+    },
+    {
+      "source": "Current SC route",
+      "translation": "Rota SC atual"
+    },
+    {
       "source": "Current Ship",
       "translation": "Navio Atual"
     },
@@ -130571,12 +130947,12 @@
       "translation": "Excluir favorito selecionado"
     },
     {
-      "source": "Delete selected fleet-carrier routes",
-      "translation": "Excluir rotas selecionadas da transportadora"
+      "source": "Delete selected carrier routes?",
+      "translation": "Excluir rotas da transportadora selecionadas?"
     },
     {
-      "source": "Delete selected fleet-carrier routes?",
-      "translation": "Excluir rotas selecionadas da transportadora?"
+      "source": "Delete selected fleet-carrier routes",
+      "translation": "Excluir rotas selecionadas da transportadora"
     },
     {
       "source": "Delete selected group",
@@ -130645,6 +131021,10 @@
     {
       "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
       "translation": "{0} excluído. Diários, notas e capturas de tela foram mantidos."
+    },
+    {
+      "source": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+      "translation": "Exclui esses itinerários da biblioteca compartilhada. O rastreamento é liberado para qualquer transportadora que segue uma rota selecionada."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -133027,10 +133407,6 @@
       "translation": "Rotas FC"
     },
     {
-      "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-      "translation": "FC Routes aceita apenas URLs de resultados do Spansh Fleet Carrier Router."
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-RAVEN"
     },
@@ -133789,14 +134165,6 @@
     {
       "source": "Fleet value",
       "translation": "Valor da frota"
-    },
-    {
-      "source": "Fleet-carrier route name",
-      "translation": "Nome da rota da transportadora de frota"
-    },
-    {
-      "source": "Fleet-carrier route notes",
-      "translation": "Notas de rota da transportadora de frota"
     },
     {
       "source": "FleetCarrier",
@@ -136215,8 +136583,8 @@
       "translation": "Importar CSV da sessão EliteMining ou SrvSurvey"
     },
     {
-      "source": "Import Fleet Carrier Router results from the FC Routes tab.",
-      "translation": "Importe os resultados do Fleet Carrier Router da guia FC Routes."
+      "source": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
+      "translation": "Importe os resultados do Fleet Carrier Router da guia Rotas FC ou Rotas SC."
     },
     {
       "source": "Import Google Desktop client setup",
@@ -136237,6 +136605,10 @@
     {
       "source": "Import a Spansh route or a list of system names.",
       "translation": "Importe uma rota Spansh ou uma lista de nomes de sistemas."
+    },
+    {
+      "source": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+      "translation": "Importe uma rota de transportadora, crie uma no SC Route Workspace ou use uma rota salva em FC Routes."
     },
     {
       "source": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -141759,6 +142131,10 @@
       "translation": "Espaço de trabalho de rota aberta"
     },
     {
+      "source": "Open SC Route Workspace",
+      "translation": "Abra o espaço de trabalho da rota SC"
+    },
+    {
       "source": "Open Selected",
       "translation": "Abrir selecionado"
     },
@@ -142615,6 +142991,10 @@
       "translation": "A escala de sobreposição não foi alterada: {0}"
     },
     {
+      "source": "Overlay settings",
+      "translation": "Configurações de sobreposição"
+    },
+    {
       "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
       "translation": "As configurações de sobreposição excedem o tamanho de recuperação suportado de 64 MiB. Nenhum arquivo foi alterado."
     },
@@ -143163,6 +143543,10 @@
       "translation": "Planeje viagens de mineração, acompanhe sessões e missões e mantenha locais e relatórios compartilhados."
     },
     {
+      "source": "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier.",
+      "translation": "Planeje o itinerário do seu esquadrão e acompanhe seus saltos independentemente do seu transportador pessoal."
+    },
+    {
       "source": "Planet",
       "translation": "Planeta"
     },
@@ -143401,6 +143785,10 @@
     {
       "source": "PlotSphericalSearch",
       "translation": "PlotSphericalSearch"
+    },
+    {
+      "source": "PlotSquadronCarrierRoute",
+      "translation": "PlotSquadronCarrierRoute"
     },
     {
       "source": "PlotStationInfo",
@@ -146251,6 +146639,10 @@
       "translation": "Removendo sistema do Nexus..."
     },
     {
+      "source": "Rename carrier route",
+      "translation": "Renomear rota da transportadora"
+    },
+    {
       "source": "Rename fleet-carrier route",
       "translation": "Renomear rota da transportadora de frota"
     },
@@ -147379,6 +147771,14 @@
       "translation": "CAIXAS DE PESQUISA SALVAS"
     },
     {
+      "source": "SC Route Workspace",
+      "translation": "Espaço de trabalho da rota SC"
+    },
+    {
+      "source": "SC Routes",
+      "translation": "Rotas SC"
+    },
+    {
       "source": "SCALE",
       "translation": "ESCALA"
     },
@@ -147601,6 +148001,14 @@
     {
       "source": "SQUADRON CARRIER",
       "translation": "Porta-Esquadrão"
+    },
+    {
+      "source": "SQUADRON CARRIER NEXT JUMP",
+      "translation": "Próximo salto do porta-aviões do esquadrão"
+    },
+    {
+      "source": "SQUADRON CARRIER ROUTE",
+      "translation": "Rota do porta-aviões do esquadrão"
     },
     {
       "source": "SRV",
@@ -148085,6 +148493,10 @@
     {
       "source": "Saved in the legacy-compatible system data file.",
       "translation": "Salvo no arquivo de dados do sistema compatível com legado."
+    },
+    {
+      "source": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+      "translation": "Itinerários salvos e favoritos são compartilhados com Rotas FC e Rotas SC. Cada transportadora mantém seu próprio progresso de rota e configuração de cópia automática."
     },
     {
       "source": "Saved mining HUD calibration.",
@@ -149799,6 +150211,10 @@
       "translation": "Mostrar falta de oferta"
     },
     {
+      "source": "Show squadron carrier next-jump information",
+      "translation": "Mostrar informações do próximo salto do porta-aviões do esquadrão"
+    },
+    {
       "source": "Show station/target details in left nav panel",
       "translation": "Mostrar detalhes da estação/alvo no painel de navegação esquerdo"
     },
@@ -149833,6 +150249,10 @@
     {
       "source": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
       "translation": "Mostre o destino selecionado, próximo salto, progresso da descoberta, contagem de sinais biológicos, distância da rota e influência opcional da facção enquanto o Mapa da Galáxia estiver aberto."
+    },
+    {
+      "source": "Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
+      "translation": "Mostre o salto programado, as fases do salto e o destino do porta-aviões do esquadrão em sua própria sobreposição, inclusive quando nenhuma rota SC estiver ativa."
     },
     {
       "source": "Show the survey-map legend",
@@ -150455,12 +150875,32 @@
       "translation": "Porta-aviões"
     },
     {
+      "source": "Squadron carrier itinerary",
+      "translation": "Itinerário do porta-aviões do esquadrão"
+    },
+    {
+      "source": "Squadron carrier next jump",
+      "translation": "Próximo salto do porta-aviões do esquadrão"
+    },
+    {
+      "source": "Squadron carrier route",
+      "translation": "Rota do porta-aviões do esquadrão"
+    },
+    {
       "source": "SquadronAndFriends",
       "translation": "Esquadrão e amigos"
     },
     {
       "source": "SquadronCarrier",
       "translation": "Esquadrão Transportador"
+    },
+    {
+      "source": "SquadronCarrierNextJump",
+      "translation": "EsquadrãoCarrierNextJump"
+    },
+    {
+      "source": "SquadronCarrierRoute.IsActive",
+      "translation": "SquadronCarrierRoute.IsActive"
     },
     {
       "source": "SquadronLogo",
@@ -150765,6 +151205,10 @@
     {
       "source": "SrvSurvey route files",
       "translation": "SrvSurvey arquivos de rota"
+    },
+    {
+      "source": "SrvSurvey squadron carrier route overlay",
+      "translation": "SrvSurvey sobreposição de rota do porta-aviões do esquadrão"
     },
     {
       "source": "SrvSurvey station information overlay",
@@ -154399,6 +154843,10 @@
       "translation": "O backup selecionado foi restaurado antes de carregar seus espaços de trabalho."
     },
     {
+      "source": "The selected carrier supplies the Galaxy Map copy.",
+      "translation": "A operadora selecionada fornece a cópia do Galaxy Map."
+    },
+    {
       "source": "The selected cloud backup was downloaded. Local settings are unchanged.",
       "translation": "O backup na nuvem selecionado foi baixado. As configurações locais permanecem inalteradas."
     },
@@ -155381,6 +155829,10 @@
     {
       "source": "Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements.",
       "translation": "Rastreie locais planejados e construções ativas, escolha quais projetos alimentam a lista de carga e inspecione os requisitos de construção em tempo real."
+    },
+    {
+      "source": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+      "translation": "Acompanhe os saltos do porta-aviões do esquadrão com um itinerário independente e as rotas salvas compartilhadas com o FC Routes."
     },
     {
       "source": "TrackMaterialCollection",
@@ -157831,7 +158283,7 @@
       "translation": "Espaço de trabalho"
     },
     {
-      "source": "Write fleet-carrier route notes...",
+      "source": "Write carrier route notes...",
       "translation": "Escreva notas de rota da transportadora..."
     },
     {
@@ -159197,6 +159649,10 @@
     {
       "source": "fc-route",
       "translation": "rota fc"
+    },
+    {
+      "source": "fc-routes",
+      "translation": "rotas fc"
     },
     {
       "source": "fcz",
@@ -160667,6 +161123,10 @@
       "translation": "seleção salva renovada."
     },
     {
+      "source": "sc-routes",
+      "translation": "rotas sc"
+    },
+    {
       "source": "scale",
       "translation": "escala"
     },
@@ -161789,6 +162249,10 @@
     {
       "source": "{0} Win32 error {1}.",
       "translation": "{0} Erro Win32 {1}."
+    },
+    {
+      "source": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+      "translation": "{0} aceita apenas URLs de resultados do Fleet Carrier Router Spansh."
     },
     {
       "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
@@ -167601,10 +168065,6 @@
       "translation": "ТЕКУЩИЕ КООРДИНАТЫ"
     },
     {
-      "source": "CURRENT FC ROUTE",
-      "translation": "ТЕКУЩИЙ МАРШРУТ ФК"
-    },
-    {
       "source": "CURRENT LIMIT",
       "translation": "ТЕКУЩИЙ ПРЕДЕЛ"
     },
@@ -167675,6 +168135,10 @@
     {
       "source": "Can fulfill all selected needs",
       "translation": "Может удовлетворить все выбранные потребности"
+    },
+    {
+      "source": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+      "translation": "Может курсировать по маршруту другого перевозчика. Обычные маршруты и поиск боксов отключают настройки автоматического копирования обоих операторов связи."
     },
     {
       "source": "Cancel",
@@ -168039,6 +168503,14 @@
     {
       "source": "Carrier route",
       "translation": "Маршрут перевозчика"
+    },
+    {
+      "source": "Carrier route name",
+      "translation": "Название маршрута перевозчика"
+    },
+    {
+      "source": "Carrier route notes",
+      "translation": "Примечания к маршруту перевозчика"
     },
     {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -168595,6 +169067,10 @@
     {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "Выберите наложение, а затем при необходимости переопределите его унаследованную непрозрачность, не меняя его положения, управляемого перетаскиванием."
+    },
+    {
+      "source": "Choose another carrier workspace to share the itinerary library.",
+      "translation": "Выберите другое рабочее пространство перевозчика, чтобы поделиться библиотекой маршрутов."
     },
     {
       "source": "Choose another commander",
@@ -169833,8 +170309,16 @@
       "translation": "Настройте пассивный внутриигровой список товаров и связанные столбцы с авианосцами."
     },
     {
+      "source": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Настройте наложение маршрута личного оператора, ярлык и информацию о следующем переходе."
+    },
+    {
       "source": "Configure the search sphere",
       "translation": "Настройте сферу поиска"
+    },
+    {
+      "source": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+      "translation": "Настройте наложение маршрута авианосца эскадрильи, ярлык и информацию о следующем прыжке."
     },
     {
       "source": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -170765,6 +171249,14 @@
       "translation": "Текущий"
     },
     {
+      "source": "Current FC route",
+      "translation": "Текущий маршрут ФК"
+    },
+    {
+      "source": "Current SC route",
+      "translation": "Текущий маршрут SC"
+    },
+    {
       "source": "Current Ship",
       "translation": "Текущий корабль"
     },
@@ -171297,12 +171789,12 @@
       "translation": "Удалить выбранную закладку"
     },
     {
-      "source": "Delete selected fleet-carrier routes",
-      "translation": "Удалить выбранные маршруты перевозчиков"
+      "source": "Delete selected carrier routes?",
+      "translation": "Удалить выбранные маршруты перевозчика?"
     },
     {
-      "source": "Delete selected fleet-carrier routes?",
-      "translation": "Удалить выбранные маршруты перевозчиков?"
+      "source": "Delete selected fleet-carrier routes",
+      "translation": "Удалить выбранные маршруты перевозчиков"
     },
     {
       "source": "Delete selected group",
@@ -171371,6 +171863,10 @@
     {
       "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
       "translation": "Удален {0}. Журналы, записи и скриншоты сохранились."
+    },
+    {
+      "source": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+      "translation": "Удаляет эти маршруты из общей библиотеки. Отслеживание очищается для любого перевозчика, следующего по выбранному маршруту."
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -173753,10 +174249,6 @@
       "translation": "Маршруты ФК"
     },
     {
-      "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-      "translation": "FC Routes принимает только URL-адреса результатов Spansh Fleet Carrier Router."
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "ФДЕВ-ВОРОН"
     },
@@ -174515,14 +175007,6 @@
     {
       "source": "Fleet value",
       "translation": "Стоимость флота"
-    },
-    {
-      "source": "Fleet-carrier route name",
-      "translation": "Название маршрута авиаперевозчика"
-    },
-    {
-      "source": "Fleet-carrier route notes",
-      "translation": "Примечания к маршруту авианосца"
     },
     {
       "source": "FleetCarrier",
@@ -176941,8 +177425,8 @@
       "translation": "Импортировать CSV-файл сеанса EliteMining или SrvSurvey"
     },
     {
-      "source": "Import Fleet Carrier Router results from the FC Routes tab.",
-      "translation": "Импортируйте результаты Fleet Carrier Router со вкладки «Маршруты FC»."
+      "source": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
+      "translation": "Импортируйте результаты Fleet Carrier Router на вкладке «Маршруты FC» или «Маршруты SC»."
     },
     {
       "source": "Import Google Desktop client setup",
@@ -176963,6 +177447,10 @@
     {
       "source": "Import a Spansh route or a list of system names.",
       "translation": "Импортируйте маршрут Spansh или список имен систем."
+    },
+    {
+      "source": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+      "translation": "Импортируйте маршрут перевозчика, создайте его в рабочей области SC Route или используйте сохраненный маршрут из FC Routes."
     },
     {
       "source": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -182485,6 +182973,10 @@
       "translation": "Открыть рабочую область маршрута"
     },
     {
+      "source": "Open SC Route Workspace",
+      "translation": "Открыть рабочую область маршрута SC"
+    },
+    {
       "source": "Open Selected",
       "translation": "Открыть выбранное"
     },
@@ -183341,6 +183833,10 @@
       "translation": "Масштаб наложения не изменен: {0}"
     },
     {
+      "source": "Overlay settings",
+      "translation": "Настройки наложения"
+    },
+    {
       "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
       "translation": "Параметры наложения превышают поддерживаемый размер восстановления в 64 МБ. Никакие файлы не были изменены."
     },
@@ -183889,6 +184385,10 @@
       "translation": "Планируйте поездки на добычу полезных ископаемых, отслеживайте сеансы и миссии, а также сохраняйте общие местоположения и отчеты."
     },
     {
+      "source": "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier.",
+      "translation": "Планируйте маршрут своего авианосца и отслеживайте его прыжки независимо от вашего личного авианосца."
+    },
+    {
       "source": "Planet",
       "translation": "Планета"
     },
@@ -184127,6 +184627,10 @@
     {
       "source": "PlotSphericalSearch",
       "translation": "ГрафикСферическийПоиск"
+    },
+    {
+      "source": "PlotSquadronCarrierRoute",
+      "translation": "СюжетЭскадрильяПеревозчикМаршрут"
     },
     {
       "source": "PlotStationInfo",
@@ -186977,6 +187481,10 @@
       "translation": "Удаление системы с Нексуса..."
     },
     {
+      "source": "Rename carrier route",
+      "translation": "Переименование маршрута перевозчика"
+    },
+    {
       "source": "Rename fleet-carrier route",
       "translation": "Переименование маршрута перевозчика"
     },
@@ -188105,6 +188613,14 @@
       "translation": "СОХРАНЕННЫЕ ПОИСКИ"
     },
     {
+      "source": "SC Route Workspace",
+      "translation": "Рабочая область маршрута SC"
+    },
+    {
+      "source": "SC Routes",
+      "translation": "Маршруты СЦ"
+    },
+    {
       "source": "SCALE",
       "translation": "МАСШТАБ"
     },
@@ -188327,6 +188843,14 @@
     {
       "source": "SQUADRON CARRIER",
       "translation": "Эскадрилья авианосца"
+    },
+    {
+      "source": "SQUADRON CARRIER NEXT JUMP",
+      "translation": "Авианосец эскадрильи следующий прыжок"
+    },
+    {
+      "source": "SQUADRON CARRIER ROUTE",
+      "translation": "Маршрут авианосца эскадрильи"
     },
     {
       "source": "SRV",
@@ -188811,6 +189335,10 @@
     {
       "source": "Saved in the legacy-compatible system data file.",
       "translation": "Сохраняется в файле устаревших системных данных."
+    },
+    {
+      "source": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+      "translation": "Сохраненные маршруты и избранное доступны для использования в FC Routes и SC Routes. Каждый перевозчик сохраняет свой прогресс маршрута и настройки автоматического копирования."
     },
     {
       "source": "Saved mining HUD calibration.",
@@ -190525,6 +191053,10 @@
       "translation": "Показать дефицит"
     },
     {
+      "source": "Show squadron carrier next-jump information",
+      "translation": "Показать информацию о следующем прыжке авианосца эскадрильи"
+    },
+    {
       "source": "Show station/target details in left nav panel",
       "translation": "Показать информацию о станции/цели на левой навигационной панели."
     },
@@ -190559,6 +191091,10 @@
     {
       "source": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
       "translation": "Покажите выбранный пункт назначения, следующий прыжок, прогресс открытия, количество биологических сигналов, расстояние маршрута и дополнительное влияние фракции, пока открыта карта Галактики."
+    },
+    {
+      "source": "Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
+      "translation": "Покажите запланированный прыжок авианосца, этапы прыжка и пункт назначения в его собственном наложении, в том числе, когда ни один маршрут SC не активен."
     },
     {
       "source": "Show the survey-map legend",
@@ -191181,12 +191717,32 @@
       "translation": "Эскадрилья авианосца"
     },
     {
+      "source": "Squadron carrier itinerary",
+      "translation": "Маршрут авианосца эскадрильи"
+    },
+    {
+      "source": "Squadron carrier next jump",
+      "translation": "Авианосец эскадрильи следующий прыжок"
+    },
+    {
+      "source": "Squadron carrier route",
+      "translation": "Маршрут авианосца эскадрильи"
+    },
+    {
       "source": "SquadronAndFriends",
       "translation": "ЭскадронИДрузья"
     },
     {
       "source": "SquadronCarrier",
       "translation": "ЭскадрильяАвианосец"
+    },
+    {
+      "source": "SquadronCarrierNextJump",
+      "translation": "ЭскадрильяАвианосецСледующийПрыжок"
+    },
+    {
+      "source": "SquadronCarrierRoute.IsActive",
+      "translation": "SquadronCarrierRoute.IsActive"
     },
     {
       "source": "SquadronLogo",
@@ -191491,6 +192047,10 @@
     {
       "source": "SrvSurvey route files",
       "translation": "SrvSurvey файлы маршрутов"
+    },
+    {
+      "source": "SrvSurvey squadron carrier route overlay",
+      "translation": "SrvSurvey наложение маршрута авианосца эскадрильи"
     },
     {
       "source": "SrvSurvey station information overlay",
@@ -195125,6 +195685,10 @@
       "translation": "Выбранная резервная копия была восстановлена ​​до загрузки рабочих областей."
     },
     {
+      "source": "The selected carrier supplies the Galaxy Map copy.",
+      "translation": "Выбранный перевозчик предоставляет копию карты Галактики."
+    },
+    {
       "source": "The selected cloud backup was downloaded. Local settings are unchanged.",
       "translation": "Выбранная облачная резервная копия загружена. Локальные настройки не изменяются."
     },
@@ -196107,6 +196671,10 @@
     {
       "source": "Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements.",
       "translation": "Отслеживайте запланированные объекты и активные сборки, выбирайте, какие проекты включаются в список грузов, и проверяйте текущие требования к строительству."
+    },
+    {
+      "source": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+      "translation": "Перевозчик трековой эскадрильи совершает прыжки с независимым маршрутом и сохраненными маршрутами, доступными через FC Routes."
     },
     {
       "source": "TrackMaterialCollection",
@@ -198557,8 +199125,8 @@
       "translation": "Рабочая область"
     },
     {
-      "source": "Write fleet-carrier route notes...",
-      "translation": "Напишите заметки о маршрутах перевозчиков..."
+      "source": "Write carrier route notes...",
+      "translation": "Напишите заметки о маршруте перевозчика..."
     },
     {
       "source": "Write route notes...",
@@ -199923,6 +200491,10 @@
     {
       "source": "fc-route",
       "translation": "fc-маршрут"
+    },
+    {
+      "source": "fc-routes",
+      "translation": "fc-маршруты"
     },
     {
       "source": "fcz",
@@ -201393,6 +201965,10 @@
       "translation": "сохраненный выбор обновлен."
     },
     {
+      "source": "sc-routes",
+      "translation": "sc-маршруты"
+    },
+    {
       "source": "scale",
       "translation": "шкала"
     },
@@ -202515,6 +203091,10 @@
     {
       "source": "{0} Win32 error {1}.",
       "translation": "{0} Ошибка Win32 {1}."
+    },
+    {
+      "source": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+      "translation": "{0} принимает только URL-адреса результатов маршрутизатора Fleet Carrier Router Spansh."
     },
     {
       "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
@@ -208327,10 +208907,6 @@
       "translation": "当前坐标"
     },
     {
-      "source": "CURRENT FC ROUTE",
-      "translation": "目前的FC路线"
-    },
-    {
       "source": "CURRENT LIMIT",
       "translation": "电流限制"
     },
@@ -208401,6 +208977,10 @@
     {
       "source": "Can fulfill all selected needs",
       "translation": "可以满足所有选定的需求"
+    },
+    {
+      "source": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+      "translation": "可以与其他承运商路线并排运行。常规路线和盒式搜索会关闭两个运营商自动复制设置。"
     },
     {
       "source": "Cancel",
@@ -208765,6 +209345,14 @@
     {
       "source": "Carrier route",
       "translation": "承运路线"
+    },
+    {
+      "source": "Carrier route name",
+      "translation": "承运人航线名称"
+    },
+    {
+      "source": "Carrier route notes",
+      "translation": "承运人航线备注"
     },
     {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -209321,6 +209909,10 @@
     {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "选择一个叠加层，然后可以选择覆盖其继承的不透明度，而不更改其拖动管理位置。"
+    },
+    {
+      "source": "Choose another carrier workspace to share the itinerary library.",
+      "translation": "选择另一个承运人工作区来共享行程库。"
     },
     {
       "source": "Choose another commander",
@@ -210559,8 +211151,16 @@
       "translation": "配置被动的游戏内商品列表和链接的舰队航母列。"
     },
     {
+      "source": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+      "translation": "配置个人运营商路线叠加、快捷方式和下一跳信息。"
+    },
+    {
       "source": "Configure the search sphere",
       "translation": "配置搜索范围"
+    },
+    {
+      "source": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+      "translation": "配置中队航母航线叠加、快捷方式和下一跳信息。"
     },
     {
       "source": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -211491,6 +212091,14 @@
       "translation": "当前"
     },
     {
+      "source": "Current FC route",
+      "translation": "目前的FC路线"
+    },
+    {
+      "source": "Current SC route",
+      "translation": "当前SC路线"
+    },
+    {
       "source": "Current Ship",
       "translation": "当前船舶"
     },
@@ -212023,12 +212631,12 @@
       "translation": "删除选定的书签"
     },
     {
-      "source": "Delete selected fleet-carrier routes",
-      "translation": "删除选定的车队承运商航线"
+      "source": "Delete selected carrier routes?",
+      "translation": "删除选定的承运人航线？"
     },
     {
-      "source": "Delete selected fleet-carrier routes?",
-      "translation": "删除选定的舰队承运商航线？"
+      "source": "Delete selected fleet-carrier routes",
+      "translation": "删除选定的车队承运商航线"
     },
     {
       "source": "Delete selected group",
@@ -212097,6 +212705,10 @@
     {
       "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
       "translation": "删除了 {0}。日记、笔记和屏幕截图均被保留。"
+    },
+    {
+      "source": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+      "translation": "从共享库中删除这些行程。任一承运商按照选定路线进行的跟踪均已清除。"
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -214479,10 +215091,6 @@
       "translation": "FC航线"
     },
     {
-      "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-      "translation": "FC 路线仅接受 Spansh 舰队运营商路由器结果 URL。"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "FDEV-乌鸦"
     },
@@ -215241,14 +215849,6 @@
     {
       "source": "Fleet value",
       "translation": "舰队价值"
-    },
-    {
-      "source": "Fleet-carrier route name",
-      "translation": "车队承运商航线名称"
-    },
-    {
-      "source": "Fleet-carrier route notes",
-      "translation": "舰队承运人航线注释"
     },
     {
       "source": "FleetCarrier",
@@ -217667,8 +218267,8 @@
       "translation": "导入 EliteMining 或 SrvSurvey 会话 CSV"
     },
     {
-      "source": "Import Fleet Carrier Router results from the FC Routes tab.",
-      "translation": "从 FC 路由选项卡导入车队运营商路由器结果。"
+      "source": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
+      "translation": "从 FC 路由或 SC 路由选项卡导入车队运营商路由器结果。"
     },
     {
       "source": "Import Google Desktop client setup",
@@ -217689,6 +218289,10 @@
     {
       "source": "Import a Spansh route or a list of system names.",
       "translation": "导入 Spansh 路由或系统名称列表。"
+    },
+    {
+      "source": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+      "translation": "导入承运人航线、在 SC 航线工作区中创建航线或使用 FC 航线中保存的航线。"
     },
     {
       "source": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -223211,6 +223815,10 @@
       "translation": "开放路线工作区"
     },
     {
+      "source": "Open SC Route Workspace",
+      "translation": "打开 SC 路线工作区"
+    },
+    {
       "source": "Open Selected",
       "translation": "打开选定的"
     },
@@ -224067,6 +224675,10 @@
       "translation": "叠加比例未更改：{0}"
     },
     {
+      "source": "Overlay settings",
+      "translation": "叠加设置"
+    },
+    {
       "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
       "translation": "覆盖设置超出了支持的 64 MiB 恢复大小。没有更改任何文件。"
     },
@@ -224615,6 +225227,10 @@
       "translation": "规划采矿之旅、跟踪会话和任务，并保留共享位置和报告。"
     },
     {
+      "source": "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier.",
+      "translation": "独立于您的个人航母来规划您的中队航母的行程并跟踪其跳跃。"
+    },
+    {
       "source": "Planet",
       "translation": "行星"
     },
@@ -224853,6 +225469,10 @@
     {
       "source": "PlotSphericalSearch",
       "translation": "绘图球形搜索"
+    },
+    {
+      "source": "PlotSquadronCarrierRoute",
+      "translation": "情节中队航母路线"
     },
     {
       "source": "PlotStationInfo",
@@ -227703,6 +228323,10 @@
       "translation": "正在从 Nexus 中删除系统..."
     },
     {
+      "source": "Rename carrier route",
+      "translation": "重命名承运人路线"
+    },
+    {
       "source": "Rename fleet-carrier route",
       "translation": "重命名舰队-承运商航线"
     },
@@ -228831,6 +229455,14 @@
       "translation": "已保存的搜索框"
     },
     {
+      "source": "SC Route Workspace",
+      "translation": "SC 路线工作区"
+    },
+    {
+      "source": "SC Routes",
+      "translation": "南卡罗来纳州航线"
+    },
+    {
       "source": "SCALE",
       "translation": "规模"
     },
@@ -229053,6 +229685,14 @@
     {
       "source": "SQUADRON CARRIER",
       "translation": "中队航母"
+    },
+    {
+      "source": "SQUADRON CARRIER NEXT JUMP",
+      "translation": "中队航母下一步跳跃"
+    },
+    {
+      "source": "SQUADRON CARRIER ROUTE",
+      "translation": "中队航母航线"
     },
     {
       "source": "SRV",
@@ -229537,6 +230177,10 @@
     {
       "source": "Saved in the legacy-compatible system data file.",
       "translation": "保存在旧版兼容系统数据文件中。"
+    },
+    {
+      "source": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+      "translation": "保存的行程和收藏夹可与 FC 路线和 SC 路线共享。每个运营商都有自己的路线进度和自动复制设置。"
     },
     {
       "source": "Saved mining HUD calibration.",
@@ -231251,6 +231895,10 @@
       "translation": "显示供不应求"
     },
     {
+      "source": "Show squadron carrier next-jump information",
+      "translation": "显示中队航母下一跳信息"
+    },
+    {
       "source": "Show station/target details in left nav panel",
       "translation": "在左侧导航面板中显示电台/目标详细信息"
     },
@@ -231285,6 +231933,10 @@
     {
       "source": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
       "translation": "当银河地图打开时，显示所选目的地、下一跳、发现进度、生物信号计数、路线距离和可选派系影响力。"
+    },
+    {
+      "source": "Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
+      "translation": "在其自己的叠加层中显示中队航空母舰的预定跳跃、跳跃阶段和目的地，包括当没有 SC 路线处于活动状态时。"
     },
     {
       "source": "Show the survey-map legend",
@@ -231907,12 +232559,32 @@
       "translation": "中队航母"
     },
     {
+      "source": "Squadron carrier itinerary",
+      "translation": "航空母舰中队行程"
+    },
+    {
+      "source": "Squadron carrier next jump",
+      "translation": "中队航母下一步跳跃"
+    },
+    {
+      "source": "Squadron carrier route",
+      "translation": "中队航母航线"
+    },
+    {
       "source": "SquadronAndFriends",
       "translation": "中队与朋友"
     },
     {
       "source": "SquadronCarrier",
       "translation": "中队航母"
+    },
+    {
+      "source": "SquadronCarrierNextJump",
+      "translation": "中队航母下一个跳跃"
+    },
+    {
+      "source": "SquadronCarrierRoute.IsActive",
+      "translation": "中队航母路线.IsActive"
     },
     {
       "source": "SquadronLogo",
@@ -232217,6 +232889,10 @@
     {
       "source": "SrvSurvey route files",
       "translation": "SrvSurvey 路线文件"
+    },
+    {
+      "source": "SrvSurvey squadron carrier route overlay",
+      "translation": "SrvSurvey 中队航母航线叠加"
     },
     {
       "source": "SrvSurvey station information overlay",
@@ -235851,6 +236527,10 @@
       "translation": "在加载工作区之前已恢复选定的备份。"
     },
     {
+      "source": "The selected carrier supplies the Galaxy Map copy.",
+      "translation": "所选运营商提供 Galaxy 地图副本。"
+    },
+    {
       "source": "The selected cloud backup was downloaded. Local settings are unchanged.",
       "translation": "所选的云备份已下载。本地设置不变。"
     },
@@ -236833,6 +237513,10 @@
     {
       "source": "Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements.",
       "translation": "跟踪规划的场地和正在进行的建设，选择哪些项目满足货物清单，并检查现场施工要求。"
+    },
+    {
+      "source": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+      "translation": "跟踪中队航母跳跃具有独立的行程，并且保存的路线与 FC 路线共享。"
     },
     {
       "source": "TrackMaterialCollection",
@@ -239283,8 +239967,8 @@
       "translation": "工作空间"
     },
     {
-      "source": "Write fleet-carrier route notes...",
-      "translation": "编写车队承运商航线注释..."
+      "source": "Write carrier route notes...",
+      "translation": "写承运人路线注释..."
     },
     {
       "source": "Write route notes...",
@@ -240649,6 +241333,10 @@
     {
       "source": "fc-route",
       "translation": "FC 路由"
+    },
+    {
+      "source": "fc-routes",
+      "translation": "FC 路线"
     },
     {
       "source": "fcz",
@@ -242119,6 +242807,10 @@
       "translation": "已保存的选择已更新。"
     },
     {
+      "source": "sc-routes",
+      "translation": "SC-路线"
+    },
+    {
       "source": "scale",
       "translation": "规模"
     },
@@ -243241,6 +243933,10 @@
     {
       "source": "{0} Win32 error {1}.",
       "translation": "{0} Win32 错误 {1}。"
+    },
+    {
+      "source": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+      "translation": "{0} 仅接受 Spansh 舰队运营商路由器结果 URL。"
     },
     {
       "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",
@@ -249053,10 +249749,6 @@
       "translation": "* CURRENT COORDINATES >>>!"
     },
     {
-      "source": "CURRENT FC ROUTE",
-      "translation": "* CURRENT FC ROUTE >>>!"
-    },
-    {
       "source": "CURRENT LIMIT",
       "translation": "* CURRENT LIMIT >>>!"
     },
@@ -249127,6 +249819,10 @@
     {
       "source": "Can fulfill all selected needs",
       "translation": "* CAN FULFILL ALL SELECTED NEEDS >>>!"
+    },
+    {
+      "source": "Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off.",
+      "translation": "* CAN RUN ALONGSIDE THE OTHER CARRIER ROUTE. REGULAR ROUTES AND BOXEL SEARCH TURN BOTH CARRIER AUTO-COPY SETTINGS OFF. >>>!"
     },
     {
       "source": "Cancel",
@@ -249491,6 +250187,14 @@
     {
       "source": "Carrier route",
       "translation": "* CARRIER ROUTE >>>!"
+    },
+    {
+      "source": "Carrier route name",
+      "translation": "* CARRIER ROUTE NAME >>>!"
+    },
+    {
+      "source": "Carrier route notes",
+      "translation": "* CARRIER ROUTE NOTES >>>!"
     },
     {
       "source": "Carrier search failed. Try again when Raven Colonial is available.",
@@ -250047,6 +250751,10 @@
     {
       "source": "Choose an overlay, then optionally override its inherited opacity without changing its drag-managed position.",
       "translation": "* CHOOSE AN OVERLAY, THEN OPTIONALLY OVERRIDE ITS INHERITED OPACITY WITHOUT CHANGING ITS DRAG-MANAGED POSITION. >>>!"
+    },
+    {
+      "source": "Choose another carrier workspace to share the itinerary library.",
+      "translation": "* CHOOSE ANOTHER CARRIER WORKSPACE TO SHARE THE ITINERARY LIBRARY. >>>!"
     },
     {
       "source": "Choose another commander",
@@ -251285,8 +251993,16 @@
       "translation": "* CONFIGURE THE PASSIVE IN-GAME COMMODITY LIST AND LINKED FLEET CARRIER COLUMNS. >>>!"
     },
     {
+      "source": "Configure the personal carrier route overlay, shortcut, and next-jump information.",
+      "translation": "* CONFIGURE THE PERSONAL CARRIER ROUTE OVERLAY, SHORTCUT, AND NEXT-JUMP INFORMATION. >>>!"
+    },
+    {
       "source": "Configure the search sphere",
       "translation": "* CONFIGURE THE SEARCH SPHERE >>>!"
+    },
+    {
+      "source": "Configure the squadron carrier route overlay, shortcut, and next-jump information.",
+      "translation": "* CONFIGURE THE SQUADRON CARRIER ROUTE OVERLAY, SHORTCUT, AND NEXT-JUMP INFORMATION. >>>!"
     },
     {
       "source": "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions.",
@@ -252217,6 +252933,14 @@
       "translation": "* CURRENT >>>!"
     },
     {
+      "source": "Current FC route",
+      "translation": "* CURRENT FC ROUTE >>>!"
+    },
+    {
+      "source": "Current SC route",
+      "translation": "* CURRENT SC ROUTE >>>!"
+    },
+    {
       "source": "Current Ship",
       "translation": "* CURRENT SHIP >>>!"
     },
@@ -252749,12 +253473,12 @@
       "translation": "* DELETE SELECTED BOOKMARK >>>!"
     },
     {
-      "source": "Delete selected fleet-carrier routes",
-      "translation": "* DELETE SELECTED FLEET-CARRIER ROUTES >>>!"
+      "source": "Delete selected carrier routes?",
+      "translation": "* DELETE SELECTED CARRIER ROUTES? >>>!"
     },
     {
-      "source": "Delete selected fleet-carrier routes?",
-      "translation": "* DELETE SELECTED FLEET-CARRIER ROUTES? >>>!"
+      "source": "Delete selected fleet-carrier routes",
+      "translation": "* DELETE SELECTED FLEET-CARRIER ROUTES >>>!"
     },
     {
       "source": "Delete selected group",
@@ -252823,6 +253547,10 @@
     {
       "source": "Deleted {0}. Journals, notes, and screenshots were kept.",
       "translation": "* DELETED {0}. JOURNALS, NOTES, AND SCREENSHOTS WERE KEPT. >>>!"
+    },
+    {
+      "source": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
+      "translation": "* DELETES THESE ITINERARIES FROM THE SHARED LIBRARY. TRACKING IS CLEARED FOR EITHER CARRIER FOLLOWING A SELECTED ROUTE. >>>!"
     },
     {
       "source": "Deleting Nexus on Raven Colonial...",
@@ -255205,10 +255933,6 @@
       "translation": "* FC ROUTES >>>!"
     },
     {
-      "source": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
-      "translation": "* FC ROUTES ACCEPTS SPANSH FLEET CARRIER ROUTER RESULT URLS ONLY. >>>!"
-    },
-    {
       "source": "FDEV-RAVEN",
       "translation": "* FDEV-RAVEN >>>!"
     },
@@ -255967,14 +256691,6 @@
     {
       "source": "Fleet value",
       "translation": "* FLEET VALUE >>>!"
-    },
-    {
-      "source": "Fleet-carrier route name",
-      "translation": "* FLEET-CARRIER ROUTE NAME >>>!"
-    },
-    {
-      "source": "Fleet-carrier route notes",
-      "translation": "* FLEET-CARRIER ROUTE NOTES >>>!"
     },
     {
       "source": "FleetCarrier",
@@ -258393,8 +259109,8 @@
       "translation": "* IMPORT ELITEMINING OR SRVSURVEY SESSION CSV >>>!"
     },
     {
-      "source": "Import Fleet Carrier Router results from the FC Routes tab.",
-      "translation": "* IMPORT FLEET CARRIER ROUTER RESULTS FROM THE FC ROUTES TAB. >>>!"
+      "source": "Import Fleet Carrier Router results from the FC Routes or SC Routes tab.",
+      "translation": "* IMPORT FLEET CARRIER ROUTER RESULTS FROM THE FC ROUTES OR SC ROUTES TAB. >>>!"
     },
     {
       "source": "Import Google Desktop client setup",
@@ -258415,6 +259131,10 @@
     {
       "source": "Import a Spansh route or a list of system names.",
       "translation": "* IMPORT A SPANSH ROUTE OR A LIST OF SYSTEM NAMES. >>>!"
+    },
+    {
+      "source": "Import a carrier route, create one in SC Route Workspace, or use a saved route from FC Routes.",
+      "translation": "* IMPORT A CARRIER ROUTE, CREATE ONE IN SC ROUTE WORKSPACE, OR USE A SAVED ROUTE FROM FC ROUTES. >>>!"
     },
     {
       "source": "Import a fleet-carrier route or create one in FC Route Workspace.",
@@ -263937,6 +264657,10 @@
       "translation": "* OPEN ROUTE WORKSPACE >>>!"
     },
     {
+      "source": "Open SC Route Workspace",
+      "translation": "* OPEN SC ROUTE WORKSPACE >>>!"
+    },
+    {
       "source": "Open Selected",
       "translation": "* OPEN SELECTED >>>!"
     },
@@ -264793,6 +265517,10 @@
       "translation": "* OVERLAY SCALE WAS NOT CHANGED: {0} >>>!"
     },
     {
+      "source": "Overlay settings",
+      "translation": "* OVERLAY SETTINGS >>>!"
+    },
+    {
       "source": "Overlay settings exceed the supported recovery size of 64 MiB. No files were changed.",
       "translation": "* OVERLAY SETTINGS EXCEED THE SUPPORTED RECOVERY SIZE OF 64 MIB. NO FILES WERE CHANGED. >>>!"
     },
@@ -265341,6 +266069,10 @@
       "translation": "* PLAN MINING TRIPS, TRACK SESSIONS AND MISSIONS, AND KEEP SHARED LOCATIONS AND REPORTS. >>>!"
     },
     {
+      "source": "Plan your squadron carrier's itinerary and track its jumps independently of your personal carrier.",
+      "translation": "* PLAN YOUR SQUADRON CARRIER'S ITINERARY AND TRACK ITS JUMPS INDEPENDENTLY OF YOUR PERSONAL CARRIER. >>>!"
+    },
+    {
       "source": "Planet",
       "translation": "* PLANET >>>!"
     },
@@ -265579,6 +266311,10 @@
     {
       "source": "PlotSphericalSearch",
       "translation": "* PLOTSPHERICALSEARCH >>>!"
+    },
+    {
+      "source": "PlotSquadronCarrierRoute",
+      "translation": "* PLOTSQUADRONCARRIERROUTE >>>!"
     },
     {
       "source": "PlotStationInfo",
@@ -268429,6 +269165,10 @@
       "translation": "* REMOVING SYSTEM FROM NEXUS... >>>!"
     },
     {
+      "source": "Rename carrier route",
+      "translation": "* RENAME CARRIER ROUTE >>>!"
+    },
+    {
       "source": "Rename fleet-carrier route",
       "translation": "* RENAME FLEET-CARRIER ROUTE >>>!"
     },
@@ -269557,6 +270297,14 @@
       "translation": "* SAVED SEARCH BOXELS >>>!"
     },
     {
+      "source": "SC Route Workspace",
+      "translation": "* SC ROUTE WORKSPACE >>>!"
+    },
+    {
+      "source": "SC Routes",
+      "translation": "* SC ROUTES >>>!"
+    },
+    {
       "source": "SCALE",
       "translation": "* SCALE >>>!"
     },
@@ -269779,6 +270527,14 @@
     {
       "source": "SQUADRON CARRIER",
       "translation": "* SQUADRON CARRIER >>>!"
+    },
+    {
+      "source": "SQUADRON CARRIER NEXT JUMP",
+      "translation": "* SQUADRON CARRIER NEXT JUMP >>>!"
+    },
+    {
+      "source": "SQUADRON CARRIER ROUTE",
+      "translation": "* SQUADRON CARRIER ROUTE >>>!"
     },
     {
       "source": "SRV",
@@ -270263,6 +271019,10 @@
     {
       "source": "Saved in the legacy-compatible system data file.",
       "translation": "* SAVED IN THE LEGACY-COMPATIBLE SYSTEM DATA FILE. >>>!"
+    },
+    {
+      "source": "Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting.",
+      "translation": "* SAVED ITINERARIES AND FAVORITES ARE SHARED WITH FC ROUTES AND SC ROUTES. EACH CARRIER KEEPS ITS OWN ROUTE PROGRESS AND AUTO-COPY SETTING. >>>!"
     },
     {
       "source": "Saved mining HUD calibration.",
@@ -271977,6 +272737,10 @@
       "translation": "* SHOW SHORT SUPPLY >>>!"
     },
     {
+      "source": "Show squadron carrier next-jump information",
+      "translation": "* SHOW SQUADRON CARRIER NEXT-JUMP INFORMATION >>>!"
+    },
+    {
       "source": "Show station/target details in left nav panel",
       "translation": "* SHOW STATION/TARGET DETAILS IN LEFT NAV PANEL >>>!"
     },
@@ -272011,6 +272775,10 @@
     {
       "source": "Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open.",
       "translation": "* SHOW THE SELECTED DESTINATION, NEXT JUMP, DISCOVERY PROGRESS, BIOLOGICAL SIGNAL COUNT, ROUTE DISTANCE, AND OPTIONAL FACTION INFLUENCE WHILE THE GALAXY MAP IS OPEN. >>>!"
+    },
+    {
+      "source": "Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active.",
+      "translation": "* SHOW THE SQUADRON CARRIER'S SCHEDULED JUMP, JUMP PHASES, AND DESTINATION IN ITS OWN OVERLAY, INCLUDING WHEN NO SC ROUTE IS ACTIVE. >>>!"
     },
     {
       "source": "Show the survey-map legend",
@@ -272633,12 +273401,32 @@
       "translation": "* SQUADRON CARRIER >>>!"
     },
     {
+      "source": "Squadron carrier itinerary",
+      "translation": "* SQUADRON CARRIER ITINERARY >>>!"
+    },
+    {
+      "source": "Squadron carrier next jump",
+      "translation": "* SQUADRON CARRIER NEXT JUMP >>>!"
+    },
+    {
+      "source": "Squadron carrier route",
+      "translation": "* SQUADRON CARRIER ROUTE >>>!"
+    },
+    {
       "source": "SquadronAndFriends",
       "translation": "* SQUADRONANDFRIENDS >>>!"
     },
     {
       "source": "SquadronCarrier",
       "translation": "* SQUADRONCARRIER >>>!"
+    },
+    {
+      "source": "SquadronCarrierNextJump",
+      "translation": "* SQUADRONCARRIERNEXTJUMP >>>!"
+    },
+    {
+      "source": "SquadronCarrierRoute.IsActive",
+      "translation": "* SQUADRONCARRIERROUTE.ISACTIVE >>>!"
     },
     {
       "source": "SquadronLogo",
@@ -272943,6 +273731,10 @@
     {
       "source": "SrvSurvey route files",
       "translation": "* SRVSURVEY ROUTE FILES >>>!"
+    },
+    {
+      "source": "SrvSurvey squadron carrier route overlay",
+      "translation": "* SRVSURVEY SQUADRON CARRIER ROUTE OVERLAY >>>!"
     },
     {
       "source": "SrvSurvey station information overlay",
@@ -276577,6 +277369,10 @@
       "translation": "* THE SELECTED BACKUP WAS RESTORED BEFORE LOADING YOUR WORKSPACES. >>>!"
     },
     {
+      "source": "The selected carrier supplies the Galaxy Map copy.",
+      "translation": "* THE SELECTED CARRIER SUPPLIES THE GALAXY MAP COPY. >>>!"
+    },
+    {
       "source": "The selected cloud backup was downloaded. Local settings are unchanged.",
       "translation": "* THE SELECTED CLOUD BACKUP WAS DOWNLOADED. LOCAL SETTINGS ARE UNCHANGED. >>>!"
     },
@@ -277559,6 +278355,10 @@
     {
       "source": "Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements.",
       "translation": "* TRACK PLANNED SITES AND ACTIVE BUILDS, CHOOSE WHICH PROJECTS FEED THE CARGO LIST, AND INSPECT LIVE CONSTRUCTION REQUIREMENTS. >>>!"
+    },
+    {
+      "source": "Track squadron carrier jumps with an independent itinerary and the saved routes shared with FC Routes.",
+      "translation": "* TRACK SQUADRON CARRIER JUMPS WITH AN INDEPENDENT ITINERARY AND THE SAVED ROUTES SHARED WITH FC ROUTES. >>>!"
     },
     {
       "source": "TrackMaterialCollection",
@@ -280009,8 +280809,8 @@
       "translation": "* WORKSPACE >>>!"
     },
     {
-      "source": "Write fleet-carrier route notes...",
-      "translation": "* WRITE FLEET-CARRIER ROUTE NOTES... >>>!"
+      "source": "Write carrier route notes...",
+      "translation": "* WRITE CARRIER ROUTE NOTES... >>>!"
     },
     {
       "source": "Write route notes...",
@@ -281375,6 +282175,10 @@
     {
       "source": "fc-route",
       "translation": "* FC-ROUTE >>>!"
+    },
+    {
+      "source": "fc-routes",
+      "translation": "* FC-ROUTES >>>!"
     },
     {
       "source": "fcz",
@@ -282845,6 +283649,10 @@
       "translation": "* SAVED SELECTION RENEWED. >>>!"
     },
     {
+      "source": "sc-routes",
+      "translation": "* SC-ROUTES >>>!"
+    },
+    {
       "source": "scale",
       "translation": "* SCALE >>>!"
     },
@@ -283967,6 +284775,10 @@
     {
       "source": "{0} Win32 error {1}.",
       "translation": "* {0} WIN32 ERROR {1}. >>>!"
+    },
+    {
+      "source": "{0} accepts Spansh Fleet Carrier Router result URLs only.",
+      "translation": "* {0} ACCEPTS SPANSH FLEET CARRIER ROUTER RESULT URLS ONLY. >>>!"
     },
     {
       "source": "{0} acquisition targets with matching rings and sell stations within 20 ly of a Fortified system or 30 ly of a Stronghold.{1}",

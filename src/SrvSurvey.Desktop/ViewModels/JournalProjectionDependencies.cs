@@ -44,6 +44,8 @@ internal sealed class JournalProjectionDependencies
     internal required RouteManagerViewModel RouteManager { get; init; }
     internal required RouteWorkspaceViewModel FleetCarrierRoute { get; init; }
     internal required RouteManagerViewModel FleetCarrierRouteManager { get; init; }
+    internal required RouteWorkspaceViewModel SquadronCarrierRoute { get; init; }
+    internal required RouteManagerViewModel SquadronCarrierRouteManager { get; init; }
     internal required JumpInfoViewModel JumpInfo { get; init; }
     internal required StationInfoViewModel StationInfo { get; init; }
     internal required HumanSiteViewModel HumanSite { get; init; }

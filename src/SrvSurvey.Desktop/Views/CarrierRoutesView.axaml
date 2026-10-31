@@ -1,0 +1,322 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             x:Class="SrvSurvey.Desktop.Views.CarrierRoutesView"
+             x:DataType="vm:RouteManagerViewModel">
+          <StackPanel Margin="0,18,0,0" Spacing="18">
+            <StackPanel Spacing="12">
+              <StackPanel Spacing="4">
+                <TextBlock x:Name="CarrierRouteTitle" Classes="page-title" FontSize="24" Text="{Binding PanelTitle}" />
+                <TextBlock Classes="muted" MaxWidth="640" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding PanelDescription}" />
+              </StackPanel>
+              <WrapPanel Orientation="Horizontal">
+                <Button Classes="secondary" Margin="0,0,10,4" Click="OpenOverlaySettings_Click" Content="Overlay settings" />
+                <Button Classes="secondary" Margin="0,0,10,4" Command="{Binding DeactivateCommand}" Content="Deactivate" />
+                <Button Classes="secondary" Margin="0,0,0,4" Command="{Binding OpenWorkspaceCommand}" Content="{Binding OpenWorkspaceLabel}" />
+              </WrapPanel>
+            </StackPanel>
+
+            <Border Classes="card raised">
+              <WrapPanel x:Name="CarrierRouteReadouts" Orientation="Horizontal">
+                <StackPanel Width="230" Margin="0,0,14,12" Spacing="4">
+                  <TextBlock Classes="muted"
+                             Text="{Binding CurrentRouteLabel}" />
+                  <TextBlock Classes="card-title"
+                             Text="{Binding Workspace.RouteName}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Classes="muted"
+                             Text="{Binding Workspace.RouteFileName}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock x:Name="CarrierEstimatedTimeRemainingReadout"
+                             Classes="muted"
+                             IsVisible="{Binding Workspace.HasCarrierEstimatedTimeRemaining}"
+                             Text="{Binding Workspace.CarrierEstimatedTimeRemaining}"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel x:Name="CarrierNextSystemReadout"
+                            Width="230" Margin="0,0,14,12"
+                            Spacing="4">
+                    <TextBlock Classes="muted" Text="NEXT SYSTEM" />
+                    <Button Classes="link" HorizontalAlignment="Left"
+                            behaviors:ClipboardCopyBehavior.Text="{Binding Workspace.NextHopName}">
+                      <TextBlock FontWeight="SemiBold"
+                                 Text="{Binding Workspace.NextHopName}"
+                                 TextTrimming="CharacterEllipsis" />
+                    </Button>
+                  <Button Classes="link" HorizontalAlignment="Left"
+                          IsVisible="{Binding Workspace.HasNextHopSystemAddress}"
+                          behaviors:ClipboardCopyBehavior.Text="{Binding Workspace.NextHopSystemAddress}">
+                      <TextBlock Classes="muted monospace" FontSize="9"
+                                 Text="{Binding Workspace.NextHopSystemAddressText}" />
+                    </Button>
+                    <TextBlock Classes="muted"
+                               Text="{Binding Workspace.ProgressSummary}"
+                               TextWrapping="Wrap" />
+                  <CheckBox x:Name="CarrierAutoCopyNextHopToggle"
+                            Margin="0,5,0,0"
+                            Command="{Binding ToggleAutoCopyCommand}"
+                            ToolTip.Tip="Can run alongside the other carrier route. Regular routes and boxel search turn both carrier auto-copy settings off."
+                            Content="Auto-copy the next hop"
+                            IsChecked="{Binding AutoCopy, Mode=OneWay}" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap" Text="The selected carrier supplies the Galaxy Map copy." />
+                </StackPanel>
+                <StackPanel x:Name="CarrierJumpCountdownReadout"
+                            Width="230" Margin="0,0,14,12"
+                            Spacing="4">
+                  <TextBlock Classes="muted"
+                             Text="{Binding Workspace.CarrierJumpCountdownTitle}"
+                             TextTrimming="CharacterEllipsis" />
+                  <Button Classes="link" HorizontalAlignment="Left" IsVisible="{Binding Workspace.HasCarrierJumpCountdown}"
+                          behaviors:ClipboardCopyBehavior.Text="{Binding Workspace.CarrierJumpDestination}">
+                    <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Workspace.CarrierJumpDestination}" />
+                  </Button>
+                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                             FontSize="22"
+                             FontWeight="SemiBold"
+                             TextWrapping="Wrap" Text="{Binding Workspace.CarrierJumpCountdownValue}" />
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               Text="{Binding Workspace.CarrierJumpPhaseLabel}" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               IsVisible="{Binding Workspace.HasCarrierJumpPhaseCountdown}"
+                               Text="{Binding Workspace.CarrierJumpPhaseCountdown}" />
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Width="80" Margin="0,0,0,12"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+                  <Border Classes="badge"
+                          IsVisible="{Binding Workspace.IsActive}">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Text="ACTIVE" />
+                  </Border>
+                  <Border Classes="badge"
+                          IsVisible="{Binding !Workspace.IsActive}">
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Text="READY" />
+                  </Border>
+                </StackPanel>
+              </WrapPanel>
+            </Border>
+
+            <TextBlock Classes="muted" MaxWidth="640" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Saved itineraries and favorites are shared with FC Routes and SC Routes. Each carrier keeps its own route progress and auto-copy setting." />
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <Border Classes="card" Padding="0" MinWidth="800">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <Grid Margin="18"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="14">
+                  <WrapPanel Orientation="Horizontal">
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            Command="{Binding OpenSelectedCommand}"
+                            Content="Open Selected" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding CanImport}"
+                            Click="ImportRoutes_Click"
+                            Content="Import" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding CanExport}"
+                            Click="ExportRoutes_Click"
+                            Content="Export" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding CanExport}"
+                            Click="ExportSpanshRoutes_Click"
+                            Content="Exp Spansh" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding CanExport}"
+                            Click="ExportCsvRoutes_Click"
+                            Content="Exp CSV" />
+                    <Button Classes="secondary compact-danger"
+                            Width="44"
+                            Height="38"
+                            Margin="0,0,8,8"
+                            Command="{Binding RequestDeleteCommand}"
+                            ToolTip.Tip="Delete selected fleet-carrier routes">
+                      <Path Width="17"
+                            Height="17"
+                            Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+                            Stroke="{DynamicResource RavenDangerBrush}"
+                            StrokeLineCap="Round"
+                            StrokeThickness="1.7"
+                            Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            Command="{Binding RefreshCommand}"
+                            Content="Refresh" />
+                  </WrapPanel>
+                  <StackPanel Grid.Column="1"
+                              Orientation="Horizontal"
+                              VerticalAlignment="Center"
+                              Spacing="10">
+                    <CheckBox IsChecked="{Binding FavoritesFirst, Mode=TwoWay}"
+                              Content="Favorites first" />
+                    <TextBlock Classes="muted"
+                               VerticalAlignment="Center"
+                               Text="{Binding SelectionSummary}" />
+                  </StackPanel>
+                </Grid>
+
+                <Border Grid.Row="1"
+                        Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                        BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="0,1"
+                        Padding="12,9">
+                  <Grid ColumnDefinitions="42,42,2*,160,3*,72,92"
+                        ColumnSpacing="10">
+                    <TextBlock Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="SELECT" />
+                    <TextBlock Grid.Column="1"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="&#x2605;" />
+                    <Button Grid.Column="2"
+                            Classes="link"
+                            HorizontalAlignment="Left"
+                            Padding="0"
+                            Command="{Binding SortNameCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="table-heading" Text="NAME" />
+                        <TextBlock Classes="table-heading"
+                                   Text="{Binding NameSortIndicator}" />
+                      </StackPanel>
+                    </Button>
+                    <Button Grid.Column="3"
+                            Classes="link"
+                            HorizontalAlignment="Left"
+                            Padding="0"
+                            Command="{Binding SortDateCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="table-heading" Text="DATE CREATED" />
+                        <TextBlock Classes="table-heading"
+                                   Text="{Binding DateSortIndicator}" />
+                      </StackPanel>
+                    </Button>
+                    <TextBlock Grid.Column="4" Classes="table-heading" Text="NOTES" />
+                    <TextBlock Grid.Column="5"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="EDIT" />
+                    <TextBlock Grid.Column="6"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="ROUTE" />
+                  </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" MinHeight="220">
+                  <StackPanel HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Spacing="6"
+                              IsVisible="{Binding !HasRoutes}">
+                    <TextBlock Classes="card-title" Text="No saved fleet-carrier routes" />
+                    <TextBlock Classes="muted"
+                               Text="{Binding EmptyLibraryMessage}" />
+                  </StackPanel>
+
+                  <ItemsControl ItemsSource="{Binding Routes}"
+                                IsVisible="{Binding HasRoutes}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:RouteManagerItemViewModel">
+                        <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="12,11">
+                          <Grid ColumnDefinitions="42,42,2*,160,3*,72,92"
+                                ColumnSpacing="10">
+                            <CheckBox HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                            <Button Grid.Column="1"
+                                    Classes="favorite-star"
+                                    Width="42"
+                                    Height="42"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding ToggleFavoriteCommand}"
+                                    ToolTip.Tip="Add or remove favorite">
+                              <TextBlock FontSize="31"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Text="{Binding FavoriteGlyph}" />
+                            </Button>
+                            <Grid Grid.Column="2"
+                                  RowDefinitions="Auto,Auto"
+                                  ColumnDefinitions="*,Auto"
+                                  VerticalAlignment="Center">
+                              <TextBlock FontWeight="SemiBold"
+                                         VerticalAlignment="Center"
+                                         Text="{Binding Name}"
+                                         TextTrimming="CharacterEllipsis" />
+                              <Button Grid.Column="1"
+                                      Classes="link"
+                                      Width="28"
+                                      Height="28"
+                                      Padding="5"
+                                      Command="{Binding RenameCommand}"
+                                      ToolTip.Tip="Rename fleet-carrier route">
+                                <Path Data="M 3,15 L 4,11 L 12,3 L 15,6 L 7,14 Z M 11,4 L 14,7"
+                                      Stroke="{DynamicResource RavenTextBrush}"
+                                      StrokeLineCap="Round"
+                                      StrokeThickness="1.5"
+                                      Stretch="Uniform" />
+                              </Button>
+                              <TextBlock Grid.Row="1"
+                                         Grid.ColumnSpan="2"
+                                         Classes="muted"
+                                         FontSize="10"
+                                         Text="{Binding FileName}"
+                                         TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                            <TextBlock Grid.Column="3"
+                                       Classes="muted"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding CreatedAtText}" />
+                            <TextBlock Grid.Column="4"
+                                       Classes="muted"
+                                       VerticalAlignment="Center"
+                                       MaxLines="2"
+                                       Text="{Binding NotesPreview}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="Wrap" />
+                            <Button Grid.Column="5"
+                                    Classes="secondary"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Padding="10,5"
+                                    Command="{Binding EditNotesCommand}"
+                                    Content="Notes" />
+                            <Button Grid.Column="6"
+                                    Classes="primary"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Padding="10,5"
+                                    Command="{Binding ActivateCommand}"
+                                    Content="Activate" />
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+              </Grid>
+            </Border>
+            </ScrollViewer>
+
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding StatusMessage}" />
+          </StackPanel>
+</UserControl>

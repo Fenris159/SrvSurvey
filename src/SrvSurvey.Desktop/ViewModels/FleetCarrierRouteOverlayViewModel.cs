@@ -34,7 +34,18 @@ public sealed class FleetCarrierRouteOverlayViewModel : INotifyPropertyChanged, 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public bool IsPassive => editorPreview?.IsPassive ?? (route.UseCarrierNextJumpInformation && !IsFinished);
-    public string Header => IsPassive ? "FLEET CARRIER NEXT JUMP" : "FLEET CARRIER ROUTE";
+    public string Header =>
+        (route.IsSquadronCarrierWorkspace, IsPassive) switch
+        {
+            (true, true) => "SQUADRON CARRIER NEXT JUMP",
+            (true, false) => "SQUADRON CARRIER ROUTE",
+            (false, true) => "FLEET CARRIER NEXT JUMP",
+            (false, false) => "FLEET CARRIER ROUTE",
+        };
+    public string WindowTitle =>
+        route.IsSquadronCarrierWorkspace
+            ? "SrvSurvey squadron carrier route overlay"
+            : "SrvSurvey fleet carrier route overlay";
     public bool HasRouteDetails => !IsPassive;
     public bool HasJumpSummary => !string.IsNullOrEmpty(JumpSummary);
     public string FuelLeftLabel

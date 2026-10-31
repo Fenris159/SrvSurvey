@@ -1399,6 +1399,15 @@
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding FleetCarrierRoute.CarrierNextJumpSettingsStatus}" />
           </StackPanel>
         </Border>
+        <Border x:Name="SquadronCarrierNextJumpCard" Classes="card raised">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="card-title" Text="Squadron carrier next jump" />
+            <CheckBox IsChecked="{Binding SquadronCarrierRoute.ShowCarrierNextJumpInformation, Mode=TwoWay}"
+                      Content="Show squadron carrier next-jump information" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active." />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding SquadronCarrierRoute.CarrierNextJumpSettingsStatus}" />
+          </StackPanel>
+        </Border>
         <Border x:Name="JumpInformationCard" Classes="card raised">
           <StackPanel Spacing="14">
             <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"

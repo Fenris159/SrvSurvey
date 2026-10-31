@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             x:Class="SrvSurvey.Desktop.Views.CarrierRouteDialogs"
+             x:DataType="vm:RouteManagerViewModel">
+  <Grid IsVisible="{Binding IsDialogVisible}">
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding IsDeleteConfirmationVisible}">
+      <Border Classes="card raised"
+              MaxWidth="470"
+              Padding="26"
+              HorizontalAlignment="Stretch" Margin="18"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="18">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Foreground="{DynamicResource RavenDangerBrush}"
+                     Text="Delete selected carrier routes?" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route." />
+          <TextBlock Text="{Binding DeleteConfirmationText}"
+                     TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding CancelDialogCommand}"
+                    Content="No" />
+            <Button Classes="secondary compact-danger"
+                    Command="{Binding ConfirmDeleteCommand}"
+                    Content="Yes" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding IsNotesVisible}">
+      <Border Classes="card raised"
+              MaxWidth="640"
+              Padding="26"
+              HorizontalAlignment="Stretch" Margin="18"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Text="Carrier route notes" />
+          <TextBlock Classes="muted"
+                     Text="{Binding EditingRouteName, StringFormat='Edit notes for {0}'}"
+                     TextWrapping="Wrap" />
+          <TextBox Height="280"
+                   AcceptsReturn="True"
+                   Text="{Binding NotesDraft, Mode=TwoWay}"
+                   TextWrapping="Wrap"
+                   PlaceholderText="Write carrier route notes..." />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding CancelDialogCommand}"
+                    Content="Close" />
+            <Button Classes="primary"
+                    Command="{Binding SaveNotesCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding IsRenameVisible}">
+      <Border Classes="card raised"
+              MaxWidth="520"
+              Padding="26"
+              HorizontalAlignment="Stretch" Margin="18"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Text="Rename carrier route" />
+          <TextBlock Classes="muted"
+                     Text="{Binding EditingRouteFileName, StringFormat='Rename {0}'}"
+                     TextWrapping="Wrap" />
+          <TextBox Text="{Binding RenameDraft, Mode=TwoWay}"
+                   PlaceholderText="Carrier route name" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding CancelDialogCommand}"
+                    Content="Cancel" />
+            <Button Classes="primary"
+                    Command="{Binding SaveRenameCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

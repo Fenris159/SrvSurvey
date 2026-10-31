@@ -74,6 +74,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
                 "Glide approach",
             ],
             ["PlotFleetCarrierRoute"] = ["Jump cooldown", "Jump scheduled", "Route only", "Carrier next jump"],
+            ["PlotSquadronCarrierRoute"] = ["Jump cooldown", "Jump scheduled", "Route only", "Carrier next jump"],
             ["PlotPulse"] = ["SCO cooling", "SCO active", "SCO ready", "Journal pulse"],
             ["PlotSurfaceMiningSurvey"] =
             [

@@ -7,6 +7,9 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class RouteWorkspaceViewModel
 {
+    private readonly FollowRouteCarrierKind? dedicatedCarrier;
+    public bool CanSelectCarrier => IsFleetCarrierWorkspace && dedicatedCarrier is null;
+    public string CarrierIdentityLabel => IsSquadronCarrierWorkspace ? "Squadron carrier" : "Personal fleet carrier";
     private const string CarrierIdPropertyName = "CarrierID";
     private readonly FleetCarrierFuelJournal carrierFuelJournal = new();
     private readonly Dictionary<FollowRouteCarrierKind, long> observedCarrierIds = [];
@@ -34,7 +37,13 @@ public sealed partial class RouteWorkspaceViewModel
         get => CarrierOptions.Single(option => option.Kind == selectedCarrierKind);
         set
         {
-            if (value is null || !CarrierOptions.Contains(value) || IsBusy || value.Kind == selectedCarrierKind)
+            if (
+                !CanSelectCarrier
+                || value is null
+                || !CarrierOptions.Contains(value)
+                || IsBusy
+                || value.Kind == selectedCarrierKind
+            )
             {
                 return;
             }
@@ -56,6 +65,7 @@ public sealed partial class RouteWorkspaceViewModel
 
     private void ApplyCarrierKind(FollowRouteCarrierKind kind)
     {
+        kind = dedicatedCarrier ?? kind;
         if (kind == selectedCarrierKind)
         {
             return;
@@ -221,16 +231,13 @@ public sealed partial class RouteWorkspaceViewModel
         carrierFuelJournal.Observe(events);
         foreach (
             System.Text.Json.JsonElement data in events
-                .Where(entry => entry.EventName == "CarrierStats")
+                .Where(entry => entry.EventName is "CarrierStats" or "CarrierJumpRequest")
                 .Select(entry => entry.Payload)
         )
         {
             if (GetInt64(data, CarrierIdPropertyName) is { } observedId)
             {
-                FollowRouteCarrierKind kind =
-                    GetString(data, "CarrierType") == "SquadronCarrier"
-                        ? FollowRouteCarrierKind.Squadron
-                        : FollowRouteCarrierKind.Personal;
+                FollowRouteCarrierKind kind = GetObservedCarrierKind(observedId, GetString(data, "CarrierType"));
                 observedCarrierIds[kind] = observedId;
             }
             if (
@@ -241,6 +248,25 @@ public sealed partial class RouteWorkspaceViewModel
                 latestCarrierFuel = known with { CarrierId = GetInt64(data, CarrierIdPropertyName) ?? known.CarrierId };
             }
         }
+    }
+
+    private FollowRouteCarrierKind GetObservedCarrierKind(long id, string? type)
+    {
+        if (type is not null)
+        {
+            return type == "SquadronCarrier" ? FollowRouteCarrierKind.Squadron : FollowRouteCarrierKind.Personal;
+        }
+        if (carrierFuelJournal.GetKnownCarrierKind(id) is { } observed)
+        {
+            return observed;
+        }
+        if (latestCarrierFuel is { } known && known.CarrierId == id)
+        {
+            return known.Kind;
+        }
+        return carrierAccountBaseline?.SquadronCarrier?.FuelData?.CarrierId == id
+            ? FollowRouteCarrierKind.Squadron
+            : FollowRouteCarrierKind.Personal;
     }
 
     private bool MatchesSelectedCarrier(JournalEventEnvelope entry)
@@ -267,6 +293,10 @@ public sealed partial class RouteWorkspaceViewModel
                     );
             }
             return id == selected;
+        }
+        if (id is not null && observedCarrierIds.Any(pair => pair.Key != selectedCarrierKind && pair.Value == id))
+        {
+            return false;
         }
         string? type = GetString(entry.Payload, "CarrierType");
         return type is null

@@ -101,6 +101,7 @@ public sealed class OverlayThemeResourcesTests
         ["PlotHumanSite"] = "HumanSite.AutoShow",
         ["PlotJumpInfo"] = "JumpInfo.AutoShow",
         ["PlotFleetCarrierRoute"] = "FleetCarrierRoute.IsActive",
+        ["PlotSquadronCarrierRoute"] = "SquadronCarrierRoute.IsActive",
         ["PlotRouteBio"] = "Route.IsActive",
         ["PlotMassacre"] = "Combat.AutoShowMassacreMissions",
         ["PlotMiniTrack"] = "SystemSurvey.AutoShowMiniTrack",
@@ -589,7 +590,7 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(41, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(42, OverlayLayoutCatalog.Supported.Count);
         Assert.All(
             OverlayLayoutCatalog.Supported,
             definition =>

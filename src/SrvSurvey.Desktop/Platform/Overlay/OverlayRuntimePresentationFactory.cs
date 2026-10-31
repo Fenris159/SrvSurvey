@@ -43,6 +43,7 @@ internal static class OverlayRuntimePresentationFactory
                 or "PlotHumanSite"
                 or "PlotJumpInfo"
                 or "PlotFleetCarrierRoute"
+                or "PlotSquadronCarrierRoute"
                 or "PlotRouteBio"
                 or "PlotMassacre"
                 or "PlotMiniTrack"
@@ -139,7 +140,7 @@ internal static class OverlayRuntimePresentationFactory
             "PlotGuardianSystem" => new GuardianSystemOverlayPresentation(),
             "PlotHumanSite" => new HumanSiteOverlayPresentation(),
             "PlotJumpInfo" => new JumpInfoOverlayPresentation(),
-            "PlotFleetCarrierRoute" => new FleetCarrierRouteOverlayPresentation(),
+            "PlotFleetCarrierRoute" or "PlotSquadronCarrierRoute" => new FleetCarrierRouteOverlayPresentation(),
             "PlotRouteBio" => new RouteBioOverlayPresentation(),
             "PlotMassacre" => new MassacreMissionsOverlayPresentation(),
             "PlotMiniTrack" => new MiniTrackOverlayPresentation(),

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Avalonia;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -19,15 +20,9 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
     {
         this.route = route ?? throw new ArgumentNullException(nameof(route));
         ArgumentNullException.ThrowIfNull(presentationSession);
+        string plotterName = route.IsSquadronCarrierWorkspace ? "PlotSquadronCarrierRoute" : "PlotFleetCarrierRoute";
         hostedWindow = presentationSession.HostPassiveWindow(
-            new PassiveOverlayWindowDefinition(
-                "PlotFleetCarrierRoute",
-                _ => CreateWindow(),
-                (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize, margin: 8)
-            )
-            {
-                Tick = OnTick,
-            }
+            new PassiveOverlayWindowDefinition(plotterName, _ => CreateWindow(), PlaceWindow) { Tick = OnTick }
         );
         viewModel = new FleetCarrierRouteOverlayViewModel(route, hostedWindow.Capabilities);
         route.PropertyChanged += OnRoutePropertyChanged;
@@ -56,6 +51,15 @@ public sealed class FleetCarrierRouteOverlayCoordinator : IDisposable
         route.PropertyChanged -= OnRoutePropertyChanged;
         hostedWindow.Dispose();
         viewModel.Dispose();
+    }
+
+    private PixelPoint PlaceWindow(PixelRect bounds, PixelSize size)
+    {
+        PixelPoint position = OverlayWindowPlacement.TopRight(bounds, size, margin: 8);
+        // Reserve the personal panel's 260-pixel width and a 16-pixel gap.
+        return route.IsSquadronCarrierWorkspace
+            ? new PixelPoint(Math.Max(bounds.X + 8, position.X - 276), position.Y)
+            : position;
     }
 
     private FleetCarrierRouteOverlayWindow CreateWindow() => new(viewModel);

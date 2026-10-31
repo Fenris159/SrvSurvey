@@ -35,6 +35,8 @@ internal static partial class ProfileSyncPolicy
         "HumanSite",
         "MineMap",
         "MiningOverlays",
+        "CarrierNextJump",
+        "SquadronCarrierNextJump",
         "Notifications",
         "PulseOverlay",
         "Quests",

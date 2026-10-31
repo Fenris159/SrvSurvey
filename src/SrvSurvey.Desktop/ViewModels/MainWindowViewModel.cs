@@ -704,30 +704,36 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 externalNetworkClient,
                 useSpanshLastUpdated: () => sharedJumpInfoSettingsStore.Load().UseSpanshLastUpdated
             );
-            var fleetCarrierRouteService = new FollowRouteService(
-                new FollowRouteStore(AppDataPaths.DataDirectory, FollowRouteKind.FleetCarrier)
-            );
-            FleetCarrierRoute = new RouteWorkspaceViewModel(
-                fleetCarrierRouteService,
+            var carrierRouteLibrary = new FollowRouteStore(AppDataPaths.DataDirectory, FollowRouteKind.FleetCarrier);
+            (FleetCarrierRoute, FleetCarrierRouteManager) = CreateCarrierRouteWorkspace(
+                carrierRouteLibrary.ForCarrier(FollowRouteCarrierKind.Personal),
+                FollowRouteCarrierKind.Personal,
                 routeNameImporter,
                 spanshRouteClient,
-                new RouteWorkspaceOptions(
-                    FollowRouteKind.FleetCarrier,
-                    PlannerClient: spanshPlannerClient,
-                    CurrentShip: CurrentShipExport,
-                    CarrierSnapshotSource: GetRouteCarrierSnapshot,
-                    RefreshCarrierSnapshot: RefreshRouteCarrierSnapshotAsync,
-                    CarrierNextJump: new(
-                        sharedSystemSummaryClient,
-                        new CarrierNextJumpSettingsStore(AppDataPaths.UiSettingsPath),
-                        sharedSystemResolver
-                    )
-                )
+                spanshPlannerClient,
+                sharedSystemSummaryClient,
+                sharedSystemResolver
             );
             rollback.Add(FleetCarrierRoute.SpanshSearch!.Dispose);
             rollback.Add(FleetCarrierRoute.CancelCarrierDestinationLookup);
-            FleetCarrierRouteManager = new RouteManagerViewModel(fleetCarrierRouteService, FleetCarrierRoute);
-            routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(Route, FleetCarrierRoute, boxelSearchSession);
+            (SquadronCarrierRoute, SquadronCarrierRouteManager) = CreateCarrierRouteWorkspace(
+                carrierRouteLibrary.ForCarrier(FollowRouteCarrierKind.Squadron),
+                FollowRouteCarrierKind.Squadron,
+                routeNameImporter,
+                spanshRouteClient,
+                spanshPlannerClient,
+                sharedSystemSummaryClient,
+                sharedSystemResolver
+            );
+            FleetCarrierRoute.ShareCarrierLibraryWith(SquadronCarrierRoute);
+            rollback.Add(SquadronCarrierRoute.SpanshSearch!.Dispose);
+            rollback.Add(SquadronCarrierRoute.CancelCarrierDestinationLookup);
+            routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(
+                Route,
+                FleetCarrierRoute,
+                boxelSearchSession,
+                SquadronCarrierRoute
+            );
             rollback.Add(routeAutoCopyCoordinator.Dispose);
             JumpInfo = new JumpInfoViewModel(
                 sharedSystemSummaryClient,
@@ -1260,6 +1266,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public RouteWorkspaceViewModel FleetCarrierRoute { get; }
 
     public RouteManagerViewModel FleetCarrierRouteManager { get; }
+
+    public RouteWorkspaceViewModel SquadronCarrierRoute { get; }
+
+    public RouteManagerViewModel SquadronCarrierRouteManager { get; }
 
     private FrontierAccountSnapshot? GetRouteCarrierSnapshot() =>
         FrontierProfile.IsViewingJournalCommander ? FrontierProfile.Snapshot : null;
@@ -4775,8 +4785,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(Route.SpanshSearch!.Dispose);
         TryDispose(FleetCarrierRoute.SpanshSearch!.Dispose);
         TryDispose(FleetCarrierRoute.CancelCarrierDestinationLookup);
+        TryDispose(SquadronCarrierRoute.SpanshSearch!.Dispose);
+        TryDispose(SquadronCarrierRoute.CancelCarrierDestinationLookup);
         await TryDisposeAsync(() => new ValueTask(Route.FlushWorkspaceAsync()));
         await TryDisposeAsync(() => new ValueTask(FleetCarrierRoute.FlushWorkspaceAsync()));
+        await TryDisposeAsync(() => new ValueTask(SquadronCarrierRoute.FlushWorkspaceAsync()));
         await TryDisposeAsync(boxelSurveyStats.DisposeAsync);
         TryDispose(BoxelSearch.CancelPendingOperations);
         TryDispose(boxelNameSuggestions.Dispose);

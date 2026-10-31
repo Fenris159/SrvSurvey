@@ -427,6 +427,29 @@ public sealed class OverlayPresentationContractTests
             ]
         ),
         Contract(
+            "PlotSquadronCarrierRoute",
+            [
+                "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml",
+            ],
+            [
+                "HopProgress",
+                "SystemName",
+                "JumpSummary",
+                "JumpsLeft",
+                "FuelLeft",
+                "TritiumInMarket",
+                "JumpFuel",
+                "IcyRingLabel",
+                "HasRestockWarning",
+                "RestockAmount",
+                "CountdownTitle",
+                "Countdown",
+                "CountdownPhase",
+                "CountdownPhaseTime",
+            ]
+        ),
+        Contract(
             "PlotRouteBio",
             [
                 "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml",
@@ -559,7 +582,7 @@ public sealed class OverlayPresentationContractTests
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
         string root = FindRepositoryRoot();
-        Assert.Equal(31, Contracts.Length);
+        Assert.Equal(32, Contracts.Length);
         foreach (PresentationContract contract in Contracts)
         {
             string production = string.Join(
@@ -709,6 +732,13 @@ public sealed class OverlayPresentationContractTests
     )]
     [InlineData(
         "PlotFleetCarrierRoute",
+        "FleetCarrierRouteOverlayPresentation.axaml",
+        "FleetCarrierRouteOverlayWindow.axaml",
+        260,
+        true
+    )]
+    [InlineData(
+        "PlotSquadronCarrierRoute",
         "FleetCarrierRouteOverlayPresentation.axaml",
         "FleetCarrierRouteOverlayWindow.axaml",
         260,

@@ -8,17 +8,20 @@ namespace SrvSurvey.Core.Routes;
 /// <summary>Records observations cheaply; reconstructs one selected carrier only when fuel inputs are requested.</summary>
 public sealed class FleetCarrierFuelJournal
 {
+    private const string CarrierStatsEvent = "CarrierStats";
     private const string CarrierIdField = "CarrierID";
     private const string MarketIdField = "MarketID";
     private const string StarSystemField = "StarSystem";
 
     private readonly List<JournalEventEnvelope> events = [];
     private readonly HashSet<string> seen = new(StringComparer.Ordinal);
+    private readonly Dictionary<long, FollowRouteCarrierKind> knownCarrierKinds = [];
 
     public void Reset()
     {
         events.Clear();
         seen.Clear();
+        knownCarrierKinds.Clear();
     }
 
     public void Observe(IReadOnlyList<JournalEventEnvelope> journalEvents)
@@ -31,7 +34,30 @@ public sealed class FleetCarrierFuelJournal
         )
         {
             events.Add(entry);
+            RememberCarrierKind(entry);
         }
+    }
+
+    /// <summary>Retains an explicitly identified carrier type when later events omit it.</summary>
+    public FollowRouteCarrierKind? GetKnownCarrierKind(long carrierId) =>
+        knownCarrierKinds.TryGetValue(carrierId, out FollowRouteCarrierKind kind) ? kind : null;
+
+    private void RememberCarrierKind(JournalEventEnvelope entry)
+    {
+        JsonElement data = entry.Payload;
+        if (
+            entry.EventName is not (CarrierStatsEvent or "CarrierJumpRequest")
+            || !data.TryGetProperty("CarrierType", out JsonElement type)
+            || type.ValueKind != JsonValueKind.String
+            || !data.TryGetProperty(CarrierIdField, out JsonElement id)
+            || id.ValueKind != JsonValueKind.Number
+            || !id.TryGetInt64(out long number)
+        )
+        {
+            return;
+        }
+        knownCarrierKinds[number] =
+            type.GetString() == "SquadronCarrier" ? FollowRouteCarrierKind.Squadron : FollowRouteCarrierKind.Personal;
     }
 
     public FleetCarrierFuelSnapshot? Read(
@@ -81,7 +107,7 @@ public sealed class FleetCarrierFuelJournal
         }
     }
 
-    private static FleetCarrierFuelSnapshot? JournalIdentity(
+    private FleetCarrierFuelSnapshot? JournalIdentity(
         IEnumerable<JournalEventEnvelope> observations,
         FollowRouteCarrierKind kind
     )
@@ -89,23 +115,22 @@ public sealed class FleetCarrierFuelJournal
         FleetCarrierFuelSnapshot? identity = null;
         foreach (
             JsonElement data in observations
-                .Where(entry => entry.EventName == "CarrierStats")
+                .Where(entry => entry.EventName == CarrierStatsEvent)
                 .Select(entry => entry.Payload)
         )
         {
-            bool squadron =
-                data.TryGetProperty("CarrierType", out JsonElement type)
-                && type.ValueKind == JsonValueKind.String
-                && type.GetString() == "SquadronCarrier";
             if (
-                squadron != (kind == FollowRouteCarrierKind.Squadron)
-                || !data.TryGetProperty(CarrierIdField, out JsonElement id)
+                !data.TryGetProperty(CarrierIdField, out JsonElement id)
                 || id.ValueKind != JsonValueKind.Number
                 || !id.TryGetInt64(out long number)
                 || !data.TryGetProperty("Callsign", out JsonElement callsign)
                 || callsign.ValueKind != JsonValueKind.String
                 || string.IsNullOrWhiteSpace(callsign.GetString())
             )
+            {
+                continue;
+            }
+            if ((GetKnownCarrierKind(number) ?? FollowRouteCarrierKind.Personal) != kind)
             {
                 continue;
             }
@@ -125,7 +150,7 @@ public sealed class FleetCarrierFuelJournal
 
     private static bool IsRelevant(string name) =>
         name
-            is "CarrierStats"
+            is CarrierStatsEvent
                 or "CarrierDepositFuel"
                 or "CarrierJump"
                 or "CarrierJumpRequest"
@@ -166,7 +191,7 @@ public sealed class FleetCarrierFuelJournal
                 case "Undocked":
                     dockedCarrier = null;
                     break;
-                case "CarrierStats" when MatchesStats(data):
+                case CarrierStatsEvent when MatchesStats(data):
                     ApplyStats(data, at);
                     break;
                 case "CarrierDepositFuel" when Matches(data):
