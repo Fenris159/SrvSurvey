@@ -629,9 +629,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             var systemNotesSettingsStore = new SystemNotesSettingsStore(AppDataPaths.OverlaySettingsDirectory);
             var journeyService = new JourneyService(
                 new JourneyStore(AppDataPaths.DataDirectory),
-                new JourneyJournalHistoryReader(
-                    ResolveJournalPathOrDefault(folderResolution, AppDataPaths.DataDirectory)
-                ),
+                CreateJourneyHistoryReader(folderResolution, AppDataPaths.DataDirectory),
                 commanderProfileStore,
                 sharedExobiologyCatalog
             );
@@ -2583,6 +2581,16 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private static CommunityGoalJournalHistoryReader? CreateCommunityGoalHistoryReader(
         JournalFolderResolution resolution
     ) => resolution.SelectedPath is { } journalPath ? new CommunityGoalJournalHistoryReader(journalPath) : null;
+
+    private static JourneyJournalHistoryReader CreateJourneyHistoryReader(
+        JournalFolderResolution resolution,
+        string dataDirectory
+    ) =>
+        new(
+            resolution.AvailablePaths.Count > 0
+                ? resolution.AvailablePaths
+                : [ResolveJournalPathOrDefault(resolution, dataDirectory)]
+        );
 
     private static Action<string>? CreateReferenceUpdateLogger(ApplicationLogService? logService) =>
         logService is null ? null : message => logService.Append(message);

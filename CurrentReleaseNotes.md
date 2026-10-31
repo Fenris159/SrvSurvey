@@ -1,4 +1,8 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.1
+# SrvSurvey-XP 2.1.3.0-rc.77.2
+
+RC77.2 fixes Journey starts when Steam, Epic, or other Elite installations keep
+journals in different folders. It also improves replay when journal sessions
+overlap or a journal source is unavailable.
 
 This release brings Journeys into Navigation with expedition history, flexible
 starting visits and portable photo reports. Colonization Market Search follows
@@ -8,6 +12,12 @@ from RC77.
 
 ## What's changed
 
+- **Journey journal reliability:** Starting a Journey uses the selected
+  commander's journals across all available folders, regardless of folder order.
+  Current starts use the latest matching location. Catch-up and reprocessing
+  include later activity from overlapping sessions, respect the Journey's start
+  time, and count copied journals once. Unreadable folders or files are skipped
+  with warnings so other readable journals remain usable.
 - **Journeys workspace:** Manage expeditions directly under Navigation instead
   of opening a separate window. The Travel shortcut opens Journeys. Archive
   completed journeys to tuck them away, restore them when needed, or delete

@@ -313,7 +313,7 @@ public sealed partial class JourneyService
         {
             JourneyDocument reset = journey with { Watermark = journey.StartTime, VisitedSystems = [] };
             JourneyJournalReadResult read = await historyReader
-                .ReadFromAsync(reset.StartingJournal, reset.FrontierId, isOdyssey, cancellationToken)
+                .ReadFromAsync(reset.StartingJournal, reset.FrontierId, isOdyssey, reset.StartTime, cancellationToken)
                 .ConfigureAwait(false);
             var processor = new JourneyJournalProcessor(reset, exobiologyCatalog, isOdyssey);
             IEnumerable<JournalEventEnvelope> events = journey.EndTime is { } endTime
@@ -393,7 +393,7 @@ public sealed partial class JourneyService
     )
     {
         JourneyJournalReadResult read = await historyReader
-            .ReadFromAsync(journey.StartingJournal, journey.FrontierId, isOdyssey, cancellationToken)
+            .ReadFromAsync(journey.StartingJournal, journey.FrontierId, isOdyssey, journey.StartTime, cancellationToken)
             .ConfigureAwait(false);
         var processor = new JourneyJournalProcessor(journey, exobiologyCatalog, isOdyssey);
         JourneyReplaySummary replay = processor.ApplyCatchUp(read.Events);
