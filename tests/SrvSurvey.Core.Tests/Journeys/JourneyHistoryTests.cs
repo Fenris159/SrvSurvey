@@ -259,6 +259,7 @@ public sealed class JourneyHistoryTests : IDisposable
             """
             {"timestamp":"1970-01-01T00:00:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"1970-01-01T00:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
+            {"timestamp":"1970-01-01T00:00:01Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
             """
         );
 

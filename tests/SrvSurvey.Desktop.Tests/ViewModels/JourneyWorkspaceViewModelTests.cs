@@ -168,6 +168,20 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
         Assert.True(settings.Snapshot?.JourneyUseGalacticTime);
     }
 
+    [Fact]
+    public async Task CurrentLocationFailureShowsJournalReadDiagnostics()
+    {
+        await WriteJournalAsync("malformed");
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Unreadable location";
+        await model.BeginJourneyAsync();
+        Assert.False(model.HasActiveJourney);
+        Assert.Contains("line 1", model.StartStatus, StringComparison.Ordinal);
+        Assert.Contains("current location could not be found", model.StartStatus, StringComparison.Ordinal);
+    }
+
     private JourneyWorkspaceViewModel CreateViewModel()
     {
         var noteStore = new SystemNoteStore(DataDirectory);

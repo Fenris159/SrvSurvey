@@ -16,8 +16,10 @@ from RC77.
   commander's journals across all available folders, regardless of folder order.
   Current starts use the latest matching location. Catch-up and reprocessing
   include later activity from overlapping sessions, respect the Journey's start
-  time, and count copied journals once. Unreadable folders or files are skipped
-  with warnings so other readable journals remain usable.
+  time, and count copied journals once. Journal read failures show warnings;
+  incomplete reprocessing preserves saved history. Some inaccessible folders
+  may be excluded during discovery. Saved system notes finish loading before
+  the history workspace becomes ready.
 - **Journeys workspace:** Manage expeditions directly under Navigation instead
   of opening a separate window. The Travel shortcut opens Journeys. Archive
   completed journeys to tuck them away, restore them when needed, or delete

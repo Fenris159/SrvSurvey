@@ -28038,14 +28038,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "Ignored {0} malformed journal line(s).",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
-  },
-  {
     "Text": "Ignored {0} malformed line(s).",
     "IsFormat": true,
     "SourceKinds": [
@@ -29563,6 +29555,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Journal read warning(s): {0}. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
   },
   {
     "Text": "Journal scan context is not loaded.",
@@ -62347,8 +62347,8 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
-    "Text": "The current location could not be found. Load the current journal or choose a previous visit.",
-    "IsFormat": false,
+    "Text": "The current location could not be found. Load the current journal or choose a previous visit.{0}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
