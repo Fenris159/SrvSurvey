@@ -631,7 +631,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 new JourneyStore(AppDataPaths.DataDirectory),
                 CreateJourneyHistoryReader(folderResolution, AppDataPaths.DataDirectory),
                 commanderProfileStore,
-                sharedExobiologyCatalog
+                sharedExobiologyCatalog,
+                CreateReferenceUpdateLogger(resolvedApplicationLogService)
             );
             Search = new SphereLimitViewModel(commanderProfileStore, sharedSystemResolver);
             NearestSystems = new NearestSystemsViewModel(

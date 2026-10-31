@@ -18,18 +18,21 @@ public sealed partial class JourneyService
     private readonly SemaphoreSlim operationLock = new(1, 1);
     private JourneyJournalProcessor? activeProcessor;
     private bool activeIsOdyssey;
+    private readonly Action<string>? log;
 
     public JourneyService(
         JourneyStore journeyStore,
         JourneyJournalHistoryReader historyReader,
         CommanderProfileStore profileStore,
-        ExobiologyReferenceCatalog exobiologyCatalog
+        ExobiologyReferenceCatalog exobiologyCatalog,
+        Action<string>? log = null
     )
     {
         this.journeyStore = journeyStore ?? throw new ArgumentNullException(nameof(journeyStore));
         this.historyReader = historyReader ?? throw new ArgumentNullException(nameof(historyReader));
         this.profileStore = profileStore ?? throw new ArgumentNullException(nameof(profileStore));
         this.exobiologyCatalog = exobiologyCatalog ?? throw new ArgumentNullException(nameof(exobiologyCatalog));
+        this.log = log;
     }
 
     public JourneyDocument? ActiveJourney => activeProcessor?.Journey;
@@ -44,9 +47,31 @@ public sealed partial class JourneyService
         return historyReader.FindLatestFsdJumpAsync(frontierId, isOdyssey, systemAddress, cancellationToken);
     }
 
-    public Task<JourneyCatalogResult> LoadAllAsync(string frontierId, CancellationToken cancellationToken = default)
+    public async Task<JourneyCatalogResult> LoadAllAsync(
+        string frontierId,
+        CancellationToken cancellationToken = default
+    )
     {
-        return journeyStore.LoadAllAsync(frontierId, cancellationToken);
+        JourneyCatalogResult catalog = await journeyStore
+            .LoadAllAsync(frontierId, cancellationToken)
+            .ConfigureAwait(false);
+        var journeys = new List<JourneyDocument>();
+        var errors = new List<string>(catalog.Errors);
+        foreach (JourneyDocument journey in catalog.Journeys)
+        {
+            JourneyLoadResult upgraded = await journeyStore
+                .UpgradeAsync(frontierId, journey.FileName, cancellationToken)
+                .ConfigureAwait(false);
+            if (upgraded.Journey is not null)
+            {
+                journeys.Add(upgraded.Journey);
+            }
+            if (upgraded.Error is not null)
+            {
+                errors.Add(upgraded.Error);
+            }
+        }
+        return new(journeys, errors);
     }
 
     public Task<JourneyJournalSystemVisitsResult> FindStartVisitsAsync(
@@ -90,53 +115,18 @@ public sealed partial class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            // Initialization belongs to the requested profile even when loading or replay fails.
+            activeProcessor = null;
+            RecoveryReference = null;
             CommanderProfileLoadResult profile = await profileStore
                 .LoadAsync(frontierId, isOdyssey, cancellationToken)
                 .ConfigureAwait(false);
-            if (profile.Data is not { } profileData)
+            if (profile.Data is not { } data)
             {
-                activeProcessor = null;
-                return new JourneyServiceResult(
-                    null,
-                    [profile.Error ?? "The commander profile could not be loaded."],
-                    0
-                );
+                return new(null, [profile.Error ?? "The commander profile could not be loaded."], 0);
             }
-
-            string? fileName = profileData.ActiveJourneyFileName;
-            if (string.IsNullOrWhiteSpace(fileName))
-            {
-                activeProcessor = null;
-                return JourneyServiceResult.Empty;
-            }
-
-            JourneyLoadResult load = await journeyStore
-                .LoadAsync(frontierId, fileName, cancellationToken)
+            return await ResolveActiveJourneyAsync(frontierId, isOdyssey, data, replay: true, cancellationToken)
                 .ConfigureAwait(false);
-            if (load.Journey is null)
-            {
-                activeProcessor = null;
-                return new JourneyServiceResult(
-                    null,
-                    [load.Error ?? $"The active journey {fileName} was not found."],
-                    0
-                );
-            }
-
-            if (!load.Journey.IsActive)
-            {
-                activeProcessor = null;
-                await profileStore
-                    .SaveActiveJourneyAsync(frontierId, profileData.CommanderName, isOdyssey, null, cancellationToken)
-                    .ConfigureAwait(false);
-                return new JourneyServiceResult(
-                    load.Journey,
-                    ["The commander profile pointed to a concluded journey. Its active reference was cleared."],
-                    0
-                );
-            }
-
-            return await CatchUpAndActivateAsync(load.Journey, isOdyssey, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -158,23 +148,34 @@ public sealed partial class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (activeProcessor is not null)
-            {
-                throw new InvalidOperationException("Conclude the active journey before beginning another one.");
-            }
-
             CommanderProfileLoadResult profile = await profileStore
                 .LoadAsync(request.FrontierId, request.IsOdyssey, cancellationToken)
                 .ConfigureAwait(false);
-            if (profile.Data is null)
+            if (profile.Data is not { } data)
             {
                 throw new InvalidDataException(profile.Error ?? "The commander profile could not be loaded.");
             }
-
-            if (!string.IsNullOrWhiteSpace(profile.Data.ActiveJourneyFileName))
+            LogState("begin", request.FrontierId, request.IsOdyssey, data.ActiveJourneyFileName);
+            JourneyServiceResult active = await ResolveActiveJourneyAsync(
+                    request.FrontierId,
+                    request.IsOdyssey,
+                    data,
+                    replay: false,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            JourneyCatalogResult catalog = await journeyStore
+                .LoadAllAsync(request.FrontierId, cancellationToken)
+                .ConfigureAwait(false);
+            JourneyDocument? blockingJourney = catalog.Journeys.FirstOrDefault(journey => journey.IsActive);
+            if (blockingJourney is not null)
             {
-                throw new InvalidOperationException("Conclude the active journey before beginning another one.");
+                throw new InvalidOperationException(
+                    $"Conclude the active journey before beginning another one. Active journey: {blockingJourney.Name} ({blockingJourney.CommanderName}). Resume it from the Journeys list if it is not currently recording."
+                );
             }
+
+            string? expectedReference = GetResolvedReference(data, active);
 
             JourneyDocument journey = await journeyStore
                 .CreateAsync(
@@ -191,16 +192,28 @@ public sealed partial class JourneyService
                 .ConfigureAwait(false);
             JourneyServiceResult result = await CatchUpAndActivateAsync(journey, request.IsOdyssey, cancellationToken)
                 .ConfigureAwait(false);
-            await profileStore
-                .SaveActiveJourneyAsync(
+            bool selected = await profileStore
+                .TryReplaceActiveJourneyAsync(
                     request.FrontierId,
-                    request.CommanderName,
                     request.IsOdyssey,
+                    expectedReference,
                     result.Journey!.FileName,
-                    cancellationToken
+                    cancellationToken,
+                    request.CommanderName
                 )
                 .ConfigureAwait(false);
-            return result;
+            if (!selected)
+            {
+                return SelectionChanged() with
+                {
+                    Errors =
+                    [
+                        "The journey was saved, but the active journey selection changed. Refresh Journeys to load the latest selection.",
+                    ],
+                };
+            }
+            RecoveryReference = null;
+            return result with { Errors = [.. active.Errors, .. catalog.Errors, .. result.Errors] };
         }
         finally
         {
@@ -519,4 +532,7 @@ public sealed record JourneyServiceResult(
 )
 {
     public static JourneyServiceResult Empty { get; } = new(null, [], 0);
+    public JourneyRecoveryReference? Recovery { get; init; }
 }
+
+public sealed record JourneyRecoveryReference(string FrontierId, bool IsOdyssey, string FileName);

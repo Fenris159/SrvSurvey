@@ -1836,7 +1836,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         var client = new StubRavenColonialClient { ValidatedCommanderName = "Other Cmdr" };
         var store = new CommanderProfileStore(directory);
         await store.SaveRavenColonialApiKeyAsync("F123", "Test Cmdr", isOdyssey: true, "existing-key");
-        string profilePath = Assert.Single(Directory.GetFiles(directory));
+        string profilePath = Assert.Single(Directory.GetFiles(directory, "*.json"));
         byte[] originalBytes = await File.ReadAllBytesAsync(profilePath);
         ColonizationViewModel viewModel = Create(client);
         viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "existing-key");
