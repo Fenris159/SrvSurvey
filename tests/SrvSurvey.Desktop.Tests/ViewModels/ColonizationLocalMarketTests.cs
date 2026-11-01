@@ -6,6 +6,15 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ColonizationLocalMarketTests
 {
+    private static readonly DateTimeOffset TestNow = new(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
+
+    private sealed class FixedClock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => TestNow;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+
     [Theory]
     [InlineData(50, false)]
     [InlineData(60, false)]
@@ -18,7 +27,11 @@ public sealed class ColonizationLocalMarketTests
                     new ColonizationMarketSearchResult([Quote(1, "steel", query.LocalOnly ? localStock : 60)], [])
                 )
         );
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         await model.SearchAsync();
         model.Results.Single().AvailableSupplies.Single().ToggleWishListCommand.Execute(null);
         Assert.Equal(40, Need(model, "steel").Remaining);
@@ -48,8 +61,12 @@ public sealed class ColonizationLocalMarketTests
         using var model = new ColonizationShoppingViewModel(
             Projects(),
             () => "Sol",
-            search,
-            saveState: state => saved = state
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                SaveState = state => saved = state,
+            }
         );
         await model.SearchAsync();
         await model.ToggleLocalCommoditiesAsync();
@@ -61,7 +78,16 @@ public sealed class ColonizationLocalMarketTests
         Assert.True(Need(model, "steel").IsSelected);
         Assert.Single(model.Results);
         Assert.Equal(40, Assert.Single(saved!.LocalMarketQuotes).Stock);
-        using var restored = new ColonizationShoppingViewModel(Projects(), () => "Sol", search, restoredState: saved);
+        using var restored = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                RestoredState = saved,
+            }
+        );
         Assert.True(Need(restored, "steel").IsSelected);
     }
 
@@ -77,7 +103,11 @@ public sealed class ColonizationLocalMarketTests
                     )
                 )
         );
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         await model.SearchAsync();
         for (int index = 0; index < 3; index++)
         {
@@ -88,8 +118,12 @@ public sealed class ColonizationLocalMarketTests
         using var restored = new ColonizationShoppingViewModel(
             Projects(),
             () => "Sol",
-            search,
-            restoredState: model.CaptureState()
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                RestoredState = model.CaptureState(),
+            }
         );
         await restored.ToggleLocalCommoditiesAsync();
         Assert.Equal(model.Warnings, restored.Warnings);
@@ -123,7 +157,14 @@ public sealed class ColonizationLocalMarketTests
                     )
                 )
         );
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search) { ExcludeSurface = true };
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        )
+        {
+            ExcludeSurface = true,
+        };
         await model.SearchAsync();
         Assert.Equal("Port 3", Assert.Single(model.Results).Station);
         await model.ToggleLocalCommoditiesAsync();
@@ -168,7 +209,11 @@ public sealed class ColonizationLocalMarketTests
                     )
                 )
         );
-        using var model = new ColonizationShoppingViewModel(projects, () => "Sol", search);
+        using var model = new ColonizationShoppingViewModel(
+            projects,
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         await model.SearchAsync();
         await model.ToggleLocalCommoditiesAsync();
         Assert.True(Need(model, "powergenerators").IsLocallyExcluded);
@@ -212,7 +257,11 @@ public sealed class ColonizationLocalMarketTests
                     )
                 )
         );
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         Assert.True(model.UseSpansh);
         Assert.True(model.UseArdent);
         await model.SearchAsync();
@@ -236,8 +285,12 @@ public sealed class ColonizationLocalMarketTests
         using var restored = new ColonizationShoppingViewModel(
             Projects(),
             () => "Sol",
-            search,
-            restoredState: model.CaptureState()
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                RestoredState = model.CaptureState(),
+            }
         );
         Assert.Equal(useSpansh, restored.UseSpansh);
         Assert.Equal(useArdent, restored.UseArdent);
@@ -259,10 +312,29 @@ public sealed class ColonizationLocalMarketTests
         Assert.True(legacy.UseArdent);
     }
 
+    [Theory]
+    [InlineData(-1, true)]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    public async Task MarketAgeIncludesTheExactCutoffAndFlagsOnlyOlderRows(int ticksAfterCutoff, bool outdated)
+    {
+        using ColonizationShoppingViewModel model = Model([
+            Quote(1, "steel", 100) with
+            {
+                UpdatedAt = TestNow.AddDays(-3).AddTicks(ticksAfterCutoff),
+            },
+        ]);
+        model.MaximumAgeText = "3";
+        await model.SearchAsync();
+        Assert.Equal(outdated, Assert.Single(model.Results).IsOutdated);
+        model.IncludeOutdatedLocalMarkets = false;
+        Assert.Equal(outdated ? 0 : 1, model.Results.Count);
+    }
+
     [Fact]
     public async Task OutdatedLocalEstimatesRemainOptionalButExcludeCoveredNeedsRegardlessOfAge()
     {
-        DateTimeOffset oldDate = DateTimeOffset.UtcNow.AddDays(-103);
+        DateTimeOffset oldDate = TestNow.AddDays(-103);
         var search = new LocalSearch(
             (_, _) =>
                 Task.FromResult(
@@ -282,7 +354,14 @@ public sealed class ColonizationLocalMarketTests
                     )
                 )
         );
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search) { MaximumAgeText = "3" };
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        )
+        {
+            MaximumAgeText = "3",
+        };
         await model.SearchAsync();
         Assert.True(search.Queries[0].IncludeOutdatedLocalMarkets);
         Assert.Equal(2, model.Results.Count);
@@ -313,8 +392,12 @@ public sealed class ColonizationLocalMarketTests
         using var restored = new ColonizationShoppingViewModel(
             Projects(),
             () => "Sol",
-            search,
-            restoredState: model.CaptureState()
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                RestoredState = model.CaptureState(),
+            }
         );
         Assert.False(restored.IncludeOutdatedLocalMarkets);
         Assert.Empty(restored.Results);
@@ -354,7 +437,7 @@ public sealed class ColonizationLocalMarketTests
                                 Quote(1, "steel", 40),
                                 Quote(1, "steel", 80) with
                                 {
-                                    UpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-10),
+                                    UpdatedAt = TestNow.AddMinutes(-10),
                                     Source = "Spansh",
                                 },
                                 Quote(2, "water", 49),
@@ -375,7 +458,11 @@ public sealed class ColonizationLocalMarketTests
                     )
                 )
         );
-        using var model = new ColonizationShoppingViewModel(projects, () => "Not a project system", search);
+        using var model = new ColonizationShoppingViewModel(
+            projects,
+            () => "Not a project system",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         Need(model, "copper").IsSelected = false;
         await model.ToggleLocalCommoditiesAsync();
         Assert.True(model.ExcludeLocalCommodities);
@@ -397,8 +484,12 @@ public sealed class ColonizationLocalMarketTests
         using var restored = new ColonizationShoppingViewModel(
             projects,
             () => "Elsewhere",
-            search,
-            restoredState: model.CaptureState()
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                RestoredState = model.CaptureState(),
+            }
         );
         Assert.True(restored.ExcludeLocalCommodities);
         Assert.False(Need(restored, "steel").IsSelected);
@@ -430,7 +521,7 @@ public sealed class ColonizationLocalMarketTests
             "carrier" => quote with { StationType = "Fleet Carrier" },
             "pad" => quote with { PadSize = 2 },
             "arrival" => quote with { Arrival = 200 },
-            "future" => quote with { UpdatedAt = DateTimeOffset.UtcNow.AddHours(1) },
+            "future" => quote with { UpdatedAt = TestNow.AddHours(1) },
             "no price" => quote with { Price = 0 },
             _ => quote with { System = "Neighbor" },
         };
@@ -488,7 +579,11 @@ public sealed class ColonizationLocalMarketTests
                     )
                 )
         );
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         await model.SearchAsync();
         model
             .Results[0]
@@ -524,8 +619,12 @@ public sealed class ColonizationLocalMarketTests
         using var model = new ColonizationShoppingViewModel(
             Projects(),
             () => "Sol",
-            search,
-            refreshProjects: _ => Task.FromResult<IReadOnlyList<ColonizationProject>>(Projects())
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                RefreshProjects = _ => Task.FromResult<IReadOnlyList<ColonizationProject>>(Projects()),
+            }
         );
         await model.ToggleLocalCommoditiesAsync();
         Assert.False(Need(model, "steel").IsSelected);
@@ -544,7 +643,11 @@ public sealed class ColonizationLocalMarketTests
     {
         var pending = new TaskCompletionSource<ColonizationMarketSearchResult>();
         var search = new LocalSearch((_, _) => pending.Task);
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         Task check = model.ToggleLocalCommoditiesAsync();
         Assert.True(model.IsBusy);
         Assert.False(model.CanSearch);
@@ -589,7 +692,11 @@ public sealed class ColonizationLocalMarketTests
                 Commodities = new() { ["steel"] = 1 },
             })
             .ToArray();
-        using var model = new ColonizationShoppingViewModel(projects, () => "Elsewhere", search);
+        using var model = new ColonizationShoppingViewModel(
+            projects,
+            () => "Elsewhere",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         Task check = model.ToggleLocalCommoditiesAsync();
         try
         {
@@ -624,7 +731,16 @@ public sealed class ColonizationLocalMarketTests
                 return cooperative ? pending.Task.WaitAsync(token) : pending.Task;
             }
         );
-        var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search, ownsProvidedSearch: true);
+        var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = search,
+                OwnsProvidedSearch = true,
+            }
+        );
         Task check = model.ToggleLocalCommoditiesAsync();
         model.Dispose();
         Assert.True(captured.IsCancellationRequested);
@@ -648,7 +764,7 @@ public sealed class ColonizationLocalMarketTests
         using ColonizationShoppingViewModel model = Model([
             Quote(1, "steel", 100) with
             {
-                UpdatedAt = DateTimeOffset.UtcNow.AddDays(-400),
+                UpdatedAt = TestNow.AddDays(-400),
             },
         ]);
         model.MaximumAgeText = age;
@@ -666,7 +782,11 @@ public sealed class ColonizationLocalMarketTests
     public async Task FailedChecksPreserveSelectionsAndUnavailableContextsCannotStartChecks()
     {
         var search = new LocalSearch((_, _) => throw new HttpRequestException("Offline"));
-        using var model = new ColonizationShoppingViewModel(Projects(), () => "Sol", search);
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         await model.ToggleLocalCommoditiesAsync();
         Assert.Contains("check failed", model.Status);
         Assert.False(model.ExcludeLocalCommodities);
@@ -675,11 +795,15 @@ public sealed class ColonizationLocalMarketTests
         using var noSystem = new ColonizationShoppingViewModel(
             ColonizationShoppingViewModelTests.Projects(),
             () => "Sol",
-            search
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
         );
         Assert.False(noSystem.CanExcludeLocalCommodities);
         await noSystem.ToggleLocalCommoditiesAsync();
-        using var empty = new ColonizationShoppingViewModel([], () => "Sol", search);
+        using var empty = new ColonizationShoppingViewModel(
+            [],
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), Search = search }
+        );
         Assert.False(empty.CanExcludeLocalCommodities);
         await empty.ToggleLocalCommoditiesAsync();
         Assert.False((new ColonizationShoppingState { LocalMarketQuotes = null! }).IsValid);
@@ -695,13 +819,18 @@ public sealed class ColonizationLocalMarketTests
         ColonizationShoppingViewModelTests.Quote(id, commodity, stock) with
         {
             Distance = 0,
+            UpdatedAt = TestNow,
         };
 
     private static ColonizationShoppingViewModel Model(IReadOnlyList<ColonizationMarketQuote> quotes) =>
         new(
             Projects(),
             () => "Sol",
-            new LocalSearch((_, _) => Task.FromResult(new ColonizationMarketSearchResult(quotes, [])))
+            new ColonizationShoppingOptions
+            {
+                TimeProvider = new FixedClock(),
+                Search = new LocalSearch((_, _) => Task.FromResult(new ColonizationMarketSearchResult(quotes, []))),
+            }
         );
 
     private static ShoppingNeedViewModel Need(ColonizationShoppingViewModel model, string commodity) =>

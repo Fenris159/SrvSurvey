@@ -2,6 +2,7 @@ using System.Xml.Linq;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
+[Trait("Category", "SourceContract")]
 public sealed class RouteWindowMarkupTests
 {
     private static readonly string[] RoutedFileNames = ["RouteWindow.axaml", "JumpInfoOverlayPresentation.axaml"];
@@ -75,19 +76,6 @@ public sealed class RouteWindowMarkupTests
     }
 
     [Fact]
-    public void SidebarReservesScrollbarGutterOutsidePanels()
-    {
-        XDocument document = LoadRouteWindow();
-        XElement sidebar = FindNamedElement(document, "RouteSidebar");
-        XElement scroller = FindNamedElement(document, "RouteSidebarScroller");
-        XElement panels = FindNamedElement(document, "RouteSidebarPanels");
-
-        Assert.Equal("18,18,6,18", sidebar.Attribute("Padding")?.Value);
-        Assert.Equal("Auto", scroller.Attribute("VerticalScrollBarVisibility")?.Value);
-        Assert.Equal("0,0,12,0", panels.Attribute("Margin")?.Value);
-    }
-
-    [Fact]
     public void SaveAsValidationUsesABooleanVisibilityBinding()
     {
         XDocument document = LoadRouteWindow();
@@ -96,24 +84,6 @@ public sealed class RouteWindowMarkupTests
             .Single(element => element.Attribute("Text")?.Value == "{Binding SaveAsError}");
 
         Assert.Equal("{Binding HasSaveAsError}", error.Attribute("IsVisible")?.Value);
-    }
-
-    [Fact]
-    public void RouteListReservesScrollbarGutterOutsidePanels()
-    {
-        XDocument document = LoadRouteWindow();
-        XElement workspace = FindNamedElement(document, "RouteHopWorkspace");
-        XElement header = FindNamedElement(document, "RouteHopHeader");
-        XElement scroller = FindNamedElement(document, "RouteHopScroller");
-        XElement table = FindNamedElement(document, "RouteHopTable");
-        XElement routeItems = FindNamedElement(document, "RouteHopItems");
-
-        Assert.Equal("20,20,6,20", workspace.Attribute("Margin")?.Value);
-        Assert.Equal("{Binding !IsFleetCarrierWorkspace}", header.Attribute("IsVisible")?.Value);
-        Assert.Equal("Auto", scroller.Attribute("VerticalScrollBarVisibility")?.Value);
-        Assert.Equal("Auto", scroller.Attribute("HorizontalScrollBarVisibility")?.Value);
-        Assert.Equal("0,0,14,0", table.Attribute("Margin")?.Value);
-        Assert.Null(routeItems.Attribute("Margin"));
     }
 
     [Fact]

@@ -12,6 +12,12 @@ public sealed class ColonizationPlannedProjectsTests
     [Fact]
     public void AsteroidPlanUsesCatalogCargoAndCannotBecomeALiveProjectThroughSerialization()
     {
+        using var costs = new MemoryStream(
+            System.Text.Encoding.UTF8.GetBytes(
+                """[{"buildType":"asteroid","category":"Orbital","tier":1,"location":"orbital","displayName":"Asteroid","layouts":["asteroid"],"cargo":{"steel":7,"water":3}}]"""
+            )
+        );
+        var fixtureCatalog = ColonizationBuildCatalog.Load(costs);
         var site = new ColonizationSystemSite
         {
             Id = "planned",
@@ -29,7 +35,7 @@ public sealed class ColonizationPlannedProjectsTests
             Sites = [site],
         };
         ColonizationProject project = Assert.Single(
-            ColonizationPlannedProjects.Create(system, catalog, [], "Cmdr", position)
+            ColonizationPlannedProjects.Create(system, fixtureCatalog, [], "Cmdr", position)
         );
         Assert.Equal("plan:42:planned", project.BuildId);
         Assert.Equal("Test Project (Plan)", project.BuildName);
@@ -39,11 +45,11 @@ public sealed class ColonizationPlannedProjectsTests
         Assert.Equal("Sol 36", project.BodyName);
         Assert.Equal(position, project.StarPosition);
         Assert.Equal(
-            catalog.FindByBuildType("asteroid")!.CommodityCosts.OrderBy(pair => pair.Key),
+            new Dictionary<string, int> { ["steel"] = 7, ["water"] = 3 }.OrderBy(pair => pair.Key),
             project.Commodities.OrderBy(pair => pair.Key)
         );
-        Assert.Equal(project.Commodities.Values.Sum(), project.RemainingRequired);
-        Assert.Equal(project.RemainingRequired, project.MaximumRequired);
+        Assert.Equal(10, project.RemainingRequired);
+        Assert.Equal(10, project.MaximumRequired);
         Assert.False(JsonSerializer.Deserialize<ColonizationProject>(JsonSerializer.Serialize(project))!.IsPlanned);
     }
 

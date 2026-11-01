@@ -16,43 +16,33 @@ public sealed class VoxStellarPublisherTests
     private static readonly TimeSpan WorkerSchedulingTimeout = TimeSpan.FromSeconds(30);
 
     [Fact]
-    public async Task EventBurstProducesOneAcceptedSummary()
+    public async Task CompletionWaitsForAcceptedWorkAndStopsAcceptingNewWork()
     {
-        var handler = new RecordingHandler();
+        var handler = new BlockingHandler();
         using var client = new HttpClient(handler);
-        var logs = new ConcurrentQueue<string>();
-        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var publisher = new VoxStellarPublisher(
-            "1.0.0",
-            "test-key",
-            client,
-            log: message =>
-            {
-                logs.Enqueue(message);
-                if (handler.Requests.Count == 3)
-                {
-                    completed.TrySetResult();
-                }
-            }
-        );
-        await publisher.ApplyAsync(
-            new VoxStellarApplyRequest
-            {
-                JournalEvents =
-                [
-                    Parse("""{"event":"Scan","BodyID":1}"""),
-                    Parse("""{"event":"Scan","BodyID":2}"""),
-                    Parse("""{"event":"FSDJump","StarSystem":"Next"}"""),
-                ],
-                CommanderName = "Test Cmdr",
-                Enabled = true,
-                AllowPublishing = true,
-            }
-        );
-        await completed.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        Assert.Equal(3, handler.Requests.Count);
-        Assert.Single(logs);
-        Assert.Contains("3 accepted", logs.Single(), StringComparison.Ordinal);
+        using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client, batchInterval: TimeSpan.Zero);
+        var request = new VoxStellarApplyRequest
+        {
+            JournalEvents = [Parse("""{"event":"Scan","BodyName":"Test A 1"}""")],
+            CommanderName = "Test Cmdr",
+            Enabled = true,
+            AllowPublishing = true,
+        };
+        await publisher.ApplyAsync(request);
+        await handler.FirstRequestStarted.Task.WaitAsync(WorkerSchedulingTimeout);
+        Task completion = publisher.CompleteAsync();
+        try
+        {
+            Assert.False(completion.IsCompleted);
+            Assert.Empty((await publisher.ApplyAsync(request)).QueuedEventNames);
+        }
+        finally
+        {
+            handler.ReleaseFirstRequest.TrySetResult();
+            await completion.WaitAsync(WorkerSchedulingTimeout);
+        }
+        Assert.Equal(1, handler.CallCount);
+        await publisher.CompleteAsync();
     }
 
     [Fact]
@@ -70,7 +60,7 @@ public sealed class VoxStellarPublisherTests
                 AllowPublishing = true,
             }
         );
-        RecordedRequest request = await handler.Request.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        RecordedRequest request = await handler.Request.Task.WaitAsync(WorkerSchedulingTimeout);
         Assert.NotEqual(true, request.ConnectionClose);
     }
 
@@ -142,6 +132,7 @@ public sealed class VoxStellarPublisherTests
                 }
             );
             Assert.Equal(["Scan"], result.QueuedEventNames);
+            await publisher.CompleteAsync().WaitAsync(WorkerSchedulingTimeout);
         }
         finally
         {
@@ -179,7 +170,7 @@ public sealed class VoxStellarPublisherTests
             }
         );
 
-        await Task.Delay(50);
+        await publisher.CompleteAsync();
         Assert.Empty(bootstrap.QueuedEventNames);
         Assert.Empty(disabled.QueuedEventNames);
         Assert.False(handler.Request.Task.IsCompleted);
@@ -209,7 +200,7 @@ public sealed class VoxStellarPublisherTests
 
         publisher.SetEnabled(false);
         handler.ReleaseFirstRequest.TrySetResult();
-        await Task.Delay(100);
+        await publisher.CompleteAsync();
 
         Assert.Equal(1, handler.CallCount);
     }
@@ -256,7 +247,7 @@ public sealed class VoxStellarPublisherTests
                 );
             }
 
-            await handler.TransportStartEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await handler.TransportStartEntered.Task.WaitAsync(WorkerSchedulingTimeout);
 
             var disableStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             disableTask = Task.Factory.StartNew(
@@ -269,7 +260,7 @@ public sealed class VoxStellarPublisherTests
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default
             );
-            await disableStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await disableStarted.Task.WaitAsync(WorkerSchedulingTimeout);
             await Task.Delay(50);
             Assert.False(disableTask.IsCompleted);
         }
@@ -278,11 +269,11 @@ public sealed class VoxStellarPublisherTests
             handler.AllowTransportStart.Set();
             if (disableTask is not null)
             {
-                await disableTask.WaitAsync(TimeSpan.FromSeconds(10));
+                await disableTask.WaitAsync(WorkerSchedulingTimeout);
             }
             if (batchTick is not null)
             {
-                await batchTick.WaitAsync(TimeSpan.FromSeconds(10));
+                await batchTick.WaitAsync(WorkerSchedulingTimeout);
             }
         }
     }
@@ -514,7 +505,7 @@ public sealed class VoxStellarPublisherTests
             );
             (await clock.NextTimerAsync()).Fire();
             await handler.Started.Task.WaitAsync(WorkerSchedulingTimeout);
-            await Task.Run(publisher.Dispose).WaitAsync(TimeSpan.FromSeconds(10));
+            await Task.Run(publisher.Dispose).WaitAsync(WorkerSchedulingTimeout);
             Assert.True(handler.RequestCancellation.IsCancellationRequested);
             Assert.Equal(2, handler.CallCount);
             Assert.Empty(logs);

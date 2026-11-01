@@ -119,7 +119,7 @@ public sealed partial class ColonizationShoppingViewModel
 
     private void ApplyLocalCommodityExclusions()
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = clock.GetUtcNow();
         var allocated = plan.Snapshot().ToDictionary(item => item.Key(), item => item.Quantity);
         var stock = FilterMarketQuotes(ColonizationShopping.Merge(localMarketQuotes), forLocalExclusion: true)
             .Where(quote =>

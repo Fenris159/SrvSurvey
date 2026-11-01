@@ -16,6 +16,12 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayResizeInteractionTests
 {
+    private static readonly (string Name, bool AutoWidth, bool AutoHeight)[] SizingFamilies =
+    [
+        ("PlotFSSInfo", false, false),
+        ("PlotBuildCommodities", false, true),
+        ("PlotSphericalSearch", true, true),
+    ];
     private static readonly int[] ScalePercents = [-25, 0, 50];
     private static readonly bool[] ConfiguredSizes = [false, true];
     private static readonly int[] PointerSteps = [1, 2, 3, 4, 5, 6, 7, 8, 6, 4, 2, 0];
@@ -26,7 +32,9 @@ public sealed class OverlayResizeInteractionTests
     public void ResizePolicyHidesAutomaticGripsAndTracksManualPointerSamples(
         string plotterName,
         int percent,
-        bool configured
+        bool configured,
+        bool autoWidth,
+        bool autoHeight
     )
     {
         var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(plotterName));
@@ -44,7 +52,7 @@ public sealed class OverlayResizeInteractionTests
             Control panel = preview.RuntimePresentation!;
             Size original = panel.Bounds.Size;
             Thumb grip = preview.FindControl<Thumb>("PanelResizeThumb")!;
-            if (panel is IOverlayPanelSizePolicy { AutoWidth: true, AutoHeight: true })
+            if (autoWidth && autoHeight)
             {
                 Assert.False(grip.IsVisible);
                 Assert.True(double.IsNaN(panel.Width));
@@ -64,10 +72,7 @@ public sealed class OverlayResizeInteractionTests
                 using WriteableBitmap? frame = preview.CaptureRenderedFrame();
                 Point actual = grip.TranslatePoint(new Point(11, 11), preview)!.Value;
                 Assert.True(
-                    Math.Abs(actual.X - pointer.X) <= 1
-                        && (
-                            panel is IOverlayPanelSizePolicy { AutoHeight: true } || Math.Abs(actual.Y - pointer.Y) <= 1
-                        ),
+                    Math.Abs(actual.X - pointer.X) <= 1 && (autoHeight || Math.Abs(actual.Y - pointer.Y) <= 1),
                     $"{plotterName} step {step}: pointer={pointer}, grip={actual}; original={original}, panel={panel.Bounds.Size}"
                 );
             }
@@ -123,7 +128,7 @@ public sealed class OverlayResizeInteractionTests
                 .OfType<TextBlock>()
                 .Where(text => text.Classes.Contains("type-value"))
                 .ToArray();
-            Assert.NotEmpty(counts);
+            Assert.Equal(["10/10", "12/20", "8/15"], counts.Select(count => count.Text).Order(StringComparer.Ordinal));
             foreach (TextBlock count in counts)
             {
                 Point position = count.TranslatePoint(default, panel)!.Value;
@@ -140,10 +145,17 @@ public sealed class OverlayResizeInteractionTests
         }
     }
 
-    /// <summary>Checks every shared presentation at natural and explicit sizes with reduced and enlarged scaling.</summary>
-    public static IEnumerable<TheoryDataRow<string, int, bool>> ResizeCases() =>
-        from definition in OverlayLayoutCatalog.Supported
+    /// <summary>Checks each sizing family at natural and explicit sizes with reduced and enlarged scaling.</summary>
+    public static IEnumerable<TheoryDataRow<string, int, bool, bool, bool>> ResizeCases() =>
+        // Shared grip behavior: manual dimensions, automatic height, fully automatic dimensions.
+        from family in SizingFamilies
         from percent in ScalePercents
         from configured in ConfiguredSizes
-        select new TheoryDataRow<string, int, bool>(definition.Name, percent, configured);
+        select new TheoryDataRow<string, int, bool, bool, bool>(
+            family.Name,
+            percent,
+            configured,
+            family.AutoWidth,
+            family.AutoHeight
+        );
 }

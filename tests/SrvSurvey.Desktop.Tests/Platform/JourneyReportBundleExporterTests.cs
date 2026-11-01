@@ -4,7 +4,7 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
-public sealed class JourneyReportBundleExporterTests : IDisposable
+public sealed partial class JourneyReportBundleExporterTests : IDisposable
 {
     private readonly string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-report-bundle-{Guid.NewGuid():N}");
 
@@ -105,7 +105,7 @@ public sealed class JourneyReportBundleExporterTests : IDisposable
         DateTimeOffset at = new(2026, 10, 29, 12, 0, 0, TimeSpan.Zero);
         JourneySystemVisit Visit(string name, long address, int hour) =>
             new(
-                new(name, address, new(hour * 10, hour * 2, hour * 4)),
+                new(name, address, name == "Sol" ? new(0, 0, 0) : new(10, 2, -4)),
                 at.AddHours(hour),
                 at.AddHours(hour + 1),
                 JourneyCounts.Empty with

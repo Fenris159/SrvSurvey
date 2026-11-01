@@ -41,7 +41,10 @@ dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 Avalonia localization catalog verification, the `.editorconfig` type-style
 rules and `tools/SonarCloud.ruleset` profile on changed C# lines, then
 Coverlet OpenCover against the mapped test projects so changed production
-lines/branches stay at SonarCloud's 80% new-code coverage minimum. Run
+lines/branches stay at SonarCloud's 80% new-code coverage minimum. Linux PRs use
+`-FullTestSuite -ResultsDirectory artifacts/TestResults/quality` to retain a single
+full-solution test run for coverage, required scenarios, and diagnostics; Windows
+keeps its independent platform run. See [test lanes](../tests/README.md). Run
 `dotnet csharpier format .` to format C# before committing. When user-facing
 desktop text or Desktop source files change, regenerate catalogs with
 `./tools/Generate-AvaloniaLocalization.ps1` (add `-TranslateMissing` for new
@@ -212,8 +215,9 @@ OS/app architectures, and .NET runtime for bug reports.
   production consumer and event-specific assertions.
 - Network coverage inventories all runtime surfaces and every `HttpClient`
   owner, including bounded streaming requirements.
-- Overlay coverage inventories 40 contracts, including 38 positionable panels, and requires
-  production markup plus assertion evidence.
+- Overlay source inventories name the registered contracts and their source/test files.
+  These are lint/navigation contracts; runtime rendering and interaction tests verify behavior.
+  See the [behavior map and test lanes](../tests/README.md).
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build
   dependency on the previous implementation.

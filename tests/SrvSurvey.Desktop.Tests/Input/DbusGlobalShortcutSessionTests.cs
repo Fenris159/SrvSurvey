@@ -445,8 +445,19 @@ public sealed class DbusGlobalShortcutSessionTests
 
     /// <summary>Checks real portal identity and session creation without opening a permission dialog.</summary>
     [Fact]
+    [Trait("Category", "PlatformSmoke")]
     public async Task CanProbeInstalledPortalWithoutPermissionDialog()
     {
+        if (
+            !string.Equals(
+                Environment.GetEnvironmentVariable("SRVSURVEY_RUN_PLATFORM_SMOKE"),
+                "1",
+                StringComparison.Ordinal
+            )
+        )
+        {
+            Assert.Skip("Set SRVSURVEY_RUN_PLATFORM_SMOKE=1 to probe the installed desktop portal.");
+        }
         if (
             !OperatingSystem.IsLinux()
             || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS"))

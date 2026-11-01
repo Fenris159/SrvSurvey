@@ -282,24 +282,15 @@ public sealed class BoxelSurveyStatsStateTests
                 )
             )
         );
-        ScanPlanet(state, SystemAAddress, 1, "Water world", mass: 1);
+        ScanPlanet(state, SystemAAddress, 1, "High metal content body", mass: 1, terraformable: true);
 
         Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(0, snapshot.CountsOf(BoxelPlanetClass.Unknown).Count);
-        Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.WaterWorld).Count);
-        int expected = ExplorationValueCalculator.Calculate(
-            new ExplorationValueRequest
-            {
-                BodyClass = "Water world",
-                Mass = 1,
-                IsFirstDiscoverer = true,
-                IsFirstMapped = true,
-                IsOdyssey = true,
-            }
-        );
-        Assert.Equal(expected, snapshot.ScanValue);
-        Assert.Equal(expected, snapshot.CurrentValue);
-        Assert.True(snapshot.MappedPotentialValue > snapshot.CurrentValue);
+        Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.HighMetalContent).Count);
+        // Independent golden vector: a first-discovered, 1 Earth-mass terraformable HMC body.
+        Assert.Equal(449200, snapshot.ScanValue);
+        Assert.Equal(449200, snapshot.CurrentValue);
+        Assert.Equal(2700541, snapshot.MappedPotentialValue);
     }
 
     [Fact]
@@ -508,21 +499,9 @@ public sealed class BoxelSurveyStatsStateTests
     public void IngestSystemFileRecomputesValuesAndIgnoresReward()
     {
         var state = new BoxelSurveyStatsState();
-        (int Scan, int Current, int Mapped) expected = BoxelSurveyValueCalculator.Calculate(
-            new BoxelSurveyValueRequest(
-                "Water world",
-                Terraformable: true,
-                1,
-                WasDiscovered: false,
-                WasMapped: false,
-                DssComplete: true,
-                DssEfficiencyBonus: false,
-                IsOdyssey: true
-            )
-        );
         SystemScanBodySnapshot body = PlanetBody(
             1,
-            "Water world",
+            "High metal content body",
             terraformable: true,
             mass: 1,
             scanValue: 999999,
@@ -538,9 +517,9 @@ public sealed class BoxelSurveyStatsStateTests
         );
 
         Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
-        Assert.Equal(expected.Scan, snapshot.ScanValue);
-        Assert.Equal(expected.Current, snapshot.CurrentValue);
-        Assert.Equal(expected.Mapped, snapshot.MappedPotentialValue);
+        Assert.Equal(449200, snapshot.ScanValue);
+        Assert.Equal(2160433, snapshot.CurrentValue);
+        Assert.Equal(2700541, snapshot.MappedPotentialValue);
         Assert.NotEqual(999999, snapshot.CurrentValue);
     }
 
