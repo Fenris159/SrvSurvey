@@ -27,6 +27,7 @@ public sealed class SquadronCarrierRoutesPresentationTests : IDisposable
 
     private readonly HttpClient noNetworkClient = new(new NoNetwork());
 
+    /// <summary>Renders the dedicated squadron workspace in every palette while retaining the shared route library.</summary>
     [AvaloniaTheory]
     [InlineData(640)]
     [InlineData(1100)]
@@ -98,10 +99,6 @@ public sealed class SquadronCarrierRoutesPresentationTests : IDisposable
                 Assert.Equal(3, main.FleetCarrierRouteManager.Routes.Count);
                 Assert.InRange(carrier.Bounds.Width, 1, width);
                 Assert.InRange(carrier.FindControl<TextBlock>("CarrierRouteTitle")!.Bounds.Width, 250, width);
-                frame.Save(
-                    Path.Combine(Path.GetTempPath(), $"srvsurvey-sc-routes-{width}-{theme.Key}.png"),
-                    PngBitmapEncoderOptions.Default
-                );
             }
             Assert.Equal(FollowRouteCarrierKind.Personal, main.FleetCarrierRoute.SelectedCarrierKind);
             Assert.Equal(FollowRouteCarrierKind.Squadron, main.SquadronCarrierRoute.SelectedCarrierKind);
@@ -279,6 +276,7 @@ public sealed class SquadronCarrierRoutesPresentationTests : IDisposable
         await sc.FlushWorkspaceAsync();
     }
 
+    /// <summary>Tracks personal and squadron jump requests independently through real hosted panels without active routes.</summary>
     [AvaloniaFact]
     public async Task BothPassiveOverlaysTrackTheirOwnRequestsAndCancellationWithoutRoutes()
     {
@@ -310,17 +308,6 @@ public sealed class SquadronCarrierRoutesPresentationTests : IDisposable
         {
             using WriteableBitmap? frame = panel.CaptureRenderedFrame();
             Assert.NotNull(frame);
-            if (
-                Assert
-                    .IsType<FleetCarrierRouteOverlayViewModel>(panel.DataContext)
-                    .Header.StartsWith("SQUADRON", StringComparison.Ordinal)
-            )
-            {
-                frame.Save(
-                    Path.Combine(Path.GetTempPath(), "srvsurvey-sc-route-overlay.png"),
-                    PngBitmapEncoderOptions.Default
-                );
-            }
         }
         Assert.NotEqual(visible[0].Position, visible[1].Position);
         Assert.Equal("Lave", fc.CarrierJumpDestination);

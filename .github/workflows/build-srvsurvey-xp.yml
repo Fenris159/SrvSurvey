@@ -186,7 +186,7 @@ jobs:
       - name: Verify changed code against SonarCloud rules
         if: matrix.rid == 'linux-x64' && github.event_name == 'pull_request'
         shell: pwsh
-        run: ./tools/Test-ChangedCodeQuality.ps1 -BaseRef "origin/${{ github.base_ref }}"
+        run: ./tools/Test-ChangedCodeQuality.ps1 -BaseRef "origin/${{ github.base_ref }}" -FullTestSuite -ResultsDirectory "artifacts/TestResults/quality"
 
       - name: Verify localization catalogs
         shell: pwsh
@@ -216,6 +216,8 @@ jobs:
           ctest --test-dir artifacts/openxr-build --output-on-failure
 
       - name: Test
+        # Linux PR validation already ran the full solution with retained TRX and coverage.
+        if: matrix.rid != 'linux-x64' || github.event_name != 'pull_request'
         timeout-minutes: 10
         run: >-
           dotnet test SrvSurvey.slnx
@@ -223,6 +225,19 @@ jobs:
           --logger trx
           --blame-hang-timeout 2m
           --blame-hang-dump-type mini
+
+      - name: Install journey report browser runtime
+        if: matrix.rid == 'linux-x64'
+        shell: pwsh
+        run: ./tests/SrvSurvey.Desktop.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps --only-shell chromium
+
+      - name: Test portable journey reports offline in Chromium
+        if: matrix.rid == 'linux-x64'
+        env:
+          SRVSURVEY_RUN_BROWSER_TESTS: '1'
+        run: >-
+          dotnet test tests/SrvSurvey.Desktop.Tests --configuration Release --no-build --no-restore
+          --filter Category=Browser --logger trx --results-directory artifacts/TestResults/browser
 
       - name: Enforce journal upload scenario matrix
         shell: pwsh
@@ -237,6 +252,7 @@ jobs:
             **/TestResults/**/*.trx
             **/TestResults/**/*Sequence*.xml
             **/TestResults/**/*.dmp
+            **/TestResults/**/coverage.opencover.xml
           if-no-files-found: ignore
           retention-days: 7
 

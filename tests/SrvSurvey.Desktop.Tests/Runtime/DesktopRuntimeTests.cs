@@ -1,4 +1,3 @@
-using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -23,27 +22,155 @@ namespace SrvSurvey.Desktop.Tests.Runtime;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DesktopRuntimeTests
 {
+    /// <summary>Observes the composed runtime before overlay construction and isolates colonization priority from other gates.</summary>
+    [AvaloniaFact]
+    public async Task StartupAppliesColonizationPriorityBeforeOverlayConstruction()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        var store = new CombatSettingsStore(temp.Paths.UiSettingsPath);
+        store.Save(store.Load() with { SuppressForActiveBuildProjects = true });
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        OverlayWindowRegistry registry = OverlayWindowRegistry.Shared;
+        registry.SetPriorityFacts(OverlayPriorityFacts.None);
+        bool? combatPresented = null;
+        bool? combatWithoutColony = null;
+        await using var runtime = DesktopRuntime.StartCompositionForTests(
+            Application.Current!,
+            desktop,
+            new DesktopStartup([], new ApplicationLogService(temp.Paths.DataDirectory))
+            {
+                AppDataPathsOverride = temp.Paths,
+            },
+            new RecordingDesktopLifetime([]),
+            DesktopStartupCheckpoint.MainWindowReady,
+            (_, _, checkpoint) =>
+            {
+                if (checkpoint != DesktopStartupCheckpoint.MainWindowReady)
+                {
+                    return;
+                }
+                // Isolate the priority decision from the independent journal-readiness gate.
+                registry.SetGlobalSuppression(false, false, false);
+                registry.SetVehicleExcludedPlotters([]);
+                var combat = new Window();
+                var colony = new Window();
+                try
+                {
+                    registry.Register(combat, "PlotMassacre");
+                    registry.SetPresentationVisual(combat, new Border());
+                    combatWithoutColony = registry.ShouldPresent(combat);
+                    registry.Register(colony, "PlotBuildCommodities");
+                    registry.SetPresentationVisual(colony, new Border());
+                    combatPresented = registry.ShouldPresent(combat);
+                }
+                finally
+                {
+                    combat.Close();
+                    colony.Close();
+                }
+            }
+        );
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
+        Assert.True(combatWithoutColony);
+        Assert.False(combatPresented);
+    }
+
+    /// <summary>Sends a resolved shortcut through the real runtime and verifies its saved colonization preference.</summary>
+    [AvaloniaFact]
+    public async Task ComposedRuntimeDispatchesTheCoveredGroupsShortcutAndPersistsIt()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        Task<bool>? dispatched = null;
+        await using var runtime = DesktopRuntime.StartCompositionForTests(
+            Application.Current!,
+            desktop,
+            new DesktopStartup([], new ApplicationLogService(temp.Paths.DataDirectory))
+            {
+                AppDataPathsOverride = temp.Paths,
+            },
+            new RecordingDesktopLifetime([]),
+            DesktopStartupCheckpoint.OverlayDependentsReady,
+            (instance, window, checkpoint) =>
+            {
+                if (
+                    checkpoint == DesktopStartupCheckpoint.OverlayDependentsReady
+                    && window?.DataContext is MainWindowViewModel main
+                )
+                {
+                    main.Colonization.CollapseCoveredCommodityGroups = false;
+                    dispatched = instance.ExecuteGlobalInputActionAsync(
+                        GlobalInputAction.ToggleCollapseCoveredColonyGroups
+                    );
+                }
+            }
+        );
+        Assert.NotNull(dispatched);
+        Assert.True(await dispatched);
+        Assert.True(
+            new ColonizationSettingsStore(temp.Paths.UiSettingsPath).LoadOverlayPreferences().CollapseCoveredGroups
+        );
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
+    }
+
+    [AvaloniaFact]
+    public void UnrelatedShortcutsRemainAvailableToTheirWorkspace()
+    {
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        using var controller = new DesktopOverlayController(main, new OverlayWindowRegistry());
+        Assert.Null(controller.TryExecute(GlobalInputAction.MapZoomIn));
+    }
+
+    [AvaloniaFact]
+    public void RetiredControllerCannotOverrideTheActiveSessionsOverlayPreferences()
+    {
+        using MainWindowViewModel retired = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        using MainWindowViewModel active = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        retired.OverlayBehavior.UpdateSessionContext(true, true, false, false);
+        active.OverlayBehavior.UpdateSessionContext(true, true, false, false);
+        retired.Combat.SuppressForActiveBuildProjects = false;
+        active.Combat.SuppressForActiveBuildProjects = false;
+        var registry = new OverlayWindowRegistry();
+        using var oldController = new DesktopOverlayController(retired, registry);
+        oldController.Dispose();
+        using var controller = new DesktopOverlayController(active, registry);
+        var colony = new Window();
+        var combat = new Window();
+        try
+        {
+            registry.Register(colony, "PlotBuildCommodities");
+            registry.SetPresentationVisual(colony, new Border());
+            registry.Register(combat, "PlotMassacre");
+            registry.SetPresentationVisual(combat, new Border());
+            Assert.True(registry.ShouldPresent(combat));
+            retired.Combat.SuppressForActiveBuildProjects = true;
+            Assert.True(registry.ShouldPresent(combat));
+            retired.OverlayBehavior.UpdateSessionContext(true, true, true, false);
+            Assert.True(registry.ShouldPresent(combat));
+            active.Combat.SuppressForActiveBuildProjects = true;
+            Assert.False(registry.ShouldPresent(combat));
+        }
+        finally
+        {
+            colony.Close();
+            combat.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData("PlotFootCombat")]
     [InlineData("PlotMassacre")]
-    public async Task CombatSuppressionPreferenceAppliesOnlyWhileTheColonyPanelIsPresented(string plotter)
+    public void CombatSuppressionPreferenceAppliesOnlyWhileTheColonyPanelIsPresented(string plotter)
     {
-        List<string> events = [];
-        var phases = new RecordingDesktopRuntimePhases(events);
-        phases.AllowProducerStop.SetResult();
-        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
         using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        FieldInfo viewModelField = typeof(DesktopRuntime).GetField("mainViewModel", flags)!;
-        MethodInfo synchronize = typeof(DesktopRuntime).GetMethod("SynchronizeOverlayPriorityFacts", flags)!;
-        viewModelField.SetValue(runtime, main);
-        OverlayWindowRegistry registry = OverlayWindowRegistry.Shared;
+        main.OverlayBehavior.UpdateSessionContext(true, true, false, false);
+        var registry = new OverlayWindowRegistry();
+        using var controller = new DesktopOverlayController(main, registry);
         var colony = new Window();
         var combat = new Window();
         try
         {
             main.Combat.SuppressForActiveBuildProjects = true;
-            synchronize.Invoke(runtime, null);
             registry.Register(combat, plotter);
             registry.SetPresentationVisual(combat, new Border());
             registry.Register(colony, "PlotBuildCommodities");
@@ -60,7 +187,6 @@ public sealed class DesktopRuntimeTests
             registry.SetPresentationVisible(colony, true);
             Assert.False(registry.ShouldPresent(combat));
             main.Combat.SuppressForActiveBuildProjects = false;
-            synchronize.Invoke(runtime, null);
             Assert.True(registry.ShouldPresent(combat));
         }
         finally
@@ -69,31 +195,21 @@ public sealed class DesktopRuntimeTests
             combat.Close();
             registry.SetPriorityFacts(default);
             registry.SetVehicleExcludedPlotters([]);
-            viewModelField.SetValue(runtime, null);
         }
     }
 
     [AvaloniaTheory]
     [InlineData(OdysseySuitType.Dominator)]
     [InlineData(OdysseySuitType.Maverick)]
-    public async Task SuitSuppressionKeepsCombatCoordinatorEligibleWhileManualAndSessionSuppressionStillApply(
+    public void SuitSuppressionKeepsCombatCoordinatorEligibleWhileManualAndSessionSuppressionStillApply(
         OdysseySuitType suit
     )
     {
-        List<string> events = [];
-        var phases = new RecordingDesktopRuntimePhases(events);
-        phases.AllowProducerStop.SetResult();
-        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
         using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
-        using var overlays = new HostedOverlayTestHarness();
+        var registry = new OverlayWindowRegistry();
+        using var overlays = new HostedOverlayTestHarness(registry);
         using var combat = new CombatOverlayCoordinator(main.Combat, overlays.Session);
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        FieldInfo viewModelField = typeof(DesktopRuntime).GetField("mainViewModel", flags)!;
-        FieldInfo coordinatorField = typeof(DesktopRuntime).GetField("combatOverlayCoordinator", flags)!;
-        FieldInfo manualField = typeof(DesktopRuntime).GetField("manualOverlaySuppressed", flags)!;
-        MethodInfo applySuppression = typeof(DesktopRuntime).GetMethod("ApplyOverlaySuppression", flags)!;
-        viewModelField.SetValue(runtime, main);
-        coordinatorField.SetValue(runtime, combat);
+        using var controller = new DesktopOverlayController(main, registry, combat);
         try
         {
             main.OverlayBehavior.HideInDominatorSuit = true;
@@ -101,24 +217,19 @@ public sealed class DesktopRuntimeTests
             main.OverlayBehavior.UpdateContext(suit, onFoot: true);
             main.OverlayBehavior.UpdateSessionContext(true, true, false, false);
             Assert.True(main.OverlayBehavior.ShouldSuppressForSuit);
-            applySuppression.Invoke(runtime, null);
             Assert.False(combat.IsSuppressed);
-            Assert.False(OverlayWindowRegistry.Shared.ShouldHost("PlotJumpInfo"));
-            Assert.True(OverlayWindowRegistry.Shared.ShouldHost("PlotFootCombat"));
+            Assert.False(registry.ShouldHost("PlotJumpInfo"));
+            Assert.True(registry.ShouldHost("PlotFootCombat"));
 
-            manualField.SetValue(runtime, true);
-            applySuppression.Invoke(runtime, null);
+            Assert.True(controller.TryExecute(GlobalInputAction.ToggleAllVisibility));
             Assert.True(combat.IsSuppressed);
-            manualField.SetValue(runtime, false);
+            Assert.True(controller.TryExecute(GlobalInputAction.ToggleAllVisibility));
             main.OverlayBehavior.UpdateSessionContext(false, true, false, false);
-            applySuppression.Invoke(runtime, null);
             Assert.True(combat.IsSuppressed);
         }
         finally
         {
             OverlayWindowRegistry.Shared.SetGlobalSuppression(false, false, false);
-            viewModelField.SetValue(runtime, null);
-            coordinatorField.SetValue(runtime, null);
         }
     }
 
@@ -169,21 +280,15 @@ public sealed class DesktopRuntimeTests
     [AvaloniaTheory]
     [InlineData(GlobalInputAction.ToggleColonizationCommoditiesVisibility)]
     [InlineData(GlobalInputAction.ShowColonyShopping)]
-    public async Task ColonizationShortcutsToggleActualVisibilityAndPersistThroughDocking(GlobalInputAction action)
+    public void ColonizationShortcutsToggleActualVisibilityAndPersistThroughDocking(GlobalInputAction action)
     {
-        List<string> events = [];
-        var phases = new RecordingDesktopRuntimePhases(events);
-        phases.AllowProducerStop.SetResult();
-        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
         using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        main.OverlayBehavior.UpdateSessionContext(true, true, false, false);
         var window = new MainWindow(main);
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        typeof(DesktopRuntime).GetField("mainViewModel", flags)!.SetValue(runtime, main);
-        typeof(DesktopRuntime).GetField("mainWindow", flags)!.SetValue(runtime, window);
-        MethodInfo execute = typeof(DesktopRuntime).GetMethod("ExecuteGlobalInputActionAsync", flags)!;
+        using var unavailableController = new DesktopOverlayController(main, OverlayWindowRegistry.Shared);
         try
         {
-            Assert.False(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.False(unavailableController.TryExecute(action));
             ColonizationCommodityOverlayViewModel overlay = main.Colonization.CommodityOverlay;
             Assert.Same(overlay, main.OverlayInteraction.ColonizationOverlay);
             var plan = new ColonizationCommodityPlan
@@ -216,16 +321,18 @@ public sealed class DesktopRuntimeTests
             overlay.Apply(plan, shipStatus);
             using var host = new HostedOverlayTestHarness(OverlayWindowRegistry.Shared);
             using var coordinator = new ColonizationCommodityOverlayCoordinator(overlay, host.Session);
-            typeof(DesktopRuntime)
-                .GetField("colonizationCommodityOverlayCoordinator", flags)!
-                .SetValue(runtime, coordinator);
+            using var controller = new DesktopOverlayController(
+                main,
+                OverlayWindowRegistry.Shared,
+                colony: coordinator
+            );
             OverlayPanelVisibilityEntryViewModel panel = main.OverlayPanelVisibility.Panels.Single(item =>
                 item.PlotterName == "PlotBuildCommodities"
             );
             Assert.True(panel.IsEnabled);
             Assert.False(coordinator.IsVisible);
 
-            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.True(controller.TryExecute(action));
             Assert.True(coordinator.IsVisible);
             overlay.Apply(
                 plan,
@@ -235,10 +342,10 @@ public sealed class DesktopRuntimeTests
             overlay.Apply(plan, new EliteStatus { Flags = StatusFlags.InMainShip });
             Assert.True(coordinator.IsVisible);
 
-            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.True(controller.TryExecute(action));
             Assert.False(panel.IsEnabled);
             Assert.False(coordinator.IsVisible);
-            Assert.True(await (Task<bool>)execute.Invoke(runtime, [action])!);
+            Assert.True(controller.TryExecute(action));
             Assert.True(panel.IsEnabled);
             Assert.True(coordinator.IsVisible);
         }
@@ -253,18 +360,14 @@ public sealed class DesktopRuntimeTests
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CollapseCoveredGroupsShortcutUpdatesAndPersistsDisplayStyle(bool hideCollapsedGroups)
+    public void CollapseCoveredGroupsShortcutUpdatesAndPersistsDisplayStyle(bool hideCollapsedGroups)
     {
-        List<string> events = [];
-        var phases = new RecordingDesktopRuntimePhases(events);
-        phases.AllowProducerStop.SetResult();
-        await using var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
         using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null);
         var window = new MainWindow(main);
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        typeof(DesktopRuntime).GetField("mainViewModel", flags)!.SetValue(runtime, main);
-        typeof(DesktopRuntime).GetField("mainWindow", flags)!.SetValue(runtime, window);
-        MethodInfo execute = typeof(DesktopRuntime).GetMethod("ExecuteGlobalInputActionAsync", flags)!;
+        OverlayWindowRegistry.Shared.SetGlobalSuppression(false, false, false);
+        OverlayWindowRegistry.Shared.SetVehicleExcludedPlotters([]);
+        using var controller = new DesktopOverlayController(main, new OverlayWindowRegistry());
+        Assert.True(OverlayWindowRegistry.Shared.ShouldHost("PlotJumpInfo"));
         ColonizationViewModel colonization = main.Colonization;
         colonization.CollapseCoveredCommodityGroups = false;
         colonization.HideCollapsedCommodityGroups = hideCollapsedGroups;
@@ -297,7 +400,7 @@ public sealed class DesktopRuntimeTests
             );
             Assert.Equal("ALT CTRL SHIFT X", binding.Chord);
 
-            Assert.True(await (Task<bool>)execute.Invoke(runtime, [binding.Definition.Action])!);
+            Assert.True(controller.TryExecute(binding.Definition.Action));
 
             Assert.True(colonization.CollapseCoveredCommodityGroups);
             Assert.True(store.LoadOverlayPreferences().CollapseCoveredGroups);
@@ -312,7 +415,7 @@ public sealed class DesktopRuntimeTests
                 Assert.True(Assert.Single(colonization.CommodityOverlay.Groups).IsCollapsed);
             }
 
-            Assert.True(await (Task<bool>)execute.Invoke(runtime, [binding.Definition.Action])!);
+            Assert.True(controller.TryExecute(binding.Definition.Action));
 
             Assert.False(colonization.CollapseCoveredCommodityGroups);
             Assert.False(store.LoadOverlayPreferences().CollapseCoveredGroups);

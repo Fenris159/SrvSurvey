@@ -1,6 +1,8 @@
 param(
     [string]$BaseRef = "origin/SrvSurvey-Avalonia",
-    [string]$Solution = "SrvSurvey.slnx"
+    [string]$Solution = "SrvSurvey.slnx",
+    [switch]$FullTestSuite,
+    [string]$ResultsDirectory
 )
 
 $ErrorActionPreference = "Stop"
@@ -289,45 +291,52 @@ function Invoke-ChangedCoverageCheck {
         }
     }
 
-    if ($coverable.Count -eq 0) {
+    if ($coverable.Count -eq 0 -and -not $FullTestSuite) {
         Write-Output "No coverable changed production C# to measure against the 80% new-code coverage gate."
         return
     }
 
     $testProjects = Get-CoverageTestProjects -RepositoryRoot $RepositoryRoot -RelativePaths @($coverable.Keys)
-    if ($testProjects.Count -eq 0) {
+    if ($testProjects.Count -eq 0 -and -not $FullTestSuite) {
         throw "Changed coverable production files have no mapped test project for the new-code coverage gate."
     }
 
-    $resultsDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("srvsurvey-coverage-" + [guid]::NewGuid().ToString("N"))
-    New-Item -ItemType Directory -Path $resultsDirectory | Out-Null
+    $retainResults = -not [string]::IsNullOrWhiteSpace($ResultsDirectory)
+    $testResultsPath = if ($retainResults) {
+        [System.IO.Path]::GetFullPath($ResultsDirectory)
+    } else {
+        Join-Path ([System.IO.Path]::GetTempPath()) ("srvsurvey-coverage-" + [guid]::NewGuid().ToString("N"))
+    }
+    if ((Test-Path -LiteralPath $testResultsPath) -and (Get-ChildItem -LiteralPath $testResultsPath -Force)) {
+        throw "Test results directory must be empty so stale results cannot satisfy a gate: $testResultsPath"
+    }
+    New-Item -ItemType Directory -Path $testResultsPath -Force | Out-Null
     try {
-        foreach ($project in $testProjects) {
-            & dotnet test $project `
-                --configuration Release `
-                --no-build `
-                --no-restore `
-                --logger trx `
-                --collect:"XPlat Code Coverage" `
-                --results-directory $resultsDirectory `
-                -- `
-                DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-            if ($LASTEXITCODE -ne 0) {
-                throw "Coverage test run failed for $project."
-            }
+        $targets = if ($FullTestSuite) { @([System.IO.Path]::GetFullPath($Solution, $RepositoryRoot)) } else { $testProjects }
+        foreach ($target in $targets) {
+            & dotnet test $target `
+                --configuration Release --no-build --no-restore -m:1 `
+                --logger trx --collect:"XPlat Code Coverage" `
+                --results-directory $testResultsPath `
+                --blame-hang-timeout 2m --blame-hang-dump-type mini `
+                -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            if ($LASTEXITCODE -ne 0) { throw "Coverage test run failed for $target." }
         }
 
-        # Desktop-only changes still require the core sender behavior matrix.
+        # Desktop-only local validation still requires the core sender behavior matrix.
         $coreTests = Join-Path $RepositoryRoot "tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj"
-        if ($coreTests -notin $testProjects) {
+        if (-not $FullTestSuite -and $coreTests -notin $testProjects) {
             & dotnet test $coreTests --configuration Release --no-build --no-restore `
-                --filter "Category=JournalUploadScenario" --logger trx --results-directory $resultsDirectory
+                --filter "Category=JournalUploadScenario" --logger trx --results-directory $testResultsPath
             if ($LASTEXITCODE -ne 0) { throw "Journal upload behavior scenarios failed." }
         }
-        # Provider scenarios are a behavior gate independent of aggregate line coverage.
-        & (Join-Path $RepositoryRoot "tools/Test-JournalUploadScenarios.ps1") -ResultsDirectory $resultsDirectory
+        & (Join-Path $RepositoryRoot "tools/Test-JournalUploadScenarios.ps1") -ResultsDirectory $testResultsPath
+        if ($coverable.Count -eq 0) {
+            Write-Output "The full suite passed; no changed production C# requires numeric coverage measurement."
+            return
+        }
 
-        $reports = Get-ChildItem -Path $resultsDirectory -Filter "coverage.opencover.xml" -Recurse
+        $reports = Get-ChildItem -Path $testResultsPath -Filter "coverage.opencover.xml" -Recurse
         if ($reports.Count -eq 0) {
             throw "Coverlet did not produce an OpenCover report for the new-code coverage gate."
         }
@@ -419,8 +428,8 @@ function Invoke-ChangedCoverageCheck {
         }
     }
     finally {
-        if (Test-Path -LiteralPath $resultsDirectory) {
-            Remove-Item -LiteralPath $resultsDirectory -Recurse -Force
+        if (-not $retainResults -and (Test-Path -LiteralPath $testResultsPath)) {
+            Remove-Item -LiteralPath $testResultsPath -Recurse -Force
         }
     }
 }
@@ -459,7 +468,13 @@ try {
 
     if ($changedRanges.Count -eq 0) {
         Write-Output "No changed C# lines to check."
-        Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
+        if ($FullTestSuite) {
+            & dotnet build $Solution --configuration Release --no-restore -warnaserror
+            if ($LASTEXITCODE -ne 0) { throw "Full-suite build failed." }
+            Invoke-ChangedCoverageCheck -RepositoryRoot $repositoryRoot -ChangedRanges $changedRanges
+        } else {
+            Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
+        }
         exit 0
     }
 
@@ -575,7 +590,7 @@ try {
 
         Write-Output "Changed C# lines match the .editorconfig style and local SonarCloud profile."
         Invoke-ChangedCoverageCheck -RepositoryRoot $repositoryRoot -ChangedRanges $changedRanges
-        Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot
+        if (-not $FullTestSuite) { Invoke-LocalizationCatalogTests -RepositoryRoot $repositoryRoot }
     }
     finally {
         if (Test-Path -LiteralPath $reportPath) {

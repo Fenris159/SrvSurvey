@@ -82,6 +82,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
     private long consentGeneration;
     private bool disposed;
     private bool stopping;
+    private bool disposing;
 
     /// <summary>Creates an in-memory sender with injectable HTTP, timing, and diagnostics.</summary>
     public VoxStellarPublisher(
@@ -658,21 +659,49 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
+    /// <summary>
+    /// Stops accepting events and waits for queued, currently eligible uploads to finish.
+    /// Reports in a configured outbox survive for the next session. Cancellation stops only
+    /// the wait; callers must still dispose the publisher to release its resources.
+    /// </summary>
+    public Task CompleteAsync(CancellationToken cancellationToken = default)
+    {
+        lock (sync)
+        {
+            if (!disposed)
+            {
+                StopAcceptingWork();
+            }
+            return (workerTask ?? Task.CompletedTask).WaitAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>Closes the producer side once and releases any batching delay so the worker can drain accepted uploads.</summary>
+    private void StopAcceptingWork()
+    {
+        if (stopping)
+        {
+            return;
+        }
+        stopping = true;
+        uploads?.Writer.TryComplete();
+        batchingCancellation.Cancel();
+    }
+
     /// <summary>Stops batching and releases queue leases after bounded worker shutdown without discarding pending reports.</summary>
     public void Dispose()
     {
         lock (sync)
         {
-            if (disposed || stopping)
+            if (disposed || disposing)
             {
                 return;
             }
-            stopping = true;
+            disposing = true;
+            StopAcceptingWork();
         }
 
         // Consent remains authoritative while a bounded shutdown flush drains queued work.
-        uploads?.Writer.TryComplete();
-        batchingCancellation.Cancel();
         WaitForWorker();
         lock (sync)
         {

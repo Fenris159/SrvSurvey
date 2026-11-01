@@ -1,7 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Routes;
@@ -13,6 +16,73 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class RouteWaypointRemovalPresentationTests
 {
+    /// <summary>Forces both route panes to overflow and measures visible content against the actual scrollbar boundary.</summary>
+    [AvaloniaTheory]
+    [InlineData("sidebar")]
+    [InlineData("route")]
+    public async Task ScrollableRouteContentAndHeadersStayClearOfTheVerticalScrollbar(string region)
+    {
+        using var temp = new SrvSurvey.Desktop.Tests.ProfileSync.ProfileSyncTestRoot();
+        var store = new FollowRouteStore(temp.Paths.DataDirectory, FollowRouteKind.Standard);
+        FollowRouteDocument route = (await store.CreateNewAsync("F123")) with
+        {
+            Hops = Enumerable
+                .Range(1, 30)
+                .Select(index => new FollowRouteHop(
+                    "Stop " + index,
+                    index,
+                    new GalacticCoordinate(index, 0, 0),
+                    "Keep this route note",
+                    false,
+                    false
+                ))
+                .ToArray(),
+        };
+        await store.SaveAsAsync(route, "Scrollbar clearance");
+        var model = new RouteWorkspaceViewModel(
+            new FollowRouteService(store),
+            new RouteNameImporter(new EmptyResolver()),
+            new EmptySpanshClient(),
+            FollowRouteKind.Standard
+        );
+        await model.UpdateContextAsync("F123", "Sol", 0, new GalacticCoordinate(0, 0, 0));
+        var window = new RouteWindow(model) { Width = 1000, Height = 420 };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            string scrollerName = region == "sidebar" ? "RouteSidebarScroller" : "RouteHopScroller";
+            string contentName = region == "sidebar" ? "RouteSidebarPanels" : "RouteHopTable";
+            ScrollViewer scroller = window.FindControl<ScrollViewer>(scrollerName)!;
+            scroller.Offset = new Vector(Math.Max(0, scroller.Extent.Width - scroller.Viewport.Width), 0);
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.True(scroller.Extent.Height > scroller.Viewport.Height, "The fixture must overflow vertically.");
+            ScrollBar scrollbar = Assert.Single(
+                scroller.GetVisualDescendants().OfType<ScrollBar>(),
+                bar => bar.Orientation == Orientation.Vertical && bar.IsEffectivelyVisible
+            );
+            double scrollbarLeft = scrollbar.TranslatePoint(default, window)!.Value.X;
+            var controls = new List<Control> { window.FindControl<Control>(contentName)! };
+            if (region == "route")
+            {
+                controls.Add(window.FindControl<Control>("RouteHopHeader")!);
+                controls.AddRange(RowTrashButtons(window));
+            }
+            foreach (Control content in controls)
+            {
+                double right = content.TranslatePoint(new Point(content.Bounds.Width, 0), window)!.Value.X;
+                Assert.True(
+                    right <= scrollbarLeft - 1,
+                    $"{region}: content right {right} touches scrollbar at {scrollbarLeft}."
+                );
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(FollowRouteKind.Standard)]
     [InlineData(FollowRouteKind.FleetCarrier)]

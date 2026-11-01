@@ -393,8 +393,9 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Equal(Mappings.Length, Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
     }
 
+    /// <summary>Checks the inventory's file references as navigation metadata rather than treating source tokens as behavioral evidence.</summary>
     [Fact]
-    public void EverySupportedOverlayHasProductionAndAssertionEvidence()
+    public void EveryInventoryReferenceNamesAnExistingSourceFile()
     {
         string root = FindRepositoryRoot();
         foreach (OverlayMapping mapping in Mappings)
@@ -413,7 +414,6 @@ public sealed partial class OverlayCoverageInventoryTests
             {
                 string absolutePath = Path.Combine(root, Native(path));
                 Assert.True(File.Exists(absolutePath), $"Missing {mapping.ContractName} test evidence: {path}");
-                Assert.Contains("Assert.", File.ReadAllText(absolutePath));
             }
         }
     }
@@ -514,32 +514,6 @@ public sealed partial class OverlayCoverageInventoryTests
             PreviewProductionWindows.Values.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal),
             runtimePanels
         );
-    }
-
-    [Fact]
-    public void EveryRuntimeOverlayUsesTheSharedLegacyPresentationPipeline()
-    {
-        string root = FindRepositoryRoot();
-        string hostedWindowSource = File.ReadAllText(
-            Path.Combine(root, Native("src/SrvSurvey.Desktop/Platform/Overlay/HostedOverlayWindow.cs"))
-        );
-        Assert.Contains("OverlayThemeResources.Apply(", hostedWindowSource);
-        var coordinatorFiles = Directory
-            .GetFiles(Path.Combine(root, Native("src/SrvSurvey.Desktop/Platform/Overlay")), "*Coordinator.cs")
-            .Select(path => new { Path = path, Source = File.ReadAllText(path) })
-            .ToArray();
-        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
-        {
-            var owners = coordinatorFiles.Where(file =>
-                file.Source.Contains($"\"{definition.Name}\"", StringComparison.Ordinal)
-            );
-            Assert.Contains(
-                owners,
-                owner =>
-                    owner.Source.Contains("OverlayThemeResources.Apply(", StringComparison.Ordinal)
-                    || owner.Source.Contains("PassiveOverlayWindowDefinition(", StringComparison.Ordinal)
-            );
-        }
     }
 
     [Theory]

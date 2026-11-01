@@ -8,6 +8,20 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+/// <summary>Supplies market-search, persistence, and clock dependencies for a shopping workspace.</summary>
+public sealed record ColonizationShoppingOptions
+{
+    public IColonizationMarketSearch? Search { get; init; }
+
+    /// <summary>Supplies HTTP for the default provider when Search is omitted.</summary>
+    public HttpClient? HttpClient { get; init; }
+    public bool OwnsProvidedSearch { get; init; }
+    public ColonizationShoppingState? RestoredState { get; init; }
+    public Action<ColonizationShoppingState>? SaveState { get; init; }
+    public Func<CancellationToken, Task<IReadOnlyList<ColonizationProject>>>? RefreshProjects { get; init; }
+    public TimeProvider TimeProvider { get; init; } = TimeProvider.System;
+}
+
 /// <summary>Owns the embedded market-search snapshot and its local filters.</summary>
 public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable, IDisposable
 {
@@ -18,6 +32,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
     private const string ArrivalSort = "Arrival";
 
     private readonly IColonizationMarketSearch search;
+    private readonly TimeProvider clock;
     private readonly Func<string?> currentSystem;
     private readonly bool ownsSearch;
     private readonly Action<ColonizationShoppingState>? saveState;
@@ -225,12 +240,34 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         Action<ColonizationShoppingState>? saveState = null,
         Func<CancellationToken, Task<IReadOnlyList<ColonizationProject>>>? refreshProjects = null
     )
+        : this(
+            projects,
+            currentSystem,
+            new ColonizationShoppingOptions
+            {
+                Search = search,
+                OwnsProvidedSearch = ownsProvidedSearch,
+                RestoredState = restoredState,
+                SaveState = saveState,
+                RefreshProjects = refreshProjects,
+            }
+        ) { }
+
+    /// <summary>Selects transport, ownership, persistence, and clock dependencies before restoring the saved search.</summary>
+    public ColonizationShoppingViewModel(
+        IEnumerable<ColonizationProject> projects,
+        Func<string?> currentSystem,
+        ColonizationShoppingOptions options
+    )
     {
-        this.saveState = saveState;
-        this.refreshProjects = refreshProjects;
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(options.TimeProvider);
+        clock = options.TimeProvider;
+        saveState = options.SaveState;
+        refreshProjects = options.RefreshProjects;
         this.currentSystem = currentSystem ?? throw new ArgumentNullException(nameof(currentSystem));
-        this.search = search ?? new ColonizationMarketSearchClient();
-        ownsSearch = search is null || ownsProvidedSearch;
+        search = options.Search ?? new ColonizationMarketSearchClient(options.HttpClient, clock);
+        ownsSearch = options.Search is null || options.OwnsProvidedSearch;
         referenceSystem = currentSystem() ?? string.Empty;
         ColonizationProject[] selected = projects.ToArray();
         UpdateProjectSystems(selected);
@@ -242,9 +279,9 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         ClearWishListCommand = new WorkspaceCommand(ClearWishList);
         VisibleNeeds = Needs;
 
-        if (restoredState is not null)
+        if (options.RestoredState is not null)
         {
-            Restore(restoredState);
+            Restore(options.RestoredState);
         }
         foreach (ShoppingNeedViewModel need in Needs)
         {
@@ -572,11 +609,12 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         return true;
     }
 
+    /// <summary>Records the completed search context and timestamp before projecting its visible market rows.</summary>
     private void CompleteSearch(ColonizationMarketQuery query, ColonizationMarketSearchResult result)
     {
         quotes = result.Quotes;
         ResetPlan();
-        completedAt = DateTimeOffset.Now;
+        completedAt = clock.GetLocalNow();
         completedSystem = query.ReferenceSystem;
         completedRadius = query.Radius;
         searchedCommodities = query.Needs.Select(need => need.Commodity).ToArray();
@@ -827,7 +865,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
                     ShowShortSupply,
                     wishList
                 );
-                row.ApplyMarketAge(MarketAgeDays);
+                row.ApplyMarketAge(MarketAgeDays, clock.GetUtcNow());
                 return row;
             })
             .Where(row => row.Matches > 0 && (!RequireFullSupply || row.CanFulfillAll));
@@ -851,6 +889,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         Changed(nameof(ResultSummary));
     }
 
+    /// <summary>Applies user filters and the workspace age cutoff while preserving the separate local-stock exclusion policy.</summary>
     private IEnumerable<ColonizationMarketQuote> FilterMarketQuotes(
         IEnumerable<ColonizationMarketQuote> source,
         bool forLocalExclusion = false
@@ -867,7 +906,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             double.TryParse(MaximumArrivalText, NumberStyles.Number, CultureInfo.CurrentCulture, out double arrival)
             && double.IsFinite(arrival)
             && arrival >= 0;
-        DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddDays(-MarketAgeDays);
+        DateTimeOffset cutoff = clock.GetUtcNow().AddDays(-MarketAgeDays);
         return source.Where(quote =>
             quote.PadSize >= pad
             && (

@@ -83,7 +83,7 @@ internal sealed partial class DesktopRuntime
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
     private readonly JournalMonitorSession journalMonitorSession = new();
-    private bool manualOverlaySuppressed;
+    private DesktopOverlayController? overlayController;
     private string[] originalStartupArguments = [];
 
     private static (CommanderProfileViewModel? Profile, string? Status) CreateDiagnosticProfile(
@@ -312,6 +312,7 @@ internal sealed partial class DesktopRuntime
         errorReportWindowCoordinator = errorReports;
         Dispatcher.UIThread.UnhandledException += HandleUiException;
         TaskScheduler.UnobservedTaskException += HandleUnobservedTaskException;
+        DesktopOverlayController.PreparePresentation(viewModel, OverlayWindowRegistry.Shared);
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.MainWindowReady);
         systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(viewModel.SystemNotes, mainWindow);
         colonizationProjectPreviewWindowCoordinator = new ColonizationProjectPreviewWindowCoordinator(
@@ -444,9 +445,6 @@ internal sealed partial class DesktopRuntime
             () => desktop.Windows.Any(window => window.IsActive)
         );
 
-        viewModel.SystemSurvey.PropertyChanged += HandleOverlayPriorityFactsChanged;
-        viewModel.Combat.PropertyChanged += HandleOverlayPriorityFactsChanged;
-        SynchronizeOverlayPriorityFacts();
         colonizationCommodityOverlayCoordinator = new ColonizationCommodityOverlayCoordinator(
             viewModel.Colonization.CommodityOverlay,
             overlayPresentation
@@ -455,8 +453,13 @@ internal sealed partial class DesktopRuntime
             viewModel.Colonization.WishList,
             overlayPresentation
         );
-        viewModel.OverlayBehavior.PropertyChanged += HandleOverlayBehaviorChanged;
-        ApplyOverlaySuppression();
+        overlayController = new DesktopOverlayController(
+            viewModel,
+            OverlayWindowRegistry.Shared,
+            combatOverlayCoordinator,
+            colonizationCommodityOverlayCoordinator,
+            ApplyNonCombatOverlaySuppression
+        );
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.OverlayDependentsReady);
         if (diagnosticReplay is null)
         {
@@ -905,8 +908,7 @@ internal sealed partial class DesktopRuntime
             TryCleanup(window.RememberCurrentPositionForShutdown);
             if (reason is DesktopShutdownReason.Restart or DesktopShutdownReason.UpdateHandoff)
             {
-                manualOverlaySuppressed = true;
-                TryCleanup(ApplyOverlaySuppression);
+                TryCleanup(() => overlayController?.SetManualSuppression(true));
             }
         }
 
@@ -921,9 +923,8 @@ internal sealed partial class DesktopRuntime
             viewModel.JournalSettings.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.ProfileSync.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
-            viewModel.OverlayBehavior.PropertyChanged -= HandleOverlayBehaviorChanged;
-            viewModel.SystemSurvey.PropertyChanged -= HandleOverlayPriorityFactsChanged;
-            viewModel.Combat.PropertyChanged -= HandleOverlayPriorityFactsChanged;
+            overlayController?.Dispose();
+            overlayController = null;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -= HandleFrontierAuthorizationCallback;
             viewModel.ReferenceDataUpdates.SetRestartHandler(null);
             viewModel.Localization.SetRestartHandler(null);
@@ -1410,64 +1411,9 @@ internal sealed partial class DesktopRuntime
         eventArgs.SetObserved();
     }
 
-    private void SynchronizeOverlayPriorityFacts()
+    /// <summary>Applies the shared non-combat suppression decision to every hosted gameplay panel.</summary>
+    private void ApplyNonCombatOverlaySuppression(bool suppress)
     {
-        MainWindowViewModel? viewModel = mainViewModel;
-        if (viewModel is null)
-        {
-            return;
-        }
-
-        OverlayPriorityFacts facts = OverlayPriorityFacts.None;
-        if (viewModel.SystemSurvey.IsFssInfoForced)
-        {
-            facts |= OverlayPriorityFacts.FssInfoForced;
-        }
-
-        if (viewModel.SystemSurvey.IsBodyInfoForced)
-        {
-            facts |= OverlayPriorityFacts.BodyInfoForced;
-        }
-
-        if (viewModel.Combat.SuppressForActiveBuildProjects)
-        {
-            facts |= OverlayPriorityFacts.HideCombatForColonization;
-        }
-
-        OverlayWindowRegistry.Shared.SetPriorityFacts(facts);
-    }
-
-    private void HandleOverlayPriorityFactsChanged(
-        object? sender,
-        System.ComponentModel.PropertyChangedEventArgs eventArgs
-    )
-    {
-        if (
-            eventArgs.PropertyName
-            is nameof(SystemSurveyViewModel.IsFssInfoForced)
-                or nameof(SystemSurveyViewModel.IsBodyInfoForced)
-                or nameof(CombatViewModel.SuppressForActiveBuildProjects)
-        )
-        {
-            SynchronizeOverlayPriorityFacts();
-        }
-    }
-
-    /// <summary>Applies shared overlay suppression consistently to all hosted gameplay panels.</summary>
-    private void ApplyOverlaySuppression()
-    {
-        MainWindowViewModel? viewModel = mainViewModel;
-        if (viewModel is null)
-        {
-            return;
-        }
-
-        bool suppressForSuit = viewModel.OverlayBehavior.ShouldSuppressForSuit;
-        bool suppressForSession = viewModel.OverlayBehavior.ShouldSuppressForSession;
-        OverlayWindowRegistry.Shared.SetGlobalSuppression(manualOverlaySuppressed, suppressForSuit, suppressForSession);
-        bool suppress = manualOverlaySuppressed || suppressForSession;
-        combatOverlayCoordinator?.SetSuppressed(suppress);
-        suppress |= suppressForSuit;
         jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
@@ -1489,20 +1435,6 @@ internal sealed partial class DesktopRuntime
         galaxyMapOverlayCoordinator?.SetSuppressed(suppress);
         explorationPoiOverlayCoordinator?.SetSuppressed(suppress);
         multiGameCommanderOverlayCoordinator?.SetSuppressed(suppress);
-    }
-
-    private void HandleOverlayBehaviorChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs eventArgs)
-    {
-        if (
-            eventArgs.PropertyName
-            is nameof(OverlayBehaviorViewModel.ShouldSuppressForSuit)
-                or nameof(OverlayBehaviorViewModel.ShouldSuppressForSession)
-                or nameof(OverlayBehaviorViewModel.HideInDominatorSuit)
-                or nameof(OverlayBehaviorViewModel.HideInMaverickSuit)
-        )
-        {
-            ApplyOverlaySuppression();
-        }
     }
 
     private void HandleAction(GlobalInputActionTriggeredEventArgs eventArgs)
@@ -1528,7 +1460,7 @@ internal sealed partial class DesktopRuntime
     }
 
     /// <summary>Dispatches shortcuts, including persistent colonization visibility before generic availability toggles.</summary>
-    private async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
+    internal async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
     {
         MainWindowViewModel viewModel =
             mainViewModel ?? throw new InvalidOperationException("Main view model is not ready.");
@@ -1537,9 +1469,9 @@ internal sealed partial class DesktopRuntime
             throw new InvalidOperationException("Main window is not ready.");
         }
 
-        if (action == GlobalInputAction.ToggleColonizationCommoditiesVisibility)
+        if (overlayController?.TryExecute(action) is bool handled)
         {
-            return ToggleColonyShopping();
+            return handled;
         }
 
         if (GlobalInputActionCatalog.TryGetOverlayPlotterName(action, out string? plotterName))
@@ -1559,7 +1491,6 @@ internal sealed partial class DesktopRuntime
                 || humanSiteOverlayCoordinator?.ResetZoom() == true
                 || systemSurveyOverlayCoordinator?.ResetSurfaceZoom() == true,
             GlobalInputAction.MapBeHuge => humanSiteOverlayCoordinator?.ToggleHuge() == true,
-            GlobalInputAction.ToggleAllVisibility => ToggleAllOverlayVisibility(),
             GlobalInputAction.ToggleOverlayInteraction => ToggleOverlayInteraction(),
             GlobalInputAction.ToggleVrOverlayInteraction => ToggleVrOverlayInteraction(),
             GlobalInputAction.ShowJumpInfo => viewModel.JumpInfo.ToggleForcedVisibility(),
@@ -1568,7 +1499,6 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.ShowStationInfo => viewModel.StationInfo.ToggleForcedVisibility(),
             GlobalInputAction.NextWindow => viewModel.CommanderInstances.SwitchToNextGameWindow(),
             GlobalInputAction.QuestShow => ShowQuestsWindow(),
-            GlobalInputAction.ShowColonyShopping => ToggleColonyShopping(),
             GlobalInputAction.ShowSystemNotes => systemNotesWindowCoordinator is not null
                 && await systemNotesWindowCoordinator.ShowOrActivateAsync(),
             GlobalInputAction.CopyNextBoxel => await CopyNextBoxelAsync(),
@@ -1590,17 +1520,9 @@ internal sealed partial class DesktopRuntime
             GlobalInputAction.Track8 => await ToggleQuickTrackerAsync(8),
             GlobalInputAction.RefreshColonyData => RefreshColonyData(),
             GlobalInputAction.CollapseColonyData => CollapseColonyData(),
-            GlobalInputAction.ToggleCollapseCoveredColonyGroups => ToggleCollapseCoveredColonyGroups(),
             GlobalInputAction.ToggleImageEmbed => ToggleImageEmbed(),
             _ => false,
         };
-    }
-
-    private bool ToggleAllOverlayVisibility()
-    {
-        manualOverlaySuppressed = !manualOverlaySuppressed;
-        ApplyOverlaySuppression();
-        return true;
     }
 
     private bool ShowQuestsWindow()
@@ -1615,18 +1537,6 @@ internal sealed partial class DesktopRuntime
         viewModel.ShowQuests();
         window.Show();
         window.Activate();
-        return true;
-    }
-
-    /// <summary>Uses one show/hide path for both colonization shortcuts and the availability checkbox.</summary>
-    private bool ToggleColonyShopping()
-    {
-        if (mainViewModel is null || colonizationCommodityOverlayCoordinator is null)
-        {
-            return false;
-        }
-
-        colonizationCommodityOverlayCoordinator.ToggleVisibility(mainViewModel.OverlayPanelVisibility);
         return true;
     }
 
@@ -1718,14 +1628,6 @@ internal sealed partial class DesktopRuntime
     private bool CollapseColonyData()
     {
         mainViewModel?.Colonization.CommodityOverlay.ToggleSatisfiedGroups();
-        return true;
-    }
-
-    /// <summary>Updates the saved collapse option and live commodity groups together.</summary>
-    private bool ToggleCollapseCoveredColonyGroups()
-    {
-        ColonizationViewModel colonization = mainViewModel!.Colonization;
-        colonization.CollapseCoveredCommodityGroups = !colonization.CollapseCoveredCommodityGroups;
         return true;
     }
 

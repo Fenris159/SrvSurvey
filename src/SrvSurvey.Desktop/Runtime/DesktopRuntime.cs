@@ -135,12 +135,14 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         return runtime;
     }
 
+    /// <summary>Observes real composition at resource checkpoints and injects a failure to exercise startup rollback.</summary>
     internal static DesktopRuntime StartCompositionForTests(
         Application application,
         IClassicDesktopStyleApplicationLifetime desktop,
         DesktopStartup startup,
         IDesktopRuntimeLifetime lifetime,
-        DesktopStartupCheckpoint failureCheckpoint
+        DesktopStartupCheckpoint failureCheckpoint,
+        Action<DesktopRuntime, MainWindow?, DesktopStartupCheckpoint>? observe = null
     )
     {
         ArgumentNullException.ThrowIfNull(application);
@@ -157,6 +159,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
                 {
                     Checkpoint = checkpoint =>
                     {
+                        observe?.Invoke(runtime, runtime.mainWindow, checkpoint);
                         if (checkpoint == failureCheckpoint)
                         {
                             throw new InvalidOperationException($"Startup failed at {checkpoint}.");

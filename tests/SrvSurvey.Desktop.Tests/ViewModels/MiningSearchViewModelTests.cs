@@ -136,10 +136,13 @@ public sealed class MiningSearchViewModelTests
         }
     }
 
+    /// <summary>Restores a saved readout while rejecting every HTTP request, then checks its independent filter state.</summary>
     [Fact]
     public void PowerplaySearchRowsReturnFromDiskWithoutAProviderRequest()
     {
         string directory = Path.Combine(Path.GetTempPath(), "srv-powerplay-cache-" + Guid.NewGuid());
+        var handler = new OfflineHandler();
+        using var http = new HttpClient(handler);
         try
         {
             var cache = new MiningSearchResultCache(directory);
@@ -189,7 +192,7 @@ public sealed class MiningSearchViewModelTests
             };
             using (
                 var keyModel = new MiningSearchViewModel(
-                    new MiningSearchClient(),
+                    new MiningSearchClient(http),
                     new BookmarksViewModel(directory),
                     _ => { },
                     () => [],
@@ -204,7 +207,7 @@ public sealed class MiningSearchViewModelTests
             }
 
             using var model = new MiningSearchViewModel(
-                new MiningSearchClient(),
+                new MiningSearchClient(http),
                 new BookmarksViewModel(directory),
                 _ => { },
                 () => [],
@@ -216,6 +219,7 @@ public sealed class MiningSearchViewModelTests
             model.UpdateCurrentLocation("Timbalderis");
             model.PreparePowerplay();
 
+            Assert.Equal(0, handler.Requests);
             Assert.Equal("Sol", model.Reference);
             Assert.Equal("Undermine", model.Objective);
             Assert.Equal("Felicia Winters", model.PledgedPower);
@@ -1853,10 +1857,13 @@ public sealed class MiningSearchViewModelTests
     [Fact]
     public async Task AcquisitionRetainsProviderFailureInItsFinalStatus()
     {
-        using var http = new HttpClient(new AcquisitionRangeHandler(failBodies: true));
+        using var temp = new SrvSurvey.Desktop.Tests.ProfileSync.ProfileSyncTestRoot();
+        var handler = new AcquisitionRangeHandler { HasSpanshMarket = true, HasCommodityReport = true };
+        using var http = new HttpClient(handler);
+        var cache = new MiningSearchResultCache(temp.Path("data", "mining"));
         using var model = new MiningSearchViewModel(
             new(http),
-            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            new BookmarksViewModel(temp.Path("data", "bookmarks")),
             _ => { },
             () => [],
             new Resolver()
@@ -1865,12 +1872,29 @@ public sealed class MiningSearchViewModelTests
             Reference = "Sol",
             PledgedPower = "Archon Delaine",
             Objective = "Acquire",
+            Mineral = "Any",
         };
 
+        model.ConfigureResultCache(cache);
+        await model.SearchSystemsAsync();
+        Assert.Equal("Claim", Assert.Single(model.AcquireRows).Target);
+        handler.FailBodies = true;
         await model.SearchSystemsAsync();
 
         Assert.Contains("Request failed. Try again.", model.Status, StringComparison.Ordinal);
         Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
+        Assert.Equal("Claim", Assert.Single(model.AcquireRows).Target);
+        using var restored = new MiningSearchViewModel(
+            new(http),
+            new BookmarksViewModel(temp.Path("data", "restored")),
+            _ => { },
+            () => [],
+            new Resolver()
+        );
+        restored.ConfigureResultCache(cache);
+        restored.RestoreLastCompletedPowerplaySearch();
+        Assert.Equal("Claim", Assert.Single(restored.AcquireRows).Target);
+        Assert.DoesNotContain("Request failed", restored.Status, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1943,8 +1967,23 @@ public sealed class MiningSearchViewModelTests
         }
     }
 
+    private sealed class OfflineHandler : HttpMessageHandler
+    {
+        public int Requests { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            Requests++;
+            throw new HttpRequestException("No provider is available while restoring cached results.");
+        }
+    }
+
     private sealed class AcquisitionRangeHandler(bool failBodies = false) : HttpMessageHandler
     {
+        public bool FailBodies { get; set; } = failBodies;
         public TaskCompletionSource? SearchEntered { get; init; }
         public TaskCompletionSource? SearchReleased { get; init; }
         public bool HasSpanshMarket { get; init; }
@@ -1958,6 +1997,7 @@ public sealed class MiningSearchViewModelTests
         public bool SawGlobalBodyQuery { get; private set; }
         public int BubblePages { get; private set; }
 
+        /// <summary>Supplies controlled system, ring, and market responses, including failures introduced after a successful search.</summary>
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -1980,7 +2020,7 @@ public sealed class MiningSearchViewModelTests
                 };
             }
 
-            if (failBodies && request.RequestUri!.AbsolutePath.EndsWith("/bodies/search", StringComparison.Ordinal))
+            if (FailBodies && request.RequestUri!.AbsolutePath.EndsWith("/bodies/search", StringComparison.Ordinal))
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
             }

@@ -13,6 +13,25 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         $"SrvSurvey-post-processor-tests-{Guid.NewGuid():N}"
     );
 
+    private static Task WithSynchronousProgress(Func<Task> operation)
+    {
+        SynchronizationContext? previous = SynchronizationContext.Current;
+        try
+        {
+            SynchronizationContext.SetSynchronizationContext(new SynchronousProgressContext());
+            return operation();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+    }
+
+    private sealed class SynchronousProgressContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state) => d(state);
+    }
+
     [Fact]
     public async Task AnalyzesSelectedCommanderWithoutChangingData()
     {
@@ -45,12 +64,11 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Assert.Contains("confirm", viewModel.StatusMessage);
 
         viewModel.CodexRebuildConfirmed = true;
-        await viewModel.RebuildCodexAsync();
+        await WithSynchronousProgress(viewModel.RebuildCodexAsync);
 
         Assert.False(viewModel.CodexRebuildConfirmed);
         Assert.True(File.Exists(Path.Combine(dataDirectory, "F123-codex.json")));
         Assert.Single(Directory.GetFiles(dataDirectory, "F123-codex-*.json"));
-        await Task.Delay(50);
         Assert.Contains("merged 2 earlier", viewModel.StatusMessage);
         Assert.Equal(originalProfile, await File.ReadAllBytesAsync(profilePath));
     }

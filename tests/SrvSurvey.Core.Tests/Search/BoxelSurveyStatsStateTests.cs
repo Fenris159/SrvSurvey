@@ -282,24 +282,15 @@ public sealed class BoxelSurveyStatsStateTests
                 )
             )
         );
-        ScanPlanet(state, SystemAAddress, 1, "Water world", mass: 1);
+        ScanPlanet(state, SystemAAddress, 1, "High metal content body", mass: 1, terraformable: true);
 
         Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(0, snapshot.CountsOf(BoxelPlanetClass.Unknown).Count);
-        Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.WaterWorld).Count);
-        int expected = ExplorationValueCalculator.Calculate(
-            new ExplorationValueRequest
-            {
-                BodyClass = "Water world",
-                Mass = 1,
-                IsFirstDiscoverer = true,
-                IsFirstMapped = true,
-                IsOdyssey = true,
-            }
-        );
-        Assert.Equal(expected, snapshot.ScanValue);
-        Assert.Equal(expected, snapshot.CurrentValue);
-        Assert.True(snapshot.MappedPotentialValue > snapshot.CurrentValue);
+        Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.HighMetalContent).Count);
+        // Independent golden vector: a first-discovered, 1 Earth-mass terraformable HMC body.
+        Assert.Equal(449200, snapshot.ScanValue);
+        Assert.Equal(449200, snapshot.CurrentValue);
+        Assert.Equal(2700541, snapshot.MappedPotentialValue);
     }
 
     [Fact]
@@ -504,25 +495,19 @@ public sealed class BoxelSurveyStatsStateTests
         Assert.True(odysseySnapshot.MappedPotentialValue > horizonsSnapshot.MappedPotentialValue);
     }
 
-    [Fact]
-    public void IngestSystemFileRecomputesValuesAndIgnoresReward()
+    // Independent water-world vector from EDCD/EDDI estimateBodyValue:
+    // https://github.com/EDCD/EDDI/blob/d3b964ea7c8bb959ad6537f55b308f293a326905/DataDefinitions/Body.cs#L474
+    // At 1 Earth mass the mass factor is 1; k=181126, q=.56591828, discovery=2.6.
+    // Mapping multiplies by 3.699622554 and 1.3; efficiency adds 1.25. Round only the final credit amounts.
+    [Theory]
+    [InlineData("High metal content body", 449200, 2160433, 2700541)]
+    [InlineData("Water world", 737434, 3546696, 4433370)]
+    public void IngestSystemFileRecomputesValuesAndIgnoresReward(string planetClass, int scan, int current, int mapped)
     {
         var state = new BoxelSurveyStatsState();
-        (int Scan, int Current, int Mapped) expected = BoxelSurveyValueCalculator.Calculate(
-            new BoxelSurveyValueRequest(
-                "Water world",
-                Terraformable: true,
-                1,
-                WasDiscovered: false,
-                WasMapped: false,
-                DssComplete: true,
-                DssEfficiencyBonus: false,
-                IsOdyssey: true
-            )
-        );
         SystemScanBodySnapshot body = PlanetBody(
             1,
-            "Water world",
+            planetClass,
             terraformable: true,
             mass: 1,
             scanValue: 999999,
@@ -538,9 +523,9 @@ public sealed class BoxelSurveyStatsStateTests
         );
 
         Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
-        Assert.Equal(expected.Scan, snapshot.ScanValue);
-        Assert.Equal(expected.Current, snapshot.CurrentValue);
-        Assert.Equal(expected.Mapped, snapshot.MappedPotentialValue);
+        Assert.Equal(scan, snapshot.ScanValue);
+        Assert.Equal(current, snapshot.CurrentValue);
+        Assert.Equal(mapped, snapshot.MappedPotentialValue);
         Assert.NotEqual(999999, snapshot.CurrentValue);
     }
 
