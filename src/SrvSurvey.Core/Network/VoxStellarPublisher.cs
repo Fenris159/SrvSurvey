@@ -676,6 +676,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
+    /// <summary>Closes the producer side once and releases any batching delay so the worker can drain accepted uploads.</summary>
     private void StopAcceptingWork()
     {
         if (stopping)

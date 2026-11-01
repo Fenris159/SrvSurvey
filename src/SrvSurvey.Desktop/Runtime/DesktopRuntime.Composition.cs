@@ -312,6 +312,7 @@ internal sealed partial class DesktopRuntime
         errorReportWindowCoordinator = errorReports;
         Dispatcher.UIThread.UnhandledException += HandleUiException;
         TaskScheduler.UnobservedTaskException += HandleUnobservedTaskException;
+        DesktopOverlayController.PreparePresentation(viewModel, OverlayWindowRegistry.Shared);
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.MainWindowReady);
         systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(viewModel.SystemNotes, mainWindow);
         colonizationProjectPreviewWindowCoordinator = new ColonizationProjectPreviewWindowCoordinator(
@@ -1459,7 +1460,7 @@ internal sealed partial class DesktopRuntime
     }
 
     /// <summary>Dispatches shortcuts, including persistent colonization visibility before generic availability toggles.</summary>
-    private async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
+    internal async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
     {
         MainWindowViewModel viewModel =
             mainViewModel ?? throw new InvalidOperationException("Main view model is not ready.");

@@ -136,6 +136,7 @@ public sealed class MiningSearchViewModelTests
         }
     }
 
+    /// <summary>Restores a saved readout while rejecting every HTTP request, then checks its independent filter state.</summary>
     [Fact]
     public void PowerplaySearchRowsReturnFromDiskWithoutAProviderRequest()
     {
@@ -1882,6 +1883,7 @@ public sealed class MiningSearchViewModelTests
 
         Assert.Contains("Request failed. Try again.", model.Status, StringComparison.Ordinal);
         Assert.DoesNotContain("Searching", model.Status, StringComparison.Ordinal);
+        Assert.Equal("Claim", Assert.Single(model.AcquireRows).Target);
         using var restored = new MiningSearchViewModel(
             new(http),
             new BookmarksViewModel(temp.Path("data", "restored")),
@@ -1995,6 +1997,7 @@ public sealed class MiningSearchViewModelTests
         public bool SawGlobalBodyQuery { get; private set; }
         public int BubblePages { get; private set; }
 
+        /// <summary>Supplies controlled system, ring, and market responses, including failures introduced after a successful search.</summary>
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken

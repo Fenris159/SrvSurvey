@@ -82,6 +82,7 @@ public sealed partial class JourneyReportBundleExporterTests : IDisposable
         );
     }
 
+    /// <summary>Builds a portable report fixture with two distinct arrivals at Sol and independently sized image assets.</summary>
     private JourneyHtmlExport CreateReport()
     {
         Directory.CreateDirectory(directory);

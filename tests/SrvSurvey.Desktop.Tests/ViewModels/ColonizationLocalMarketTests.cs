@@ -15,6 +15,44 @@ public sealed class ColonizationLocalMarketTests
         public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
     }
 
+    [Fact]
+    public async Task DefaultProviderUsesTheWorkspaceClockForQuoteAge()
+    {
+        using var http = new HttpClient(new FixedMarketHandler());
+        using var model = new ColonizationShoppingViewModel(
+            Projects(),
+            () => "Sol",
+            new ColonizationShoppingOptions { TimeProvider = new FixedClock(), HttpClient = http }
+        )
+        {
+            UseSpansh = false,
+            MaximumAgeText = "3",
+        };
+        await model.SearchAsync();
+        ShoppingMarketRowViewModel quote = Assert.Single(model.Results);
+        Assert.Equal("Nearby", quote.System);
+        Assert.Equal("Clock Port", quote.Station);
+        Assert.False(quote.IsOutdated);
+        Assert.Empty(model.Warnings);
+    }
+
+    private sealed class FixedMarketHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        ) =>
+            Task.FromResult(
+                new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        $$"""[{"systemName":"Nearby","stationName":"Clock Port","marketId":1,"stationType":"Coriolis Starport","maxLandingPadSize":3,"distance":12,"distanceToArrival":100,"commodityName":"Steel","stock":100,"buyPrice":500,"updatedAt":"{{TestNow.AddDays(-1):O}}"}]"""
+                    ),
+                }
+            );
+    }
+
+    /// <summary>Protects the independently worked stock boundary after a shopping-list allocation has reserved sixty tonnes.</summary>
     [Theory]
     [InlineData(50, false)]
     [InlineData(60, false)]
@@ -40,6 +78,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.Equal(60, Assert.Single(model.CaptureState().WishList).Quantity);
     }
 
+    /// <summary>Keeps completed local-stock exclusions durable when the separate nearby-provider request fails.</summary>
     [Fact]
     public async Task AcceptedLocalRefreshUpdatesAndSavesExclusionsEvenWhenTheNearbySearchFails()
     {
@@ -91,6 +130,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.True(Need(restored, "steel").IsSelected);
     }
 
+    /// <summary>Retains each provider warning once even when local checks are repeated and restored.</summary>
     [Fact]
     public async Task RepeatedLocalChecksDeduplicateIndividualWarningsAcrossSessions()
     {
@@ -129,6 +169,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.Equal(model.Warnings, restored.Warnings);
     }
 
+    /// <summary>Separates stock eligibility for local exclusions from the visible surface-market filter.</summary>
     [Theory]
     [InlineData(99, false)]
     [InlineData(100, true)]
@@ -185,6 +226,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.Equal(3, search.Queries.Count);
     }
 
+    /// <summary>Preserves allocated commodities when display filters leave no additional stock to plan.</summary>
     [Fact]
     public async Task SurfaceFilterPreservesPlannedCommodityAndExplainsZeroLeftToPlan()
     {
@@ -243,6 +285,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.Equal(5, search.Queries.Count);
     }
 
+    /// <summary>Carries provider selections consistently through display, local-stock checks, and restoration.</summary>
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -312,6 +355,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.True(legacy.UseArdent);
     }
 
+    /// <summary>Protects the exact age cutoff and the adjacent ticks using a fixed UTC observation time.</summary>
     [Theory]
     [InlineData(-1, true)]
     [InlineData(0, false)]
@@ -408,6 +452,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.Equal(2, restored.Results.Count);
     }
 
+    /// <summary>Combines station stock without double-counting overlapping providers and preserves manual exclusions.</summary>
     [Fact]
     public async Task CombinesDistinctLocalMarketsWithoutDoubleCountingProvidersAndRestoresManualSelections()
     {
@@ -565,6 +610,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.True(Need(model, "steel").IsSelected);
     }
 
+    /// <summary>Checks local coverage against unreserved stock without changing existing shopping-list assignments.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -603,6 +649,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.Equal(20, Assert.Single(model.CaptureState().WishList).Quantity);
     }
 
+    /// <summary>Refreshes local coverage while retaining provider diagnostics needed to interpret incomplete results.</summary>
     [Fact]
     public async Task RefreshRechecksLocalStockAndKeepsProviderWarnings()
     {
@@ -663,6 +710,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.All(model.Needs, need => Assert.True(need.IsSelected));
     }
 
+    /// <summary>Uses controlled provider completions to protect the concurrency bound and stop further work after closing.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -717,6 +765,7 @@ public sealed class ColonizationLocalMarketTests
         Assert.Equal(close, Need(model, "steel").IsSelected);
     }
 
+    /// <summary>Keeps the owned provider alive until its canceled in-flight operations have actually finished.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

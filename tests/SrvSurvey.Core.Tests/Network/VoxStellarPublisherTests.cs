@@ -15,6 +15,7 @@ public sealed class VoxStellarPublisherTests
     // Worker scheduling may be delayed by instrumentation; shutdown deadlines are asserted separately.
     private static readonly TimeSpan WorkerSchedulingTimeout = TimeSpan.FromSeconds(30);
 
+    /// <summary>Drains an accepted buffered report and its in-flight predecessor before completion returns.</summary>
     [Fact]
     public async Task CompletionWaitsForAcceptedWorkAndStopsAcceptingNewWork()
     {
@@ -30,6 +31,7 @@ public sealed class VoxStellarPublisherTests
         };
         await publisher.ApplyAsync(request);
         await handler.FirstRequestStarted.Task.WaitAsync(WorkerSchedulingTimeout);
+        await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan","BodyName":"Buffered B 2"}""")]));
         Task completion = publisher.CompleteAsync();
         try
         {
@@ -41,8 +43,36 @@ public sealed class VoxStellarPublisherTests
             handler.ReleaseFirstRequest.TrySetResult();
             await completion.WaitAsync(WorkerSchedulingTimeout);
         }
-        Assert.Equal(1, handler.CallCount);
+        Assert.Equal(2, handler.CompletedCount);
+        Assert.Contains(handler.Bodies, body => body.Contains("Buffered B 2", StringComparison.Ordinal));
         await publisher.CompleteAsync();
+    }
+
+    /// <summary>Cancels only the caller's wait and observes the accepted request complete successfully afterward.</summary>
+    [Fact]
+    public async Task CancelingCompletionWaitKeepsTheAcceptedTransportAlive()
+    {
+        var handler = new BlockingHandler();
+        using var client = new HttpClient(handler);
+        using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client, batchInterval: TimeSpan.Zero);
+        await publisher.ApplyAsync(CreateRequest([Parse("""{"event":"Scan","BodyName":"Wait-only cancellation"}""")]));
+        await handler.FirstRequestStarted.Task.WaitAsync(WorkerSchedulingTimeout);
+        using var cancellation = new CancellationTokenSource();
+        Task completion = publisher.CompleteAsync(cancellation.Token);
+        try
+        {
+            await cancellation.CancelAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                completion.WaitAsync(WorkerSchedulingTimeout)
+            );
+            Assert.False(handler.RequestToken.IsCancellationRequested);
+        }
+        finally
+        {
+            handler.ReleaseFirstRequest.TrySetResult();
+            await publisher.CompleteAsync().WaitAsync(WorkerSchedulingTimeout);
+        }
+        Assert.Equal(1, handler.CompletedCount);
     }
 
     [Fact]
@@ -766,15 +796,21 @@ public sealed class VoxStellarPublisherTests
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public int CallCount { get; private set; }
+        public int CompletedCount { get; private set; }
+        public CancellationToken RequestToken { get; private set; }
+        public ConcurrentQueue<string> Bodies { get; } = new();
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
         {
+            Bodies.Enqueue(await request.Content!.ReadAsStringAsync(cancellationToken));
+            RequestToken = cancellationToken;
             CallCount++;
             FirstRequestStarted.TrySetResult();
             await ReleaseFirstRequest.Task.WaitAsync(cancellationToken);
+            CompletedCount++;
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }

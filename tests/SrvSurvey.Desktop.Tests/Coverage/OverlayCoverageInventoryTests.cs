@@ -393,6 +393,7 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Equal(Mappings.Length, Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
     }
 
+    /// <summary>Checks the inventory's file references as navigation metadata rather than treating source tokens as behavioral evidence.</summary>
     [Fact]
     public void EveryInventoryReferenceNamesAnExistingSourceFile()
     {

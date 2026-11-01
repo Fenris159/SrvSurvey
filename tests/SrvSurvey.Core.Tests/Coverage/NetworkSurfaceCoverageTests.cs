@@ -46,6 +46,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs",
         "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs",
         "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs",
+        "src/SrvSurvey.Desktop/ViewModels/ColonizationShoppingViewModel.cs",
         "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModelFactory.cs",
@@ -54,6 +55,8 @@ public sealed class NetworkSurfaceCoverageTests
     private static readonly string[] ResponseOwners = HttpClientOwners
         .Where(path =>
             !path.EndsWith("MainWindowViewModel.cs", StringComparison.Ordinal)
+            // This workspace supplies the HTTP boundary; Ardent/Spansh own and bound its responses.
+            && !path.EndsWith("ColonizationShoppingViewModel.cs", StringComparison.Ordinal)
             && !path.EndsWith("MiningWorkspaceViewModel.cs", StringComparison.Ordinal)
             && !path.EndsWith("MiningSearchClient.cs", StringComparison.Ordinal)
             && !path.EndsWith("ColonizationMarketSearchClient.cs", StringComparison.Ordinal)

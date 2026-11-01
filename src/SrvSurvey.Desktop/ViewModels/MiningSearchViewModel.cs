@@ -1885,6 +1885,7 @@ public sealed class MiningSearchViewModel(
             );
     }
 
+    /// <summary>Publishes enriched acquisition candidates while keeping the existing readout when provider enrichment fails.</summary>
     private async Task PublishAcquisitionRowsAsync(
         (MiningSystemResult Target, MiningSystemResult Miner)[] pairs,
         CancellationToken token
@@ -1973,6 +1974,7 @@ public sealed class MiningSearchViewModel(
         catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
             Session.Publish(() => Status = RequestFailed, token);
+            return;
         }
 
         token.ThrowIfCancellationRequested();

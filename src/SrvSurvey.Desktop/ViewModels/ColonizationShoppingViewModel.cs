@@ -12,6 +12,9 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed record ColonizationShoppingOptions
 {
     public IColonizationMarketSearch? Search { get; init; }
+
+    /// <summary>Supplies HTTP for the default provider when Search is omitted.</summary>
+    public HttpClient? HttpClient { get; init; }
     public bool OwnsProvidedSearch { get; init; }
     public ColonizationShoppingState? RestoredState { get; init; }
     public Action<ColonizationShoppingState>? SaveState { get; init; }
@@ -250,6 +253,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             }
         ) { }
 
+    /// <summary>Selects transport, ownership, persistence, and clock dependencies before restoring the saved search.</summary>
     public ColonizationShoppingViewModel(
         IEnumerable<ColonizationProject> projects,
         Func<string?> currentSystem,
@@ -262,7 +266,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         saveState = options.SaveState;
         refreshProjects = options.RefreshProjects;
         this.currentSystem = currentSystem ?? throw new ArgumentNullException(nameof(currentSystem));
-        search = options.Search ?? new ColonizationMarketSearchClient();
+        search = options.Search ?? new ColonizationMarketSearchClient(options.HttpClient, clock);
         ownsSearch = options.Search is null || options.OwnsProvidedSearch;
         referenceSystem = currentSystem() ?? string.Empty;
         ColonizationProject[] selected = projects.ToArray();
@@ -605,6 +609,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         return true;
     }
 
+    /// <summary>Records the completed search context and timestamp before projecting its visible market rows.</summary>
     private void CompleteSearch(ColonizationMarketQuery query, ColonizationMarketSearchResult result)
     {
         quotes = result.Quotes;
@@ -884,6 +889,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         Changed(nameof(ResultSummary));
     }
 
+    /// <summary>Applies user filters and the workspace age cutoff while preserving the separate local-stock exclusion policy.</summary>
     private IEnumerable<ColonizationMarketQuote> FilterMarketQuotes(
         IEnumerable<ColonizationMarketQuote> source,
         bool forLocalExclusion = false

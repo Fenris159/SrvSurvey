@@ -11,10 +11,13 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
     private const int SpanshPageSize = 100;
     private static readonly HttpClient SharedClient = CreateSharedClient();
     private readonly ArdentApi ardent;
+    private readonly TimeProvider clock;
     private readonly SpanshApi spansh;
 
-    public ColonizationMarketSearchClient(HttpClient? client = null)
+    /// <summary>Shares one time source across provider validation and stale-stock warnings while preserving shared HTTP defaults.</summary>
+    public ColonizationMarketSearchClient(HttpClient? client = null, TimeProvider? timeProvider = null)
     {
+        clock = timeProvider ?? TimeProvider.System;
         HttpClient http = client ?? SharedClient;
         ardent = new ArdentApi(http, maximumConcurrentRequests: 3);
         spansh = new SpanshApi(http);
@@ -22,6 +25,7 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
 
     public void Dispose() => ardent.Dispose();
 
+    /// <summary>Combines successful provider observations and reports partial failures without discarding usable stock.</summary>
     public async Task<ColonizationMarketSearchResult> SearchAsync(
         ColonizationMarketQuery query,
         CancellationToken cancellationToken = default
@@ -66,7 +70,7 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
             results.SelectMany(result => result.Quotes)
         );
         var warnings = results.SelectMany(result => result.Warnings).ToList();
-        if (quotes.Any(quote => quote.UpdatedAt < DateTimeOffset.UtcNow.AddDays(-query.MaximumAgeDays)))
+        if (quotes.Any(quote => quote.UpdatedAt < clock.GetUtcNow().AddDays(-query.MaximumAgeDays)))
         {
             warnings.Add(
                 $"Local markets include outdated stock older than {query.MaximumAgeDays} days. These are estimates; verify stock before travelling."
@@ -187,7 +191,8 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
             .ConfigureAwait(false);
     }
 
-    private static void ReadArdent(
+    /// <summary>Translates Ardent observations into canonical commodity quotes before applying the shared eligibility rules.</summary>
+    private void ReadArdent(
         JsonDocument document,
         ColonizationMarketQuery query,
         Dictionary<string, ColonizationShoppingNeed> needs,
@@ -324,11 +329,8 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
         return rows;
     }
 
-    private static void ReadSpansh(
-        JsonElement station,
-        ColonizationMarketQuery query,
-        List<ColonizationMarketQuote> quotes
-    )
+    /// <summary>Projects each matching Spansh marketplace entry into a quote with the station observation time.</summary>
+    private void ReadSpansh(JsonElement station, ColonizationMarketQuery query, List<ColonizationMarketQuote> quotes)
     {
         foreach (JsonElement item in MiningJson.Array(station, "market"))
         {
@@ -371,13 +373,14 @@ public sealed class ColonizationMarketSearchClient : IColonizationMarketSearch, 
         return MiningJson.Number(station, "small_pads") > 0 ? 1 : 0;
     }
 
-    private static void AddValid(
+    /// <summary>Rejects invalid, expired, future, and out-of-range stock using the same clock as the workspace.</summary>
+    private void AddValid(
         ColonizationMarketQuote quote,
         ColonizationMarketQuery query,
         List<ColonizationMarketQuote> quotes
     )
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = clock.GetUtcNow();
         if (
             quote.Stock > 0
             && quote.Price > 0

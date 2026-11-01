@@ -65,6 +65,7 @@ internal sealed class DesktopOverlayController : IDisposable
         }
     }
 
+    /// <summary>Changes this session's manual gate without allowing a retired controller to affect active overlays.</summary>
     public void SetManualSuppression(bool suppressed)
     {
         if (disposed)
@@ -75,7 +76,21 @@ internal sealed class DesktopOverlayController : IDisposable
         SynchronizeSuppression();
     }
 
-    private void SynchronizePriority()
+    /// <summary>Establishes priority and session gates before any hosted overlay can register or present.</summary>
+    public static void PreparePresentation(MainWindowViewModel viewModel, OverlayWindowRegistry registry)
+    {
+        registry.SetPriorityFacts(PriorityFacts(viewModel));
+        registry.SetGlobalSuppression(
+            false,
+            viewModel.OverlayBehavior.ShouldSuppressForSuit,
+            viewModel.OverlayBehavior.ShouldSuppressForSession
+        );
+    }
+
+    private void SynchronizePriority() => registry.SetPriorityFacts(PriorityFacts(viewModel));
+
+    /// <summary>Derives presentation priorities from forced survey panes and the colonization suppression preference.</summary>
+    private static OverlayPriorityFacts PriorityFacts(MainWindowViewModel viewModel)
     {
         OverlayPriorityFacts facts = OverlayPriorityFacts.None;
         if (viewModel.SystemSurvey.IsFssInfoForced)
@@ -90,9 +105,10 @@ internal sealed class DesktopOverlayController : IDisposable
         {
             facts |= OverlayPriorityFacts.HideCombatForColonization;
         }
-        registry.SetPriorityFacts(facts);
+        return facts;
     }
 
+    /// <summary>Applies session and manual gates to combat, adding suit suppression only for other gameplay panels.</summary>
     private void SynchronizeSuppression()
     {
         bool suit = viewModel.OverlayBehavior.ShouldSuppressForSuit;
@@ -102,6 +118,7 @@ internal sealed class DesktopOverlayController : IDisposable
         suppressOtherPanels?.Invoke(manuallySuppressed || session || suit);
     }
 
+    /// <summary>Refreshes priority facts only when a preference that contributes to them changes.</summary>
     private void OnPriorityChanged(object? sender, PropertyChangedEventArgs args)
     {
         if (
@@ -115,6 +132,7 @@ internal sealed class DesktopOverlayController : IDisposable
         }
     }
 
+    /// <summary>Reconciles live suppression when session readiness or suit-related preferences change.</summary>
     private void OnBehaviorChanged(object? sender, PropertyChangedEventArgs args)
     {
         if (
@@ -129,6 +147,7 @@ internal sealed class DesktopOverlayController : IDisposable
         }
     }
 
+    /// <summary>Detaches preference subscriptions so a retired session cannot overwrite current presentation policy.</summary>
     public void Dispose()
     {
         if (disposed)

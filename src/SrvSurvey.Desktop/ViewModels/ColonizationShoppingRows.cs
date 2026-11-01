@@ -159,6 +159,7 @@ public sealed class ShoppingMarketRowViewModel : WorkspaceObservable
     /// <summary>Shows the observation date so old local stock cannot be mistaken for current availability.</summary>
     public string OutdatedMarketWarning { get; private set; } = string.Empty;
 
+    /// <summary>Labels old observations against the supplied time, falling back to wall time for standalone rows.</summary>
     internal void ApplyMarketAge(int maximumAgeDays, DateTimeOffset? utcNow = null)
     {
         IsOutdated = oldestObservation < (utcNow ?? DateTimeOffset.UtcNow).AddDays(-maximumAgeDays);

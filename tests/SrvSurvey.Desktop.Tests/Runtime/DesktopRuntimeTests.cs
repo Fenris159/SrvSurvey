@@ -22,6 +22,97 @@ namespace SrvSurvey.Desktop.Tests.Runtime;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class DesktopRuntimeTests
 {
+    /// <summary>Observes the composed runtime before overlay construction and isolates colonization priority from other gates.</summary>
+    [AvaloniaFact]
+    public async Task StartupAppliesColonizationPriorityBeforeOverlayConstruction()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        var store = new CombatSettingsStore(temp.Paths.UiSettingsPath);
+        store.Save(store.Load() with { SuppressForActiveBuildProjects = true });
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        OverlayWindowRegistry registry = OverlayWindowRegistry.Shared;
+        registry.SetPriorityFacts(OverlayPriorityFacts.None);
+        bool? combatPresented = null;
+        bool? combatWithoutColony = null;
+        await using var runtime = DesktopRuntime.StartCompositionForTests(
+            Application.Current!,
+            desktop,
+            new DesktopStartup([], new ApplicationLogService(temp.Paths.DataDirectory))
+            {
+                AppDataPathsOverride = temp.Paths,
+            },
+            new RecordingDesktopLifetime([]),
+            DesktopStartupCheckpoint.MainWindowReady,
+            (_, _, checkpoint) =>
+            {
+                if (checkpoint != DesktopStartupCheckpoint.MainWindowReady)
+                {
+                    return;
+                }
+                // Isolate the priority decision from the independent journal-readiness gate.
+                registry.SetGlobalSuppression(false, false, false);
+                registry.SetVehicleExcludedPlotters([]);
+                var combat = new Window();
+                var colony = new Window();
+                try
+                {
+                    registry.Register(combat, "PlotMassacre");
+                    registry.SetPresentationVisual(combat, new Border());
+                    combatWithoutColony = registry.ShouldPresent(combat);
+                    registry.Register(colony, "PlotBuildCommodities");
+                    registry.SetPresentationVisual(colony, new Border());
+                    combatPresented = registry.ShouldPresent(combat);
+                }
+                finally
+                {
+                    combat.Close();
+                    colony.Close();
+                }
+            }
+        );
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
+        Assert.True(combatWithoutColony);
+        Assert.False(combatPresented);
+    }
+
+    /// <summary>Sends a resolved shortcut through the real runtime and verifies its saved colonization preference.</summary>
+    [AvaloniaFact]
+    public async Task ComposedRuntimeDispatchesTheCoveredGroupsShortcutAndPersistsIt()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        Task<bool>? dispatched = null;
+        await using var runtime = DesktopRuntime.StartCompositionForTests(
+            Application.Current!,
+            desktop,
+            new DesktopStartup([], new ApplicationLogService(temp.Paths.DataDirectory))
+            {
+                AppDataPathsOverride = temp.Paths,
+            },
+            new RecordingDesktopLifetime([]),
+            DesktopStartupCheckpoint.OverlayDependentsReady,
+            (instance, window, checkpoint) =>
+            {
+                if (
+                    checkpoint == DesktopStartupCheckpoint.OverlayDependentsReady
+                    && window?.DataContext is MainWindowViewModel main
+                )
+                {
+                    main.Colonization.CollapseCoveredCommodityGroups = false;
+                    dispatched = instance.ExecuteGlobalInputActionAsync(
+                        GlobalInputAction.ToggleCollapseCoveredColonyGroups
+                    );
+                }
+            }
+        );
+        Assert.NotNull(dispatched);
+        Assert.True(await dispatched);
+        Assert.True(
+            new ColonizationSettingsStore(temp.Paths.UiSettingsPath).LoadOverlayPreferences().CollapseCoveredGroups
+        );
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
+    }
+
     [AvaloniaFact]
     public void UnrelatedShortcutsRemainAvailableToTheirWorkspace()
     {
@@ -53,6 +144,8 @@ public sealed class DesktopRuntimeTests
             registry.SetPresentationVisual(combat, new Border());
             Assert.True(registry.ShouldPresent(combat));
             retired.Combat.SuppressForActiveBuildProjects = true;
+            Assert.True(registry.ShouldPresent(combat));
+            retired.OverlayBehavior.UpdateSessionContext(true, true, true, false);
             Assert.True(registry.ShouldPresent(combat));
             active.Combat.SuppressForActiveBuildProjects = true;
             Assert.False(registry.ShouldPresent(combat));
@@ -271,7 +364,10 @@ public sealed class DesktopRuntimeTests
     {
         using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(null);
         var window = new MainWindow(main);
-        using var controller = new DesktopOverlayController(main, OverlayWindowRegistry.Shared);
+        OverlayWindowRegistry.Shared.SetGlobalSuppression(false, false, false);
+        OverlayWindowRegistry.Shared.SetVehicleExcludedPlotters([]);
+        using var controller = new DesktopOverlayController(main, new OverlayWindowRegistry());
+        Assert.True(OverlayWindowRegistry.Shared.ShouldHost("PlotJumpInfo"));
         ColonizationViewModel colonization = main.Colonization;
         colonization.CollapseCoveredCommodityGroups = false;
         colonization.HideCollapsedCommodityGroups = hideCollapsedGroups;

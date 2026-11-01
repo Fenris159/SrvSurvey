@@ -117,6 +117,7 @@ public sealed partial class ColonizationShoppingViewModel
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+    /// <summary>Allocates eligible local stock after shopping-list reservations and ignores implausible future observations.</summary>
     private void ApplyLocalCommodityExclusions()
     {
         DateTimeOffset now = clock.GetUtcNow();

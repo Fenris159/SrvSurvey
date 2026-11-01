@@ -27,6 +27,7 @@ public sealed class SquadronCarrierRoutesPresentationTests : IDisposable
 
     private readonly HttpClient noNetworkClient = new(new NoNetwork());
 
+    /// <summary>Renders the dedicated squadron workspace in every palette while retaining the shared route library.</summary>
     [AvaloniaTheory]
     [InlineData(640)]
     [InlineData(1100)]
@@ -275,6 +276,7 @@ public sealed class SquadronCarrierRoutesPresentationTests : IDisposable
         await sc.FlushWorkspaceAsync();
     }
 
+    /// <summary>Tracks personal and squadron jump requests independently through real hosted panels without active routes.</summary>
     [AvaloniaFact]
     public async Task BothPassiveOverlaysTrackTheirOwnRequestsAndCancellationWithoutRoutes()
     {

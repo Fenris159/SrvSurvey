@@ -7,16 +7,17 @@ Keep fixture values independent of production calculations.
 | Behavior worth protecting | Existing test surface and important cases |
 | --- | --- |
 | Captured uploads survive restart and failures | Core `JournalUploadScenarioTests`, `JournalUploadOutboxTests`, `JournalUploadStealthTests`: owner isolation, bootstrap versus live records, consent, successful acknowledgement, cooldown, crash/restart, corrupt/torn records, checkpoints, docking release. The mandatory scenario matrix remains a separate gate. |
-| Upload completion and bounded shutdown | Core `VoxStellarPublisherTests`: accepted transport must finish before completion returns, no new events after completion, revoked queued work cannot send, failed work stays retained, synchronous application shutdown remains bounded. Observe transport completion rather than diagnostic prose or a short negative sleep. |
+| Upload completion and bounded shutdown | Core `VoxStellarPublisherTests`: in-flight and buffered uploads finish before completion returns, no new events after completion, canceling a completion wait leaves accepted transport alive, revoked queued work cannot send, failed work stays retained, synchronous application shutdown remains bounded. Observe transport completion rather than diagnostic prose or a short negative sleep. |
 | Mining session totals match cargo | Core `MiningCargoJournalRegressionTests`: supplied real journal, six independent session totals, refinery carryover, cargo reconciliation, duplicate physical records, closing/reopening. Preserve the fixture and literal expected totals. |
-| Mining search results survive travel and failures | Desktop `MiningSearchViewModelTests`, `SurfaceMiningSearchViewModelTests`, Core `MiningSearchSessionTests`: jump during/after search, force-include, edited filters during requests, offline cache restore makes zero HTTP requests, failed refresh preserves the last successful saved results. |
+| Mining search results survive travel and failures | Desktop `MiningSearchViewModelTests`, `SurfaceMiningSearchViewModelTests`, Core `MiningSearchSessionTests`: jump during/after search, force-include, edited filters during requests, offline cache restore makes zero HTTP requests, failed refresh preserves both the current readout and last successful saved results. |
 | CAPI/journal freshness and carrier identity | Desktop `DedicatedCarrierIdentityTests` and commander/carrier view-model regressions: request timing, later journal events versus older fetches, later fetches versus earlier journal events, ambiguous carrier events, personal/squadron separation, only one current ship. |
-| Exploration and project totals | Core `BoxelSurveyStatsStateTests`, `ExplorationValueCalculatorTests`, `ColonizationPlannedProjectsTests`: literal first-discovery/scan/mapping vectors, star exclusion, no double counting, stale stored rewards ignored, known catalog cargo transferred with independently worked totals. |
-| Market stock eligibility | Desktop `ColonizationLocalMarketTests`: fixed clock, exact age cutoff and one tick either side, future timestamps, project systems, pad/arrival/provider restrictions, allocations and carrier cargo, insufficient stock, restore, failed provider calls. |
+| Exploration and project totals | Core `BoxelSurveyStatsStateTests`, `ExplorationValueCalculatorTests`, `ColonizationPlannedProjectsTests`: independent literal high-metal-content and water-world scan/current/mapping values, star exclusion, no double counting, stale stored rewards ignored, known catalog cargo transferred with independently worked totals. |
+| Market stock eligibility | Desktop `ColonizationLocalMarketTests`: the real default provider and workspace share a fixed clock, exact age cutoff and one tick either side, future timestamps, project systems, pad/arrival/provider restrictions, allocations and carrier cargo, insufficient stock, restore, failed provider calls. |
 | Overlay interaction and appearance | Desktop `OverlayResizeInteractionTests`: shared resize families at natural/configured sizes and small/default/large scales, released grip stops resizing, exact mission counts remain readable in narrow panels. `OverlayLivePanelSizingTests` retains all-panel/state runtime/editor parity; theme tests retain all six schemes. |
-| Overlay visibility and shortcuts | Desktop `DesktopRuntimeTests` exercises the real `DesktopOverlayController`: colonization show/hide persists through docking, covered groups update saved settings, combat priority applies only to a presented colony panel, suits spare combat while manual/session suppression still applies. Runtime lifetime tests retain actual shutdown ownership and ordering contracts. |
+| Overlay visibility and shortcuts | Desktop `DesktopRuntimeTests` exercises real runtime dispatch and `DesktopOverlayController`: colonization priority is ready before overlay construction, colonization show/hide persists through docking, covered groups update saved settings, combat priority applies only to a presented colony panel, suits spare combat while manual/session suppression still applies, and retired controllers cannot overwrite an active session. Preference-only fixtures use their own registry. Runtime lifetime tests retain actual shutdown ownership and ordering contracts. |
 | Portable journey reports | Core `JourneyReportTests`/`JourneyRouteMapTests`: statistics, escaping, traversal rejection, coordinates, negative Z, reference points, real journey legs. Desktop `JourneyReportBundleExporterTests`: originals, bounded previews, atomic failure cleanup, relocation. Browser cases cover both viewport widths, map switch, dated return-visit chooser, history selection, gallery enlargement/keyboard navigation/focus, and local assets with network disabled. |
 | Real external platform integration | DBus protocol tests use an isolated fake portal. The installed portal probe is explicitly opt-in. Native OpenXR frame protocol tests and the Gamescope smoke scenarios remain separate real-platform checks. |
+| Route scrollbar clearance | Desktop `RouteWaypointRemovalPresentationTests`: force both panes to overflow and measure content, headers, and row actions against the visible scrollbar boundary. Do not assert a specific padding literal. |
 
 ## Lanes
 
@@ -58,8 +59,10 @@ Record the checked faults and outcomes with the change's validation evidence.
 
 ### Verified targeted faults (2026-10-31)
 
-The focused assertions failed for each temporary production fault below, and the
-source was restored after each run. Browser faults were checked at both widths.
+The focused assertions failed for each temporary fault below, and the source was
+restored after each run. Browser behavior is exercised at both widths; the
+follow-up faults target return selection at desktop width and a corrupt second
+image at narrow width independently.
 
 | Deliberate fault | Assertion that detected it |
 | --- | --- |
@@ -76,3 +79,14 @@ source was restored after each run. Browser faults were checked at both widths.
 | The coincident-visit chooser never opens | `RelocatedJourneyWorksOfflineWithReturnVisitsAndScreenshotNavigation` |
 | Retired overlay controllers remain subscribed | `RetiredControllerCannotOverrideTheActiveSessionsOverlayPreferences` |
 | Overlay routing consumes shortcuts owned by another workspace | `UnrelatedShortcutsRemainAvailableToTheirWorkspace` |
+| Completion exits before the second buffered upload | `CompletionWaitsForAcceptedWorkAndStopsAcceptingNewWork` (two successful transports) |
+| Canceling the completion wait cancels accepted HTTP work | `CancelingCompletionWaitKeepsTheAcceptedTransportAlive` |
+| Water-world reward constant is off by one | `IngestSystemFileRecomputesValuesAndIgnoresReward` (independent water-world vector) |
+| Provider validation advances the injected clock by 30 days | `DefaultProviderUsesTheWorkspaceClockForQuoteAge` |
+| Runtime startup omits initial overlay priorities | `StartupAppliesColonizationPriorityBeforeOverlayConstruction` |
+| Runtime skips overlay-controller shortcut dispatch | `ComposedRuntimeDispatchesTheCoveredGroupsShortcutAndPersistsIt` |
+| Retired controllers retain the behavior-change subscription | `RetiredControllerCannotOverrideTheActiveSessionsOverlayPreferences` (retired shutdown change) |
+| Preference fixture uses the shared registry and leaks its session gate | `CollapseCoveredGroupsShortcutUpdatesAndPersistsDisplayStyle` (shared host eligibility) |
+| Either route pane expands its content into the scrollbar | `ScrollableRouteContentAndHeadersStayClearOfTheVerticalScrollbar` (both panes) |
+| Second return option navigates to the first visit | `RelocatedJourneyWorksOfflineWithReturnVisitsAndScreenshotNavigation` (desktop visit 3) |
+| Relocated second original image is corrupt | `RelocatedJourneyWorksOfflineWithReturnVisitsAndScreenshotNavigation` (narrow image load) |

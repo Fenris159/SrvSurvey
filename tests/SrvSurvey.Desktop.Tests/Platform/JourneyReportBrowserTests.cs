@@ -7,6 +7,7 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 
 public sealed partial class JourneyReportBundleExporterTests
 {
+    /// <summary>Exercises both return visits and original-image navigation from a relocated report with networking disabled.</summary>
     [Theory]
     [InlineData(1280)]
     [InlineData(390)]
@@ -66,7 +67,15 @@ public sealed partial class JourneyReportBundleExporterTests
         await Expect(page.Locator("#visit-1 details")).ToHaveAttributeAsync("open", "");
         await Expect(page.Locator("#visit-1")).ToBeFocusedAsync();
 
-        ILocator tile = page.Locator("#visit-1 .screenshot-tile").First;
+        await page.Locator("#map-detail .route-stop-link").Last.ClickAsync();
+        await Expect(page.Locator("#map-visit-picker")).ToBeVisibleAsync();
+        await page.Locator(".map-visit-option").Nth(1).ClickAsync();
+        await Expect(page.Locator("#map-visit-picker")).ToBeHiddenAsync();
+        await Expect(page.Locator("#visit-3")).ToBeVisibleAsync();
+        await Expect(page.Locator("#visit-3 details")).ToHaveAttributeAsync("open", "");
+        await Expect(page.Locator("#visit-3")).ToBeFocusedAsync();
+
+        ILocator tile = page.Locator("#visit-3 .screenshot-tile").First;
         ILocator preview = tile.Locator("img");
         await preview.ScrollIntoViewIfNeededAsync();
         await Expect(preview).ToHaveJSPropertyAsync("naturalWidth", 640);
@@ -77,6 +86,16 @@ public sealed partial class JourneyReportBundleExporterTests
         await page.Keyboard.PressAsync("ArrowRight");
         await Expect(page.Locator("#image-position")).ToHaveTextAsync("2 of 2");
         await Expect(page.Locator("#image-full")).ToHaveAttributeAsync("src", "images/42/0002.png");
+        await page.WaitForFunctionAsync(
+            """
+            () => {
+                const image = document.querySelector('#image-full');
+                return image?.getAttribute('src') === 'images/42/0002.png'
+                    && image.complete && image.naturalWidth === 1600;
+            }
+            """,
+            options: new() { Timeout = 5000 }
+        );
         await page.Keyboard.PressAsync("Escape");
         await Expect(page.Locator("#image-viewer")).ToBeHiddenAsync();
         await Expect(tile).ToBeFocusedAsync();
