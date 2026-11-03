@@ -11,6 +11,18 @@ namespace SrvSurvey.Desktop.Platform;
 
 public interface IScreenshotProcessingService
 {
+    int PendingCount => 0;
+
+    Task<ScreenshotProcessingResult> ProcessLiveAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        ScreenshotProcessingPreferences preferences,
+        string? commanderName,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        ProcessAsync(journalEvents, preferences, commanderName, guardianContexts, navigationContext, cancellationToken);
+
     Task<ScreenshotProcessingResult> ProcessAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
@@ -32,6 +44,12 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     private const int FileReadinessAttempts = 150;
     private static readonly TimeSpan FileReadinessPollInterval = TimeSpan.FromMilliseconds(200);
 
+    private readonly Dictionary<string, PendingScreenshot> pending = new(StringComparer.Ordinal);
+    private readonly HashSet<string> completed = new(StringComparer.Ordinal);
+    private int pendingCount;
+
+    public int PendingCount => Volatile.Read(ref pendingCount);
+
     private readonly SemaphoreSlim processingLock = new(1, 1);
     private readonly Func<int?> gameClientWidthProvider;
     private readonly Func<TimeSpan, CancellationToken, Task> retryDelay;
@@ -52,13 +70,50 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return Path.Combine(Path.GetFullPath(targetFolder), SafeFileName(systemName));
     }
 
-    public async Task<ScreenshotProcessingResult> ProcessAsync(
+    public Task<ScreenshotProcessingResult> ProcessAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
         ScreenshotNavigationContext? navigationContext = null,
         CancellationToken cancellationToken = default
+    ) =>
+        ProcessQueuedAsync(
+            journalEvents,
+            preferences,
+            commanderName,
+            guardianContexts,
+            navigationContext,
+            false,
+            cancellationToken
+        );
+
+    public Task<ScreenshotProcessingResult> ProcessLiveAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        ScreenshotProcessingPreferences preferences,
+        string? commanderName,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default
+    ) =>
+        ProcessQueuedAsync(
+            journalEvents,
+            preferences,
+            commanderName,
+            guardianContexts,
+            navigationContext,
+            true,
+            cancellationToken
+        );
+
+    private async Task<ScreenshotProcessingResult> ProcessQueuedAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        ScreenshotProcessingPreferences preferences,
+        string? commanderName,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts,
+        ScreenshotNavigationContext? navigationContext,
+        bool live,
+        CancellationToken cancellationToken
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
@@ -68,94 +123,96 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             return ScreenshotProcessingResult.Empty;
         }
 
-        JournalEventEnvelope[] screenshots = journalEvents.Where(entry => entry.EventName == "Screenshot").ToArray();
-        if (screenshots.Length == 0)
-        {
-            return ScreenshotProcessingResult.Empty;
-        }
-
         await processingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await ProcessCoreAsync(
-                    screenshots,
-                    preferences,
-                    commanderName,
-                    guardianContexts,
-                    navigationContext,
-                    cancellationToken
-                )
-                .ConfigureAwait(false);
+            var warnings = new List<string>();
+            Enqueue(journalEvents, preferences, commanderName, guardianContexts, navigationContext, warnings);
+            return await DrainAsync(warnings, live, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
+            Volatile.Write(ref pendingCount, pending.Count);
             processingLock.Release();
         }
     }
 
-    private async Task<ScreenshotProcessingResult> ProcessCoreAsync(
-        IReadOnlyList<JournalEventEnvelope> screenshots,
+    private void Enqueue(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts,
         ScreenshotNavigationContext? navigationContext,
-        CancellationToken cancellationToken
+        List<string> warnings
     )
     {
-        var conversions = new List<ScreenshotConversion>();
-        var warnings = new List<string>();
-        if (string.IsNullOrWhiteSpace(preferences.SourceFolder) || !Path.IsPathFullyQualified(preferences.SourceFolder))
+        foreach (JournalEventEnvelope entry in journalEvents.Where(entry => entry.EventName == "Screenshot"))
         {
-            return new ScreenshotProcessingResult(
-                conversions,
-                ["The screenshot source folder must be an absolute path."]
-            );
-        }
-
-        if (string.IsNullOrWhiteSpace(preferences.TargetFolder) || !Path.IsPathFullyQualified(preferences.TargetFolder))
-        {
-            return new ScreenshotProcessingResult(
-                conversions,
-                ["The screenshot target folder must be an absolute path."]
-            );
-        }
-
-        string sourceDirectory = Path.GetFullPath(preferences.SourceFolder);
-        string targetDirectory = Path.GetFullPath(preferences.TargetFolder);
-        if (!Directory.Exists(sourceDirectory))
-        {
-            return new ScreenshotProcessingResult(
-                conversions,
-                [$"The screenshot source folder does not exist: {sourceDirectory}"]
-            );
-        }
-
-        int? gameClientWidth = gameClientWidthProvider();
-        foreach (JournalEventEnvelope entry in screenshots)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+            string key = entry.SourceRecordIdentity ?? commanderName + "\n" + entry.RawJson;
+            if (completed.Contains(key) || pending.ContainsKey(key))
+            {
+                continue;
+            }
             try
             {
-                ScreenshotGuardianContext? guardianContext = guardianContexts?.GetValueOrDefault(entry);
-                ScreenshotConversion conversion = await ConvertAsync(
+                if (!Path.IsPathFullyQualified(preferences.SourceFolder))
+                {
+                    throw new ArgumentException("The screenshot source folder must be an absolute path.");
+                }
+                if (!Path.IsPathFullyQualified(preferences.TargetFolder))
+                {
+                    throw new ArgumentException("The screenshot target folder must be an absolute path.");
+                }
+                pending.Add(
+                    key,
+                    new PendingScreenshot(
                         new ScreenshotConversionRequest(
                             entry,
                             preferences,
                             commanderName,
-                            guardianContext,
+                            guardianContexts?.GetValueOrDefault(entry),
                             navigationContext,
-                            gameClientWidth,
-                            sourceDirectory,
-                            targetDirectory
-                        ),
+                            gameClientWidthProvider(),
+                            ResolveSourcePaths(entry, preferences.SourceFolder),
+                            Path.GetFullPath(preferences.TargetFolder)
+                        )
+                    )
+                );
+            }
+            catch (Exception exception) when (exception is ArgumentException or InvalidDataException)
+            {
+                warnings.Add(DescribeFailure(entry, exception, retained: false));
+                completed.Add(key);
+            }
+        }
+    }
+
+    private async Task<ScreenshotProcessingResult> DrainAsync(
+        List<string> warnings,
+        bool live,
+        CancellationToken cancellationToken
+    )
+    {
+        var conversions = new List<ScreenshotConversion>();
+        foreach ((string key, PendingScreenshot capture) in pending.ToArray())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                string sourcePath = await WaitForCompletedFileAsync(
+                        capture.Request.SourcePaths,
+                        live,
                         cancellationToken
                     )
                     .ConfigureAwait(false);
+                ScreenshotConversion conversion = Convert(capture.Request, sourcePath);
                 conversions.Add(conversion);
                 if (conversion.Warning is not null)
                 {
                     warnings.Add(conversion.Warning);
                 }
+                pending.Remove(key);
+                completed.Add(key);
             }
             catch (Exception exception)
                 when (exception
@@ -165,15 +222,29 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                             or ArgumentException
                 )
             {
-                warnings.Add(
-                    $"Screenshot {entry.Timestamp?.ToString("u", CultureInfo.InvariantCulture) ?? "with unknown time"} "
-                        + "was not converted: "
-                        + exception.Message
-                );
+                string warning = DescribeFailure(capture.Request.Entry, exception);
+                if (warning != capture.LastWarning)
+                {
+                    warnings.Add(warning);
+                    capture.LastWarning = warning;
+                }
             }
         }
+        return new ScreenshotProcessingResult(conversions, warnings) { PendingCount = pending.Count };
+    }
 
-        return new ScreenshotProcessingResult(conversions, warnings);
+    private static string DescribeFailure(JournalEventEnvelope entry, Exception exception, bool retained = true)
+    {
+        string timestamp = entry.Timestamp?.ToString("u", CultureInfo.InvariantCulture) ?? "with unknown time";
+        return retained
+            ? $"Screenshot {timestamp} was not converted; it remains pending and the original is retained: {exception.Message}"
+            : $"Screenshot {timestamp} was not converted; the original is retained: {exception.Message}";
+    }
+
+    private sealed class PendingScreenshot(ScreenshotConversionRequest request)
+    {
+        public ScreenshotConversionRequest Request { get; } = request;
+        public string? LastWarning { get; set; }
     }
 
     private readonly record struct ScreenshotConversionRequest(
@@ -183,21 +254,15 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         ScreenshotGuardianContext? GuardianContext,
         ScreenshotNavigationContext? NavigationContext,
         int? GameClientWidth,
-        string SourceDirectory,
+        IReadOnlyList<string> SourcePaths,
         string TargetDirectory
     );
 
-    private async Task<ScreenshotConversion> ConvertAsync(
-        ScreenshotConversionRequest request,
-        CancellationToken cancellationToken
-    )
+    private static ScreenshotConversion Convert(ScreenshotConversionRequest request, string sourcePath)
     {
         JournalEventEnvelope entry = request.Entry;
         ScreenshotProcessingPreferences preferences = request.Preferences;
         ScreenshotGuardianContext? guardianContext = request.GuardianContext;
-        string sourcePath = ResolveSourcePath(entry, request.SourceDirectory);
-        await WaitForCompletedFileAsync(sourcePath, cancellationToken).ConfigureAwait(false);
-
         using SKBitmap source =
             SKBitmap.Decode(sourcePath)
             ?? throw new InvalidDataException($"'{sourcePath}' is not a supported bitmap image.");
@@ -277,7 +342,10 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             }
         }
 
-        return new ScreenshotConversion(sourcePath, outputPath, sourceDeleted, warning, aerialOutputPath);
+        return new ScreenshotConversion(sourcePath, outputPath, sourceDeleted, warning, aerialOutputPath)
+        {
+            IncludedBanner = preferences.AddBanner,
+        };
     }
 
     private static void WritePngAtomically(SKBitmap bitmap, string outputPath)
@@ -379,7 +447,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return rotated;
     }
 
-    private static string ResolveSourcePath(JournalEventEnvelope entry, string sourceDirectory)
+    private static IReadOnlyList<string> ResolveSourcePaths(JournalEventEnvelope entry, string sourceDirectory)
     {
         string journalPath =
             GetString(entry, "Filename") ?? throw new InvalidDataException("The Screenshot event has no Filename.");
@@ -390,46 +458,96 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             throw new InvalidDataException("The Screenshot event filename is invalid.");
         }
 
-        return Path.Combine(sourceDirectory, fileName);
+        string fallback = Path.Combine(Path.GetFullPath(sourceDirectory), fileName);
+        // ED_Pictures is a game placeholder, including when its leading slash
+        // resembles an absolute Unix path. Guest Windows paths also use the
+        // configured (or Proton-derived) host folder on Linux.
+        bool placeholder = normalized.StartsWith("/ED_Pictures/", StringComparison.OrdinalIgnoreCase);
+        if (!placeholder && Path.IsPathFullyQualified(journalPath))
+        {
+            string absolute = Path.GetFullPath(journalPath);
+            return absolute == fallback ? [absolute] : [absolute, fallback];
+        }
+        return [fallback];
     }
 
-    private async Task WaitForCompletedFileAsync(string path, CancellationToken cancellationToken)
+    private async Task<string> WaitForCompletedFileAsync(
+        IReadOnlyList<string> paths,
+        bool live,
+        CancellationToken cancellationToken
+    )
     {
         Exception? lastError = null;
+        string path = paths[0];
         long previousLength = -1;
+        string? previousPath = null;
         int stableReads = 0;
-        // High-resolution captures can finish well after the journal event. Allow
-        // up to thirty seconds while still requiring an unlocked, stable file.
-        for (int attempt = 0; attempt < FileReadinessAttempts; attempt++)
+        // Live polling never waits for a missing or locked BMP. Ready files still
+        // need two unchanged length observations before decoding; otherwise the
+        // immutable capture is retried on the next journal poll.
+        int attempts = live ? 3 : FileReadinessAttempts;
+        for (int attempt = 0; attempt < attempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            path = SelectSourcePath(paths);
+            (long length, Exception? error) = ReadSourceLength(path);
+            lastError = error;
+            stableReads = length > 0 && length == previousLength && path == previousPath ? stableReads + 1 : 0;
+            if (stableReads >= 2)
+            {
+                return path;
+            }
+            previousPath = path;
+            previousLength = length;
+            if (live && error is not null)
+            {
+                break;
+            }
+            if (attempt + 1 < attempts)
+            {
+                await retryDelay(FileReadinessPollInterval, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        string reason = lastError switch
+        {
+            FileNotFoundException or DirectoryNotFoundException => "The source bitmap was not found",
+            UnauthorizedAccessException => "Access to the source bitmap was denied",
+            not null => "The source bitmap could not be read (it may still be locked or writing)",
+            _ => "The source bitmap is empty or still changing",
+        };
+        throw new IOException($"{reason}: {path}. {lastError?.Message}", lastError);
+    }
+
+    private static (long Length, Exception? Error) ReadSourceLength(string path)
+    {
+        try
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return (stream.Length, null);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return (-1, exception);
+        }
+    }
+
+    private static string SelectSourcePath(IReadOnlyList<string> paths)
+    {
+        foreach (string path in paths)
+        {
+            // File.Exists hides permission and sharing errors. Fall back only
+            // when a native absolute journal path really is absent.
             try
             {
-                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                if (stream.Length > 0 && stream.Length == previousLength)
-                {
-                    stableReads++;
-                    if (stableReads >= 2)
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    stableReads = 0;
-                }
-
-                previousLength = stream.Length;
+                File.GetAttributes(path);
+                return path;
             }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
             {
-                lastError = exception;
+                // Try the configured screenshot folder for moved/guest files.
             }
-
-            await retryDelay(FileReadinessPollInterval, cancellationToken).ConfigureAwait(false);
         }
-
-        throw new IOException($"The source bitmap did not become readable: {path}", lastError);
+        return paths[^1];
     }
 
     private static string ResolveGuardianBannerSiteName(ScreenshotGuardianContext guardianContext)
@@ -609,6 +727,8 @@ public sealed record ScreenshotProcessingResult(
     IReadOnlyList<string> Warnings
 )
 {
+    public int PendingCount { get; init; }
+
     public static ScreenshotProcessingResult Empty { get; } = new([], []);
 }
 
@@ -618,7 +738,10 @@ public sealed record ScreenshotConversion(
     bool SourceDeleted,
     string? Warning,
     string? AerialOutputPath = null
-);
+)
+{
+    public bool? IncludedBanner { get; init; }
+}
 
 public sealed record ScreenshotGuardianContext(
     string SiteType,

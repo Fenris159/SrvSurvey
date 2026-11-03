@@ -1449,6 +1449,10 @@
       "translation": "Eine verifizierte Anforderung zum Herunterfahren von einer anderen Instanz SrvSurvey wurde akzeptiert."
     },
     {
+      "source": "Access to the source bitmap was denied",
+      "translation": "Der Zugriff auf die Quellbitmap wurde verweigert"
+    },
+    {
       "source": "Access:",
       "translation": "Zugang:"
     },
@@ -26065,8 +26069,8 @@
       "translation": "{0} Overlay-Einstellung(en) gespeichert. Sichtbare Overlays werden sofort aktualisiert.{1}"
     },
     {
-      "source": "Saved {0} screenshots to {1}.",
-      "translation": "{0} Screenshots wurden in {1} gespeichert."
+      "source": "Saved {0} screenshots.",
+      "translation": "{0}-Screenshots gespeichert."
     },
     {
       "source": "Saved {0}.",
@@ -26333,8 +26337,12 @@
       "translation": "Screenshot gemacht"
     },
     {
-      "source": "Screenshot {0} was not converted: {1}",
-      "translation": "Screenshot {0} wurde nicht konvertiert: {1}"
+      "source": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+      "translation": "Screenshot {0} wurde nicht konvertiert; es bleibt ausstehend und das Original bleibt erhalten: {1}"
+    },
+    {
+      "source": "Screenshot {0} was not converted; the original is retained: {1}",
+      "translation": "Screenshot {0} wurde nicht konvertiert; das Original bleibt erhalten: {1}"
     },
     {
       "source": "ScreenshotEnabledCheckBox",
@@ -32297,10 +32305,6 @@
       "translation": "Die Screenshot-Vorschau konnte nicht erstellt werden."
     },
     {
-      "source": "The screenshot source folder does not exist: {0}",
-      "translation": "Der Screenshot-Quellordner existiert nicht: {0}"
-    },
-    {
       "source": "The screenshot source folder must be an absolute path.",
       "translation": "Der Screenshot-Quellordner muss ein absoluter Pfad sein."
     },
@@ -32497,8 +32501,16 @@
       "translation": "Der Site-Name „{0}“ ist dupliziert."
     },
     {
-      "source": "The source bitmap did not become readable: {0}",
-      "translation": "Die Quellbitmap wurde nicht lesbar: {0}"
+      "source": "The source bitmap could not be read (it may still be locked or writing)",
+      "translation": "Die Quellbitmap konnte nicht gelesen werden (sie ist möglicherweise noch gesperrt oder schreibt)"
+    },
+    {
+      "source": "The source bitmap is empty or still changing",
+      "translation": "Die Quellbitmap ist leer oder ändert sich noch"
+    },
+    {
+      "source": "The source bitmap was not found",
+      "translation": "Die Quellbitmap wurde nicht gefunden"
     },
     {
       "source": "The spherical limit is disabled",
@@ -42317,6 +42329,10 @@
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
       "translation": "Se aceptó una solicitud de cierre verificada de otra instancia SrvSurvey."
+    },
+    {
+      "source": "Access to the source bitmap was denied",
+      "translation": "Se denegó el acceso al mapa de bits de origen"
     },
     {
       "source": "Access:",
@@ -66935,8 +66951,8 @@
       "translation": "Configuración de superposición {0} guardada. Las superposiciones visibles se actualizan inmediatamente.{1}"
     },
     {
-      "source": "Saved {0} screenshots to {1}.",
-      "translation": "Capturas de pantalla de {0} guardadas en {1}."
+      "source": "Saved {0} screenshots.",
+      "translation": "Capturas de pantalla guardadas de {0}."
     },
     {
       "source": "Saved {0}.",
@@ -67203,8 +67219,12 @@
       "translation": "Captura de pantalla tomada"
     },
     {
-      "source": "Screenshot {0} was not converted: {1}",
-      "translation": "La captura de pantalla {0} no se convirtió: {1}"
+      "source": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+      "translation": "La captura de pantalla {0} no se convirtió; queda pendiente y se conserva el original: {1}"
+    },
+    {
+      "source": "Screenshot {0} was not converted; the original is retained: {1}",
+      "translation": "La captura de pantalla {0} no se convirtió; se conserva el original: {1}"
     },
     {
       "source": "ScreenshotEnabledCheckBox",
@@ -73167,10 +73187,6 @@
       "translation": "No se pudo crear la vista previa de la captura de pantalla."
     },
     {
-      "source": "The screenshot source folder does not exist: {0}",
-      "translation": "La carpeta fuente de la captura de pantalla no existe: {0}"
-    },
-    {
       "source": "The screenshot source folder must be an absolute path.",
       "translation": "La carpeta de origen de la captura de pantalla debe ser una ruta absoluta."
     },
@@ -73367,8 +73383,16 @@
       "translation": "El nombre del sitio '{0}' está duplicado."
     },
     {
-      "source": "The source bitmap did not become readable: {0}",
-      "translation": "El mapa de bits de origen no se volvió legible: {0}"
+      "source": "The source bitmap could not be read (it may still be locked or writing)",
+      "translation": "No se pudo leer el mapa de bits de origen (es posible que aún esté bloqueado o escribiendo)"
+    },
+    {
+      "source": "The source bitmap is empty or still changing",
+      "translation": "El mapa de bits de origen está vacío o sigue cambiando"
+    },
+    {
+      "source": "The source bitmap was not found",
+      "translation": "No se encontró el mapa de bits de origen"
     },
     {
       "source": "The spherical limit is disabled",
@@ -83187,6 +83211,10 @@
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
       "translation": "Acceptation d'une demande d'arrêt vérifiée provenant d'une autre instance SrvSurvey."
+    },
+    {
+      "source": "Access to the source bitmap was denied",
+      "translation": "L'accès au bitmap source a été refusé"
     },
     {
       "source": "Access:",
@@ -107805,8 +107833,8 @@
       "translation": "{0} paramètre(s) de superposition enregistré(s). Les superpositions visibles sont mises à jour immédiatement.{1}"
     },
     {
-      "source": "Saved {0} screenshots to {1}.",
-      "translation": "Captures d'écran de {0} enregistrées dans {1}."
+      "source": "Saved {0} screenshots.",
+      "translation": "Captures d'écran {0} enregistrées."
     },
     {
       "source": "Saved {0}.",
@@ -108073,8 +108101,12 @@
       "translation": "Capture d'écran prise"
     },
     {
-      "source": "Screenshot {0} was not converted: {1}",
-      "translation": "La capture d'écran {0} n'a pas été convertie : {1}"
+      "source": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+      "translation": "La capture d'écran {0} n'a pas été convertie ; il reste en attente et l'original est conservé : {1}"
+    },
+    {
+      "source": "Screenshot {0} was not converted; the original is retained: {1}",
+      "translation": "La capture d'écran {0} n'a pas été convertie ; l'original est conservé : {1}"
     },
     {
       "source": "ScreenshotEnabledCheckBox",
@@ -114037,10 +114069,6 @@
       "translation": "L'aperçu de la capture d'écran n'a pas pu être créé."
     },
     {
-      "source": "The screenshot source folder does not exist: {0}",
-      "translation": "Le dossier source de la capture d'écran n'existe pas : {0}"
-    },
-    {
       "source": "The screenshot source folder must be an absolute path.",
       "translation": "Le dossier source de la capture d'écran doit être un chemin absolu."
     },
@@ -114237,8 +114265,16 @@
       "translation": "Le nom du site '{0}' est dupliqué."
     },
     {
-      "source": "The source bitmap did not become readable: {0}",
-      "translation": "Le bitmap source n'est pas devenu lisible : {0}"
+      "source": "The source bitmap could not be read (it may still be locked or writing)",
+      "translation": "Le bitmap source n'a pas pu être lu (il est peut-être encore verrouillé ou en écriture)"
+    },
+    {
+      "source": "The source bitmap is empty or still changing",
+      "translation": "Le bitmap source est vide ou est toujours en train de changer"
+    },
+    {
+      "source": "The source bitmap was not found",
+      "translation": "Le bitmap source n'a pas été trouvé"
     },
     {
       "source": "The spherical limit is disabled",
@@ -124057,6 +124093,10 @@
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
       "translation": "Aceitou uma solicitação de encerramento verificada de outra instância SrvSurvey."
+    },
+    {
+      "source": "Access to the source bitmap was denied",
+      "translation": "O acesso ao bitmap de origem foi negado"
     },
     {
       "source": "Access:",
@@ -148675,8 +148715,8 @@
       "translation": "{0} configurações de sobreposição salvas. As sobreposições visíveis são atualizadas imediatamente.{1}"
     },
     {
-      "source": "Saved {0} screenshots to {1}.",
-      "translation": "Capturas de tela de {0} salvas em {1}."
+      "source": "Saved {0} screenshots.",
+      "translation": "Capturas de tela {0} salvas."
     },
     {
       "source": "Saved {0}.",
@@ -148943,8 +148983,12 @@
       "translation": "Captura de tela tirada"
     },
     {
-      "source": "Screenshot {0} was not converted: {1}",
-      "translation": "Captura de tela {0} não foi convertida: {1}"
+      "source": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+      "translation": "A captura de tela {0} não foi convertida; permanece pendente e o original é retido: {1}"
+    },
+    {
+      "source": "Screenshot {0} was not converted; the original is retained: {1}",
+      "translation": "A captura de tela {0} não foi convertida; o original é mantido: {1}"
     },
     {
       "source": "ScreenshotEnabledCheckBox",
@@ -154907,10 +154951,6 @@
       "translation": "A visualização da captura de tela não pôde ser criada."
     },
     {
-      "source": "The screenshot source folder does not exist: {0}",
-      "translation": "A pasta de origem da captura de tela não existe: {0}"
-    },
-    {
       "source": "The screenshot source folder must be an absolute path.",
       "translation": "A pasta de origem da captura de tela deve ser um caminho absoluto."
     },
@@ -155107,8 +155147,16 @@
       "translation": "O nome do site '{0}' está duplicado."
     },
     {
-      "source": "The source bitmap did not become readable: {0}",
-      "translation": "O bitmap de origem não ficou legível: {0}"
+      "source": "The source bitmap could not be read (it may still be locked or writing)",
+      "translation": "O bitmap de origem não pôde ser lido (ele ainda pode estar bloqueado ou gravando)"
+    },
+    {
+      "source": "The source bitmap is empty or still changing",
+      "translation": "O bitmap de origem está vazio ou ainda está mudando"
+    },
+    {
+      "source": "The source bitmap was not found",
+      "translation": "O bitmap de origem não foi encontrado"
     },
     {
       "source": "The spherical limit is disabled",
@@ -164927,6 +164975,10 @@
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
       "translation": "Принят подтвержденный запрос на завершение работы от другого экземпляра SrvSurvey."
+    },
+    {
+      "source": "Access to the source bitmap was denied",
+      "translation": "Доступ к исходному растровому изображению запрещен."
     },
     {
       "source": "Access:",
@@ -189545,8 +189597,8 @@
       "translation": "Сохранены настройки наложения {0}. Видимые наложения обновляются немедленно.{1}"
     },
     {
-      "source": "Saved {0} screenshots to {1}.",
-      "translation": "Скриншоты {0} сохранены в {1}."
+      "source": "Saved {0} screenshots.",
+      "translation": "Сохранены скриншоты {0}."
     },
     {
       "source": "Saved {0}.",
@@ -189813,8 +189865,12 @@
       "translation": "Скриншот сделан"
     },
     {
-      "source": "Screenshot {0} was not converted: {1}",
-      "translation": "Скриншот {0} не был преобразован: {1}"
+      "source": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+      "translation": "Скриншот {0} не конвертировался; он остается в ожидании, а оригинал сохраняется: {1}"
+    },
+    {
+      "source": "Screenshot {0} was not converted; the original is retained: {1}",
+      "translation": "Скриншот {0} не конвертировался; оригинал сохранен: {1}"
     },
     {
       "source": "ScreenshotEnabledCheckBox",
@@ -195777,10 +195833,6 @@
       "translation": "Не удалось создать предварительный просмотр скриншота."
     },
     {
-      "source": "The screenshot source folder does not exist: {0}",
-      "translation": "Исходная папка скриншота не существует: {0}"
-    },
-    {
       "source": "The screenshot source folder must be an absolute path.",
       "translation": "Исходная папка снимка экрана должна иметь абсолютный путь."
     },
@@ -195977,8 +196029,16 @@
       "translation": "Имя сайта «{0}» повторяется."
     },
     {
-      "source": "The source bitmap did not become readable: {0}",
-      "translation": "Исходное растровое изображение не стало доступным для чтения: {0}"
+      "source": "The source bitmap could not be read (it may still be locked or writing)",
+      "translation": "Исходное растровое изображение не удалось прочитать (оно все еще может быть заблокировано или записываться)"
+    },
+    {
+      "source": "The source bitmap is empty or still changing",
+      "translation": "Исходное растровое изображение пусто или все еще меняется."
+    },
+    {
+      "source": "The source bitmap was not found",
+      "translation": "Исходное растровое изображение не найдено"
     },
     {
       "source": "The spherical limit is disabled",
@@ -205797,6 +205857,10 @@
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
       "translation": "接受了来自另一个 SrvSurvey 实例的已验证关闭请求。"
+    },
+    {
+      "source": "Access to the source bitmap was denied",
+      "translation": "对源位图的访问被拒绝"
     },
     {
       "source": "Access:",
@@ -230415,8 +230479,8 @@
       "translation": "已保存 {0} 叠加设置。可见叠加层立即更新。{1}"
     },
     {
-      "source": "Saved {0} screenshots to {1}.",
-      "translation": "已将 {0} 屏幕截图保存到 {1}。"
+      "source": "Saved {0} screenshots.",
+      "translation": "已保存 {0} 屏幕截图。"
     },
     {
       "source": "Saved {0}.",
@@ -230683,8 +230747,12 @@
       "translation": "已截屏"
     },
     {
-      "source": "Screenshot {0} was not converted: {1}",
-      "translation": "屏幕截图 {0} 未转换：{1}"
+      "source": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+      "translation": "截图{0}未转换；它仍然悬而未决，并保留原始内容：{1}"
+    },
+    {
+      "source": "Screenshot {0} was not converted; the original is retained: {1}",
+      "translation": "截图{0}未转换；保留原文：{1}"
     },
     {
       "source": "ScreenshotEnabledCheckBox",
@@ -236647,10 +236715,6 @@
       "translation": "无法创建屏幕截图预览。"
     },
     {
-      "source": "The screenshot source folder does not exist: {0}",
-      "translation": "屏幕截图源文件夹不存在：{0}"
-    },
-    {
       "source": "The screenshot source folder must be an absolute path.",
       "translation": "截图源文件夹必须是绝对路径。"
     },
@@ -236847,8 +236911,16 @@
       "translation": "站点名称“{0}”重复。"
     },
     {
-      "source": "The source bitmap did not become readable: {0}",
-      "translation": "源位图无法读取：{0}"
+      "source": "The source bitmap could not be read (it may still be locked or writing)",
+      "translation": "无法读取源位图（可能仍处于锁定或写入状态）"
+    },
+    {
+      "source": "The source bitmap is empty or still changing",
+      "translation": "源位图为空或仍在变化"
+    },
+    {
+      "source": "The source bitmap was not found",
+      "translation": "未找到源位图"
     },
     {
       "source": "The spherical limit is disabled",
@@ -246667,6 +246739,10 @@
     {
       "source": "Accepted a verified shutdown request from another SrvSurvey instance.",
       "translation": "* ACCEPTED A VERIFIED SHUTDOWN REQUEST FROM ANOTHER SRVSURVEY INSTANCE. >>>!"
+    },
+    {
+      "source": "Access to the source bitmap was denied",
+      "translation": "* ACCESS TO THE SOURCE BITMAP WAS DENIED >>>!"
     },
     {
       "source": "Access:",
@@ -271285,8 +271361,8 @@
       "translation": "* SAVED {0} OVERLAY SETTING(S). VISIBLE OVERLAYS UPDATE IMMEDIATELY.{1} >>>!"
     },
     {
-      "source": "Saved {0} screenshots to {1}.",
-      "translation": "* SAVED {0} SCREENSHOTS TO {1}. >>>!"
+      "source": "Saved {0} screenshots.",
+      "translation": "* SAVED {0} SCREENSHOTS. >>>!"
     },
     {
       "source": "Saved {0}.",
@@ -271553,8 +271629,12 @@
       "translation": "* SCREENSHOT TAKEN >>>!"
     },
     {
-      "source": "Screenshot {0} was not converted: {1}",
-      "translation": "* SCREENSHOT {0} WAS NOT CONVERTED: {1} >>>!"
+      "source": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+      "translation": "* SCREENSHOT {0} WAS NOT CONVERTED; IT REMAINS PENDING AND THE ORIGINAL IS RETAINED: {1} >>>!"
+    },
+    {
+      "source": "Screenshot {0} was not converted; the original is retained: {1}",
+      "translation": "* SCREENSHOT {0} WAS NOT CONVERTED; THE ORIGINAL IS RETAINED: {1} >>>!"
     },
     {
       "source": "ScreenshotEnabledCheckBox",
@@ -277517,10 +277597,6 @@
       "translation": "* THE SCREENSHOT PREVIEW COULD NOT BE CREATED. >>>!"
     },
     {
-      "source": "The screenshot source folder does not exist: {0}",
-      "translation": "* THE SCREENSHOT SOURCE FOLDER DOES NOT EXIST: {0} >>>!"
-    },
-    {
       "source": "The screenshot source folder must be an absolute path.",
       "translation": "* THE SCREENSHOT SOURCE FOLDER MUST BE AN ABSOLUTE PATH. >>>!"
     },
@@ -277717,8 +277793,16 @@
       "translation": "* THE SITE NAME '{0}' IS DUPLICATED. >>>!"
     },
     {
-      "source": "The source bitmap did not become readable: {0}",
-      "translation": "* THE SOURCE BITMAP DID NOT BECOME READABLE: {0} >>>!"
+      "source": "The source bitmap could not be read (it may still be locked or writing)",
+      "translation": "* THE SOURCE BITMAP COULD NOT BE READ (IT MAY STILL BE LOCKED OR WRITING) >>>!"
+    },
+    {
+      "source": "The source bitmap is empty or still changing",
+      "translation": "* THE SOURCE BITMAP IS EMPTY OR STILL CHANGING >>>!"
+    },
+    {
+      "source": "The source bitmap was not found",
+      "translation": "* THE SOURCE BITMAP WAS NOT FOUND >>>!"
     },
     {
       "source": "The spherical limit is disabled",

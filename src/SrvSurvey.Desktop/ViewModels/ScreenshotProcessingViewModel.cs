@@ -176,7 +176,11 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         CancellationToken cancellationToken = default
     )
     {
-        ScreenshotProcessingResult result = await processingService.ProcessAsync(
+        if (processingService.PendingCount == 0 && !journalEvents.Any(entry => entry.EventName == "Screenshot"))
+        {
+            return ScreenshotProcessingResult.Empty;
+        }
+        ScreenshotProcessingResult result = await processingService.ProcessLiveAsync(
             journalEvents,
             preferences,
             commanderName,
@@ -193,7 +197,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         {
             0 => "No screenshots were converted.",
             1 => $"Saved screenshot: {result.Conversions[0].OutputPath}",
-            _ => $"Saved {result.Conversions.Count:N0} screenshots to " + preferences.TargetFolder + ".",
+            _ => $"Saved {result.Conversions.Count:N0} screenshots.",
         };
         StatusMessage = result.Warnings.Count == 0 ? converted : converted + " " + string.Join(" ", result.Warnings);
         return result;

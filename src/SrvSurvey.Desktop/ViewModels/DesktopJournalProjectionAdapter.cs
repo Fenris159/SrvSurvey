@@ -842,6 +842,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 : null,
             CancellationToken.None
         );
+        ReportScreenshotResult(screenshotResult);
+    }
+
+    private void ReportScreenshotResult(ScreenshotProcessingResult screenshotResult)
+    {
         if (screenshotResult.Conversions.Count > 0)
         {
             dependencies.Journey.RefreshScreenshotAvailability();
@@ -1363,6 +1368,14 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
     private async Task ApplyIdleHousekeepingAsync(JournalMonitorUpdate update)
     {
+        if (!dependencies.IsDiagnosticReplay())
+        {
+            ScreenshotProcessingResult screenshots = await dependencies.ScreenshotProcessing.ProcessJournalEventsAsync(
+                [],
+                state.Session.CommanderName
+            );
+            ReportScreenshotResult(screenshots);
+        }
         DateTimeOffset now = DateTimeOffset.UtcNow;
         if (now - state.LastIdleHousekeepingAt < TimeSpan.FromSeconds(5))
         {

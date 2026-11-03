@@ -2898,6 +2898,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationInstanceRegistry.cs"
   },
   {
+    "Text": "Access to the source bitmap was denied",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
     "Text": "Access:",
     "IsFormat": false,
     "SourceKinds": [
@@ -52302,7 +52310,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
   },
   {
-    "Text": "Saved {0} screenshots to {1}.",
+    "Text": "Saved {0} screenshots.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -52838,7 +52846,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Screenshot {0} was not converted: {1}",
+    "Text": "Screenshot {0} was not converted; it remains pending and the original is retained: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "Screenshot {0} was not converted; the original is retained: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -64797,14 +64813,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
   },
   {
-    "Text": "The screenshot source folder does not exist: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
-  },
-  {
     "Text": "The screenshot source folder must be an absolute path.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65197,8 +65205,24 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
-    "Text": "The source bitmap did not become readable: {0}",
-    "IsFormat": true,
+    "Text": "The source bitmap could not be read (it may still be locked or writing)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "The source bitmap is empty or still changing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "The source bitmap was not found",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
