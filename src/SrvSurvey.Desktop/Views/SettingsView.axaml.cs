@@ -206,12 +206,17 @@ public sealed partial class SettingsView : UserControl
         }
     }
 
-    private async void ChooseScreenshotTargetFolder_Click(object? sender, RoutedEventArgs eventArgs)
+    private async void OpenScreenshotTargetFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        string? folder = await ChooseFolderAsync("Choose the converted screenshot folder");
-        if (folder is not null && DataContext is MainWindowViewModel viewModel)
+        if (DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.ScreenshotProcessing.TargetFolder = folder;
+            await viewModel.ScreenshotProcessing.OpenOutputFolderAsync(async directory =>
+            {
+                ILauncher launcher =
+                    TopLevel.GetTopLevel(this)?.Launcher
+                    ?? throw new InvalidOperationException("The desktop folder launcher is not available.");
+                return await launcher.LaunchDirectoryInfoAsync(directory);
+            });
         }
     }
 

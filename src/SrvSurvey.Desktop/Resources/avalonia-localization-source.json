@@ -2842,14 +2842,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Absolute destination for converted screenshots",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Absolute folder containing Elite screenshots",
     "IsFormat": false,
     "SourceKinds": [
@@ -11381,14 +11373,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Choose an absolute screenshot target folder.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
-  },
-  {
     "Text": "Choose an end date",
     "IsFormat": false,
     "SourceKinds": [
@@ -11595,14 +11579,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Choose the converted screenshot folder",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml.cs"
   },
   {
     "Text": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -14766,6 +14742,14 @@
   },
   {
     "Text": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -39982,6 +39966,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiagnosticsLogViewModel.cs"
   },
   {
+    "Text": "Opened the converted screenshot folder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
     "Text": "Opened the current journal file.",
     "IsFormat": false,
     "SourceKinds": [
@@ -62483,6 +62475,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "The converted screenshot folder could not be opened.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
+    "Text": "The converted screenshot folder could not be opened: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
+    "Text": "The converted screenshot folder must be an absolute path.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
   },
   {
     "Text": "The created Raven project could not be opened: {0}",

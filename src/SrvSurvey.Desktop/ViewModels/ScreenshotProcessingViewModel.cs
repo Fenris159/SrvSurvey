@@ -161,6 +161,36 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         private set => SetField(ref statusMessage, value);
     }
 
+    public async Task OpenOutputFolderAsync(Func<DirectoryInfo, Task<bool>> directoryLauncher)
+    {
+        ArgumentNullException.ThrowIfNull(directoryLauncher);
+        try
+        {
+            Runtime.DesktopExternalEffectPolicy.ThrowIfDisabled();
+            if (!Path.IsPathFullyQualified(TargetFolder))
+            {
+                throw new InvalidOperationException("The converted screenshot folder must be an absolute path.");
+            }
+            DirectoryInfo directory = Directory.CreateDirectory(TargetFolder);
+            bool launched = await directoryLauncher(directory);
+            StatusMessage = launched
+                ? "Opened the converted screenshot folder."
+                : "The converted screenshot folder could not be opened.";
+        }
+        catch (Exception exception)
+            when (exception
+                    is ArgumentException
+                        or InvalidOperationException
+                        or IOException
+                        or NotSupportedException
+                        or UnauthorizedAccessException
+                        or System.Runtime.InteropServices.ExternalException
+            )
+        {
+            StatusMessage = "The converted screenshot folder could not be opened: " + exception.Message;
+        }
+    }
+
     public bool ToggleBanner()
     {
         AddBanner = !AddBanner;
@@ -244,7 +274,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
 
         if (!Path.IsPathFullyQualified(preferences.TargetFolder))
         {
-            return "Choose an absolute screenshot target folder.";
+            return "The converted screenshot folder must be an absolute path.";
         }
 
         return "New Elite BMP screenshots will be converted to verified PNG files.";

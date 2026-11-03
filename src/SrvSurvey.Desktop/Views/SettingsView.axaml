@@ -464,13 +464,19 @@
           <StackPanel Spacing="5">
             <TextBlock Classes="eyebrow" Text="TARGET PNG FOLDER" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-              <TextBox Text="{Binding ScreenshotProcessing.TargetFolder, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                       PlaceholderText="Absolute destination for converted screenshots" />
-              <Button Grid.Column="1"
+              <SelectableTextBlock x:Name="ScreenshotTargetFolderPath"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding ScreenshotProcessing.TargetFolder, Mode=OneWay}" />
+              <Button x:Name="OpenScreenshotTargetFolderButton"
+                      Grid.Column="1"
                       Classes="secondary"
-                      Click="ChooseScreenshotTargetFolder_Click"
-                      Content="Choose folder" />
+                      Click="OpenScreenshotTargetFolder_Click"
+                      Content="Open folder" />
             </Grid>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Converted PNGs are organized into system folders here. Journeys uses this same location." />
           </StackPanel>
 
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">

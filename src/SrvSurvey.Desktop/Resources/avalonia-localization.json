@@ -1421,10 +1421,6 @@
       "translation": "Absolutes Cache-Verzeichnis"
     },
     {
-      "source": "Absolute destination for converted screenshots",
-      "translation": "Absolutes Ziel für konvertierte Screenshots"
-    },
-    {
       "source": "Absolute folder containing Elite screenshots",
       "translation": "Absoluter Ordner mit Elite-Screenshots"
     },
@@ -5677,10 +5673,6 @@
       "translation": "Wählen Sie ein SrvSurvey Profil oder einen Anwendungsdatenordner zum Importieren aus."
     },
     {
-      "source": "Choose an absolute screenshot target folder.",
-      "translation": "Wählen Sie einen Zielordner für den Screenshot."
-    },
-    {
       "source": "Choose an end date",
       "translation": "Wählen Sie ein Enddatum"
     },
@@ -5783,10 +5775,6 @@
     {
       "source": "Choose the connection route",
       "translation": "Wählen Sie die Verbindungsroute"
-    },
-    {
-      "source": "Choose the converted screenshot folder",
-      "translation": "Wählen Sie den konvertierten Screenshot-Ordner"
     },
     {
       "source": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -7363,6 +7351,10 @@
     {
       "source": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
       "translation": "Konvertieren Sie Elite Dangerous BMP-Screenshots in organisierte PNG-Dateien unter Windows oder Linux."
+    },
+    {
+      "source": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
+      "translation": "Konvertierte PNGs werden hier in Systemordnern organisiert. Journeys nutzt denselben Standort."
     },
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
@@ -19921,6 +19913,10 @@
       "translation": "Der Anwendungsprotokollordner wurde geöffnet."
     },
     {
+      "source": "Opened the converted screenshot folder.",
+      "translation": "Den konvertierten Screenshot-Ordner geöffnet."
+    },
+    {
       "source": "Opened the current journal file.",
       "translation": "Die aktuelle Journaldatei geöffnet."
     },
@@ -31141,6 +31137,18 @@
       "translation": "Das konvertierte PNG konnte nicht überprüft werden."
     },
     {
+      "source": "The converted screenshot folder could not be opened.",
+      "translation": "Der konvertierte Screenshot-Ordner konnte nicht geöffnet werden."
+    },
+    {
+      "source": "The converted screenshot folder could not be opened: {0}",
+      "translation": "Der konvertierte Screenshot-Ordner konnte nicht geöffnet werden: {0}"
+    },
+    {
+      "source": "The converted screenshot folder must be an absolute path.",
+      "translation": "Der konvertierte Screenshot-Ordner muss ein absoluter Pfad sein."
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "Das erstellte Raven-Projekt konnte nicht geöffnet werden: {0}"
     },
@@ -42303,10 +42311,6 @@
       "translation": "Directorio de caché absoluto"
     },
     {
-      "source": "Absolute destination for converted screenshots",
-      "translation": "Destino absoluto para capturas de pantalla convertidas"
-    },
-    {
       "source": "Absolute folder containing Elite screenshots",
       "translation": "Carpeta absoluta que contiene capturas de pantalla de Elite"
     },
@@ -46559,10 +46563,6 @@
       "translation": "Elija un perfil SrvSurvey o una carpeta de datos de aplicación para importar."
     },
     {
-      "source": "Choose an absolute screenshot target folder.",
-      "translation": "Elija una carpeta de destino de captura de pantalla absoluta."
-    },
-    {
       "source": "Choose an end date",
       "translation": "Elige una fecha de finalización"
     },
@@ -46665,10 +46665,6 @@
     {
       "source": "Choose the connection route",
       "translation": "Elige la ruta de conexión"
-    },
-    {
-      "source": "Choose the converted screenshot folder",
-      "translation": "Elija la carpeta de captura de pantalla convertida"
     },
     {
       "source": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -48245,6 +48241,10 @@
     {
       "source": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
       "translation": "Convierta capturas de pantalla BMP de Elite Dangerous en archivos PNG organizados en Windows o Linux."
+    },
+    {
+      "source": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
+      "translation": "Los PNG convertidos se organizan en carpetas del sistema aquí. Journeys utiliza esta misma ubicación."
     },
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
@@ -60803,6 +60803,10 @@
       "translation": "Abrió la carpeta de registro de la aplicación."
     },
     {
+      "source": "Opened the converted screenshot folder.",
+      "translation": "Abrió la carpeta de captura de pantalla convertida."
+    },
+    {
       "source": "Opened the current journal file.",
       "translation": "Abrió el archivo de diario actual."
     },
@@ -72023,6 +72027,18 @@
       "translation": "No se pudo verificar el PNG convertido."
     },
     {
+      "source": "The converted screenshot folder could not be opened.",
+      "translation": "No se pudo abrir la carpeta de captura de pantalla convertida."
+    },
+    {
+      "source": "The converted screenshot folder could not be opened: {0}",
+      "translation": "No se pudo abrir la carpeta de captura de pantalla convertida: {0}"
+    },
+    {
+      "source": "The converted screenshot folder must be an absolute path.",
+      "translation": "La carpeta de captura de pantalla convertida debe ser una ruta absoluta."
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "El proyecto Raven creado no se pudo abrir: {0}"
     },
@@ -83185,10 +83201,6 @@
       "translation": "Répertoire de cache absolu"
     },
     {
-      "source": "Absolute destination for converted screenshots",
-      "translation": "Destination absolue pour les captures d'écran converties"
-    },
-    {
       "source": "Absolute folder containing Elite screenshots",
       "translation": "Dossier absolu contenant des captures d'écran Elite"
     },
@@ -87441,10 +87453,6 @@
       "translation": "Choisissez un profil SrvSurvey ou un dossier de données d'application à importer."
     },
     {
-      "source": "Choose an absolute screenshot target folder.",
-      "translation": "Choisissez un dossier cible de capture d'écran absolu."
-    },
-    {
       "source": "Choose an end date",
       "translation": "Choisissez une date de fin"
     },
@@ -87547,10 +87555,6 @@
     {
       "source": "Choose the connection route",
       "translation": "Choisissez l'itinéraire de connexion"
-    },
-    {
-      "source": "Choose the converted screenshot folder",
-      "translation": "Choisissez le dossier de capture d'écran converti"
     },
     {
       "source": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -89127,6 +89131,10 @@
     {
       "source": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
       "translation": "Convertissez des captures d'écran Elite Dangerous BMP en fichiers PNG organisés sous Windows ou Linux."
+    },
+    {
+      "source": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
+      "translation": "Les PNG convertis sont organisés ici dans des dossiers système. Journeys utilise ce même emplacement."
     },
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
@@ -101685,6 +101693,10 @@
       "translation": "J'ai ouvert le dossier du journal des applications."
     },
     {
+      "source": "Opened the converted screenshot folder.",
+      "translation": "J'ai ouvert le dossier de capture d'écran converti."
+    },
+    {
       "source": "Opened the current journal file.",
       "translation": "Ouverture du fichier journal actuel."
     },
@@ -112905,6 +112917,18 @@
       "translation": "Le PNG converti n'a pas pu être vérifié."
     },
     {
+      "source": "The converted screenshot folder could not be opened.",
+      "translation": "Le dossier de capture d'écran converti n'a pas pu être ouvert."
+    },
+    {
+      "source": "The converted screenshot folder could not be opened: {0}",
+      "translation": "Le dossier de capture d'écran converti n'a pas pu être ouvert : {0}"
+    },
+    {
+      "source": "The converted screenshot folder must be an absolute path.",
+      "translation": "Le dossier de capture d'écran converti doit être un chemin absolu."
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "Le projet Raven créé n'a pas pu être ouvert : {0}"
     },
@@ -124067,10 +124091,6 @@
       "translation": "Diretório de cache absoluto"
     },
     {
-      "source": "Absolute destination for converted screenshots",
-      "translation": "Destino absoluto para capturas de tela convertidas"
-    },
-    {
       "source": "Absolute folder containing Elite screenshots",
       "translation": "Pasta absoluta contendo capturas de tela do Elite"
     },
@@ -128323,10 +128343,6 @@
       "translation": "Escolha um perfil SrvSurvey ou uma pasta de dados do aplicativo para importar."
     },
     {
-      "source": "Choose an absolute screenshot target folder.",
-      "translation": "Escolha uma pasta de destino absoluta para captura de tela."
-    },
-    {
       "source": "Choose an end date",
       "translation": "Escolha uma data de término"
     },
@@ -128429,10 +128445,6 @@
     {
       "source": "Choose the connection route",
       "translation": "Escolha a rota de conexão"
-    },
-    {
-      "source": "Choose the converted screenshot folder",
-      "translation": "Escolha a pasta de captura de tela convertida"
     },
     {
       "source": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -130009,6 +130021,10 @@
     {
       "source": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
       "translation": "Converta Elite Dangerous capturas de tela BMP em arquivos PNG organizados no Windows ou Linux."
+    },
+    {
+      "source": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
+      "translation": "Os PNGs convertidos são organizados em pastas do sistema aqui. Journeys usa esse mesmo local."
     },
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
@@ -142567,6 +142583,10 @@
       "translation": "Abriu a pasta de log do aplicativo."
     },
     {
+      "source": "Opened the converted screenshot folder.",
+      "translation": "Abriu a pasta de captura de tela convertida."
+    },
+    {
       "source": "Opened the current journal file.",
       "translation": "Abriu o arquivo de diário atual."
     },
@@ -153787,6 +153807,18 @@
       "translation": "O PNG convertido não pôde ser verificado."
     },
     {
+      "source": "The converted screenshot folder could not be opened.",
+      "translation": "A pasta de captura de tela convertida não pôde ser aberta."
+    },
+    {
+      "source": "The converted screenshot folder could not be opened: {0}",
+      "translation": "A pasta de captura de tela convertida não pôde ser aberta: {0}"
+    },
+    {
+      "source": "The converted screenshot folder must be an absolute path.",
+      "translation": "A pasta de captura de tela convertida deve ser um caminho absoluto."
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "O projeto Raven criado não pôde ser aberto: {0}"
     },
@@ -164949,10 +164981,6 @@
       "translation": "Абсолютный каталог кэша"
     },
     {
-      "source": "Absolute destination for converted screenshots",
-      "translation": "Абсолютное место для конвертированных скриншотов"
-    },
-    {
       "source": "Absolute folder containing Elite screenshots",
       "translation": "Абсолютная папка со скриншотами Elite"
     },
@@ -169205,10 +169233,6 @@
       "translation": "Выберите профиль SrvSurvey или папку данных приложения для импорта."
     },
     {
-      "source": "Choose an absolute screenshot target folder.",
-      "translation": "Выберите абсолютную целевую папку для скриншотов."
-    },
-    {
       "source": "Choose an end date",
       "translation": "Выберите дату окончания"
     },
@@ -169311,10 +169335,6 @@
     {
       "source": "Choose the connection route",
       "translation": "Выберите маршрут подключения"
-    },
-    {
-      "source": "Choose the converted screenshot folder",
-      "translation": "Выберите папку с преобразованными скриншотами."
     },
     {
       "source": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -170891,6 +170911,10 @@
     {
       "source": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
       "translation": "Преобразуйте скриншоты Elite Dangerous BMP в организованные файлы PNG в Windows или Linux."
+    },
+    {
+      "source": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
+      "translation": "Конвертированные PNG-файлы организованы здесь в системные папки. Journeys использует то же местоположение."
     },
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
@@ -183449,6 +183473,10 @@
       "translation": "Открыл папку журнала приложения."
     },
     {
+      "source": "Opened the converted screenshot folder.",
+      "translation": "Открыл папку с конвертированными скриншотами."
+    },
+    {
       "source": "Opened the current journal file.",
       "translation": "Открыт текущий файл журнала."
     },
@@ -194669,6 +194697,18 @@
       "translation": "Преобразованный PNG не удалось проверить."
     },
     {
+      "source": "The converted screenshot folder could not be opened.",
+      "translation": "Папку преобразованных снимков экрана невозможно открыть."
+    },
+    {
+      "source": "The converted screenshot folder could not be opened: {0}",
+      "translation": "Не удалось открыть преобразованную папку скриншотов: {0}."
+    },
+    {
+      "source": "The converted screenshot folder must be an absolute path.",
+      "translation": "Папка преобразованного скриншота должна иметь абсолютный путь."
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "Не удалось открыть созданный проект Raven: {0}"
     },
@@ -205831,10 +205871,6 @@
       "translation": "绝对缓存目录"
     },
     {
-      "source": "Absolute destination for converted screenshots",
-      "translation": "转换屏幕截图的绝对目的地"
-    },
-    {
       "source": "Absolute folder containing Elite screenshots",
       "translation": "包含 Elite 屏幕截图的绝对文件夹"
     },
@@ -210087,10 +210123,6 @@
       "translation": "选择要导入的 SrvSurvey 配置文件或应用程序数据文件夹。"
     },
     {
-      "source": "Choose an absolute screenshot target folder.",
-      "translation": "选择绝对截图目标文件夹。"
-    },
-    {
       "source": "Choose an end date",
       "translation": "选择结束日期"
     },
@@ -210193,10 +210225,6 @@
     {
       "source": "Choose the connection route",
       "translation": "选择连接路线"
-    },
-    {
-      "source": "Choose the converted screenshot folder",
-      "translation": "选择转换后的截图文件夹"
     },
     {
       "source": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -211773,6 +211801,10 @@
     {
       "source": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
       "translation": "在 Windows 或 Linux 上将 Elite Dangerous BMP 屏幕截图转换为组织好的 PNG 文件。"
+    },
+    {
+      "source": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
+      "translation": "转换后的 PNG 被组织到此处的系统文件夹中。 Journeys 使用相同的位置。"
     },
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
@@ -224331,6 +224363,10 @@
       "translation": "打开应用程序日志文件夹。"
     },
     {
+      "source": "Opened the converted screenshot folder.",
+      "translation": "打开转换后的屏幕截图文件夹。"
+    },
+    {
       "source": "Opened the current journal file.",
       "translation": "打开当前日志文件。"
     },
@@ -235551,6 +235587,18 @@
       "translation": "无法验证转换后的 PNG。"
     },
     {
+      "source": "The converted screenshot folder could not be opened.",
+      "translation": "无法打开转换后的屏幕截图文件夹。"
+    },
+    {
+      "source": "The converted screenshot folder could not be opened: {0}",
+      "translation": "转换后的截图文件夹无法打开：{0}"
+    },
+    {
+      "source": "The converted screenshot folder must be an absolute path.",
+      "translation": "转换后的截图文件夹必须是绝对路径。"
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "无法打开创建的Raven项目：{0}"
     },
@@ -246713,10 +246761,6 @@
       "translation": "* ABSOLUTE CACHE DIRECTORY >>>!"
     },
     {
-      "source": "Absolute destination for converted screenshots",
-      "translation": "* ABSOLUTE DESTINATION FOR CONVERTED SCREENSHOTS >>>!"
-    },
-    {
       "source": "Absolute folder containing Elite screenshots",
       "translation": "* ABSOLUTE FOLDER CONTAINING ELITE SCREENSHOTS >>>!"
     },
@@ -250969,10 +251013,6 @@
       "translation": "* CHOOSE AN SRVSURVEY PROFILE OR APPLICATION-DATA FOLDER TO IMPORT. >>>!"
     },
     {
-      "source": "Choose an absolute screenshot target folder.",
-      "translation": "* CHOOSE AN ABSOLUTE SCREENSHOT TARGET FOLDER. >>>!"
-    },
-    {
       "source": "Choose an end date",
       "translation": "* CHOOSE AN END DATE >>>!"
     },
@@ -251075,10 +251115,6 @@
     {
       "source": "Choose the connection route",
       "translation": "* CHOOSE THE CONNECTION ROUTE >>>!"
-    },
-    {
-      "source": "Choose the converted screenshot folder",
-      "translation": "* CHOOSE THE CONVERTED SCREENSHOT FOLDER >>>!"
     },
     {
       "source": "Choose the correct Site type to repair an unknown or misidentified survey, and enter both surface latitude and longitude when the surveyed origin is known.",
@@ -252655,6 +252691,10 @@
     {
       "source": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
       "translation": "* CONVERT ELITE DANGEROUS BMP SCREENSHOTS INTO ORGANIZED PNG FILES ON WINDOWS OR LINUX. >>>!"
+    },
+    {
+      "source": "Converted PNGs are organized into system folders here. Journeys uses this same location.",
+      "translation": "* CONVERTED PNGS ARE ORGANIZED INTO SYSTEM FOLDERS HERE. JOURNEYS USES THIS SAME LOCATION. >>>!"
     },
     {
       "source": "Converted retired organic history without changing its source: {0} profile(s), {1} body file(s), {2} scan(s), and {3} organism(s).",
@@ -265213,6 +265253,10 @@
       "translation": "* OPENED THE APPLICATION LOG FOLDER. >>>!"
     },
     {
+      "source": "Opened the converted screenshot folder.",
+      "translation": "* OPENED THE CONVERTED SCREENSHOT FOLDER. >>>!"
+    },
+    {
       "source": "Opened the current journal file.",
       "translation": "* OPENED THE CURRENT JOURNAL FILE. >>>!"
     },
@@ -276431,6 +276475,18 @@
     {
       "source": "The converted PNG could not be verified.",
       "translation": "* THE CONVERTED PNG COULD NOT BE VERIFIED. >>>!"
+    },
+    {
+      "source": "The converted screenshot folder could not be opened.",
+      "translation": "* THE CONVERTED SCREENSHOT FOLDER COULD NOT BE OPENED. >>>!"
+    },
+    {
+      "source": "The converted screenshot folder could not be opened: {0}",
+      "translation": "* THE CONVERTED SCREENSHOT FOLDER COULD NOT BE OPENED: {0} >>>!"
+    },
+    {
+      "source": "The converted screenshot folder must be an absolute path.",
+      "translation": "* THE CONVERTED SCREENSHOT FOLDER MUST BE AN ABSOLUTE PATH. >>>!"
     },
     {
       "source": "The created Raven project could not be opened: {0}",
