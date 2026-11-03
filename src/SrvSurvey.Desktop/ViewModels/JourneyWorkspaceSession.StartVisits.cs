@@ -3,12 +3,13 @@ using SrvSurvey.Core.Journeys;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed partial class JourneyWorkspaceViewModel
+internal sealed partial class JourneyWorkspaceSession
 {
     private IReadOnlyList<JourneyStartVisitViewModel> startVisits = [];
     private JourneyStartVisitViewModel? selectedStartVisit;
     private long? selectedStartSystemAddress;
     private int startVisitVersion;
+    private BusyScope? startVisitBusy;
     private bool useCurrentStart = true;
     private DateTime? visitsOnOrAfter;
 
@@ -112,16 +113,8 @@ public sealed partial class JourneyWorkspaceViewModel
         if (cancel is not null)
         {
             cancel();
-            IsBusy = false;
-        }
-    }
-
-    private void InvalidateStartVisitContext(string? profileKey)
-    {
-        if (!string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
-        {
-            ClearStartVisits();
-            selectedStartSystemAddress = null;
+            startVisitBusy?.Dispose();
+            startVisitBusy = null;
         }
     }
 
@@ -159,9 +152,10 @@ public sealed partial class JourneyWorkspaceViewModel
         int version = startVisitVersion;
         using var cancellation = new CancellationTokenSource();
         cancelStartVisitSearch = cancellation.Cancel;
+        using BusyScope busy = BeginBusy();
+        startVisitBusy = busy;
         try
         {
-            IsBusy = true;
             StartStatus = $"Finding your visits to {name}...";
             JourneyJournalSystemVisitsResult result = address is > 0
                 ? await journeyService.FindStartVisitsAsync(
@@ -194,7 +188,7 @@ public sealed partial class JourneyWorkspaceViewModel
             if (version == startVisitVersion)
             {
                 cancelStartVisitSearch = null;
-                IsBusy = false;
+                startVisitBusy = null;
                 beginJourneyCommand.RaiseCanExecuteChanged();
             }
         }
@@ -214,10 +208,6 @@ public sealed partial class JourneyWorkspaceViewModel
             );
             entry = current.Entry;
             errors = current.Errors;
-        }
-        if (context.Version != contextVersion)
-        {
-            return null;
         }
         if (context.UseCurrent && (context.SystemAddress != currentSystemAddress || !UseCurrentStart))
         {
@@ -246,8 +236,7 @@ public sealed partial class JourneyWorkspaceViewModel
         JourneyStartDraft Draft,
         bool UseCurrent,
         long? SystemAddress,
-        JourneyJournalSystemEntry? Entry,
-        int Version
+        JourneyJournalSystemEntry? Entry
     );
 
     private void ApplyStartVisits(JourneyJournalSystemVisitsResult result, string? name)
@@ -269,13 +258,4 @@ public sealed partial class JourneyWorkspaceViewModel
 
     private static string FormatJournalWarnings(IReadOnlyList<string> errors) =>
         errors.Count == 0 ? string.Empty : $" Journal read warning(s): {errors.Count:N0}. {errors[0]}";
-}
-
-public sealed record JourneyStartVisitViewModel(JourneyJournalSystemEntry Entry)
-{
-    public string SystemName => Entry.System.Name;
-    public string Arrived =>
-        Entry.Event.Timestamp?.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)
-        ?? "Unknown arrival time";
-    public string ArrivalType => Entry.Event.EventName == "CarrierJump" ? "Fleet carrier arrival" : "Ship arrival";
 }

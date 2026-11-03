@@ -2791,7 +2791,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "Aa",
@@ -3047,7 +3047,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Active mining session",
@@ -5058,7 +5058,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Archive journey",
@@ -5066,7 +5066,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Archived {0}. Find it in Archive.",
@@ -5074,7 +5074,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Archon Delaine",
@@ -5259,7 +5259,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Arriving at a Guardian system",
@@ -6203,7 +6203,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Azura Initiative",
@@ -7142,7 +7142,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Begin journey",
@@ -7680,7 +7680,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Biology body predictions",
@@ -7768,7 +7768,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Biology, Guardian, body and system rows",
@@ -7945,7 +7945,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Bodies scanned",
@@ -7953,7 +7953,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Body",
@@ -8860,7 +8860,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CANCELLED",
@@ -8901,7 +8901,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CARRIER DEPARTURE",
@@ -8909,7 +8909,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CARRIER JUMP",
@@ -8917,7 +8917,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CATEGORY",
@@ -9013,7 +9013,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "CMDR\u0027S COMPANION",
@@ -9547,14 +9547,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Callsign",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
   },
   {
     "Text": "Can fulfill all selected needs",
@@ -10352,7 +10344,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CarrierJump",
@@ -10360,7 +10352,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CarrierJumpCancelled",
@@ -10368,7 +10360,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CarrierJumpRequest",
@@ -10376,7 +10368,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CarrierLocation",
@@ -10384,7 +10376,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "CarrierNextJump",
@@ -10401,14 +10393,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.CarrierManifest.cs"
-  },
-  {
-    "Text": "CarrierStats",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.CarrierFuel.cs"
   },
   {
     "Text": "CarrierType",
@@ -10521,7 +10505,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Cavas",
@@ -11161,7 +11145,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Choose a landmark type or subtype. A variant is optional.",
@@ -11634,7 +11618,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
@@ -11698,7 +11682,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Choose what happens when you switch windows or change suits.",
@@ -11730,7 +11714,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Choose where to edit overlays when Elite\u0027s window isn\u0027t detected. Automatic uses the primary monitor. Reopen the editor after changing this setting.",
@@ -12396,7 +12380,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Codex tools distinguish personal discoveries, regional discoveries, confirmed entries, predictions, and known scan locations.",
@@ -12412,7 +12396,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Codex, Codex Bingo, and prior scans",
@@ -13776,7 +13760,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Concurrent Raven changes were preserved; nothing is ready to publish.",
@@ -15106,7 +15090,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Export.cs"
   },
   {
     "Text": "Core",
@@ -16022,7 +16006,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Current temperature {0} K is too cold.",
@@ -16094,7 +16078,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Custom",
@@ -16182,7 +16166,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Export.cs"
   },
   {
     "Text": "DARK",
@@ -16238,7 +16222,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "DESCENT",
@@ -17064,7 +17048,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Deletes these itineraries from the shared library. Tracking is cleared for either carrier following a selected route.",
@@ -17225,7 +17209,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Departure",
@@ -17241,7 +17225,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "Depleted",
@@ -17613,7 +17597,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Detect FSS tuning completion from the game display",
@@ -21259,7 +21243,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Exploration rewards ~{0} CR",
@@ -21267,7 +21251,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Exploration screenshots",
@@ -22039,7 +22023,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "FSDJump",
@@ -22143,7 +22127,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "FSS complete {0} FSS bodies {1} ({2})",
@@ -22199,7 +22183,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "FSS tuning",
@@ -22271,7 +22255,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "FSS {0}%",
@@ -22881,7 +22865,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Finds",
@@ -23347,7 +23331,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Fleet carrier itinerary",
@@ -23763,7 +23747,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Frame Shift Drive",
@@ -29376,7 +29360,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "JUMP COOLDOWN",
@@ -29384,7 +29368,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "JUMP DEPARTURE",
@@ -29400,7 +29384,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "JUMP INITIATION IN",
@@ -29408,7 +29392,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "JUMP {0} OF {1}",
@@ -29634,7 +29618,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Journal scan context is not loaded.",
@@ -29690,7 +29674,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journal verified",
@@ -29738,7 +29722,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey data could not be initialized: {0}",
@@ -29746,7 +29730,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey data could not be refreshed: {0}",
@@ -29754,7 +29738,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey description (optional)",
@@ -29778,7 +29762,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey history could not be loaded: {0}",
@@ -29786,7 +29770,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey name",
@@ -29802,7 +29786,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey preferences were not saved: {0}",
@@ -29810,7 +29794,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey report export canceled.",
@@ -29826,7 +29810,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Export.cs"
   },
   {
     "Text": "Journey updated through {0}.",
@@ -29834,7 +29818,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journey {0} is active and caught up.",
@@ -29842,7 +29826,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Journeys",
@@ -29859,7 +29843,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -30414,7 +30398,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "LANDMARK TYPE (OPTIONAL)",
@@ -30703,7 +30687,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Landing-pad data unavailable",
@@ -31786,7 +31770,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Load theme",
@@ -31858,7 +31842,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Loaded legacy-compatible Ram Tah mission progress.",
@@ -36226,7 +36210,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "New Elite BMP screenshots will be converted to verified PNG files.",
@@ -36803,7 +36787,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "No Nexus projects are linked to this commander.",
@@ -36915,7 +36899,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "No active journey. Browse history or begin a new expedition.",
@@ -36923,7 +36907,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "No active project rows are loaded.",
@@ -37019,7 +37003,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "No artifact requirement is recorded.",
@@ -37459,7 +37443,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "No launcher is available for {0}.",
@@ -37739,7 +37723,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "No projects loaded.",
@@ -38156,7 +38140,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "No tags",
@@ -40035,7 +40019,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Opened the {0} survey workspace.",
@@ -40267,7 +40251,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Organisms analyzed",
@@ -41494,7 +41478,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "PAI",
@@ -43420,7 +43404,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Preparing the verified profile import. Large profiles on a network share can take several minutes; progress will appear here.",
@@ -48701,7 +48685,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Reputation",
@@ -49269,7 +49253,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Restore mining backup (ZIP or JSON; previous data retained)",
@@ -49349,7 +49333,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Restored {0} to its original measured size. Use the top \u2713 to save and close.",
@@ -51882,7 +51866,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Save or discard changes before selecting another journey.",
@@ -51890,7 +51874,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Save or discard changes before switching journey lists.",
@@ -51898,7 +51882,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Save or discard the system notes before selecting another visit.",
@@ -51906,7 +51890,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Save or select a bookmark before attaching screenshots.",
@@ -52331,7 +52315,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Saved. Discord carrier announcements are off.",
@@ -53037,7 +53021,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Search for visits on or after the selected date, or clear it for all dates.",
@@ -53045,7 +53029,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Search near system",
@@ -53526,7 +53510,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "Select a completed session first.",
@@ -54827,7 +54811,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Ship cargo is paused while multiple Elite windows are running because Cargo.json cannot be attributed safely.",
@@ -58099,7 +58083,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "Starports",
@@ -58115,7 +58099,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Start Date:",
@@ -58187,7 +58171,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Start a mining session manually.",
@@ -58235,7 +58219,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Start chapter",
@@ -59513,7 +59497,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Surface survey",
@@ -59955,7 +59939,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "System effects",
@@ -60093,7 +60077,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "System notes could not be read.",
@@ -60101,7 +60085,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "System notes require a current commander and system.",
@@ -60310,7 +60294,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "SystemControlBackgroundChromeMediumLowBrush",
@@ -60334,7 +60318,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FleetCarrierJumpCountdownTracker.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "SystemMap",
@@ -60350,7 +60334,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
     "Text": "SystemNicknames",
@@ -60510,7 +60494,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Systems, mining rings, and surface mining maps",
@@ -61546,7 +61530,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The Journey preferences could not be loaded.",
@@ -61554,7 +61538,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The Journey workspace requires a commander profile.",
@@ -61562,7 +61546,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The Link / Air Link, Steam Link, Virtual Desktop SteamVR, and ALVR routes require SteamVR. The separate VDXR route does not require SteamVR; direct Meta runtime overlays remain unsupported.",
@@ -62058,7 +62042,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Recovery.cs"
   },
   {
     "Text": "The active selection changed or its saved journey is readable again. Nothing was cleared.",
@@ -62066,7 +62050,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Recovery.cs"
   },
   {
     "Text": "The active settlement changed, so its unexported authoring draft was discarded.",
@@ -62602,7 +62586,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "The current market is not a Fleet Carrier market.",
@@ -63322,7 +63306,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "The journey could not be moved: {0}",
@@ -63330,7 +63314,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "The journey name cannot be blank.",
@@ -63338,7 +63322,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The journey report could not be created: {0}",
@@ -63346,7 +63330,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.History.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
     "Text": "The journey report could not be saved: {0}",
@@ -63354,7 +63338,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Export.cs"
   },
   {
     "Text": "The journey was not concluded: {0}",
@@ -63362,7 +63346,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The journey was not started: {0}",
@@ -63370,7 +63354,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The language changed for this session but could not be saved: {0}",
@@ -63482,7 +63466,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The live construction context changed. Review the project again before publishing.",
@@ -63826,7 +63810,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The operating system could not open {0}.",
@@ -64690,7 +64674,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Recovery.cs"
   },
   {
     "Text": "The saved overlay theme state was not deleted: {0}",
@@ -64794,7 +64778,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The screenshot preference changed for this session but could not be saved: {0}",
@@ -65506,7 +65490,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Recovery.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Recovery.cs"
   },
   {
     "Text": "The unhealthy replacement process did not exit for rollback.",
@@ -66709,7 +66693,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Total estimated trips: ship capacity unknown",
@@ -66805,7 +66789,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Tourist Planner",
@@ -67951,7 +67935,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "Unknown body",
@@ -68167,7 +68151,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "Unsaved changes",
@@ -72078,7 +72062,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Your current visit will be used automatically.",
@@ -72086,7 +72070,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -72110,7 +72094,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Your previous visits could not be loaded: {0}",
@@ -72118,7 +72102,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.StartVisits.cs"
   },
   {
     "Text": "Your saved platform and overlay calibration are unchanged.",
@@ -75486,7 +75470,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.Export.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.Export.cs"
   },
   {
     "Text": "imperial",
@@ -79319,7 +79303,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "yyyy-MM-dd HH:mm:ss",
@@ -79335,7 +79319,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.StartVisits.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
     "Text": "zip",
@@ -81167,7 +81151,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "{0} x {1}",
@@ -81759,7 +81743,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "~{0} M",
@@ -81847,7 +81831,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "\u2022 concluded {0}",
@@ -81855,7 +81839,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "\u2190 PREVIOUS AT THIS LEVEL",

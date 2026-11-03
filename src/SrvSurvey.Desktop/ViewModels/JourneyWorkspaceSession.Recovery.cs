@@ -3,7 +3,7 @@ using SrvSurvey.Core.Journeys;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed partial class JourneyWorkspaceViewModel
+internal sealed partial class JourneyWorkspaceSession
 {
     private AsyncCommand? clearUnavailableJourneyCommand;
     private AsyncCommand? resumeJourneyCommand;
@@ -28,37 +28,20 @@ public sealed partial class JourneyWorkspaceViewModel
         {
             return;
         }
-        int version = contextVersion;
+        using BusyScope busy = BeginBusy();
         try
         {
-            IsBusy = true;
-            JourneyServiceResult result = await journeyService.ResumeAsync(frontierId, isOdyssey, selected.FileName);
-            if (version != contextVersion)
-            {
-                return;
-            }
+            JourneyServiceResult result = await StartAttachedAsync(() =>
+                journeyService.ResumeAsync(frontierId, isOdyssey, selected.FileName)
+            );
             await RefreshCatalogAsync(result.Journey?.FileName);
-            if (version != contextVersion)
-            {
-                return;
-            }
             CaptureRecoveryReference(result.Recovery);
             SetInitializationStatus(result);
             RaiseActiveState();
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            if (version == contextVersion)
-            {
-                StatusMessage = "The saved journey could not be resumed: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
+            StatusMessage = "The saved journey could not be resumed: " + exception.Message;
         }
     }
 
@@ -82,21 +65,11 @@ public sealed partial class JourneyWorkspaceViewModel
         {
             return;
         }
-        int version = contextVersion;
+        using BusyScope busy = BeginBusy();
         try
         {
-            IsBusy = true;
             bool cleared = await journeyService.ClearUnavailableJourneyAsync(reference);
-            if (version != contextVersion)
-            {
-                return;
-            }
-            IsBusy = false;
             await RefreshAsync();
-            if (version != contextVersion)
-            {
-                return;
-            }
             string message = cleared
                 ? "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey."
                 : "The active selection changed or its saved journey is readable again. Nothing was cleared.";
@@ -105,18 +78,8 @@ public sealed partial class JourneyWorkspaceViewModel
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            if (version == contextVersion)
-            {
-                StartStatus = "The active journey selection could not be cleared: " + exception.Message;
-                StatusMessage = StartStatus;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
+            StartStatus = "The active journey selection could not be cleared: " + exception.Message;
+            StatusMessage = StartStatus;
         }
     }
 }

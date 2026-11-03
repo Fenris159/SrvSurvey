@@ -4765,10 +4765,6 @@
       "translation": "Ruft die nächste Aktion, das ausgewählte Ziel, das aktive Ziel, die Routennotiz oder die fokussierte Zeile auf."
     },
     {
-      "source": "Callsign",
-      "translation": "Rufzeichen"
-    },
-    {
       "source": "Can fulfill all selected needs",
       "translation": "Kann alle ausgewählten Bedürfnisse erfüllen"
     },
@@ -5187,10 +5183,6 @@
     {
       "source": "CarrierRefreshAttempts",
       "translation": "CarrierRefreshAttempts"
-    },
-    {
-      "source": "CarrierStats",
-      "translation": "CarrierStats"
     },
     {
       "source": "CarrierType",
@@ -45643,10 +45635,6 @@
       "translation": "Indica la siguiente acción, el destino seleccionado, el objetivo activo, la nota de ruta o la fila enfocada."
     },
     {
-      "source": "Callsign",
-      "translation": "indicativo de llamada"
-    },
-    {
       "source": "Can fulfill all selected needs",
       "translation": "Puede satisfacer todas las necesidades seleccionadas"
     },
@@ -46065,10 +46053,6 @@
     {
       "source": "CarrierRefreshAttempts",
       "translation": "Intentos de actualización del operador"
-    },
-    {
-      "source": "CarrierStats",
-      "translation": "Estadísticas del transportista"
     },
     {
       "source": "CarrierType",
@@ -86521,10 +86505,6 @@
       "translation": "Appelle l'action suivante, la destination sélectionnée, la cible active, la note d'itinéraire ou la ligne ciblée."
     },
     {
-      "source": "Callsign",
-      "translation": "Indicatif"
-    },
-    {
       "source": "Can fulfill all selected needs",
       "translation": "Peut répondre à tous les besoins sélectionnés"
     },
@@ -86943,10 +86923,6 @@
     {
       "source": "CarrierRefreshAttempts",
       "translation": "Tentatives de rafraîchissement de transporteur"
-    },
-    {
-      "source": "CarrierStats",
-      "translation": "Statistiques des transporteurs"
     },
     {
       "source": "CarrierType",
@@ -127399,10 +127375,6 @@
       "translation": "Chama a próxima ação, destino selecionado, alvo ativo, nota de rota ou linha em foco."
     },
     {
-      "source": "Callsign",
-      "translation": "Indicativo"
-    },
-    {
       "source": "Can fulfill all selected needs",
       "translation": "Pode atender a todas as necessidades selecionadas"
     },
@@ -127821,10 +127793,6 @@
     {
       "source": "CarrierRefreshAttempts",
       "translation": "CarrierRefreshAttempts"
-    },
-    {
-      "source": "CarrierStats",
-      "translation": "Estatísticas da operadora"
     },
     {
       "source": "CarrierType",
@@ -168277,10 +168245,6 @@
       "translation": "Вызывает следующее действие, выбранный пункт назначения, активную цель, заметку о маршруте или выделенную строку."
     },
     {
-      "source": "Callsign",
-      "translation": "Позывной"
-    },
-    {
       "source": "Can fulfill all selected needs",
       "translation": "Может удовлетворить все выбранные потребности"
     },
@@ -168699,10 +168663,6 @@
     {
       "source": "CarrierRefreshAttempts",
       "translation": "ПеревозчикОбновитьПопытки"
-    },
-    {
-      "source": "CarrierStats",
-      "translation": "Статистика перевозчика"
     },
     {
       "source": "CarrierType",
@@ -209155,10 +209115,6 @@
       "translation": "调出下一个操作、选定的目的地、活动目标、路线注释或焦点行。"
     },
     {
-      "source": "Callsign",
-      "translation": "呼号"
-    },
-    {
       "source": "Can fulfill all selected needs",
       "translation": "可以满足所有选定的需求"
     },
@@ -209577,10 +209533,6 @@
     {
       "source": "CarrierRefreshAttempts",
       "translation": "运营商刷新尝试"
-    },
-    {
-      "source": "CarrierStats",
-      "translation": "运营商统计"
     },
     {
       "source": "CarrierType",
@@ -250033,10 +249985,6 @@
       "translation": "* CALLS OUT THE NEXT ACTION, SELECTED DESTINATION, ACTIVE TARGET, ROUTE NOTE, OR FOCUSED ROW. >>>!"
     },
     {
-      "source": "Callsign",
-      "translation": "* CALLSIGN >>>!"
-    },
-    {
       "source": "Can fulfill all selected needs",
       "translation": "* CAN FULFILL ALL SELECTED NEEDS >>>!"
     },
@@ -250455,10 +250403,6 @@
     {
       "source": "CarrierRefreshAttempts",
       "translation": "* CARRIERREFRESHATTEMPTS >>>!"
-    },
-    {
-      "source": "CarrierStats",
-      "translation": "* CARRIERSTATS >>>!"
     },
     {
       "source": "CarrierType",

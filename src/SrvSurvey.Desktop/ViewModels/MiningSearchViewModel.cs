@@ -1740,7 +1740,7 @@ public sealed class MiningSearchViewModel(
         }
 
         token.ThrowIfCancellationRequested();
-        if (!Status.Contains(RequestFailed, StringComparison.Ordinal))
+        if (!Session.HasIncompleteResult)
         {
             Status =
                 AcquireRows.Count > 0
@@ -1765,7 +1765,7 @@ public sealed class MiningSearchViewModel(
             .ToArray();
         token.ThrowIfCancellationRequested();
         Systems = result;
-        if (!Status.Contains(RequestFailed, StringComparison.Ordinal))
+        if (!Session.HasIncompleteResult)
         {
             Status = "";
         }
@@ -1973,6 +1973,7 @@ public sealed class MiningSearchViewModel(
         }
         catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
+            Session.MarkIncomplete(token);
             Session.Publish(() => Status = RequestFailed, token);
             return;
         }
@@ -2149,6 +2150,7 @@ public sealed class MiningSearchViewModel(
             }
             catch (Exception ex) when (MiningProviderFailure.Is(ex))
             {
+                Session.MarkIncomplete(token);
                 Status = RequestFailed;
             }
         }
@@ -2374,6 +2376,7 @@ public sealed class MiningSearchViewModel(
         catch (Exception ex) when (MiningProviderFailure.Is(ex))
         {
             Session.Publish(() => MeritRows = [], token);
+            Session.MarkIncomplete(token);
             Session.Publish(() => Status = RequestFailed, token);
         }
     }
@@ -2995,7 +2998,9 @@ public sealed class MiningSearchViewModel(
     public string PowerplaySummary =>
         $"{Objective} · {(IsAny(PledgedPower) ? "Any Power" : PledgedPower)} · {Mineral} · {RingType} · {Reserve} reserve · within {Radius:0} ly";
 
-    public void ResetPowerplay()
+    public void ResetPowerplay() => Session.Reset(ResetPowerplayFilters);
+
+    private void ResetPowerplayFilters()
     {
         Objective = ReinforceObjective;
         PledgedPower = detectedPower.Length > 0 ? detectedPower : AnyPower;
@@ -3027,7 +3032,6 @@ public sealed class MiningSearchViewModel(
         ResultLimit = 30;
         ForceIncludeReference = false;
         restoredPowerplaySearch = false;
-        Session.Reference.Unpin();
         preserveRestoredPower = false;
         Page = 0;
         SystemOnly = false;
@@ -3119,40 +3123,44 @@ public sealed class MiningSearchViewModel(
         };
 
     private void RestorePowerplaySnapshot(PowerplaySearchSnapshot snapshot, bool restoreFilters) =>
-        Session.Restore(() =>
-        {
-            if (restoreFilters)
+        Session.RestoreResult(
+            snapshot,
+            () =>
             {
-                LoadOptions(snapshot.Options);
-                PledgedPower = snapshot.PledgedPower.Length > 0 ? snapshot.PledgedPower : snapshot.Options.PledgedPower;
-                Objective = snapshot.Objective;
-                RestoreSelections(MiningTypeChips, snapshot.MiningTypes);
-                RestoreSelections(MineralChips, snapshot.Minerals);
-                RestoreSelections(StateChips, snapshot.States);
-            }
+                if (restoreFilters)
+                {
+                    LoadOptions(snapshot.Options);
+                    PledgedPower =
+                        snapshot.PledgedPower.Length > 0 ? snapshot.PledgedPower : snapshot.Options.PledgedPower;
+                    Objective = snapshot.Objective;
+                    RestoreSelections(MiningTypeChips, snapshot.MiningTypes);
+                    RestoreSelections(MineralChips, snapshot.Minerals);
+                    RestoreSelections(StateChips, snapshot.States);
+                }
 
-            MeritRows = snapshot.MeritRows.Select(MeritSystemRowViewModel.RestoreSnapshot).ToArray();
-            AcquireRows = snapshot.AcquireRows.Select(row => row.Restore()).ToArray();
-            if (snapshot.PlanetaryRows is { } planetary)
-            {
-                PlanetarySearch.RestoreSnapshot(planetary, restoreFilters: true);
-            }
-            else
-            {
-                PlanetarySearch.ClearResults();
-            }
-            Status = MiningSearchStatusText.Saved(snapshot.Status, snapshot.SavedAt);
-            Changed(nameof(HasMeritRows));
-            Changed(nameof(HasAcquireRows));
-            Changed(nameof(IsPlanetaryAcquire));
-            Changed(nameof(IsPlanetaryCombined));
-            if (restoreFilters)
-            {
-                restoredPowerplaySearch = true;
-                Session.Reference.Pin();
-                preserveRestoredPower = true;
-            }
-        });
+                MeritRows = snapshot.MeritRows.Select(MeritSystemRowViewModel.RestoreSnapshot).ToArray();
+                AcquireRows = snapshot.AcquireRows.Select(row => row.Restore()).ToArray();
+                if (snapshot.PlanetaryRows is { } planetary)
+                {
+                    PlanetarySearch.RestoreSnapshot(planetary, restoreFilters: true);
+                }
+                else
+                {
+                    PlanetarySearch.ClearResults();
+                }
+                Status = MiningSearchStatusText.Saved(snapshot.Status, snapshot.SavedAt);
+                Changed(nameof(HasMeritRows));
+                Changed(nameof(HasAcquireRows));
+                Changed(nameof(IsPlanetaryAcquire));
+                Changed(nameof(IsPlanetaryCombined));
+                if (restoreFilters)
+                {
+                    restoredPowerplaySearch = true;
+                    preserveRestoredPower = true;
+                }
+            },
+            pinReference: restoreFilters
+        );
 
     private static void RestoreSelections(MiningChipBoxViewModel chips, IReadOnlyList<string> selected)
     {
@@ -3208,12 +3216,12 @@ public sealed class MiningSearchViewModel(
             }
         );
 
-    public void LoadOptions(MiningSearchPreferences values)
+    public void LoadOptions(MiningSearchPreferences values) => Session.Reset(() => ApplyOptions(values));
+
+    private void ApplyOptions(MiningSearchPreferences values)
     {
-        Session.Cancel();
         detectedPower = "";
         PledgedPower = AnyPower;
-        Session.Abandon();
         Rings = [];
         Markets = [];
         Systems = [];
@@ -3224,7 +3232,6 @@ public sealed class MiningSearchViewModel(
         SystemOnly = false;
         powerplayPrepared = false;
         restoredPowerplaySearch = false;
-        Session.Reference.Unpin();
         preserveRestoredPower = false;
         Objective = AllSystems;
         SelectedRing = null;
@@ -3344,19 +3351,20 @@ public sealed class MiningSearchViewModel(
 
     private Task Run(Func<CancellationToken, Task> action, bool cacheSearch = false)
     {
-        if (!string.IsNullOrWhiteSpace(Reference))
+        async Task Search(CancellationToken token)
         {
-            Session.Reference.Pin();
-        }
-        return Session.RunAsync(
-            token =>
+            token.ThrowIfCancellationRequested();
+            await action(token);
+            if (client.PriceMarksUnavailable || (IsPlanetaryMining && PlanetarySearch.HasIncompleteResult))
             {
-                token.ThrowIfCancellationRequested();
-                return action(token);
-            },
-            outcome => ReportSearch(outcome, cacheSearch),
-            new MiningSearchRunOptions(SearchTimeout(), InvalidOperationFails: true)
-        );
+                Session.MarkIncomplete(token);
+            }
+        }
+        void Report(MiningSearchOutcome outcome) => ReportSearch(outcome, cacheSearch);
+        var runOptions = new MiningSearchRunOptions(SearchTimeout(), InvalidOperationFails: true);
+        return cacheSearch
+            ? Session.RunAndCaptureAsync(Search, Report, ExportPowerplaySnapshot, runOptions)
+            : Session.RunAsync(Search, Report, runOptions);
     }
 
     private void ReportSearch(MiningSearchOutcome outcome, bool cacheSearch)
@@ -3367,13 +3375,8 @@ public sealed class MiningSearchViewModel(
                 Status = "Searching…";
                 break;
             case MiningSearchOutcomeKind.Completed:
-                if (
-                    cacheSearch
-                    && Session.Store is not null
-                    && !Status.Contains(RequestFailed, StringComparison.Ordinal)
-                )
+                if (cacheSearch && Session.Store is not null && !Session.HasIncompleteResult)
                 {
-                    Session.Save(ExportPowerplaySnapshot());
                     powerplayPrepared = true;
                 }
                 break;

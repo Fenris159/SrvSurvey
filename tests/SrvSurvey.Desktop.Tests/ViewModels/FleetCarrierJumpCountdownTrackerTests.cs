@@ -1,5 +1,5 @@
 using SrvSurvey.Core.Journal;
-using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Core.Routes;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 

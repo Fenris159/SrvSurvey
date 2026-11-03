@@ -5,7 +5,7 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed partial class JourneyWorkspaceViewModel
+internal sealed partial class JourneyWorkspaceSession
 {
     private AsyncCommand? archiveCommand;
     private AsyncCommand? requestDeleteCommand;
@@ -104,19 +104,14 @@ public sealed partial class JourneyWorkspaceViewModel
         {
             return;
         }
-        int version = contextVersion;
+        using BusyScope busy = BeginBusy();
         try
         {
-            IsBusy = true;
             JourneyDocument updated = await journeyService.SetArchivedAsync(
                 document.FrontierId,
                 document.FileName,
                 !document.IsArchived
             );
-            if (version != contextVersion)
-            {
-                return;
-            }
             UpdateCatalogDocument(updated);
             SelectVisibleJourney(document.FileName);
             StatusMessage = updated.IsArchived
@@ -125,17 +120,7 @@ public sealed partial class JourneyWorkspaceViewModel
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            if (version == contextVersion)
-            {
-                StatusMessage = "The journey could not be moved: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
+            StatusMessage = "The journey could not be moved: " + exception.Message;
         }
     }
 
@@ -145,15 +130,10 @@ public sealed partial class JourneyWorkspaceViewModel
         {
             return;
         }
-        int version = contextVersion;
+        using BusyScope busy = BeginBusy();
         try
         {
-            IsBusy = true;
             await journeyService.DeleteAsync(document.FrontierId, document.FileName);
-            if (version != contextVersion)
-            {
-                return;
-            }
             Journeys = Journeys.Where(item => item.Document.FileName != document.FileName).ToArray();
             SelectVisibleJourney(null);
             IsDeletePending = false;
@@ -161,17 +141,7 @@ public sealed partial class JourneyWorkspaceViewModel
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            if (version == contextVersion)
-            {
-                StatusMessage = "The journey could not be deleted: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
+            StatusMessage = "The journey could not be deleted: " + exception.Message;
         }
     }
 
@@ -183,17 +153,12 @@ public sealed partial class JourneyWorkspaceViewModel
             StatusMessage = "Select a completed journey and save any changes before exporting.";
             return null;
         }
-        int version = contextVersion;
+        using BusyScope busy = BeginBusy();
         try
         {
-            IsBusy = true;
             StatusMessage = "Preparing the journey report...";
             Dictionary<long, string?> imageFolders = CaptureReportImageFolders(document);
             JourneyReportImages images = await Task.Run(() => CaptureReportImages(imageFolders));
-            if (version != contextVersion)
-            {
-                return null;
-            }
             var notes = new Dictionary<long, string>();
             foreach (
                 JourneySystemReference system in document
@@ -206,10 +171,6 @@ public sealed partial class JourneyWorkspaceViewModel
                     system.Name,
                     system.SystemAddress
                 );
-                if (version != contextVersion)
-                {
-                    return null;
-                }
                 if (!result.IsSuccess)
                 {
                     throw new IOException(result.Error ?? "System notes could not be read.");
@@ -217,26 +178,12 @@ public sealed partial class JourneyWorkspaceViewModel
                 notes[system.SystemAddress] = result.Notes ?? string.Empty;
             }
             string html = await Task.Run(() => JourneyReport.Html(document, notes, images.BySystem));
-            if (version != contextVersion)
-            {
-                return null;
-            }
             return new JourneyHtmlExport($"journey-{document.FileName}.html", html, images.Assets);
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            if (version == contextVersion)
-            {
-                StatusMessage = "The journey report could not be created: " + exception.Message;
-            }
+            StatusMessage = "The journey report could not be created: " + exception.Message;
             return null;
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
         }
     }
 

@@ -131,12 +131,13 @@ namespace SrvSurvey.LocalizationTool
 
     internal sealed class LocalizationSourceExtractor(string repositoryRoot)
     {
-        private static readonly string[] PlannerSourceNames =
+        private static readonly string[] CoreRoutePresentationSourceNames =
         [
             "SpanshPlannerCatalog",
             "SpanshPlannerDefinition",
             "SpanshPlannerClient",
             "SpanshShipBuild",
+            "FleetCarrierJumpCountdownTracker",
         ];
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
@@ -205,7 +206,7 @@ namespace SrvSurvey.LocalizationTool
         }
 
         /// <summary>
-        /// Extracts desktop and planner user-facing strings in a stable source-file order.
+        /// Extracts desktop and Core route presentation strings in a stable source-file order.
         /// </summary>
         private void ExtractCSharp(IDictionary<string, LocalizationSourceEntry> entries)
         {
@@ -214,7 +215,7 @@ namespace SrvSurvey.LocalizationTool
                 string? path in Directory
                     .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
                     .Concat(
-                        PlannerSourceNames
+                        CoreRoutePresentationSourceNames
                             .Select(name =>
                                 Path.Combine(repositoryRoot, "src", "SrvSurvey.Core", "Routes", name + ".cs")
                             )

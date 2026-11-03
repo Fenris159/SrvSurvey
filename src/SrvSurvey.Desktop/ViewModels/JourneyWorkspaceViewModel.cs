@@ -1,72 +1,20 @@
 using System.ComponentModel;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
+/// <summary>Displays one Journey activation; detached activations cannot publish into another commander.</summary>
+public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 {
-    private const string Unavailable = "\u2014";
-
-    private readonly JourneyService journeyService;
-    private readonly SystemNoteStore noteStore;
-    private readonly SystemNotesSettingsStore settingsStore;
-    private readonly Func<string, string?> screenshotDirectoryProvider;
-    private readonly AsyncCommand openWorkspaceCommand;
-    private readonly AsyncCommand refreshCommand;
-    private readonly AsyncCommand newJourneyCommand;
-    private readonly AsyncCommand cancelNewJourneyCommand;
-    private readonly AsyncCommand findStartCommand;
-    private readonly AsyncCommand beginJourneyCommand;
-    private readonly AsyncCommand saveCommand;
-    private readonly AsyncCommand discardCommand;
-    private readonly AsyncCommand requestConcludeCommand;
-    private readonly AsyncCommand confirmConcludeCommand;
-    private readonly AsyncCommand cancelConcludeCommand;
-    private readonly AsyncCommand requestReprocessCommand;
-    private readonly AsyncCommand confirmReprocessCommand;
-    private readonly AsyncCommand cancelReprocessCommand;
-    private readonly AsyncCommand openImagesCommand;
-    private string? frontierId;
-    private string? commanderName;
-    private bool isOdyssey = true;
-    private string? currentSystemName;
-    private long? currentSystemAddress;
-    private string? initializedProfileKey;
-    private int contextVersion;
-    private bool isBusy;
-    private string statusMessage = "Waiting for a commander profile.";
-    private IReadOnlyList<JourneyListItemViewModel> journeys = [];
-    private IReadOnlyList<string> catalogErrors = [];
-    private JourneyListItemViewModel? selectedJourney;
-    private JourneyDocument? selectedDocument;
-    private IReadOnlyList<JourneyStatisticViewModel> quickStatistics = [];
-    private IReadOnlyList<JourneySystemItemViewModel> visitedSystems = [];
-    private JourneySystemItemViewModel? selectedSystem;
-    private string journeyName = string.Empty;
-    private string journeyDescription = string.Empty;
-    private SystemNoteDraft systemNotes = new(string.Empty, string.Empty);
-    private Task selectedSystemLoad = Task.CompletedTask;
-    private string selectedSystemDetails = string.Empty;
-    private IReadOnlyList<string> screenshotFiles = [];
-    private string? imagesDirectory;
-    private bool isApplyingDocument;
-    private bool isUpdatingLibrary;
-    private bool suppressSystemLoad;
-    private int systemLoadVersion;
-    private bool isCreating;
-    private string newJourneyName = string.Empty;
-    private string newJourneyDescription = string.Empty;
-    private string startSystemQuery = string.Empty;
-    private string startStatus = "Choose where this journey should begin.";
-    private bool isConcludePending;
-    private bool isReprocessPending;
-    private bool alwaysOnTop;
-    private bool useGalacticTime;
+    private readonly Func<JourneyWorkspaceSession> createSession;
+    private readonly Dictionary<string, JourneyEditDraft> drafts = new(StringComparer.OrdinalIgnoreCase);
+    private JourneyWorkspaceSession session;
+    private string? profileKey;
     private Func<Task<bool>>? workspaceOpener;
     private Func<DirectoryInfo, Task<bool>>? directoryLauncher;
 
@@ -77,409 +25,23 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         Func<string, string?>? screenshotDirectoryProvider = null
     )
     {
-        this.journeyService = journeyService ?? throw new ArgumentNullException(nameof(journeyService));
-        this.noteStore = noteStore ?? throw new ArgumentNullException(nameof(noteStore));
-        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.screenshotDirectoryProvider = screenshotDirectoryProvider ?? settingsStore.GetImagesDirectory;
-        SystemNotesSettingsLoadResult settings = settingsStore.Load();
-        alwaysOnTop = settings.Snapshot?.JourneyAlwaysOnTop ?? false;
-        useGalacticTime = settings.Snapshot?.JourneyUseGalacticTime ?? false;
-        if (!settings.IsSuccess)
-        {
-            statusMessage = settings.Error ?? "The Journey preferences could not be loaded.";
-        }
-
-        openWorkspaceCommand = new AsyncCommand(OpenWorkspaceAsync, CanOpenWorkspace);
-        refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfileAndNotBusy() && !IsDirty);
-        newJourneyCommand = new AsyncCommand(
-            StartNewJourneyAsync,
-            () => HasProfileAndNotBusy() && !HasListedActiveJourney && !IsDirty
-        );
-        cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
-        findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
-        beginJourneyCommand = new AsyncCommand(BeginJourneyAsync, CanBeginJourney);
-        saveCommand = new AsyncCommand(SaveAsync, () => IsDirty && !IsBusy);
-        discardCommand = new AsyncCommand(DiscardAsync, () => IsDirty && !IsBusy);
-        requestConcludeCommand = new AsyncCommand(RequestConcludeAsync, CanConclude);
-        confirmConcludeCommand = new AsyncCommand(ConfirmConcludeAsync, () => IsConcludePending && CanConclude());
-        cancelConcludeCommand = new AsyncCommand(CancelConcludeAsync, () => IsConcludePending && !IsBusy);
-        requestReprocessCommand = new AsyncCommand(
-            RequestReprocessAsync,
-            () => selectedDocument is not null && !IsDirty && !IsBusy
-        );
-        confirmReprocessCommand = new AsyncCommand(
-            ConfirmReprocessAsync,
-            () => IsReprocessPending && selectedDocument is not null && !IsBusy
-        );
-        cancelReprocessCommand = new AsyncCommand(CancelReprocessAsync, () => IsReprocessPending && !IsBusy);
-        openImagesCommand = new AsyncCommand(
-            OpenImagesAsync,
-            () => HasImagesDirectory && directoryLauncher is not null
-        );
+        ArgumentNullException.ThrowIfNull(journeyService);
+        ArgumentNullException.ThrowIfNull(noteStore);
+        ArgumentNullException.ThrowIfNull(settingsStore);
+        createSession = () =>
+            new JourneyWorkspaceSession(journeyService, noteStore, settingsStore, screenshotDirectoryProvider);
+        session = createSession();
+        session.PropertyChanged += OnSessionChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
-
-    public bool HasActiveJourney => journeyService.IsActiveFor(frontierId, isOdyssey);
-
-    private bool HasListedActiveJourney => Journeys.Any(journey => journey.Document.IsActive);
-
-    private JourneyDocument? CurrentActiveJourney => HasActiveJourney ? journeyService.ActiveJourney : null;
-
-    public string ActiveJourneyName => CurrentActiveJourney?.Name ?? "No active journey";
-
-    public string ActiveJourneySummary =>
-        CurrentActiveJourney is { } active
-            ? $"{active.VisitedSystems.Count:N0} visits \u2022 set out {FormatTime(active.StartTime)}"
-            : "Start a journey to track systems, scans, notes, screenshots, and rewards.";
-
-    public bool IsBusy
+    private void OnSessionChanged(object? sender, PropertyChangedEventArgs args)
     {
-        get => isBusy;
-        private set
+        if (ReferenceEquals(sender, session))
         {
-            if (SetField(ref isBusy, value))
-            {
-                RaiseCommands();
-            }
+            PropertyChanged?.Invoke(this, args);
         }
-    }
-
-    public string StatusMessage
-    {
-        get => statusMessage;
-        private set => SetField(ref statusMessage, value);
-    }
-
-    public IReadOnlyList<JourneyListItemViewModel> Journeys
-    {
-        get => journeys;
-        private set
-        {
-            if (SetField(ref journeys, value))
-            {
-                RaiseLibraryState();
-            }
-        }
-    }
-
-    public bool HasJourneys => Journeys.Count > 0;
-
-    public JourneyListItemViewModel? SelectedJourney
-    {
-        get => selectedJourney;
-        set
-        {
-            if (isUpdatingLibrary)
-            {
-                return;
-            }
-            if (IsDirty && selectedDocument?.FileName != value?.Document.FileName)
-            {
-                StatusMessage = "Save or discard changes before selecting another journey.";
-                OnPropertyChanged();
-                return;
-            }
-            if (!SetField(ref selectedJourney, value))
-            {
-                return;
-            }
-
-            ApplyDocument(value?.Document);
-        }
-    }
-
-    public bool HasSelectedJourney => selectedDocument is not null;
-
-    public string JourneyName
-    {
-        get => journeyName;
-        set
-        {
-            if (SetField(ref journeyName, value ?? string.Empty) && !isApplyingDocument)
-            {
-                RaiseDirtyState();
-            }
-        }
-    }
-
-    public string JourneyDescription
-    {
-        get => journeyDescription;
-        set
-        {
-            if (SetField(ref journeyDescription, value ?? string.Empty) && !isApplyingDocument)
-            {
-                RaiseDirtyState();
-            }
-        }
-    }
-
-    public string JourneyByline =>
-        selectedDocument is null
-            ? Unavailable
-            : $"CMDR {selectedDocument.CommanderName} \u2022 "
-                + $"set out {FormatTime(selectedDocument.StartTime)}"
-                + (
-                    selectedDocument.EndTime switch
-                    {
-                        DateTimeOffset end => $" \u2022 concluded {FormatTime(end)}",
-                        null => " \u2022 active",
-                    }
-                );
-
-    public IReadOnlyList<JourneyStatisticViewModel> QuickStatistics
-    {
-        get => quickStatistics;
-        private set => SetField(ref quickStatistics, value);
-    }
-
-    public IReadOnlyList<JourneySystemItemViewModel> VisitedSystems
-    {
-        get => visitedSystems;
-        private set => SetField(ref visitedSystems, value);
-    }
-
-    public JourneySystemItemViewModel? SelectedSystem
-    {
-        get => selectedSystem;
-        set
-        {
-            if (!isApplyingDocument && systemNotes.IsDirty)
-            {
-                StatusMessage = "Save or discard the system notes before selecting another visit.";
-                OnPropertyChanged();
-                return;
-            }
-            if (!SetField(ref selectedSystem, value))
-            {
-                return;
-            }
-
-            if (!suppressSystemLoad)
-            {
-                selectedSystemLoad = LoadSelectedSystemAsync(value);
-            }
-
-            OnPropertyChanged(nameof(SelectedSystemName));
-            OnPropertyChanged(nameof(SelectedSystemAddress));
-            OnPropertyChanged(nameof(SelectedSystemAddressText));
-        }
-    }
-
-    public bool HasSelectedSystem => SelectedSystem is not null;
-
-    public string SelectedSystemName => SelectedSystem?.Name ?? string.Empty;
-
-    public string SelectedSystemAddress => SelectedSystem?.Address ?? string.Empty;
-
-    public string SelectedSystemAddressText =>
-        SystemAddressFormatter.Format(SelectedSystem?.Visit.StarSystem.SystemAddress);
-
-    public string SelectedSystemNotes
-    {
-        get => systemNotes.Text;
-        set
-        {
-            if (
-                SetField(
-                    ref systemNotes,
-                    systemNotes with
-                    {
-                        Text = value ?? string.Empty,
-                    },
-                    nameof(SelectedSystemNotes)
-                ) && !isApplyingDocument
-            )
-            {
-                RaiseDirtyState();
-            }
-        }
-    }
-
-    public string SelectedSystemDetails
-    {
-        get => selectedSystemDetails;
-        private set => SetField(ref selectedSystemDetails, value);
-    }
-
-    public IReadOnlyList<string> ScreenshotFiles
-    {
-        get => screenshotFiles;
-        private set
-        {
-            if (SetField(ref screenshotFiles, value))
-            {
-                OnPropertyChanged(nameof(HasScreenshots));
-            }
-        }
-    }
-
-    public bool HasScreenshots => ScreenshotFiles.Count > 0;
-
-    public bool HasImagesDirectory => !string.IsNullOrWhiteSpace(imagesDirectory) && Directory.Exists(imagesDirectory);
-
-    public void RefreshScreenshotAvailability()
-    {
-        try
-        {
-            imagesDirectory =
-                selectedDocument is not null && SelectedSystem is { } selected
-                    ? screenshotDirectoryProvider(selected.Visit.StarSystem.Name)
-                    : null;
-            ScreenshotFiles = GetScreenshotFiles(imagesDirectory);
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            imagesDirectory = null;
-            ScreenshotFiles = [];
-            StatusMessage = "The screenshot folder could not be opened: " + exception.Message;
-        }
-        OnPropertyChanged(nameof(HasImagesDirectory));
-        RaiseCommands();
-    }
-
-    public bool IsDirty =>
-        selectedDocument is not null
-        && (
-            !string.Equals(JourneyName, selectedDocument.Name, StringComparison.Ordinal)
-            || !string.Equals(JourneyDescription, selectedDocument.Description, StringComparison.Ordinal)
-            || systemNotes.IsDirty
-        );
-
-    public bool IsCreating
-    {
-        get => isCreating;
-        private set
-        {
-            if (SetField(ref isCreating, value))
-            {
-                RaiseCommands();
-            }
-        }
-    }
-
-    public string NewJourneyName
-    {
-        get => newJourneyName;
-        set
-        {
-            if (SetField(ref newJourneyName, value ?? string.Empty))
-            {
-                beginJourneyCommand.RaiseCanExecuteChanged();
-            }
-        }
-    }
-
-    public string NewJourneyDescription
-    {
-        get => newJourneyDescription;
-        set => SetField(ref newJourneyDescription, value ?? string.Empty);
-    }
-
-    public bool HasCurrentStartSystem => currentSystemAddress is > 0 && !string.IsNullOrWhiteSpace(currentSystemName);
-
-    public string CurrentStartSystem => currentSystemName ?? "Current system unavailable";
-
-    public string StartSystemQuery
-    {
-        get => startSystemQuery;
-        set
-        {
-            if (SetField(ref startSystemQuery, value ?? string.Empty))
-            {
-                selectedStartSystemAddress = null;
-                ClearStartVisits();
-                StartStatus = "Search for a system to see your previous visits.";
-                RaiseCommands();
-            }
-        }
-    }
-
-    public string StartStatus
-    {
-        get => startStatus;
-        private set => SetField(ref startStatus, value);
-    }
-
-    public bool IsConcludePending
-    {
-        get => isConcludePending;
-        private set
-        {
-            if (SetField(ref isConcludePending, value))
-            {
-                RaiseCommands();
-            }
-        }
-    }
-
-    public bool IsReprocessPending
-    {
-        get => isReprocessPending;
-        private set
-        {
-            if (SetField(ref isReprocessPending, value))
-            {
-                RaiseCommands();
-            }
-        }
-    }
-
-    public bool AlwaysOnTop
-    {
-        get => alwaysOnTop;
-        private set => SetField(ref alwaysOnTop, value);
-    }
-
-    public bool UseGalacticTime
-    {
-        get => useGalacticTime;
-        private set => SetField(ref useGalacticTime, value);
-    }
-
-    public ICommand OpenWorkspaceCommand => openWorkspaceCommand;
-
-    public ICommand RefreshCommand => refreshCommand;
-
-    public ICommand NewJourneyCommand => newJourneyCommand;
-
-    public ICommand CancelNewJourneyCommand => cancelNewJourneyCommand;
-
-    public ICommand FindStartCommand => findStartCommand;
-
-    public ICommand BeginJourneyCommand => beginJourneyCommand;
-
-    public ICommand SaveCommand => saveCommand;
-
-    public ICommand DiscardCommand => discardCommand;
-
-    public ICommand RequestConcludeCommand => requestConcludeCommand;
-
-    public ICommand ConfirmConcludeCommand => confirmConcludeCommand;
-
-    public ICommand CancelConcludeCommand => cancelConcludeCommand;
-
-    public ICommand RequestReprocessCommand => requestReprocessCommand;
-
-    public ICommand ConfirmReprocessCommand => confirmReprocessCommand;
-
-    public ICommand CancelReprocessCommand => cancelReprocessCommand;
-
-    public ICommand OpenImagesCommand => openImagesCommand;
-
-    public void SetWorkspaceOpener(Func<Task<bool>>? opener)
-    {
-        workspaceOpener = opener;
-        openWorkspaceCommand.RaiseCanExecuteChanged();
-    }
-
-    public void SetDirectoryLauncher(Func<DirectoryInfo, Task<bool>>? launcher)
-    {
-        directoryLauncher = launcher;
-        openImagesCommand.RaiseCanExecuteChanged();
     }
 
     public async Task<bool> UpdateContextAsync(
@@ -490,1077 +52,240 @@ public sealed partial class JourneyWorkspaceViewModel : INotifyPropertyChanged
         long? nextSystemAddress
     )
     {
-        string? normalizedFrontierId = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId;
-        if (
-            string.Equals(frontierId, normalizedFrontierId, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(commanderName, nextCommanderName, StringComparison.Ordinal)
-            && isOdyssey == nextIsOdyssey
-            && string.Equals(currentSystemName, nextSystemName, StringComparison.Ordinal)
-            && currentSystemAddress == nextSystemAddress
-        )
+        string? profile = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId;
+        string? key = profile is null ? null : $"{profile}|{nextIsOdyssey}";
+        if (string.Equals(profileKey, key, StringComparison.OrdinalIgnoreCase))
         {
+            session.UpdateLocation(nextCommanderName, nextSystemName, nextSystemAddress);
             return false;
         }
-
-        string? profileKey = normalizedFrontierId is null ? null : $"{normalizedFrontierId}|{nextIsOdyssey}";
-        if (!string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
+        if (profileKey is not null)
         {
-            RememberJourneyDraft();
-        }
-        InvalidateStartVisitContext(profileKey);
-        frontierId = normalizedFrontierId;
-        commanderName = nextCommanderName;
-        isOdyssey = nextIsOdyssey;
-        currentSystemName = nextSystemName;
-        currentSystemAddress = nextSystemAddress;
-        OnPropertyChanged(nameof(HasProfile));
-        OnPropertyChanged(nameof(CurrentStartSystem));
-        OnPropertyChanged(nameof(HasCurrentStartSystem));
-
-        if (string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
-        {
-            RaiseCommands();
-            return false;
-        }
-
-        initializedProfileKey = profileKey;
-        CaptureRecoveryReference(null);
-        catalogErrors = [];
-        int version = ++contextVersion;
-        selectedJourney = null;
-        OnPropertyChanged(nameof(SelectedJourney));
-        ApplyDocument(null);
-        Journeys = [];
-        showArchived = false;
-        OnPropertyChanged(nameof(ShowArchived));
-        IsCreating = false;
-        IsConcludePending = false;
-        IsReprocessPending = false;
-        RaiseLibraryState();
-        if (frontierId is null)
-        {
-            IsBusy = false;
-            ApplyDocument(null);
-            Journeys = [];
-            OnPropertyChanged(nameof(HasJourneys));
-            StatusMessage = "Waiting for a commander profile.";
-            RaiseActiveState();
-            return true;
-        }
-
-        try
-        {
-            IsBusy = true;
-            JourneyServiceResult active = await journeyService.InitializeActiveAsync(frontierId, isOdyssey);
-            if (version != contextVersion)
+            if (session.CaptureDraft() is { } dirty)
             {
-                return true;
+                drafts[profileKey] = dirty;
             }
-
-            string? preferredFile = PreferredJourneyFile(profileKey, active.Journey?.FileName);
-            await RefreshCatalogAsync(preferredFile);
-            if (version != contextVersion)
+            else
             {
-                return true;
-            }
-
-            CaptureRecoveryReference(active.Recovery);
-            SetInitializationStatus(active);
-            if (profileKey is not null)
-            {
-                IsBusy = true;
-                await RestoreJourneyDraftAsync(profileKey, version);
-            }
-            RaiseActiveState();
-            return true;
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                StatusMessage = "Journey data could not be initialized: " + exception.Message;
-            }
-
-            return true;
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
+                drafts.Remove(profileKey);
             }
         }
+        session.PropertyChanged -= OnSessionChanged;
+        session.Detach();
+        JourneyWorkspaceSession next = createSession();
+        session = next;
+        profileKey = key;
+        next.SetWorkspaceOpener(workspaceOpener);
+        next.SetDirectoryLauncher(directoryLauncher);
+        next.PropertyChanged += OnSessionChanged;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+        JourneyEditDraft? draft =
+            key is not null && drafts.TryGetValue(key, out JourneyEditDraft? saved) ? saved : null;
+        await next.InitializeAsync(profile, nextCommanderName, nextIsOdyssey, nextSystemName, nextSystemAddress, draft);
+        return true;
     }
 
-    private void SetInitializationStatus(JourneyServiceResult active)
+    public void SetWorkspaceOpener(Func<Task<bool>>? opener)
     {
-        if (active.Errors.Count > 0 || catalogErrors.Count > 0)
-        {
-            StatusMessage = string.Join(
-                Environment.NewLine,
-                active.Errors.Concat(catalogErrors).Distinct(StringComparer.Ordinal)
-            );
-        }
-        else if (active.Journey is null)
-        {
-            StatusMessage = "No active journey. Browse history or begin a new expedition.";
-        }
-        else if (active.ProcessedEventCount > 0)
-        {
-            StatusMessage = $"Caught up {active.ProcessedEventCount:N0} Journey journal events.";
-        }
-        else
-        {
-            StatusMessage = $"Active journey: {active.Journey.Name}.";
-        }
+        workspaceOpener = opener;
+        session.SetWorkspaceOpener(opener);
     }
 
-    public async Task ApplyJournalEventsAsync(IReadOnlyList<JournalEventEnvelope> journalEvents)
+    public void SetDirectoryLauncher(Func<DirectoryInfo, Task<bool>>? launcher)
     {
-        if (journalEvents.Count == 0 || !HasActiveJourney)
-        {
-            return;
-        }
-
-        try
-        {
-            JourneyServiceResult result = await journeyService.ApplyLiveAsync(journalEvents);
-            if (result.ProcessedEventCount == 0 || result.Journey is null)
-            {
-                return;
-            }
-
-            UpdateCatalogDocument(result.Journey);
-            if (selectedDocument?.FileName == result.Journey.FileName)
-            {
-                ApplyDocument(result.Journey, preserveEdits: IsDirty);
-            }
-
-            StatusMessage = $"Journey updated through {FormatTime(result.Journey.Watermark)}.";
-            RaiseActiveState();
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            StatusMessage = "The live Journey update was not saved: " + exception.Message;
-        }
-    }
-
-    public async Task RefreshAsync()
-    {
-        if (IsDirty)
-        {
-            StatusMessage = "Save or discard changes before refreshing journeys.";
-            return;
-        }
-        if (frontierId is null)
-        {
-            return;
-        }
-        int version = contextVersion;
-        try
-        {
-            IsBusy = true;
-            JourneyServiceResult active = await journeyService.InitializeActiveAsync(frontierId, isOdyssey);
-            if (version != contextVersion)
-            {
-                return;
-            }
-            await RefreshCatalogAsync(selectedDocument?.FileName ?? active.Journey?.FileName);
-            if (version != contextVersion)
-            {
-                return;
-            }
-            CaptureRecoveryReference(active.Recovery);
-            SetInitializationStatus(active);
-            RaiseActiveState();
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                StatusMessage = "Journey data could not be refreshed: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
-        }
+        directoryLauncher = launcher;
+        session.SetDirectoryLauncher(launcher);
     }
 
     public async Task SetPreferencesAsync(bool nextAlwaysOnTop, bool nextUseGalacticTime)
     {
-        bool previousAlwaysOnTop = AlwaysOnTop;
-        bool previousUseGalacticTime = UseGalacticTime;
-        AlwaysOnTop = nextAlwaysOnTop;
-        UseGalacticTime = nextUseGalacticTime;
-        try
-        {
-            await settingsStore.SaveJourneyPreferencesAsync(nextAlwaysOnTop, nextUseGalacticTime);
-            if (selectedDocument is not null)
-            {
-                ApplyDocument(selectedDocument, preserveEdits: IsDirty);
-            }
-
-            OnPropertyChanged(nameof(ActiveJourneySummary));
-            StatusMessage = "Journey preferences saved.";
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            AlwaysOnTop = previousAlwaysOnTop;
-            UseGalacticTime = previousUseGalacticTime;
-            StatusMessage = "Journey preferences were not saved: " + exception.Message;
-        }
+        JourneyWorkspaceSession owner = session;
+        string message = await owner.SetPreferencesAsync(nextAlwaysOnTop, nextUseGalacticTime);
+        session.ReloadPreferences(owner.AlwaysOnTop, owner.UseGalacticTime);
+        session.SetExportStatus(message);
     }
 
-    private bool HasProfileAndNotBusy()
+    public IReadOnlyList<JourneyListItemViewModel> VisibleJourneys => session.VisibleJourneys;
+    public bool HasVisibleJourneys => session.HasVisibleJourneys;
+    public string JourneysLabel => session.JourneysLabel;
+    public string ArchiveLabel => session.ArchiveLabel;
+    public string LibraryEmptyMessage => session.LibraryEmptyMessage;
+    public bool ShowArchived
     {
-        return HasProfile && !IsBusy;
+        get => session.ShowArchived;
+        set => session.ShowArchived = value;
     }
-
-    private bool CanOpenWorkspace()
+    public bool IsSelectedActiveJourney => session.IsSelectedActiveJourney;
+    public string EmptyWorkspaceMessage => session.EmptyWorkspaceMessage;
+    public bool IsCompletedJourney => session.IsCompletedJourney;
+    public bool CanExportReport => session.CanExportReport;
+    public string SelectedJourneyState => session.SelectedJourneyState;
+    public string ArchiveButtonText => session.ArchiveButtonText;
+    public bool HasVisitedSystems => session.HasVisitedSystems;
+    public string RouteOrigin => session.RouteOrigin;
+    public string RouteDestination => session.RouteDestination;
+    public IReadOnlyList<JourneyStatisticViewModel> PrimaryStatistics => session.PrimaryStatistics;
+    public bool IsDeletePending => session.IsDeletePending;
+    public ICommand ArchiveCommand => session.ArchiveCommand;
+    public ICommand RequestDeleteCommand => session.RequestDeleteCommand;
+    public ICommand ConfirmDeleteCommand => session.ConfirmDeleteCommand;
+    public ICommand CancelDeleteCommand => session.CancelDeleteCommand;
+    public bool HasUnavailableJourney => session.HasUnavailableJourney;
+    public ICommand ClearUnavailableJourneyCommand => session.ClearUnavailableJourneyCommand;
+    public bool CanResumeJourney => session.CanResumeJourney;
+    public ICommand ResumeJourneyCommand => session.ResumeJourneyCommand;
+    public bool UseCurrentStart
     {
-        return workspaceOpener is not null && !IsBusy;
+        get => session.UseCurrentStart;
+        set => session.UseCurrentStart = value;
     }
-
-    private async Task OpenWorkspaceAsync()
+    public bool UsePreviousStart
     {
-        if (workspaceOpener is null || !await workspaceOpener())
-        {
-            StatusMessage = "The Journey workspace requires a commander profile.";
-        }
+        get => session.UsePreviousStart;
+        set => session.UsePreviousStart = value;
     }
-
-    private async Task RefreshCatalogAsync(string? preferredFileName)
+    public DateTime? VisitsOnOrAfter
     {
-        if (frontierId is null)
-        {
-            return;
-        }
-
-        string profile = frontierId;
-        int version = contextVersion;
-        try
-        {
-            IsBusy = true;
-            JourneyCatalogResult result = await journeyService.LoadAllAsync(profile);
-            if (version != contextVersion)
-            {
-                return;
-            }
-
-            catalogErrors = result.Errors;
-            Journeys = result
-                .Journeys.Select(journey => new JourneyListItemViewModel(
-                    journey,
-                    FormatTime(journey.StartTime),
-                    FormatTime(journey.Watermark)
-                ))
-                .ToArray();
-            OnPropertyChanged(nameof(HasJourneys));
-            SelectedJourney =
-                VisibleJourneys.FirstOrDefault(item =>
-                    string.Equals(item.Document.FileName, preferredFileName, StringComparison.Ordinal)
-                )
-                ?? VisibleJourneys.FirstOrDefault(item => item.Document.IsActive)
-                ?? (VisibleJourneys.Count > 0 ? VisibleJourneys[0] : null);
-            await selectedSystemLoad;
-            if (version != contextVersion)
-            {
-                return;
-            }
-            if (result.Errors.Count > 0)
-            {
-                StatusMessage = string.Join(Environment.NewLine, result.Errors);
-            }
-            else
-            {
-                StatusMessage = SelectedJourney is null
-                    ? "No Journey history has been recorded for this commander."
-                    : (SelectedJourney.Document.IsActive) switch
-                    {
-                        true => $"Active journey: {SelectedJourney.Document.Name}.",
-                        false => $"Loaded journey: {SelectedJourney.Document.Name}.",
-                    };
-            }
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                StatusMessage = "Journey history could not be loaded: " + exception.Message;
-                catalogErrors = [StatusMessage];
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
-        }
+        get => session.VisitsOnOrAfter;
+        set => session.VisitsOnOrAfter = value;
     }
-
-    public Task StartNewJourneyAsync()
+    public bool HasVisitDate => session.HasVisitDate;
+    public IReadOnlyList<JourneyStartVisitViewModel> StartVisits => session.StartVisits;
+    public bool HasStartVisits => session.HasStartVisits;
+    public string StartVisitsHeading => session.StartVisitsHeading;
+    public JourneyStartVisitViewModel? SelectedStartVisit
     {
-        IsCreating = true;
-        NewJourneyName = string.Empty;
-        NewJourneyDescription = string.Empty;
-        StartSystemQuery = string.Empty;
-        selectedStartSystemAddress = null;
-        VisitsOnOrAfter = null;
-        UseCurrentStart = HasCurrentStartSystem;
-        ClearStartVisits();
-        StartStatus = UseCurrentStart
-            ? "Your current visit will be used automatically."
-            : "Search for a system to see your previous visits.";
-        return Task.CompletedTask;
+        get => session.SelectedStartVisit;
+        set => session.SelectedStartVisit = value;
     }
-
-    private Task CancelNewJourneyAsync()
+    public bool HasProfile => session.HasProfile;
+    public bool HasActiveJourney => session.HasActiveJourney;
+    public string ActiveJourneyName => session.ActiveJourneyName;
+    public string ActiveJourneySummary => session.ActiveJourneySummary;
+    public bool IsBusy => session.IsBusy;
+    public string StatusMessage => session.StatusMessage;
+    public IReadOnlyList<JourneyListItemViewModel> Journeys => session.Journeys;
+    public bool HasJourneys => session.HasJourneys;
+    public JourneyListItemViewModel? SelectedJourney
     {
-        ClearStartVisits();
-        IsCreating = false;
-        return Task.CompletedTask;
+        get => session.SelectedJourney;
+        set => session.SelectedJourney = value;
     }
-
-    private bool CanFindStart() =>
-        IsCreating && UsePreviousStart && HasProfileAndNotBusy() && !string.IsNullOrWhiteSpace(StartSystemQuery);
-
-    public async Task BeginJourneyAsync()
+    public bool HasSelectedJourney => session.HasSelectedJourney;
+    public string JourneyName
     {
-        if (frontierId is null || !CanBeginJourney())
-        {
-            StartStatus = "Choose the current system or select a previous visit before beginning the journey.";
-            return;
-        }
-        var context = new JourneyStartContext(
-            new(frontierId, commanderName ?? string.Empty, isOdyssey, NewJourneyName, NewJourneyDescription),
-            UseCurrentStart,
-            currentSystemAddress,
-            SelectedStartVisit?.Entry,
-            contextVersion
-        );
-        int version = context.Version;
-        try
-        {
-            IsBusy = true;
-            JourneyBeginRequest? request = await PrepareBeginRequestAsync(context);
-            if (request is null)
-            {
-                return;
-            }
-            JourneyServiceResult result = await journeyService.BeginAsync(request);
-            if (version != contextVersion)
-            {
-                return;
-            }
-            IsCreating = false;
-            ClearStartVisits();
-            await RefreshCatalogAsync(result.Journey?.FileName);
-            if (version != contextVersion)
-            {
-                return;
-            }
-            StatusMessage =
-                result.Errors.Count > 0
-                    ? string.Join(Environment.NewLine, result.Errors)
-                    : $"Journey {result.Journey!.Name} is active and caught up.";
-            CaptureRecoveryReference(result.Recovery);
-            RaiseActiveState();
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                CaptureRecoveryReference(journeyService.RecoveryReference);
-                await RefreshCatalogAsync(journeyService.ActiveJourney?.FileName);
-                if (version != contextVersion)
-                {
-                    return;
-                }
-                StartStatus = "The journey was not started: " + exception.Message;
-                RaiseActiveState();
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
-        }
+        get => session.JourneyName;
+        set => session.JourneyName = value;
     }
-
-    public async Task SaveAsync()
+    public string JourneyDescription
     {
-        if (selectedDocument is null)
-        {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(JourneyName))
-        {
-            StatusMessage = "The journey name cannot be blank.";
-            return;
-        }
-
-        (long Address, DateTimeOffset Arrived)? selectedIdentity = SelectedSystem is { } system
-            ? (system.Visit.StarSystem.SystemAddress, system.Visit.Arrived)
-            : ((long Address, DateTimeOffset Arrived)?)null;
-        int version = contextVersion;
-        try
-        {
-            IsBusy = true;
-            JourneyDocument saved = await journeyService.SaveAsync(
-                selectedDocument with
-                {
-                    Name = JourneyName,
-                    Description = JourneyDescription,
-                }
-            );
-            if (version != contextVersion)
-            {
-                return;
-            }
-            saved = await SaveSelectedSystemNotesAsync(saved, version);
-            if (version != contextVersion)
-            {
-                return;
-            }
-
-            ApplyDocument(saved, preferredSystem: selectedIdentity);
-            ClearJourneyDraft();
-            UpdateCatalogDocument(saved);
-            StatusMessage = $"Saved {saved.Name}.";
-            RaiseDirtyState();
-            RaiseActiveState();
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                StatusMessage = "Journey changes were not fully saved: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
-        }
+        get => session.JourneyDescription;
+        set => session.JourneyDescription = value;
     }
-
-    private async Task<JourneyDocument> SaveSelectedSystemNotesAsync(JourneyDocument saved, int version)
+    public string JourneyByline => session.JourneyByline;
+    public IReadOnlyList<JourneyStatisticViewModel> QuickStatistics => session.QuickStatistics;
+    public IReadOnlyList<JourneySystemItemViewModel> VisitedSystems => session.VisitedSystems;
+    public JourneySystemItemViewModel? SelectedSystem
     {
-        if (SelectedSystem is not { } selected || !systemNotes.IsDirty)
-        {
-            return saved;
-        }
-        await noteStore.SaveAsync(
-            new SystemNoteContext(
-                saved.FrontierId,
-                saved.CommanderName,
-                selected.Visit.StarSystem.Name,
-                selected.Visit.StarSystem.SystemAddress,
-                selected.Visit.StarSystem.Position
-            ),
-            SelectedSystemNotes
-        );
-        if (version != contextVersion)
-        {
-            return saved;
-        }
-        await journeyService.IncrementNoteCountAsync(selected.Visit.StarSystem.SystemAddress);
-        if (version != contextVersion)
-        {
-            return saved;
-        }
-        systemNotes = systemNotes with { Loaded = systemNotes.Text };
-        return journeyService.ActiveJourney?.FileName == saved.FileName ? journeyService.ActiveJourney : saved;
+        get => session.SelectedSystem;
+        set => session.SelectedSystem = value;
     }
-
-    public Task DiscardAsync()
+    public bool HasSelectedSystem => session.HasSelectedSystem;
+    public string SelectedSystemName => session.SelectedSystemName;
+    public string SelectedSystemAddress => session.SelectedSystemAddress;
+    public string SelectedSystemAddressText => session.SelectedSystemAddressText;
+    public string SelectedSystemNotes
     {
-        if (selectedDocument is not null)
-        {
-            ClearJourneyDraft();
-            SelectedSystemNotes = systemNotes.Loaded;
-            ApplyDocument(
-                selectedDocument,
-                preferredSystem: SelectedSystem is { } system
-                    ? (system.Visit.StarSystem.SystemAddress, system.Visit.Arrived)
-                    : null
-            );
-            StatusMessage = "Unsaved Journey changes were discarded.";
-        }
-
-        return Task.CompletedTask;
+        get => session.SelectedSystemNotes;
+        set => session.SelectedSystemNotes = value;
     }
-
-    private bool CanConclude()
+    public string SelectedSystemDetails => session.SelectedSystemDetails;
+    public IReadOnlyList<string> ScreenshotFiles => session.ScreenshotFiles;
+    public bool HasScreenshots => session.HasScreenshots;
+    public bool HasImagesDirectory => session.HasImagesDirectory;
+    public bool IsDirty => session.IsDirty;
+    public bool IsCreating => session.IsCreating;
+    public string NewJourneyName
     {
-        return HasActiveJourney
-            && selectedDocument is { IsActive: true } document
-            && journeyService.ActiveJourney is { } active
-            && active.FileName == document.FileName
-            && string.Equals(active.FrontierId, document.FrontierId, StringComparison.OrdinalIgnoreCase)
-            && !IsDirty
-            && !IsBusy;
+        get => session.NewJourneyName;
+        set => session.NewJourneyName = value;
     }
-
-    private Task RequestConcludeAsync()
+    public string NewJourneyDescription
     {
-        IsConcludePending = true;
-        IsReprocessPending = false;
-        return Task.CompletedTask;
+        get => session.NewJourneyDescription;
+        set => session.NewJourneyDescription = value;
     }
-
-    private Task CancelConcludeAsync()
+    public bool HasCurrentStartSystem => session.HasCurrentStartSystem;
+    public string CurrentStartSystem => session.CurrentStartSystem;
+    public string StartSystemQuery
     {
-        IsConcludePending = false;
-        return Task.CompletedTask;
+        get => session.StartSystemQuery;
+        set => session.StartSystemQuery = value;
     }
+    public string StartStatus => session.StartStatus;
+    public bool IsConcludePending => session.IsConcludePending;
+    public bool IsReprocessPending => session.IsReprocessPending;
+    public bool AlwaysOnTop => session.AlwaysOnTop;
+    public bool UseGalacticTime => session.UseGalacticTime;
+    public ICommand OpenWorkspaceCommand => session.OpenWorkspaceCommand;
+    public ICommand RefreshCommand => session.RefreshCommand;
+    public ICommand NewJourneyCommand => session.NewJourneyCommand;
+    public ICommand CancelNewJourneyCommand => session.CancelNewJourneyCommand;
+    public ICommand FindStartCommand => session.FindStartCommand;
+    public ICommand BeginJourneyCommand => session.BeginJourneyCommand;
+    public ICommand SaveCommand => session.SaveCommand;
+    public ICommand DiscardCommand => session.DiscardCommand;
+    public ICommand RequestConcludeCommand => session.RequestConcludeCommand;
+    public ICommand ConfirmConcludeCommand => session.ConfirmConcludeCommand;
+    public ICommand CancelConcludeCommand => session.CancelConcludeCommand;
+    public ICommand RequestReprocessCommand => session.RequestReprocessCommand;
+    public ICommand ConfirmReprocessCommand => session.ConfirmReprocessCommand;
+    public ICommand CancelReprocessCommand => session.CancelReprocessCommand;
+    public ICommand OpenImagesCommand => session.OpenImagesCommand;
 
-    public async Task ConfirmConcludeAsync()
+    public Task ArchiveSelectedAsync() => session.ArchiveSelectedAsync();
+
+    public Task DeleteSelectedAsync() => session.DeleteSelectedAsync();
+
+    public async Task<JourneyHtmlExport?> CreateHtmlReportAsync()
     {
-        if (!CanConclude() || selectedDocument is not { } document)
-        {
-            return;
-        }
-        int version = contextVersion;
-        string name = commanderName ?? document.CommanderName;
-        try
-        {
-            IsBusy = true;
-            if (version != contextVersion)
-            {
-                return;
-            }
-            JourneyDocument? concluded = await journeyService.ConcludeActiveAsync(
-                name,
-                DateTimeOffset.Now,
-                expectedJourney: document
-            );
-            if (version != contextVersion)
-            {
-                return;
-            }
-            IsConcludePending = false;
-            if (concluded is not null)
-            {
-                ApplyDocument(concluded);
-                UpdateCatalogDocument(concluded);
-                StatusMessage = $"Concluded {concluded.Name}.";
-            }
-            RaiseActiveState();
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                StatusMessage = "The journey was not concluded: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
-        }
+        JourneyWorkspaceSession owner = session;
+        JourneyHtmlExport? report = await owner.CreateHtmlReportAsync();
+        return ReferenceEquals(owner, session) ? report : null;
     }
 
-    private Task RequestReprocessAsync()
-    {
-        IsReprocessPending = true;
-        IsConcludePending = false;
-        return Task.CompletedTask;
-    }
+    public void SetExportStatus(string message) => session.SetExportStatus(message);
 
-    private Task CancelReprocessAsync()
-    {
-        IsReprocessPending = false;
-        return Task.CompletedTask;
-    }
+    public Task SaveHtmlReportAsync(JourneyHtmlExport report, string destination) =>
+        session.SaveHtmlReportAsync(report, destination);
 
-    public async Task ConfirmReprocessAsync()
-    {
-        if (selectedDocument is not { } document || IsBusy || IsDirty)
-        {
-            return;
-        }
-        int version = contextVersion;
-        bool odyssey = isOdyssey;
-        try
-        {
-            IsBusy = true;
-            if (version != contextVersion)
-            {
-                return;
-            }
-            JourneyServiceResult result = await journeyService.ReprocessAsync(document, odyssey);
-            if (version != contextVersion)
-            {
-                return;
-            }
-            IsReprocessPending = false;
-            if (result.Journey is not null)
-            {
-                ApplyDocument(result.Journey);
-                UpdateCatalogDocument(result.Journey);
-                StatusMessage =
-                    result.Errors.Count > 0
-                        ? string.Join(Environment.NewLine, result.Errors)
-                        : $"Reprocessed {result.ProcessedEventCount:N0} journal events.";
-            }
-            RaiseActiveState();
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == contextVersion)
-            {
-                StatusMessage = "The Journey could not be reprocessed: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
-        }
-    }
+    public Task ResumeJourneyAsync() => session.ResumeJourneyAsync();
 
-    private void ApplyDocument(
-        JourneyDocument? document,
-        bool preserveEdits = false,
-        (long Address, DateTimeOffset Arrived)? preferredSystem = null
-    )
-    {
-        string previousName = JourneyName;
-        string previousDescription = JourneyDescription;
-        string previousNotes = SelectedSystemNotes;
-        preferredSystem ??= SelectedSystem is { } prior
-            ? (prior.Visit.StarSystem.SystemAddress, prior.Visit.Arrived)
-            : null;
-        selectedDocument = document;
-        isApplyingDocument = true;
-        try
-        {
-            JourneyName = preserveEdits ? previousName : document?.Name ?? string.Empty;
-            JourneyDescription = preserveEdits ? previousDescription : document?.Description ?? string.Empty;
-            QuickStatistics = document is null ? [] : CreateStatistics(JourneyStatistics.Calculate(document));
-            primaryStatistics = QuickStatistics.Take(4).ToArray();
-            IReadOnlySet<long> systemsWithPhotos =
-                document
-                    ?.VisitedSystems.Where(visit => visit.Counts.Screenshots > 0)
-                    .Select(visit => visit.StarSystem.SystemAddress)
-                    .ToHashSet()
-                ?? [];
-            IReadOnlySet<long> systemsWithNotes =
-                document
-                    ?.VisitedSystems.Where(visit => visit.Counts.Notes > 0)
-                    .Select(visit => visit.StarSystem.SystemAddress)
-                    .ToHashSet()
-                ?? [];
-            VisitedSystems =
-                document
-                    ?.VisitedSystems.OrderByDescending(visit => visit.Arrived)
-                    .Select(visit => new JourneySystemItemViewModel(
-                        visit,
-                        CreateInterestFlags(visit, systemsWithPhotos, systemsWithNotes),
-                        FormatTime(visit.Arrived),
-                        visit.Departed is { } departed ? FormatTime(departed) : "Current"
-                    ))
-                    .ToArray()
-                ?? [];
-            suppressSystemLoad = preserveEdits;
-            try
-            {
-                JourneySystemItemViewModel? firstVisitedSystem = VisitedSystems.Count > 0 ? VisitedSystems[0] : null;
-                SelectedSystem = preferredSystem is { } identity
-                    ? VisitedSystems.FirstOrDefault(item =>
-                        item.Visit.StarSystem.SystemAddress == identity.Address
-                        && item.Visit.Arrived == identity.Arrived
-                    ) ?? firstVisitedSystem
-                    : firstVisitedSystem;
-            }
-            finally
-            {
-                suppressSystemLoad = false;
-            }
+    public Task ClearUnavailableJourneyAsync() => session.ClearUnavailableJourneyAsync();
 
-            if (preserveEdits)
-            {
-                SelectedSystemNotes = previousNotes;
-                SelectedSystemDetails = SelectedSystem is { } selected
-                    ? CreateSystemDetails(selected.Visit)
-                    : string.Empty;
-            }
-        }
-        finally
-        {
-            isApplyingDocument = false;
-        }
+    public Task SelectStartingSystemAsync(string? systemName, long? systemAddress) =>
+        session.SelectStartingSystemAsync(systemName, systemAddress);
 
-        IsDeletePending = false;
-        OnPropertyChanged(nameof(HasSelectedJourney));
-        OnPropertyChanged(nameof(PrimaryStatistics));
-        OnPropertyChanged(nameof(SelectedJourneyState));
-        OnPropertyChanged(nameof(HasVisitedSystems));
-        OnPropertyChanged(nameof(RouteOrigin));
-        OnPropertyChanged(nameof(RouteDestination));
-        OnPropertyChanged(nameof(IsCompletedJourney));
-        OnPropertyChanged(nameof(IsSelectedActiveJourney));
-        OnPropertyChanged(nameof(ArchiveButtonText));
-        OnPropertyChanged(nameof(JourneyByline));
-        OnPropertyChanged(nameof(HasSelectedSystem));
-        RaiseDirtyState();
-        RaiseCommands();
-    }
+    public Task FindStartAsync() => session.FindStartAsync();
 
-    private void ApplyLoadedSystemNotes(string notes)
-    {
-        systemNotes = new SystemNoteDraft(notes, notes);
-        OnPropertyChanged(nameof(SelectedSystemNotes));
-    }
+    public void RefreshScreenshotAvailability() => session.RefreshScreenshotAvailability();
 
-    private sealed record SystemNoteDraft(string Loaded, string Text)
-    {
-        public bool IsDirty => !string.Equals(Loaded, Text, StringComparison.Ordinal);
-    }
+    public Task ApplyJournalEventsAsync(IReadOnlyList<JournalEventEnvelope> journalEvents) =>
+        session.ApplyJournalEventsAsync(journalEvents);
 
-    private async Task LoadSelectedSystemAsync(JourneySystemItemViewModel? item)
-    {
-        int version = ++systemLoadVersion;
-        if (item is null || selectedDocument is null)
-        {
-            isApplyingDocument = true;
-            try
-            {
-                ApplyLoadedSystemNotes(string.Empty);
-                SelectedSystemDetails = string.Empty;
-                ScreenshotFiles = [];
-                imagesDirectory = null;
-            }
-            finally
-            {
-                isApplyingDocument = false;
-            }
+    public Task RefreshAsync() => session.RefreshAsync();
 
-            OnPropertyChanged(nameof(HasSelectedSystem));
-            OnPropertyChanged(nameof(HasImagesDirectory));
-            RaiseCommands();
-            return;
-        }
+    public Task StartNewJourneyAsync() => session.StartNewJourneyAsync();
 
-        try
-        {
-            JourneySystemVisit visit = item.Visit;
-            SystemNoteLoadResult load = await noteStore.LoadAsync(
-                selectedDocument.FrontierId,
-                visit.StarSystem.Name,
-                visit.StarSystem.SystemAddress
-            );
-            if (version != systemLoadVersion)
-            {
-                return;
-            }
+    public Task BeginJourneyAsync() => session.BeginJourneyAsync();
 
-            isApplyingDocument = true;
-            try
-            {
-                ApplyLoadedSystemNotes(load.Notes ?? string.Empty);
-                SelectedSystemDetails = CreateSystemDetails(visit);
-                RefreshScreenshotAvailability();
-            }
-            finally
-            {
-                isApplyingDocument = false;
-            }
+    public Task SaveAsync() => session.SaveAsync();
 
-            OnPropertyChanged(nameof(HasSelectedSystem));
-            OnPropertyChanged(nameof(HasImagesDirectory));
-            RaiseDirtyState();
-            RaiseCommands();
-            if (!load.IsSuccess)
-            {
-                StatusMessage = load.Error ?? "System notes could not be loaded.";
-            }
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            if (version == systemLoadVersion)
-            {
-                StatusMessage = "System details could not be loaded: " + exception.Message;
-            }
-        }
-    }
+    public Task DiscardAsync() => session.DiscardAsync();
 
-    private async Task OpenImagesAsync()
-    {
-        if (directoryLauncher is null || imagesDirectory is null)
-        {
-            return;
-        }
+    public Task ConfirmConcludeAsync() => session.ConfirmConcludeAsync();
 
-        try
-        {
-            StatusMessage = await directoryLauncher(new DirectoryInfo(imagesDirectory))
-                ? "Opened the system screenshot folder."
-                : "The operating system could not open the screenshot folder.";
-        }
-        catch (Exception exception) when (IsExpectedException(exception))
-        {
-            StatusMessage = "The screenshot folder could not be opened: " + exception.Message;
-        }
-    }
-
-    private void UpdateCatalogDocument(JourneyDocument document)
-    {
-        Journeys = Journeys
-            .Select(item =>
-                item.Document.FileName == document.FileName
-                    ? new JourneyListItemViewModel(
-                        document,
-                        FormatTime(document.StartTime),
-                        FormatTime(document.Watermark)
-                    )
-                    : item
-            )
-            .ToArray();
-        selectedJourney = VisibleJourneys.FirstOrDefault(item => item.Document.FileName == selectedDocument?.FileName);
-        OnPropertyChanged(nameof(SelectedJourney));
-        OnPropertyChanged(nameof(HasJourneys));
-    }
-
-    private void RaiseActiveState()
-    {
-        OnPropertyChanged(nameof(HasActiveJourney));
-        OnPropertyChanged(nameof(ActiveJourneyName));
-        OnPropertyChanged(nameof(ActiveJourneySummary));
-        RaiseCommands();
-    }
-
-    private void RaiseDirtyState()
-    {
-        clearUnavailableJourneyCommand?.RaiseCanExecuteChanged();
-        resumeJourneyCommand?.RaiseCanExecuteChanged();
-        OnPropertyChanged(nameof(CanResumeJourney));
-        OnPropertyChanged(nameof(IsDirty));
-        newJourneyCommand.RaiseCanExecuteChanged();
-        beginJourneyCommand.RaiseCanExecuteChanged();
-        refreshCommand.RaiseCanExecuteChanged();
-        saveCommand.RaiseCanExecuteChanged();
-        discardCommand.RaiseCanExecuteChanged();
-        requestConcludeCommand.RaiseCanExecuteChanged();
-        requestReprocessCommand.RaiseCanExecuteChanged();
-        RaiseHistoryCommands();
-    }
-
-    private void RaiseCommands()
-    {
-        clearUnavailableJourneyCommand?.RaiseCanExecuteChanged();
-        resumeJourneyCommand?.RaiseCanExecuteChanged();
-        OnPropertyChanged(nameof(CanResumeJourney));
-        openWorkspaceCommand.RaiseCanExecuteChanged();
-        refreshCommand.RaiseCanExecuteChanged();
-        newJourneyCommand.RaiseCanExecuteChanged();
-        cancelNewJourneyCommand.RaiseCanExecuteChanged();
-        findStartCommand.RaiseCanExecuteChanged();
-        beginJourneyCommand.RaiseCanExecuteChanged();
-        saveCommand.RaiseCanExecuteChanged();
-        discardCommand.RaiseCanExecuteChanged();
-        requestConcludeCommand.RaiseCanExecuteChanged();
-        confirmConcludeCommand.RaiseCanExecuteChanged();
-        cancelConcludeCommand.RaiseCanExecuteChanged();
-        requestReprocessCommand.RaiseCanExecuteChanged();
-        confirmReprocessCommand.RaiseCanExecuteChanged();
-        cancelReprocessCommand.RaiseCanExecuteChanged();
-        openImagesCommand.RaiseCanExecuteChanged();
-        RaiseHistoryCommands();
-    }
-
-    private string FormatTime(DateTimeOffset value)
-    {
-        return UseGalacticTime
-            ? value.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)
-            : value.LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
-    }
-
-    private string CreateSystemDetails(JourneySystemVisit visit)
-    {
-        int bodyCount = Math.Max(0, visit.Counts.BodyCount - visit.Counts.Stars);
-        string departure = visit.Departed switch
-        {
-            { } departed => $"Departed {FormatTime(departed)}",
-            _ when selectedDocument?.EndTime is { } ended => $"Journey ended here {FormatTime(ended)}",
-            _ => "Currently in this system",
-        };
-        var lines = new List<string>
-        {
-            $"Arrived {FormatTime(visit.Arrived)}",
-            departure,
-            $"FSS {visit.Counts.BodyScans:N0} of {visit.Counts.BodyCount:N0} bodies; DSS {visit.Counts.DetailedSurfaceScans:N0} of {bodyCount:N0}",
-            $"Exploration rewards ~{visit.Counts.ExplorationRewards:N0} CR",
-            $"Biology {visit.Counts.Organisms:N0} analysed / base value {visit.Counts.ExobiologyRewards:N0} CR",
-            $"Codex {visit.CodexScanned?.Count ?? 0:N0} scans / {visit.Counts.NewCodexEntries:N0} regional firsts",
-            $"Touchdowns {visit.Counts.Touchdowns:N0}; screenshots {visit.Counts.Screenshots:N0}; notes {visit.Counts.Notes:N0}",
-        };
-        if (visit.SurfaceSignals is { Count: > 0 })
-        {
-            lines.Add(
-                "Surface signals: "
-                    + string.Join(", ", visit.SurfaceSignals.Select(signal => $"{signal.Key} {signal.Value:N0}"))
-            );
-        }
-
-        if (visit.FssSignals is { Count: > 0 })
-        {
-            lines.Add(
-                "FSS signals: "
-                    + string.Join(", ", visit.FssSignals.Select(signal => $"{signal.Key} {signal.Value:N0}"))
-            );
-        }
-
-        return string.Join(Environment.NewLine, lines);
-    }
-
-    private static List<JourneyStatisticViewModel> CreateStatistics(JourneyQuickStatistics statistics)
-    {
-        var values = new List<JourneyStatisticViewModel>
-        {
-            new("FSD jumps", statistics.JumpCount.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Total distance", $"{statistics.TotalDistance:N1} ly"),
-            new("Systems visited", statistics.UniqueSystemCount.ToString("N0", CultureInfo.CurrentCulture)),
-            new("FSS complete", statistics.FssCompletedSystemCount.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Bodies scanned", statistics.Counts.BodyScans.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Detailed scans", statistics.Counts.DetailedSurfaceScans.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Touchdowns", statistics.TotalLandingCount.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Screenshots", statistics.Counts.Screenshots.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Notes", statistics.Counts.Notes.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Organisms", statistics.Counts.Organisms.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Biology base value", $"{statistics.Counts.ExobiologyRewards:N0} CR"),
-            new("Exploration rewards", $"~{statistics.Counts.ExplorationRewards:N0} CR"),
-            new("Codex scans", statistics.CodexScanCount.ToString("N0", CultureInfo.CurrentCulture)),
-            new("New Codex", statistics.Counts.NewCodexEntries.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Stars", statistics.Counts.Stars.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Bodies catalogued", statistics.Counts.BodyCount.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Landing sites by visit", statistics.LandedBodyCount.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Journal touchdowns", statistics.Counts.Touchdowns.ToString("N0", CultureInfo.CurrentCulture)),
-        };
-        values.AddRange(
-            statistics.SubCategoryCounts.Select(category => new JourneyStatisticViewModel(
-                category.Key,
-                category.Value.ToString("N0", CultureInfo.CurrentCulture)
-            ))
-        );
-        return values;
-    }
-
-    private static string CreateInterestFlags(
-        JourneySystemVisit visit,
-        IReadOnlySet<long> systemsWithPhotos,
-        IReadOnlySet<long> systemsWithNotes
-    )
-    {
-        string flags = string.Empty;
-        flags +=
-            visit.Counts.Screenshots > 0
-                ? "P"
-                : (systemsWithPhotos.Contains(visit.StarSystem.SystemAddress)) switch
-                {
-                    true => "p",
-                    false => string.Empty,
-                };
-        flags += visit.Counts.Organisms > 0 ? "B" : string.Empty;
-        flags +=
-            visit.Counts.Notes > 0
-                ? "N"
-                : (systemsWithNotes.Contains(visit.StarSystem.SystemAddress)) switch
-                {
-                    true => "n",
-                    false => string.Empty,
-                };
-        flags += visit.Counts.NewCodexEntries > 0 ? "C" : string.Empty;
-        flags += visit.Counts.Touchdowns > 0 ? "T" : string.Empty;
-        return flags;
-    }
-
-    private static string[] GetScreenshotFiles(string? directory)
-    {
-        if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
-        {
-            return [];
-        }
-
-        try
-        {
-            return Directory
-                .EnumerateFiles(directory, "*.png", SearchOption.TopDirectoryOnly)
-                .Order(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            return [];
-        }
-    }
-
-    private static bool IsExpectedException(Exception exception)
-    {
-        return exception
-            is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException
-                or ArgumentException
-                or HttpRequestException;
-    }
-
-    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-    {
-        if (EqualityComparer<T>.Default.Equals(field, value))
-        {
-            return false;
-        }
-
-        field = value;
-        OnPropertyChanged(propertyName);
-        return true;
-    }
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
-    {
-        public event EventHandler? CanExecuteChanged;
-
-        public bool CanExecute(object? parameter)
-        {
-            return canExecute();
-        }
-
-        public async void Execute(object? parameter)
-        {
-            if (CanExecute(parameter))
-            {
-                await execute();
-            }
-        }
-
-        public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
-    }
+    public Task ConfirmReprocessAsync() => session.ConfirmReprocessAsync();
 }
 
 public sealed record JourneyListItemViewModel(JourneyDocument Document, string Started, string Updated)
@@ -1628,4 +353,13 @@ public sealed record JourneySystemItemViewModel(
         };
 
     public string Address => Visit.StarSystem.SystemAddress.ToString(CultureInfo.InvariantCulture);
+}
+
+public sealed record JourneyStartVisitViewModel(JourneyJournalSystemEntry Entry)
+{
+    public string SystemName => Entry.System.Name;
+    public string Arrived =>
+        Entry.Event.Timestamp?.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)
+        ?? "Unknown arrival time";
+    public string ArrivalType => Entry.Event.EventName == "CarrierJump" ? "Fleet carrier arrival" : "Ship arrival";
 }

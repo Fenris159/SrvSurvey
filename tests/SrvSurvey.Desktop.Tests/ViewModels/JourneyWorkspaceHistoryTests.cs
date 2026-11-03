@@ -90,6 +90,135 @@ public sealed partial class JourneyWorkspaceViewModelTests
         Assert.Equal("Waiting for a commander profile.", model.StatusMessage);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ABackgroundJournalWriteCannotPublishIntoADisconnectedWorkspace(bool failWrite)
+    {
+        await WriteJournalAsync(
+            """
+            {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
+            {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            """
+        );
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Original commander";
+        await model.BeginJourneyAsync();
+        string fileName = Assert.Single(model.Journeys).Document.FileName;
+        string directory = Path.Combine(DataDirectory, "journey", "F123");
+        Task update;
+        await using (
+            var lease = new FileStream(
+                Path.Combine(directory, ".journey.lease"),
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.None
+            )
+        )
+        {
+            update = model.ApplyJournalEventsAsync([
+                Parse("""{"timestamp":"2026-07-01T00:06:00Z","event":"Screenshot"}"""),
+            ]);
+            Assert.False(update.IsCompleted);
+            await model.UpdateContextAsync(null, null, true, null, null);
+            if (failWrite)
+            {
+                await File.WriteAllTextAsync(Path.Combine(directory, fileName + ".json"), "invalid journey");
+            }
+        }
+        await update.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.False(model.HasProfile);
+        Assert.False(model.IsBusy);
+        Assert.Empty(model.Journeys);
+        Assert.False(model.HasSelectedJourney);
+        Assert.Equal("Waiting for a commander profile.", model.StatusMessage);
+        if (!failWrite)
+        {
+            JourneyLoadResult saved = await new JourneyStore(DataDirectory).LoadAsync("F123", fileName);
+            Assert.Equal(1, Assert.Single(saved.Journey!.VisitedSystems).Counts.Screenshots);
+        }
+    }
+
+    [Fact]
+    public async Task APreparedReportIsNotReturnedAfterTheCommanderDisconnects()
+    {
+        await SeedHistoricalJourneyAsync(1);
+        Action? duringImageLookup = null;
+        JourneyWorkspaceViewModel model = CreateViewModel(_ =>
+        {
+            duringImageLookup?.Invoke();
+            return null;
+        });
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Task<bool>? disconnected = null;
+        duringImageLookup = () =>
+        {
+            duringImageLookup = null;
+            disconnected = model.UpdateContextAsync(null, null, true, null, null);
+        };
+
+        JourneyHtmlExport? report = await model.CreateHtmlReportAsync();
+
+        Assert.NotNull(disconnected);
+        await disconnected;
+        Assert.Null(report);
+        Assert.False(model.HasProfile);
+        Assert.False(model.IsBusy);
+        Assert.Equal("Waiting for a commander profile.", model.StatusMessage);
+    }
+
+    [Fact]
+    public async Task LeavingDuringBeginPreparationCannotReplaceTheNewCommandersActiveJourney()
+    {
+        await WriteJournalAsync(
+            """
+            {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
+            {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            """
+        );
+        string secondJournal = Path.Combine(JournalDirectory, "Journal.2026-07-02T000000.01.log");
+        await File.WriteAllTextAsync(
+            secondJournal,
+            """
+            {"timestamp":"2026-07-02T00:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"2026-07-02T00:00:01Z","event":"Commander","Name":"Other","FID":"F456"}
+            {"timestamp":"2026-07-02T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            """
+        );
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 7, 2, 0, 0, 0, DateTimeKind.Utc));
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Second commander";
+        await model.BeginJourneyAsync();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        await model.StartNewJourneyAsync();
+        model.NewJourneyName = "Cancelled preparation";
+        bool switchRequested = false;
+        Task<bool>? switched = null;
+        model.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(model.IsBusy) && model.IsBusy && !switchRequested)
+            {
+                switchRequested = true;
+                switched = model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+            }
+        };
+
+        await model.BeginJourneyAsync();
+        Assert.NotNull(switched);
+        await switched;
+
+        Assert.True(model.HasActiveJourney);
+        Assert.Equal("Second commander", model.ActiveJourneyName);
+        Assert.Empty((await new JourneyStore(DataDirectory).LoadAllAsync("F123")).Journeys);
+    }
+
     [Fact]
     public async Task ANewerArchiveDecisionDoesNotHideAnUnsavedDraftOnCommanderReturn()
     {

@@ -283,12 +283,28 @@ public sealed partial class JourneyService
         }
     }
 
-    public async Task<bool> IncrementNoteCountAsync(long systemAddress, CancellationToken cancellationToken = default)
+    public Task<bool> IncrementNoteCountAsync(long systemAddress, CancellationToken cancellationToken = default) =>
+        IncrementNoteCountAsync(systemAddress, null, cancellationToken);
+
+    public async Task<bool> IncrementNoteCountAsync(
+        long systemAddress,
+        JourneyDocument? expectedJourney,
+        CancellationToken cancellationToken = default
+    )
     {
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (activeProcessor is null)
+            if (
+                activeProcessor is null
+                || (
+                    expectedJourney is not null
+                    && (
+                        activeProcessor.Journey.FrontierId != expectedJourney.FrontierId
+                        || activeProcessor.Journey.FileName != expectedJourney.FileName
+                    )
+                )
+            )
             {
                 return false;
             }

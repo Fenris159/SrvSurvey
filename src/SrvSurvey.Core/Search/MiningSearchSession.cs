@@ -27,6 +27,9 @@ public static class MiningProviderFailure
         ex is HttpRequestException or JsonException or IOException or InvalidDataException;
 }
 
+/// <summary>A completed readout and the search context that produced it.</summary>
+public sealed record AcceptedMiningSearch<TSnapshot>(TSnapshot Snapshot, string FilterKey, string Reference);
+
 public sealed record MiningSearchRunOptions(TimeSpan? Timeout = null, bool InvalidOperationFails = false)
 {
     public static MiningSearchRunOptions Default { get; } = new();
@@ -59,6 +62,12 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
 
     public bool IsRestoring { get; private set; }
 
+    public AcceptedMiningSearch<TSnapshot>? AcceptedResult { get; private set; }
+
+    public bool HasIncompleteResult { get; private set; }
+
+    public MiningSearchOutcomeKind? LastOutcome { get; private set; }
+
     public MiningSearchReference Reference { get; }
 
     public IMiningSearchResultStore? Store { get; private set; }
@@ -84,6 +93,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         }
 
         Store?.Save(Workspace, key, snapshot);
+        AcceptedResult = new(snapshot, key, Reference.Value);
     }
 
     /// <summary>Applies presentation progress or results only while their search is still current.</summary>
@@ -105,17 +115,60 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
 
         if (Store.Load<TSnapshot>(Workspace, FilterKey()) is { } saved)
         {
-            restore(saved);
+            RestoreResult(saved, () => restore(saved), pinReference: false);
         }
         else
         {
+            AcceptedResult = null;
             clear();
+        }
+    }
+
+    /// <summary>Restores one accepted readout without interpreting its saved filters as user edits.</summary>
+    public void RestoreResult(TSnapshot snapshot, Action apply, bool pinReference)
+    {
+        Abandon();
+        try
+        {
+            Restore(apply);
+            AcceptedResult = new(snapshot, FilterKey(), Reference.Value);
+            HasIncompleteResult = false;
+            LastOutcome = MiningSearchOutcomeKind.Completed;
+        }
+        finally
+        {
+            if (pinReference)
+            {
+                Reference.Pin();
+            }
+        }
+    }
+
+    /// <summary>Clears accepted and pending work, then restores current-location following.</summary>
+    public void Reset(Action apply)
+    {
+        Abandon();
+        AcceptedResult = null;
+        HasIncompleteResult = false;
+        LastOutcome = null;
+        Reference.Unpin();
+        Restore(apply);
+    }
+
+    /// <summary>Records a provider failure or partial result without depending on presentation text.</summary>
+    public void MarkIncomplete(CancellationToken token)
+    {
+        if (pending is { } current && current.Cancellation.Token == token)
+        {
+            current.Incomplete = true;
+            HasIncompleteResult = true;
         }
     }
 
     /// <summary>Applies restored filters without treating them as commander edits.</summary>
     public void Restore(Action apply)
     {
+        bool previous = IsRestoring;
         IsRestoring = true;
         try
         {
@@ -123,18 +176,38 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         }
         finally
         {
-            IsRestoring = false;
+            IsRestoring = previous;
         }
     }
 
-    public async Task RunAsync(
+    public Task RunAsync(
         Func<CancellationToken, Task> search,
         Action<MiningSearchOutcome> report,
         MiningSearchRunOptions? options = null,
         CancellationToken cancellationToken = default
+    ) => RunCoreAsync(search, report, null, options, cancellationToken);
+
+    public Task RunAndCaptureAsync(
+        Func<CancellationToken, Task> search,
+        Action<MiningSearchOutcome> report,
+        Func<TSnapshot> capture,
+        MiningSearchRunOptions? options = null,
+        CancellationToken cancellationToken = default
+    ) => RunCoreAsync(search, report, capture, options, cancellationToken);
+
+    private async Task RunCoreAsync(
+        Func<CancellationToken, Task> search,
+        Action<MiningSearchOutcome> report,
+        Func<TSnapshot>? capture,
+        MiningSearchRunOptions? options,
+        CancellationToken cancellationToken
     )
     {
         options ??= MiningSearchRunOptions.Default;
+        if (!string.IsNullOrWhiteSpace(Reference.Value))
+        {
+            Reference.Pin();
+        }
         string key = FilterKey();
         PendingSearch? previous = pending;
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -145,8 +218,9 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         }
 
         pending = current;
+        HasIncompleteResult = false;
         SetBusy(true);
-        report(MiningSearchOutcome.Started);
+        Report(MiningSearchOutcome.Started, report);
         using IDisposable diagnosticScope = provider.BeginDiagnostics();
         CancellationToken token = cancellation.Token;
         try
@@ -159,16 +233,13 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
             token.ThrowIfCancellationRequested();
             await search(token);
             token.ThrowIfCancellationRequested();
-            if (pending == current)
-            {
-                report(MiningSearchOutcome.Completed);
-            }
+            CompleteSearch(current, capture, report);
         }
         catch (OperationCanceledException)
         {
             if (pending == current)
             {
-                report(MiningSearchOutcome.Canceled);
+                Report(MiningSearchOutcome.Canceled, report);
             }
         }
         catch (Exception ex)
@@ -176,14 +247,14 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         {
             if (pending == current)
             {
-                report(MiningSearchOutcome.Failed);
+                Report(MiningSearchOutcome.Failed, report);
             }
         }
         catch (ArgumentException ex)
         {
             if (pending == current)
             {
-                report(new MiningSearchOutcome(MiningSearchOutcomeKind.Rejected, ex.Message));
+                Report(new MiningSearchOutcome(MiningSearchOutcomeKind.Rejected, ex.Message), report);
             }
         }
         finally
@@ -194,6 +265,19 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
                 SetBusy(false);
             }
         }
+    }
+
+    private void CompleteSearch(PendingSearch current, Func<TSnapshot>? capture, Action<MiningSearchOutcome> report)
+    {
+        if (pending != current)
+        {
+            return;
+        }
+        if (!current.Incomplete && current.FilterKey == FilterKey() && capture is not null)
+        {
+            Save(capture());
+        }
+        Report(MiningSearchOutcome.Completed, report);
     }
 
     public void Cancel() => pending?.Cancellation.Cancel();
@@ -216,6 +300,13 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         public CancellationTokenSource Cancellation { get; } = cancellation;
 
         public string FilterKey { get; } = filterKey;
+        public bool Incomplete { get; set; }
+    }
+
+    private void Report(MiningSearchOutcome outcome, Action<MiningSearchOutcome> report)
+    {
+        LastOutcome = outcome.Kind;
+        report(outcome);
     }
 
     private void SetBusy(bool value)
@@ -241,6 +332,8 @@ public sealed class MiningSearchReference
 
     public string CurrentSystem { get; private set; } = "";
 
+    internal string Value { get; private set; } = "";
+
     /// <summary>Normalizes an edited reference; an emptied field falls back to the commander's system.</summary>
     public string Edit(string? value, out bool refilled)
     {
@@ -257,6 +350,7 @@ public sealed class MiningSearchReference
 
         refilled = string.IsNullOrEmpty(value) && next.Length > 0;
         tracksCommander = next.Equals(CurrentSystem, StringComparison.OrdinalIgnoreCase);
+        Value = next;
         return next;
     }
 

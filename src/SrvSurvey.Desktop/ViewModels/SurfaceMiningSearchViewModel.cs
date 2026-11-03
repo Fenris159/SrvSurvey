@@ -414,12 +414,10 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     }
 
     public void Reset() =>
-        session.Restore(() =>
+        session.Reset(() =>
         {
-            session.Abandon();
             Materials.Selected.Clear();
             ForceIncludeReference = false;
-            session.Reference.Unpin();
             Radius = 100;
             ResultLimit = 1;
             MineSellRadius = 50;
@@ -476,9 +474,9 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
         };
 
     public void RestoreSnapshot(SurfaceMiningSearchSnapshot snapshot, bool restoreFilters) =>
-        session.Restore(() =>
-        {
-            try
+        session.RestoreResult(
+            snapshot,
+            () =>
             {
                 if (restoreFilters)
                 {
@@ -496,18 +494,11 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                     MinimumDemand = snapshot.MinimumDemand;
                     MaximumDemand = snapshot.MaximumDemand;
                 }
-
                 Rows = snapshot.Rows.Select(row => row.Restore()).ToArray();
                 Status = MiningSearchStatusText.Saved(snapshot.Status, snapshot.SavedAt);
-            }
-            finally
-            {
-                if (restoreFilters)
-                {
-                    session.Reference.Pin();
-                }
-            }
-        });
+            },
+            pinReference: restoreFilters
+        );
 
     private object CacheFilters() =>
         new
@@ -660,6 +651,8 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     }
 
     public bool HasRows => Rows.Count > 0;
+    internal bool HasIncompleteResult =>
+        session.HasIncompleteResult || session.LastOutcome is not MiningSearchOutcomeKind.Completed;
     public IReadOnlyList<PowerplayAcquireClusterViewModel> AcquireClusters => acquireClusters;
 
     public void UseDiagnosticLog(Action<string>? log) => client.DiagnosticLog = log;
@@ -667,19 +660,19 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
     public Task SearchAsync(CancellationToken cancellationToken = default)
     {
         SurfaceSellSearchRequest request = SearchRequest();
-        if (!string.IsNullOrWhiteSpace(request.Reference))
-        {
-            // A journal arrival must not change this search's reference or cached-result identity.
-            session.Reference.Pin();
-        }
         bool defaultDistanceSort = DefaultSellDistanceSort;
-        return session.RunAsync(
+        return session.RunAndCaptureAsync(
             async token =>
             {
                 string result = await FindSurfaceSalesAsync(request, defaultDistanceSort, token);
+                if (client.PriceMarksUnavailable)
+                {
+                    session.MarkIncomplete(token);
+                }
                 session.Publish(() => Status = result, token);
             },
             ReportSearch,
+            ExportSnapshot,
             cancellationToken: cancellationToken
         );
     }
@@ -692,10 +685,6 @@ public sealed class SurfaceMiningSearchViewModel : WorkspaceObservable, IDisposa
                 Status = "Searching…";
                 break;
             case MiningSearchOutcomeKind.Completed:
-                if (!Status.Contains(RequestFailed, StringComparison.Ordinal))
-                {
-                    session.Save(ExportSnapshot());
-                }
                 break;
             case MiningSearchOutcomeKind.Canceled:
                 Status = "Search canceled.";

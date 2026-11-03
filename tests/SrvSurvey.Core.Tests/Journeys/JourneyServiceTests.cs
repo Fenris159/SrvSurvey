@@ -128,7 +128,10 @@ public sealed class JourneyServiceTests : IDisposable
         JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
         var request = new JourneyBeginRequest("F123", "Drew", true, "Journey", string.Empty, start.Entry!);
         JourneyServiceResult begun = await service.BeginAsync(request);
+        JourneyDocument journey = Assert.IsType<JourneyDocument>(begun.Journey);
 
+        Assert.False(await service.IncrementNoteCountAsync(42, journey with { FrontierId = "F456" }));
+        Assert.False(await service.IncrementNoteCountAsync(42, journey with { FileName = "another-journey" }));
         Assert.True(await service.IncrementNoteCountAsync(42));
         Assert.False(await service.IncrementNoteCountAsync(999));
         await service.ApplyLiveAsync([
@@ -139,7 +142,7 @@ public sealed class JourneyServiceTests : IDisposable
         Assert.False(await service.IncrementNoteCountAsync(42));
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.BeginAsync(request));
 
-        JourneyLoadResult stored = await new JourneyStore(DataDirectory).LoadAsync("F123", begun.Journey!.FileName);
+        JourneyLoadResult stored = await new JourneyStore(DataDirectory).LoadAsync("F123", journey.FileName);
         Assert.Equal(1, stored.Journey!.VisitedSystems[0].Counts.Notes);
         Assert.Equal(0, stored.Journey.CurrentSystem!.Counts.Notes);
         Assert.Equal(1, service.ActiveJourney!.VisitedSystems[0].Counts.Notes);
