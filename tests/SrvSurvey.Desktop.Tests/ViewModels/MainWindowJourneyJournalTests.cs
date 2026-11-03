@@ -98,6 +98,14 @@ public sealed class MainWindowJourneyJournalTests : IDisposable
             { /* The assertion below reports the missing Journey image. */
             }
             string expected = Path.Combine(pictures, "converted", "Sol", "Earth (1970-01-01 050653).png");
+            Assert.True(
+                File.Exists(expected),
+                $"Expected converted PNG at '{expected}'. "
+                    + $"Screenshot status: {model.ScreenshotProcessing.StatusMessage} "
+                    + $"Source: {model.ScreenshotProcessing.SourceFolder}; target: {model.ScreenshotProcessing.TargetFolder}; "
+                    + $"pending: {processor.PendingCount}; monitoring: {monitoring.Status}; "
+                    + $"journal status: {model.StatusMessage}"
+            );
             Assert.Equal([expected], model.Journey.ScreenshotFiles);
         }
         finally

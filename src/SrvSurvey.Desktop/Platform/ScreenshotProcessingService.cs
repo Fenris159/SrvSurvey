@@ -264,7 +264,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         ScreenshotProcessingPreferences preferences = request.Preferences;
         ScreenshotGuardianContext? guardianContext = request.GuardianContext;
         using SKBitmap source =
-            SKBitmap.Decode(sourcePath)
+            DecodeBitmapFile(sourcePath)
             ?? throw new InvalidDataException($"'{sourcePath}' is not a supported bitmap image.");
         using SKBitmap output =
             source.Copy() ?? throw new InvalidDataException($"'{sourcePath}' could not be copied for conversion.");
@@ -348,6 +348,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         };
     }
 
+    private static SKBitmap? DecodeBitmapFile(string path)
+    {
+        // Managed file streams support long Windows paths without asking the
+        // native decoder to reopen a filename through its own file API.
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return SKBitmap.Decode(stream);
+    }
+
     private static void WritePngAtomically(SKBitmap bitmap, string outputPath)
     {
         string temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
@@ -361,7 +369,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 stream.Flush(true);
             }
 
-            using (var verified = SKBitmap.Decode(temporaryPath))
+            using (SKBitmap? verified = DecodeBitmapFile(temporaryPath))
             {
                 if (verified is null || verified.Width != bitmap.Width || verified.Height != bitmap.Height)
                 {

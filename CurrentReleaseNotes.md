@@ -3,8 +3,9 @@
 RC77.4 adds dedicated Squadron Carrier routes, clearer Canonn Prior Scans,
 persistent mining search results and galactic Journey report maps. Personal and
 squadron carriers can be tracked together while keeping their progress, fuel
-and jump readouts separate. This release also retains the Journey recovery,
-workspace and reliability improvements described below.
+and jump readouts separate. It also improves screenshot conversion and folder
+selection, Journey workspace consistency, mining result restoration and Nexus
+log clarity, alongside the recovery and reliability improvements below.
 
 RC77.3 fixes older Journey files leaving an empty workspace unable to begin a
 new Journey. Older metadata is upgraded with an original-file backup, and saved
@@ -28,6 +29,33 @@ from RC77.
 
 ## What's changed
 
+- **Screenshot conversion:** Late or locked BMPs stay pending and are retried
+  during live and idle journal polling. Each capture retains its original
+  system, commander, Guardian details and conversion preferences through travel
+  or settings changes. Repeated journal records do not create duplicate PNGs,
+  and turning conversion off pauses pending work. Failure messages explain the
+  file error while retaining the original BMP. Image reads use managed streams
+  to support long Windows paths during decoding and PNG verification.
+- **Screenshot folders:** Automatic detection uses the configured Wine/Proton
+  journal profile's Pictures folder, with the platform Pictures location as a
+  fallback. Windows keeps its known-folder support, including redirected
+  Pictures folders. The BMP source can still be chosen manually. The shared
+  PNG destination used by Journeys is displayed read-only with an **Open folder**
+  button that creates the folder when needed. Native absolute screenshot paths
+  are honored, with a configured-folder fallback for moved or guest files.
+- **Quieter Colonization Nexus:** Reused or closing project action menus no
+  longer produce empty-context binding warnings in the application log.
+- **Journey workspace consistency:** Switching commanders or disconnecting
+  retires pending workspace operations so late history, start, save and export
+  results cannot replace another commander's readout. Unsaved Journey drafts
+  survive an interrupted return, and delayed photo conversion refreshes the
+  original system's gallery and portable report images.
+- **Mining search restoration:** Restoring settings reconciles cached results,
+  reference systems and status messages. An unfinished or incomplete search
+  cannot replace a newer accepted result or cache entry.
+- **Carrier observation consistency:** Fuel, position and next-jump tracking
+  share identity and timestamp decisions, keeping personal and squadron carrier
+  observations separate while preserving legacy carrier inference.
 - **Squadron Carrier routes:** SC Routes sits beside FC Routes with its own
   workspace, overlay, panel shortcut and next-jump settings. Both carriers share
   saved itinerary bookmarks while keeping their selected routes, progress and
@@ -94,10 +122,10 @@ from RC77.
   Journeys is selected. Begin and Cancel remain reachable while the creation
   form scrolls. Save or discard edits to an existing journey before beginning
   another expedition.
-- **Journey screenshots:** Image lists use the PNG converter's current output
-  folder and refresh after conversion or a destination change without discarding
-  unsaved notes. Existing converted images remain available across repeat visits
-  to the same system.
+- **Journey screenshots:** Image lists use the same output folder as the PNG
+  converter and refresh after conversion, including captures that finish late,
+  without discarding unsaved notes. Existing converted images remain available
+  across repeat visits to the same system.
 - **Portable Journey reports:** Export a completed journey into its own folder
   containing index.html and an images subfolder. Reports include expedition
   statistics, a route overview, searchable visit history, saved notes and tiled
