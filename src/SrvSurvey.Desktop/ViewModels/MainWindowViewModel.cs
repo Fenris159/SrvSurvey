@@ -483,7 +483,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 );
             ScreenshotProcessing = new ScreenshotProcessingViewModel(
                 new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
-                screenshotProcessingService
+                screenshotProcessingService,
+                ResolvePrimaryJournalPath(folderResolution)
             );
             construction.Checkpoint?.Invoke(MainWindowViewModelConstructionCheckpoint.OverlayReady);
             DockToDock = new DockToDockViewModel(

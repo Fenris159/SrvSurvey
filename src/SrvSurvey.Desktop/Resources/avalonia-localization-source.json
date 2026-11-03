@@ -19711,7 +19711,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
   },
   {
     "Text": "Elite Dangerous could not be focused after {0}; no matching game window was available.",
@@ -23827,7 +23827,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
   },
   {
     "Text": "Frontier ID",

@@ -41,6 +41,40 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void AutomaticFoldersFollowTheJournalAfterSavingOtherPreferences()
+    {
+        string first = Path.Combine(temporaryDirectory, "first", "drive_c", "users", "steamuser");
+        string second = Path.Combine(temporaryDirectory, "second", "drive_c", "users", "steamuser");
+        string firstJournal = Path.Combine(first, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        string secondJournal = Path.Combine(second, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "settings.json"));
+        store.Save(store.Load(firstJournal) with { AddBanner = false }, firstJournal);
+
+        ScreenshotProcessingPreferences restored = store.Load(secondJournal);
+
+        Assert.Equal(
+            Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous"),
+            restored.SourceFolder
+        );
+        Assert.Equal(
+            Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous", "converted"),
+            restored.TargetFolder
+        );
+        Assert.False(restored.AddBanner);
+
+        string customSource = Path.Combine(first, "Pictures", "Frontier Developments", "Elite Dangerous");
+        string customTarget = Path.Combine(customSource, "converted");
+        store.Save(restored with { SourceFolder = customSource, TargetFolder = customTarget }, secondJournal);
+        ScreenshotProcessingPreferences manual = store.Load(firstJournal);
+        Assert.Equal(customSource, manual.SourceFolder);
+        Assert.Equal(customTarget, manual.TargetFolder);
+        store.Save(manual with { AddBanner = true }, firstJournal);
+        ScreenshotProcessingPreferences savedAgain = store.Load(secondJournal);
+        Assert.Equal(customSource, savedAgain.SourceFolder);
+        Assert.Equal(customTarget, savedAgain.TargetFolder);
+    }
+
+    [Fact]
     public void LegacyColorObjectIsTranslatedWithoutFailure()
     {
         Directory.CreateDirectory(temporaryDirectory);

@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Desktop.Configuration;
 
@@ -11,17 +12,26 @@ public sealed class ScreenshotProcessingSettingsStore
         documentStore = new UiSettingsDocumentStore(path);
     }
 
-    public ScreenshotProcessingPreferences Load()
+    public ScreenshotProcessingPreferences Load(string? journalDirectory = null) =>
+        LoadWithFolderModes(journalDirectory).Preferences;
+
+    internal (
+        ScreenshotProcessingPreferences Preferences,
+        bool AutomaticSource,
+        bool AutomaticTarget
+    ) LoadWithFolderModes(string? journalDirectory)
     {
-        var defaults = ScreenshotProcessingPreferences.CreateDefaults();
+        var defaults = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory);
         var settings = documentStore.Load()["Screenshots"] as JsonObject;
-        return new ScreenshotProcessingPreferences(
+        string? source = GetString(settings, "SourceFolder");
+        string? target = GetString(settings, "TargetFolder");
+        var preferences = new ScreenshotProcessingPreferences(
             GetBoolean(settings, "Enabled") ?? defaults.Enabled,
             GetBoolean(settings, "AddBanner") ?? defaults.AddBanner,
             GetBoolean(settings, "DeleteOriginal") ?? defaults.DeleteOriginal,
             GetBoolean(settings, "UseGuardianAerialFolder") ?? defaults.UseGuardianAerialFolder,
-            GetString(settings, "SourceFolder") ?? defaults.SourceFolder,
-            GetString(settings, "TargetFolder") ?? defaults.TargetFolder,
+            source ?? defaults.SourceFolder,
+            target ?? defaults.TargetFolder,
             GetBoolean(settings, "RotateAlphaAerial") ?? defaults.RotateAlphaAerial,
             GetBannerColor(settings?["BannerColor"], defaults.BannerColor),
             GetBoolean(settings, "BannerLocalTime") ?? defaults.BannerLocalTime,
@@ -29,11 +39,18 @@ public sealed class ScreenshotProcessingSettingsStore
             GetDouble(settings, "AerialAltitudeBeta") ?? defaults.AerialAltitudeBeta,
             GetDouble(settings, "AerialAltitudeGamma") ?? defaults.AerialAltitudeGamma
         );
+        return (preferences, source is null, target is null);
     }
 
-    public void Save(ScreenshotProcessingPreferences preferences)
+    public void Save(
+        ScreenshotProcessingPreferences preferences,
+        string? journalDirectory = null,
+        bool? useAutomaticSource = null,
+        bool? useAutomaticTarget = null
+    )
     {
         ArgumentNullException.ThrowIfNull(preferences);
+        var defaults = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory);
         documentStore.Update(root =>
         {
             root["Version"] = 1;
@@ -48,8 +65,8 @@ public sealed class ScreenshotProcessingSettingsStore
             settings["AddBanner"] = preferences.AddBanner;
             settings["DeleteOriginal"] = preferences.DeleteOriginal;
             settings["UseGuardianAerialFolder"] = preferences.UseGuardianAerialFolder;
-            settings["SourceFolder"] = preferences.SourceFolder;
-            settings["TargetFolder"] = preferences.TargetFolder;
+            SaveFolder(settings, "SourceFolder", preferences.SourceFolder, defaults.SourceFolder, useAutomaticSource);
+            SaveFolder(settings, "TargetFolder", preferences.TargetFolder, defaults.TargetFolder, useAutomaticTarget);
             settings["RotateAlphaAerial"] = preferences.RotateAlphaAerial;
             settings["BannerColor"] = preferences.BannerColor;
             settings["BannerLocalTime"] = preferences.BannerLocalTime;
@@ -57,6 +74,23 @@ public sealed class ScreenshotProcessingSettingsStore
             settings["AerialAltitudeBeta"] = preferences.AerialAltitudeBeta;
             settings["AerialAltitudeGamma"] = preferences.AerialAltitudeGamma;
         });
+    }
+
+    private static void SaveFolder(JsonObject settings, string name, string value, string defaultValue, bool? automatic)
+    {
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        bool manual = automatic == false || (automatic is null && GetString(settings, name) is not null);
+        if (!manual && string.Equals(value, defaultValue, comparison))
+        {
+            // Keep automatic folders linked to the journal instead of freezing today's derived path.
+            settings.Remove(name);
+        }
+        else
+        {
+            settings[name] = value;
+        }
     }
 
     private static bool? GetBoolean(JsonObject? root, string name)
@@ -127,10 +161,10 @@ public sealed record ScreenshotProcessingPreferences(
     double AerialAltitudeGamma
 )
 {
-    public static ScreenshotProcessingPreferences CreateDefaults()
+    public static ScreenshotProcessingPreferences CreateDefaults(string? journalDirectory = null)
     {
         string pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        string source = Path.Combine(pictures, "Frontier Developments", "Elite Dangerous");
+        string source = JournalFolderLocator.ResolveScreenshotDirectory(journalDirectory, pictures);
         return new ScreenshotProcessingPreferences(
             false,
             true,

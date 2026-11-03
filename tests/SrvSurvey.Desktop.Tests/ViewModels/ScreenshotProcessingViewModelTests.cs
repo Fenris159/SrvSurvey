@@ -43,6 +43,50 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         Assert.Contains("disabled", viewModel.StatusMessage);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AutomaticFoldersFollowTheActiveJournalUntilManuallyOverridden(bool overrideSource)
+    {
+        string first = Path.Combine(temporaryDirectory, "first", "drive_c", "users", "steamuser");
+        string second = Path.Combine(temporaryDirectory, "second", "drive_c", "users", "steamuser");
+        string firstJournal = Path.Combine(first, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        string secondJournal = Path.Combine(second, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "settings.json"));
+        var model = new ScreenshotProcessingViewModel(store, journalDirectory: firstJournal);
+        model.UpdateJournalDirectory(secondJournal);
+
+        Assert.Equal(Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous"), model.SourceFolder);
+        Assert.Equal(
+            Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous", "converted"),
+            model.TargetFolder
+        );
+
+        string custom = Path.Combine(first, "Pictures", "Frontier Developments", "Elite Dangerous");
+        if (overrideSource)
+        {
+            model.SourceFolder = custom;
+        }
+        else
+        {
+            model.TargetFolder = Path.Combine(custom, "converted");
+        }
+        model.UpdateJournalDirectory(firstJournal);
+        model.AddBanner = false;
+        model.UpdateJournalDirectory(secondJournal);
+        string expectedSource = overrideSource
+            ? custom
+            : Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous");
+        string expectedTarget = overrideSource
+            ? Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous", "converted")
+            : Path.Combine(custom, "converted");
+        Assert.Equal(expectedSource, model.SourceFolder);
+        Assert.Equal(expectedTarget, model.TargetFolder);
+        var reopened = new ScreenshotProcessingViewModel(store, journalDirectory: secondJournal);
+        Assert.Equal(expectedSource, reopened.SourceFolder);
+        Assert.Equal(expectedTarget, reopened.TargetFolder);
+    }
+
     [Fact]
     public async Task ProcessingResultIsReportedWithWarnings()
     {

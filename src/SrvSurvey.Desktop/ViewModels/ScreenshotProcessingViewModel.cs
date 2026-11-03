@@ -12,19 +12,58 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     private readonly IScreenshotProcessingService processingService;
     private ScreenshotProcessingPreferences preferences;
     private string statusMessage;
+    private string? journalDirectory;
+    private bool automaticSource;
+    private bool automaticTarget;
 
     public ScreenshotProcessingViewModel(
         ScreenshotProcessingSettingsStore settingsStore,
-        IScreenshotProcessingService? processingService = null
+        IScreenshotProcessingService? processingService = null,
+        string? journalDirectory = null
     )
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.processingService = processingService ?? new ScreenshotProcessingService();
-        preferences = settingsStore.Load();
+        this.journalDirectory = journalDirectory;
+        (preferences, automaticSource, automaticTarget) = settingsStore.LoadWithFolderModes(journalDirectory);
         statusMessage = CreateReadyStatus(preferences);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void UpdateJournalDirectory(string directory)
+    {
+        if (string.Equals(journalDirectory, directory, PathComparison))
+        {
+            return;
+        }
+        journalDirectory = directory;
+        var defaults = ScreenshotProcessingPreferences.CreateDefaults(directory);
+        ScreenshotProcessingPreferences updated = preferences with
+        {
+            SourceFolder = automaticSource ? defaults.SourceFolder : preferences.SourceFolder,
+            TargetFolder = automaticTarget ? defaults.TargetFolder : preferences.TargetFolder,
+        };
+        if (preferences == updated)
+        {
+            return;
+        }
+        bool sourceChanged = preferences.SourceFolder != updated.SourceFolder;
+        bool targetChanged = preferences.TargetFolder != updated.TargetFolder;
+        preferences = updated;
+        if (sourceChanged)
+        {
+            OnPropertyChanged(nameof(SourceFolder));
+        }
+        if (targetChanged)
+        {
+            OnPropertyChanged(nameof(TargetFolder));
+        }
+        StatusMessage = CreateReadyStatus(preferences);
+    }
+
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     public bool Enabled
     {
@@ -59,13 +98,31 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     public string SourceFolder
     {
         get => preferences.SourceFolder;
-        set => Update(preferences with { SourceFolder = value?.Trim() ?? string.Empty });
+        set
+        {
+            string next = value?.Trim() ?? string.Empty;
+            if (next == preferences.SourceFolder)
+            {
+                return;
+            }
+            automaticSource = false;
+            Update(preferences with { SourceFolder = next });
+        }
     }
 
     public string TargetFolder
     {
         get => preferences.TargetFolder;
-        set => Update(preferences with { TargetFolder = value?.Trim() ?? string.Empty });
+        set
+        {
+            string next = value?.Trim() ?? string.Empty;
+            if (next == preferences.TargetFolder)
+            {
+                return;
+            }
+            automaticTarget = false;
+            Update(preferences with { TargetFolder = next });
+        }
     }
 
     public string BannerColor
@@ -153,7 +210,12 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         try
         {
-            settingsStore.Save(preferences);
+            settingsStore.Save(
+                preferences,
+                journalDirectory,
+                useAutomaticSource: automaticSource,
+                useAutomaticTarget: automaticTarget
+            );
             StatusMessage = CreateReadyStatus(preferences);
         }
         catch (Exception exception)
