@@ -68,7 +68,8 @@ public sealed class ScreenshotProcessingSettingsStore
         ScreenshotProcessingPreferences preferences,
         string? journalDirectory = null,
         bool? useAutomaticSource = null,
-        bool? useAutomaticTarget = null
+        bool? useAutomaticTarget = null,
+        bool preserveTargetFolder = false
     )
     {
         ArgumentNullException.ThrowIfNull(preferences);
@@ -99,7 +100,16 @@ public sealed class ScreenshotProcessingSettingsStore
             {
                 settings[SourceFolderKey] = preferences.SourceFolder;
             }
-            SaveFolder(settings, TargetFolderKey, preferences.TargetFolder, defaults.TargetFolder, useAutomaticTarget);
+            if (!preserveTargetFolder)
+            {
+                SaveFolder(
+                    settings,
+                    TargetFolderKey,
+                    preferences.TargetFolder,
+                    defaults.TargetFolder,
+                    useAutomaticTarget
+                );
+            }
             settings["RotateAlphaAerial"] = preferences.RotateAlphaAerial;
             settings["BannerColor"] = preferences.BannerColor;
             settings["BannerLocalTime"] = preferences.BannerLocalTime;

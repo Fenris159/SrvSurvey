@@ -7,6 +7,77 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class JourneyWorkspaceViewModelTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AStoredNoteCanRetryItsFailedVisitCountWithoutRewritingOrFalselyConflicting(bool switchCommander)
+    {
+        JourneyDocument document = await SeedHistoricalJourneyAsync(1);
+        document = document with
+        {
+            VisitedSystems = [document.VisitedSystems[0] with { Counts = JourneyCounts.Empty }],
+        };
+        await new JourneyStore(DataDirectory).SaveAsync(document);
+        string held = document.FilePath + ".held";
+        bool fault = true;
+        var notes = new NoteWriteBoundary(
+            new SystemNoteStore(DataDirectory),
+            () =>
+            {
+                if (fault)
+                {
+                    fault = false;
+                    File.Move(document.FilePath, held);
+                    Directory.CreateDirectory(document.FilePath);
+                }
+            }
+        );
+        JourneyWorkspaceViewModel model = CreateViewModel(noteStore: notes);
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        model.SelectedSystemNotes = "Saved note awaiting its visit count";
+        await model.SaveAsync();
+        Assert.Contains("not fully saved", model.StatusMessage, StringComparison.Ordinal);
+        Assert.False(model.DiscardCommand.CanExecute(null));
+        await model.DiscardAsync();
+        Assert.True(model.IsDirty);
+        Assert.Equal("Saved note awaiting its visit count", (await notes.LoadAsync("F123", "Sol", 42)).Notes);
+        Directory.Delete(document.FilePath);
+        File.Move(held, document.FilePath);
+        if (switchCommander)
+        {
+            await model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+            await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        }
+        Assert.True(model.IsDirty);
+        await model.SaveAsync();
+        Assert.False(model.IsDirty, model.StatusMessage);
+        Assert.Equal("Saved note awaiting its visit count", model.SelectedSystemNotes);
+        await model.SaveAsync();
+        JourneyDocument stored = (await new JourneyStore(DataDirectory).LoadAsync("F123", document.FileName)).Journey!;
+        Assert.Equal(1, Assert.Single(stored.VisitedSystems).Counts.Notes);
+    }
+
+    private sealed class NoteWriteBoundary(SystemNoteStore store, Action afterWrite) : ISystemNoteStore
+    {
+        public Task<SystemNoteLoadResult> LoadAsync(
+            string frontierId,
+            string systemName,
+            long systemAddress,
+            CancellationToken cancellationToken = default
+        ) => store.LoadAsync(frontierId, systemName, systemAddress, cancellationToken);
+
+        public async Task<string> SaveAsync(
+            SystemNoteContext context,
+            string? notes,
+            CancellationToken cancellationToken = default
+        )
+        {
+            string path = await store.SaveAsync(context, notes, cancellationToken);
+            afterWrite();
+            return path;
+        }
+    }
+
     [Fact]
     public async Task ClearingAnUnavailableActiveSelectionKeepsItsHistoryReadErrorVisible()
     {

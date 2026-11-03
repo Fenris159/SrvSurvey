@@ -13,7 +13,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
     private const string Unavailable = "\u2014";
 
     private readonly JourneyService journeyService;
-    private readonly SystemNoteStore noteStore;
+    private readonly ISystemNoteStore noteStore;
     private readonly SystemNotesSettingsStore settingsStore;
     private readonly Func<string, string?> screenshotDirectoryProvider;
     private readonly AsyncCommand openWorkspaceCommand;
@@ -74,7 +74,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
 
     public JourneyWorkspaceSession(
         JourneyService journeyService,
-        SystemNoteStore noteStore,
+        ISystemNoteStore noteStore,
         SystemNotesSettingsStore settingsStore,
         Func<string, string?>? screenshotDirectoryProvider = null
     )
@@ -101,7 +101,10 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
         beginJourneyCommand = new AsyncCommand(BeginJourneyAsync, CanBeginJourney);
         saveCommand = new AsyncCommand(SaveAsync, () => IsDirty && !IsBusy && !notesLoading);
-        discardCommand = new AsyncCommand(DiscardAsync, () => IsDirty && !IsBusy);
+        discardCommand = new AsyncCommand(
+            DiscardAsync,
+            () => IsDirty && !IsBusy && systemNotes.CountUpdate?.IsPending != true
+        );
         requestConcludeCommand = new AsyncCommand(RequestConcludeAsync, CanConclude);
         confirmConcludeCommand = new AsyncCommand(ConfirmConcludeAsync, () => IsConcludePending && CanConclude());
         cancelConcludeCommand = new AsyncCommand(CancelConcludeAsync, () => IsConcludePending && !IsBusy);
@@ -896,27 +899,44 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
                 "The stored system notes changed. Reload them before saving your edits."
             );
         }
-        await noteStore.SaveAsync(
-            new SystemNoteContext(
-                saved.FrontierId,
-                saved.CommanderName,
-                selected.Visit.StarSystem.Name,
+        if (systemNotes.CountUpdate is { IsPending: true } pending)
+        {
+            await pending.CompleteAsync(journeyService);
+        }
+        if (!string.Equals(systemNotes.Loaded, systemNotes.Text, StringComparison.Ordinal))
+        {
+            string text = SelectedSystemNotes;
+            await noteStore.SaveAsync(
+                new SystemNoteContext(
+                    saved.FrontierId,
+                    saved.CommanderName,
+                    selected.Visit.StarSystem.Name,
+                    selected.Visit.StarSystem.SystemAddress,
+                    selected.Visit.StarSystem.Position
+                ),
+                text
+            );
+            var countUpdate = new JourneyNoteCountUpdate(
+                saved,
                 selected.Visit.StarSystem.SystemAddress,
-                selected.Visit.StarSystem.Position
-            ),
-            SelectedSystemNotes
-        );
-        JourneyDocument updated = await journeyService.RecordNoteAsync(
-            saved,
-            selected.Visit.StarSystem.SystemAddress,
-            selected.Visit.Arrived
-        );
-        systemNotes = systemNotes with { Loaded = systemNotes.Text };
-        return updated;
+                selected.Visit.Arrived
+            );
+            systemNotes = new SystemNoteDraft(text, systemNotes.Text, countUpdate);
+            RaiseDirtyState();
+            await countUpdate.CompleteAsync(journeyService);
+        }
+        systemNotes = systemNotes with { CountUpdate = null };
+        return await journeyService.LoadLatestAsync(saved);
     }
 
     public Task DiscardAsync()
     {
+        if (systemNotes.CountUpdate?.IsPending == true)
+        {
+            StatusMessage =
+                "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.";
+            return Task.CompletedTask;
+        }
         if (selectedDocument is not null)
         {
             ClearJourneyDraft();
@@ -1123,9 +1143,9 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedSystemNotes));
     }
 
-    private sealed record SystemNoteDraft(string Loaded, string Text)
+    private sealed record SystemNoteDraft(string Loaded, string Text, JourneyNoteCountUpdate? CountUpdate = null)
     {
-        public bool IsDirty => !string.Equals(Loaded, Text, StringComparison.Ordinal);
+        public bool IsDirty => !string.Equals(Loaded, Text, StringComparison.Ordinal) || CountUpdate?.IsPending == true;
     }
 
     private async Task LoadSelectedSystemAsync(JourneySystemItemViewModel? item)

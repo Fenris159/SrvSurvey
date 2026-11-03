@@ -332,6 +332,42 @@ public sealed partial class JourneyService
         );
     }
 
+    public async Task<JourneyDocument> LoadLatestAsync(
+        JourneyDocument journey,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(journey);
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await ReadLatestJourneyAsync(journey, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            operationLock.Release();
+        }
+    }
+
+    private async Task<JourneyDocument> ReadLatestJourneyAsync(
+        JourneyDocument expected,
+        CancellationToken cancellationToken
+    )
+    {
+        if (
+            activeProcessor?.Journey is { } active
+            && active.FileName == expected.FileName
+            && active.FrontierId == expected.FrontierId
+        )
+        {
+            return active;
+        }
+        JourneyLoadResult load = await journeyStore
+            .LoadAsync(expected.FrontierId, expected.FileName, cancellationToken)
+            .ConfigureAwait(false);
+        return load.Journey ?? throw new IOException(load.Error ?? "The Journey could not be loaded for editing.");
+    }
+
     private async Task<JourneyDocument> UpdateStoredJourneyAsync(
         JourneyDocument expected,
         Func<JourneyDocument, JourneyDocument> update,
@@ -341,15 +377,7 @@ public sealed partial class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            JourneyDocument? latest = activeProcessor?.Journey;
-            if (latest is null || latest.FileName != expected.FileName || latest.FrontierId != expected.FrontierId)
-            {
-                JourneyLoadResult load = await journeyStore
-                    .LoadAsync(expected.FrontierId, expected.FileName, cancellationToken)
-                    .ConfigureAwait(false);
-                latest =
-                    load.Journey ?? throw new IOException(load.Error ?? "The Journey could not be loaded for editing.");
-            }
+            JourneyDocument latest = await ReadLatestJourneyAsync(expected, cancellationToken).ConfigureAwait(false);
             JourneyDocument saved = await journeyStore
                 .SaveAsync(update(latest), cancellationToken)
                 .ConfigureAwait(false);

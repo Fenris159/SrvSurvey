@@ -39,7 +39,9 @@ from RC77.
   to support long Windows paths during decoding and PNG verification. Unchanged
   corrupt files stay pending without repeating costly decoding attempts; a file
   change enables another attempt. Recovery verifies published images before
-  cleaning up an original BMP and avoids creating duplicate copies.
+  cleaning up an original BMP and avoids creating duplicate copies. Concurrent
+  captures that choose the same filename retain both images before originals
+  can be removed.
 - **Screenshot folders:** Automatic detection uses the configured Wine/Proton
   journal profile's Pictures folder, with the platform Pictures location as a
   fallback. Windows keeps its known-folder support, including redirected
@@ -52,6 +54,8 @@ from RC77.
   Bootstrap selects the commander's configured profile before fixing the first
   output destination, including linked Wine journals. Choosing the displayed
   source folder explicitly keeps that choice through later profile changes.
+  Preference edits made before a journal is selected keep that first destination
+  automatic until the correct profile is known.
   Native absolute screenshot paths
   are honored, with a configured-folder fallback for moved or guest files.
 - **Quieter Colonization Nexus:** Reused or closing project action menus no
@@ -67,6 +71,8 @@ from RC77.
   another commander's session, and recovery keeps history-load errors visible.
   New edits to a readable Journey take priority over a retained draft whose
   original Journey has become unavailable.
+  A saved system note can retry a failed Journey visit-count update without
+  falsely conflicting with its own text, including after a commander switch.
 - **Mining search restoration:** Restoring settings reconciles cached results,
   reference systems and status messages. An unfinished or incomplete search
   cannot replace a newer accepted result or cache entry. Filter edits made during

@@ -22,7 +22,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public JourneyWorkspaceViewModel(
         JourneyService journeyService,
-        SystemNoteStore noteStore,
+        ISystemNoteStore noteStore,
         SystemNotesSettingsStore settingsStore,
         Func<string, string?>? screenshotDirectoryProvider = null
     )

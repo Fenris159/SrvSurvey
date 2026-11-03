@@ -56,15 +56,18 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     public bool HasPendingWork => PendingCount > 0 || Volatile.Read(ref recoveryWarningCount) > 0;
 
     private readonly SemaphoreSlim processingLock = new(1, 1);
+    private readonly Func<string, string, bool> tryPublishImage;
     private readonly Func<int?> gameClientWidthProvider;
     private readonly Func<TimeSpan, CancellationToken, Task> retryDelay;
 
     public ScreenshotProcessingService(
         Func<int?>? gameClientWidthProvider = null,
         Func<TimeSpan, CancellationToken, Task>? retryDelay = null,
-        string? pendingQueueDirectory = null
+        string? pendingQueueDirectory = null,
+        Func<string, string, bool>? tryPublishImage = null
     )
     {
+        this.tryPublishImage = tryPublishImage ?? TryMoveImage;
         this.gameClientWidthProvider = gameClientWidthProvider ?? GetGameClientWidth;
         this.retryDelay = retryDelay ?? Task.Delay;
         this.pendingQueueDirectory = pendingQueueDirectory is null ? null : Path.GetFullPath(pendingQueueDirectory);
@@ -373,7 +376,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         string TargetDirectory
     );
 
-    private static ScreenshotConversion Convert(PendingScreenshot capture, string sourcePath, SKBitmap source)
+    private ScreenshotConversion Convert(PendingScreenshot capture, string sourcePath, SKBitmap source)
     {
         ScreenshotConversionRequest request = capture.Request;
         JournalEventEnvelope entry = request.Entry;
@@ -457,7 +460,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         return SKBitmap.Decode(stream);
     }
 
-    private static PublishedImage WritePngAtomically(SKBitmap bitmap, string outputPath)
+    private PublishedImage WritePngAtomically(SKBitmap bitmap, string outputPath)
     {
         string temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
         try
@@ -478,18 +481,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
                 }
             }
 
-            string hash = HashFile(temporaryPath);
-            outputPath = GetAvailablePath(
-                Path.GetDirectoryName(outputPath)!,
-                Path.GetFileNameWithoutExtension(outputPath),
-                ".png",
-                hash
-            );
-            if (!File.Exists(outputPath))
-            {
-                File.Move(temporaryPath, outputPath, false);
-            }
-            return new PublishedImage(outputPath, hash);
+            return PublishImage(temporaryPath, outputPath, HashFile(temporaryPath));
         }
         finally
         {
@@ -497,6 +489,35 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
             {
                 File.Delete(temporaryPath);
             }
+        }
+    }
+
+    private PublishedImage PublishImage(string temporaryPath, string outputPath, string hash)
+    {
+        string directory = Path.GetDirectoryName(outputPath)!;
+        string baseName = Path.GetFileNameWithoutExtension(outputPath);
+        outputPath = GetAvailablePath(directory, baseName, ".png", hash);
+        while (!tryPublishImage(temporaryPath, outputPath))
+        {
+            if (ImageStillValid(new PublishedImage(outputPath, hash)))
+            {
+                return new PublishedImage(outputPath, hash);
+            }
+            outputPath = GetAvailablePath(directory, baseName, ".png", hash);
+        }
+        return new PublishedImage(outputPath, hash);
+    }
+
+    private static bool TryMoveImage(string source, string destination)
+    {
+        try
+        {
+            File.Move(source, destination, false);
+            return true;
+        }
+        catch (IOException) when (File.Exists(destination))
+        {
+            return false;
         }
     }
 

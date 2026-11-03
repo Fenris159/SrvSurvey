@@ -87,6 +87,57 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         Assert.Equal(expectedTarget, reopened.TargetFolder);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PreferenceEditsBeforeJournalSelectionKeepTheFirstOutputAutomatic(bool externallySelectedOutput)
+    {
+        string first = Path.Combine(
+            temporaryDirectory,
+            "first",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        string second = Path.Combine(
+            temporaryDirectory,
+            "second",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "settings.json"));
+        var model = new ScreenshotProcessingViewModel(store, journalDirectory: first, deferOutputInitialization: true);
+        string custom = Path.Combine(temporaryDirectory, "existing-output");
+        if (externallySelectedOutput)
+        {
+            store.Save(store.Load(first) with { TargetFolder = custom }, first, useAutomaticTarget: false);
+        }
+        model.Enabled = true;
+        model.UpdateJournalDirectory(second);
+        string expected = externallySelectedOutput
+            ? custom
+            : Path.Combine(
+                temporaryDirectory,
+                "second",
+                "drive_c",
+                "users",
+                "steamuser",
+                "Pictures",
+                "Frontier Developments",
+                "Elite Dangerous",
+                "converted"
+            );
+        Assert.Equal(expected, model.TargetFolder);
+        Assert.Equal(expected, new ScreenshotProcessingViewModel(store, journalDirectory: second).TargetFolder);
+    }
+
     [Fact]
     public void ExplicitlyPickingTheDisplayedSourceKeepsItManualAcrossProfilesAndRestart()
     {

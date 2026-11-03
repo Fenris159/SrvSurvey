@@ -32637,6 +32637,10 @@
       "translation": "Die System-Nickname-Präferenz konnte nicht gespeichert werden: {0}"
     },
     {
+      "source": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+      "translation": "Die Systemnotiz wird gespeichert. Versuchen Sie „Speichern“ erneut, um die Aktualisierung des Journey-Besuchs abzuschließen, bevor andere Änderungen verworfen werden."
+    },
+    {
       "source": "The system notes could not be loaded.",
       "translation": "Die Systemnotizen konnten nicht geladen werden."
     },
@@ -73581,6 +73585,10 @@
     {
       "source": "The system nickname preference could not be saved: {0}",
       "translation": "No se pudo guardar la preferencia del apodo del sistema: {0}"
+    },
+    {
+      "source": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+      "translation": "La nota del sistema se guarda. Vuelva a intentar guardar para terminar de actualizar su visita de viaje antes de descartar otros cambios."
     },
     {
       "source": "The system notes could not be loaded.",
@@ -114529,6 +114537,10 @@
       "translation": "La préférence de pseudonyme du système n'a pas pu être enregistrée : {0}"
     },
     {
+      "source": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+      "translation": "La note système est enregistrée. Réessayez Enregistrer pour terminer la mise à jour de sa visite Journey avant d’ignorer les autres modifications."
+    },
+    {
       "source": "The system notes could not be loaded.",
       "translation": "Les notes système n'ont pas pu être chargées."
     },
@@ -155473,6 +155485,10 @@
     {
       "source": "The system nickname preference could not be saved: {0}",
       "translation": "A preferência de apelido do sistema não pôde ser salva: {0}"
+    },
+    {
+      "source": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+      "translation": "A nota do sistema é salva. Tente Salvar novamente para concluir a atualização da visita da Jornada antes de descartar outras alterações."
     },
     {
       "source": "The system notes could not be loaded.",
@@ -196421,6 +196437,10 @@
       "translation": "Не удалось сохранить настройки системного псевдонима: {0}"
     },
     {
+      "source": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+      "translation": "Системная заметка сохранена. Повторите попытку сохранения, чтобы завершить обновление посещения Путешествия, прежде чем отменять другие изменения."
+    },
+    {
       "source": "The system notes could not be loaded.",
       "translation": "Не удалось загрузить системные заметки."
     },
@@ -237367,6 +237387,10 @@
       "translation": "无法保存系统昵称首选项：{0}"
     },
     {
+      "source": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+      "translation": "系统注释已保存。重试保存以完成更新其旅程访问，然后再放弃其他更改。"
+    },
+    {
       "source": "The system notes could not be loaded.",
       "translation": "无法加载系统笔记。"
     },
@@ -278311,6 +278335,10 @@
     {
       "source": "The system nickname preference could not be saved: {0}",
       "translation": "* THE SYSTEM NICKNAME PREFERENCE COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+      "translation": "* THE SYSTEM NOTE IS SAVED. RETRY SAVE TO FINISH UPDATING ITS JOURNEY VISIT BEFORE DISCARDING OTHER CHANGES. >>>!"
     },
     {
       "source": "The system notes could not be loaded.",

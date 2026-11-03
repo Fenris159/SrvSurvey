@@ -161,8 +161,14 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         set
         {
             string next = value?.Trim() ?? string.Empty;
+            bool pinExplicitTarget = outputUninitialized;
+            outputUninitialized = false;
             if (next == preferences.TargetFolder)
             {
+                if (pinExplicitTarget)
+                {
+                    SavePreferences();
+                }
                 return;
             }
             Update(preferences with { TargetFolder = next });
@@ -297,7 +303,8 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
                 preferences,
                 journalDirectory,
                 useAutomaticSource: automaticSource,
-                useAutomaticTarget: false
+                useAutomaticTarget: false,
+                preserveTargetFolder: outputUninitialized
             );
             StatusMessage = CreateReadyStatus(preferences);
         }

@@ -1,3 +1,5 @@
+using SrvSurvey.Core.Journeys;
+
 namespace SrvSurvey.Desktop.ViewModels;
 
 internal sealed partial class JourneyWorkspaceSession
@@ -16,7 +18,8 @@ internal sealed partial class JourneyWorkspaceSession
             JourneyDescription != selectedDocument.Description ? JourneyDescription : null,
             systemNotes.IsDirty ? SelectedSystemNotes : null,
             SelectedSystem is { } system ? (system.Visit.StarSystem.SystemAddress, system.Visit.Arrived) : null,
-            ShowArchived
+            ShowArchived,
+            systemNotes.CountUpdate
         );
     }
 
@@ -58,6 +61,9 @@ internal sealed partial class JourneyWorkspaceSession
         if (SelectedSystem is not null && draft.Notes is not null)
         {
             SelectedSystemNotes = draft.Notes;
+            systemNotes = systemNotes with { CountUpdate = draft.CountUpdate };
+            RaiseDirtyState();
+            RaiseCommands();
         }
         retainedDraft = null;
     }
@@ -71,5 +77,35 @@ internal sealed record JourneyEditDraft(
     string? Description,
     string? Notes,
     (long Address, DateTimeOffset Arrived)? System,
-    bool Archived
+    bool Archived,
+    JourneyNoteCountUpdate? CountUpdate = null
 );
+
+internal sealed class JourneyNoteCountUpdate(JourneyDocument journey, long address, DateTimeOffset arrived)
+{
+    private readonly System.Threading.Lock gate = new();
+    private Task<JourneyDocument>? update;
+
+    internal bool IsPending
+    {
+        get
+        {
+            lock (gate)
+            {
+                return update?.IsCompletedSuccessfully != true;
+            }
+        }
+    }
+
+    internal Task<JourneyDocument> CompleteAsync(JourneyService service)
+    {
+        lock (gate)
+        {
+            if (update is null || update.IsFaulted || update.IsCanceled)
+            {
+                update = service.RecordNoteAsync(journey, address, arrived);
+            }
+            return update;
+        }
+    }
+}

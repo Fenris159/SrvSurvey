@@ -8,6 +8,57 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed partial class ScreenshotProcessingServiceTests
 {
     [Fact]
+    public async Task AConcurrentPublicationPreservesBothImagesBeforeDeletingTheOriginal()
+    {
+        string source = Path.Combine(temporaryDirectory, "source");
+        string target = Path.Combine(temporaryDirectory, "target");
+        Directory.CreateDirectory(source);
+        string bitmap = Path.Combine(source, "blue.bmp");
+        CreateBitmap(bitmap, SKColors.Blue);
+        bool collided = false;
+        bool Publish(string pending, string destination)
+        {
+            if (!collided)
+            {
+                collided = true;
+                using var other = new SKBitmap(320, 180);
+                other.Erase(SKColors.Red);
+                using SKData data = other.Encode(SKEncodedImageFormat.Png, 100);
+                using FileStream stream = File.Create(destination);
+                data.SaveTo(stream);
+                return false;
+            }
+            File.Move(pending, destination, false);
+            return true;
+        }
+        var service = new ScreenshotProcessingService(
+            () => 320,
+            (_, _) => Task.CompletedTask,
+            tryPublishImage: Publish
+        );
+        ScreenshotProcessingResult result = await service.ProcessLiveAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-11-03T05:06:53Z","event":"Screenshot","Filename":"\\ED_Pictures\\blue.bmp","System":"Sol","Body":"Earth"}"""
+                ),
+            ],
+            Preferences(source, target) with
+            {
+                AddBanner = false,
+                DeleteOriginal = true,
+            },
+            null
+        );
+        ScreenshotConversion converted = Assert.Single(result.Conversions);
+        Assert.True(converted.SourceDeleted);
+        using var ours = SKBitmap.Decode(converted.OutputPath);
+        Assert.Equal(SKColors.Blue, ours.GetPixel(100, 100));
+        using var otherImage = SKBitmap.Decode(Path.Combine(target, "Sol", "Earth (2026-11-03 050653).png"));
+        Assert.Equal(SKColors.Red, otherImage.GetPixel(100, 100));
+        Assert.Equal(2, Directory.GetFiles(target, "*.png", SearchOption.AllDirectories).Length);
+    }
+
+    [Fact]
     public async Task RecoveryAfterPublicationReusesThePngBeforeDeletingItsOriginal()
     {
         string source = Path.Combine(temporaryDirectory, "source");

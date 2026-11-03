@@ -65477,6 +65477,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemNicknameViewModel.cs"
   },
   {
+    "Text": "The system note is saved. Retry Save to finish updating its Journey visit before discarding other changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
+  },
+  {
     "Text": "The system notes could not be loaded.",
     "IsFormat": false,
     "SourceKinds": [
