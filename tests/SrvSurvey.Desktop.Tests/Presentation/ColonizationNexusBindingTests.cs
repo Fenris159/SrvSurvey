@@ -71,11 +71,12 @@ public sealed class ColonizationNexusBindingTests
             Button privacy = Buttons(view, "nexus-privacy")[0];
             Assert.Equal("Private Nexus. Click to make the entire Nexus public.", ToolTip.GetTip(privacy));
             Assert.True(privacy.IsEnabled);
-            Button remove = Buttons(view, "nexus-remove-system")[0];
+            Button remove = Buttons(view, "nexus-remove-system")[1];
             Assert.True(remove.IsEnabled);
             remove.Command!.Execute(remove.CommandParameter);
             Render(window);
             Assert.True(view.FindControl<Border>("RemoveNexusSystemPrompt")!.IsVisible);
+            Assert.Contains("Beta", replacement.SystemRemovalWarning, StringComparison.Ordinal);
             Assert.False(original.IsSystemRemovalVisible);
             view.FindControl<Button>("CancelNexusSystemRemoval")!.Command!.Execute(null);
             privacy.Command!.Execute(null);

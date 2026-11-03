@@ -965,6 +965,10 @@
       "translation": "Ein passives Overlay ist Click-through. Mit der Live-Interaktionsverknüpfung können vorhandene Live-Overlays vorübergehend gezogen werden, ohne dass der vollständige Positionseditor geöffnet werden muss."
     },
     {
+      "source": "A pending screenshot record could not be recovered from '{0}': {1}",
+      "translation": "Ein ausstehender Screenshot-Datensatz konnte von „{0}“ nicht wiederhergestellt werden: {1}"
+    },
+    {
       "source": "A positive Codex entry ID is required.",
       "translation": "Eine positive Codex-Eintrags-ID ist erforderlich."
     },
@@ -20937,6 +20941,10 @@
       "translation": "Ausstehende Live-Speicherung ist fehlgeschlagen; Entwurf beibehalten"
     },
     {
+      "source": "Pending screenshots could not be recovered: {0}",
+      "translation": "Ausstehende Screenshots konnten nicht wiederhergestellt werden: {0}"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ausstehende Frachtanpassungen"
     },
@@ -20999,6 +21007,10 @@
     {
       "source": "Phimbee AA-A d7640",
       "translation": "Phimbee AA-A d7640"
+    },
+    {
+      "source": "Pictures",
+      "translation": "Bilder"
     },
     {
       "source": "Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically.",
@@ -31149,6 +31161,18 @@
       "translation": "Der konvertierte Screenshot-Ordner muss ein absoluter Pfad sein."
     },
     {
+      "source": "The converted screenshot was saved, but the changed original BMP was retained.",
+      "translation": "Der konvertierte Screenshot wurde gespeichert, das geänderte Original-BMP blieb jedoch erhalten."
+    },
+    {
+      "source": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+      "translation": "Der konvertierte Screenshot wurde gespeichert, das ursprüngliche BMP konnte jedoch nicht überprüft werden und wurde beibehalten."
+    },
+    {
+      "source": "The converted screenshot's recovery record could not be removed: {0}",
+      "translation": "Der Wiederherstellungsdatensatz des konvertierten Screenshots konnte nicht entfernt werden: {0}"
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "Das erstellte Raven-Projekt konnte nicht geöffnet werden: {0}"
     },
@@ -31977,6 +32001,22 @@
       "translation": "Die Nutzlast wird direkt auf https://voxstellar.com/webhooks/v1/system als Commander + Daten gepostet und mit HMAC-SHA256 signiert. SrvSurvey sendet keinen Startverlauf oder wiedergegebene Journaleinträge. Wenn Sie die Option deaktivieren, werden Einträge in der Warteschlange ungültig, deren Hochladen noch nicht begonnen hat."
     },
     {
+      "source": "The pending screenshot could not be saved for restart recovery: {0}",
+      "translation": "Der ausstehende Screenshot konnte nicht für die Neustartwiederherstellung gespeichert werden: {0}"
+    },
+    {
+      "source": "The pending screenshot output verification is invalid.",
+      "translation": "Die ausstehende Überprüfung der Screenshot-Ausgabe ist ungültig."
+    },
+    {
+      "source": "The pending screenshot record is empty.",
+      "translation": "Der ausstehende Screenshot-Datensatz ist leer."
+    },
+    {
+      "source": "The pending screenshot record is invalid.",
+      "translation": "Der ausstehende Screenshot-Datensatz ist ungültig."
+    },
+    {
       "source": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
       "translation": "Der persönliche Schlüssel wird nur in diesem Kommandantenprofil gespeichert. Für Schreibereignisse ist kein Anwendungstoken eingebettet oder erforderlich."
     },
@@ -32305,6 +32345,10 @@
       "translation": "Der Screenshot-Ordner konnte nicht geöffnet werden: {0}"
     },
     {
+      "source": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+      "translation": "Der Screenshot-Ausgabeordner ist für diese Sitzung festgelegt, konnte jedoch nicht gespeichert werden: {0}"
+    },
+    {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "Die Screenshot-Einstellungen wurden für diese Sitzung geändert, konnten jedoch nicht gespeichert werden: {0}"
     },
@@ -32547,6 +32591,14 @@
     {
       "source": "The startup resource was already transferred.",
       "translation": "Die Startressource wurde bereits übertragen."
+    },
+    {
+      "source": "The stored system notes changed. Reload them before saving your edits.",
+      "translation": "Die gespeicherten Systemnotizen haben sich geändert. Laden Sie sie erneut, bevor Sie Ihre Änderungen speichern."
+    },
+    {
+      "source": "The stored system notes could not be read before saving.",
+      "translation": "Die gespeicherten Systemnotizen konnten vor dem Speichern nicht gelesen werden."
     },
     {
       "source": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -34603,6 +34655,10 @@
     {
       "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
       "translation": "Verwenden Sie diese Verknüpfung, um SteamVR oder VDXR Overlays zwischen Click-through und Controller-Zeiger-Interaktion umzuschalten. Zeigen Sie auf VDXR auf ein Panel: Klicken Sie auslösen, klicken Sie mit der rechten Maustaste und scrollen Sie mit dem Daumen. Verwenden Sie die Verknüpfung erneut, um den Klickmodus wiederherzustellen."
+    },
+    {
+      "source": "UseAutomaticSourceFolder",
+      "translation": "Verwenden Sie AutomaticSourceFolder"
     },
     {
       "source": "UseCompactScrollingCommoditiesList",
@@ -41853,6 +41909,10 @@
     {
       "source": "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
       "translation": "Una superposición pasiva es mediante clic. El acceso directo de interacción en vivo permite temporalmente arrastrar las superposiciones en vivo existentes sin abrir el editor de posición completo."
+    },
+    {
+      "source": "A pending screenshot record could not be recovered from '{0}': {1}",
+      "translation": "No se pudo recuperar un registro de captura de pantalla pendiente de '{0}': {1}"
     },
     {
       "source": "A positive Codex entry ID is required.",
@@ -61827,6 +61887,10 @@
       "translation": "Falló el guardado en vivo pendiente; borrador retenido"
     },
     {
+      "source": "Pending screenshots could not be recovered: {0}",
+      "translation": "No se pudieron recuperar las capturas de pantalla pendientes: {0}"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustes De Carga Pendientes"
     },
@@ -61889,6 +61953,10 @@
     {
       "source": "Phimbee AA-A d7640",
       "translation": "Phimbee AA-A d7640"
+    },
+    {
+      "source": "Pictures",
+      "translation": "Fotos"
     },
     {
       "source": "Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically.",
@@ -72039,6 +72107,18 @@
       "translation": "La carpeta de captura de pantalla convertida debe ser una ruta absoluta."
     },
     {
+      "source": "The converted screenshot was saved, but the changed original BMP was retained.",
+      "translation": "La captura de pantalla convertida se guardó, pero se conservó el BMP original modificado."
+    },
+    {
+      "source": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+      "translation": "La captura de pantalla convertida se guardó, pero no se pudo verificar el BMP original y se conservó."
+    },
+    {
+      "source": "The converted screenshot's recovery record could not be removed: {0}",
+      "translation": "No se pudo eliminar el registro de recuperación de la captura de pantalla convertida: {0}"
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "El proyecto Raven creado no se pudo abrir: {0}"
     },
@@ -72867,6 +72947,22 @@
       "translation": "La carga útil se publica directamente en https://voxstellar.com/webhooks/v1/system como comandante + datos y se firma con HMAC-SHA256. SrvSurvey no envía el historial de inicio ni las entradas del diario reproducidas. Desactivar la opción invalida las entradas en cola que no han comenzado a cargarse."
     },
     {
+      "source": "The pending screenshot could not be saved for restart recovery: {0}",
+      "translation": "La captura de pantalla pendiente no se pudo guardar para reiniciar la recuperación: {0}"
+    },
+    {
+      "source": "The pending screenshot output verification is invalid.",
+      "translation": "La verificación de salida de la captura de pantalla pendiente no es válida."
+    },
+    {
+      "source": "The pending screenshot record is empty.",
+      "translation": "El registro de captura de pantalla pendiente está vacío."
+    },
+    {
+      "source": "The pending screenshot record is invalid.",
+      "translation": "El registro de captura de pantalla pendiente no es válido."
+    },
+    {
       "source": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
       "translation": "La clave personal se almacena únicamente en este perfil de comandante. No se incluye ni se requiere ningún token de aplicación para eventos de escritura."
     },
@@ -73195,6 +73291,10 @@
       "translation": "No se pudo abrir la carpeta de captura de pantalla: {0}"
     },
     {
+      "source": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+      "translation": "La carpeta de salida de la captura de pantalla está fijada para esta sesión pero no se pudo guardar: {0}"
+    },
+    {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "La preferencia de captura de pantalla cambió para esta sesión pero no se pudo guardar: {0}"
     },
@@ -73437,6 +73537,14 @@
     {
       "source": "The startup resource was already transferred.",
       "translation": "El recurso de inicio ya fue transferido."
+    },
+    {
+      "source": "The stored system notes changed. Reload them before saving your edits.",
+      "translation": "Las notas almacenadas del sistema cambiaron. Vuelva a cargarlos antes de guardar sus ediciones."
+    },
+    {
+      "source": "The stored system notes could not be read before saving.",
+      "translation": "Las notas del sistema almacenadas no se pudieron leer antes de guardarlas."
     },
     {
       "source": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -75493,6 +75601,10 @@
     {
       "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
       "translation": "Utilice este acceso directo para cambiar SteamVR o VDXR superposiciones entre clic y interacción controlador-puntero. En VDXR, apunte a un panel: clics del disparador, clics con el botón derecho y desplazamientos con el joystick. Utilice el acceso directo nuevamente para restaurar el modo de clic."
+    },
+    {
+      "source": "UseAutomaticSourceFolder",
+      "translation": "UsarCarpeta de origen automática"
     },
     {
       "source": "UseCompactScrollingCommoditiesList",
@@ -82743,6 +82855,10 @@
     {
       "source": "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
       "translation": "Une superposition passive est un clic. Le raccourci d'interaction en direct rend temporairement les superpositions en direct existantes déplaçables sans ouvrir l'éditeur de position complet."
+    },
+    {
+      "source": "A pending screenshot record could not be recovered from '{0}': {1}",
+      "translation": "Un enregistrement de capture d'écran en attente n'a pas pu être récupéré à partir de « {0} » : {1}"
     },
     {
       "source": "A positive Codex entry ID is required.",
@@ -102717,6 +102833,10 @@
       "translation": "La sauvegarde en direct en attente a échoué ; projet retenu"
     },
     {
+      "source": "Pending screenshots could not be recovered: {0}",
+      "translation": "Les captures d'écran en attente n'ont pas pu être récupérées : {0}"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustements de fret en attente"
     },
@@ -102779,6 +102899,10 @@
     {
       "source": "Phimbee AA-A d7640",
       "translation": "Phimbee AA-A d7640"
+    },
+    {
+      "source": "Pictures",
+      "translation": "Photos"
     },
     {
       "source": "Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically.",
@@ -112929,6 +113053,18 @@
       "translation": "Le dossier de capture d'écran converti doit être un chemin absolu."
     },
     {
+      "source": "The converted screenshot was saved, but the changed original BMP was retained.",
+      "translation": "La capture d'écran convertie a été enregistrée, mais le BMP d'origine modifié a été conservé."
+    },
+    {
+      "source": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+      "translation": "La capture d'écran convertie a été enregistrée, mais le BMP d'origine n'a pas pu être vérifié et a été conservé."
+    },
+    {
+      "source": "The converted screenshot's recovery record could not be removed: {0}",
+      "translation": "L'enregistrement de récupération de la capture d'écran convertie n'a pas pu être supprimé : {0}"
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "Le projet Raven créé n'a pas pu être ouvert : {0}"
     },
@@ -113757,6 +113893,22 @@
       "translation": "La charge utile est publiée directement sur https://voxstellar.com/webhooks/v1/system en tant que commandant + données et signée avec HMAC-SHA256. SrvSurvey n'envoie pas l'historique de démarrage ni les entrées de journal relues. La désactivation de l'option invalide les entrées en file d'attente dont le téléchargement n'a pas encore commencé."
     },
     {
+      "source": "The pending screenshot could not be saved for restart recovery: {0}",
+      "translation": "La capture d'écran en attente n'a pas pu être enregistrée pour la récupération au redémarrage : {0}"
+    },
+    {
+      "source": "The pending screenshot output verification is invalid.",
+      "translation": "La vérification de la sortie de capture d'écran en attente n'est pas valide."
+    },
+    {
+      "source": "The pending screenshot record is empty.",
+      "translation": "L'enregistrement de capture d'écran en attente est vide."
+    },
+    {
+      "source": "The pending screenshot record is invalid.",
+      "translation": "L'enregistrement de capture d'écran en attente n'est pas valide."
+    },
+    {
       "source": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
       "translation": "La clé personnelle est stockée uniquement dans ce profil de commandant. Aucun jeton d'application n'est intégré ou requis pour les événements d'écriture."
     },
@@ -114085,6 +114237,10 @@
       "translation": "Le dossier de capture d'écran n'a pas pu être ouvert : {0}"
     },
     {
+      "source": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+      "translation": "Le dossier de sortie de capture d'écran est corrigé pour cette session mais n'a pas pu être enregistré : {0}"
+    },
+    {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "La préférence de capture d'écran a été modifiée pour cette session mais n'a pas pu être enregistrée : {0}"
     },
@@ -114327,6 +114483,14 @@
     {
       "source": "The startup resource was already transferred.",
       "translation": "La ressource de démarrage a déjà été transférée."
+    },
+    {
+      "source": "The stored system notes changed. Reload them before saving your edits.",
+      "translation": "Les notes système stockées ont changé. Rechargez-les avant d'enregistrer vos modifications."
+    },
+    {
+      "source": "The stored system notes could not be read before saving.",
+      "translation": "Les notes système stockées n'ont pas pu être lues avant d'être enregistrées."
     },
     {
       "source": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -116383,6 +116547,10 @@
     {
       "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
       "translation": "Utilisez ce raccourci pour basculer les superpositions SteamVR ou VDXR entre le clic et l'interaction contrôleur-pointeur. Sur VDXR, pointez sur un panneau : clics de déclenchement, clics droits de la poignée et défilement de la manette. Utilisez à nouveau le raccourci pour restaurer le mode clic."
+    },
+    {
+      "source": "UseAutomaticSourceFolder",
+      "translation": "UtiliserAutomaticSourceFolder"
     },
     {
       "source": "UseCompactScrollingCommoditiesList",
@@ -123633,6 +123801,10 @@
     {
       "source": "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
       "translation": "Uma sobreposição passiva é click-through. O atalho de interação ao vivo torna temporariamente as sobreposições ao vivo existentes arrastáveis ​​sem abrir o editor de posição completo."
+    },
+    {
+      "source": "A pending screenshot record could not be recovered from '{0}': {1}",
+      "translation": "Não foi possível recuperar um registro de captura de tela pendente de '{0}': {1}"
     },
     {
       "source": "A positive Codex entry ID is required.",
@@ -143607,6 +143779,10 @@
       "translation": "Falha no salvamento ao vivo pendente; rascunho retido"
     },
     {
+      "source": "Pending screenshots could not be recovered: {0}",
+      "translation": "Não foi possível recuperar capturas de tela pendentes: {0}"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ajustes de carga pendentes"
     },
@@ -143669,6 +143845,10 @@
     {
       "source": "Phimbee AA-A d7640",
       "translation": "Phimbee AA-A d7640"
+    },
+    {
+      "source": "Pictures",
+      "translation": "Fotos"
     },
     {
       "source": "Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically.",
@@ -153819,6 +153999,18 @@
       "translation": "A pasta de captura de tela convertida deve ser um caminho absoluto."
     },
     {
+      "source": "The converted screenshot was saved, but the changed original BMP was retained.",
+      "translation": "A captura de tela convertida foi salva, mas o BMP original alterado foi mantido."
+    },
+    {
+      "source": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+      "translation": "A captura de tela convertida foi salva, mas o BMP original não pôde ser verificado e foi retido."
+    },
+    {
+      "source": "The converted screenshot's recovery record could not be removed: {0}",
+      "translation": "O registro de recuperação da captura de tela convertida não pôde ser removido: {0}"
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "O projeto Raven criado não pôde ser aberto: {0}"
     },
@@ -154647,6 +154839,22 @@
       "translation": "A carga útil é postada diretamente em https://voxstellar.com/webhooks/v1/system como comandante + dados e assinada com HMAC-SHA256. SrvSurvey não envia histórico de inicialização ou entradas de diário reproduzidas. Desativar a opção invalida as entradas na fila que ainda não começaram a ser carregadas."
     },
     {
+      "source": "The pending screenshot could not be saved for restart recovery: {0}",
+      "translation": "A captura de tela pendente não pôde ser salva para recuperação de reinicialização: {0}"
+    },
+    {
+      "source": "The pending screenshot output verification is invalid.",
+      "translation": "A verificação de saída de captura de tela pendente é inválida."
+    },
+    {
+      "source": "The pending screenshot record is empty.",
+      "translation": "O registro de captura de tela pendente está vazio."
+    },
+    {
+      "source": "The pending screenshot record is invalid.",
+      "translation": "O registro de captura de tela pendente é inválido."
+    },
+    {
       "source": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
       "translation": "A chave pessoal é armazenada apenas neste perfil de comandante. Nenhum token de aplicativo é incorporado ou necessário para eventos de gravação."
     },
@@ -154975,6 +155183,10 @@
       "translation": "A pasta de captura de tela não pôde ser aberta: {0}"
     },
     {
+      "source": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+      "translation": "A pasta de saída da captura de tela foi corrigida para esta sessão, mas não pôde ser salva: {0}"
+    },
+    {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "A preferência de captura de tela foi alterada para esta sessão, mas não pôde ser salva: {0}"
     },
@@ -155217,6 +155429,14 @@
     {
       "source": "The startup resource was already transferred.",
       "translation": "O recurso de inicialização já foi transferido."
+    },
+    {
+      "source": "The stored system notes changed. Reload them before saving your edits.",
+      "translation": "As notas do sistema armazenadas foram alteradas. Recarregue-os antes de salvar suas edições."
+    },
+    {
+      "source": "The stored system notes could not be read before saving.",
+      "translation": "As notas do sistema armazenadas não puderam ser lidas antes de serem salvas."
     },
     {
       "source": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -157273,6 +157493,10 @@
     {
       "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
       "translation": "Use este atalho para alternar as sobreposições SteamVR ou VDXR entre clique e interação do ponteiro do controlador. Em VDXR, aponte para um painel: cliques no gatilho, cliques com o botão direito do mouse e rolagens do polegar. Use o atalho novamente para restaurar o modo click-through."
+    },
+    {
+      "source": "UseAutomaticSourceFolder",
+      "translation": "UseAutomaticSourceFolder"
     },
     {
       "source": "UseCompactScrollingCommoditiesList",
@@ -164523,6 +164747,10 @@
     {
       "source": "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
       "translation": "Пассивное наложение – это переход по клику. Ярлык интерактивного взаимодействия временно позволяет перетаскивать существующие живые наложения без открытия редактора полного положения."
+    },
+    {
+      "source": "A pending screenshot record could not be recovered from '{0}': {1}",
+      "translation": "Не удалось восстановить ожидающую запись снимка экрана из «{0}»: {1}."
     },
     {
       "source": "A positive Codex entry ID is required.",
@@ -184497,6 +184725,10 @@
       "translation": "Ожидание живого сохранения не удалось; проект сохранен"
     },
     {
+      "source": "Pending screenshots could not be recovered: {0}",
+      "translation": "Не удалось восстановить ожидающие снимки экрана: {0}."
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "Ожидается корректировка груза"
     },
@@ -184559,6 +184791,10 @@
     {
       "source": "Phimbee AA-A d7640",
       "translation": "Фимби АА-А d7640"
+    },
+    {
+      "source": "Pictures",
+      "translation": "Картинки"
     },
     {
       "source": "Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically.",
@@ -194709,6 +194945,18 @@
       "translation": "Папка преобразованного скриншота должна иметь абсолютный путь."
     },
     {
+      "source": "The converted screenshot was saved, but the changed original BMP was retained.",
+      "translation": "Преобразованный снимок экрана был сохранен, но измененный исходный BMP остался."
+    },
+    {
+      "source": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+      "translation": "Преобразованный снимок экрана был сохранен, но исходный BMP не удалось проверить, и он был сохранен."
+    },
+    {
+      "source": "The converted screenshot's recovery record could not be removed: {0}",
+      "translation": "Не удалось удалить запись восстановления преобразованного снимка экрана: {0}."
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "Не удалось открыть созданный проект Raven: {0}"
     },
@@ -195537,6 +195785,22 @@
       "translation": "Полезная нагрузка размещается непосредственно на https://voxstellar.com/webhooks/v1/system как «командир + данные» и подписывается HMAC-SHA256. SrvSurvey не отправляет историю запуска или воспроизведенные записи журнала. Отключение этой опции делает недействительными записи в очереди, которые еще не начали загрузку."
     },
     {
+      "source": "The pending screenshot could not be saved for restart recovery: {0}",
+      "translation": "Не удалось сохранить ожидающий снимок экрана для повторного восстановления: {0}."
+    },
+    {
+      "source": "The pending screenshot output verification is invalid.",
+      "translation": "Ожидаемая проверка вывода скриншота недействительна."
+    },
+    {
+      "source": "The pending screenshot record is empty.",
+      "translation": "Ожидаемая запись скриншота пуста."
+    },
+    {
+      "source": "The pending screenshot record is invalid.",
+      "translation": "Ожидаемая запись скриншота недействительна."
+    },
+    {
       "source": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
       "translation": "Персональный ключ хранится только в этом профиле командира. Никакой токен приложения не встроен и не требуется для событий записи."
     },
@@ -195865,6 +196129,10 @@
       "translation": "Не удалось открыть папку со скриншотами: {0}"
     },
     {
+      "source": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+      "translation": "Папка вывода снимков экрана фиксирована для этого сеанса, но не может быть сохранена: {0}"
+    },
+    {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "Настройки снимков экрана изменились для этого сеанса, но не удалось сохранить: {0}"
     },
@@ -196107,6 +196375,14 @@
     {
       "source": "The startup resource was already transferred.",
       "translation": "Ресурс запуска уже перенесен."
+    },
+    {
+      "source": "The stored system notes changed. Reload them before saving your edits.",
+      "translation": "Сохраненные системные примечания изменились. Перезагрузите их, прежде чем сохранять изменения."
+    },
+    {
+      "source": "The stored system notes could not be read before saving.",
+      "translation": "Сохраненные системные заметки не удалось прочитать перед сохранением."
     },
     {
       "source": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -198163,6 +198439,10 @@
     {
       "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
       "translation": "Используйте этот ярлык для переключения наложений SteamVR или VDXR между кликом и взаимодействием указателя контроллера. На VDXR наведите указатель мыши на панель: щелчки триггера, щелчок правой кнопкой мыши и прокрутка с помощью джойстика. Используйте ярлык еще раз, чтобы восстановить режим перехода по клику."
+    },
+    {
+      "source": "UseAutomaticSourceFolder",
+      "translation": "Усеавтоматиксаурцепапка"
     },
     {
       "source": "UseCompactScrollingCommoditiesList",
@@ -205413,6 +205693,10 @@
     {
       "source": "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
       "translation": "被动覆盖是点击。实时交互快捷方式暂时使现有的实时叠加可拖动，而无需打开完整位置编辑器。"
+    },
+    {
+      "source": "A pending screenshot record could not be recovered from '{0}': {1}",
+      "translation": "无法从“{0}”恢复待处理的屏幕截图记录：{1}"
     },
     {
       "source": "A positive Codex entry ID is required.",
@@ -225387,6 +225671,10 @@
       "translation": "等待实时保存失败；保留草稿"
     },
     {
+      "source": "Pending screenshots could not be recovered: {0}",
+      "translation": "无法恢复挂起的屏幕截图：{0}"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "待定货物调整"
     },
@@ -225449,6 +225737,10 @@
     {
       "source": "Phimbee AA-A d7640",
       "translation": "菲姆比 AA-A d7640"
+    },
+    {
+      "source": "Pictures",
+      "translation": "图片"
     },
     {
       "source": "Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically.",
@@ -235599,6 +235891,18 @@
       "translation": "转换后的截图文件夹必须是绝对路径。"
     },
     {
+      "source": "The converted screenshot was saved, but the changed original BMP was retained.",
+      "translation": "保存了转换后的屏幕截图，但保留了更改后的原始 BMP。"
+    },
+    {
+      "source": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+      "translation": "转换后的截图被保存，但原始BMP无法验证，被保留。"
+    },
+    {
+      "source": "The converted screenshot's recovery record could not be removed: {0}",
+      "translation": "无法删除转换后的屏幕截图的恢复记录：{0}"
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "无法打开创建的Raven项目：{0}"
     },
@@ -236427,6 +236731,22 @@
       "translation": "有效负载作为指挥官 + 数据直接发布到 https://voxstellar.com/webhooks/v1/system 并使用 HMAC-SHA256 进行签名。 SrvSurvey 不发送启动历史记录或重播的日志条目。关闭该选项将使尚未开始上传的排队条目无效。"
     },
     {
+      "source": "The pending screenshot could not be saved for restart recovery: {0}",
+      "translation": "无法保存挂起的屏幕截图以进行重新启动恢复：{0}"
+    },
+    {
+      "source": "The pending screenshot output verification is invalid.",
+      "translation": "待处理的屏幕截图输出验证无效。"
+    },
+    {
+      "source": "The pending screenshot record is empty.",
+      "translation": "待处理的屏幕截图记录为空。"
+    },
+    {
+      "source": "The pending screenshot record is invalid.",
+      "translation": "待处理的屏幕截图记录无效。"
+    },
+    {
       "source": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
       "translation": "个人密钥仅存储在该指挥官配置文件中。写入事件不嵌入或不需要应用程序令牌。"
     },
@@ -236755,6 +237075,10 @@
       "translation": "无法打开屏幕截图文件夹：{0}"
     },
     {
+      "source": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+      "translation": "此会话的屏幕截图输出文件夹是固定的，但无法保存：{0}"
+    },
+    {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "此会话的屏幕截图首选项已更改，但无法保存：{0}"
     },
@@ -236997,6 +237321,14 @@
     {
       "source": "The startup resource was already transferred.",
       "translation": "启动资源已经转移。"
+    },
+    {
+      "source": "The stored system notes changed. Reload them before saving your edits.",
+      "translation": "存储的系统注释已更改。在保存编辑之前重新加载它们。"
+    },
+    {
+      "source": "The stored system notes could not be read before saving.",
+      "translation": "保存前无法读取已存储的系统注释。"
     },
     {
       "source": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -239053,6 +239385,10 @@
     {
       "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
       "translation": "使用此快捷方式可在点击和控制器指针交互之间切换 SteamVR 或 VDXR 覆盖。在 VDXR 上，指向面板：触发单击、握柄右键单击和摇杆滚动。再次使用该快捷方式可恢复点击模式。"
+    },
+    {
+      "source": "UseAutomaticSourceFolder",
+      "translation": "使用自动源文件夹"
     },
     {
       "source": "UseCompactScrollingCommoditiesList",
@@ -246303,6 +246639,10 @@
     {
       "source": "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
       "translation": "* A PASSIVE OVERLAY IS CLICK-THROUGH. THE LIVE-INTERACTION SHORTCUT TEMPORARILY MAKES EXISTING LIVE OVERLAYS DRAGGABLE WITHOUT OPENING THE FULL POSITION EDITOR. >>>!"
+    },
+    {
+      "source": "A pending screenshot record could not be recovered from '{0}': {1}",
+      "translation": "* A PENDING SCREENSHOT RECORD COULD NOT BE RECOVERED FROM '{0}': {1} >>>!"
     },
     {
       "source": "A positive Codex entry ID is required.",
@@ -266277,6 +266617,10 @@
       "translation": "* PENDING LIVE SAVE FAILED; DRAFT RETAINED >>>!"
     },
     {
+      "source": "Pending screenshots could not be recovered: {0}",
+      "translation": "* PENDING SCREENSHOTS COULD NOT BE RECOVERED: {0} >>>!"
+    },
+    {
       "source": "PendingCargoAdjustments",
       "translation": "* PENDINGCARGOADJUSTMENTS >>>!"
     },
@@ -266339,6 +266683,10 @@
     {
       "source": "Phimbee AA-A d7640",
       "translation": "* PHIMBEE AA-A D7640 >>>!"
+    },
+    {
+      "source": "Pictures",
+      "translation": "* PICTURES >>>!"
     },
     {
       "source": "Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically.",
@@ -276489,6 +276837,18 @@
       "translation": "* THE CONVERTED SCREENSHOT FOLDER MUST BE AN ABSOLUTE PATH. >>>!"
     },
     {
+      "source": "The converted screenshot was saved, but the changed original BMP was retained.",
+      "translation": "* THE CONVERTED SCREENSHOT WAS SAVED, BUT THE CHANGED ORIGINAL BMP WAS RETAINED. >>>!"
+    },
+    {
+      "source": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+      "translation": "* THE CONVERTED SCREENSHOT WAS SAVED, BUT THE ORIGINAL BMP COULD NOT BE VERIFIED AND WAS RETAINED. >>>!"
+    },
+    {
+      "source": "The converted screenshot's recovery record could not be removed: {0}",
+      "translation": "* THE CONVERTED SCREENSHOT'S RECOVERY RECORD COULD NOT BE REMOVED: {0} >>>!"
+    },
+    {
       "source": "The created Raven project could not be opened: {0}",
       "translation": "* THE CREATED RAVEN PROJECT COULD NOT BE OPENED: {0} >>>!"
     },
@@ -277317,6 +277677,22 @@
       "translation": "* THE PAYLOAD IS POSTED DIRECTLY TO HTTPS://VOXSTELLAR.COM/WEBHOOKS/V1/SYSTEM AS COMMANDER + DATA AND SIGNED WITH HMAC-SHA256. SRVSURVEY DOES NOT SEND STARTUP HISTORY OR REPLAYED JOURNAL ENTRIES. TURNING THE OPTION OFF INVALIDATES QUEUED ENTRIES THAT HAVE NOT BEGUN UPLOADING. >>>!"
     },
     {
+      "source": "The pending screenshot could not be saved for restart recovery: {0}",
+      "translation": "* THE PENDING SCREENSHOT COULD NOT BE SAVED FOR RESTART RECOVERY: {0} >>>!"
+    },
+    {
+      "source": "The pending screenshot output verification is invalid.",
+      "translation": "* THE PENDING SCREENSHOT OUTPUT VERIFICATION IS INVALID. >>>!"
+    },
+    {
+      "source": "The pending screenshot record is empty.",
+      "translation": "* THE PENDING SCREENSHOT RECORD IS EMPTY. >>>!"
+    },
+    {
+      "source": "The pending screenshot record is invalid.",
+      "translation": "* THE PENDING SCREENSHOT RECORD IS INVALID. >>>!"
+    },
+    {
       "source": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
       "translation": "* THE PERSONAL KEY IS STORED ONLY IN THIS COMMANDER PROFILE. NO APPLICATION TOKEN IS EMBEDDED OR REQUIRED FOR WRITE EVENTS. >>>!"
     },
@@ -277645,6 +278021,10 @@
       "translation": "* THE SCREENSHOT FOLDER COULD NOT BE OPENED: {0} >>>!"
     },
     {
+      "source": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+      "translation": "* THE SCREENSHOT OUTPUT FOLDER IS FIXED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
       "source": "The screenshot preference changed for this session but could not be saved: {0}",
       "translation": "* THE SCREENSHOT PREFERENCE CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
     },
@@ -277887,6 +278267,14 @@
     {
       "source": "The startup resource was already transferred.",
       "translation": "* THE STARTUP RESOURCE WAS ALREADY TRANSFERRED. >>>!"
+    },
+    {
+      "source": "The stored system notes changed. Reload them before saving your edits.",
+      "translation": "* THE STORED SYSTEM NOTES CHANGED. RELOAD THEM BEFORE SAVING YOUR EDITS. >>>!"
+    },
+    {
+      "source": "The stored system notes could not be read before saving.",
+      "translation": "* THE STORED SYSTEM NOTES COULD NOT BE READ BEFORE SAVING. >>>!"
     },
     {
       "source": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -279943,6 +280331,10 @@
     {
       "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
       "translation": "* USE THIS SHORTCUT TO SWITCH STEAMVR OR VDXR OVERLAYS BETWEEN CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. ON VDXR, POINT AT A PANEL: TRIGGER CLICKS, GRIP RIGHT-CLICKS, AND THUMBSTICK SCROLLS. USE THE SHORTCUT AGAIN TO RESTORE CLICK-THROUGH MODE. >>>!"
+    },
+    {
+      "source": "UseAutomaticSourceFolder",
+      "translation": "* USEAUTOMATICSOURCEFOLDER >>>!"
     },
     {
       "source": "UseCompactScrollingCommoditiesList",

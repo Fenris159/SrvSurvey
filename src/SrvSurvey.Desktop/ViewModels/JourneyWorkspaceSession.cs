@@ -51,6 +51,8 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
     private string journeyDescription = string.Empty;
     private SystemNoteDraft systemNotes = new(string.Empty, string.Empty);
     private Task selectedSystemLoad = Task.CompletedTask;
+    private bool notesLoading;
+    private int notesEditVersion;
     private string selectedSystemDetails = string.Empty;
     private IReadOnlyList<string> screenshotFiles = [];
     private string? imagesDirectory;
@@ -98,7 +100,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         cancelNewJourneyCommand = new AsyncCommand(CancelNewJourneyAsync, CanCancelNewJourney);
         findStartCommand = new AsyncCommand(FindStartAsync, CanFindStart);
         beginJourneyCommand = new AsyncCommand(BeginJourneyAsync, CanBeginJourney);
-        saveCommand = new AsyncCommand(SaveAsync, () => IsDirty && !IsBusy);
+        saveCommand = new AsyncCommand(SaveAsync, () => IsDirty && !IsBusy && !notesLoading);
         discardCommand = new AsyncCommand(DiscardAsync, () => IsDirty && !IsBusy);
         requestConcludeCommand = new AsyncCommand(RequestConcludeAsync, CanConclude);
         confirmConcludeCommand = new AsyncCommand(ConfirmConcludeAsync, () => IsConcludePending && CanConclude());
@@ -294,10 +296,13 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
                 ) && !isApplyingDocument
             )
             {
+                notesEditVersion++;
                 RaiseDirtyState();
             }
         }
     }
+
+    public bool CanEditSystemNotes => selectedDocument is not null && HasSelectedSystem && !notesLoading && !IsBusy;
 
     public string SelectedSystemDetails
     {
@@ -831,7 +836,8 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
 
     public async Task SaveAsync()
     {
-        if (selectedDocument is null)
+        await selectedSystemLoad;
+        if (detached || selectedDocument is null)
         {
             return;
         }
@@ -848,16 +854,15 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         using BusyScope busy = BeginBusy();
         try
         {
-            JourneyDocument saved = await journeyService.SaveAsync(
-                selectedDocument with
-                {
-                    Name = JourneyName,
-                    Description = JourneyDescription,
-                }
+            JourneyDocument saved = await journeyService.SaveMetadataAsync(
+                selectedDocument,
+                JourneyName,
+                JourneyDescription
             );
             saved = await SaveSelectedSystemNotesAsync(saved);
 
             ApplyDocument(saved, preferredSystem: selectedIdentity);
+            await selectedSystemLoad;
             ClearJourneyDraft();
             UpdateCatalogDocument(saved);
             StatusMessage = $"Saved {saved.Name}.";
@@ -876,6 +881,21 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         {
             return saved;
         }
+        SystemNoteLoadResult baseline = await noteStore.LoadAsync(
+            saved.FrontierId,
+            selected.Visit.StarSystem.Name,
+            selected.Visit.StarSystem.SystemAddress
+        );
+        if (!baseline.IsSuccess)
+        {
+            throw new IOException(baseline.Error ?? "The stored system notes could not be read before saving.");
+        }
+        if (!string.Equals(baseline.Notes ?? string.Empty, systemNotes.Loaded, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                "The stored system notes changed. Reload them before saving your edits."
+            );
+        }
         await noteStore.SaveAsync(
             new SystemNoteContext(
                 saved.FrontierId,
@@ -886,9 +906,13 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
             ),
             SelectedSystemNotes
         );
-        await journeyService.IncrementNoteCountAsync(selected.Visit.StarSystem.SystemAddress, expectedJourney: saved);
+        JourneyDocument updated = await journeyService.RecordNoteAsync(
+            saved,
+            selected.Visit.StarSystem.SystemAddress,
+            selected.Visit.Arrived
+        );
         systemNotes = systemNotes with { Loaded = systemNotes.Text };
-        return journeyService.ActiveJourney?.FileName == saved.FileName ? journeyService.ActiveJourney : saved;
+        return updated;
     }
 
     public Task DiscardAsync()
@@ -1093,9 +1117,9 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         RaiseCommands();
     }
 
-    private void ApplyLoadedSystemNotes(string notes)
+    private void ApplyLoadedSystemNotes(string notes, string? draft = null)
     {
-        systemNotes = new SystemNoteDraft(notes, notes);
+        systemNotes = new SystemNoteDraft(notes, draft ?? notes);
         OnPropertyChanged(nameof(SelectedSystemNotes));
     }
 
@@ -1107,6 +1131,9 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
     private async Task LoadSelectedSystemAsync(JourneySystemItemViewModel? item)
     {
         int version = ++systemLoadVersion;
+        notesLoading = item is not null && selectedDocument is not null;
+        OnPropertyChanged(nameof(CanEditSystemNotes));
+        RaiseCommands();
         if (item is null || selectedDocument is null)
         {
             isApplyingDocument = true;
@@ -1128,6 +1155,8 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
             return;
         }
 
+        int editVersion = notesEditVersion;
+        ApplyLoadedSystemNotes(string.Empty);
         try
         {
             JourneySystemVisit visit = item.Visit;
@@ -1144,7 +1173,17 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
             isApplyingDocument = true;
             try
             {
-                ApplyLoadedSystemNotes(load.Notes ?? string.Empty);
+                string loaded = load.Notes ?? string.Empty;
+                string? draft = notesEditVersion != editVersion ? systemNotes.Text : null;
+                if (
+                    !string.IsNullOrEmpty(draft)
+                    && !string.IsNullOrEmpty(loaded)
+                    && !draft.StartsWith(loaded, StringComparison.Ordinal)
+                )
+                {
+                    draft = loaded + Environment.NewLine + draft;
+                }
+                ApplyLoadedSystemNotes(loaded, string.IsNullOrEmpty(draft) ? null : draft);
                 SelectedSystemDetails = CreateSystemDetails(visit);
                 RefreshScreenshotAvailability();
             }
@@ -1167,6 +1206,15 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
             if (version == systemLoadVersion)
             {
                 StatusMessage = "System details could not be loaded: " + exception.Message;
+            }
+        }
+        finally
+        {
+            if (version == systemLoadVersion)
+            {
+                notesLoading = false;
+                OnPropertyChanged(nameof(CanEditSystemNotes));
+                RaiseCommands();
             }
         }
     }
@@ -1234,6 +1282,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
 
     private void RaiseCommands()
     {
+        OnPropertyChanged(nameof(CanEditSystemNotes));
         clearUnavailableJourneyCommand?.RaiseCanExecuteChanged();
         resumeJourneyCommand?.RaiseCanExecuteChanged();
         OnPropertyChanged(nameof(CanResumeJourney));

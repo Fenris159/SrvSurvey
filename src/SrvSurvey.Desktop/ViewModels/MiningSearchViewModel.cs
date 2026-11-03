@@ -3210,6 +3210,7 @@ public sealed class MiningSearchViewModel(
 
     private void ClearPowerplayResults()
     {
+        Status = string.Empty;
         MeritRows = [];
         AcquireRows = [];
         PlanetarySearch.ClearResults();

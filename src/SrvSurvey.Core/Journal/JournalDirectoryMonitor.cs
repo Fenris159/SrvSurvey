@@ -19,6 +19,7 @@ public sealed class JournalDirectoryMonitor
     private readonly Dictionary<string, HashSet<(long ByteOffset, string RawJson)>> observedTextEvents;
     private readonly Func<string, CompanionFileStampReadResult> companionFileStampReader;
     private readonly Dictionary<string, string> companionFileStampErrors;
+    private readonly Dictionary<string, string> configuredJournalSources;
     private readonly SemaphoreSlim pollLock = new(1, 1);
     private string? currentJournalPath;
     private long currentJournalOffset;
@@ -85,6 +86,7 @@ public sealed class JournalDirectoryMonitor
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
         observedTextEvents = new Dictionary<string, HashSet<(long ByteOffset, string RawJson)>>(pathComparer);
+        configuredJournalSources = new Dictionary<string, string>(pathComparer);
         companionFileStampErrors = new Dictionary<string, string>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
@@ -167,6 +169,9 @@ public sealed class JournalDirectoryMonitor
             StatusReadErrorRecovered = companions.StatusReadErrorRecovered,
             IsAwaitingCommanderIdentity = isAwaitingCommanderIdentity,
             SessionContextChanged = sessionContextChanged,
+            ConfiguredJournalDirectory = currentJournalPath is null
+                ? null
+                : configuredJournalSources.GetValueOrDefault(currentJournalPath),
         };
         lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
         hasCompletedFirstPoll = true;
@@ -287,6 +292,7 @@ public sealed class JournalDirectoryMonitor
     /// <summary>Selects the commander's newest physical journal without treating folder aliases as separate sources.</summary>
     private async Task<FileInfo?> FindLatestJournalAsync(CancellationToken cancellationToken)
     {
+        configuredJournalSources.Clear();
         FileInfo[] journals = journalDirectories
             .Where(Directory.Exists)
             .SelectMany(EnumerateJournalFiles)
@@ -395,13 +401,18 @@ public sealed class JournalDirectoryMonitor
     }
 
     /// <summary>Enumerates physical journal paths so Steam aliases share one cursor and command history.</summary>
-    private static FileInfo[] EnumerateJournalFiles(string journalDirectory)
+    private FileInfo[] EnumerateJournalFiles(string journalDirectory)
     {
         try
         {
-            return new DirectoryInfo(ResolveJournalDirectory(journalDirectory))
+            FileInfo[] files = new DirectoryInfo(ResolveJournalDirectory(journalDirectory))
                 .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
                 .ToArray();
+            foreach (FileInfo file in files)
+            {
+                configuredJournalSources.TryAdd(file.FullName, journalDirectory);
+            }
+            return files;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -913,6 +924,9 @@ public sealed record JournalMonitorUpdate(
     ShipLockerSnapshot? ShipLocker = null
 )
 {
+    /// <summary>The selected journal's configured source, retaining its Wine profile when physical files are linked.</summary>
+    public string? ConfiguredJournalDirectory { get; init; }
+
     public bool StatusReadErrorRecovered { get; init; }
 
     public bool IsAwaitingCommanderIdentity { get; init; }

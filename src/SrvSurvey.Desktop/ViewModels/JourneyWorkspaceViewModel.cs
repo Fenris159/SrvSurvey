@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
@@ -14,6 +15,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private readonly Func<JourneyWorkspaceSession> createSession;
     private readonly Dictionary<string, JourneyEditDraft> drafts = new(StringComparer.OrdinalIgnoreCase);
     private JourneyWorkspaceSession session;
+    private readonly ConditionalWeakTable<JourneyHtmlExport, JourneyWorkspaceSession> reportOwners = [];
     private string? profileKey;
     private Func<Task<bool>>? workspaceOpener;
     private Func<DirectoryInfo, Task<bool>>? directoryLauncher;
@@ -199,6 +201,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         get => session.SelectedSystemNotes;
         set => session.SelectedSystemNotes = value;
     }
+    public bool CanEditSystemNotes => session.CanEditSystemNotes;
     public string SelectedSystemDetails => session.SelectedSystemDetails;
     public IReadOnlyList<string> ScreenshotFiles => session.ScreenshotFiles;
     public bool HasScreenshots => session.HasScreenshots;
@@ -251,13 +254,28 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     {
         JourneyWorkspaceSession owner = session;
         JourneyHtmlExport? report = await owner.CreateHtmlReportAsync();
-        return ReferenceEquals(owner, session) ? report : null;
+        if (report is not null && ReferenceEquals(owner, session))
+        {
+            reportOwners.GetValue(report, _ => owner);
+            return report;
+        }
+        return null;
     }
 
     public void SetExportStatus(string message) => session.SetExportStatus(message);
 
+    public void SetExportStatus(JourneyHtmlExport report, string message)
+    {
+        if (reportOwners.TryGetValue(report, out JourneyWorkspaceSession? owner) && ReferenceEquals(owner, session))
+        {
+            owner.SetExportStatus(message);
+        }
+    }
+
     public Task SaveHtmlReportAsync(JourneyHtmlExport report, string destination) =>
-        session.SaveHtmlReportAsync(report, destination);
+        reportOwners.TryGetValue(report, out JourneyWorkspaceSession? owner) && ReferenceEquals(owner, session)
+            ? owner.SaveHtmlReportAsync(report, destination)
+            : Task.CompletedTask;
 
     public Task ResumeJourneyAsync() => session.ResumeJourneyAsync();
 

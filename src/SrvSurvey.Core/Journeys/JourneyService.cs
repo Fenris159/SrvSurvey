@@ -283,6 +283,91 @@ public sealed partial class JourneyService
         }
     }
 
+    /// <summary>Edits metadata against the latest stored or active journey while serialized with live projection.</summary>
+    public Task<JourneyDocument> SaveMetadataAsync(
+        JourneyDocument journey,
+        string name,
+        string description,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(journey);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        return UpdateStoredJourneyAsync(
+            journey,
+            latest => latest with { Name = name.Trim(), Description = description ?? string.Empty },
+            cancellationToken
+        );
+    }
+
+    /// <summary>Records a saved note against its selected visit, including historical and completed journeys.</summary>
+    public Task<JourneyDocument> RecordNoteAsync(
+        JourneyDocument journey,
+        long systemAddress,
+        DateTimeOffset arrived,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(journey);
+        return UpdateStoredJourneyAsync(
+            journey,
+            latest =>
+            {
+                JourneySystemVisit[] visits = latest.VisitedSystems.ToArray();
+                int index = Array.FindIndex(
+                    visits,
+                    visit => visit.StarSystem.SystemAddress == systemAddress && visit.Arrived == arrived
+                );
+                if (index < 0)
+                {
+                    throw new InvalidOperationException(
+                        "The selected Journey visit is no longer available; its note count was not updated."
+                    );
+                }
+                JourneySystemVisit visit = visits[index];
+                visits[index] = visit with { Counts = visit.Counts with { Notes = checked(visit.Counts.Notes + 1) } };
+                return latest with { VisitedSystems = visits };
+            },
+            cancellationToken
+        );
+    }
+
+    private async Task<JourneyDocument> UpdateStoredJourneyAsync(
+        JourneyDocument expected,
+        Func<JourneyDocument, JourneyDocument> update,
+        CancellationToken cancellationToken
+    )
+    {
+        await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            JourneyDocument? latest = activeProcessor?.Journey;
+            if (latest is null || latest.FileName != expected.FileName || latest.FrontierId != expected.FrontierId)
+            {
+                JourneyLoadResult load = await journeyStore
+                    .LoadAsync(expected.FrontierId, expected.FileName, cancellationToken)
+                    .ConfigureAwait(false);
+                latest =
+                    load.Journey ?? throw new IOException(load.Error ?? "The Journey could not be loaded for editing.");
+            }
+            JourneyDocument saved = await journeyStore
+                .SaveAsync(update(latest), cancellationToken)
+                .ConfigureAwait(false);
+            if (
+                activeProcessor?.Journey.FileName == saved.FileName
+                && activeProcessor.Journey.FrontierId == saved.FrontierId
+            )
+            {
+                activeProcessor.UpdateJourney(saved);
+            }
+            return saved;
+        }
+        finally
+        {
+            operationLock.Release();
+        }
+    }
+
     public Task<bool> IncrementNoteCountAsync(long systemAddress, CancellationToken cancellationToken = default) =>
         IncrementNoteCountAsync(systemAddress, null, cancellationToken);
 

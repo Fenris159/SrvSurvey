@@ -6,13 +6,9 @@ internal sealed partial class JourneyWorkspaceSession
 
     internal JourneyEditDraft? CaptureDraft()
     {
-        if (retainedDraft is not null)
-        {
-            return retainedDraft;
-        }
         if (selectedDocument is null || !IsDirty)
         {
-            return null;
+            return retainedDraft;
         }
         return new(
             selectedDocument.FileName,

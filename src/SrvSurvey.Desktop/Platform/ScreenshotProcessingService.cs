@@ -12,6 +12,7 @@ namespace SrvSurvey.Desktop.Platform;
 public interface IScreenshotProcessingService
 {
     int PendingCount => 0;
+    bool HasPendingWork => PendingCount > 0;
 
     Task<ScreenshotProcessingResult> ProcessLiveAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
@@ -38,7 +39,7 @@ public interface IScreenshotProcessingService
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The service is application-scoped and its gate may have in-flight waiters."
 )]
-public sealed class ScreenshotProcessingService : IScreenshotProcessingService
+public sealed partial class ScreenshotProcessingService : IScreenshotProcessingService
 {
     private const string UnknownLabel = "unknown";
     private const int FileReadinessAttempts = 150;
@@ -46,9 +47,13 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private readonly Dictionary<string, PendingScreenshot> pending = new(StringComparer.Ordinal);
     private readonly HashSet<string> completed = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, CompletedSource> completedSources = new(
+        OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+    );
     private int pendingCount;
 
     public int PendingCount => Volatile.Read(ref pendingCount);
+    public bool HasPendingWork => PendingCount > 0 || Volatile.Read(ref recoveryWarningCount) > 0;
 
     private readonly SemaphoreSlim processingLock = new(1, 1);
     private readonly Func<int?> gameClientWidthProvider;
@@ -56,11 +61,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     public ScreenshotProcessingService(
         Func<int?>? gameClientWidthProvider = null,
-        Func<TimeSpan, CancellationToken, Task>? retryDelay = null
+        Func<TimeSpan, CancellationToken, Task>? retryDelay = null,
+        string? pendingQueueDirectory = null
     )
     {
         this.gameClientWidthProvider = gameClientWidthProvider ?? GetGameClientWidth;
         this.retryDelay = retryDelay ?? Task.Delay;
+        this.pendingQueueDirectory = pendingQueueDirectory is null ? null : Path.GetFullPath(pendingQueueDirectory);
+        RecoverPendingCaptures();
     }
 
     public static string GetSystemFolderPath(string targetFolder, string systemName)
@@ -126,7 +134,9 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         await processingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var warnings = new List<string>();
+            var warnings = new List<string>(recoveryWarnings);
+            recoveryWarnings.Clear();
+            Volatile.Write(ref recoveryWarningCount, 0);
             Enqueue(journalEvents, preferences, commanderName, guardianContexts, navigationContext, warnings);
             return await DrainAsync(warnings, live, cancellationToken).ConfigureAwait(false);
         }
@@ -148,7 +158,15 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     {
         foreach (JournalEventEnvelope entry in journalEvents.Where(entry => entry.EventName == "Screenshot"))
         {
-            string key = entry.SourceRecordIdentity ?? commanderName + "\n" + entry.RawJson;
+            string key = JsonSerializer.Serialize(
+                new
+                {
+                    entry.SourceRecordIdentity,
+                    Commander = commanderName,
+                    entry.RawJson,
+                    preferences.SourceFolder,
+                }
+            );
             if (completed.Contains(key) || pending.ContainsKey(key))
             {
                 continue;
@@ -167,7 +185,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                     key,
                     new PendingScreenshot(
                         new ScreenshotConversionRequest(
-                            entry,
+                            entry.Timestamp is null ? entry with { Timestamp = DateTimeOffset.UtcNow } : entry,
                             preferences,
                             commanderName,
                             guardianContexts?.GetValueOrDefault(entry),
@@ -178,12 +196,25 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                         )
                     )
                 );
+                PersistNewCapture(key, pending[key], warnings);
             }
             catch (Exception exception) when (exception is ArgumentException or InvalidDataException)
             {
                 warnings.Add(DescribeFailure(entry, exception, retained: false));
                 completed.Add(key);
             }
+        }
+    }
+
+    private void PersistNewCapture(string key, PendingScreenshot capture, List<string> warnings)
+    {
+        try
+        {
+            SavePendingCapture(key, capture);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add("The pending screenshot could not be saved for restart recovery: " + exception.Message);
         }
     }
 
@@ -199,20 +230,27 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                string sourcePath = await WaitForCompletedFileAsync(
-                        capture.Request.SourcePaths,
+                (ScreenshotConversion? conversion, bool complete) = await TryConvertAsync(
+                        key,
+                        capture,
                         live,
                         cancellationToken
                     )
                     .ConfigureAwait(false);
-                ScreenshotConversion conversion = Convert(capture.Request, sourcePath);
-                conversions.Add(conversion);
-                if (conversion.Warning is not null)
+                if (conversion is not null)
                 {
-                    warnings.Add(conversion.Warning);
+                    conversions.Add(conversion);
+                    if (conversion.Warning is not null)
+                    {
+                        warnings.Add(conversion.Warning);
+                    }
                 }
-                pending.Remove(key);
-                completed.Add(key);
+                if (complete)
+                {
+                    pending.Remove(key);
+                    completed.Add(key);
+                    RemovePendingCapture(key, warnings);
+                }
             }
             catch (Exception exception)
                 when (exception
@@ -233,6 +271,79 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return new ScreenshotProcessingResult(conversions, warnings) { PendingCount = pending.Count };
     }
 
+    private async Task<(ScreenshotConversion? Conversion, bool Complete)> TryConvertAsync(
+        string key,
+        PendingScreenshot capture,
+        bool live,
+        CancellationToken cancellationToken
+    )
+    {
+        if (capture.CompletedConversion is not null && capture.PublishedImages.All(ImageStillValid))
+        {
+            ScreenshotConversion recovered = FinishConversion(key, capture);
+            return (recovered, true);
+        }
+        capture.CompletedConversion = null;
+        capture.PublishedImages.Clear();
+        string candidate = SelectSourcePath(capture.Request.SourcePaths);
+        SourceFingerprint? fingerprint = ReadFingerprint(candidate);
+        if (IsDuplicateSource(capture.Request, fingerprint))
+        {
+            return (null, true);
+        }
+        if (fingerprint is not null && SameFingerprint(fingerprint, capture.Undecodable))
+        {
+            throw new InvalidDataException($"'{candidate}' is not a supported bitmap image.");
+        }
+        string sourcePath = await WaitForCompletedFileAsync(capture.Request.SourcePaths, live, cancellationToken)
+            .ConfigureAwait(false);
+        fingerprint = ReadFingerprint(sourcePath);
+        using SKBitmap? source = DecodeBitmapFile(sourcePath);
+        if (source is null)
+        {
+            capture.Undecodable = fingerprint;
+            SavePendingCapture(key, capture);
+            throw new InvalidDataException($"'{sourcePath}' is not a supported bitmap image.");
+        }
+        capture.Undecodable = null;
+        capture.Source = fingerprint;
+        capture.CompletedConversion = Convert(capture, sourcePath, source);
+        ScreenshotConversion conversion = FinishConversion(key, capture);
+        return (conversion, true);
+    }
+
+    private bool IsDuplicateSource(ScreenshotConversionRequest request, SourceFingerprint? fingerprint)
+    {
+        foreach (string path in request.SourcePaths)
+        {
+            if (
+                completedSources.TryGetValue(path, out CompletedSource? prior)
+                && (
+                    SameFingerprint(prior.Fingerprint, fingerprint)
+                    || (
+                        fingerprint is null
+                        && request.Entry.Timestamp is not null
+                        && prior.Timestamp == request.Entry.Timestamp
+                    )
+                )
+            )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static SourceFingerprint? ReadFingerprint(string path)
+    {
+        var info = new FileInfo(path);
+        return info.Exists ? new SourceFingerprint(info.FullName, info.Length, info.LastWriteTimeUtc) : null;
+    }
+
+    private sealed record SourceFingerprint(string Path, long Length, DateTime LastWriteTimeUtc);
+
+    private sealed record CompletedSource(SourceFingerprint Fingerprint, DateTimeOffset? Timestamp);
+
     private static string DescribeFailure(JournalEventEnvelope entry, Exception exception, bool retained = true)
     {
         string timestamp = entry.Timestamp?.ToString("u", CultureInfo.InvariantCulture) ?? "with unknown time";
@@ -245,6 +356,10 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     {
         public ScreenshotConversionRequest Request { get; } = request;
         public string? LastWarning { get; set; }
+        public SourceFingerprint? Undecodable { get; set; }
+        public SourceFingerprint? Source { get; set; }
+        public ScreenshotConversion? CompletedConversion { get; set; }
+        public List<PublishedImage> PublishedImages { get; } = [];
     }
 
     private readonly record struct ScreenshotConversionRequest(
@@ -258,14 +373,12 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         string TargetDirectory
     );
 
-    private static ScreenshotConversion Convert(ScreenshotConversionRequest request, string sourcePath)
+    private static ScreenshotConversion Convert(PendingScreenshot capture, string sourcePath, SKBitmap source)
     {
+        ScreenshotConversionRequest request = capture.Request;
         JournalEventEnvelope entry = request.Entry;
         ScreenshotProcessingPreferences preferences = request.Preferences;
         ScreenshotGuardianContext? guardianContext = request.GuardianContext;
-        using SKBitmap source =
-            DecodeBitmapFile(sourcePath)
-            ?? throw new InvalidDataException($"'{sourcePath}' is not a supported bitmap image.");
         using SKBitmap output =
             source.Copy() ?? throw new InvalidDataException($"'{sourcePath}' could not be copied for conversion.");
         if (preferences.AddBanner)
@@ -283,8 +396,9 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 + GetGuardianFileSuffix(guardianContext)
                 + GetHighResolutionSuffix(entry, request.GameClientWidth)
         );
-        string outputPath = GetAvailablePath(folder, baseName, ".png");
-        WritePngAtomically(output, outputPath);
+        PublishedImage main = WritePngAtomically(output, Path.Combine(folder, baseName + ".png"));
+        capture.PublishedImages.Add(main);
+        string outputPath = main.Path;
 
         string? warning = null;
         string? aerialOutputPath = null;
@@ -310,8 +424,9 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                     SafeFileName("Aerial " + guardianContext.SiteType)
                 );
                 Directory.CreateDirectory(aerialFolder);
-                aerialOutputPath = GetAvailablePath(aerialFolder, baseName, ".png");
-                WritePngAtomically(aerial, aerialOutputPath);
+                PublishedImage aerialImage = WritePngAtomically(aerial, Path.Combine(aerialFolder, baseName + ".png"));
+                capture.PublishedImages.Add(aerialImage);
+                aerialOutputPath = aerialImage.Path;
             }
             catch (Exception exception)
                 when (exception
@@ -328,21 +443,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             }
         }
 
-        bool sourceDeleted = false;
-        if (preferences.DeleteOriginal && warning is null)
-        {
-            try
-            {
-                File.Delete(sourcePath);
-                sourceDeleted = true;
-            }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-            {
-                warning = $"Saved '{outputPath}', but the original BMP could not be removed: " + exception.Message;
-            }
-        }
-
-        return new ScreenshotConversion(sourcePath, outputPath, sourceDeleted, warning, aerialOutputPath)
+        return new ScreenshotConversion(sourcePath, outputPath, false, warning, aerialOutputPath)
         {
             IncludedBanner = preferences.AddBanner,
         };
@@ -356,7 +457,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return SKBitmap.Decode(stream);
     }
 
-    private static void WritePngAtomically(SKBitmap bitmap, string outputPath)
+    private static PublishedImage WritePngAtomically(SKBitmap bitmap, string outputPath)
     {
         string temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
         try
@@ -377,7 +478,18 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 }
             }
 
-            File.Move(temporaryPath, outputPath, false);
+            string hash = HashFile(temporaryPath);
+            outputPath = GetAvailablePath(
+                Path.GetDirectoryName(outputPath)!,
+                Path.GetFileNameWithoutExtension(outputPath),
+                ".png",
+                hash
+            );
+            if (!File.Exists(outputPath))
+            {
+                File.Move(temporaryPath, outputPath, false);
+            }
+            return new PublishedImage(outputPath, hash);
         }
         finally
         {
@@ -704,12 +816,16 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             : null;
     }
 
-    private static string GetAvailablePath(string directory, string baseName, string extension)
+    private static string GetAvailablePath(string directory, string baseName, string extension, string expectedHash)
     {
         string candidate = Path.Combine(directory, baseName + extension);
         int suffix = 2;
         while (File.Exists(candidate))
         {
+            if (ImageStillValid(new PublishedImage(candidate, expectedHash)))
+            {
+                return candidate;
+            }
             candidate = Path.Combine(directory, $"{baseName} ({suffix++}){extension}");
         }
 

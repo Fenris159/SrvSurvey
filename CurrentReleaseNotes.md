@@ -30,18 +30,29 @@ from RC77.
 ## What's changed
 
 - **Screenshot conversion:** Late or locked BMPs stay pending and are retried
-  during live and idle journal polling. Each capture retains its original
+  during live and idle journal polling, including after restarting SrvSurvey.
+  Each capture retains its original
   system, commander, Guardian details and conversion preferences through travel
   or settings changes. Repeated journal records do not create duplicate PNGs,
   and turning conversion off pauses pending work. Failure messages explain the
   file error while retaining the original BMP. Image reads use managed streams
-  to support long Windows paths during decoding and PNG verification.
+  to support long Windows paths during decoding and PNG verification. Unchanged
+  corrupt files stay pending without repeating costly decoding attempts; a file
+  change enables another attempt. Recovery verifies published images before
+  cleaning up an original BMP and avoids creating duplicate copies.
 - **Screenshot folders:** Automatic detection uses the configured Wine/Proton
   journal profile's Pictures folder, with the platform Pictures location as a
   fallback. Windows keeps its known-folder support, including redirected
   Pictures folders. The BMP source can still be chosen manually. The shared
   PNG destination used by Journeys is displayed read-only with an **Open folder**
-  button that creates the folder when needed. Native absolute screenshot paths
+  button that creates the folder when needed. This destination stays fixed
+  through source-folder changes, journal-profile changes and restarts; existing
+  custom destinations are retained. Older automatically saved source defaults
+  gain Proton detection while explicit manual choices remain intact.
+  Bootstrap selects the commander's configured profile before fixing the first
+  output destination, including linked Wine journals. Choosing the displayed
+  source folder explicitly keeps that choice through later profile changes.
+  Native absolute screenshot paths
   are honored, with a configured-folder fallback for moved or guest files.
 - **Quieter Colonization Nexus:** Reused or closing project action menus no
   longer produce empty-context binding warnings in the application log.
@@ -49,13 +60,23 @@ from RC77.
   retires pending workspace operations so late history, start, save and export
   results cannot replace another commander's readout. Unsaved Journey drafts
   survive an interrupted return, and delayed photo conversion refreshes the
-  original system's gallery and portable report images.
+  original system's gallery and portable report images. Metadata saves preserve
+  visits received while saving. System notes wait for their stored baseline
+  before editing and update the selected visit's count, including completed
+  Journeys. An export destination picker cannot hand one commander's report to
+  another commander's session, and recovery keeps history-load errors visible.
+  New edits to a readable Journey take priority over a retained draft whose
+  original Journey has become unavailable.
 - **Mining search restoration:** Restoring settings reconciles cached results,
   reference systems and status messages. An unfinished or incomplete search
-  cannot replace a newer accepted result or cache entry.
+  cannot replace a newer accepted result or cache entry. Filter edits made during
+  a search reconcile after it finishes, restored results retain their reference
+  through travel, and Reset resumes location following even before the first
+  location is known. Empty Powerplay results no longer show an old result count.
 - **Carrier observation consistency:** Fuel, position and next-jump tracking
   share identity and timestamp decisions, keeping personal and squadron carrier
-  observations separate while preserving legacy carrier inference.
+  observations separate while preserving legacy carrier inference. Unsupported
+  carrier types cannot replace a known carrier identity or advance its route.
 - **Squadron Carrier routes:** SC Routes sits beside FC Routes with its own
   workspace, overlay, panel shortcut and next-jump settings. Both carriers share
   saved itinerary bookmarks while keeping their selected routes, progress and

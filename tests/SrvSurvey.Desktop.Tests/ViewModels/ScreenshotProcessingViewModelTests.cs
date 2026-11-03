@@ -46,7 +46,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void AutomaticFoldersFollowTheActiveJournalUntilManuallyOverridden(bool overrideSource)
+    public void AutomaticSourceFollowsTheJournalWhileOutputStaysFixedAcrossRestarts(bool overrideSource)
     {
         string first = Path.Combine(temporaryDirectory, "first", "drive_c", "users", "steamuser");
         string second = Path.Combine(temporaryDirectory, "second", "drive_c", "users", "steamuser");
@@ -58,7 +58,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
 
         Assert.Equal(Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous"), model.SourceFolder);
         Assert.Equal(
-            Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous", "converted"),
+            Path.Combine(first, "Pictures", "Frontier Developments", "Elite Dangerous", "converted"),
             model.TargetFolder
         );
 
@@ -69,7 +69,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         }
         else
         {
-            model.TargetFolder = Path.Combine(custom, "converted");
+            model.TargetFolder = Path.Combine(temporaryDirectory, "legacy-output");
         }
         model.UpdateJournalDirectory(firstJournal);
         model.AddBanner = false;
@@ -78,13 +78,59 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
             ? custom
             : Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous");
         string expectedTarget = overrideSource
-            ? Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous", "converted")
-            : Path.Combine(custom, "converted");
+            ? Path.Combine(first, "Pictures", "Frontier Developments", "Elite Dangerous", "converted")
+            : Path.Combine(temporaryDirectory, "legacy-output");
         Assert.Equal(expectedSource, model.SourceFolder);
         Assert.Equal(expectedTarget, model.TargetFolder);
         var reopened = new ScreenshotProcessingViewModel(store, journalDirectory: secondJournal);
         Assert.Equal(expectedSource, reopened.SourceFolder);
         Assert.Equal(expectedTarget, reopened.TargetFolder);
+    }
+
+    [Fact]
+    public void ExplicitlyPickingTheDisplayedSourceKeepsItManualAcrossProfilesAndRestart()
+    {
+        string first = Path.Combine(
+            temporaryDirectory,
+            "first",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        string second = Path.Combine(
+            temporaryDirectory,
+            "second",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "settings.json"));
+        var model = new ScreenshotProcessingViewModel(store, journalDirectory: first);
+        string selected = model.SourceFolder;
+        model.SelectSourceFolder(selected);
+        model.UpdateJournalDirectory(second);
+        Assert.Equal(selected, model.SourceFolder);
+        Assert.Equal(selected, new ScreenshotProcessingViewModel(store, journalDirectory: second).SourceFolder);
+    }
+
+    [Fact]
+    public void OutputPinFailureRetainsAnAbsoluteDestinationAndReportsTheError()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string blocker = Path.Combine(temporaryDirectory, "not-a-directory");
+        File.WriteAllText(blocker, "block settings creation");
+        var model = new ScreenshotProcessingViewModel(
+            new ScreenshotProcessingSettingsStore(Path.Combine(blocker, "settings.json"))
+        );
+        Assert.True(Path.IsPathFullyQualified(model.TargetFolder));
+        Assert.Contains("could not be saved", model.StatusMessage, StringComparison.Ordinal);
+        Assert.Equal("block settings creation", File.ReadAllText(blocker));
     }
 
     [Fact]

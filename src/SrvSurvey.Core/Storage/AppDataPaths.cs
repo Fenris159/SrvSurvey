@@ -29,6 +29,12 @@ public sealed record AppDataPaths(
             ? Path.Combine(DataDirectory, "journal-uploads")
             : Path.Combine(DataDirectory, "journal-uploads", "profiles", SettingsFrontierId);
 
+    /// <summary>Keeps unfinished screenshot processing on this machine across application restarts.</summary>
+    public string ScreenshotQueueDirectory =>
+        SettingsFrontierId is null
+            ? Path.Combine(DataDirectory, "screenshot-conversion")
+            : Path.Combine(DataDirectory, "screenshot-conversion", "profiles", SettingsFrontierId);
+
     public string OverlaySettingsDirectory =>
         SettingsFrontierId is null
             ? DataDirectory

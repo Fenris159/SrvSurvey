@@ -6,7 +6,7 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
-public sealed class ScreenshotProcessingServiceTests : IDisposable
+public sealed partial class ScreenshotProcessingServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),

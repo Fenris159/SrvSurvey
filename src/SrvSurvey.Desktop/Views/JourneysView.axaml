@@ -153,7 +153,7 @@
                     <TextBlock Text="{Binding SelectedSystemDetails}" TextWrapping="Wrap" FontSize="13" LineHeight="24" />
                     <StackPanel Spacing="6">
                       <TextBlock Text="System notes" FontWeight="SemiBold" />
-                      <TextBox MinHeight="105" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
+                      <TextBox IsReadOnly="{Binding !CanEditSystemNotes}" MinHeight="105" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
                                Text="{Binding SelectedSystemNotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                PlaceholderText="Add notes about this visit..." />
                     </StackPanel>
@@ -192,8 +192,8 @@
             <TabItem Header="Journey details">
               <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Spacing="16" Margin="0,16,0,0" MaxWidth="800" HorizontalAlignment="Stretch">
-                  <StackPanel Spacing="6"><TextBlock Text="Journey name" /><TextBox Text="{Binding JourneyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                  <StackPanel Spacing="6"><TextBlock Text="Description" /><TextBox MinHeight="120" AcceptsReturn="True" TextWrapping="Wrap"
+                  <StackPanel Spacing="6"><TextBlock Text="Journey name" /><TextBox IsReadOnly="{Binding IsBusy}" Text="{Binding JourneyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                  <StackPanel Spacing="6"><TextBlock Text="Description" /><TextBox IsReadOnly="{Binding IsBusy}" MinHeight="120" AcceptsReturn="True" TextWrapping="Wrap"
                         Text="{Binding JourneyDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="What is this expedition for?" /></StackPanel>
                   <CheckBox x:Name="GalacticTimeCheckBox" IsChecked="{Binding UseGalacticTime, Mode=OneWay}" Click="Preferences_Click" Content="Use UTC timestamps" />
                   <CheckBox x:Name="AlwaysOnTopCheckBox" IsChecked="{Binding AlwaysOnTop, Mode=OneWay}" Click="Preferences_Click" Content="Keep the application on top while viewing Journeys" />

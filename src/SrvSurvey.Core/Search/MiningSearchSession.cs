@@ -47,6 +47,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     private readonly Func<object> filters;
     private PendingSearch? pending;
     private bool busy;
+    private Action? restoreAfterSearch;
 
     public MiningSearchSession(IMiningSearchProvider provider, string workspace, Func<object> filters)
     {
@@ -108,14 +109,19 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     /// <summary>Shows the saved result for the current filters, or clears stale results when none was saved.</summary>
     public void RestoreSaved(Action<TSnapshot> restore, Action clear)
     {
-        if (IsRestoring || IsBusy || Store is null)
+        if (IsRestoring || Store is null)
         {
+            return;
+        }
+        if (IsBusy)
+        {
+            restoreAfterSearch = () => RestoreSaved(restore, clear);
             return;
         }
 
         if (Store.Load<TSnapshot>(Workspace, FilterKey()) is { } saved)
         {
-            RestoreResult(saved, () => restore(saved), pinReference: false);
+            RestoreResult(saved, () => restore(saved), pinReference: true);
         }
         else
         {
@@ -152,6 +158,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         HasIncompleteResult = false;
         LastOutcome = null;
         Reference.Unpin();
+        Reference.Follow();
         Restore(apply);
     }
 
@@ -259,11 +266,24 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
         }
         finally
         {
-            if (pending == current)
-            {
-                pending = null;
-                SetBusy(false);
-            }
+            FinishSearch(current);
+        }
+    }
+
+    private void FinishSearch(PendingSearch current)
+    {
+        if (pending != current)
+        {
+            return;
+        }
+        pending = null;
+        bool filtersChanged = current.FilterKey != FilterKey();
+        Action? restore = restoreAfterSearch;
+        restoreAfterSearch = null;
+        SetBusy(false);
+        if (filtersChanged && !IsBusy)
+        {
+            restore?.Invoke();
         }
     }
 
@@ -287,6 +307,7 @@ public sealed class MiningSearchSession<TSnapshot> : IMiningSearchRestoreState, 
     {
         PendingSearch? abandoned = pending;
         pending = null;
+        restoreAfterSearch = null;
         abandoned?.Cancellation.Cancel();
         SetBusy(false);
     }

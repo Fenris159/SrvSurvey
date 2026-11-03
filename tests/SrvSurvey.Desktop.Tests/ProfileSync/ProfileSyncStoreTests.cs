@@ -422,7 +422,7 @@ public sealed class ProfileSyncStoreTests
             "cross-platform-ui.json",
             """
             {"Version":1,"Theme":"blue-dark","OverlayBehavior":{"KeepWhenGameLosesFocus":true,"PreferredMonitor":"DP-1","BypassWindowManagement":true},
-             "WaylandCapture":{"Enabled":true},"SurfaceMining":{"Detection":{"Width":100},"AutoClearRigsOnShipBoarding":true},
+             "WaylandCapture":{"Enabled":true},"Screenshots":{"UseAutomaticSourceFolder":false,"SourceFolder":"/capture-source","TargetFolder":"/capture-output"},"SurfaceMining":{"Detection":{"Width":100},"AutoClearRigsOnShipBoarding":true},
              "Input":{"Bindings":{"map":"ALT M"},"ControllerDeviceId":"device"},
              "Colonization":{"Enabled":true,"ApiKey":"secret","PendingContributions":[1]},"Inara":{"ApiKey":"secret"},"Journal":{"Directories":["/journal"]}}
             """
@@ -433,12 +433,22 @@ public sealed class ProfileSyncStoreTests
         root.Write("data", "theme.json", "{\"orange\":\"#ff0000\"}");
         root.Write("data", "plotters.json", "{\"Panel\":\"left:10,top:20\"}");
         root.Write("data", "mining-provider-cache/anything.json", "{}");
+        root.Write("data", "screenshot-conversion/pending.json", "{\"capture\":\"private-capture\"}");
         ProfileSnapshot snapshot = root.Store.Capture();
         string text = Encoding.UTF8.GetString(snapshot.Serialize());
         Assert.DoesNotContain("secret", text);
         Assert.DoesNotContain("/journal", text);
         Assert.DoesNotContain("/local/image.png", text);
         Assert.DoesNotContain("eddn-outbox", text);
+        Assert.DoesNotContain("private-capture", text);
+        Assert.DoesNotContain(
+            Key("config", "cross-platform-ui.json", "/Screenshots/UseAutomaticSourceFolder"),
+            snapshot.Portable.Keys
+        );
+        Assert.Contains(
+            Key("config", "cross-platform-ui.json", "/Screenshots/UseAutomaticSourceFolder"),
+            snapshot.Machine.Keys
+        );
         Assert.Contains(Key("config", "cross-platform-ui.json", "/Theme"), snapshot.Portable.Keys);
         Assert.Contains(Key("config", "cross-platform-ui.json", "/Input/Bindings/map"), snapshot.Portable.Keys);
         Assert.Contains(Key("config", "cross-platform-ui.json", "/WaylandCapture/Enabled"), snapshot.Machine.Keys);

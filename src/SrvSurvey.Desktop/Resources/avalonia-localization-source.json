@@ -1929,6 +1929,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "A pending screenshot record could not be recovered from \u0027{0}\u0027: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
     "Text": "A positive Codex entry ID is required.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19703,7 +19711,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
   },
   {
     "Text": "Elite Dangerous could not be focused after {0}; no matching game window was available.",
@@ -23819,7 +23827,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
   },
   {
     "Text": "Frontier ID",
@@ -42017,6 +42025,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Pending screenshots could not be recovered: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
     "Text": "PendingCargoAdjustments",
     "IsFormat": false,
     "SourceKinds": [
@@ -42144,6 +42160,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ExpectedSystemsInformationWindow.axaml.cs"
+  },
+  {
+    "Text": "Pictures",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
   },
   {
     "Text": "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
@@ -52067,7 +52091,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
   },
   {
     "Text": "Saved Boxel Searches",
@@ -52739,7 +52763,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
   },
   {
     "Text": "Screenshot \u0027{0}\u0027 could not be decoded.",
@@ -62501,6 +62525,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
   },
   {
+    "Text": "The converted screenshot was saved, but the changed original BMP was retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
+    "Text": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
+    "Text": "The converted screenshot\u0027s recovery record could not be removed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
     "Text": "The created Raven project could not be opened: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -64157,6 +64205,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
+    "Text": "The pending screenshot could not be saved for restart recovery: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "The pending screenshot output verification is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
+    "Text": "The pending screenshot record is empty.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
+    "Text": "The pending screenshot record is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
     "Text": "The personal key is stored only in this commander profile. No application token is embedded or required for write events.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64813,6 +64893,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
+    "Text": "The screenshot output folder is fixed for this session but could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
     "Text": "The screenshot preference changed for this session but could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -65299,6 +65387,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModelFactory.cs"
+  },
+  {
+    "Text": "The stored system notes changed. Reload them before saving your edits.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
+  },
+  {
+    "Text": "The stored system notes could not be read before saving.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
@@ -69418,6 +69522,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "UseAutomaticSourceFolder",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
   },
   {
     "Text": "UseCompactScrollingCommoditiesList",

@@ -74,7 +74,10 @@ internal sealed partial class JourneyWorkspaceSession
                 ? "The unavailable journey's active selection was cleared. Its saved file was kept. You can begin a new journey."
                 : "The active selection changed or its saved journey is readable again. Nothing was cleared.";
             StartStatus = message;
-            StatusMessage = message;
+            if (catalogErrors.Count == 0)
+            {
+                StatusMessage = message;
+            }
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {

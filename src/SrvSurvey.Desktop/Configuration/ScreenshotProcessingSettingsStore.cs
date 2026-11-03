@@ -5,6 +5,9 @@ namespace SrvSurvey.Desktop.Configuration;
 
 public sealed class ScreenshotProcessingSettingsStore
 {
+    private const string SettingsKey = "Screenshots";
+    private const string SourceFolderKey = nameof(ScreenshotProcessingPreferences.SourceFolder);
+    private const string TargetFolderKey = nameof(ScreenshotProcessingPreferences.TargetFolder);
     private readonly UiSettingsDocumentStore documentStore;
 
     public ScreenshotProcessingSettingsStore(string path)
@@ -22,15 +25,16 @@ public sealed class ScreenshotProcessingSettingsStore
     ) LoadWithFolderModes(string? journalDirectory)
     {
         var defaults = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory);
-        var settings = documentStore.Load()["Screenshots"] as JsonObject;
-        string? source = GetString(settings, "SourceFolder");
-        string? target = GetString(settings, "TargetFolder");
+        var settings = documentStore.Load()[SettingsKey] as JsonObject;
+        string? source = GetString(settings, SourceFolderKey);
+        string? target = GetString(settings, TargetFolderKey);
+        bool automaticSource = UsesAutomaticSource(settings);
         var preferences = new ScreenshotProcessingPreferences(
             GetBoolean(settings, "Enabled") ?? defaults.Enabled,
             GetBoolean(settings, "AddBanner") ?? defaults.AddBanner,
             GetBoolean(settings, "DeleteOriginal") ?? defaults.DeleteOriginal,
             GetBoolean(settings, "UseGuardianAerialFolder") ?? defaults.UseGuardianAerialFolder,
-            source ?? defaults.SourceFolder,
+            automaticSource ? defaults.SourceFolder : source ?? defaults.SourceFolder,
             target ?? defaults.TargetFolder,
             GetBoolean(settings, "RotateAlphaAerial") ?? defaults.RotateAlphaAerial,
             GetBannerColor(settings?["BannerColor"], defaults.BannerColor),
@@ -39,7 +43,25 @@ public sealed class ScreenshotProcessingSettingsStore
             GetDouble(settings, "AerialAltitudeBeta") ?? defaults.AerialAltitudeBeta,
             GetDouble(settings, "AerialAltitudeGamma") ?? defaults.AerialAltitudeGamma
         );
-        return (preferences, source is null, target is null);
+        return (preferences, automaticSource, target is null);
+    }
+
+    internal string PinOutputFolder(string fallbackFolder)
+    {
+        string selected = fallbackFolder;
+        documentStore.Update(root =>
+        {
+            var settings = root[SettingsKey] as JsonObject;
+            if (settings is null)
+            {
+                settings = [];
+                root[SettingsKey] = settings;
+            }
+            string? existing = GetString(settings, TargetFolderKey);
+            selected = existing is not null && Path.IsPathFullyQualified(existing) ? existing : fallbackFolder;
+            settings[TargetFolderKey] = selected;
+        });
+        return selected;
     }
 
     public void Save(
@@ -54,19 +76,30 @@ public sealed class ScreenshotProcessingSettingsStore
         documentStore.Update(root =>
         {
             root["Version"] = 1;
-            var settings = root["Screenshots"] as JsonObject;
+            var settings = root[SettingsKey] as JsonObject;
             if (settings is null)
             {
                 settings = [];
-                root["Screenshots"] = settings;
+                root[SettingsKey] = settings;
             }
 
             settings["Enabled"] = preferences.Enabled;
             settings["AddBanner"] = preferences.AddBanner;
             settings["DeleteOriginal"] = preferences.DeleteOriginal;
             settings["UseGuardianAerialFolder"] = preferences.UseGuardianAerialFolder;
-            SaveFolder(settings, "SourceFolder", preferences.SourceFolder, defaults.SourceFolder, useAutomaticSource);
-            SaveFolder(settings, "TargetFolder", preferences.TargetFolder, defaults.TargetFolder, useAutomaticTarget);
+            bool automaticSource =
+                useAutomaticSource
+                ?? (UsesAutomaticSource(settings) && PathsEqual(preferences.SourceFolder, defaults.SourceFolder));
+            settings["UseAutomaticSourceFolder"] = automaticSource;
+            if (automaticSource)
+            {
+                settings.Remove(SourceFolderKey);
+            }
+            else
+            {
+                settings[SourceFolderKey] = preferences.SourceFolder;
+            }
+            SaveFolder(settings, TargetFolderKey, preferences.TargetFolder, defaults.TargetFolder, useAutomaticTarget);
             settings["RotateAlphaAerial"] = preferences.RotateAlphaAerial;
             settings["BannerColor"] = preferences.BannerColor;
             settings["BannerLocalTime"] = preferences.BannerLocalTime;
@@ -75,6 +108,25 @@ public sealed class ScreenshotProcessingSettingsStore
             settings["AerialAltitudeGamma"] = preferences.AerialAltitudeGamma;
         });
     }
+
+    private static bool UsesAutomaticSource(JsonObject? settings)
+    {
+        if (GetBoolean(settings, "UseAutomaticSourceFolder") is { } automatic)
+        {
+            return automatic;
+        }
+        string? source = GetString(settings, SourceFolderKey);
+        return source is null
+            || PathsEqual(source, ScreenshotProcessingPreferences.CreateDefaults().SourceFolder)
+            || PathsEqual(source, Path.Combine("Frontier Developments", "Elite Dangerous"));
+    }
+
+    private static bool PathsEqual(string first, string second) =>
+        string.Equals(
+            first,
+            second,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        );
 
     private static void SaveFolder(JsonObject settings, string name, string value, string defaultValue, bool? automatic)
     {
@@ -163,7 +215,28 @@ public sealed record ScreenshotProcessingPreferences(
 {
     public static ScreenshotProcessingPreferences CreateDefaults(string? journalDirectory = null)
     {
-        string pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        return CreateDefaults(
+            journalDirectory,
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.MyPictures,
+                Environment.SpecialFolderOption.DoNotVerify
+            ),
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.UserProfile,
+                Environment.SpecialFolderOption.DoNotVerify
+            )
+        );
+    }
+
+    internal static ScreenshotProcessingPreferences CreateDefaults(
+        string? journalDirectory,
+        string picturesDirectory,
+        string userProfileDirectory
+    )
+    {
+        string pictures = Path.IsPathFullyQualified(picturesDirectory)
+            ? picturesDirectory
+            : Path.GetFullPath(Path.Combine(userProfileDirectory, "Pictures"));
         string source = JournalFolderLocator.ResolveScreenshotDirectory(journalDirectory, pictures);
         return new ScreenshotProcessingPreferences(
             false,

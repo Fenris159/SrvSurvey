@@ -228,6 +228,88 @@ public sealed class JourneyServiceTests : IDisposable
         Assert.Contains("Could not read", result.Errors[0]);
     }
 
+    [Fact]
+    public async Task MetadataSaveQueuedBehindLiveWritesPreservesTheNewArrival()
+    {
+        await WriteJournalAsync(
+            "Journal.2026-07-01T000000.01.log",
+            new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+            BasicJournal("2026-07-01T00:05:00Z")
+        );
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
+        JourneyDocument original = (
+            await service.BeginAsync(new("F123", "Drew", true, "Original", "", start.Entry!))
+        ).Journey!;
+        Task<JourneyServiceResult> live;
+        Task<JourneyDocument> edit;
+        using (
+            FileStream lease = File.Open(
+                Path.Combine(DataDirectory, "journey", "F123", ".journey.lease"),
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.None
+            )
+        )
+        {
+            live = service.ApplyLiveAsync([
+                Parse(
+                    """{"timestamp":"2026-07-01T00:06:00Z","event":"FSDJump","StarSystem":"Lave","SystemAddress":43,"StarPos":[1,2,3]}"""
+                ),
+            ]);
+            Assert.False(live.IsCompleted);
+            edit = service.SaveMetadataAsync(original, "  Renamed  ", "Field notes");
+            Assert.False(edit.IsCompleted);
+        }
+        await live;
+        JourneyDocument saved = await edit;
+        Assert.Equal("Renamed", saved.Name);
+        Assert.Equal("Field notes", saved.Description);
+        Assert.Equal(["Sol", "Lave"], saved.VisitedSystems.Select(visit => visit.StarSystem.Name));
+        await service.ApplyLiveAsync([Parse("""{"timestamp":"2026-07-01T00:07:00Z","event":"Screenshot"}""")]);
+        JourneyDocument stored = (await new JourneyStore(DataDirectory).LoadAsync("F123", original.FileName)).Journey!;
+        Assert.Equal("Renamed", stored.Name);
+        Assert.Equal(1, stored.CurrentSystem!.Counts.Screenshots);
+        Assert.Equal("Lave", service.ActiveJourney!.CurrentSystem!.StarSystem.Name);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SavingANoteUpdatesTheExactHistoricalVisitWithoutReplacingNewerState(bool complete)
+    {
+        await WriteJournalAsync(
+            "Journal.2026-07-01T000000.01.log",
+            new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+            BasicJournal("2026-07-01T00:05:00Z")
+        );
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
+        JourneyDocument original = (
+            await service.BeginAsync(new("F123", "Drew", true, "Original", "", start.Entry!))
+        ).Journey!;
+        await service.ApplyLiveAsync([
+            Parse(
+                """{"timestamp":"2026-07-01T00:06:00Z","event":"FSDJump","StarSystem":"Lave","SystemAddress":43,"StarPos":[1,2,3]}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:07:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+            ),
+        ]);
+        if (complete)
+        {
+            await service.ConcludeActiveAsync("Drew", original.StartTime.AddHours(1));
+        }
+        JourneyDocument saved = await service.RecordNoteAsync(original, 42, original.VisitedSystems[0].Arrived);
+        Assert.Equal([1, 0, 0], saved.VisitedSystems.Select(visit => visit.Counts.Notes));
+        Assert.Equal(complete, saved.EndTime is not null);
+        saved = await service.RecordNoteAsync(saved, 42, new DateTimeOffset(2026, 7, 1, 0, 7, 0, TimeSpan.Zero));
+        Assert.Equal([1, 0, 1], saved.VisitedSystems.Select(visit => visit.Counts.Notes));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.RecordNoteAsync(saved, 999, saved.StartTime));
+        JourneyDocument stored = (await new JourneyStore(DataDirectory).LoadAsync("F123", original.FileName)).Journey!;
+        Assert.Equal([1, 0, 1], stored.VisitedSystems.Select(visit => visit.Counts.Notes));
+    }
+
     private JourneyService CreateService()
     {
         return new JourneyService(

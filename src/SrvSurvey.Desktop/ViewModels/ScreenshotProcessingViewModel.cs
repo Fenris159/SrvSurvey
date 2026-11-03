@@ -14,52 +14,97 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     private string statusMessage;
     private string? journalDirectory;
     private bool automaticSource;
-    private bool automaticTarget;
+    private bool outputUninitialized;
 
     public ScreenshotProcessingViewModel(
         ScreenshotProcessingSettingsStore settingsStore,
         IScreenshotProcessingService? processingService = null,
-        string? journalDirectory = null
+        string? journalDirectory = null,
+        string? pendingQueueDirectory = null,
+        bool deferOutputInitialization = false
     )
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.processingService = processingService ?? new ScreenshotProcessingService();
+        this.processingService =
+            processingService ?? new ScreenshotProcessingService(pendingQueueDirectory: pendingQueueDirectory);
         this.journalDirectory = journalDirectory;
-        (preferences, automaticSource, automaticTarget) = settingsStore.LoadWithFolderModes(journalDirectory);
+        bool automaticOutput;
+        (preferences, automaticSource, automaticOutput) = settingsStore.LoadWithFolderModes(journalDirectory);
         statusMessage = CreateReadyStatus(preferences);
+        outputUninitialized = automaticOutput || !Path.IsPathFullyQualified(preferences.TargetFolder);
+        if (outputUninitialized)
+        {
+            preferences = preferences with
+            {
+                TargetFolder = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory).TargetFolder,
+            };
+            if (!deferOutputInitialization)
+            {
+                InitializeOutputFolder();
+            }
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private void InitializeOutputFolder()
+    {
+        if (!outputUninitialized)
+        {
+            return;
+        }
+        outputUninitialized = false;
+        preferences = preferences with
+        {
+            TargetFolder = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory).TargetFolder,
+        };
+        try
+        {
+            preferences = preferences with { TargetFolder = settingsStore.PinOutputFolder(preferences.TargetFolder) };
+            StatusMessage = CreateReadyStatus(preferences);
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            StatusMessage =
+                "The screenshot output folder is fixed for this session but could not be saved: " + exception.Message;
+        }
+        OnPropertyChanged(nameof(TargetFolder));
+    }
+
     public void UpdateJournalDirectory(string directory)
     {
-        if (string.Equals(journalDirectory, directory, PathComparison))
+        if (!string.Equals(journalDirectory, directory, PathComparison))
         {
-            return;
+            journalDirectory = directory;
+            var defaults = ScreenshotProcessingPreferences.CreateDefaults(directory);
+            ScreenshotProcessingPreferences updated = preferences with
+            {
+                SourceFolder = automaticSource ? defaults.SourceFolder : preferences.SourceFolder,
+            };
+            if (preferences != updated)
+            {
+                preferences = updated;
+                OnPropertyChanged(nameof(SourceFolder));
+                StatusMessage = CreateReadyStatus(preferences);
+            }
         }
-        journalDirectory = directory;
-        var defaults = ScreenshotProcessingPreferences.CreateDefaults(directory);
-        ScreenshotProcessingPreferences updated = preferences with
+        InitializeOutputFolder();
+    }
+
+    public void SelectSourceFolder(string folder)
+    {
+        ArgumentNullException.ThrowIfNull(folder);
+        automaticSource = false;
+        string next = folder.Trim();
+        if (next == preferences.SourceFolder)
         {
-            SourceFolder = automaticSource ? defaults.SourceFolder : preferences.SourceFolder,
-            TargetFolder = automaticTarget ? defaults.TargetFolder : preferences.TargetFolder,
-        };
-        if (preferences == updated)
-        {
-            return;
+            SavePreferences();
         }
-        bool sourceChanged = preferences.SourceFolder != updated.SourceFolder;
-        bool targetChanged = preferences.TargetFolder != updated.TargetFolder;
-        preferences = updated;
-        if (sourceChanged)
+        else
         {
-            OnPropertyChanged(nameof(SourceFolder));
+            SourceFolder = next;
         }
-        if (targetChanged)
-        {
-            OnPropertyChanged(nameof(TargetFolder));
-        }
-        StatusMessage = CreateReadyStatus(preferences);
     }
 
     private static StringComparison PathComparison =>
@@ -120,7 +165,6 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             {
                 return;
             }
-            automaticTarget = false;
             Update(preferences with { TargetFolder = next });
         }
     }
@@ -206,7 +250,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         CancellationToken cancellationToken = default
     )
     {
-        if (processingService.PendingCount == 0 && !journalEvents.Any(entry => entry.EventName == "Screenshot"))
+        if (!processingService.HasPendingWork && !journalEvents.Any(entry => entry.EventName == "Screenshot"))
         {
             return ScreenshotProcessingResult.Empty;
         }
@@ -242,13 +286,18 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
 
         preferences = updated;
         OnPropertyChanged(propertyName);
+        SavePreferences();
+    }
+
+    private void SavePreferences()
+    {
         try
         {
             settingsStore.Save(
                 preferences,
                 journalDirectory,
                 useAutomaticSource: automaticSource,
-                useAutomaticTarget: automaticTarget
+                useAutomaticTarget: false
             );
             StatusMessage = CreateReadyStatus(preferences);
         }

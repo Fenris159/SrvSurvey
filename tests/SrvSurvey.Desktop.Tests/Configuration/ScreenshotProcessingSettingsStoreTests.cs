@@ -75,6 +75,63 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void LegacyAutomaticSourceUpgradesButExplicitManualSourceAndOutputRemainFixed()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string settingsPath = Path.Combine(temporaryDirectory, "settings.json");
+        string journal = Path.Combine(
+            temporaryDirectory,
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        string native = ScreenshotProcessingPreferences.CreateDefaults().SourceFolder;
+        string output = Path.Combine(temporaryDirectory, "existing-converted");
+        File.WriteAllText(
+            settingsPath,
+            new JsonObject
+            {
+                ["Screenshots"] = new JsonObject { ["SourceFolder"] = native, ["TargetFolder"] = output },
+            }.ToJsonString()
+        );
+        var store = new ScreenshotProcessingSettingsStore(settingsPath);
+        ScreenshotProcessingPreferences upgraded = store.Load(journal);
+        Assert.Equal(
+            Path.Combine(
+                temporaryDirectory,
+                "drive_c",
+                "users",
+                "steamuser",
+                "Pictures",
+                "Frontier Developments",
+                "Elite Dangerous"
+            ),
+            upgraded.SourceFolder
+        );
+        Assert.Equal(output, upgraded.TargetFolder);
+        store.Save(upgraded with { SourceFolder = native }, journal, useAutomaticSource: false);
+        Assert.Equal(native, store.Load(journal).SourceFolder);
+        Assert.Equal(output, store.Load(journal).TargetFolder);
+    }
+
+    [Fact]
+    public void MissingNativePicturesUsesAnAbsoluteUserProfileLocation()
+    {
+        var defaults = ScreenshotProcessingPreferences.CreateDefaults(null, "", temporaryDirectory);
+        Assert.Equal(
+            Path.Combine(temporaryDirectory, "Pictures", "Frontier Developments", "Elite Dangerous"),
+            defaults.SourceFolder
+        );
+        Assert.Equal(
+            Path.Combine(temporaryDirectory, "Pictures", "Frontier Developments", "Elite Dangerous", "converted"),
+            defaults.TargetFolder
+        );
+    }
+
+    [Fact]
     public void LegacyColorObjectIsTranslatedWithoutFailure()
     {
         Directory.CreateDirectory(temporaryDirectory);

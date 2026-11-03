@@ -202,7 +202,7 @@ public sealed partial class SettingsView : UserControl
         string? folder = await ChooseFolderAsync("Choose the Elite Dangerous screenshot folder");
         if (folder is not null && DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.ScreenshotProcessing.SourceFolder = folder;
+            viewModel.ScreenshotProcessing.SelectSourceFolder(folder);
         }
     }
 

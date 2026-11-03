@@ -69,6 +69,7 @@ public sealed class MiningSearchViewModelTests
 
             model.Security = "High";
             Assert.Empty(model.AcquireRows);
+            Assert.Equal(string.Empty, model.Status);
             model.Security = "";
             Assert.Equal(key, model.PowerplayCacheKey());
             Assert.Equal(result.Target, Assert.Single(model.AcquireRows).Target);

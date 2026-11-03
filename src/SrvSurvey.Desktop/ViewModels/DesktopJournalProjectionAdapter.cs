@@ -590,6 +590,12 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
     private void ApplySessionBaseline(JournalProjectionContext context, JournalProjectionTick tick)
     {
+        string? screenshotDirectory =
+            context.Update.ConfiguredJournalDirectory ?? Path.GetDirectoryName(context.Update.JournalPath);
+        if (screenshotDirectory is not null)
+        {
+            dependencies.ScreenshotProcessing.UpdateJournalDirectory(screenshotDirectory);
+        }
         tick.PreviousFrontierId = state.Session.FrontierId;
         tick.PreviousCommanderName = state.Session.CommanderName;
         state.IsAwaitingCommanderIdentity = context.Update.IsAwaitingCommanderIdentity;
@@ -823,10 +829,6 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
     private async Task ApplyScreenshotProcessingAsync(JournalProjectionContext context, JournalProjectionTick tick)
     {
-        if (context.Update.JournalPath is { } journalPath && Path.GetDirectoryName(journalPath) is { } directory)
-        {
-            dependencies.ScreenshotProcessing.UpdateJournalDirectory(directory);
-        }
         ScreenshotProcessingResult screenshotResult = await dependencies.ScreenshotProcessing.ProcessJournalEventsAsync(
             context.JournalEvents,
             state.Session.CommanderName,

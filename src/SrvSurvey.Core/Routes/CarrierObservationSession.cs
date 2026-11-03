@@ -96,18 +96,12 @@ public sealed class CarrierObservationSession(bool dedicated)
 
     private void Observe(IReadOnlyList<JournalEventEnvelope> events)
     {
-        if (dedicated)
-        {
-            // Unsupported types must not teach the personal workspace an unrelated carrier's identity.
-            events = events
-                .Where(entry =>
-                    GetString(entry.Payload, CarrierTypePropertyName)
-                        is null
-                            or PersonalCarrierType
-                            or SquadronCarrierType
-                )
-                .ToArray();
-        }
+        // Unsupported types must not teach either workspace an unrelated carrier's identity.
+        events = events
+            .Where(entry =>
+                GetString(entry.Payload, CarrierTypePropertyName) is null or PersonalCarrierType or SquadronCarrierType
+            )
+            .ToArray();
         journal.Observe(events);
         foreach (
             System.Text.Json.JsonElement data in events
@@ -136,7 +130,12 @@ public sealed class CarrierObservationSession(bool dedicated)
     {
         if (type is not null)
         {
-            return type == SquadronCarrierType ? FollowRouteCarrierKind.Squadron : FollowRouteCarrierKind.Personal;
+            return type switch
+            {
+                PersonalCarrierType => FollowRouteCarrierKind.Personal,
+                SquadronCarrierType => FollowRouteCarrierKind.Squadron,
+                _ => null,
+            };
         }
         if (journal.GetKnownCarrierKind(id) is { } observed)
         {
@@ -155,6 +154,13 @@ public sealed class CarrierObservationSession(bool dedicated)
 
     private bool MatchesSelectedCarrier(JournalEventEnvelope entry)
     {
+        if (
+            GetString(entry.Payload, CarrierTypePropertyName)
+            is not (null or PersonalCarrierType or SquadronCarrierType)
+        )
+        {
+            return false;
+        }
         long? id = GetCarrierId(entry);
         long? selectedId = ResolveSelectedCarrierId(Fuel?.CarrierId);
         if (dedicated)
@@ -287,7 +293,10 @@ public sealed class CarrierObservationSession(bool dedicated)
         string? type = GetString(entry.Payload, CarrierTypePropertyName);
         if (
             type is not null
-            && (type == SquadronCarrierType) != (selectedCarrierKind == FollowRouteCarrierKind.Squadron)
+            && (
+                type is not PersonalCarrierType and not SquadronCarrierType
+                || (type == SquadronCarrierType) != (selectedCarrierKind == FollowRouteCarrierKind.Squadron)
+            )
         )
         {
             return false;
