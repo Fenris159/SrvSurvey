@@ -254,6 +254,13 @@ public sealed class MiningSearchViewModelTests
                 Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
             }
 
+            model.LoadOptions(new MiningSearchPreferences { Reference = "Lave" });
+            Assert.Equal("Lave", model.Reference);
+            Assert.Empty(model.MeritRows);
+            Assert.Empty(model.Status);
+            model.RestoreLastCompletedPowerplaySearch();
+            Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
+
             model.PledgedPower = "Any";
             cache.Save(
                 "powerplay",

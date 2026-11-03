@@ -59,6 +59,72 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task HighResolutionBitmapThatArrivesAfterSixSecondsIsConvertedFromTheConfiguredFolder()
+    {
+        string sourceDirectory = Path.Combine(temporaryDirectory, "source");
+        string targetDirectory = Path.Combine(temporaryDirectory, "target");
+        Directory.CreateDirectory(sourceDirectory);
+        string sourcePath = Path.Combine(sourceDirectory, "HighResScreenShot_2026-11-03_05-06-54.bmp");
+        TimeSpan elapsed = TimeSpan.Zero;
+        Task Advance(TimeSpan interval, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            elapsed += interval;
+            if (elapsed >= TimeSpan.FromSeconds(6) && !File.Exists(sourcePath))
+            {
+                CreateBitmap(sourcePath, SKColors.Cyan);
+            }
+            return Task.CompletedTask;
+        }
+
+        ScreenshotProcessingResult result = await new ScreenshotProcessingService(() => 1920, Advance).ProcessAsync(
+            [
+                Parse(
+                    """
+                    {"timestamp":"2026-11-03T05:06:53Z","event":"Screenshot","Filename":"C:\\xxx\\Pictures\\Frontier Developments\\Elite Dangerous\\HighResScreenShot_2026-11-03_05-06-54.bmp","Width":3840,"System":"Sol","Body":"Earth"}
+                    """
+                ),
+            ],
+            Preferences(sourceDirectory, targetDirectory) with
+            {
+                AddBanner = false,
+            },
+            null
+        );
+
+        ScreenshotConversion conversion = Assert.Single(result.Conversions);
+        Assert.Empty(result.Warnings);
+        Assert.Equal(sourcePath, conversion.SourcePath);
+        Assert.True(File.Exists(sourcePath));
+        using var image = SKBitmap.Decode(conversion.OutputPath);
+        Assert.NotNull(image);
+        Assert.Equal(SKColors.Cyan, image.GetPixel(100, 100));
+    }
+
+    [Fact]
+    public async Task MissingScreenshotReportsFailureWithoutCreatingAnOutput()
+    {
+        string sourceDirectory = Path.Combine(temporaryDirectory, "source");
+        string targetDirectory = Path.Combine(temporaryDirectory, "target");
+        Directory.CreateDirectory(sourceDirectory);
+        ScreenshotProcessingResult result = await new ScreenshotProcessingService(
+            retryDelay: (_, token) =>
+            {
+                token.ThrowIfCancellationRequested();
+                return Task.CompletedTask;
+            }
+        ).ProcessAsync(
+            [Parse("""{"event":"Screenshot","Filename":"missing.bmp"}""")],
+            Preferences(sourceDirectory, targetDirectory),
+            null
+        );
+
+        Assert.Empty(result.Conversions);
+        Assert.Contains(Path.Combine(sourceDirectory, "missing.bmp"), Assert.Single(result.Warnings));
+        Assert.False(Directory.Exists(targetDirectory));
+    }
+
+    [Fact]
     public async Task HighResolutionScreenshotRetainsLegacyFilenameSuffix()
     {
         string sourceDirectory = Path.Combine(temporaryDirectory, "source");

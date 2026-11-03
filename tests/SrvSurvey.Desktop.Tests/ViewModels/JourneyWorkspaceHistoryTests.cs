@@ -262,6 +262,39 @@ public sealed partial class JourneyWorkspaceViewModelTests
     }
 
     [Fact]
+    public async Task InterruptingACommanderReturnKeepsAllUnsavedJourneyFields()
+    {
+        await SeedHistoricalJourneyAsync(1);
+        JourneyWorkspaceViewModel model = CreateViewModel();
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        model.JourneyName = "Unsaved name";
+        model.JourneyDescription = "Unsaved description";
+        model.SelectedSystemNotes = "Unsaved notes";
+        await model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+        Task<bool> returning;
+        await using (
+            var lease = new FileStream(
+                Path.Combine(DataDirectory, "journey", "F123", ".journey.lease"),
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.None
+            )
+        )
+        {
+            returning = model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+            Assert.False(returning.IsCompleted);
+            await model.UpdateContextAsync("F456", "Other", true, "Sol", 42);
+        }
+        await returning.WaitAsync(TimeSpan.FromSeconds(10));
+        await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+
+        Assert.Equal("Unsaved name", model.JourneyName);
+        Assert.Equal("Unsaved description", model.JourneyDescription);
+        Assert.Equal("Unsaved notes", model.SelectedSystemNotes);
+        Assert.True(model.IsDirty);
+    }
+
+    [Fact]
     public async Task CommanderSwitchRetainsUnsavedJourneyMetadataAndSystemNotes()
     {
         await SeedHistoricalJourneyAsync(1);

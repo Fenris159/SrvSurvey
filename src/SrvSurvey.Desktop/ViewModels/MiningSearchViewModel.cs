@@ -3206,20 +3206,26 @@ public sealed class MiningSearchViewModel(
     }
 
     private void TryRestorePowerplaySearch() =>
-        Session.RestoreSaved(
-            saved => RestorePowerplaySnapshot(saved, restoreFilters: false),
-            () =>
-            {
-                MeritRows = [];
-                AcquireRows = [];
-                PlanetarySearch.ClearResults();
-            }
-        );
+        Session.RestoreSaved(saved => RestorePowerplaySnapshot(saved, restoreFilters: false), ClearPowerplayResults);
 
-    public void LoadOptions(MiningSearchPreferences values) => Session.Reset(() => ApplyOptions(values));
+    private void ClearPowerplayResults()
+    {
+        MeritRows = [];
+        AcquireRows = [];
+        PlanetarySearch.ClearResults();
+    }
+
+    public void LoadOptions(MiningSearchPreferences values)
+    {
+        Session.Reset(() => ApplyOptions(values));
+        TryRestorePowerplaySearch();
+    }
 
     private void ApplyOptions(MiningSearchPreferences values)
     {
+        PlanetarySearch.Cancel();
+        ClearPowerplayResults();
+        Status = "";
         detectedPower = "";
         PledgedPower = AnyPower;
         Rings = [];

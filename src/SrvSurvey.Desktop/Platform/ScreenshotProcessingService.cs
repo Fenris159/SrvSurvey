@@ -29,13 +29,20 @@ public interface IScreenshotProcessingService
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
     private const string UnknownLabel = "unknown";
+    private const int FileReadinessAttempts = 150;
+    private static readonly TimeSpan FileReadinessPollInterval = TimeSpan.FromMilliseconds(200);
 
     private readonly SemaphoreSlim processingLock = new(1, 1);
     private readonly Func<int?> gameClientWidthProvider;
+    private readonly Func<TimeSpan, CancellationToken, Task> retryDelay;
 
-    public ScreenshotProcessingService(Func<int?>? gameClientWidthProvider = null)
+    public ScreenshotProcessingService(
+        Func<int?>? gameClientWidthProvider = null,
+        Func<TimeSpan, CancellationToken, Task>? retryDelay = null
+    )
     {
         this.gameClientWidthProvider = gameClientWidthProvider ?? GetGameClientWidth;
+        this.retryDelay = retryDelay ?? Task.Delay;
     }
 
     public static string GetSystemFolderPath(string targetFolder, string systemName)
@@ -180,7 +187,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         string TargetDirectory
     );
 
-    private static async Task<ScreenshotConversion> ConvertAsync(
+    private async Task<ScreenshotConversion> ConvertAsync(
         ScreenshotConversionRequest request,
         CancellationToken cancellationToken
     )
@@ -386,12 +393,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return Path.Combine(sourceDirectory, fileName);
     }
 
-    private static async Task WaitForCompletedFileAsync(string path, CancellationToken cancellationToken)
+    private async Task WaitForCompletedFileAsync(string path, CancellationToken cancellationToken)
     {
         Exception? lastError = null;
         long previousLength = -1;
         int stableReads = 0;
-        for (int attempt = 0; attempt < 25; attempt++)
+        // High-resolution captures can finish well after the journal event. Allow
+        // up to thirty seconds while still requiring an unlocked, stable file.
+        for (int attempt = 0; attempt < FileReadinessAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -417,7 +426,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 lastError = exception;
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken).ConfigureAwait(false);
+            await retryDelay(FileReadinessPollInterval, cancellationToken).ConfigureAwait(false);
         }
 
         throw new IOException($"The source bitmap did not become readable: {path}", lastError);

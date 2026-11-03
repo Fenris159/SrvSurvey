@@ -155,12 +155,8 @@ public sealed class CarrierObservationSession(bool dedicated)
 
     private bool MatchesSelectedCarrier(JournalEventEnvelope entry)
     {
-        long? id = GetInt64(entry.Payload, CarrierIdPropertyName) ?? GetInt64(entry.Payload, "MarketID");
-        long? selectedId = Fuel?.CarrierId;
-        if (selectedId is null && observedCarrierIds.TryGetValue(selectedCarrierKind, out long observed))
-        {
-            selectedId = observed;
-        }
+        long? id = GetCarrierId(entry);
+        long? selectedId = ResolveSelectedCarrierId(Fuel?.CarrierId);
         if (dedicated)
         {
             return MatchesDedicatedCarrier(entry, id, selectedId);
@@ -190,14 +186,16 @@ public sealed class CarrierObservationSession(bool dedicated)
 
     private bool MatchesDedicatedCarrierMovement(JournalEventEnvelope entry, FleetCarrierFuelSnapshot current)
     {
-        long? id = GetInt64(entry.Payload, CarrierIdPropertyName) ?? GetInt64(entry.Payload, "MarketID");
-        long? selectedId = current.CarrierId;
-        if (selectedId is null && observedCarrierIds.TryGetValue(selectedCarrierKind, out long observed))
-        {
-            selectedId = observed;
-        }
+        long? id = GetCarrierId(entry);
+        long? selectedId = ResolveSelectedCarrierId(current.CarrierId);
         return MatchesDedicatedCarrier(entry, id, selectedId, current.Callsign);
     }
+
+    private long? ResolveSelectedCarrierId(long? snapshotId) =>
+        snapshotId ?? (observedCarrierIds.TryGetValue(selectedCarrierKind, out long observed) ? observed : null);
+
+    private static long? GetCarrierId(JournalEventEnvelope entry) =>
+        GetInt64(entry.Payload, CarrierIdPropertyName) ?? GetInt64(entry.Payload, "MarketID");
 
     private bool MatchesDedicatedCarrier(
         JournalEventEnvelope entry,
@@ -273,11 +271,7 @@ public sealed class CarrierObservationSession(bool dedicated)
 
     public bool AcceptsArrival(JournalEventEnvelope entry, FollowRouteHop? nextHop)
     {
-        if (
-            dedicated
-            || GetInt64(entry.Payload, CarrierIdPropertyName) is not null
-            || GetInt64(entry.Payload, "MarketID") is not null
-        )
+        if (dedicated || GetCarrierId(entry) is not null)
         {
             return MatchesSelectedCarrier(entry);
         }

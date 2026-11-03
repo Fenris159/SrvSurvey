@@ -6,6 +6,10 @@ internal sealed partial class JourneyWorkspaceSession
 
     internal JourneyEditDraft? CaptureDraft()
     {
+        if (retainedDraft is not null)
+        {
+            return retainedDraft;
+        }
         if (selectedDocument is null || !IsDirty)
         {
             return null;
@@ -59,6 +63,7 @@ internal sealed partial class JourneyWorkspaceSession
         {
             SelectedSystemNotes = draft.Notes;
         }
+        retainedDraft = null;
     }
 
     private void ClearJourneyDraft() => retainedDraft = null;
