@@ -204,17 +204,19 @@ public sealed partial class JourneyStore(
         string frontierId,
         string fileName,
         Func<JourneyDocument, JourneyDocument> update,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        CancellationToken? leaseCancellationToken = null
     )
     {
         ValidateFolderName(frontierId, nameof(frontierId));
         string normalized = NormalizeFileName(fileName);
         string path = Path.Combine(GetJourneyDirectory(frontierId), normalized + JsonFileExtension);
-        await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        CancellationToken acquisition = leaseCancellationToken ?? cancellationToken;
+        cancellationToken.ThrowIfCancellationRequested();
+        await saveLock.WaitAsync(acquisition).ConfigureAwait(false);
         try
         {
-            await using FileStream lease = await AcquireMutationAsync(frontierId, cancellationToken)
-                .ConfigureAwait(false);
+            await using FileStream lease = await AcquireMutationAsync(frontierId, acquisition).ConfigureAwait(false);
             JsonObjectReadResult read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
             JsonObject root =
                 read.Root

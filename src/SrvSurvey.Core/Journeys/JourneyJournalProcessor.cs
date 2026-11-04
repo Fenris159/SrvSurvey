@@ -59,7 +59,7 @@ public sealed partial class JourneyJournalProcessor
         }
     }
 
-    private void PrimeEvent(JournalEventEnvelope journalEvent)
+    private void PrimeEvent(JournalEventEnvelope journalEvent, bool replaceEqual = true)
     {
         if (journalEvent.EventName == "Fileheader")
         {
@@ -67,7 +67,7 @@ public sealed partial class JourneyJournalProcessor
         }
         else if (journalEvent.EventName == "Scan")
         {
-            PrimeBody(journalEvent.Payload, CurrentVisit);
+            PrimeBody(journalEvent.Payload, CurrentVisit, journalEvent.Timestamp!.Value, replaceEqual);
         }
     }
 
@@ -99,7 +99,7 @@ public sealed partial class JourneyJournalProcessor
                 break;
 
             case "Scan":
-                ApplyScan(root);
+                ApplyScan(root, journalEvent.Timestamp!.Value);
                 break;
 
             case "SAAScanComplete":
@@ -187,10 +187,10 @@ public sealed partial class JourneyJournalProcessor
         });
     }
 
-    private void ApplyScan(JsonElement root)
+    private void ApplyScan(JsonElement root, DateTimeOffset timestamp)
     {
         JourneySystemVisit? current = CurrentVisit;
-        BodyState? body = PrimeBody(root, current);
+        BodyState? body = PrimeBody(root, current, timestamp);
         if (
             current is null
             || body is null
@@ -398,7 +398,12 @@ public sealed partial class JourneyJournalProcessor
         );
     }
 
-    private BodyState? PrimeBody(JsonElement root, JourneySystemVisit? current)
+    private BodyState? PrimeBody(
+        JsonElement root,
+        JourneySystemVisit? current,
+        DateTimeOffset timestamp,
+        bool replaceEqual = true
+    )
     {
         int? bodyId = GetInt32(root, "BodyID");
         long? systemAddress = GetInt64(root, "SystemAddress") ?? current?.StarSystem.SystemAddress;
@@ -410,6 +415,11 @@ public sealed partial class JourneyJournalProcessor
 
         var key = new BodyKey(systemAddress.Value, bodyId.Value);
         BodyState body = bodies.GetValueOrDefault(key) ?? new BodyState(key);
+        if (body.ObservedAt > timestamp || (!replaceEqual && body.ObservedAt == timestamp))
+        {
+            return body;
+        }
+        body.ObservedAt = timestamp;
         body.BodyClass = bodyClass;
         body.IsTerraformable = GetString(root, "TerraformState") == "Terraformable";
         double? planetMass = GetDouble(root, "MassEM");
@@ -514,6 +524,7 @@ public sealed partial class JourneyJournalProcessor
 
     private sealed record BodyState(BodyKey Key)
     {
+        public DateTimeOffset ObservedAt { get; set; }
         public string? BodyClass { get; set; }
 
         public bool IsTerraformable { get; set; }

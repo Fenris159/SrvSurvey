@@ -114,12 +114,16 @@ public sealed partial class JourneyJournalProcessor
 
     internal void ApplyPendingRecord(JournalEventEnvelope entry)
     {
-        if (entry.Timestamp < State.StartTime || (State.EndTime is { } end && entry.Timestamp > end))
+        if (
+            (entry.Timestamp < State.StartTime && entry.EventName is not ("Scan" or "Fileheader"))
+            || (State.EndTime is { } end && entry.Timestamp > end)
+        )
         {
             return;
         }
         if (
             !Apply(entry)
+            && !IsContextOnly(entry)
             && !IsRecorded(entry)
             && entry.EventName is not ("Fileheader" or "Commander" or "LoadGame" or "Music")
         )
@@ -129,6 +133,9 @@ public sealed partial class JourneyJournalProcessor
             );
         }
     }
+
+    private bool IsContextOnly(JournalEventEnvelope entry) =>
+        entry.Timestamp <= baseline.Watermark && entry.EventName is "Scan" or "Fileheader";
 
     private bool ApplyRecord(JournalEventEnvelope entry, bool catchUp)
     {
@@ -159,10 +166,8 @@ public sealed partial class JourneyJournalProcessor
         lastObservation = prepared;
         if (IsRecorded(entry))
         {
-            if (!CaptureObservation(prepared))
-            {
-                PrimeAtTime(entry);
-            }
+            CaptureObservation(prepared);
+            PrimeAtTime(entry, replaceEqual: false);
             return false;
         }
         if (catchUp && timestamp == State.RecordTrackingStart && !State.RecordTrackingStartComplete)
@@ -174,6 +179,7 @@ public sealed partial class JourneyJournalProcessor
         }
         if (CannotReplayBeforeBaseline(entry))
         {
+            PrimeAtTime(entry);
             return false;
         }
         AppendObservation(prepared);
@@ -271,10 +277,10 @@ public sealed partial class JourneyJournalProcessor
         return processor;
     }
 
-    private void PrimeAtTime(JournalEventEnvelope entry)
+    private void PrimeAtTime(JournalEventEnvelope entry, bool replaceEqual = true)
     {
         CaptureBaselineContext(entry);
-        PrimeWithoutCapturing(entry);
+        PrimeWithoutCapturing(entry, replaceEqual);
     }
 
     private int FindVisitAt(DateTimeOffset timestamp)

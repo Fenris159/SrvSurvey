@@ -92,7 +92,14 @@ from RC77.
   scoped to their Journey so other commanders and unavailable-file recovery
   continue working; new Journeys keep a consistent recording selection even if
   their initial catch-up save fails. Receiptless catch-up avoids repeating an
-  unknown saved timestamp.
+  unknown saved timestamp. Legacy scan context can be saved without recounting
+  statistics, and older replayed scans cannot overwrite newer reward context.
+  Same-second scan context follows the source's record order.
+  Activity at a saved departure boundary stays with its original visit. Partial
+  journal copies preserve stronger saved ordering evidence without inventing
+  cycles from omitted duplicate captures or linking a new source to another
+  source's tail. Pending observations can also finish saving after another window
+  concludes the Journey, without restoring its active selection.
   Live/history matching handles UTF-8 and mixed line endings. Readouts identify
   note-save counts explicitly.
 

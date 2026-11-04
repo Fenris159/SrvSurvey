@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Journeys;
@@ -58,7 +59,11 @@ public sealed record JourneyObservedRecord(
     string RawJson,
     string? SourceRecordIdentity,
     IReadOnlySet<string> PreviousIdentities
-);
+)
+{
+    public IReadOnlyList<JournalOrderEvidence>? OrderEvidence { get; init; }
+    public int? SourceOccurrenceCount { get; init; }
+}
 
 public sealed record JourneySystemVisit(
     JourneySystemReference StarSystem,

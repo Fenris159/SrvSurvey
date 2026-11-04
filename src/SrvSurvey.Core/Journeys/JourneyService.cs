@@ -125,6 +125,7 @@ public sealed partial class JourneyService
             pendingJournalEvents.Clear();
             pendingHistoryReplay = null;
             RecoveryReference = null;
+            await DrainRetainedProgressAsync(frontierId, cancellationToken).ConfigureAwait(false);
             CommanderProfileLoadResult profile = await profileStore
                 .LoadAsync(frontierId, isOdyssey, cancellationToken)
                 .ConfigureAwait(false);
@@ -426,14 +427,24 @@ public sealed partial class JourneyService
 
     private JourneyDocument ReconcilePendingProgress(JourneyDocument stored)
     {
-        if (!HasPendingProgress(stored) || activeProcessor is null)
+        if (HasPendingProgress(stored) && activeProcessor is not null)
         {
-            return stored;
+            return MergePendingProgress(
+                stored,
+                new(activeProcessor, activeIsOdyssey, pendingJournalEvents, pendingHistoryReplay)
+            );
         }
-        JourneyJournalProcessor merged = pendingHistoryReplay is { } replay
-            ? CreateCatchUpProcessor(stored, replay, activeIsOdyssey).Processor
-            : activeProcessor.CreateMergeProcessor(stored);
-        merged.MergePendingRecords(pendingJournalEvents);
+        return retainedProgress.TryGetValue((stored.FrontierId, stored.FileName), out PendingJourney? retained)
+            ? MergePendingProgress(stored, retained)
+            : stored;
+    }
+
+    private JourneyDocument MergePendingProgress(JourneyDocument stored, PendingJourney pending)
+    {
+        JourneyJournalProcessor merged = pending.History is { } replay
+            ? CreateCatchUpProcessor(stored, replay, pending.IsOdyssey).Processor
+            : pending.Processor.CreateMergeProcessor(stored);
+        merged.MergePendingRecords(pending.Events);
         return merged.Journey;
     }
 
@@ -461,6 +472,7 @@ public sealed partial class JourneyService
             pendingJournalEvents.Clear();
             pendingHistoryReplay = null;
         }
+        retainedProgress.Remove((saved.FrontierId, saved.FileName));
         return saved;
     }
 
@@ -692,6 +704,7 @@ public sealed partial class JourneyService
                 isOdyssey
             );
             rebuilt.ApplyCatchUp(read.Events);
+            rebuilt.MergeRetainedOrdering(journey);
             if (CoversSavedActivity(journey, rebuilt.Journey))
             {
                 rebuilt.UpdateJourney(

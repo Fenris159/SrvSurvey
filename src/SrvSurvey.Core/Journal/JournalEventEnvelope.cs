@@ -30,6 +30,14 @@ public sealed record JournalEventEnvelope(
     [Newtonsoft.Json.JsonIgnore]
     public IReadOnlySet<string>? SourcePreviousContentIdentities { get; init; }
 
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public IReadOnlyList<JournalOrderEvidence>? SourceOrderEvidence { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public int? SourceOccurrenceCount { get; init; }
+
     internal string CaptureContentIdentity(string fileName, Dictionary<string, int> occurrences)
     {
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(RawJson)));
@@ -89,3 +97,5 @@ public sealed record JournalEventEnvelope(
         }
     }
 }
+
+public sealed record JournalOrderEvidence(string PreviousIdentity, int Occurrences, int PreviousOccurrences);

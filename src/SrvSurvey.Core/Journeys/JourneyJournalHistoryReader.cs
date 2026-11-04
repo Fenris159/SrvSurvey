@@ -349,7 +349,18 @@ public sealed partial class JourneyJournalHistoryReader
                     predecessors.Add(incoming);
                 }
                 predecessors.UnionWith(entry.SourcePreviousContentIdentities ?? new HashSet<string>());
-                events[existingIndex] = existing with { SourcePreviousContentIdentities = predecessors };
+                events[existingIndex] = existing with
+                {
+                    SourcePreviousContentIdentities = predecessors,
+                    SourceOrderEvidence = (existing.SourceOrderEvidence ?? [])
+                        .Concat(entry.SourceOrderEvidence ?? [])
+                        .Distinct()
+                        .ToArray(),
+                    SourceOccurrenceCount = Math.Max(
+                        existing.SourceOccurrenceCount ?? 1,
+                        entry.SourceOccurrenceCount ?? 1
+                    ),
+                };
             }
             else
             {
@@ -498,6 +509,7 @@ public sealed partial class JourneyJournalHistoryReader
             events.Add(journalEvent);
         }
 
+        JournalSourceOrdering.Attach(events, 0, occurrences);
         return new JournalFileReadResult(file.Name, events, errors);
     }
 

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Journal;
 
@@ -76,9 +77,48 @@ public sealed partial class JourneyStore
             {
                 throw new InvalidDataException($"The journey {path} has a duplicate or invalid timeline observation.");
             }
-            records.Add(new(identity, timestamp, json, GetString(row, "source"), previous));
+            records.Add(
+                new(identity, timestamp, json, GetString(row, "source"), previous)
+                {
+                    OrderEvidence = ReadOrderEvidence(row, path),
+                    SourceOccurrenceCount = GetInt32(row, "occurrences"),
+                }
+            );
         }
         return records;
+    }
+
+    private static List<JournalOrderEvidence>? ReadOrderEvidence(JsonObject row, string path)
+    {
+        if (row["order"] is null)
+        {
+            return null;
+        }
+        if (row["order"] is not JsonArray array)
+        {
+            throw new InvalidDataException($"The journey {path} has invalid ordering evidence.");
+        }
+        var result = new List<JournalOrderEvidence>();
+        foreach (JsonNode? node in array)
+        {
+            if (
+                node is not JsonObject edge
+                || GetString(edge, nameof(JournalOrderEvidence.PreviousIdentity)) is not { Length: > 0 } previous
+                || GetInt32(edge, nameof(JournalOrderEvidence.Occurrences)) is not > 0
+                || GetInt32(edge, nameof(JournalOrderEvidence.PreviousOccurrences)) is not > 0
+            )
+            {
+                throw new InvalidDataException($"The journey {path} has invalid ordering evidence.");
+            }
+            result.Add(
+                new(
+                    previous,
+                    GetInt32(edge, nameof(JournalOrderEvidence.Occurrences))!.Value,
+                    GetInt32(edge, nameof(JournalOrderEvidence.PreviousOccurrences))!.Value
+                )
+            );
+        }
+        return result;
     }
 
     private static void WriteObservationHistory(JsonObject root, JourneyDocument journey)
@@ -126,6 +166,8 @@ public sealed partial class JourneyStore
                 ["timestamp"] = record.Timestamp,
                 ["source"] = record.SourceRecordIdentity,
                 ["record"] = JsonNode.Parse(record.RawJson),
+                ["order"] = JsonSerializer.SerializeToNode(record.OrderEvidence),
+                ["occurrences"] = record.SourceOccurrenceCount,
             };
             WriteSet(row, "previous", record.PreviousIdentities);
             array.Add(row);

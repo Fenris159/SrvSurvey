@@ -532,6 +532,7 @@ public sealed partial class JournalDirectoryMonitor
         Buffer.BlockCopy(pendingJournalBytes, 0, combined, 0, pendingJournalBytes.Length);
         Buffer.BlockCopy(appended, 0, combined, pendingJournalBytes.Length, appended.Length);
 
+        int eventStart = events.Count;
         int lineStart = 0;
         for (int index = 0; index < combined.Length; index++)
         {
@@ -550,6 +551,7 @@ public sealed partial class JournalDirectoryMonitor
             lineStart = index + 1;
         }
 
+        JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences);
         pendingJournalBytes = combined[lineStart..];
     }
 
@@ -558,7 +560,9 @@ public sealed partial class JournalDirectoryMonitor
     {
         if (pendingJournalBytes.Length > 0)
         {
+            int eventStart = events.Count;
             ParseLine(pendingJournalBytes, currentJournalOffset - pendingJournalBytes.Length, events, errors);
+            JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences);
             pendingJournalBytes = [];
         }
     }

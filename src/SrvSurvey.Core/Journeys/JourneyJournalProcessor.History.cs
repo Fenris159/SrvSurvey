@@ -88,6 +88,14 @@ public sealed partial class JourneyJournalProcessor
             );
             observations = ImmutableList<JourneyObservedRecord>.Empty;
         }
+        IReadOnlyDictionary<string, int> legacyCounts = JourneyObservationOrder.Multiplicities(
+            baseline.Context.Concat(observations).ToArray()
+        );
+        observations = observations.Select(record => WithLegacyOrder(record, legacyCounts)).ToImmutableList();
+        baseline = baseline with
+        {
+            Context = baseline.Context.Select(record => WithLegacyOrder(record, legacyCounts)).ToArray(),
+        };
         for (int index = 0; index < observations.Count; index++)
         {
             observationIndices[observations[index].Identity] = index;
@@ -148,6 +156,8 @@ public sealed partial class JourneyJournalProcessor
             SourceContentIdentity = record.Identity,
             SourceRecordIdentity = record.SourceRecordIdentity,
             SourcePreviousContentIdentities = record.PreviousIdentities,
+            SourceOrderEvidence = record.OrderEvidence,
+            SourceOccurrenceCount = record.SourceOccurrenceCount,
         };
     }
 
@@ -166,7 +176,8 @@ public sealed partial class JourneyJournalProcessor
         }
         (string file, long offset) = JourneyObservationOrder.Position(entry.SourceRecordIdentity);
         if (
-            entry.SourcePreviousContentIdentity is null
+            entry.SourceOrderEvidence is null
+            && entry.SourcePreviousContentIdentity is null
             && entry.SourcePreviousContentIdentities is null
             && observedSourcePositions.TryGetValue(file, out (long Offset, string Identity) previous)
             && offset > previous.Offset
@@ -197,10 +208,14 @@ public sealed partial class JourneyJournalProcessor
             (entry.SourcePreviousContentIdentities ?? ImmutableHashSet<string>.Empty).ToImmutableHashSet(
                 StringComparer.Ordinal
             )
-        );
+        )
+        {
+            OrderEvidence = entry.SourceOrderEvidence,
+            SourceOccurrenceCount = entry.SourceOccurrenceCount,
+        };
     }
 
-    private bool CaptureObservation(JournalEventEnvelope prepared)
+    private void CaptureObservation(JournalEventEnvelope prepared)
     {
         string identity = prepared.SourceContentIdentity!;
         if (!observationIndices.TryGetValue(identity, out int index))
@@ -211,7 +226,7 @@ public sealed partial class JourneyJournalProcessor
                 string? alias = TimelineAliases().GetValueOrDefault(identity);
                 if (alias is null || !observationIndices.TryGetValue(alias, out index))
                 {
-                    return false;
+                    return;
                 }
             }
         }
@@ -219,14 +234,79 @@ public sealed partial class JourneyJournalProcessor
         ImmutableHashSet<string> previous = existing
             .PreviousIdentities.ToImmutableHashSet(StringComparer.Ordinal)
             .Union(prepared.SourcePreviousContentIdentities ?? ImmutableHashSet<string>.Empty);
-        if (!previous.SetEquals(existing.PreviousIdentities))
+        JournalOrderEvidence[] evidence = (existing.OrderEvidence ?? LegacyOrder(existing))
+            .Concat(
+                prepared.SourceOrderEvidence ?? previous.Select(identity => new JournalOrderEvidence(identity, 1, 1))
+            )
+            .Distinct()
+            .ToArray();
+        int count = Math.Max(existing.SourceOccurrenceCount ?? 1, prepared.SourceOccurrenceCount ?? 1);
+        if (
+            !previous.SetEquals(existing.PreviousIdentities)
+            || count != (existing.SourceOccurrenceCount ?? 1)
+            || !evidence.ToHashSet().SetEquals(existing.OrderEvidence ?? LegacyOrder(existing))
+        )
         {
-            observations = observations.SetItem(index, existing with { PreviousIdentities = previous });
+            observations = observations.SetItem(
+                index,
+                existing with
+                {
+                    PreviousIdentities = previous,
+                    OrderEvidence = evidence,
+                    SourceOccurrenceCount = count,
+                }
+            );
             MarkObservationChange();
             requiresReplay = true;
         }
         lastObservation = prepared with { SourceContentIdentity = existing.Identity };
-        return true;
+    }
+
+    private JournalOrderEvidence[] LegacyOrder(JourneyObservedRecord record)
+    {
+        IReadOnlyDictionary<string, int> counts = JourneyObservationOrder.Multiplicities(
+            baseline.Context.Concat(observations).ToArray()
+        );
+        return WithLegacyOrder(record, counts).OrderEvidence!.ToArray();
+    }
+
+    private static JourneyObservedRecord WithLegacyOrder(
+        JourneyObservedRecord record,
+        IReadOnlyDictionary<string, int> counts
+    ) =>
+        record.OrderEvidence is not null
+            ? record
+            : record with
+            {
+                OrderEvidence = record
+                    .PreviousIdentities.Select(previous => new JournalOrderEvidence(
+                        previous,
+                        counts.GetValueOrDefault(JourneyObservationOrder.ContentKey(record.Identity), 1),
+                        counts.GetValueOrDefault(JourneyObservationOrder.ContentKey(previous), 1)
+                    ))
+                    .ToArray(),
+            };
+
+    internal void MergeRetainedOrdering(JourneyDocument saved)
+    {
+        if (saved.ObservationHistory is not { } history)
+        {
+            return;
+        }
+        IReadOnlyDictionary<string, int> counts = JourneyObservationOrder.Multiplicities(history.Records);
+        foreach (JourneyObservedRecord record in history.Records)
+        {
+            JourneyObservedRecord known = WithLegacyOrder(record, counts);
+            JournalEventEnvelope entry = Decode(known);
+            if (IsRecorded(entry))
+            {
+                CaptureObservation(entry);
+            }
+        }
+        if (requiresReplay)
+        {
+            ReplayObservations();
+        }
     }
 
     private void AppendObservation(JournalEventEnvelope prepared)
@@ -266,13 +346,14 @@ public sealed partial class JourneyJournalProcessor
         string identity =
             RecordReceipt(entry)
             ?? "context:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
-        if (baseline.Context.Any(record => record.Identity == identity))
+        if (observationIndices.ContainsKey(identity) || baseline.Context.Any(record => record.Identity == identity))
         {
             return;
         }
         JourneyObservedRecord record = Compact(entry with { SourceContentIdentity = identity });
         baseline = baseline with { Context = [.. baseline.Context, record] };
         MarkObservationChange();
+        requiresReplay = true;
     }
 
     private void RememberBaselineIdentity(string? identity)
@@ -337,7 +418,7 @@ public sealed partial class JourneyJournalProcessor
 
     private void ApplyProjectedEvent(JournalEventEnvelope entry)
     {
-        applyingVisitIndex = entry.Timestamp < baseline.Watermark ? FindVisitAt(entry.Timestamp.Value) : null;
+        applyingVisitIndex = entry.Timestamp <= baseline.Watermark ? FindVisitAt(entry.Timestamp.Value) : null;
         try
         {
             ApplyEvent(entry);
@@ -389,12 +470,12 @@ public sealed partial class JourneyJournalProcessor
         return visits;
     }
 
-    private void PrimeWithoutCapturing(JournalEventEnvelope entry)
+    private void PrimeWithoutCapturing(JournalEventEnvelope entry, bool replaceEqual = true)
     {
         applyingVisitIndex = entry.Timestamp is { } timestamp ? FindVisitAt(timestamp) : -1;
         try
         {
-            PrimeEvent(entry);
+            PrimeEvent(entry, replaceEqual);
         }
         finally
         {

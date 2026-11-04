@@ -40,4 +40,39 @@ public sealed partial class JourneyService
         pendingJournalEvents.AddRange(pending.Events);
         pendingHistoryReplay = pending.History;
     }
+
+    private async Task DrainRetainedProgressAsync(string frontierId, CancellationToken cancellationToken)
+    {
+        foreach (
+            ((string FrontierId, string FileName) key, PendingJourney pending) in retainedProgress
+                .Where(pair => pair.Key.FrontierId == frontierId)
+                .ToArray()
+        )
+        {
+            using var attempt = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            attempt.CancelAfter(TimeSpan.FromMilliseconds(250));
+            try
+            {
+                await journeyStore
+                    .UpdateAsync(
+                        key.FrontierId,
+                        key.FileName,
+                        stored => MergePendingProgress(stored, pending),
+                        cancellationToken,
+                        leaseCancellationToken: attempt.Token
+                    )
+                    .ConfigureAwait(false);
+                retainedProgress.Remove(key);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                log?.Invoke($"Journey observations remain pending for {key.FileName}; its storage is busy.");
+            }
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+            {
+                log?.Invoke($"Journey observations remain pending for {key.FileName}: {exception.Message}");
+            }
+        }
+    }
 }

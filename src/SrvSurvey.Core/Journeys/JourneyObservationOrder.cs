@@ -36,7 +36,7 @@ internal static class JourneyObservationOrder
         {
             children[index] = [];
         }
-        LinkPredecessors(records, aliases, indices, degree, children);
+        LinkPredecessors(records, aliases, indices, degree, children, Multiplicities(records));
         var ready = new SortedSet<int>(Comparer<int>.Create((left, right) => Compare(records, left, right)));
         for (int index = 0; index < degree.Length; index++)
         {
@@ -73,24 +73,99 @@ internal static class JourneyObservationOrder
         IReadOnlyDictionary<string, string> aliases,
         Dictionary<string, int> indices,
         int[] degree,
-        List<int>[] children
+        List<int>[] children,
+        IReadOnlyDictionary<string, int> multiplicities
     )
     {
         for (int index = 0; index < records.Length; index++)
         {
+            JourneyObservedRecord record = records[index];
+            IEnumerable<SrvSurvey.Core.Journal.JournalOrderEvidence> evidence =
+                record.OrderEvidence
+                ?? record.PreviousIdentities.Select(previous => new SrvSurvey.Core.Journal.JournalOrderEvidence(
+                    previous,
+                    multiplicities.GetValueOrDefault(ContentKey(record.Identity), 1),
+                    multiplicities.GetValueOrDefault(ContentKey(previous), 1)
+                ));
             foreach (
-                string predecessor in records[index]
-                    .PreviousIdentities.Select(id => aliases.GetValueOrDefault(id, id))
-                    .Distinct(StringComparer.Ordinal)
+                string previousIdentity in evidence
+                    .Where(edge =>
+                        edge.Occurrences >= multiplicities.GetValueOrDefault(ContentKey(record.Identity), 1)
+                        && edge.PreviousOccurrences
+                            >= multiplicities.GetValueOrDefault(ContentKey(edge.PreviousIdentity), 1)
+                    )
+                    .Select(edge => edge.PreviousIdentity)
             )
             {
-                if (indices.TryGetValue(predecessor, out int parent) && parent != index)
+                string predecessor = aliases.GetValueOrDefault(previousIdentity, previousIdentity);
+                if (
+                    indices.TryGetValue(predecessor, out int parent)
+                    && parent != index
+                    && !children[parent].Contains(index)
+                )
                 {
                     degree[index]++;
                     children[parent].Add(index);
                 }
             }
         }
+    }
+
+    internal static Dictionary<string, int> Multiplicities(IReadOnlyList<JourneyObservedRecord> records)
+    {
+        var counts = records
+            .GroupBy(record => ContentKey(record.Identity))
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(record => record.Identity).Distinct(StringComparer.Ordinal).Count(),
+                StringComparer.Ordinal
+            );
+        foreach (JourneyObservedRecord record in records)
+        {
+            string key = ContentKey(record.Identity);
+            counts[key] = Math.Max(counts[key], record.SourceOccurrenceCount ?? CanonicalOccurrence(record.Identity));
+            foreach (SrvSurvey.Core.Journal.JournalOrderEvidence edge in record.OrderEvidence ?? [])
+            {
+                counts[key] = Math.Max(counts[key], edge.Occurrences);
+                string parent = ContentKey(edge.PreviousIdentity);
+                counts[parent] = Math.Max(counts.GetValueOrDefault(parent, 1), edge.PreviousOccurrences);
+            }
+        }
+        return counts;
+    }
+
+    internal static string ContentKey(string identity)
+    {
+        int last = identity.LastIndexOf(':');
+        int prior = last > 0 ? identity.LastIndexOf(':', last - 1) : -1;
+        if (prior < 0)
+        {
+            return identity;
+        }
+        if (
+            last - prior - 1 == 64
+            && int.TryParse(identity.AsSpan(last + 1), NumberStyles.None, CultureInfo.InvariantCulture, out _)
+        )
+        {
+            return identity[..last];
+        }
+        return identity.Length - last - 1 == 64 ? identity[..prior] + ":" + identity[(last + 1)..] : identity;
+    }
+
+    private static int CanonicalOccurrence(string identity)
+    {
+        string key = ContentKey(identity);
+        return
+            identity.StartsWith(key + ":", StringComparison.Ordinal)
+            && int.TryParse(
+                identity.AsSpan(key.Length + 1),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out int occurrence
+            )
+            && occurrence < int.MaxValue
+            ? occurrence + 1
+            : 1;
     }
 
     private static int Compare(JourneyObservedRecord[] records, int left, int right)
