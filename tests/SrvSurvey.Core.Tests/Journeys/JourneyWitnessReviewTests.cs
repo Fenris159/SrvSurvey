@@ -9,6 +9,86 @@ public sealed partial class JourneyServiceTests
         "{\"timestamp\":\"2026-07-01T00:06:00Z\",\"event\":\"Music\",\"MusicTrack\":\"Exploration\"}";
 
     [Fact]
+    public async Task PhysicalReceiptsUseSourcePositionWhenCanonicalWitnessesArriveLater()
+    {
+        await WriteJournalAsync(
+            BoundaryJournal,
+            new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
+            BasicJournal("2026-07-01T00:05:00Z") + "\n"
+        );
+        JourneyService service = CreateService();
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
+        await service.BeginAsync(new("F123", "Test", true, "Physical receipts", "", start.Entry!));
+        await service.ApplyLiveAsync([
+            TimelineEntry(BoundaryShot, BoundaryJournal + ":200") with
+            {
+                SourceOrderEvidence = [],
+            },
+            TimelineEntry(BoundaryShot, BoundaryJournal + ":100") with
+            {
+                SourceOrderEvidence = [],
+            },
+        ]);
+        await File.AppendAllTextAsync(
+            Path.Combine(JournalDirectory, BoundaryJournal),
+            string.Join('\n', BoundaryShot, OrderArrival, BoundaryShot, OrderMusic) + "\n"
+        );
+        JourneyServiceResult corrected = await service.ApplyLiveAsync(
+            (await new JournalDirectoryMonitor(JournalDirectory, "F123").PollAsync()).JournalEvents
+        );
+
+        Assert.Empty(corrected.Errors);
+        Assert.Equal(["Sol", "Sirius"], corrected.Journey!.VisitedSystems.Select(visit => visit.StarSystem.Name));
+        Assert.Equal([1, 1], corrected.Journey.VisitedSystems.Select(visit => visit.Counts.Screenshots));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IndependentRecordsCannotExhaustOrderingSearchForAConsistentRoute(bool sharedPredecessor)
+    {
+        string end = RepeatedOrderMusic.Replace("Exploration", "End", StringComparison.Ordinal);
+        var suffixes = new List<string>
+        {
+            BoundaryShot,
+            string.Join('\n', RepeatedOrderMusic, BoundaryShot, OrderArrival),
+            string.Join('\n', OrderArrival, BoundaryShot, end),
+            BoundaryShot + "\n" + BoundaryShot,
+        };
+        for (int index = 0; index < 9; index++)
+        {
+            string independent = RepeatedOrderMusic.Replace(
+                "Exploration",
+                "Independent" + index,
+                StringComparison.Ordinal
+            );
+            suffixes.Add(sharedPredecessor ? RepeatedOrderMusic + "\n" + independent : independent);
+        }
+        var folders = new List<string>();
+        for (int index = 0; index < suffixes.Count; index++)
+        {
+            string folder = Path.Combine(
+                temporaryDirectory,
+                index.ToString("D2", global::System.Globalization.CultureInfo.InvariantCulture)
+            );
+            folders.Add(folder);
+            Directory.CreateDirectory(folder);
+            await File.WriteAllTextAsync(
+                Path.Combine(folder, BoundaryJournal),
+                BasicJournal("2026-07-01T00:05:00Z", suffixes[index] + "\n" + OrderMusic) + "\n"
+            );
+        }
+        JourneyService service = BoundaryService(folders);
+        JourneyJournalSystemSearchResult start = await service.FindLatestStartAsync("F123", true, 42);
+        JourneyServiceResult result = await service.BeginAsync(
+            new("F123", "Test", true, "Independent records", "", start.Entry!)
+        );
+
+        Assert.Empty(result.Errors);
+        Assert.Equal([1, 1], result.Journey!.VisitedSystems.Select(visit => visit.Counts.Screenshots));
+    }
+
+    [Fact]
     public async Task PartialCopyKeepsARepeatedScreenshotBeforeItsFollowingArrival()
     {
         string[] folders = ["a-arrival", "b-placement", "c-repeated"];

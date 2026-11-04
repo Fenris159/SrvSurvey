@@ -22,7 +22,8 @@ internal sealed partial class JourneyWorkspaceSession
             ShowArchived,
             systemNotes.CountUpdate,
             systemNotes.Context,
-            systemNotes.Loaded
+            systemNotes.BaselineKnown ? systemNotes.Loaded : null,
+            systemNotes.NoteWrite
         );
     }
 
@@ -66,21 +67,35 @@ internal sealed partial class JourneyWorkspaceSession
         {
             JourneyDescription = draft.Description;
         }
-        if (draft.Notes is not null)
-        {
-            systemNotes = new SystemNoteDraft(
-                draft.NotesBaseline ?? systemNotes.Loaded,
-                draft.Notes,
-                draft.CountUpdate,
-                draft.NotesContext ?? systemNotes.Context
-            );
-            OnPropertyChanged(nameof(SelectedSystemNotes));
-            OnPropertyChanged(nameof(CanEditSystemNotes));
-            RaiseDirtyState();
-            RaiseCommands();
-        }
+        RestoreSystemNoteDraft(draft);
         retainedDraft = null;
     }
+
+    private void RestoreSystemNoteDraft(JourneyEditDraft draft)
+    {
+        if (draft.Notes is null || (systemNotes.BaselineKnown && WasDraftSaved(draft)))
+        {
+            return;
+        }
+        string? written = draft.NoteWrite is { WrittenCount: not null } receipt ? receipt.Text : null;
+        systemNotes = new SystemNoteDraft(
+            written ?? draft.NotesBaseline ?? systemNotes.Loaded,
+            written is null && draft.NotesBaseline is null
+                ? MergeNoteDraft(systemNotes.Loaded, draft.Notes)
+                : draft.Notes,
+            draft.NoteWrite?.WrittenCount ?? draft.CountUpdate,
+            draft.NotesContext ?? systemNotes.Context,
+            BaselineKnown: written is not null || draft.NotesBaseline is not null || systemNotes.BaselineKnown
+        );
+        OnPropertyChanged(nameof(SelectedSystemNotes));
+        OnPropertyChanged(nameof(CanEditSystemNotes));
+        RaiseDirtyState();
+        RaiseCommands();
+    }
+
+    private static bool WasDraftSaved(JourneyEditDraft draft) =>
+        draft.NoteWrite is { WrittenCount.IsPending: false } write
+        && string.Equals(draft.Notes, write.Text, StringComparison.Ordinal);
 
     private void ClearJourneyDraft() => retainedDraft = null;
 }
@@ -94,8 +109,25 @@ internal sealed record JourneyEditDraft(
     bool Archived,
     JourneyNoteCountUpdate? CountUpdate = null,
     SystemNoteContext? NotesContext = null,
-    string? NotesBaseline = null
+    string? NotesBaseline = null,
+    JourneyNoteWriteReceipt? NoteWrite = null
 );
+
+internal sealed class JourneyNoteWriteReceipt
+{
+    private readonly TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal string Text { get; private set; } = string.Empty;
+    internal JourneyNoteCountUpdate? WrittenCount { get; private set; }
+    internal Task Completion => completion.Task;
+
+    internal void MarkWritten(string text, JourneyNoteCountUpdate count)
+    {
+        Text = text;
+        WrittenCount = count;
+    }
+
+    internal void Complete() => completion.TrySetResult();
+}
 
 internal sealed class JourneyNoteCountUpdate(JourneyDocument journey, long address, DateTimeOffset arrived)
 {

@@ -10,13 +10,20 @@ internal static class JourneyObservationOrder
     )
     {
         var result = new List<JourneyObservedRecord>(records.Count);
+        var occurrenceRanks = aliases
+            .GroupBy(pair => pair.Value)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Min(pair => CanonicalOccurrence(pair.Key)),
+                StringComparer.Ordinal
+            );
         foreach (
             IGrouping<DateTimeOffset, JourneyObservedRecord> group in records
                 .GroupBy(record => record.Timestamp)
                 .OrderBy(group => group.Key)
         )
         {
-            OrderGroup(group.ToArray(), aliases, result);
+            OrderGroup(group.ToArray(), aliases, occurrenceRanks, result);
         }
         return result;
     }
@@ -24,16 +31,33 @@ internal static class JourneyObservationOrder
     private static void OrderGroup(
         JourneyObservedRecord[] records,
         IReadOnlyDictionary<string, string> aliases,
+        IReadOnlyDictionary<string, int> occurrenceRanks,
         List<JourneyObservedRecord> result
     )
     {
-        var witnesses = new JourneyOrderWitnesses(records, aliases);
-        var schedule = new JourneyObservationSchedule(
-            records,
-            witnesses,
-            (left, right) => Compare(records, left, right)
+        var witnesses = new JourneyOrderWitnesses(records, aliases, occurrenceRanks);
+        var heads = new PriorityQueue<Queue<int>, int>(
+            Comparer<int>.Create((left, right) => Compare(records, left, right))
         );
-        result.AddRange(schedule.Sort().Select(index => records[index]));
+        foreach (int[] component in witnesses.Components())
+        {
+            JourneyObservedRecord[] connected = component.Select(index => records[index]).ToArray();
+            var schedule = new JourneyObservationSchedule(
+                connected,
+                new JourneyOrderWitnesses(connected, aliases, occurrenceRanks),
+                (left, right) => Compare(connected, left, right)
+            );
+            var ordered = new Queue<int>(schedule.Sort().Select(index => component[index]));
+            heads.Enqueue(ordered, ordered.Peek());
+        }
+        while (heads.TryDequeue(out Queue<int>? ordered, out _))
+        {
+            result.Add(records[ordered.Dequeue()]);
+            if (ordered.Count > 0)
+            {
+                heads.Enqueue(ordered, ordered.Peek());
+            }
+        }
     }
 
     internal static Dictionary<string, int> Multiplicities(IReadOnlyList<JourneyObservedRecord> records)

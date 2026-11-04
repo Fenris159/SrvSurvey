@@ -1,10 +1,16 @@
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Views;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed partial class JourneyWorkspaceViewModelTests
 {
     [Fact]
@@ -41,7 +47,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         Assert.Equal("Sol only", (await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sol", 42)).Notes);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public async Task RemovedVisitKeepsUnsavedNotesWithTheirOriginalSystem()
     {
         const string file = "Journal.2026-07-01T000000.01.log";
@@ -70,23 +76,58 @@ public sealed partial class JourneyWorkspaceViewModelTests
         Assert.Equal(3, model.VisitedSystems.Count);
         model.SelectedSystem = model.VisitedSystems.Single(item => item.Name == "Sol" && item.Visit.Departed is null);
         model.SelectedSystemNotes = "Sol draft";
-        string complete = Path.Combine(temporaryDirectory, "complete-location");
-        Directory.CreateDirectory(complete);
-        await File.WriteAllTextAsync(Path.Combine(complete, file), preamble + location + arrival);
-        await model.ApplyJournalEventsAsync(
-            (await new JournalDirectoryMonitor(complete, "F123").PollAsync()).JournalEvents
-        );
+        await WithBoundJourneyAsync(
+            model,
+            async () =>
+            {
+                string complete = Path.Combine(temporaryDirectory, "complete-location");
+                Directory.CreateDirectory(complete);
+                await File.WriteAllTextAsync(Path.Combine(complete, file), preamble + location + arrival);
+                await model.ApplyJournalEventsAsync(
+                    (await new JournalDirectoryMonitor(complete, "F123").PollAsync()).JournalEvents
+                );
 
-        Assert.Equal(2, model.VisitedSystems.Count);
-        Assert.Equal("Sol", model.SelectedSystemName);
-        Assert.Equal("Sol draft", model.SelectedSystemNotes);
-        Assert.True(model.IsDirty);
-        await model.SaveAsync();
-        Assert.False(model.IsDirty);
-        Assert.Equal("Sol draft", (await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sol", 42)).Notes);
-        Assert.Equal(string.Empty, (await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sirius", 44)).Notes);
-        Assert.Equal(1, model.VisitedSystems.Single(item => item.Name == "Sol").Visit.Counts.Notes);
-        Assert.Equal(0, model.VisitedSystems.Single(item => item.Name == "Sirius").Visit.Counts.Notes);
+                Assert.Equal(2, model.VisitedSystems.Count);
+                Assert.Equal("Sol", model.SelectedSystemName);
+                Assert.Equal("Sol draft", model.SelectedSystemNotes);
+                Assert.True(model.IsDirty);
+                await model.SaveAsync();
+                Assert.False(model.IsDirty);
+                Assert.Equal(
+                    "Sol draft",
+                    (await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sol", 42)).Notes
+                );
+                Assert.Equal(
+                    string.Empty,
+                    (await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sirius", 44)).Notes
+                );
+                Assert.Equal(1, model.VisitedSystems.Single(item => item.Name == "Sol").Visit.Counts.Notes);
+                Assert.Equal(0, model.VisitedSystems.Single(item => item.Name == "Sirius").Visit.Counts.Notes);
+            }
+        );
+    }
+
+    private static async Task WithBoundJourneyAsync(JourneyWorkspaceViewModel model, Func<Task> action)
+    {
+        var view = new JourneysView { DataContext = model };
+        var window = new Window
+        {
+            Content = view,
+            Width = 1000,
+            Height = 800,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            Assert.Same(model.SelectedSystem, view.FindControl<ListBox>("JourneyVisitList")!.SelectedItem);
+            await action();
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [Fact]

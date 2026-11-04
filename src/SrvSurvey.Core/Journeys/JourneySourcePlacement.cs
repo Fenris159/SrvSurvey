@@ -8,20 +8,16 @@ internal sealed class JourneySourcePlacement
     private readonly Dictionary<string, int> remaining;
     private readonly HashSet<int> matched = [];
 
-    internal JourneySourcePlacement(JourneyObservedRecord[] records, Dictionary<int, HashSet<int>> parents)
+    internal JourneySourcePlacement(
+        JourneyObservedRecord[] records,
+        Dictionary<int, HashSet<int>> parents,
+        Func<IEnumerable<int>, int[]> orderOccurrences
+    )
     {
         this.parents = parents;
         occurrences = parents
             .Keys.GroupBy(index => JourneyObservationOrder.ContentKey(records[index].Identity))
-            .ToDictionary(
-                group => group.Key,
-                group =>
-                    group
-                        .OrderBy(index => JourneyObservationOrder.CanonicalOccurrence(records[index].Identity))
-                        .ThenBy(index => index)
-                        .ToArray(),
-                StringComparer.Ordinal
-            );
+            .ToDictionary(group => group.Key, group => orderOccurrences(group), StringComparer.Ordinal);
         remaining = occurrences.ToDictionary(pair => pair.Key, pair => pair.Value.Length, StringComparer.Ordinal);
         foreach (int[] indices in occurrences.Values)
         {
@@ -40,6 +36,8 @@ internal sealed class JourneySourcePlacement
         );
         return match >= 0 || remaining.GetValueOrDefault(content) <= availableAfter;
     }
+
+    internal string StateKey(bool[] relevant) => string.Join(',', matched.Where(index => relevant[index]).Order());
 
     internal void Advance(string content, int match)
     {

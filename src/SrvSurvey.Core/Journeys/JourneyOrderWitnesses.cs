@@ -10,13 +10,19 @@ internal sealed class JourneyOrderWitnesses
     private readonly IReadOnlyDictionary<string, string> aliases;
     private readonly Dictionary<string, int> indices;
     private readonly Dictionary<string, int> multiplicities;
+    private readonly IReadOnlyDictionary<string, int> occurrenceRanks;
     private readonly Dictionary<(string Witness, string Content), int> witnessedCounts = [];
     private readonly Dictionary<(string Witness, int Child), HashSet<int>> witnessedParents = [];
 
-    internal JourneyOrderWitnesses(JourneyObservedRecord[] records, IReadOnlyDictionary<string, string> aliases)
+    internal JourneyOrderWitnesses(
+        JourneyObservedRecord[] records,
+        IReadOnlyDictionary<string, string> aliases,
+        IReadOnlyDictionary<string, int> occurrenceRanks
+    )
     {
         this.records = records;
         this.aliases = aliases;
+        this.occurrenceRanks = occurrenceRanks;
         indices = records
             .Select((record, index) => (record.Identity, index))
             .ToDictionary(pair => pair.Identity, pair => pair.index, StringComparer.Ordinal);
@@ -92,6 +98,64 @@ internal sealed class JourneyOrderWitnesses
             .ToArray();
     }
 
+    internal int[][] Components()
+    {
+        int[] roots = Enumerable.Range(0, records.Length).ToArray();
+        for (int child = 0; child < records.Length; child++)
+        {
+            foreach (JournalOrderEvidence edge in Evidence(records[child]))
+            {
+                if (TryParent(edge, out int parent))
+                {
+                    Join(roots, child, parent);
+                }
+            }
+        }
+        foreach (
+            IGrouping<string, int> group in Enumerable
+                .Range(0, records.Length)
+                .GroupBy(index => JourneyObservationOrder.ContentKey(records[index].Identity))
+        )
+        {
+            int first = group.First();
+            foreach (int index in group)
+            {
+                Join(roots, first, index);
+            }
+        }
+        return Enumerable
+            .Range(0, records.Length)
+            .GroupBy(index => Root(roots, index))
+            .Select(group => group.ToArray())
+            .ToArray();
+    }
+
+    internal bool[] SearchRelevantRecords()
+    {
+        // Unique terminal records cannot unlock another placement. Their interleavings do not change feasibility.
+        bool[] relevant = records.Select(record => Multiplicity(record.Identity) > 1).ToArray();
+        foreach (JournalOrderEvidence edge in records.SelectMany(Evidence))
+        {
+            if (TryParent(edge, out int parent))
+            {
+                relevant[parent] = true;
+            }
+        }
+        return relevant;
+    }
+
+    private static void Join(int[] roots, int left, int right) => roots[Root(roots, right)] = Root(roots, left);
+
+    private static int Root(int[] roots, int index)
+    {
+        while (roots[index] != index)
+        {
+            roots[index] = roots[roots[index]];
+            index = roots[index];
+        }
+        return index;
+    }
+
     private JourneySourcePlacement CreatePlacement(string witness)
     {
         var parents = new Dictionary<int, HashSet<int>>();
@@ -108,7 +172,29 @@ internal sealed class JourneyOrderWitnesses
                 parents.TryAdd(parent, []);
             }
         }
-        return new JourneySourcePlacement(records, parents);
+        return new JourneySourcePlacement(records, parents, OrderOccurrences);
+    }
+
+    internal int[] OrderOccurrences(IEnumerable<int> occurrences) =>
+        occurrences
+            .OrderBy(OccurrenceRank)
+            .ThenBy(index => JourneyObservationOrder.Position(records[index].SourceRecordIdentity).Offset)
+            .ThenBy(index => index)
+            .ToArray();
+
+    private long OccurrenceRank(int index)
+    {
+        JourneyObservedRecord record = records[index];
+        if (occurrenceRanks.TryGetValue(record.Identity, out int rank))
+        {
+            return rank;
+        }
+        return record.Identity.StartsWith(
+            JourneyObservationOrder.ContentKey(record.Identity) + ":",
+            StringComparison.Ordinal
+        )
+            ? JourneyObservationOrder.CanonicalOccurrence(record.Identity)
+            : JourneyObservationOrder.Position(record.SourceRecordIdentity).Offset;
     }
 
     private void AddUnambiguousAncestors(int child, string witness, HashSet<int> result)

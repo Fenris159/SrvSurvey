@@ -356,6 +356,19 @@ public sealed partial class JourneyService
                 );
                 if (index < 0)
                 {
+                    index = visits
+                        .Select((visit, position) => (visit, position))
+                        .Where(pair =>
+                            pair.visit.StarSystem.SystemAddress == systemAddress
+                            && pair.visit.Arrived <= arrived
+                            && (pair.visit.Departed is null || arrived <= pair.visit.Departed)
+                        )
+                        .OrderByDescending(pair => pair.visit.Arrived)
+                        .Select(pair => pair.position)
+                        .FirstOrDefault(-1);
+                }
+                if (index < 0)
+                {
                     throw new InvalidOperationException(
                         "The selected Journey visit is no longer available; its note count was not updated."
                     );

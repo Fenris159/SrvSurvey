@@ -11,6 +11,8 @@ internal sealed class JourneyObservationSchedule
     private readonly int[] degree;
     private readonly SortedSet<int> ready;
     private readonly Comparison<int> compare;
+    private readonly bool[] relevant;
+    private readonly bool[] emitted;
     private int attempts;
 
     internal JourneyObservationSchedule(
@@ -20,6 +22,8 @@ internal sealed class JourneyObservationSchedule
     )
     {
         this.compare = compare;
+        relevant = witnesses.SearchRelevantRecords();
+        emitted = new bool[records.Length];
         placements = witnesses.Placements();
         content = records.Select(record => JourneyObservationOrder.ContentKey(record.Identity)).ToArray();
         remaining = content
@@ -37,10 +41,7 @@ internal sealed class JourneyObservationSchedule
         }
         foreach (IGrouping<string, int> group in Enumerable.Range(0, records.Length).GroupBy(index => content[index]))
         {
-            int[] occurrences = group
-                .OrderBy(index => JourneyObservationOrder.CanonicalOccurrence(records[index].Identity))
-                .ThenBy(index => index)
-                .ToArray();
+            int[] occurrences = witnesses.OrderOccurrences(group);
             for (int index = 1; index < occurrences.Length; index++)
             {
                 Link(occurrences[index - 1], occurrences[index]);
@@ -67,10 +68,12 @@ internal sealed class JourneyObservationSchedule
     {
         var result = new List<int>(content.Length);
         List<SearchFrame> frames = [new()];
+        var failed = new HashSet<string>(StringComparer.Ordinal);
         while (result.Count < content.Length)
         {
             SearchFrame frame = frames[^1];
-            if (TryNext(frame, out int index, out int[] matches))
+            frame.StateKey ??= StateKey();
+            if (!failed.Contains(frame.StateKey) && TryNext(frame, out int index, out int[] matches))
             {
                 frame.Matches = matches;
                 Advance(index, matches);
@@ -79,6 +82,7 @@ internal sealed class JourneyObservationSchedule
             }
             else
             {
+                failed.Add(frame.StateKey);
                 if (result.Count == 0)
                 {
                     throw Conflict();
@@ -91,6 +95,11 @@ internal sealed class JourneyObservationSchedule
         }
         return result;
     }
+
+    private string StateKey() =>
+        string.Join(',', Enumerable.Range(0, emitted.Length).Where(index => relevant[index] && emitted[index]))
+        + ":"
+        + string.Join(';', placements.Select(placement => placement.StateKey(relevant)));
 
     private bool TryNext(SearchFrame frame, out int index, out int[] matches)
     {
@@ -134,6 +143,7 @@ internal sealed class JourneyObservationSchedule
     private void Advance(int index, int[] matches)
     {
         ready.Remove(index);
+        emitted[index] = true;
         remaining[content[index]]--;
         for (int witness = 0; witness < placements.Length; witness++)
         {
@@ -162,6 +172,7 @@ internal sealed class JourneyObservationSchedule
             placements[witness].Undo(content[index], matches[witness]);
         }
         remaining[content[index]]++;
+        emitted[index] = false;
         ready.Add(index);
     }
 
@@ -172,5 +183,6 @@ internal sealed class JourneyObservationSchedule
     {
         internal int? LastTried { get; set; }
         internal int[] Matches { get; set; } = [];
+        internal string? StateKey { get; set; }
     }
 }
