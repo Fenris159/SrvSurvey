@@ -20,6 +20,7 @@ public sealed partial class JournalDirectoryMonitor
     private readonly Func<string, CompanionFileStampReadResult> companionFileStampReader;
     private readonly Dictionary<string, string> companionFileStampErrors;
     private readonly Dictionary<string, string> configuredJournalSources;
+    private readonly Func<string, FileStream> openJournalStream;
     private readonly SemaphoreSlim pollLock = new(1, 1);
     private string? currentJournalPath;
     private long currentJournalOffset;
@@ -63,7 +64,8 @@ public sealed partial class JournalDirectoryMonitor
     internal JournalDirectoryMonitor(
         IReadOnlyList<string> journalDirectories,
         string? targetFrontierId,
-        Func<string, CompanionFileStampReadResult> companionFileStampReader
+        Func<string, CompanionFileStampReadResult> companionFileStampReader,
+        Func<string, FileStream>? openJournalStream = null
     )
     {
         ArgumentNullException.ThrowIfNull(journalDirectories);
@@ -83,6 +85,7 @@ public sealed partial class JournalDirectoryMonitor
 
         this.targetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId) ? null : targetFrontierId.Trim();
         this.companionFileStampReader = companionFileStampReader;
+        this.openJournalStream = openJournalStream ?? OpenJournalStream;
         journalIdentityCache = new Dictionary<string, JournalIdentityCacheEntry>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
@@ -92,6 +95,16 @@ public sealed partial class JournalDirectoryMonitor
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
     }
+
+    private static FileStream OpenJournalStream(string path) =>
+        new(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            16 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
 
     public event EventHandler<JournalEventEnvelope>? JournalEventReceived;
 
@@ -151,7 +164,8 @@ public sealed partial class JournalDirectoryMonitor
 
         var events = new List<JournalEventEnvelope>();
         var errors = new List<string>();
-        await ReadLatestJournalAsync(events, errors, cancellationToken).ConfigureAwait(false);
+        bool journalReadSucceeded = await ReadJournalBatchAsync(events, errors, cancellationToken)
+            .ConfigureAwait(false);
         CompanionPollResults companions = await PollAllCompanionsAsync(errors, cancellationToken).ConfigureAwait(false);
         bool sessionContextChanged = isAwaitingCommanderIdentity != lastReportedAwaitingCommanderIdentity;
         string? configuredSource = currentJournalPath is null
@@ -182,8 +196,28 @@ public sealed partial class JournalDirectoryMonitor
         };
         lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
         lastReportedConfiguredJournalDirectory = configuredSource;
-        hasCompletedFirstPoll = true;
+        hasCompletedFirstPoll |= journalReadSucceeded || events.Count > 0;
         return update;
+    }
+
+    private async Task<bool> ReadJournalBatchAsync(
+        List<JournalEventEnvelope> events,
+        List<string> errors,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            await ReadLatestJournalAsync(events, errors, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // Cursors and chat dedup state already describe any consumed prefix.
+            // Deliver that prefix even if the next part cannot currently be opened.
+            errors.Add(exception.Message);
+            return false;
+        }
     }
 
     private async Task ReadLatestJournalAsync(
@@ -372,14 +406,7 @@ public sealed partial class JournalDirectoryMonitor
         DateTime modified = journal.LastWriteTimeUtc;
         try
         {
-            await using var stream = new FileStream(
-                journal.FullName,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete,
-                16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan
-            );
+            await using FileStream stream = openJournalStream(journal.FullName);
             using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
@@ -469,14 +496,7 @@ public sealed partial class JournalDirectoryMonitor
             return;
         }
 
-        await using var stream = new FileStream(
-            currentJournalPath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete,
-            16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan
-        );
+        await using FileStream stream = openJournalStream(currentJournalPath);
         if (stream.Length < currentJournalOffset)
         {
             currentJournalOffset = 0;

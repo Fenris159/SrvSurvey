@@ -16,6 +16,9 @@ public sealed record JourneyDocument(
     IReadOnlyList<JourneySystemVisit> VisitedSystems
 )
 {
+    /// <summary>Exact source records represented at the watermark; absent in legacy documents.</summary>
+    public IReadOnlySet<string>? WatermarkRecords { get; init; }
+
     public bool IsArchived { get; init; }
 
     public bool IsActive => EndTime is null;

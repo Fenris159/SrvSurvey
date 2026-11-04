@@ -404,7 +404,8 @@ public sealed partial class JourneyService
 
     private JourneyDocument ReconcilePendingProgress(JourneyDocument stored)
     {
-        if (!HasPendingProgress(stored) || stored.Watermark > pendingLiveProgress!.Watermark)
+        JourneyDocument? pending = pendingLiveProgress;
+        if (pending is null || !HasPendingProgress(stored) || CoversPendingProgress(stored, pending))
         {
             return stored;
         }
@@ -413,7 +414,7 @@ public sealed partial class JourneyService
         var notes = stored
             .VisitedSystems.GroupBy(visit => (visit.StarSystem.SystemAddress, visit.Arrived))
             .ToDictionary(group => group.Key, group => group.Max(visit => visit.Counts.Notes));
-        JourneySystemVisit[] visits = pendingLiveProgress
+        JourneySystemVisit[] visits = pending
             .VisitedSystems.Select(visit =>
                 notes.TryGetValue((visit.StarSystem.SystemAddress, visit.Arrived), out int count)
                     ? visit with
@@ -423,8 +424,22 @@ public sealed partial class JourneyService
                     : visit
             )
             .ToArray();
-        return stored with { Watermark = pendingLiveProgress.Watermark, VisitedSystems = visits };
+        return stored with
+        {
+            Watermark = pending.Watermark,
+            WatermarkRecords = pending.WatermarkRecords,
+            VisitedSystems = visits,
+        };
     }
+
+    private static bool CoversPendingProgress(JourneyDocument stored, JourneyDocument pending) =>
+        stored.Watermark > pending.Watermark
+        || (
+            stored.Watermark == pending.Watermark
+            && stored.WatermarkRecords is { } savedRecords
+            && pending.WatermarkRecords is { } pendingRecords
+            && savedRecords.IsSupersetOf(pendingRecords)
+        );
 
     private async Task<JourneyDocument> UpdateStoredJourneyLockedAsync(
         JourneyDocument expected,
@@ -528,7 +543,12 @@ public sealed partial class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            JourneyDocument reset = journey with { Watermark = journey.StartTime, VisitedSystems = [] };
+            JourneyDocument reset = journey with
+            {
+                Watermark = journey.StartTime,
+                WatermarkRecords = null,
+                VisitedSystems = [],
+            };
             JourneyJournalReadResult read = await historyReader
                 .ReadFromAsync(reset.StartingJournal, reset.FrontierId, isOdyssey, reset.StartTime, cancellationToken)
                 .ConfigureAwait(false);
@@ -643,6 +663,7 @@ public sealed partial class JourneyService
                 journey with
                 {
                     Watermark = journey.StartTime,
+                    WatermarkRecords = null,
                     VisitedSystems = [],
                 },
                 exobiologyCatalog,

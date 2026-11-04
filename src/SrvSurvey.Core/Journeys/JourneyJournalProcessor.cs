@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -41,20 +43,51 @@ public sealed class JourneyJournalProcessor
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        if (journalEvent.Timestamp is not { } timestamp || timestamp < Journey.Watermark)
+        if (journalEvent.Timestamp is not { } timestamp)
         {
             return false;
         }
-
+        if (timestamp < Journey.Watermark)
+        {
+            PrimeEvent(journalEvent);
+            return false;
+        }
+        string? receipt = GetRecordReceipt(journalEvent);
+        if (
+            timestamp == Journey.Watermark
+            && receipt is not null
+            && Journey.WatermarkRecords?.Contains(receipt) == true
+        )
+        {
+            PrimeEvent(journalEvent);
+            return false;
+        }
+        HashSet<string>? records =
+            timestamp == Journey.Watermark && Journey.WatermarkRecords is { } prior
+                ? new(prior, StringComparer.Ordinal)
+                : null;
+        if (receipt is not null)
+        {
+            records ??= new(StringComparer.Ordinal);
+            records.Add(receipt);
+        }
         ApplyEvent(journalEvent);
-        Journey = Journey with { Watermark = timestamp };
+        Journey = Journey with { Watermark = timestamp, WatermarkRecords = records };
         return true;
     }
+
+    private static string? GetRecordReceipt(JournalEventEnvelope entry) =>
+        string.IsNullOrWhiteSpace(entry.SourceRecordIdentity)
+            ? null
+            : entry.SourceRecordIdentity
+                + ":"
+                + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
 
     public JourneyReplaySummary ApplyCatchUp(IEnumerable<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         DateTimeOffset startingWatermark = Journey.Watermark;
+        bool hasExactBoundary = Journey.WatermarkRecords is not null;
         int processed = 0;
         int ignored = 0;
 
@@ -66,7 +99,7 @@ public sealed class JourneyJournalProcessor
                 continue;
             }
 
-            if (timestamp <= startingWatermark)
+            if (timestamp < startingWatermark || (timestamp == startingWatermark && !hasExactBoundary))
             {
                 PrimeEvent(journalEvent);
                 ignored++;

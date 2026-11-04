@@ -20,6 +20,7 @@ public sealed partial class JourneyStore(
     private const string CodexNewPropertyName = "codexNew";
     private const int CurrentSchemaVersion = 1;
     private const string VisitedSystemsPropertyName = "visitedSystems";
+    private const string WatermarkRecordsPropertyName = "watermarkRecords";
 
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
@@ -335,9 +336,16 @@ public sealed partial class JourneyStore(
             visits
         )
         {
+            WatermarkRecords = ReadWatermarkRecords(root, GetDateTimeOffset(root, "watermark") ?? startTime),
             IsArchived = root["archived"] is JsonValue archived && archived.TryGetValue<bool>(out bool value) && value,
         };
     }
+
+    private static HashSet<string>? ReadWatermarkRecords(JsonObject root, DateTimeOffset watermark) =>
+        root[WatermarkRecordsPropertyName] is JsonObject boundary
+        && GetDateTimeOffset(boundary, "timestamp") == watermark
+            ? ReadStringSet(boundary, "records")
+            : null;
 
     private static JourneySystemVisit ParseVisit(string path, int index, JsonObject root)
     {
@@ -472,6 +480,18 @@ public sealed partial class JourneyStore(
         }
 
         root["watermark"] = journey.Watermark;
+        if (journey.WatermarkRecords is { } records)
+        {
+            root[WatermarkRecordsPropertyName] = new JsonObject
+            {
+                ["timestamp"] = journey.Watermark,
+                ["records"] = new JsonArray(records.Select(record => (JsonNode?)JsonValue.Create(record)).ToArray()),
+            };
+        }
+        else
+        {
+            root.Remove(WatermarkRecordsPropertyName);
+        }
         root[VisitedSystemsPropertyName] = MergeVisits(
             root[VisitedSystemsPropertyName] as JsonArray,
             journey.VisitedSystems

@@ -56,7 +56,10 @@ from RC77.
   Historical captures require covering journal history; a verified, currently
   bound live session can remain quiet without an arbitrary age cutoff. Selected
   commanders follow verified continuation parts on startup and during rotation,
-  preserving session context and unread activity. Quiet Steam captures also work
+  preserving session context and unread activity. If a later part becomes locked
+  or unavailable, already-consumed activity and commands are delivered once and
+  reading resumes after repair. Failed initial reads retain bootstrap safety.
+  Quiet Steam captures also work
   when Elite is on a nested Gamescope display with no switchable desktop window.
 - **Journey note recovery:** A saved note's pending visit count can finish even
   if another window edits the note before retry. The external text is retained;
@@ -64,7 +67,10 @@ from RC77.
   Journey edits read and write under one shared file lease so independent windows
   retain each other's changes. Failed live saves retain consumed Journey progress
   through later metadata and note edits, while preserving another window's saved
-  metadata and note counts. Readouts identify note-save counts explicitly.
+  metadata and note counts. Staggered readers reconcile exact records at the saved
+  watermark, avoiding double counts while retaining distinct same-second events.
+  History replay uses the same source positions as live tracking, including UTF-8
+  and mixed line endings. Readouts identify note-save counts explicitly.
 
 - **Guides:** Refresh in-app instructions and the shipped chat reference for
   Journeys, portable photo reports, Commander readouts, FC/SC Routes, Discord,

@@ -6,7 +6,7 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Journeys;
 
-public sealed class JourneyJournalHistoryReader
+public sealed partial class JourneyJournalHistoryReader
 {
     private static readonly StringComparer PathComparer = OperatingSystem.IsWindows()
         ? StringComparer.OrdinalIgnoreCase
@@ -440,10 +440,11 @@ public sealed class JourneyJournalHistoryReader
             16 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
 
         int lineNumber = 0;
-        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
+        await foreach (
+            (string line, long offset) in ReadSourceRecordsAsync(stream, cancellationToken).ConfigureAwait(false)
+        )
         {
             lineNumber++;
             if (string.IsNullOrWhiteSpace(line))
@@ -460,7 +461,13 @@ public sealed class JourneyJournalHistoryReader
                 continue;
             }
 
-            events.Add(journalEvent);
+            events.Add(
+                journalEvent with
+                {
+                    SourceRecordIdentity =
+                        file.Name + ":" + offset.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                }
+            );
         }
 
         return new JournalFileReadResult(file.Name, events, errors);
