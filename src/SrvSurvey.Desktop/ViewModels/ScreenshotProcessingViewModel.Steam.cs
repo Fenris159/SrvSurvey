@@ -109,21 +109,16 @@ public sealed partial class ScreenshotProcessingViewModel
                 cancellationToken
             );
             warnings.AddRange(batch.Warnings);
-            foreach (SteamScreenshotCapture capture in batch.Captures)
+            if (batch.Captures.Count > 0)
             {
                 ScreenshotProcessingResult converted = await processingService.ProcessLiveAsync(
-                    [capture.Entry],
+                    batch.Captures.Select(capture => capture.Entry).ToArray(),
                     capturedPreferences,
-                    capture.CommanderName,
+                    null,
                     cancellationToken: cancellationToken
                 );
                 conversions.AddRange(converted.Conversions);
                 warnings.AddRange(converted.Warnings);
-                if (converted.Conversions.Count > 0)
-                {
-                    // Bound completed-image work per poll so a historical library cannot hold up journal projection.
-                    break;
-                }
             }
         }
         catch (Exception exception)

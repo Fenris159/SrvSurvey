@@ -37,7 +37,7 @@ public sealed partial class SteamScreenshotSource(
                 ["Choose Elite's Steam 760/remote/359320/screenshots folder; other games are not imported."]
             );
         }
-        folder = ResolvePhysicalFolder(folder);
+        folder = Path.GetFullPath(folder);
         Dictionary<string, DateTimeOffset> captures = ReadCaptureTimes(folder, warnings);
         if (captures.Count == 0)
         {
@@ -70,6 +70,7 @@ public sealed partial class SteamScreenshotSource(
                 ["Filename"] = path,
                 ["System"] = location.SystemName,
                 ["SteamScreenshot"] = true,
+                ["Commander"] = location.CommanderName,
             };
             if (location.BodyName is not null)
             {
@@ -90,9 +91,14 @@ public sealed partial class SteamScreenshotSource(
         ReadIndexedCaptureTimes(folder, warnings, captures);
         foreach (string path in Directory.EnumerateFiles(folder).Where(IsJpeg))
         {
-            if (!captures.ContainsKey(path) && new FileInfo(path).LinkTarget is null && TryFilenameTime(path) is { } at)
+            string physical = ResolvePhysicalCapture(path);
+            if (
+                !captures.ContainsKey(physical)
+                && new FileInfo(path).LinkTarget is null
+                && TryFilenameTime(path) is { } at
+            )
             {
-                captures.TryAdd(path, at);
+                captures.TryAdd(physical, at);
             }
         }
         return captures;
@@ -157,7 +163,7 @@ public sealed partial class SteamScreenshotSource(
         }
         try
         {
-            captures.TryAdd(path, DateTimeOffset.FromUnixTimeSeconds(seconds));
+            captures.TryAdd(ResolvePhysicalCapture(path), DateTimeOffset.FromUnixTimeSeconds(seconds));
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -187,6 +193,9 @@ public sealed partial class SteamScreenshotSource(
             ? null
             : new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(local, zone));
     }
+
+    private static string ResolvePhysicalCapture(string path) =>
+        Path.Combine(ResolvePhysicalFolder(Path.GetDirectoryName(path)!), Path.GetFileName(path));
 
     private static string ResolvePhysicalFolder(string path)
     {

@@ -37,6 +37,21 @@ from RC77.
 
 ## What's changed
 
+- **Screenshot retry responsiveness:** Steam captures are admitted as one batch,
+  and live processing bounds failed attempts as well as completed conversions.
+  Later ready images can progress while another capture stays unreadable. An
+  inaccessible Steam completion archive no longer prevents pending BMP recovery.
+- **Steam capture ownership:** Consecutive journal parts retain Commander and
+  location context, with dependent history recalculated when an earlier file
+  changes. External Proton libraries are matched to their Steam client; ambiguous
+  installations and unusable account metadata require manual source selection.
+  Quoted braces in Steam metadata remain valid, and linked screenshot folders
+  keep their index timestamps. Docking after leaving a planet no longer restores
+  that departed body's name into a photo label.
+- **Journey note recovery:** A saved note's pending visit count can finish even
+  if another window edits the note before retry. The external text is retained;
+  additional unsaved edits still receive conflict protection and can be discarded.
+
 - **Guides:** Refresh in-app instructions and the shipped chat reference for
   Journeys, portable photo reports, Commander readouts, FC/SC Routes, Discord,
   Stealth Mode, Canonn radar, mining controls and Colonization project filters.

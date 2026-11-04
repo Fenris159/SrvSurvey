@@ -3,7 +3,7 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
-public sealed class SteamScreenshotSourceTests : IDisposable
+public sealed partial class SteamScreenshotSourceTests : IDisposable
 {
     private readonly string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-steam-shots-{Guid.NewGuid():N}");
 

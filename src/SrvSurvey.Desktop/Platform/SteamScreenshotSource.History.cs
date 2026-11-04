@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
@@ -6,6 +7,8 @@ namespace SrvSurvey.Desktop.Platform;
 
 public sealed partial class SteamScreenshotSource
 {
+    private const string FileheaderEvent = "Fileheader";
+
     private sealed record CaptureLocation(
         DateTimeOffset At,
         string? FrontierId,
@@ -14,9 +17,13 @@ public sealed partial class SteamScreenshotSource
         string? BodyName
     );
 
-    private sealed record CachedJournal(long Length, DateTime Modified, IReadOnlyList<CaptureLocation> Locations);
+    private sealed record JournalFile(string Path, long Length, DateTime Modified);
 
-    private readonly Dictionary<string, CachedJournal> journalCache = new(PathComparer);
+    private sealed record CachedSeries(JournalFile[] Files, IReadOnlyList<CaptureLocation> Locations);
+
+    private sealed record JournalPart(string Series, int Number);
+
+    private readonly Dictionary<string, CachedSeries> historyCache = new(PathComparer);
 
     private async Task<IReadOnlyList<CaptureLocation>> ReadLocationsAsync(
         string directory,
@@ -24,32 +31,124 @@ public sealed partial class SteamScreenshotSource
     )
     {
         var result = new List<CaptureLocation>();
-        string[] paths = Directory.GetFiles(directory, "Journal.*.log");
-        foreach (string obsolete in journalCache.Keys.Except(paths, PathComparer).ToArray())
+        IGrouping<string, string>[] groups = Directory
+            .GetFiles(directory, "Journal.*.log")
+            .Order(StringComparer.Ordinal)
+            .GroupBy(GetJournalSeries)
+            .ToArray();
+        foreach (string obsolete in historyCache.Keys.Except(groups.Select(group => group.Key), PathComparer).ToArray())
         {
-            journalCache.Remove(obsolete);
+            historyCache.Remove(obsolete);
         }
-        foreach (string path in paths.Order(StringComparer.Ordinal))
+        foreach (IGrouping<string, string> group in groups)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var info = new FileInfo(path);
-            if (
-                !journalCache.TryGetValue(path, out CachedJournal? cached)
-                || cached.Length != info.Length
-                || cached.Modified != info.LastWriteTimeUtc
-            )
+            JournalFile[] files = group
+                .Select(path =>
+                {
+                    var info = new FileInfo(path);
+                    return new JournalFile(info.FullName, info.Length, info.LastWriteTimeUtc);
+                })
+                .ToArray();
+            // A later part depends on earlier ownership. Cache the series together,
+            // without retaining raw journal payloads or replaying unchanged history.
+            if (!historyCache.TryGetValue(group.Key, out CachedSeries? cached) || !cached.Files.SequenceEqual(files))
             {
-                IReadOnlyList<CaptureLocation> locations = await ReadJournalLocationsAsync(path, cancellationToken)
+                IReadOnlyList<CaptureLocation> locations = await ReadSeriesLocationsAsync(group, cancellationToken)
                     .ConfigureAwait(false);
-                cached = new(info.Length, info.LastWriteTimeUtc, locations);
-                journalCache[path] = cached;
+                cached = new(files, locations);
+                historyCache[group.Key] = cached;
             }
             result.AddRange(cached.Locations);
         }
         return result.OrderBy(location => location.At).ToArray();
     }
 
-    private static async Task<IReadOnlyList<CaptureLocation>> ReadJournalLocationsAsync(
+    private static string GetJournalSeries(string path)
+    {
+        string[] parts = Path.GetFileName(path).Split('.');
+        return parts.Length == 4 ? parts[1] : path;
+    }
+
+    private static async Task<IReadOnlyList<CaptureLocation>> ReadSeriesLocationsAsync(
+        IEnumerable<string> paths,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = new List<CaptureLocation>();
+        var session = new JournalSessionState();
+        string? captureBody = null;
+        JournalPart? previousPart = null;
+        foreach (string path in paths)
+        {
+            IReadOnlyList<JournalEventEnvelope> entries = await ReadJournalEventsAsync(path, cancellationToken)
+                .ConfigureAwait(false);
+            JournalPart? part = ReadJournalPart(path, entries);
+            bool continuation =
+                part is not null
+                && previousPart is not null
+                && part.Series == previousPart.Series
+                && part.Number == previousPart.Number + 1;
+            if (!continuation)
+            {
+                session = new();
+                captureBody = null;
+            }
+            foreach (JournalEventEnvelope entry in entries)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                // A continuation header describes the same running game session.
+                // Re-applying it would put that session back into the main menu.
+                if (entry.EventName == FileheaderEvent && continuation)
+                {
+                    continue;
+                }
+                session.Apply(entry);
+                captureBody = ResolveCaptureBody(entry, session, captureBody);
+                result.Add(
+                    new(
+                        entry.Timestamp!.Value,
+                        session.FrontierId,
+                        session.CommanderName,
+                        session.IsShutdown || session.IsAtMainMenu ? null : session.SystemName,
+                        captureBody
+                    )
+                );
+            }
+            previousPart = part;
+        }
+        return result;
+    }
+
+    private static JournalPart? ReadJournalPart(string path, IReadOnlyList<JournalEventEnvelope> entries)
+    {
+        string[] parts = Path.GetFileName(path).Split('.');
+        if (
+            parts.Length != 4
+            || !int.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out int number)
+            || number < 1
+        )
+        {
+            return null;
+        }
+        JournalEventEnvelope? header = entries.FirstOrDefault(entry => entry.EventName == FileheaderEvent);
+        if (header is null)
+        {
+            return null;
+        }
+        if (
+            (
+                header.Payload.TryGetProperty("part", out JsonElement declared)
+                || header.Payload.TryGetProperty("Part", out declared)
+            ) && (declared.ValueKind != JsonValueKind.Number || !declared.TryGetInt32(out int part) || part != number)
+        )
+        {
+            return null;
+        }
+        return new(parts[1], number);
+    }
+
+    private static async Task<IReadOnlyList<JournalEventEnvelope>> ReadJournalEventsAsync(
         string path,
         CancellationToken cancellationToken
     )
@@ -63,26 +162,19 @@ public sealed partial class SteamScreenshotSource
             useAsync: true
         );
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        var session = new JournalSessionState();
-        string? captureBody = null;
-        var result = new List<CaptureLocation>();
+        var result = new List<JournalEventEnvelope>();
         while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             if (
-                !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? entry, out _)
-                || entry?.Timestamp is not { } at
+                !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? entry, out _) || entry?.Timestamp is null
             )
             {
                 continue;
             }
-            if (entry.EventName == "Fileheader")
-            {
-                session = new();
-            }
             if (
                 entry.EventName
                 is not (
-                    "Fileheader"
+                    FileheaderEvent
                     or "Commander"
                     or "LoadGame"
                     or "Location"
@@ -104,17 +196,7 @@ public sealed partial class SteamScreenshotSource
             {
                 continue;
             }
-            session.Apply(entry);
-            captureBody = ResolveCaptureBody(entry, session, captureBody);
-            result.Add(
-                new(
-                    at,
-                    session.FrontierId,
-                    session.CommanderName,
-                    session.IsShutdown || session.IsAtMainMenu ? null : session.SystemName,
-                    captureBody
-                )
-            );
+            result.Add(entry);
         }
         return result;
     }
@@ -129,7 +211,7 @@ public sealed partial class SteamScreenshotSource
         // also includes stations, stars, and other explicitly named locations.
         return entry.EventName switch
         {
-            "Fileheader"
+            FileheaderEvent
             or "Commander"
             or "LoadGame"
             or "StartJump"
@@ -140,7 +222,7 @@ public sealed partial class SteamScreenshotSource
             "Location" or "FSDJump" or "CarrierJump" or "SupercruiseExit" => CaptureText(entry, "Body")
                 ?? CaptureText(entry, "BodyName"),
             "ApproachBody" => CaptureText(entry, "Body") ?? previous,
-            "Docked" => CaptureText(entry, "Body") ?? session.BodyName ?? CaptureText(entry, "StationName") ?? previous,
+            "Docked" => CaptureText(entry, "Body") ?? previous ?? CaptureText(entry, "StationName"),
             "Screenshot"
                 when string.Equals(
                     CaptureText(entry, "System"),

@@ -13811,6 +13811,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DockToDockViewModel.cs"
   },
   {
+    "Text": "Completed screenshot history could not be recovered: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
     "Text": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
     "IsFormat": false,
     "SourceKinds": [
@@ -42297,6 +42305,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "Part",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
+  },
+  {
     "Text": "Passive notification overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -62525,6 +62541,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamKeyValues.cs"
   },
   {
+    "Text": "The Steam library ownership index is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
     "Text": "The Steam screenshot folder must be an absolute path.",
     "IsFormat": false,
     "SourceKinds": [
@@ -76745,6 +76769,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
+    "Text": "libraryfolders",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
+    "Text": "libraryfolders.vdf",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
     "Text": "lifesupport",
     "IsFormat": false,
     "SourceKinds": [
@@ -77825,12 +77865,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "part",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
+  },
+  {
     "Text": "passive",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "path",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
   },
   {
     "Text": "path:{0}",

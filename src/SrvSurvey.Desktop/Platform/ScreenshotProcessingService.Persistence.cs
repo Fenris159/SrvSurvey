@@ -31,14 +31,8 @@ public sealed partial class ScreenshotProcessingService
         try
         {
             string completedDirectory = Path.Combine(pendingQueueDirectory, "steam-completed");
-            if (Directory.Exists(completedDirectory))
-            {
-                foreach (string path in Directory.EnumerateFiles(completedDirectory, "*.json"))
-                {
-                    RecoverCapture(path, isCompleted: true);
-                }
-            }
-            foreach (string path in Directory.EnumerateFiles(pendingQueueDirectory, "*.json"))
+            RecoverCompletionArchive(completedDirectory);
+            foreach (string path in enumerateRecoveryFiles(pendingQueueDirectory))
             {
                 RecoverCapture(path);
             }
@@ -49,6 +43,24 @@ public sealed partial class ScreenshotProcessingService
         }
         pendingCount = pending.Count;
         recoveryWarningCount = recoveryWarnings.Count;
+    }
+
+    private void RecoverCompletionArchive(string directory)
+    {
+        try
+        {
+            if (Directory.Exists(directory))
+            {
+                foreach (string path in enumerateRecoveryFiles(directory))
+                {
+                    RecoverCapture(path, isCompleted: true);
+                }
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            recoveryWarnings.Add("Completed screenshot history could not be recovered: " + exception.Message);
+        }
     }
 
     private void RecoverCapture(string path, bool isCompleted = false)

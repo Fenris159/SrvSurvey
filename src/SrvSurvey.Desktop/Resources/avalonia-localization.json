@@ -6885,6 +6885,10 @@
       "translation": "Abgeschlossene Live-Fahrten werden sicher an {0} angehängt."
     },
     {
+      "source": "Completed screenshot history could not be recovered: {0}",
+      "translation": "Der abgeschlossene Screenshot-Verlauf konnte nicht wiederhergestellt werden: {0}"
+    },
+    {
       "source": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
       "translation": "Abgeschlossene Recherchen im Bereich Tagebau und Powerplay behalten das Referenzsystem und die Ergebnisse bei, die für diese Suche verwendet wurden."
     },
@@ -21077,6 +21081,10 @@
       "translation": "Eltern"
     },
     {
+      "source": "Part",
+      "translation": "Teil"
+    },
+    {
       "source": "Passive notification overlay",
       "translation": "Passives Benachrichtigungs-Overlay"
     },
@@ -31161,6 +31169,10 @@
       "translation": "Der Steam-Index ist zu groß."
     },
     {
+      "source": "The Steam library ownership index is invalid.",
+      "translation": "Der Eigentumsindex der Steam-Bibliothek ist ungültig."
+    },
+    {
       "source": "The Steam screenshot folder must be an absolute path.",
       "translation": "Der Steam-Screenshot-Ordner muss ein absoluter Pfad sein."
     },
@@ -38265,6 +38277,14 @@
       "translation": "Legacy-Laufzeitoberfläche"
     },
     {
+      "source": "libraryfolders",
+      "translation": "Bibliotheksordner"
+    },
+    {
+      "source": "libraryfolders.vdf",
+      "translation": "Bibliotheksordner.vdf"
+    },
+    {
       "source": "lifesupport",
       "translation": "Lebenserhaltung"
     },
@@ -38805,8 +38825,16 @@
       "translation": "panthermkii"
     },
     {
+      "source": "part",
+      "translation": "Teil"
+    },
+    {
       "source": "passive",
       "translation": "passiv"
+    },
+    {
+      "source": "path",
+      "translation": "Weg"
     },
     {
       "source": "path:{0}",
@@ -48265,6 +48293,10 @@
     {
       "source": "Completed live trips will be appended safely to {0}.",
       "translation": "Los viajes en vivo completados se agregarán de forma segura a {0}."
+    },
+    {
+      "source": "Completed screenshot history could not be recovered: {0}",
+      "translation": "No se pudo recuperar el historial de capturas de pantalla completo: {0}"
     },
     {
       "source": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
@@ -62459,6 +62491,10 @@
       "translation": "padres"
     },
     {
+      "source": "Part",
+      "translation": "parte"
+    },
+    {
       "source": "Passive notification overlay",
       "translation": "Superposición de notificaciones pasivas"
     },
@@ -72543,6 +72579,10 @@
       "translation": "El índice de Steam es demasiado grande."
     },
     {
+      "source": "The Steam library ownership index is invalid.",
+      "translation": "El índice de propiedad de la biblioteca Steam no es válido."
+    },
+    {
       "source": "The Steam screenshot folder must be an absolute path.",
       "translation": "La carpeta de captura de pantalla de Steam debe ser una ruta absoluta."
     },
@@ -79647,6 +79687,14 @@
       "translation": "superficie-en tiempo de ejecución heredada"
     },
     {
+      "source": "libraryfolders",
+      "translation": "carpetas de la biblioteca"
+    },
+    {
+      "source": "libraryfolders.vdf",
+      "translation": "carpetasdebiblioteca.vdf"
+    },
+    {
       "source": "lifesupport",
       "translation": "soporte vital"
     },
@@ -80187,8 +80235,16 @@
       "translation": "panthermkii"
     },
     {
+      "source": "part",
+      "translation": "parte"
+    },
+    {
       "source": "passive",
       "translation": "pasivo"
+    },
+    {
+      "source": "path",
+      "translation": "camino"
     },
     {
       "source": "path:{0}",
@@ -89647,6 +89703,10 @@
     {
       "source": "Completed live trips will be appended safely to {0}.",
       "translation": "Les trajets en direct terminés seront ajoutés en toute sécurité à {0}."
+    },
+    {
+      "source": "Completed screenshot history could not be recovered: {0}",
+      "translation": "L'historique des captures d'écran terminé n'a pas pu être récupéré : {0}"
     },
     {
       "source": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
@@ -103841,6 +103901,10 @@
       "translation": "Parents"
     },
     {
+      "source": "Part",
+      "translation": "partie"
+    },
+    {
       "source": "Passive notification overlay",
       "translation": "Superposition de notifications passives"
     },
@@ -113925,6 +113989,10 @@
       "translation": "L'index Steam est trop grand."
     },
     {
+      "source": "The Steam library ownership index is invalid.",
+      "translation": "L'index de propriété de la bibliothèque Steam n'est pas valide."
+    },
+    {
       "source": "The Steam screenshot folder must be an absolute path.",
       "translation": "Le dossier de capture d'écran Steam doit être un chemin absolu."
     },
@@ -121029,6 +121097,14 @@
       "translation": "surface d'exécution héritée"
     },
     {
+      "source": "libraryfolders",
+      "translation": "dossiers de bibliothèque"
+    },
+    {
+      "source": "libraryfolders.vdf",
+      "translation": "dossiers de bibliothèque.vdf"
+    },
+    {
       "source": "lifesupport",
       "translation": "survie"
     },
@@ -121569,8 +121645,16 @@
       "translation": "panthermkii"
     },
     {
+      "source": "part",
+      "translation": "partie"
+    },
+    {
       "source": "passive",
       "translation": "passif"
+    },
+    {
+      "source": "path",
+      "translation": "chemin"
     },
     {
       "source": "path:{0}",
@@ -131029,6 +131113,10 @@
     {
       "source": "Completed live trips will be appended safely to {0}.",
       "translation": "As viagens ao vivo concluídas serão anexadas com segurança a {0}."
+    },
+    {
+      "source": "Completed screenshot history could not be recovered: {0}",
+      "translation": "O histórico de capturas de tela concluído não pôde ser recuperado: {0}"
     },
     {
       "source": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
@@ -145223,6 +145311,10 @@
       "translation": "Pais"
     },
     {
+      "source": "Part",
+      "translation": "papel"
+    },
+    {
       "source": "Passive notification overlay",
       "translation": "Sobreposição de notificação passiva"
     },
@@ -155307,6 +155399,10 @@
       "translation": "O índice do Steam é muito grande."
     },
     {
+      "source": "The Steam library ownership index is invalid.",
+      "translation": "O índice de propriedade da biblioteca Steam é inválido."
+    },
+    {
       "source": "The Steam screenshot folder must be an absolute path.",
       "translation": "A pasta de captura de tela do Steam deve ser um caminho absoluto."
     },
@@ -162411,6 +162507,14 @@
       "translation": "superfície de tempo de execução herdada"
     },
     {
+      "source": "libraryfolders",
+      "translation": "pastas da biblioteca"
+    },
+    {
+      "source": "libraryfolders.vdf",
+      "translation": "bibliotecafolders.vdf"
+    },
+    {
       "source": "lifesupport",
       "translation": "suporte de vida"
     },
@@ -162951,8 +163055,16 @@
       "translation": "panterakii"
     },
     {
+      "source": "part",
+      "translation": "papel"
+    },
+    {
       "source": "passive",
       "translation": "passiva"
+    },
+    {
+      "source": "path",
+      "translation": "caminho"
     },
     {
       "source": "path:{0}",
@@ -172411,6 +172523,10 @@
     {
       "source": "Completed live trips will be appended safely to {0}.",
       "translation": "Завершенные онлайн-поездки будут безопасно добавлены в {0}."
+    },
+    {
+      "source": "Completed screenshot history could not be recovered: {0}",
+      "translation": "Не удалось восстановить полную историю снимков экрана: {0}."
     },
     {
       "source": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
@@ -186605,6 +186721,10 @@
       "translation": "Родители"
     },
     {
+      "source": "Part",
+      "translation": "часть"
+    },
+    {
       "source": "Passive notification overlay",
       "translation": "Пассивное наложение уведомлений"
     },
@@ -196689,6 +196809,10 @@
       "translation": "Индекс Steam слишком велик."
     },
     {
+      "source": "The Steam library ownership index is invalid.",
+      "translation": "Индекс владения библиотекой Steam недействителен."
+    },
+    {
       "source": "The Steam screenshot folder must be an absolute path.",
       "translation": "Папка скриншотов Steam должна иметь абсолютный путь."
     },
@@ -203793,6 +203917,14 @@
       "translation": "устаревшая поверхность времени выполнения"
     },
     {
+      "source": "libraryfolders",
+      "translation": "библиотекипапки"
+    },
+    {
+      "source": "libraryfolders.vdf",
+      "translation": "библиотекапапки.vdf"
+    },
+    {
       "source": "lifesupport",
       "translation": "жизнеобеспечение"
     },
@@ -204333,8 +204465,16 @@
       "translation": "пантермкии"
     },
     {
+      "source": "part",
+      "translation": "часть"
+    },
+    {
       "source": "passive",
       "translation": "пассивный"
+    },
+    {
+      "source": "path",
+      "translation": "путь"
     },
     {
       "source": "path:{0}",
@@ -213793,6 +213933,10 @@
     {
       "source": "Completed live trips will be appended safely to {0}.",
       "translation": "已完成的实时行程将安全地附加到 {0}。"
+    },
+    {
+      "source": "Completed screenshot history could not be recovered: {0}",
+      "translation": "无法恢复完整的屏幕截图历史记录：{0}"
     },
     {
       "source": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
@@ -227987,6 +228131,10 @@
       "translation": "家长"
     },
     {
+      "source": "Part",
+      "translation": "部分"
+    },
+    {
       "source": "Passive notification overlay",
       "translation": "被动通知覆盖"
     },
@@ -238071,6 +238219,10 @@
       "translation": "Steam 索引太大。"
     },
     {
+      "source": "The Steam library ownership index is invalid.",
+      "translation": "Steam 库所有权索引无效。"
+    },
+    {
       "source": "The Steam screenshot folder must be an absolute path.",
       "translation": "Steam截图文件夹必须是绝对路径。"
     },
@@ -245175,6 +245327,14 @@
       "translation": "遗留运行时表面"
     },
     {
+      "source": "libraryfolders",
+      "translation": "库文件夹"
+    },
+    {
+      "source": "libraryfolders.vdf",
+      "translation": "库文件夹.vdf"
+    },
+    {
       "source": "lifesupport",
       "translation": "生命支持"
     },
@@ -245715,8 +245875,16 @@
       "translation": "黑豹"
     },
     {
+      "source": "part",
+      "translation": "部分"
+    },
+    {
       "source": "passive",
       "translation": "被动的"
+    },
+    {
+      "source": "path",
+      "translation": "小路"
     },
     {
       "source": "path:{0}",
@@ -255175,6 +255343,10 @@
     {
       "source": "Completed live trips will be appended safely to {0}.",
       "translation": "* COMPLETED LIVE TRIPS WILL BE APPENDED SAFELY TO {0}. >>>!"
+    },
+    {
+      "source": "Completed screenshot history could not be recovered: {0}",
+      "translation": "* COMPLETED SCREENSHOT HISTORY COULD NOT BE RECOVERED: {0} >>>!"
     },
     {
       "source": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
@@ -269369,6 +269541,10 @@
       "translation": "* PARENTS >>>!"
     },
     {
+      "source": "Part",
+      "translation": "* PART >>>!"
+    },
+    {
       "source": "Passive notification overlay",
       "translation": "* PASSIVE NOTIFICATION OVERLAY >>>!"
     },
@@ -279453,6 +279629,10 @@
       "translation": "* THE STEAM INDEX IS TOO LARGE. >>>!"
     },
     {
+      "source": "The Steam library ownership index is invalid.",
+      "translation": "* THE STEAM LIBRARY OWNERSHIP INDEX IS INVALID. >>>!"
+    },
+    {
       "source": "The Steam screenshot folder must be an absolute path.",
       "translation": "* THE STEAM SCREENSHOT FOLDER MUST BE AN ABSOLUTE PATH. >>>!"
     },
@@ -286557,6 +286737,14 @@
       "translation": "* LEGACY-RUNTIME-SURFACE >>>!"
     },
     {
+      "source": "libraryfolders",
+      "translation": "* LIBRARYFOLDERS >>>!"
+    },
+    {
+      "source": "libraryfolders.vdf",
+      "translation": "* LIBRARYFOLDERS.VDF >>>!"
+    },
+    {
       "source": "lifesupport",
       "translation": "* LIFESUPPORT >>>!"
     },
@@ -287097,8 +287285,16 @@
       "translation": "* PANTHERMKII >>>!"
     },
     {
+      "source": "part",
+      "translation": "* PART >>>!"
+    },
+    {
       "source": "passive",
       "translation": "* PASSIVE >>>!"
+    },
+    {
+      "source": "path",
+      "translation": "* PATH >>>!"
     },
     {
       "source": "path:{0}",

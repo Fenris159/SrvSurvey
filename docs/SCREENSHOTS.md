@@ -28,14 +28,20 @@ Enable **Process Steam screenshots** as well as the main processing option to
 include Elite's Steam JPEG captures, normally taken with F12. Automatic detection
 supports Windows Steam, native Linux Steam and Flatpak Steam installations and
 uses Elite's app ID, 359320. A manual Steam source folder is also available.
-Steam accounts remain separate; check the detected folder when changing account
+External Proton libraries are matched through Steam’s library ownership records.
+Ambiguous clients or unusable login metadata leave automatic detection unset; use
+the manual source picker to resolve them. Steam accounts remain separate; check
+the detected folder when changing account
 or using a nonstandard installation.
 
 Steam captures have no Elite `Screenshot` event. SrvSurvey matches their capture
 time to the relevant Commander's journal history, using system, station and body
 context known at that time. It does not borrow a later body's name or carry a
 body into a different system. Unmatched captures remain untouched until they can
-be attributed. Journals covering the capture are needed for this matching.
+be attributed. Journals covering the capture are needed for this matching. Consecutive parts of
+the same journal retain session context; unrelated or missing parts cannot borrow
+another session’s ownership. Linked screenshot storage retains access to Steam’s
+index timestamps.
 
 ## Output and optional processing
 

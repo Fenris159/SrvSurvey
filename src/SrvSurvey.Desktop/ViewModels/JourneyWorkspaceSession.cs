@@ -884,6 +884,17 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         {
             return saved;
         }
+        if (systemNotes.CountUpdate is { IsPending: true } pending)
+        {
+            await pending.CompleteAsync(journeyService);
+            systemNotes = systemNotes with { CountUpdate = null };
+            RaiseDirtyState();
+            RaiseCommands();
+            if (!systemNotes.IsDirty)
+            {
+                return await journeyService.LoadLatestAsync(saved);
+            }
+        }
         SystemNoteLoadResult baseline = await noteStore.LoadAsync(
             saved.FrontierId,
             selected.Visit.StarSystem.Name,
@@ -898,10 +909,6 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
             throw new InvalidOperationException(
                 "The stored system notes changed. Reload them before saving your edits."
             );
-        }
-        if (systemNotes.CountUpdate is { IsPending: true } pending)
-        {
-            await pending.CompleteAsync(journeyService);
         }
         if (!string.Equals(systemNotes.Loaded, systemNotes.Text, StringComparison.Ordinal))
         {

@@ -35,17 +35,19 @@ internal sealed class SteamKeyValues
             var result = new SteamKeyValues();
             while (NextToken() is { } key)
             {
-                if (key == "}" && depth > 0)
+                if (key is { Structural: true, Text: "}" } && depth > 0)
                 {
                     return result;
                 }
-                string value = NextToken() ?? throw new InvalidDataException("The Steam index is incomplete.");
-                if (key is "{" or "}" || value == "}")
+                Token value = NextToken() ?? throw new InvalidDataException("The Steam index is incomplete.");
+                if (key.Structural || value is { Structural: true, Text: "}" })
                 {
                     throw new InvalidDataException("The Steam index contains an unexpected brace.");
                 }
-                SteamKeyValues child = value == "{" ? ReadObject(depth + 1) : new() { Value = value };
-                if (!result.Children.TryAdd(key, child))
+                SteamKeyValues child = value is { Structural: true, Text: "{" }
+                    ? ReadObject(depth + 1)
+                    : new() { Value = value.Text };
+                if (!result.Children.TryAdd(key.Text, child))
                 {
                     throw new InvalidDataException("The Steam index contains a duplicate key.");
                 }
@@ -53,7 +55,9 @@ internal sealed class SteamKeyValues
             return depth == 0 ? result : throw new InvalidDataException("The Steam index is incomplete.");
         }
 
-        private string? NextToken()
+        private readonly record struct Token(string Text, bool Structural = false);
+
+        private Token? NextToken()
         {
             SkipTrivia();
             if (position == text.Length)
@@ -63,9 +67,9 @@ internal sealed class SteamKeyValues
             char first = text[position++];
             if (first is '{' or '}')
             {
-                return first.ToString();
+                return new(first.ToString(), Structural: true);
             }
-            return first == '"' ? ReadQuotedToken() : ReadUnquotedToken();
+            return new(first == '"' ? ReadQuotedToken() : ReadUnquotedToken());
         }
 
         private void SkipTrivia()

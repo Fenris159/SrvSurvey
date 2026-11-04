@@ -24,7 +24,7 @@ engineering records; their original conclusions are not current how-to promises.
 | Privacy | Stealth Mode and EDAstro were missing; VoxStellar guide unnecessarily required a separate EDDN tool | Provider publishers, privacy settings and stealth-mode.md |
 | Missions | Massacre tracker scope could be mistaken for all station missions | CombatState mission acceptance |
 | Chat commands | Missing waypoint navigation and explicit survey completion | MineMapService command handling |
-| Linux | KWin OSD claim, same-display requirement and environment-only Gamescope host selection were dated | Native overlay host policy and Overlay_Troubleshooting.md |
+| Linux | Corrected KWin OSD and same-display claims; distinguish verified Gamescope hosting from its environment-selected fallback | Native overlay host policy and Overlay_Troubleshooting.md |
 | Developer/platform docs | Full warning gate was described as changed-line-only; stream category and SteamOS PR reference were stale | Quality gate, current settings and host code |
 | Version examples | Installation/development examples and release notes needed RC77.5 | Desktop project and release workflow |
 

@@ -178,13 +178,15 @@ printf 'session=%s\nDISPLAY=%s\nWAYLAND_DISPLAY=%s\n' \
 
 ### Overlay window strategy
 
-SrvSurvey keeps its established separate-window overlay implementation on
-ordinary X11 and XWayland desktops, including when only Elite runs inside a
-nested Gamescope window. In a verified Gamescope compositor session, live overlay
-controls are instead placed in one transparent window matching the Elite client
-area. Gamescope environment variables alone do not select this strategy. This
-avoids asking Gamescope to stack many independent overlay windows while preserving the existing behavior on
-KWin, Mutter, Xfwm, Muffin, and Windows.
+SrvSurvey normally uses separate overlay windows on X11 and XWayland desktops.
+A verified Gamescope external-overlay session requires one combined canvas.
+There is also an environment-based fallback on X11/XWayland: a nonempty
+`GAMESCOPE_WAYLAND_DISPLAY` or `GAMESCOPE_DISPLAY`, or a Gamescope-valued
+`XDG_CURRENT_DESKTOP`, selects the combined host unless an explicit separate-window
+override applies. Inherited variables can therefore affect desktop launches even
+when only Elite is inside nested Gamescope. Check the logged selection when
+troubleshooting. Ordinary KWin, Mutter, Xfwm, Muffin and Windows sessions retain
+separate overlays by default.
 
 The selected strategy is recorded in the application log as `Overlay
 presentation`. These diagnostic overrides take effect after restarting

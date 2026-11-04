@@ -43,6 +43,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
 {
     private const string UnknownLabel = "unknown";
     private const int FileReadinessAttempts = 150;
+    private const int LiveConversionAttemptLimit = 2;
     private static readonly TimeSpan FileReadinessPollInterval = TimeSpan.FromMilliseconds(200);
 
     private readonly Dictionary<string, PendingScreenshot> pending = new(StringComparer.Ordinal);
@@ -51,6 +52,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
     );
     private int pendingCount;
+    private string? lastAttempt;
 
     public int PendingCount => Volatile.Read(ref pendingCount);
     public bool HasPendingWork => PendingCount > 0 || Volatile.Read(ref recoveryWarningCount) > 0;
@@ -59,17 +61,20 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     private readonly Func<string, string, bool> tryPublishImage;
     private readonly Func<int?> gameClientWidthProvider;
     private readonly Func<TimeSpan, CancellationToken, Task> retryDelay;
+    private readonly Func<string, IEnumerable<string>> enumerateRecoveryFiles;
 
     public ScreenshotProcessingService(
         Func<int?>? gameClientWidthProvider = null,
         Func<TimeSpan, CancellationToken, Task>? retryDelay = null,
         string? pendingQueueDirectory = null,
-        Func<string, string, bool>? tryPublishImage = null
+        Func<string, string, bool>? tryPublishImage = null,
+        Func<string, IEnumerable<string>>? enumerateRecoveryFiles = null
     )
     {
         this.tryPublishImage = tryPublishImage ?? TryMoveImage;
         this.gameClientWidthProvider = gameClientWidthProvider ?? GetGameClientWidth;
         this.retryDelay = retryDelay ?? Task.Delay;
+        this.enumerateRecoveryFiles = enumerateRecoveryFiles ?? (folder => Directory.EnumerateFiles(folder, "*.json"));
         this.pendingQueueDirectory = pendingQueueDirectory is null ? null : Path.GetFullPath(pendingQueueDirectory);
         RecoverPendingCaptures();
     }
@@ -192,7 +197,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
                         new ScreenshotConversionRequest(
                             entry.Timestamp is null ? entry with { Timestamp = DateTimeOffset.UtcNow } : entry,
                             preferences,
-                            commanderName,
+                            GetCaptureCommanderName(entry, commanderName),
                             guardianContexts?.GetValueOrDefault(entry),
                             navigationContext,
                             gameClientWidthProvider(),
@@ -210,6 +215,9 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
             }
         }
     }
+
+    private static string? GetCaptureCommanderName(JournalEventEnvelope entry, string? fallback) =>
+        IsSteamCapture(entry) ? GetString(entry, "Commander") ?? fallback : fallback;
 
     private static bool IsSteamCapture(JournalEventEnvelope entry) =>
         entry.Payload.TryGetProperty("SteamScreenshot", out JsonElement steam) && steam.ValueKind == JsonValueKind.True;
@@ -239,9 +247,10 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     )
     {
         var conversions = new List<ScreenshotConversion>();
-        foreach ((string key, PendingScreenshot capture) in pending.ToArray())
+        foreach ((string key, PendingScreenshot capture) in GetPendingWork(live))
         {
             cancellationToken.ThrowIfCancellationRequested();
+            lastAttempt = key;
             try
             {
                 (ScreenshotConversion? conversion, bool complete) = await TryConvertAsync(
@@ -288,6 +297,18 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
             }
         }
         return new ScreenshotProcessingResult(conversions, warnings) { PendingCount = pending.Count };
+    }
+
+    private IEnumerable<KeyValuePair<string, PendingScreenshot>> GetPendingWork(bool live)
+    {
+        KeyValuePair<string, PendingScreenshot>[] work = pending.ToArray();
+        if (!live)
+        {
+            return work;
+        }
+        // Resume after the last attempt so unreadable captures cannot starve ready images.
+        int start = Array.FindIndex(work, item => item.Key == lastAttempt) + 1;
+        return work.Skip(start).Concat(work.Take(start)).Take(LiveConversionAttemptLimit);
     }
 
     private async Task<(ScreenshotConversion? Conversion, bool Complete)> TryConvertAsync(

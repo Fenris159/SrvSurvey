@@ -4,7 +4,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class SteamScreenshotSettingsTests : IDisposable
+public sealed partial class SteamScreenshotSettingsTests : IDisposable
 {
     private readonly string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-steam-options-{Guid.NewGuid():N}");
 
