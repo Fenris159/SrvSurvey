@@ -48,8 +48,8 @@ from RC77.
   sample data even when gameplay would hide a panel. Place in front of me moves
   the selected panel to eye level, one metre along the current headset heading.
   Samples and held input are cleared when calibration closes or the route changes.
-  Busy scenes reserve space for the calibration controls and selected sample
-  within the runtime's panel limit.
+  Calibration reserves transport slots for its controls and selected sample;
+  OpenXR's separate composition-layer budget can still omit published panels.
 - **VDXR placement:** Seated defaults follow the live-testing feedback. VDXR saves
   placements separately from SteamVR, retains existing custom calibration as a
   starting point, and supports route-specific resets and vehicle-mode overrides.

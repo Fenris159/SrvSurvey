@@ -37,8 +37,13 @@ into additional rows on narrow windows and keep readable numeric boxes.
 Selecting another target or mode discards unsaved changes to the previous
 selection. Save each placement before moving on. The sample identifies the
 selected panel; the calibration control panel is a separate surface below it.
-If the runtime reaches its panel limit, the controls and selected sample take
-priority. Temporarily omitted live panels return when calibration closes.
+At the transport's panel limit, SrvSurvey reserves publication slots for the
+controls and selected sample so calibration does not overflow the frame packet.
+On VDXR, OpenXR's native composition-layer budget is a separate limit shared
+with Elite, the controller cursor and other OpenXR layers. It can still omit
+published panels, including the selected sample. If a sample is missing in a
+busy scene, temporarily hide other panels or layers and retry. Closing
+calibration returns the available transport slots to live panels.
 
 **Reset VR orientation** recenters the whole arrangement using the selected
 backend's existing origin behavior. Use **Place in front of me** to recover a
