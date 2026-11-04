@@ -13,12 +13,22 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed partial class JourneyWorkspaceViewModelTests
 {
-    [Fact]
-    public async Task MissingOriginalSystemRetainsItsNoteDraftAcrossCommanderChanges()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MissingOriginalSystemRetainsItsNoteDraftAcrossCommanderChanges(bool initialReadFails)
     {
         JourneyDocument original = await SeedHistoricalJourneyAsync(1);
-        JourneyWorkspaceViewModel model = CreateViewModel();
+        var notes = new SystemNoteStore(DataDirectory);
+        if (initialReadFails)
+        {
+            await notes.SaveAsync(new("F123", "Drew", "Sol", 42, new(0, 0, 0)), "Stored baseline");
+        }
+        JourneyWorkspaceViewModel model = CreateViewModel(
+            noteStore: initialReadFails ? new FirstNoteReadFailure(notes) : notes
+        );
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        Assert.Empty(model.SelectedSystemNotes);
         model.SelectedSystemNotes = "Sol only";
         await model.UpdateContextAsync("F456", "Other", true, "Sirius", 44);
         var store = new JourneyStore(DataDirectory);
@@ -40,11 +50,41 @@ public sealed partial class JourneyWorkspaceViewModelTests
         await model.UpdateContextAsync("F456", "Other", true, "Sirius", 44);
         await store.SaveAsync(original);
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
+        string expected = initialReadFails ? "Stored baseline" + Environment.NewLine + "Sol only" : "Sol only";
         Assert.Equal("Sol", model.SelectedSystemName);
-        Assert.Equal("Sol only", model.SelectedSystemNotes);
+        Assert.Equal(expected, model.SelectedSystemNotes);
         await model.SaveAsync();
-        Assert.False(model.IsDirty);
-        Assert.Equal("Sol only", (await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sol", 42)).Notes);
+        Assert.False(model.IsDirty, model.StatusMessage);
+        Assert.Equal(expected, (await notes.LoadAsync("F123", "Sol", 42)).Notes);
+        Assert.Equal(2, model.SelectedSystem!.Visit.Counts.Notes);
+    }
+
+    private sealed class FirstNoteReadFailure(ISystemNoteStore store) : ISystemNoteStore
+    {
+        private int failNextRead = 1;
+
+        public async Task<SystemNoteLoadResult> LoadAsync(
+            string frontierId,
+            string systemName,
+            long systemAddress,
+            CancellationToken cancellationToken = default
+        )
+        {
+            bool fail = Interlocked.Exchange(ref failNextRead, 0) == 1;
+            SystemNoteLoadResult result = await store.LoadAsync(
+                frontierId,
+                systemName,
+                systemAddress,
+                cancellationToken
+            );
+            return fail ? result with { Notes = null, Error = "Injected note read failure." } : result;
+        }
+
+        public Task<string> SaveAsync(
+            SystemNoteContext context,
+            string? notes,
+            CancellationToken cancellationToken = default
+        ) => store.SaveAsync(context, notes, cancellationToken);
     }
 
     [AvaloniaFact]

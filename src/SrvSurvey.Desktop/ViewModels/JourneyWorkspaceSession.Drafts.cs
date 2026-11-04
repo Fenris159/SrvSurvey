@@ -73,25 +73,32 @@ internal sealed partial class JourneyWorkspaceSession
 
     private void RestoreSystemNoteDraft(JourneyEditDraft draft)
     {
-        if (draft.Notes is null || (systemNotes.BaselineKnown && WasDraftSaved(draft)))
+        bool loadedContextMatches = HasLoadedDraftContext(draft);
+        if (draft.Notes is null || (loadedContextMatches && WasDraftSaved(draft)))
         {
             return;
         }
+        string loaded = loadedContextMatches ? systemNotes.Loaded : string.Empty;
         string? written = draft.NoteWrite is { WrittenCount: not null } receipt ? receipt.Text : null;
         systemNotes = new SystemNoteDraft(
-            written ?? draft.NotesBaseline ?? systemNotes.Loaded,
-            written is null && draft.NotesBaseline is null
-                ? MergeNoteDraft(systemNotes.Loaded, draft.Notes)
-                : draft.Notes,
+            written ?? draft.NotesBaseline ?? loaded,
+            written is null && draft.NotesBaseline is null ? MergeNoteDraft(loaded, draft.Notes) : draft.Notes,
             draft.NoteWrite?.WrittenCount ?? draft.CountUpdate,
             draft.NotesContext ?? systemNotes.Context,
-            BaselineKnown: written is not null || draft.NotesBaseline is not null || systemNotes.BaselineKnown
+            BaselineKnown: written is not null || draft.NotesBaseline is not null || loadedContextMatches
         );
         OnPropertyChanged(nameof(SelectedSystemNotes));
         OnPropertyChanged(nameof(CanEditSystemNotes));
         RaiseDirtyState();
         RaiseCommands();
     }
+
+    private bool HasLoadedDraftContext(JourneyEditDraft draft) =>
+        systemNotes.BaselineKnown
+        && systemNotes.Context is { } loaded
+        && draft.NotesContext is { } expected
+        && string.Equals(loaded.FrontierId, expected.FrontierId, StringComparison.OrdinalIgnoreCase)
+        && loaded.SystemAddress == expected.SystemAddress;
 
     private static bool WasDraftSaved(JourneyEditDraft draft) =>
         draft.NoteWrite is { WrittenCount.IsPending: false } write

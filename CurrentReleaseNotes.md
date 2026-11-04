@@ -107,8 +107,9 @@ from RC77.
   unsaved system notes stay attached to their original system, including across
   commander changes; they cannot be saved to another destination. Bound visit
   lists retain drafts through selection changes. In-flight note reads keep their
-  stored baseline, and saves completed after a commander switch do not revive
-  already-saved text. Pending note counts follow a corrected visit to the same
+  stored baseline; a temporarily missing system keeps an unread baseline unknown
+  through commander switches. Saves completed after a commander switch do not
+  revive already-saved text. Pending note counts follow a corrected visit to the same
   system. Physical receipts use their source positions, and unrelated records
   cannot exhaust replay ordering through equivalent interleavings. Pending
   observations can also finish saving after another window

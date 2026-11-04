@@ -1171,9 +1171,12 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
                     MatchesNoteContext(document, item) && item.Visit.Arrived == preferred?.Arrived
                 ) ?? VisitedSystems.FirstOrDefault(item => MatchesNoteContext(document, item));
         }
-        return VisitedSystems.FirstOrDefault(item =>
-                item.Visit.StarSystem.SystemAddress == preferred?.Address && item.Visit.Arrived == preferred?.Arrived
-            ) ?? (VisitedSystems.Count > 0 ? VisitedSystems[0] : null);
+        JourneySystemItemViewModel? matching = preferred is { } identity
+            ? VisitedSystems.FirstOrDefault(item =>
+                item.Visit.StarSystem.SystemAddress == identity.Address && item.Visit.Arrived == identity.Arrived
+            )
+            : null;
+        return matching ?? (VisitedSystems.Count > 0 ? VisitedSystems[0] : null);
     }
 
     private bool MatchesNoteContext(JourneyDocument document, JourneySystemItemViewModel item) =>
@@ -1185,7 +1188,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         string notes,
         SystemNoteContext? context = null,
         string? draft = null,
-        bool baselineKnown = true
+        bool baselineKnown = false
     )
     {
         systemNotes = new SystemNoteDraft(notes, draft ?? notes, Context: context, BaselineKnown: baselineKnown);
@@ -1198,7 +1201,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         JourneyNoteCountUpdate? CountUpdate = null,
         SystemNoteContext? Context = null,
         JourneyNoteWriteReceipt? NoteWrite = null,
-        bool BaselineKnown = true
+        bool BaselineKnown = false
     )
     {
         public bool IsDirty => !string.Equals(Loaded, Text, StringComparison.Ordinal) || CountUpdate?.IsPending == true;
