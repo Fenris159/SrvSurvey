@@ -12,6 +12,7 @@ namespace SrvSurvey.Desktop.Platform;
 public interface IScreenshotProcessingService
 {
     int PendingCount => 0;
+    bool IsGameWindowAvailable => false;
     bool HasPendingWork => PendingCount > 0;
 
     Task<ScreenshotProcessingResult> ProcessLiveAsync(
@@ -61,6 +62,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     );
 
     public int PendingCount => Volatile.Read(ref pendingCount);
+    public bool IsGameWindowAvailable => gameClientWidthProvider() is > 0;
     public bool HasPendingWork => PendingCount > 0 || Volatile.Read(ref recoveryWarningCount) > 0;
 
     private readonly SemaphoreSlim processingLock = new(1, 1);
@@ -650,19 +652,27 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
 
     private bool CandidateMatches(string path, string expectedHash)
     {
-        SourceFingerprint? stamp = ReadFingerprint(path);
-        if (
-            imageHashes.TryGetValue(path, out (SourceFingerprint Stamp, string Hash) cached)
-            && SameFingerprint(stamp, cached.Stamp)
-            && cached.Hash != expectedHash
-        )
+        try
         {
+            SourceFingerprint? stamp = ReadFingerprint(path);
+            if (
+                imageHashes.TryGetValue(path, out (SourceFingerprint Stamp, string Hash) cached)
+                && SameFingerprint(stamp, cached.Stamp)
+                && cached.Hash != expectedHash
+            )
+            {
+                return false;
+            }
+            // A positive reuse always verifies current bytes before source cleanup.
+            string hash = readImageHash(path);
+            RememberImageHash(path, hash);
+            return hash == expectedHash;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // An unrelated unreadable output must not prevent a distinct suffixed image.
             return false;
         }
-        // A positive reuse always verifies current bytes before source cleanup.
-        string hash = readImageHash(path);
-        RememberImageHash(path, hash);
-        return hash == expectedHash;
     }
 
     private static bool TryMoveImage(string source, string destination)

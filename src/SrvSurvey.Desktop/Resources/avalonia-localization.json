@@ -21093,10 +21093,6 @@
       "translation": "Eltern"
     },
     {
-      "source": "Part",
-      "translation": "Teil"
-    },
-    {
       "source": "Passive notification overlay",
       "translation": "Passives Benachrichtigungs-Overlay"
     },
@@ -38835,10 +38831,6 @@
     {
       "source": "panthermkii",
       "translation": "panthermkii"
-    },
-    {
-      "source": "part",
-      "translation": "Teil"
     },
     {
       "source": "passive",
@@ -62515,10 +62507,6 @@
       "translation": "padres"
     },
     {
-      "source": "Part",
-      "translation": "parte"
-    },
-    {
       "source": "Passive notification overlay",
       "translation": "Superposición de notificaciones pasivas"
     },
@@ -80257,10 +80245,6 @@
     {
       "source": "panthermkii",
       "translation": "panthermkii"
-    },
-    {
-      "source": "part",
-      "translation": "parte"
     },
     {
       "source": "passive",
@@ -103937,10 +103921,6 @@
       "translation": "Parents"
     },
     {
-      "source": "Part",
-      "translation": "partie"
-    },
-    {
       "source": "Passive notification overlay",
       "translation": "Superposition de notifications passives"
     },
@@ -121679,10 +121659,6 @@
     {
       "source": "panthermkii",
       "translation": "panthermkii"
-    },
-    {
-      "source": "part",
-      "translation": "partie"
     },
     {
       "source": "passive",
@@ -145359,10 +145335,6 @@
       "translation": "Pais"
     },
     {
-      "source": "Part",
-      "translation": "papel"
-    },
-    {
       "source": "Passive notification overlay",
       "translation": "Sobreposição de notificação passiva"
     },
@@ -163101,10 +163073,6 @@
     {
       "source": "panthermkii",
       "translation": "panterakii"
-    },
-    {
-      "source": "part",
-      "translation": "papel"
     },
     {
       "source": "passive",
@@ -186781,10 +186749,6 @@
       "translation": "Родители"
     },
     {
-      "source": "Part",
-      "translation": "часть"
-    },
-    {
       "source": "Passive notification overlay",
       "translation": "Пассивное наложение уведомлений"
     },
@@ -204523,10 +204487,6 @@
     {
       "source": "panthermkii",
       "translation": "пантермкии"
-    },
-    {
-      "source": "part",
-      "translation": "часть"
     },
     {
       "source": "passive",
@@ -228203,10 +228163,6 @@
       "translation": "家长"
     },
     {
-      "source": "Part",
-      "translation": "部分"
-    },
-    {
       "source": "Passive notification overlay",
       "translation": "被动通知覆盖"
     },
@@ -245945,10 +245901,6 @@
     {
       "source": "panthermkii",
       "translation": "黑豹"
-    },
-    {
-      "source": "part",
-      "translation": "部分"
     },
     {
       "source": "passive",
@@ -269625,10 +269577,6 @@
       "translation": "* PARENTS >>>!"
     },
     {
-      "source": "Part",
-      "translation": "* PART >>>!"
-    },
-    {
       "source": "Passive notification overlay",
       "translation": "* PASSIVE NOTIFICATION OVERLAY >>>!"
     },
@@ -287367,10 +287315,6 @@
     {
       "source": "panthermkii",
       "translation": "* PANTHERMKII >>>!"
-    },
-    {
-      "source": "part",
-      "translation": "* PART >>>!"
     },
     {
       "source": "passive",

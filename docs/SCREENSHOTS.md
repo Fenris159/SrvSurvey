@@ -45,7 +45,9 @@ be attributed. Historical captures need journal events covering their capture
 time; the last location in an old journal does not extend indefinitely. A verified
 live game bound to that journal can remain quiet without an age limit. Shutdown
 and main-menu state end that live context. Consecutive parts retain session
-context; unrelated or missing parts cannot borrow another session’s ownership.
+context on startup and during rotation; unrelated or missing parts cannot borrow
+another session’s ownership. Live matching uses the Gamescope-aware game tracker,
+so a nested game does not need to appear in the desktop window switcher.
 Linked screenshot storage retains access to Steam’s index timestamps.
 
 ## Output and optional processing
@@ -58,7 +60,9 @@ saving that destination fails, SrvSurvey retries the same fixed folder.
 Location labels and original-file removal apply to both sources. Labels are
 optional. Originals are removed only after the converted PNG is published and
 verified; failures retain the original. Persistent processing receipts prevent
-the same capture from being converted repeatedly. Disabling processing pauses
+the same capture from being converted repeatedly. Occupied output filenames that
+cannot be read are left untouched, and a new capture uses a distinct suffix.
+Disabling processing pauses
 pending work. Faster lossless encoding preserves decoded image quality, though
 PNG file sizes can be larger than with slower compression.
 

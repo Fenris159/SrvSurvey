@@ -11,6 +11,9 @@ public sealed partial class ScreenshotProcessingViewModel
     private DateTimeOffset? lastSteamScan;
     private string? lastSteamWarning;
 
+    internal SteamScreenshotLiveSession CreateLiveSession(string journalPath, string frontierId) =>
+        new(journalPath, frontierId, steamClock.GetUtcNow());
+
     public bool ProcessSteamScreenshots
     {
         get => preferences.ProcessSteamScreenshots;

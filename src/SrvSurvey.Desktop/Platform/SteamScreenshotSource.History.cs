@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
@@ -32,8 +31,6 @@ public sealed partial class SteamScreenshotSource
     private sealed record JournalFile(string Path, long Length, DateTime Modified);
 
     private sealed record CachedSeries(JournalFile[] Files, IReadOnlyList<CaptureLocation> Locations);
-
-    private sealed record JournalPart(string Series, int Number);
 
     private readonly Dictionary<string, CachedSeries> historyCache = new(PathComparer);
 
@@ -91,12 +88,12 @@ public sealed partial class SteamScreenshotSource
         var session = new JournalSessionState();
         PhotoBody? captureBody = null;
         var coverage = new CaptureCoverage();
-        JournalPart? previousPart = null;
+        JournalFilePart? previousPart = null;
         foreach (string path in paths)
         {
             PhotoJournal journal = await ReadJournalEventsAsync(path, cancellationToken).ConfigureAwait(false);
             IReadOnlyList<JournalEventEnvelope> entries = journal.Events;
-            JournalPart? part = ReadJournalPart(path, entries);
+            var part = JournalFilePart.Read(path, entries.FirstOrDefault(entry => entry.EventName == FileheaderEvent));
             bool continuation =
                 part is not null
                 && previousPart is not null
@@ -162,34 +159,6 @@ public sealed partial class SteamScreenshotSource
             );
         }
         return captureBody;
-    }
-
-    private static JournalPart? ReadJournalPart(string path, IReadOnlyList<JournalEventEnvelope> entries)
-    {
-        string[] parts = Path.GetFileName(path).Split('.');
-        if (
-            parts.Length != 4
-            || !int.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out int number)
-            || number < 1
-        )
-        {
-            return null;
-        }
-        JournalEventEnvelope? header = entries.FirstOrDefault(entry => entry.EventName == FileheaderEvent);
-        if (header is null)
-        {
-            return null;
-        }
-        if (
-            (
-                header.Payload.TryGetProperty("part", out JsonElement declared)
-                || header.Payload.TryGetProperty("Part", out declared)
-            ) && (declared.ValueKind != JsonValueKind.Number || !declared.TryGetInt32(out int part) || part != number)
-        )
-        {
-            return null;
-        }
-        return new(parts[1], number);
     }
 
     private static async Task<PhotoJournal> ReadJournalEventsAsync(string path, CancellationToken cancellationToken)

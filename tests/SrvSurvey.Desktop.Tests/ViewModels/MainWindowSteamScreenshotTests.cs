@@ -6,7 +6,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class MainWindowSteamScreenshotTests : IDisposable
+public sealed partial class MainWindowSteamScreenshotTests : IDisposable
 {
     private readonly string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-journey-steam-{Guid.NewGuid():N}");
 

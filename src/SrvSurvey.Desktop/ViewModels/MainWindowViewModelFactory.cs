@@ -216,6 +216,8 @@ internal sealed class MainWindowOverlayInputs
 
     public IScreenshotProcessingService? ScreenshotProcessingService { get; init; }
 
+    public TimeProvider? ScreenshotTimeProvider { get; init; }
+
     public GuardianOverlaySettingsStore? GuardianOverlaySettingsStore { get; init; }
 
     public DesktopBehaviorSettingsStore? DesktopBehaviorSettingsStore { get; init; }

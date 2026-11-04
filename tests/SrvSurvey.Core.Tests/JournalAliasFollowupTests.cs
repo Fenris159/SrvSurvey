@@ -4,7 +4,7 @@ namespace SrvSurvey.Core.Tests;
 
 public sealed partial class JournalDirectoryMonitorTests
 {
-    [Fact]
+    [DirectoryAliasFact]
     public async Task AChangedConfiguredAliasIsReportedWithoutReplayingThePhysicalJournal()
     {
         string real = Path.Combine(temporaryDirectory, "physical");
@@ -25,5 +25,33 @@ public sealed partial class JournalDirectoryMonitorTests
         Assert.Empty(changed.JournalEvents);
         Assert.True(changed.HasChanges);
         Assert.False((await monitor.PollAsync()).HasChanges);
+    }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class DirectoryAliasFactAttribute : FactAttribute
+    {
+        public DirectoryAliasFactAttribute()
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+            string probe = Path.Combine(Path.GetTempPath(), $"SrvSurvey-alias-capability-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(probe);
+            try
+            {
+                string target = Path.Combine(probe, "target");
+                Directory.CreateDirectory(target);
+                Directory.CreateSymbolicLink(Path.Combine(probe, "alias"), target);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Skip = "Directory aliases require Windows developer mode or symbolic-link privilege.";
+            }
+            finally
+            {
+                Directory.Delete(probe, recursive: true);
+            }
+        }
     }
 }

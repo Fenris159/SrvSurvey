@@ -850,15 +850,17 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     }
 
     private SteamScreenshotLiveSession? GetLiveScreenshotSession(JournalMonitorUpdate update) =>
-        !dependencies.IsDiagnosticReplay()
+        dependencies.ScreenshotProcessing.Enabled
+        && dependencies.ScreenshotProcessing.ProcessSteamScreenshots
+        && !dependencies.IsDiagnosticReplay()
         && !update.IsAwaitingCommanderIdentity
         && !state.Session.IsShutdown
         && !state.Session.IsAtMainMenu
-        && dependencies.CommanderInstances.AvailableGameWindowCount > 0
+        && dependencies.ScreenshotProcessing.IsGameWindowAvailable
         && dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount)
         && update.JournalPath is { } path
         && state.Session.FrontierId is { } frontierId
-            ? new(path, frontierId, DateTimeOffset.UtcNow)
+            ? dependencies.ScreenshotProcessing.CreateLiveSession(path, frontierId)
             : null;
 
     private void ReportScreenshotResult(ScreenshotProcessingResult screenshotResult)

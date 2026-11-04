@@ -17,6 +17,7 @@ public sealed partial class JourneyService
     private readonly ExobiologyReferenceCatalog exobiologyCatalog;
     private readonly SemaphoreSlim operationLock = new(1, 1);
     private JourneyJournalProcessor? activeProcessor;
+    private JourneyDocument? pendingLiveProgress;
     private bool activeIsOdyssey;
     private readonly Action<string>? log;
 
@@ -117,6 +118,7 @@ public sealed partial class JourneyService
         {
             // Initialization belongs to the requested profile even when loading or replay fails.
             activeProcessor = null;
+            pendingLiveProgress = null;
             RecoveryReference = null;
             CommanderProfileLoadResult profile = await profileStore
                 .LoadAsync(frontierId, isOdyssey, cancellationToken)
@@ -239,7 +241,16 @@ public sealed partial class JourneyService
 
             if (processed > 0)
             {
-                await journeyStore.SaveAsync(activeProcessor.Journey, cancellationToken).ConfigureAwait(false);
+                pendingLiveProgress = activeProcessor.Journey;
+            }
+            if (HasPendingProgress(activeProcessor.Journey))
+            {
+                await UpdateStoredJourneyLockedAsync(
+                        activeProcessor.Journey,
+                        static latest => latest,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
             }
 
             return new JourneyServiceResult(activeProcessor.Journey, [], processed);
@@ -273,6 +284,7 @@ public sealed partial class JourneyService
             )
             {
                 activeProcessor.UpdateJourney(normalized);
+                pendingLiveProgress = null;
             }
 
             return normalized;
@@ -377,22 +389,66 @@ public sealed partial class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            JourneyDocument saved = await journeyStore
-                .UpdateAsync(expected.FrontierId, expected.FileName, update, cancellationToken)
-                .ConfigureAwait(false);
-            if (
-                activeProcessor?.Journey.FileName == saved.FileName
-                && activeProcessor.Journey.FrontierId == saved.FrontierId
-            )
-            {
-                activeProcessor.UpdateJourney(saved);
-            }
-            return saved;
+            return await UpdateStoredJourneyLockedAsync(expected, update, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
             operationLock.Release();
         }
+    }
+
+    private bool HasPendingProgress(JourneyDocument journey) =>
+        pendingLiveProgress is { } pending
+        && pending.FrontierId == journey.FrontierId
+        && pending.FileName == journey.FileName;
+
+    private JourneyDocument ReconcilePendingProgress(JourneyDocument stored)
+    {
+        if (!HasPendingProgress(stored) || stored.Watermark > pendingLiveProgress!.Watermark)
+        {
+            return stored;
+        }
+        // Journal progress owns visits and the watermark; edits in another instance
+        // still own metadata and note-save counts, including on historical visits.
+        var notes = stored
+            .VisitedSystems.GroupBy(visit => (visit.StarSystem.SystemAddress, visit.Arrived))
+            .ToDictionary(group => group.Key, group => group.Max(visit => visit.Counts.Notes));
+        JourneySystemVisit[] visits = pendingLiveProgress
+            .VisitedSystems.Select(visit =>
+                notes.TryGetValue((visit.StarSystem.SystemAddress, visit.Arrived), out int count)
+                    ? visit with
+                    {
+                        Counts = visit.Counts with { Notes = count },
+                    }
+                    : visit
+            )
+            .ToArray();
+        return stored with { Watermark = pendingLiveProgress.Watermark, VisitedSystems = visits };
+    }
+
+    private async Task<JourneyDocument> UpdateStoredJourneyLockedAsync(
+        JourneyDocument expected,
+        Func<JourneyDocument, JourneyDocument> update,
+        CancellationToken cancellationToken
+    )
+    {
+        JourneyDocument saved = await journeyStore
+            .UpdateAsync(
+                expected.FrontierId,
+                expected.FileName,
+                stored => update(ReconcilePendingProgress(stored)),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+        if (
+            activeProcessor?.Journey.FileName == saved.FileName
+            && activeProcessor.Journey.FrontierId == saved.FrontierId
+        )
+        {
+            activeProcessor.UpdateJourney(saved);
+            pendingLiveProgress = null;
+        }
+        return saved;
     }
 
     public Task<bool> IncrementNoteCountAsync(long systemAddress, CancellationToken cancellationToken = default) =>
@@ -427,13 +483,33 @@ public sealed partial class JourneyService
                 return false;
             }
 
-            JourneySystemVisit[] visits = activeProcessor.Journey.VisitedSystems.ToArray();
-            int index = Array.LastIndexOf(visits, current);
-            JourneySystemVisit visit = visits[index];
-            visits[index] = visit with { Counts = visit.Counts with { Notes = checked(visit.Counts.Notes + 1) } };
-            JourneyDocument updated = activeProcessor.Journey with { VisitedSystems = visits };
-            activeProcessor.UpdateJourney(updated);
-            await journeyStore.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+            await UpdateStoredJourneyLockedAsync(
+                    activeProcessor.Journey,
+                    latest =>
+                    {
+                        JourneySystemVisit[] visits = latest.VisitedSystems.ToArray();
+                        int index = Array.FindIndex(
+                            visits,
+                            visit =>
+                                visit.StarSystem.SystemAddress == current.StarSystem.SystemAddress
+                                && visit.Arrived == current.Arrived
+                        );
+                        if (index < 0)
+                        {
+                            throw new InvalidOperationException(
+                                "The active Journey visit is no longer available for its note count."
+                            );
+                        }
+                        JourneySystemVisit visit = visits[index];
+                        visits[index] = visit with
+                        {
+                            Counts = visit.Counts with { Notes = checked(visit.Counts.Notes + 1) },
+                        };
+                        return latest with { VisitedSystems = visits };
+                    },
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
             return true;
         }
         finally
@@ -476,6 +552,7 @@ public sealed partial class JourneyService
             )
             {
                 activeProcessor = processor;
+                pendingLiveProgress = null;
                 activeIsOdyssey = isOdyssey;
             }
 
@@ -520,6 +597,7 @@ public sealed partial class JourneyService
             JourneyDocument concluded = activeProcessor.Journey with { EndTime = endTime };
             await journeyStore.SaveAsync(concluded, cancellationToken).ConfigureAwait(false);
             activeProcessor = null;
+            pendingLiveProgress = null;
             await profileStore
                 .SaveActiveJourneyAsync(concluded.FrontierId, commanderName, activeIsOdyssey, null, cancellationToken)
                 .ConfigureAwait(false);
@@ -548,6 +626,7 @@ public sealed partial class JourneyService
         }
 
         activeProcessor = processor;
+        pendingLiveProgress = null;
         activeIsOdyssey = isOdyssey;
         return new JourneyServiceResult(processor.Journey, read.Errors, processed);
     }

@@ -9,7 +9,7 @@ namespace SrvSurvey.Core.Journal;
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The monitor is process-scoped and its poll gate may have in-flight waiters."
 )]
-public sealed class JournalDirectoryMonitor
+public sealed partial class JournalDirectoryMonitor
 {
     private const int StatusReadFailureReportThreshold = 2;
 
@@ -200,14 +200,12 @@ public sealed class JournalDirectoryMonitor
 
         if (!PathsEqual(latestJournal.FullName, currentJournalPath))
         {
-            FlushPendingLine(events, errors);
-            SetActiveJournalDirectory(latestJournal.DirectoryName);
-            currentJournalPath = latestJournal.FullName;
-            currentJournalOffset = 0;
-            pendingJournalBytes = [];
+            await ReadSelectedPartsAsync(latestJournal, events, errors, cancellationToken).ConfigureAwait(false);
         }
-
-        await ReadJournalAppendAsync(events, errors, cancellationToken).ConfigureAwait(false);
+        else
+        {
+            await ReadJournalAppendAsync(events, errors, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private async Task<CompanionPollResults> PollAllCompanionsAsync(
@@ -353,7 +351,10 @@ public sealed class JournalDirectoryMonitor
             ? !string.IsNullOrWhiteSpace(frontierId)
             : string.Equals(frontierId, targetFrontierId, StringComparison.OrdinalIgnoreCase);
 
-    private async Task<string?> ReadFrontierIdAsync(FileInfo journal, CancellationToken cancellationToken)
+    private async Task<JournalIdentityCacheEntry?> ReadJournalIdentityAsync(
+        FileInfo journal,
+        CancellationToken cancellationToken
+    )
     {
         journal.Refresh();
         if (
@@ -362,10 +363,13 @@ public sealed class JournalDirectoryMonitor
             && cached.LastWriteTimeUtc == journal.LastWriteTimeUtc
         )
         {
-            return cached.FrontierId;
+            return cached;
         }
 
         string? frontierId = null;
+        JournalEventEnvelope? header = null;
+        long length = journal.Length;
+        DateTime modified = journal.LastWriteTimeUtc;
         try
         {
             await using var stream = new FileStream(
@@ -382,16 +386,19 @@ public sealed class JournalDirectoryMonitor
                 if (
                     !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _)
                     || journalEvent is null
-                    || (journalEvent.EventName != "Commander" && journalEvent.EventName != "LoadGame")
-                    || !journalEvent.Payload.TryGetProperty("FID", out JsonElement value)
-                    || value.ValueKind != System.Text.Json.JsonValueKind.String
                 )
                 {
                     continue;
                 }
-
-                frontierId = value.GetString();
-                break;
+                if (journalEvent.EventName == "Fileheader")
+                {
+                    header ??= journalEvent;
+                }
+                frontierId = ReadDeclaredFrontierId(journalEvent);
+                if (frontierId is not null)
+                {
+                    break;
+                }
             }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
@@ -399,13 +406,14 @@ public sealed class JournalDirectoryMonitor
             return null;
         }
 
-        journal.Refresh();
-        journalIdentityCache[journal.FullName] = new JournalIdentityCacheEntry(
-            journal.Length,
-            journal.LastWriteTimeUtc,
-            frontierId
+        var identity = new JournalIdentityCacheEntry(
+            length,
+            modified,
+            frontierId,
+            JournalFilePart.Read(journal.FullName, header)
         );
-        return frontierId;
+        journalIdentityCache[journal.FullName] = identity;
+        return identity;
     }
 
     /// <summary>Enumerates physical journal paths so Steam aliases share one cursor and command history.</summary>
@@ -555,6 +563,10 @@ public sealed class JournalDirectoryMonitor
             && journalEvent is not null
         )
         {
+            if (currentJournalIsContinuation && journalEvent.EventName == "Fileheader")
+            {
+                return;
+            }
             journalEvent = journalEvent with
             {
                 SourceRecordIdentity =
@@ -598,7 +610,12 @@ public sealed class JournalDirectoryMonitor
             );
     }
 
-    private sealed record JournalIdentityCacheEntry(long Length, DateTime LastWriteTimeUtc, string? FrontierId);
+    private sealed record JournalIdentityCacheEntry(
+        long Length,
+        DateTime LastWriteTimeUtc,
+        string? FrontierId,
+        JournalFilePart? Part
+    );
 
     private async Task<StatusCompanionPollResult> PollStatusCompanionAsync(
         List<string> errors,

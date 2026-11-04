@@ -47,6 +47,7 @@ public sealed partial class JourneyService
             )
             {
                 activeProcessor = null;
+                pendingLiveProgress = null;
             }
             foreach (bool odyssey in new[] { true, false })
             {

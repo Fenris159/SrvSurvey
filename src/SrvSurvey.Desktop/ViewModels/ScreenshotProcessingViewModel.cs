@@ -51,6 +51,8 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
         }
     }
 
+    internal bool IsGameWindowAvailable => processingService.IsGameWindowAvailable;
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void InitializeOutputFolder()

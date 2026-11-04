@@ -27,6 +27,7 @@ public sealed partial class JourneyService
         if (string.IsNullOrWhiteSpace(profile.ActiveJourneyFileName))
         {
             activeProcessor = null;
+            pendingLiveProgress = null;
             return JourneyServiceResult.Empty;
         }
         string fileName;
@@ -51,6 +52,7 @@ public sealed partial class JourneyService
             if (!load.Exists)
             {
                 activeProcessor = null;
+                pendingLiveProgress = null;
                 if (
                     !await profileStore
                         .TryReplaceActiveJourneyAsync(
@@ -84,6 +86,7 @@ public sealed partial class JourneyService
         if (!journey.IsActive)
         {
             activeProcessor = null;
+            pendingLiveProgress = null;
             if (
                 !await profileStore
                     .TryReplaceActiveJourneyAsync(
@@ -139,6 +142,7 @@ public sealed partial class JourneyService
         )
         {
             activeProcessor = new(journey, exobiologyCatalog, isOdyssey);
+            pendingLiveProgress = null;
             activeIsOdyssey = isOdyssey;
         }
         IReadOnlyList<string> warnings = upgradeWarning is null ? [] : [upgradeWarning];
@@ -164,6 +168,7 @@ public sealed partial class JourneyService
     private JourneyServiceResult Unavailable(string frontierId, bool isOdyssey, string fileName, string error)
     {
         activeProcessor = null;
+        pendingLiveProgress = null;
         RecoveryReference = new(frontierId, isOdyssey, fileName);
         log?.Invoke($"Journeys: unavailable active selection for {frontierId}: {error}");
         return new(
@@ -237,6 +242,7 @@ public sealed partial class JourneyService
             )
             {
                 activeProcessor = null;
+                pendingLiveProgress = null;
             }
             if (RecoveryReference == expected)
             {
@@ -331,6 +337,7 @@ public sealed partial class JourneyService
     private JourneyServiceResult SelectionChanged()
     {
         activeProcessor = null;
+        pendingLiveProgress = null;
         return new(
             null,
             ["The active journey selection changed while loading. Refresh Journeys to load the latest selection."],

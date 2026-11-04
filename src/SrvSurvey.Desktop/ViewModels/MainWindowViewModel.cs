@@ -486,7 +486,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 screenshotProcessingService,
                 ResolvePrimaryJournalPath(folderResolution),
                 AppDataPaths.ScreenshotQueueDirectory,
-                deferOutputInitialization: true
+                deferOutputInitialization: true,
+                timeProvider: overlay.ScreenshotTimeProvider
             );
             construction.Checkpoint?.Invoke(MainWindowViewModelConstructionCheckpoint.OverlayReady);
             DockToDock = new DockToDockViewModel(

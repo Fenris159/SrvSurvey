@@ -42329,14 +42329,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "Part",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
-  },
-  {
     "Text": "Passive notification overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -77887,14 +77879,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
-  },
-  {
-    "Text": "part",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "passive",

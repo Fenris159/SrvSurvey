@@ -43,7 +43,8 @@ from RC77.
   after earlier conversions finish. Failed queue saves retry before the source
   arrives; an inaccessible Steam completion archive does not block pending BMP
   recovery. Same-second filename collisions reuse verified matches without
-  repeatedly hashing every earlier image.
+  repeatedly hashing every earlier image. An unreadable occupied PNG no longer
+  blocks a new capture from using a distinct suffixed filename.
 - **Steam capture ownership:** Consecutive journal parts retain Commander and
   location context, with dependent history recalculated when an earlier file
   changes. External Proton libraries are matched to their Steam client; ambiguous
@@ -53,12 +54,17 @@ from RC77.
   Malformed index paths cannot discard later valid captures. Fresh docking names
   replace old station or star labels while retaining valid planet context.
   Historical captures require covering journal history; a verified, currently
-  bound live session can remain quiet without an arbitrary age cutoff.
+  bound live session can remain quiet without an arbitrary age cutoff. Selected
+  commanders follow verified continuation parts on startup and during rotation,
+  preserving session context and unread activity. Quiet Steam captures also work
+  when Elite is on a nested Gamescope display with no switchable desktop window.
 - **Journey note recovery:** A saved note's pending visit count can finish even
   if another window edits the note before retry. The external text is retained;
   additional unsaved edits still receive conflict protection and can be discarded.
   Journey edits read and write under one shared file lease so independent windows
-  retain each other's changes. Readouts identify note-save counts explicitly.
+  retain each other's changes. Failed live saves retain consumed Journey progress
+  through later metadata and note edits, while preserving another window's saved
+  metadata and note counts. Readouts identify note-save counts explicitly.
 
 - **Guides:** Refresh in-app instructions and the shipped chat reference for
   Journeys, portable photo reports, Commander readouts, FC/SC Routes, Discord,
