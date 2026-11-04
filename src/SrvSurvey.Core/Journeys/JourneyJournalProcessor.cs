@@ -18,26 +18,45 @@ public sealed partial class JourneyJournalProcessor
     )
     {
         ArgumentNullException.ThrowIfNull(journey);
-        Journey = InitializeRecordTracking(journey);
+        State = InitializeRecordTracking(journey);
         this.exobiologyCatalog = exobiologyCatalog ?? throw new ArgumentNullException(nameof(exobiologyCatalog));
         this.isOdyssey = isOdyssey;
+        InitializeObservationHistory(journey);
     }
 
-    public JourneyDocument Journey { get; private set; }
+    private JourneyDocument state = null!;
+    private bool snapshotDirty;
+    private JourneyDocument State
+    {
+        get => state;
+        set
+        {
+            state = value;
+            snapshotDirty = true;
+        }
+    }
+    public JourneyDocument Journey => Snapshot();
 
     public void UpdateJourney(JourneyDocument journey)
     {
-        ArgumentNullException.ThrowIfNull(journey);
-        if (
-            !string.Equals(journey.FrontierId, Journey.FrontierId, StringComparison.Ordinal)
-            || !string.Equals(journey.FileName, Journey.FileName, StringComparison.Ordinal)
-        )
+        lock (stateLock)
         {
-            throw new ArgumentException("The replacement document must represent the same journey.", nameof(journey));
-        }
+            ArgumentNullException.ThrowIfNull(journey);
+            if (
+                !string.Equals(journey.FrontierId, State.FrontierId, StringComparison.Ordinal)
+                || !string.Equals(journey.FileName, State.FileName, StringComparison.Ordinal)
+            )
+            {
+                throw new ArgumentException(
+                    "The replacement document must represent the same journey.",
+                    nameof(journey)
+                );
+            }
 
-        Journey = InitializeRecordTracking(journey);
-        HasRecordMetadataChanges = false;
+            State = InitializeRecordTracking(journey);
+            InitializeObservationHistory(journey);
+            HasRecordMetadataChanges = false;
+        }
     }
 
     private void PrimeEvent(JournalEventEnvelope journalEvent)
@@ -154,7 +173,7 @@ public sealed partial class JourneyJournalProcessor
         UpdateCurrent(visit =>
         {
             DateTimeOffset? observed =
-                visit.BodyCountObservedAt ?? (visit.Counts.BodyCount > 0 ? Journey.Watermark : null);
+                visit.BodyCountObservedAt ?? (visit.Counts.BodyCount > 0 ? State.Watermark : null);
             if (observed > timestamp || (observed == timestamp && visit.BodyCountIsFinal && !final))
             {
                 return visit;
@@ -421,7 +440,7 @@ public sealed partial class JourneyJournalProcessor
 
     private void UpdateCurrent(Func<JourneySystemVisit, JourneySystemVisit> update)
     {
-        var visits = Journey.VisitedSystems.ToList();
+        var visits = State.VisitedSystems.ToList();
         int index = applyingVisitIndex ?? FindCurrentIndex(visits);
         if (index < 0)
         {
@@ -429,7 +448,7 @@ public sealed partial class JourneyJournalProcessor
         }
 
         visits[index] = update(visits[index]);
-        Journey = Journey with { VisitedSystems = visits };
+        State = State with { VisitedSystems = visits };
     }
 
     private static int FindCurrentIndex(List<JourneySystemVisit> visits)

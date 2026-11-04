@@ -85,7 +85,14 @@ from RC77.
   known live records stay deduplicated even at an incomplete legacy boundary.
   Late body-count reports retain the newer observation, including same-time final
   scan results. Older snapshots without reliable coverage keep ambiguous pending
-  activity available for recovery.
+  activity available for recovery. Retained observations now rebuild affected
+  history chronologically when a missing arrival is discovered, moving activity
+  to the correct visit and preserving return trips, departure times and notes.
+  Mapping uses scan details known at the time of mapping. Failed saves remain
+  scoped to their Journey so other commanders and unavailable-file recovery
+  continue working; new Journeys keep a consistent recording selection even if
+  their initial catch-up save fails. Receiptless catch-up avoids repeating an
+  unknown saved timestamp.
   Live/history matching handles UTF-8 and mixed line endings. Readouts identify
   note-save counts explicitly.
 

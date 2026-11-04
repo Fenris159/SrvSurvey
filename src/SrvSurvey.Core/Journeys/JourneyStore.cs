@@ -338,6 +338,7 @@ public sealed partial class JourneyStore(
             visits
         )
         {
+            ObservationHistory = ReadObservationHistory(root, path),
             WatermarkRecords = ReadWatermarkRecords(root, watermark),
             WatermarkRecordsComplete = ReadBoundaryCompleteness(root, watermark),
             RecordTrackingStart = progress?.From,
@@ -505,6 +506,7 @@ public sealed partial class JourneyStore(
             root.Remove(WatermarkRecordsPropertyName);
         }
         WriteRecordedProgress(root, journey);
+        WriteObservationHistory(root, journey);
         root[VisitedSystemsPropertyName] = MergeVisits(
             root[VisitedSystemsPropertyName] as JsonArray,
             journey.VisitedSystems

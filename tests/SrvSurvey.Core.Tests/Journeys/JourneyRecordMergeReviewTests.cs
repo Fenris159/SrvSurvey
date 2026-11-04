@@ -127,6 +127,7 @@ public sealed partial class JourneyServiceTests
                     WatermarkRecordsComplete = null,
                     RecordTrackingStart = null,
                     RecordedJournalRecords = null,
+                    ObservationHistory = null,
                 }
             );
             await Assert.ThrowsAsync<IOException>(() => pending.ApplyLiveAsync([music]));
@@ -208,6 +209,7 @@ public sealed partial class JourneyServiceTests
                 WatermarkRecordsComplete = null,
                 RecordTrackingStart = null,
                 RecordedJournalRecords = null,
+                ObservationHistory = null,
             }
         );
         string path = Path.Combine(JournalDirectory, BoundaryJournal);
@@ -274,6 +276,7 @@ public sealed partial class JourneyServiceTests
                 WatermarkRecordsComplete = null,
                 RecordTrackingStart = null,
                 RecordedJournalRecords = null,
+                ObservationHistory = null,
             }
         );
         JourneyService service = BoundaryService([JournalDirectory, Path.Combine(temporaryDirectory, "unavailable")]);

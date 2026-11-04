@@ -27,12 +27,38 @@ public sealed record JourneyDocument(
     public bool RecordTrackingStartComplete { get; init; }
     public IReadOnlySet<string>? RecordedJournalRecords { get; init; }
 
+    public JourneyObservationHistory? ObservationHistory { get; init; }
+
     public bool IsArchived { get; init; }
 
     public bool IsActive => EndTime is null;
 
     public JourneySystemVisit? CurrentSystem => VisitedSystems.LastOrDefault(visit => visit.Departed is null);
 }
+
+public sealed record JourneyObservationHistory(
+    JourneyProgressBaseline Baseline,
+    IReadOnlyList<JourneyObservedRecord> Records,
+    DateTimeOffset Through,
+    string ProjectionSignature
+);
+
+public sealed record JourneyProgressBaseline(
+    DateTimeOffset Watermark,
+    IReadOnlyList<JourneySystemVisit> VisitedSystems,
+    IReadOnlySet<string> KnownRecords,
+    IReadOnlyList<JourneyObservedRecord> Context,
+    bool IsOriginKnown,
+    bool IsOdyssey
+);
+
+public sealed record JourneyObservedRecord(
+    string Identity,
+    DateTimeOffset Timestamp,
+    string RawJson,
+    string? SourceRecordIdentity,
+    IReadOnlySet<string> PreviousIdentities
+);
 
 public sealed record JourneySystemVisit(
     JourneySystemReference StarSystem,

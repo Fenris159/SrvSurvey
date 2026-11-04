@@ -278,7 +278,7 @@ public sealed partial class JourneyJournalHistoryReader
 
         var events = new List<JournalEventEnvelope>();
         var diagnostics = new ReadDiagnostics();
-        var seen = new HashSet<(string Journal, int Occurrence, string Json)>();
+        var seen = new Dictionary<(string Journal, int Occurrence, string Json), int>();
         FileInfo[] files = EnumerateJournalFiles(descending: false, diagnostics).ToArray();
         string missingMessage = $"The starting journal was not found for this commander: {startingJournal}";
         FileInfo startingFile =
@@ -317,7 +317,7 @@ public sealed partial class JourneyJournalHistoryReader
         string fileName,
         bool isStartingFile,
         DateTimeOffset boundary,
-        HashSet<(string Journal, int Occurrence, string Json)> seen,
+        Dictionary<(string Journal, int Occurrence, string Json), int> seen,
         List<JournalEventEnvelope> events
     )
     {
@@ -328,8 +328,32 @@ public sealed partial class JourneyJournalHistoryReader
             int occurrence = occurrences.GetValueOrDefault(entry.RawJson);
             occurrences[entry.RawJson] = occurrence + 1;
             // Keep the starting preamble for scan context; overlapping files contribute from the time boundary.
-            if ((isStartingFile || entry.Timestamp >= boundary) && seen.Add((fileName, occurrence, entry.RawJson)))
+            if (!isStartingFile && entry.Timestamp < boundary)
             {
+                continue;
+            }
+            (string, int, string) key = (fileName, occurrence, entry.RawJson);
+            if (seen.TryGetValue(key, out int existingIndex))
+            {
+                JournalEventEnvelope existing = events[existingIndex];
+                var predecessors = new HashSet<string>(
+                    existing.SourcePreviousContentIdentities ?? new HashSet<string>(),
+                    StringComparer.Ordinal
+                );
+                if (existing.SourcePreviousContentIdentity is { } prior)
+                {
+                    predecessors.Add(prior);
+                }
+                if (entry.SourcePreviousContentIdentity is { } incoming)
+                {
+                    predecessors.Add(incoming);
+                }
+                predecessors.UnionWith(entry.SourcePreviousContentIdentities ?? new HashSet<string>());
+                events[existingIndex] = existing with { SourcePreviousContentIdentities = predecessors };
+            }
+            else
+            {
+                seen[key] = events.Count;
                 events.Add(entry);
             }
         }
@@ -443,6 +467,7 @@ public sealed partial class JourneyJournalHistoryReader
 
         var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
         int lineNumber = 0;
+        string? previousIdentity = null;
         await foreach (
             (string line, long offset) in ReadSourceRecordsAsync(stream, cancellationToken).ConfigureAwait(false)
         )
@@ -462,14 +487,15 @@ public sealed partial class JourneyJournalHistoryReader
                 continue;
             }
 
-            events.Add(
-                journalEvent with
-                {
-                    SourceRecordIdentity =
-                        file.Name + ":" + offset.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    SourceContentIdentity = journalEvent.CaptureContentIdentity(file.Name, occurrences),
-                }
-            );
+            journalEvent = journalEvent with
+            {
+                SourcePreviousContentIdentity = previousIdentity,
+                SourceRecordIdentity =
+                    file.Name + ":" + offset.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                SourceContentIdentity = journalEvent.CaptureContentIdentity(file.Name, occurrences),
+            };
+            previousIdentity = journalEvent.SourceContentIdentity;
+            events.Add(journalEvent);
         }
 
         return new JournalFileReadResult(file.Name, events, errors);

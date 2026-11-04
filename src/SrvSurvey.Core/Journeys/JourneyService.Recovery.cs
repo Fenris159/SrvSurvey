@@ -140,10 +140,18 @@ public sealed partial class JourneyService
         CancellationToken cancellationToken
     )
     {
+        RestorePendingProgress(journey);
         if (HasPendingProgress(journey))
         {
-            journey = await UpdateStoredJourneyLockedAsync(journey, static latest => latest, cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                journey = await UpdateStoredJourneyLockedAsync(journey, static latest => latest, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                return new(activeProcessor!.Journey, [exception.Message], 0);
+            }
         }
         if (
             replay
@@ -353,6 +361,7 @@ public sealed partial class JourneyService
 
     private JourneyServiceResult SelectionChanged()
     {
+        ParkPendingProgress();
         activeProcessor = null;
         pendingLiveProgress = null;
         pendingJournalEvents.Clear();

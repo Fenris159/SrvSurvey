@@ -21,6 +21,15 @@ public sealed record JournalEventEnvelope(
     [Newtonsoft.Json.JsonIgnore]
     public string? SourceContentIdentity { get; init; }
 
+    /// <summary>Preserves physical record order when partial or shifted copies are reconciled.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public string? SourcePreviousContentIdentity { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public IReadOnlySet<string>? SourcePreviousContentIdentities { get; init; }
+
     internal string CaptureContentIdentity(string fileName, Dictionary<string, int> occurrences)
     {
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(RawJson)));

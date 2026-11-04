@@ -21,6 +21,7 @@ public sealed partial class JourneyServiceTests
                 WatermarkRecordsComplete = null,
                 RecordTrackingStart = null,
                 RecordedJournalRecords = null,
+                ObservationHistory = null,
             }
         );
         JourneyService legacy = BoundaryService([JournalDirectory, Path.Combine(temporaryDirectory, "unavailable")]);

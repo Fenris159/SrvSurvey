@@ -9,6 +9,8 @@ namespace SrvSurvey.Core.Journeys;
 public sealed partial class JourneyJournalProcessor
 {
     private int? applyingVisitIndex;
+    private DateTimeOffset catchUpBoundary;
+    private bool catchUpBoundaryComplete;
     internal bool HasRecordMetadataChanges { get; private set; }
     private JourneySystemVisit? CurrentVisit
     {
@@ -16,9 +18,9 @@ public sealed partial class JourneyJournalProcessor
         {
             if (applyingVisitIndex is not { } index)
             {
-                return Journey.CurrentSystem;
+                return State.CurrentSystem;
             }
-            return index < 0 ? null : Journey.VisitedSystems[index];
+            return index < 0 ? null : State.VisitedSystems[index];
         }
     }
 
@@ -94,13 +96,28 @@ public sealed partial class JourneyJournalProcessor
                 + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
 
     private bool IsRecorded(JournalEventEnvelope entry) =>
-        (RecordReceipt(entry) is { } primary && Journey.RecordedJournalRecords!.Contains(primary))
-        || (PhysicalRecordReceipt(entry) is { } physical && Journey.RecordedJournalRecords!.Contains(physical));
+        (RecordReceipt(entry) is { } primary && State.RecordedJournalRecords!.Contains(primary))
+        || (PhysicalRecordReceipt(entry) is { } physical && State.RecordedJournalRecords!.Contains(physical));
 
-    public bool Apply(JournalEventEnvelope journalEvent) => ApplyRecord(journalEvent, catchUp: false);
+    public bool Apply(JournalEventEnvelope journalEvent)
+    {
+        lock (stateLock)
+        {
+            bool applied = ApplyRecord(journalEvent, catchUp: false);
+            if (requiresReplay && !observationBatch)
+            {
+                ReplayObservations();
+            }
+            return applied;
+        }
+    }
 
     internal void ApplyPendingRecord(JournalEventEnvelope entry)
     {
+        if (entry.Timestamp < State.StartTime || (State.EndTime is { } end && entry.Timestamp > end))
+        {
+            return;
+        }
         if (
             !Apply(entry)
             && !IsRecorded(entry)
@@ -116,122 +133,155 @@ public sealed partial class JourneyJournalProcessor
     private bool ApplyRecord(JournalEventEnvelope entry, bool catchUp)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        lastObservation = null;
         if (entry.Timestamp is not { } timestamp)
         {
             return false;
         }
-        string? receipt = RecordReceipt(entry);
-        if (
-            timestamp < Journey.RecordTrackingStart
-            || (receipt is null && timestamp < Journey.Watermark)
-            || IsRecorded(entry)
-        )
+        string? originalReceipt = RecordReceipt(entry);
+        if (State.EndTime is { } end && timestamp > end)
         {
+            return false;
+        }
+        if (BeforeReplayRange(timestamp, originalReceipt))
+        {
+            PrimeAtTime(entry);
+            lastObservation = entry;
+            return false;
+        }
+        if (catchUp && originalReceipt is null && timestamp == catchUpBoundary && !catchUpBoundaryComplete)
+        {
+            PrimeAtTime(entry);
+            lastObservation = entry;
+            return false;
+        }
+        JournalEventEnvelope prepared = PrepareObservation(entry);
+        lastObservation = prepared;
+        if (IsRecorded(entry))
+        {
+            if (!CaptureObservation(prepared))
+            {
+                PrimeAtTime(entry);
+            }
+            return false;
+        }
+        if (catchUp && timestamp == State.RecordTrackingStart && !State.RecordTrackingStartComplete)
+        {
+            RememberRecord(originalReceipt);
+            RememberBaselineIdentity(originalReceipt);
             PrimeAtTime(entry);
             return false;
         }
-        if (catchUp && timestamp == Journey.RecordTrackingStart && !Journey.RecordTrackingStartComplete)
+        if (CannotReplayBeforeBaseline(entry))
         {
-            RememberRecord(receipt);
-            PrimeAtTime(entry);
             return false;
         }
-        applyingVisitIndex = FindVisitAt(timestamp);
-        try
+        AppendObservation(prepared);
+        if (!requiresReplay)
         {
-            ApplyEvent(entry);
+            ApplyProjectedEvent(entry);
         }
-        finally
-        {
-            applyingVisitIndex = null;
-        }
-        RememberRecord(receipt);
-        UpdateBoundary(timestamp, receipt);
+        RememberRecord(prepared.SourceContentIdentity);
+        UpdateBoundary(
+            timestamp,
+            prepared.SourceContentIdentity!.StartsWith("$journey-local$", StringComparison.Ordinal)
+                ? null
+                : originalReceipt
+        );
         return true;
     }
+
+    private bool BeforeReplayRange(DateTimeOffset timestamp, string? receipt) =>
+        timestamp < State.RecordTrackingStart || (receipt is null && timestamp < State.Watermark);
 
     private void RememberRecord(string? receipt)
     {
         if (receipt is not null)
         {
-            var records = (ImmutableHashSet<string>)Journey.RecordedJournalRecords!;
+            var records = (ImmutableHashSet<string>)State.RecordedJournalRecords!;
             ImmutableHashSet<string> updated = records.Add(receipt);
             HasRecordMetadataChanges |= !ReferenceEquals(records, updated);
-            Journey = Journey with { RecordedJournalRecords = updated };
+            State = State with { RecordedJournalRecords = updated };
         }
     }
 
     private void UpdateBoundary(DateTimeOffset timestamp, string? receipt)
     {
-        if (timestamp < Journey.Watermark)
+        if (timestamp < State.Watermark)
         {
             return;
         }
-        bool advancing = timestamp > Journey.Watermark;
+        bool advancing = timestamp > State.Watermark;
         HashSet<string> boundary = advancing
             ? []
-            : new(Journey.WatermarkRecords ?? ImmutableHashSet<string>.Empty, StringComparer.Ordinal);
+            : new(State.WatermarkRecords ?? ImmutableHashSet<string>.Empty, StringComparer.Ordinal);
         if (receipt is not null)
         {
             boundary.Add(receipt);
         }
-        Journey = Journey with
+        State = State with
         {
             Watermark = timestamp,
             WatermarkRecords = boundary,
             WatermarkRecordsComplete =
                 receipt is not null
-                && (advancing || (Journey.WatermarkRecordsComplete ?? Journey.WatermarkRecords is not null)),
+                && (advancing || (State.WatermarkRecordsComplete ?? State.WatermarkRecords is not null)),
         };
     }
 
     public JourneyReplaySummary ApplyCatchUp(IEnumerable<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        int processed = 0;
-        int ignored = 0;
-        foreach (JournalEventEnvelope entry in journalEvents)
+        lock (stateLock)
         {
-            if (ApplyRecord(entry, catchUp: true))
+            catchUpBoundary = State.Watermark;
+            catchUpBoundaryComplete = State.WatermarkRecordsComplete ?? State.WatermarkRecords is not null;
+            int processed = 0;
+            int ignored = 0;
+            observationBatch = true;
+            try
             {
-                processed++;
+                foreach (JournalEventEnvelope entry in journalEvents)
+                {
+                    if (ApplyRecord(entry, catchUp: true))
+                    {
+                        processed++;
+                    }
+                    else
+                    {
+                        ignored++;
+                    }
+                }
             }
-            else
+            finally
             {
-                ignored++;
+                observationBatch = false;
             }
+            if (requiresReplay)
+            {
+                ReplayObservations();
+            }
+            return new(Journey, processed, ignored);
         }
-        return new(Journey, processed, ignored);
     }
 
     internal JourneyJournalProcessor CreateMergeProcessor(JourneyDocument stored)
     {
         var processor = new JourneyJournalProcessor(stored, exobiologyCatalog, isOdyssey);
-        foreach (KeyValuePair<BodyKey, BodyState> pair in bodies)
-        {
-            processor.bodies[pair.Key] = pair.Value with { };
-        }
         return processor;
     }
 
     private void PrimeAtTime(JournalEventEnvelope entry)
     {
-        applyingVisitIndex = entry.Timestamp is { } timestamp ? FindVisitAt(timestamp) : -1;
-        try
-        {
-            PrimeEvent(entry);
-        }
-        finally
-        {
-            applyingVisitIndex = null;
-        }
+        CaptureBaselineContext(entry);
+        PrimeWithoutCapturing(entry);
     }
 
     private int FindVisitAt(DateTimeOffset timestamp)
     {
-        for (int index = Journey.VisitedSystems.Count - 1; index >= 0; index--)
+        for (int index = State.VisitedSystems.Count - 1; index >= 0; index--)
         {
-            JourneySystemVisit visit = Journey.VisitedSystems[index];
+            JourneySystemVisit visit = State.VisitedSystems[index];
             if (visit.Arrived <= timestamp && (visit.Departed is null || timestamp <= visit.Departed))
             {
                 return index;
@@ -242,7 +292,7 @@ public sealed partial class JourneyJournalProcessor
 
     private void ApplyArrivalAtTime(JourneySystemReference system, DateTimeOffset timestamp)
     {
-        var visits = Journey.VisitedSystems.ToList();
+        var visits = State.VisitedSystems.ToList();
         int existing = FindVisitAt(timestamp);
         if (existing >= 0 && visits[existing].StarSystem.SystemAddress == system.SystemAddress)
         {
@@ -274,6 +324,6 @@ public sealed partial class JourneyJournalProcessor
                 null
             )
         );
-        Journey = Journey with { VisitedSystems = visits };
+        State = State with { VisitedSystems = visits };
     }
 }

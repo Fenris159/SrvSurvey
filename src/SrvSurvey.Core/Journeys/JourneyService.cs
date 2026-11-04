@@ -118,12 +118,7 @@ public sealed partial class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            // Persist consumed observations before replacing any active projection.
-            if (pendingLiveProgress is { } pending)
-            {
-                await UpdateStoredJourneyLockedAsync(pending, static latest => latest, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            ParkPendingProgress();
             // Initialization belongs to the requested profile even when loading or replay fails.
             activeProcessor = null;
             pendingLiveProgress = null;
@@ -202,27 +197,41 @@ public sealed partial class JourneyService
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            JourneyServiceResult result = await CatchUpAndActivateAsync(journey, request.IsOdyssey, cancellationToken)
-                .ConfigureAwait(false);
             bool selected = await profileStore
                 .TryReplaceActiveJourneyAsync(
                     request.FrontierId,
                     request.IsOdyssey,
                     expectedReference,
-                    result.Journey!.FileName,
+                    journey.FileName,
                     cancellationToken,
                     request.CommanderName
                 )
                 .ConfigureAwait(false);
             if (!selected)
             {
-                return SelectionChanged() with
-                {
-                    Errors =
-                    [
-                        "The journey was saved, but the active journey selection changed. Refresh Journeys to load the latest selection.",
-                    ],
-                };
+                return SelectionChanged();
+            }
+            JourneyServiceResult result = await ResumeSavedJourneyAsync(
+                    journey,
+                    request.IsOdyssey,
+                    replay: true,
+                    upgradeWarning: null,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
+            if (
+                !await profileStore
+                    .TryReplaceActiveJourneyAsync(
+                        request.FrontierId,
+                        request.IsOdyssey,
+                        journey.FileName,
+                        journey.FileName,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false)
+            )
+            {
+                return SelectionChanged();
             }
             RecoveryReference = null;
             return result with { Errors = [.. active.Errors, .. catalog.Errors, .. result.Errors] };
@@ -247,14 +256,10 @@ public sealed partial class JourneyService
                 return JourneyServiceResult.Empty;
             }
 
-            int processed = 0;
-            foreach (JournalEventEnvelope entry in journalEvents.Where(activeProcessor.Apply))
-            {
-                pendingJournalEvents.Add(entry);
-                processed++;
-            }
-
-            if (processed > 0)
+            JourneyObservedBatch batch = activeProcessor.ApplyLiveBatch(journalEvents);
+            int processed = batch.Processed;
+            pendingJournalEvents.AddRange(batch.Observations);
+            if (batch.Observations.Count > 0)
             {
                 pendingLiveProgress = activeProcessor.Journey;
             }
@@ -428,10 +433,7 @@ public sealed partial class JourneyService
         JourneyJournalProcessor merged = pendingHistoryReplay is { } replay
             ? CreateCatchUpProcessor(stored, replay, activeIsOdyssey).Processor
             : activeProcessor.CreateMergeProcessor(stored);
-        foreach (JournalEventEnvelope entry in pendingJournalEvents.OrderBy(entry => entry.Timestamp))
-        {
-            merged.ApplyPendingRecord(entry);
-        }
+        merged.MergePendingRecords(pendingJournalEvents);
         return merged.Journey;
     }
 
@@ -546,6 +548,7 @@ public sealed partial class JourneyService
                 WatermarkRecordsComplete = null,
                 RecordTrackingStart = null,
                 RecordedJournalRecords = null,
+                ObservationHistory = null,
                 RecordTrackingStartComplete = false,
                 VisitedSystems = [],
             };
@@ -681,6 +684,7 @@ public sealed partial class JourneyService
                     WatermarkRecordsComplete = null,
                     RecordTrackingStart = null,
                     RecordedJournalRecords = null,
+                    ObservationHistory = null,
                     RecordTrackingStartComplete = false,
                     VisitedSystems = [],
                 },
@@ -690,26 +694,13 @@ public sealed partial class JourneyService
             rebuilt.ApplyCatchUp(read.Events);
             if (CoversSavedActivity(journey, rebuilt.Journey))
             {
-                var notes = journey.VisitedSystems.ToDictionary(
-                    visit => (visit.StarSystem.SystemAddress, visit.Arrived),
-                    visit => visit.Counts.Notes
-                );
                 rebuilt.UpdateJourney(
                     rebuilt.Journey with
                     {
-                        VisitedSystems = rebuilt
-                            .Journey.VisitedSystems.Select(visit =>
-                                visit with
-                                {
-                                    Counts = visit.Counts with
-                                    {
-                                        Notes = notes.GetValueOrDefault(
-                                            (visit.StarSystem.SystemAddress, visit.Arrived)
-                                        ),
-                                    },
-                                }
-                            )
-                            .ToArray(),
+                        VisitedSystems = JourneyJournalProcessor.RestoreNotes(
+                            journey.VisitedSystems,
+                            rebuilt.Journey.VisitedSystems
+                        ),
                     }
                 );
                 return (rebuilt, true, read.Events.Count(entry => entry.Timestamp > journey.Watermark));
@@ -723,7 +714,10 @@ public sealed partial class JourneyService
 
     private static bool CoversSavedActivity(JourneyDocument saved, JourneyDocument rebuilt) =>
         rebuilt.Watermark >= saved.Watermark
-        && CoversVisitedActivity(saved, rebuilt)
+        && (
+            (JourneyProgressSignature.IsTrusted(saved) && saved.ObservationHistory!.Baseline.IsOriginKnown)
+            || CoversVisitedActivity(saved, rebuilt)
+        )
         && JourneyJournalProcessor.CoversRecordedProgress(saved, rebuilt);
 
     private static bool CoversVisitedActivity(JourneyDocument saved, JourneyDocument rebuilt)
