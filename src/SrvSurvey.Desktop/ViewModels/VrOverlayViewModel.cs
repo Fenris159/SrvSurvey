@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -86,6 +87,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
                     is IOException
                         or UnauthorizedAccessException
                         or InvalidDataException
+                        or JsonException
                         or FormatException
                         or OverflowException
             )
@@ -178,26 +180,38 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
                 return;
             }
 
-            selectedPlatformProfile = value;
-            preferences = preferences with { RuntimeProfileId = value.Id };
-            settingsStore.Save(preferences);
-            LoadSelectedCalibration();
-            RefreshAvailableModes();
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(IsCustomRuntime));
-            OnPropertyChanged(nameof(IsVdxr));
-            OnPropertyChanged(nameof(CanEnableOverlays));
-            OnPropertyChanged(nameof(PlatformSupportMessage));
-            SetConnectionStatus(
-                Enabled ? VrOverlayConnectionState.WaitingForRuntime : VrOverlayConnectionState.Disabled,
-                Enabled ? "Connection route changed" : OverlaysOffHeadline,
-                Enabled
-                    ? $"Complete the {value.DisplayName} pairing steps while SrvSurvey checks the runtime."
-                    : "Complete this route's pairing steps, then enable VR overlays."
-            );
+            IsChangingRoute = true;
+            try
+            {
+                selectedPlatformProfile = value;
+                preferences = preferences with { RuntimeProfileId = value.Id };
+                settingsStore.Save(preferences);
+                SetAvailableOverlays(catalog.Defaults.Keys.Where(OverlayRuntimePresentationFactory.IsSupported));
+                RefreshAvailableModes();
+                LoadSelectedCalibration();
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsCustomRuntime));
+                OnPropertyChanged(nameof(IsVdxr));
+                OnPropertyChanged(nameof(CanEnableOverlays));
+                OnPropertyChanged(nameof(PlatformSupportMessage));
+                SetConnectionStatus(
+                    Enabled ? VrOverlayConnectionState.WaitingForRuntime : VrOverlayConnectionState.Disabled,
+                    Enabled ? "Connection route changed" : OverlaysOffHeadline,
+                    Enabled
+                        ? $"Complete the {value.DisplayName} pairing steps while SrvSurvey checks the runtime."
+                        : "Complete this route's pairing steps, then enable VR overlays."
+                );
+            }
+            finally
+            {
+                IsChangingRoute = false;
+            }
             RequestConnectionCheck();
         }
     }
+
+    // Reload editor fields as one route change before asking the coordinator to publish.
+    internal bool IsChangingRoute { get; private set; }
 
     public bool CanEnableOverlays => SelectedPlatformProfile.IsAvailable;
 
@@ -213,6 +227,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
                     is IOException
                         or UnauthorizedAccessException
                         or InvalidDataException
+                        or JsonException
                         or FormatException
                         or OverflowException
             )
@@ -601,6 +616,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
                     is IOException
                         or UnauthorizedAccessException
                         or InvalidDataException
+                        or JsonException
                         or FormatException
                         or OverflowException
             )

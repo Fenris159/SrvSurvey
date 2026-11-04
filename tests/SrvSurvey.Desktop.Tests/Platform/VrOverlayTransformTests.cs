@@ -36,6 +36,38 @@ public sealed class VrOverlayTransformTests
         Assert.Equal(90, placed.Rotation.Y, 4);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(90)]
+    public void PitchedAndRolledHeadsetPlacesThePanelAlongItsForwardHeadingWithOriginCompensation(float offsetDegrees)
+    {
+        var matrix = new HmdMatrix34_t
+        {
+            m0 = 0.7071068f,
+            m1 = -0.7071068f,
+            m2 = 0,
+            m3 = 2,
+            m4 = 0.5f,
+            m5 = 0.5f,
+            m6 = -0.7071068f,
+            m7 = 1,
+            m8 = 0.5f,
+            m9 = 0.5f,
+            m10 = 0.7071068f,
+            m11 = 3,
+        };
+        float offset = offsetDegrees * MathF.PI / 180;
+        var origin = Matrix4x4.CreateRotationY(offset);
+        VrOverlayHeadPose pose = VrOverlayTransform.FromOpenVrHeadPose(matrix, offset, origin);
+        VrOverlayCalibration placed = VrOverlayTransform.PlaceInFront(new(8, Vector3.Zero, Vector3.Zero), pose);
+        Matrix4x4 world = VrOverlayTransform.Create(placed, offset, origin);
+        Assert.Equal(2, world.M41, 4);
+        Assert.Equal(1, world.M42, 4);
+        Assert.Equal(2, world.M43, 4);
+        Assert.Equal(0.8, world.M11, 4);
+        Assert.Equal(0, world.M13, 4);
+    }
+
     [Fact]
     public void LegacyScaleAndCoordinateConversionArePreserved()
     {

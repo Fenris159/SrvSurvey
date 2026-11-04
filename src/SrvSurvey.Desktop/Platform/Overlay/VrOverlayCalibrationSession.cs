@@ -1,7 +1,7 @@
 using System.Numerics;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
 
@@ -31,9 +31,9 @@ internal sealed class VrOverlayCalibrationSession : IDisposable
             var content = new Border
             {
                 Padding = new Thickness(20),
-                Background = new SolidColorBrush(Color.Parse("#171A21")),
                 Child = new VrCalibrationView { DataContext = viewModel, IsInHeadset = true },
             };
+            content[!Border.BackgroundProperty] = new DynamicResourceExtension("RavenWindowBrush");
             controls = CreateSurface(ControlsPlotterName, content, 760);
             ControlsCalibration = new(8, new Vector3(0, -5, 11), new Vector3(15, 0, 0));
             awaitingHeadPose = true;

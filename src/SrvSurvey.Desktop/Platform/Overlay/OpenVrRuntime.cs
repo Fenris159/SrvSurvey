@@ -68,14 +68,11 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
         {
             return false;
         }
-        HmdMatrix34_t matrix = poses[0].mDeviceToAbsoluteTracking;
-        var position = Vector3.Transform(
-            new Vector3(matrix.m3, matrix.m7, matrix.m11),
-            Matrix4x4.Transpose(headsetOrientationOffset)
+        pose = VrOverlayTransform.FromOpenVrHeadPose(
+            poses[0].mDeviceToAbsoluteTracking,
+            headsetYawOffset,
+            headsetOrientationOffset
         );
-        float yaw = VrOverlayTransform.ExtractYaw(matrix);
-        // Legacy OpenVR rotates positions and panel orientations with opposite offset signs.
-        pose = new VrOverlayHeadPose(position, yaw - headsetYawOffset, yaw + headsetYawOffset);
         return true;
     }
 

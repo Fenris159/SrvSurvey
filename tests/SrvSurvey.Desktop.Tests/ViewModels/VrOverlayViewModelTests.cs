@@ -75,16 +75,41 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.Equal(4.5f, model.GetCalibration("PlotJumpInfo", "testbuggy")!.Position.Y);
     }
 
-    [Fact]
-    public void InvalidRouteCalibrationKeepsThePreviousRouteAndReportsTheLoadFailure()
+    [Theory]
+    [InlineData("{\"PlotJumpInfo\":42}")]
+    [InlineData("{\"PlotJumpInfo\":")]
+    public void InvalidRouteCalibrationKeepsThePreviousRouteAndReportsTheLoadFailure(string json)
     {
         VrOverlayViewModel model = CreateViewModel();
         string directory = Path.Combine(temporaryDirectory, "data", "vr", "vdxr");
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, "Default.json"), "{\"PlotJumpInfo\":42}");
+        File.WriteAllText(Path.Combine(directory, "Default.json"), json);
         model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
         Assert.Equal(VrPlatformProfileCatalog.SteamVrProfileId, model.SelectedPlatformProfile.Id);
         Assert.Contains("could not be loaded", model.StatusMessage);
+    }
+
+    [Fact]
+    public void ChangingToARouteWithoutTheSelectedPanelCannotPublishOrSaveItsOldPlacement()
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "data", "plotters.json"),
+            """{"PlotJumpInfo":"center:0, top:8","PlotBioStatus":"left:0, top:0 { s: 5, p: <0, 0, 10>, r: <0, 0, 0>}"}"""
+        );
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.True(model.BeginAdjustment());
+        model.SelectedOverlayName = "PlotJumpInfo";
+        model.Scale = 42;
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.SteamVrProfileId);
+        Assert.Equal(["PlotBioStatus"], model.AvailableOverlays);
+        Assert.Equal("PlotBioStatus", model.SelectedOverlayName);
+        Assert.Null(model.GetCalibration("PlotJumpInfo"));
+        Assert.Equal(5, model.Scale);
+        model.SaveCommand.Execute(null);
+        Assert.Null(
+            new VrOverlayCalibrationStore(Path.Combine(temporaryDirectory, "data")).Load().Resolve("PlotJumpInfo", null)
+        );
     }
 
     [Fact]

@@ -203,6 +203,10 @@ public sealed class VrOverlayCoordinator : IDisposable
             calibrationSession.Dispose();
             calibrationRegistrations = [];
         }
+        if (viewModel.IsChangingRoute)
+        {
+            return;
+        }
         if (
             eventArgs.PropertyName
             is nameof(VrOverlayViewModel.IsAdjusting)

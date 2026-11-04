@@ -100,8 +100,8 @@ an extra frame-driven sync. They also verify publisher-generation opt-in and
 acknowledgement, plus deactivation after overlay graphics failure. A late game
 attach exposes the incompatibility rather than reporting false success.
 
-Validation on 2026-11-04: the combined VR branch passes the repository quality
-gate with 92.2% changed-code C# coverage, 5,695 desktop tests and 521 core tests.
+Initial validation on 2026-11-04: the combined VR branch passes the repository quality
+gate with 92.2% changed-code C# coverage, 5,804 desktop tests and 521 core tests.
 The Windows native layer cross-compiles and passes its fake-runtime / software
 D3D11 tests under Wine; the Linux packet and pointer tests pass. Deliberate
 mutations of persistence, opt-in, synchronization, generation checks, application

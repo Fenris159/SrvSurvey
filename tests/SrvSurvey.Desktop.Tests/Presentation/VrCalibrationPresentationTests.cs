@@ -3,10 +3,12 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
 
@@ -121,6 +123,45 @@ public sealed class VrCalibrationPresentationTests : IDisposable
         Assert.Empty(session.Refresh(model, null));
         Assert.False(controls.Window.IsVisible);
         Assert.False(sample.Window.IsVisible);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("blue-light")]
+    [InlineData("green-light")]
+    [InlineData("orange-dark")]
+    public void HeadsetCalibrationUsesReadableMatchingApplicationThemeColors(string palette)
+    {
+        var theme = new RavenThemeService(
+            Application.Current!,
+            new ThemePreferenceStore(Path.Combine(directory, "theme.json"))
+        );
+        string previous = theme.Current.Key;
+        using var session = new VrOverlayCalibrationSession();
+        try
+        {
+            theme.Select(palette);
+            RegisteredOverlayWindow controls = session
+                .Refresh(CreateViewModel(), null)
+                .Single(item => item.PlotterName == "PlotAdjustVR");
+            controls.Window.CaptureRenderedFrame()?.Dispose();
+            Border background = Assert.IsType<Border>(controls.RenderSource);
+            TextBlock title = controls
+                .Window.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(text => text.Text == "VR overlay calibration");
+            Assert.Equal(
+                Color.Parse(RavenThemeCatalog.Get(palette).WindowColor),
+                Assert.IsAssignableFrom<ISolidColorBrush>(background.Background).Color
+            );
+            Assert.Equal(
+                Color.Parse(RavenThemeCatalog.Get(palette).TextColor),
+                Assert.IsAssignableFrom<ISolidColorBrush>(title.Foreground).Color
+            );
+        }
+        finally
+        {
+            theme.Select(previous);
+        }
     }
 
     private VrOverlayViewModel CreateViewModel()

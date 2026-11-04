@@ -40,6 +40,21 @@ public static class VrOverlayTransform
         return Matrix4x4.Multiply(Matrix4x4.Multiply(rotation, scale), translation);
     }
 
+    public static VrOverlayHeadPose FromOpenVrHeadPose(
+        Valve.VR.HmdMatrix34_t matrix,
+        float headsetYawOffset,
+        Matrix4x4 headsetOrientationOffset
+    )
+    {
+        var position = Vector3.Transform(
+            new Vector3(matrix.m3, matrix.m7, matrix.m11),
+            Matrix4x4.Transpose(headsetOrientationOffset)
+        );
+        float yaw = MathF.Atan2(matrix.m2, matrix.m10);
+        // Legacy OpenVR rotates positions and panel orientations with opposite offset signs.
+        return new VrOverlayHeadPose(position, yaw - headsetYawOffset, yaw + headsetYawOffset);
+    }
+
     public static float ExtractYaw(Valve.VR.HmdMatrix34_t matrix)
     {
         return MathF.Atan2(-matrix.m8, matrix.m0);

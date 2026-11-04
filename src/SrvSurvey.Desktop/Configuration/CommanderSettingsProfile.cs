@@ -61,7 +61,9 @@ internal static class CommanderSettingsProfile
 
         string marker = Path.Combine(paths.OverlaySettingsDirectory, ".profile-initialized");
         string vrMarker = Path.Combine(paths.OverlaySettingsDirectory, ".vr-profile-initialized");
-        if (File.Exists(marker) && File.Exists(vrMarker))
+        string vdxrMarker = Path.Combine(paths.OverlaySettingsDirectory, ".vdxr-profile-initialized");
+        string[] markers = [marker, vrMarker, vdxrMarker];
+        if (markers.All(File.Exists))
         {
             return;
         }
@@ -71,7 +73,7 @@ internal static class CommanderSettingsProfile
                 new[] { Path.Combine(paths.DataDirectory, file), Path.Combine(paths.OverlaySettingsDirectory, file) }
             )
         );
-        if (File.Exists(marker) && File.Exists(vrMarker))
+        if (markers.All(File.Exists))
         {
             return;
         }
@@ -90,17 +92,33 @@ internal static class CommanderSettingsProfile
         Directory.CreateDirectory(paths.OverlaySettingsDirectory);
         if (!File.Exists(vrMarker))
         {
-            string legacyVrDirectory = Path.Combine(paths.DataDirectory, "vr");
-            if (Directory.Exists(legacyVrDirectory))
-            {
-                foreach (string source in Directory.EnumerateFiles(legacyVrDirectory, "*.json"))
-                {
-                    CopyIfMissing(source, Path.Combine(paths.OverlaySettingsDirectory, "vr", Path.GetFileName(source)));
-                }
-            }
+            CopyCalibrationDirectory(
+                Path.Combine(paths.DataDirectory, "vr"),
+                Path.Combine(paths.OverlaySettingsDirectory, "vr")
+            );
             WriteInitializationMarker(vrMarker);
         }
+        if (!File.Exists(vdxrMarker))
+        {
+            CopyCalibrationDirectory(
+                Path.Combine(paths.DataDirectory, "vr", "vdxr"),
+                Path.Combine(paths.OverlaySettingsDirectory, "vr", "vdxr")
+            );
+            WriteInitializationMarker(vdxrMarker);
+        }
         WriteInitializationMarker(marker);
+    }
+
+    private static void CopyCalibrationDirectory(string sourceDirectory, string targetDirectory)
+    {
+        if (!Directory.Exists(sourceDirectory))
+        {
+            return;
+        }
+        foreach (string source in Directory.EnumerateFiles(sourceDirectory, "*.json"))
+        {
+            CopyIfMissing(source, Path.Combine(targetDirectory, Path.GetFileName(source)));
+        }
     }
 
     /// <summary>Records completed migration while accepting a marker already written by another instance.</summary>
