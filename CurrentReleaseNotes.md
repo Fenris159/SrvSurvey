@@ -37,20 +37,28 @@ from RC77.
 
 ## What's changed
 
-- **Screenshot retry responsiveness:** Steam captures are admitted as one batch,
-  and live processing bounds failed attempts as well as completed conversions.
-  Later ready images can progress while another capture stays unreadable. An
-  inaccessible Steam completion archive no longer prevents pending BMP recovery.
+- **Screenshot retry responsiveness:** Live processing bounds durable Steam
+  admissions and conversion attempts, so large libraries do not flood the recovery
+  queue in one poll. Ready images keep progressing past unreadable captures even
+  after earlier conversions finish. Failed queue saves retry before the source
+  arrives; an inaccessible Steam completion archive does not block pending BMP
+  recovery. Same-second filename collisions reuse verified matches without
+  repeatedly hashing every earlier image.
 - **Steam capture ownership:** Consecutive journal parts retain Commander and
   location context, with dependent history recalculated when an earlier file
   changes. External Proton libraries are matched to their Steam client; ambiguous
   installations and unusable account metadata require manual source selection.
   Quoted braces in Steam metadata remain valid, and linked screenshot folders
-  keep their index timestamps. Docking after leaving a planet no longer restores
-  that departed body's name into a photo label.
+  keep their index timestamps, including sources with a trailing separator.
+  Malformed index paths cannot discard later valid captures. Fresh docking names
+  replace old station or star labels while retaining valid planet context.
+  Historical captures require covering journal history; a verified, currently
+  bound live session can remain quiet without an arbitrary age cutoff.
 - **Journey note recovery:** A saved note's pending visit count can finish even
   if another window edits the note before retry. The external text is retained;
   additional unsaved edits still receive conflict protection and can be discarded.
+  Journey edits read and write under one shared file lease so independent windows
+  retain each other's changes. Readouts identify note-save counts explicitly.
 
 - **Guides:** Refresh in-app instructions and the shipped chat reference for
   Journeys, portable photo reports, Commander readouts, FC/SC Routes, Discord,
@@ -69,8 +77,8 @@ from RC77.
   records do not create duplicate PNGs, and turning conversion off pauses pending
   work. Failure messages explain the file error while retaining the original BMP. Image reads use managed streams
   to support long Windows paths during decoding and PNG verification. Unchanged
-  corrupt files stay pending without repeating costly decoding attempts; a file
-  change enables another attempt. Recovery verifies published images before
+  corrupt files stay pending without hot-poll decoding; a file change or periodic
+  retry detects repairs even when size and modification time stay unchanged. Recovery verifies published images before
   cleaning up an original BMP and avoids creating duplicate copies. Concurrent
   captures that choose the same filename retain both images before originals
   can be removed. Live conversion reports each finished capture without waiting
@@ -84,10 +92,12 @@ from RC77.
   PNG destination used by Journeys is displayed read-only with an **Open folder**
   button that creates the folder when needed. This destination stays fixed
   through source-folder changes, journal-profile changes and restarts; existing
-  custom destinations are retained. Older automatically saved source defaults
+  custom destinations are retained. A failed destination save retries the same
+  frozen folder rather than deriving a new location from another profile. Older automatically saved source defaults
   gain Proton detection while explicit manual choices remain intact.
   Bootstrap selects the commander's configured profile before fixing the first
-  output destination, including linked Wine journals. Choosing the displayed
+  output destination, including linked Wine journals. Configured journal alias
+  changes are applied even when no new journal events arrive. Choosing the displayed
   source folder explicitly keeps that choice through later profile changes.
   Preference edits made before a journal is selected keep that first destination
   automatic until the correct profile is known.

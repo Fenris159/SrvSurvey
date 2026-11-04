@@ -843,10 +843,23 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                 )
                 : null,
             frontierId: state.Session.FrontierId,
-            cancellationToken: CancellationToken.None
+            cancellationToken: CancellationToken.None,
+            liveSession: GetLiveScreenshotSession(context.Update)
         );
         ReportScreenshotResult(screenshotResult);
     }
+
+    private SteamScreenshotLiveSession? GetLiveScreenshotSession(JournalMonitorUpdate update) =>
+        !dependencies.IsDiagnosticReplay()
+        && !update.IsAwaitingCommanderIdentity
+        && !state.Session.IsShutdown
+        && !state.Session.IsAtMainMenu
+        && dependencies.CommanderInstances.AvailableGameWindowCount > 0
+        && dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount)
+        && update.JournalPath is { } path
+        && state.Session.FrontierId is { } frontierId
+            ? new(path, frontierId, DateTimeOffset.UtcNow)
+            : null;
 
     private void ReportScreenshotResult(ScreenshotProcessingResult screenshotResult)
     {
@@ -1376,7 +1389,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             ScreenshotProcessingResult screenshots = await dependencies.ScreenshotProcessing.ProcessJournalEventsAsync(
                 [],
                 state.Session.CommanderName,
-                frontierId: state.Session.FrontierId
+                frontierId: state.Session.FrontierId,
+                liveSession: GetLiveScreenshotSession(update)
             );
             ReportScreenshotResult(screenshots);
         }

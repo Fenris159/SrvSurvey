@@ -186,6 +186,7 @@ public sealed partial class SteamScreenshotSourceTests : IDisposable
             {"timestamp":"1970-01-01T05:07:00Z","event":"Screenshot","System":"Sol","Body":"Earth"}
             {"timestamp":"1970-01-01T05:08:10Z","event":"Screenshot","System":"Lave","Body":"Wrong system"}
             {"timestamp":"1970-01-01T05:08:30Z","event":"LeaveBody","StarSystem":"Sol","Body":"Earth"}
+            {"timestamp":"1970-01-01T05:09:00Z","event":"FuelScoop","Total":10}
             """ + "\n"
         );
         foreach (string name in new[] { "before.jpg", "at-body.jpg", "after.jpg" })

@@ -73,6 +73,7 @@ public sealed partial class ScreenshotProcessingViewModel
 
     private async Task<ScreenshotProcessingResult> ProcessSteamScreenshotsAsync(
         string? frontierId,
+        SteamScreenshotLiveSession? liveSession,
         CancellationToken cancellationToken
     )
     {
@@ -106,7 +107,8 @@ public sealed partial class ScreenshotProcessingViewModel
                 source,
                 journalDirectory,
                 frontierId,
-                cancellationToken
+                cancellationToken,
+                liveSession
             );
             warnings.AddRange(batch.Warnings);
             if (batch.Captures.Count > 0)

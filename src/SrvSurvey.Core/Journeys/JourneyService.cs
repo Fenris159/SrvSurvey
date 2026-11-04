@@ -377,9 +377,8 @@ public sealed partial class JourneyService
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            JourneyDocument latest = await ReadLatestJourneyAsync(expected, cancellationToken).ConfigureAwait(false);
             JourneyDocument saved = await journeyStore
-                .SaveAsync(update(latest), cancellationToken)
+                .UpdateAsync(expected.FrontierId, expected.FileName, update, cancellationToken)
                 .ConfigureAwait(false);
             if (
                 activeProcessor?.Journey.FileName == saved.FileName

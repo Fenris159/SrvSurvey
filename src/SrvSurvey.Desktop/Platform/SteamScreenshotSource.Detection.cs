@@ -56,10 +56,7 @@ public sealed partial class SteamScreenshotSource
         if (library is not null)
         {
             string[] owners = clients.Where(root => OwnsLibrary(root, library)).ToArray();
-            if (owners.Length > 0)
-            {
-                return owners.Length == 1 ? owners[0] : null;
-            }
+            return owners.Length == 1 ? owners[0] : null;
         }
         return clients.Length == 1 ? clients[0] : null;
     }

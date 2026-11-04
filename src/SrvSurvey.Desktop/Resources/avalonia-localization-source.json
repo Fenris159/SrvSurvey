@@ -409,7 +409,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "1 note",
+    "Text": "1 note save",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1455,6 +1455,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A Steam screenshot index entry was skipped: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
     "Text": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -8236,6 +8244,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/SystemSurveySettingsStore.cs"
+  },
+  {
+    "Text": "BodyType",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Bookmark POI",
@@ -38792,6 +38808,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Note saves",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
+  },
+  {
     "Text": "Notes",
     "IsFormat": false,
     "SourceKinds": [
@@ -42679,7 +42703,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MeritSystemRowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Planetary",
@@ -67704,7 +67728,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
-    "Text": "Touchdowns {0}; screenshots {1}; notes {2}",
+    "Text": "Touchdowns {0}; screenshots {1}; note saves {2}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -68766,7 +68790,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.Missions.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Unhandled process exception: {0}",
@@ -81618,7 +81642,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "{0} notes",
+    "Text": "{0} note saves",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

@@ -19,7 +19,8 @@ public sealed partial class SteamScreenshotSource(
         string folder,
         string journalDirectory,
         string frontierId,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        SteamScreenshotLiveSession? liveSession = null
     )
     {
         var warnings = new List<string>();
@@ -37,7 +38,7 @@ public sealed partial class SteamScreenshotSource(
                 ["Choose Elite's Steam 760/remote/359320/screenshots folder; other games are not imported."]
             );
         }
-        folder = Path.GetFullPath(folder);
+        folder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(folder));
         Dictionary<string, DateTimeOffset> captures = ReadCaptureTimes(folder, warnings);
         if (captures.Count == 0)
         {
@@ -53,7 +54,7 @@ public sealed partial class SteamScreenshotSource(
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            CaptureLocation? location = FindLocation(locations, timestamp);
+            CaptureLocation? location = FindLocation(locations, timestamp, liveSession);
             if (
                 location is null
                 || location.FrontierId != frontierId
@@ -122,7 +123,14 @@ public sealed partial class SteamScreenshotSource(
                     ?.Children.GetValueOrDefault(EliteAppId);
                 foreach (SteamKeyValues item in game?.Children.Values.AsEnumerable() ?? [])
                 {
-                    AddIndexedCapture(item, remote!.FullName, folder, captures);
+                    try
+                    {
+                        AddIndexedCapture(item, remote!.FullName, folder, captures);
+                    }
+                    catch (ArgumentException exception)
+                    {
+                        warnings.Add("A Steam screenshot index entry was skipped: " + exception.Message);
+                    }
                 }
             }
         }
@@ -224,3 +232,5 @@ internal sealed record SteamScreenshotBatch(
     IReadOnlyList<SteamScreenshotCapture> Captures,
     IReadOnlyList<string> Warnings
 );
+
+public sealed record SteamScreenshotLiveSession(string JournalPath, string FrontierId, DateTimeOffset Through);

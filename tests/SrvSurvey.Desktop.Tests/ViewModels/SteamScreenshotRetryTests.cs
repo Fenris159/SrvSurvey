@@ -16,6 +16,7 @@ public sealed partial class SteamScreenshotSettingsTests
             """
             {"timestamp":"1970-01-01T05:00:00Z","event":"Commander","FID":"F123","Name":"Test"}
             {"timestamp":"1970-01-01T05:00:01Z","event":"Location","StarSystem":"Sol","Body":"Earth","BodyType":"Planet"}
+            {"timestamp":"1970-01-01T05:07:00Z","event":"FuelScoop","Total":10}
             """
         );
         string folder = Platform.SteamScreenshotSourceTests.CreateAccount(Path.Combine(directory, "Steam"), "42");

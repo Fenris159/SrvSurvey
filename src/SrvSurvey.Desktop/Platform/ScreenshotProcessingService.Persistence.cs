@@ -19,7 +19,8 @@ public sealed partial class ScreenshotProcessingService
         SourceFingerprint? Source,
         SourceFingerprint? Undecodable,
         ScreenshotConversion? CompletedConversion,
-        IReadOnlyList<PublishedImage> Images
+        IReadOnlyList<PublishedImage> Images,
+        DateTimeOffset? RetryAfter = null
     );
 
     private void RecoverPendingCaptures()
@@ -87,6 +88,8 @@ public sealed partial class ScreenshotProcessingService
             }
             var capture = new PendingScreenshot(saved.Request)
             {
+                AdmissionStored = true,
+                RetryAfter = saved.RetryAfter,
                 Source = saved.Source,
                 Undecodable = saved.Undecodable,
                 CompletedConversion = saved.CompletedConversion,
@@ -154,6 +157,7 @@ public sealed partial class ScreenshotProcessingService
     {
         if (pendingQueueDirectory is null)
         {
+            capture.AdmissionStored = true;
             return;
         }
         if (OperatingSystem.IsWindows())
@@ -192,12 +196,14 @@ public sealed partial class ScreenshotProcessingService
                         capture.Source,
                         capture.Undecodable,
                         capture.CompletedConversion,
-                        capture.PublishedImages
+                        capture.PublishedImages,
+                        capture.RetryAfter
                     )
                 );
                 stream.Flush(true);
             }
             File.Move(temporary, path, true);
+            capture.AdmissionStored = true;
         }
         finally
         {
@@ -298,11 +304,11 @@ public sealed partial class ScreenshotProcessingService
         return System.Convert.ToHexString(SHA256.HashData(stream));
     }
 
-    private static bool ImageStillValid(PublishedImage image)
+    private bool ImageStillValid(PublishedImage image)
     {
         try
         {
-            return File.Exists(image.Path) && HashFile(image.Path) == image.Hash;
+            return File.Exists(image.Path) && readImageHash(image.Path) == image.Hash;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

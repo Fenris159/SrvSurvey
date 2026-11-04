@@ -5,7 +5,7 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Tests.Journeys;
 
-public sealed class JourneyServiceTests : IDisposable
+public sealed partial class JourneyServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),

@@ -6,7 +6,7 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests;
 
-public sealed class JournalDirectoryMonitorTests : IDisposable
+public sealed partial class JournalDirectoryMonitorTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),

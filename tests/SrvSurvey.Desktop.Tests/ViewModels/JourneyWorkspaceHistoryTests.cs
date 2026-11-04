@@ -335,7 +335,7 @@ public sealed partial class JourneyWorkspaceViewModelTests
         await new JourneyStore(DataDirectory).SaveAsync(journey with { VisitedSystems = [first, revisit, quiet] });
         JourneyWorkspaceViewModel model = CreateViewModel();
         await model.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
-        Assert.Equal("1 screenshot, 2 notes, 1 landing", model.VisitedSystems[2].ActivitySummary);
+        Assert.Equal("1 screenshot, 2 note saves, 1 landing", model.VisitedSystems[2].ActivitySummary);
         Assert.Equal("Screenshots on another visit, Notes on another visit", model.VisitedSystems[1].ActivitySummary);
         Assert.Empty(model.VisitedSystems[0].ActivitySummary);
     }

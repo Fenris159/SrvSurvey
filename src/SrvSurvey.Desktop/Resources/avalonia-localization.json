@@ -205,8 +205,8 @@
       "translation": "1 Nichtkörpersignal"
     },
     {
-      "source": "1 note",
-      "translation": "1 Anmerkung"
+      "source": "1 note save",
+      "translation": "1 Notiz speichern"
     },
     {
       "source": "1 organism",
@@ -727,6 +727,10 @@
     {
       "source": "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
       "translation": "Ein SHA-256-Manifest zeichnet die importierten Dateien auf, sodass Teilkopien und stille Beschädigungen erkannt werden können."
+    },
+    {
+      "source": "A Steam screenshot index entry was skipped: {0}",
+      "translation": "Ein Steam-Screenshot-Indexeintrag wurde übersprungen: {0}"
     },
     {
       "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -4111,6 +4115,10 @@
     {
       "source": "BodyPredictionPreviewExtensionSeconds",
       "translation": "BodyPredictionPreviewExtensionSeconds"
+    },
+    {
+      "source": "BodyType",
+      "translation": "Körpertyp"
     },
     {
       "source": "Bookmark POI",
@@ -19329,6 +19337,10 @@
       "translation": "Nicht besucht"
     },
     {
+      "source": "Note saves",
+      "translation": "Hinweis wird gespeichert"
+    },
+    {
       "source": "Notes",
       "translation": "Notizen"
     },
@@ -33749,8 +33761,8 @@
       "translation": "Touchdowns"
     },
     {
-      "source": "Touchdowns {0}; screenshots {1}; notes {2}",
-      "translation": "Touchdowns {0}; Screenshots {1}; Notizen {2}"
+      "source": "Touchdowns {0}; screenshots {1}; note saves {2}",
+      "translation": "Touchdowns {0}; Screenshots {1}; Hinweis speichert {2}"
     },
     {
       "source": "Tourist Planner",
@@ -40701,8 +40713,8 @@
       "translation": "{0} Nichtkörpersignale"
     },
     {
-      "source": "{0} notes",
-      "translation": "{0} Notizen"
+      "source": "{0} note saves",
+      "translation": "{0} Notizen werden gespeichert"
     },
     {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
@@ -41615,8 +41627,8 @@
       "translation": "1 señal no corporal"
     },
     {
-      "source": "1 note",
-      "translation": "1 nota"
+      "source": "1 note save",
+      "translation": "1 nota guardada"
     },
     {
       "source": "1 organism",
@@ -42137,6 +42149,10 @@
     {
       "source": "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
       "translation": "Un manifiesto SHA-256 registra los archivos importados para que se puedan detectar copias parciales y corrupción silenciosa."
+    },
+    {
+      "source": "A Steam screenshot index entry was skipped: {0}",
+      "translation": "Se omitió una entrada del índice de captura de pantalla de Steam: {0}"
     },
     {
       "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -45521,6 +45537,10 @@
     {
       "source": "BodyPredictionPreviewExtensionSeconds",
       "translation": "CuerpoPredicciónVista previaExtensiónSegundos"
+    },
+    {
+      "source": "BodyType",
+      "translation": "Tipo de cuerpo"
     },
     {
       "source": "Bookmark POI",
@@ -60739,6 +60759,10 @@
       "translation": "No visitado"
     },
     {
+      "source": "Note saves",
+      "translation": "Nota guardada"
+    },
+    {
       "source": "Notes",
       "translation": "Notas"
     },
@@ -75159,8 +75183,8 @@
       "translation": "Anotaciones"
     },
     {
-      "source": "Touchdowns {0}; screenshots {1}; notes {2}",
-      "translation": "Anotaciones {0}; capturas de pantalla {1}; notas {2}"
+      "source": "Touchdowns {0}; screenshots {1}; note saves {2}",
+      "translation": "Anotaciones {0}; capturas de pantalla {1}; nota guarda {2}"
     },
     {
       "source": "Tourist Planner",
@@ -82111,8 +82135,8 @@
       "translation": "{0} señales no corporales"
     },
     {
-      "source": "{0} notes",
-      "translation": "Notas {0}"
+      "source": "{0} note saves",
+      "translation": "Nota guardada {0}"
     },
     {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
@@ -83025,8 +83049,8 @@
       "translation": "1 signal non corporel"
     },
     {
-      "source": "1 note",
-      "translation": "1 remarque"
+      "source": "1 note save",
+      "translation": "1 note sauvegardée"
     },
     {
       "source": "1 organism",
@@ -83547,6 +83571,10 @@
     {
       "source": "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
       "translation": "Un manifeste SHA-256 enregistre les fichiers importés afin que les copies partielles et la corruption silencieuse puissent être détectées."
+    },
+    {
+      "source": "A Steam screenshot index entry was skipped: {0}",
+      "translation": "Une entrée d'index de capture d'écran Steam a été ignorée : {0}"
     },
     {
       "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -86931,6 +86959,10 @@
     {
       "source": "BodyPredictionPreviewExtensionSeconds",
       "translation": "BodyPredictionPreviewExtensionSeconds"
+    },
+    {
+      "source": "BodyType",
+      "translation": "Type de corps"
     },
     {
       "source": "Bookmark POI",
@@ -102149,6 +102181,10 @@
       "translation": "Non visité"
     },
     {
+      "source": "Note saves",
+      "translation": "La note enregistre"
+    },
+    {
       "source": "Notes",
       "translation": "Remarques"
     },
@@ -116569,8 +116605,8 @@
       "translation": "Touchés"
     },
     {
-      "source": "Touchdowns {0}; screenshots {1}; notes {2}",
-      "translation": "Touchés {0} ; captures d'écran {1} ; note {2}"
+      "source": "Touchdowns {0}; screenshots {1}; note saves {2}",
+      "translation": "Touchés {0} ; captures d'écran {1} ; la note enregistre {2}"
     },
     {
       "source": "Tourist Planner",
@@ -123521,8 +123557,8 @@
       "translation": "{0} signaux non corporels"
     },
     {
-      "source": "{0} notes",
-      "translation": "Remarques sur {0}"
+      "source": "{0} note saves",
+      "translation": "La note {0} enregistre"
     },
     {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
@@ -124435,8 +124471,8 @@
       "translation": "1 sinal não corporal"
     },
     {
-      "source": "1 note",
-      "translation": "1 nota"
+      "source": "1 note save",
+      "translation": "1 nota salva"
     },
     {
       "source": "1 organism",
@@ -124957,6 +124993,10 @@
     {
       "source": "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
       "translation": "Um manifesto SHA-256 registra os arquivos importados para que cópias parciais e corrupção silenciosa possam ser detectadas."
+    },
+    {
+      "source": "A Steam screenshot index entry was skipped: {0}",
+      "translation": "Uma entrada de índice de captura de tela do Steam foi ignorada: {0}"
     },
     {
       "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -128341,6 +128381,10 @@
     {
       "source": "BodyPredictionPreviewExtensionSeconds",
       "translation": "BodyPredictionPreviewExtensionSeconds"
+    },
+    {
+      "source": "BodyType",
+      "translation": "Tipo de corpo"
     },
     {
       "source": "Bookmark POI",
@@ -143559,6 +143603,10 @@
       "translation": "Não visitado"
     },
     {
+      "source": "Note saves",
+      "translation": "Nota salva"
+    },
+    {
       "source": "Notes",
       "translation": "Notas"
     },
@@ -157979,8 +158027,8 @@
       "translation": "Aterrissagens"
     },
     {
-      "source": "Touchdowns {0}; screenshots {1}; notes {2}",
-      "translation": "Aterrissagens {0}; capturas de tela {1}; notas {2}"
+      "source": "Touchdowns {0}; screenshots {1}; note saves {2}",
+      "translation": "Aterrissagens {0}; capturas de tela {1}; nota salva {2}"
     },
     {
       "source": "Tourist Planner",
@@ -164931,8 +164979,8 @@
       "translation": "{0} sinais não corporais"
     },
     {
-      "source": "{0} notes",
-      "translation": "Notas {0}"
+      "source": "{0} note saves",
+      "translation": "Nota {0} salva"
     },
     {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
@@ -165845,8 +165893,8 @@
       "translation": "1 сигнал, не являющийся телом"
     },
     {
-      "source": "1 note",
-      "translation": "1 примечание"
+      "source": "1 note save",
+      "translation": "1 заметка сохранить"
     },
     {
       "source": "1 organism",
@@ -166367,6 +166415,10 @@
     {
       "source": "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
       "translation": "Манифест SHA-256 записывает импортированные файлы, поэтому можно обнаружить частичные копии и скрытое повреждение."
+    },
+    {
+      "source": "A Steam screenshot index entry was skipped: {0}",
+      "translation": "Запись индекса скриншотов Steam была пропущена: {0}."
     },
     {
       "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -169751,6 +169803,10 @@
     {
       "source": "BodyPredictionPreviewExtensionSeconds",
       "translation": "BodyPredictionPreviewExtensionSeconds"
+    },
+    {
+      "source": "BodyType",
+      "translation": "Тип тела"
     },
     {
       "source": "Bookmark POI",
@@ -184969,6 +185025,10 @@
       "translation": "Не посещено"
     },
     {
+      "source": "Note saves",
+      "translation": "Примечание сохраняется"
+    },
+    {
       "source": "Notes",
       "translation": "Примечания"
     },
@@ -199389,8 +199449,8 @@
       "translation": "Тачдауны"
     },
     {
-      "source": "Touchdowns {0}; screenshots {1}; notes {2}",
-      "translation": "Тачдауны {0}; скриншоты {1}; примечания {2}"
+      "source": "Touchdowns {0}; screenshots {1}; note saves {2}",
+      "translation": "Тачдауны {0}; скриншоты {1}; заметки сохраняются {2}"
     },
     {
       "source": "Tourist Planner",
@@ -206341,8 +206401,8 @@
       "translation": "{0} сигналы, не являющиеся телом"
     },
     {
-      "source": "{0} notes",
-      "translation": "{0} примечания"
+      "source": "{0} note saves",
+      "translation": "Сохранение заметок {0}"
     },
     {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
@@ -207255,8 +207315,8 @@
       "translation": "1 个非身体信号"
     },
     {
-      "source": "1 note",
-      "translation": "1 条注释"
+      "source": "1 note save",
+      "translation": "1 条笔记保存"
     },
     {
       "source": "1 organism",
@@ -207777,6 +207837,10 @@
     {
       "source": "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
       "translation": "SHA-256 清单记录导入的文件，以便可以检测到部分副本和静默损坏。"
+    },
+    {
+      "source": "A Steam screenshot index entry was skipped: {0}",
+      "translation": "Steam 屏幕截图索引条目被跳过：{0}"
     },
     {
       "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -211161,6 +211225,10 @@
     {
       "source": "BodyPredictionPreviewExtensionSeconds",
       "translation": "BodyPreviewExtensionSeconds"
+    },
+    {
+      "source": "BodyType",
+      "translation": "体型"
     },
     {
       "source": "Bookmark POI",
@@ -226379,6 +226447,10 @@
       "translation": "未访问过"
     },
     {
+      "source": "Note saves",
+      "translation": "注意保存"
+    },
+    {
       "source": "Notes",
       "translation": "注释"
     },
@@ -240799,8 +240871,8 @@
       "translation": "达阵次数"
     },
     {
-      "source": "Touchdowns {0}; screenshots {1}; notes {2}",
-      "translation": "达阵 {0};屏幕截图 {1}；注释 {2}"
+      "source": "Touchdowns {0}; screenshots {1}; note saves {2}",
+      "translation": "达阵 {0}；截图{1}；注意保存{2}"
     },
     {
       "source": "Tourist Planner",
@@ -247751,8 +247823,8 @@
       "translation": "{0} 非身体信号"
     },
     {
-      "source": "{0} notes",
-      "translation": "{0} 注释"
+      "source": "{0} note saves",
+      "translation": "{0} 笔记保存"
     },
     {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",
@@ -248665,8 +248737,8 @@
       "translation": "* 1 NON-BODY SIGNAL >>>!"
     },
     {
-      "source": "1 note",
-      "translation": "* 1 NOTE >>>!"
+      "source": "1 note save",
+      "translation": "* 1 NOTE SAVE >>>!"
     },
     {
       "source": "1 organism",
@@ -249187,6 +249259,10 @@
     {
       "source": "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
       "translation": "* A SHA-256 MANIFEST RECORDS THE IMPORTED FILES SO PARTIAL COPIES AND SILENT CORRUPTION CAN BE DETECTED. >>>!"
+    },
+    {
+      "source": "A Steam screenshot index entry was skipped: {0}",
+      "translation": "* A STEAM SCREENSHOT INDEX ENTRY WAS SKIPPED: {0} >>>!"
     },
     {
       "source": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
@@ -252571,6 +252647,10 @@
     {
       "source": "BodyPredictionPreviewExtensionSeconds",
       "translation": "* BODYPREDICTIONPREVIEWEXTENSIONSECONDS >>>!"
+    },
+    {
+      "source": "BodyType",
+      "translation": "* BODYTYPE >>>!"
     },
     {
       "source": "Bookmark POI",
@@ -267789,6 +267869,10 @@
       "translation": "* NOT VISITED >>>!"
     },
     {
+      "source": "Note saves",
+      "translation": "* NOTE SAVES >>>!"
+    },
+    {
       "source": "Notes",
       "translation": "* NOTES >>>!"
     },
@@ -282209,8 +282293,8 @@
       "translation": "* TOUCHDOWNS >>>!"
     },
     {
-      "source": "Touchdowns {0}; screenshots {1}; notes {2}",
-      "translation": "* TOUCHDOWNS {0}; SCREENSHOTS {1}; NOTES {2} >>>!"
+      "source": "Touchdowns {0}; screenshots {1}; note saves {2}",
+      "translation": "* TOUCHDOWNS {0}; SCREENSHOTS {1}; NOTE SAVES {2} >>>!"
     },
     {
       "source": "Tourist Planner",
@@ -289161,8 +289245,8 @@
       "translation": "* {0} NON-BODY SIGNALS >>>!"
     },
     {
-      "source": "{0} notes",
-      "translation": "* {0} NOTES >>>!"
+      "source": "{0} note saves",
+      "translation": "* {0} NOTE SAVES >>>!"
     },
     {
       "source": "{0} now uses global opacity. Use the top ✓ to save and close.",

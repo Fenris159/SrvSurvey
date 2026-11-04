@@ -20,7 +20,10 @@ automatic folder does not match your installation.
 The journal filename is resolved against the selected source, including virtual
 or placeholder paths. Late or locked files stay pending and retry without
 blocking journal updates, including after restarting SrvSurvey. Each pending
-capture retains its original Commander, location and processing choices.
+capture retains its original Commander, location and processing choices. Failed
+recovery-queue saves are retried while the source is still missing. Unchanged
+unreadable images are periodically rechecked so a repair can be detected without
+repeated decoding on every poll.
 
 ## Optional Steam captures
 
@@ -38,16 +41,19 @@ Steam captures have no Elite `Screenshot` event. SrvSurvey matches their capture
 time to the relevant Commander's journal history, using system, station and body
 context known at that time. It does not borrow a later body's name or carry a
 body into a different system. Unmatched captures remain untouched until they can
-be attributed. Journals covering the capture are needed for this matching. Consecutive parts of
-the same journal retain session context; unrelated or missing parts cannot borrow
-another session’s ownership. Linked screenshot storage retains access to Steam’s
-index timestamps.
+be attributed. Historical captures need journal events covering their capture
+time; the last location in an old journal does not extend indefinitely. A verified
+live game bound to that journal can remain quiet without an age limit. Shutdown
+and main-menu state end that live context. Consecutive parts retain session
+context; unrelated or missing parts cannot borrow another session’s ownership.
+Linked screenshot storage retains access to Steam’s index timestamps.
 
 ## Output and optional processing
 
 The **PNG destination** is read-only and shared with Journeys. **Open folder**
 creates and opens that location. A previously configured custom destination is
-retained; source-folder or journal changes do not move the photo library.
+retained; source-folder or journal changes do not move the photo library. If
+saving that destination fails, SrvSurvey retries the same fixed folder.
 
 Location labels and original-file removal apply to both sources. Labels are
 optional. Originals are removed only after the converted PNG is published and

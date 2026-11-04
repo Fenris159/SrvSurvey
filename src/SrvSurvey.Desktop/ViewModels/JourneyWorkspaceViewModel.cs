@@ -356,8 +356,8 @@ public sealed record JourneySystemItemViewModel(
     private string NotesSummary =>
         Visit.Counts.Notes switch
         {
-            > 1 => $"{Visit.Counts.Notes:N0} notes",
-            1 => "1 note",
+            > 1 => $"{Visit.Counts.Notes:N0} note saves",
+            1 => "1 note save",
             _ when InterestFlags.Contains('n') => "Notes on another visit",
             _ => "",
         };

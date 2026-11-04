@@ -1355,7 +1355,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
             $"Exploration rewards ~{visit.Counts.ExplorationRewards:N0} CR",
             $"Biology {visit.Counts.Organisms:N0} analysed / base value {visit.Counts.ExobiologyRewards:N0} CR",
             $"Codex {visit.CodexScanned?.Count ?? 0:N0} scans / {visit.Counts.NewCodexEntries:N0} regional firsts",
-            $"Touchdowns {visit.Counts.Touchdowns:N0}; screenshots {visit.Counts.Screenshots:N0}; notes {visit.Counts.Notes:N0}",
+            $"Touchdowns {visit.Counts.Touchdowns:N0}; screenshots {visit.Counts.Screenshots:N0}; note saves {visit.Counts.Notes:N0}",
         };
         if (visit.SurfaceSignals is { Count: > 0 })
         {
@@ -1388,7 +1388,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
             new("Detailed scans", statistics.Counts.DetailedSurfaceScans.ToString("N0", CultureInfo.CurrentCulture)),
             new("Touchdowns", statistics.TotalLandingCount.ToString("N0", CultureInfo.CurrentCulture)),
             new("Screenshots", statistics.Counts.Screenshots.ToString("N0", CultureInfo.CurrentCulture)),
-            new("Notes", statistics.Counts.Notes.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Note saves", statistics.Counts.Notes.ToString("N0", CultureInfo.CurrentCulture)),
             new("Organisms", statistics.Counts.Organisms.ToString("N0", CultureInfo.CurrentCulture)),
             new("Biology base value", $"{statistics.Counts.ExobiologyRewards:N0} CR"),
             new("Exploration rewards", $"~{statistics.Counts.ExplorationRewards:N0} CR"),

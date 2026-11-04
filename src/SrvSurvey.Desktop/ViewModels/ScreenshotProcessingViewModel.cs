@@ -15,6 +15,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
     private string? journalDirectory;
     private bool automaticSource;
     private bool outputUninitialized;
+    private bool outputPinPending;
 
     public ScreenshotProcessingViewModel(
         ScreenshotProcessingSettingsStore settingsStore,
@@ -54,18 +55,23 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
 
     private void InitializeOutputFolder()
     {
-        if (!outputUninitialized)
+        if (outputUninitialized)
+        {
+            outputUninitialized = false;
+            outputPinPending = true;
+            preferences = preferences with
+            {
+                TargetFolder = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory).TargetFolder,
+            };
+        }
+        if (!outputPinPending)
         {
             return;
         }
-        outputUninitialized = false;
-        preferences = preferences with
-        {
-            TargetFolder = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory).TargetFolder,
-        };
         try
         {
             preferences = preferences with { TargetFolder = settingsStore.PinOutputFolder(preferences.TargetFolder) };
+            outputPinPending = false;
             StatusMessage = CreateReadyStatus(preferences);
         }
         catch (Exception exception)
@@ -261,9 +267,14 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
         ScreenshotNavigationContext? navigationContext = null,
         string? frontierId = null,
+        SteamScreenshotLiveSession? liveSession = null,
         CancellationToken cancellationToken = default
     )
     {
+        if (outputPinPending)
+        {
+            InitializeOutputFolder();
+        }
         ScreenshotProcessingResult result =
             processingService.HasPendingWork || journalEvents.Any(entry => entry.EventName == "Screenshot")
                 ? await processingService.ProcessLiveAsync(
@@ -278,7 +289,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
         // A completed image should reach the overlay before a Steam history scan or another conversion starts.
         ScreenshotProcessingResult steam =
             result.Conversions.Count == 0
-                ? await ProcessSteamScreenshotsAsync(frontierId, cancellationToken)
+                ? await ProcessSteamScreenshotsAsync(frontierId, liveSession, cancellationToken)
                 : ScreenshotProcessingResult.Empty;
         result = new(
             result.Conversions.Concat(steam.Conversions).ToArray(),
@@ -325,6 +336,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
                 useAutomaticTarget: false,
                 preserveTargetFolder: outputUninitialized
             );
+            outputPinPending = false;
             StatusMessage = CreateReadyStatus(preferences);
         }
         catch (Exception exception)

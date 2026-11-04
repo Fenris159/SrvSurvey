@@ -40,6 +40,7 @@ public sealed class JournalDirectoryMonitor
     private bool isAutomaticIdentityScanIncomplete;
     private bool isAwaitingCommanderIdentity;
     private bool lastReportedAwaitingCommanderIdentity;
+    private string? lastReportedConfiguredJournalDirectory;
     private string? activeJournalDirectory;
 
     /// <summary>Monitors a single journal directory for the selected commander.</summary>
@@ -153,6 +154,9 @@ public sealed class JournalDirectoryMonitor
         await ReadLatestJournalAsync(events, errors, cancellationToken).ConfigureAwait(false);
         CompanionPollResults companions = await PollAllCompanionsAsync(errors, cancellationToken).ConfigureAwait(false);
         bool sessionContextChanged = isAwaitingCommanderIdentity != lastReportedAwaitingCommanderIdentity;
+        string? configuredSource = currentJournalPath is null
+            ? null
+            : configuredJournalSources.GetValueOrDefault(currentJournalPath);
 
         var update = new JournalMonitorUpdate(
             currentJournalPath,
@@ -169,11 +173,15 @@ public sealed class JournalDirectoryMonitor
             StatusReadErrorRecovered = companions.StatusReadErrorRecovered,
             IsAwaitingCommanderIdentity = isAwaitingCommanderIdentity,
             SessionContextChanged = sessionContextChanged,
-            ConfiguredJournalDirectory = currentJournalPath is null
-                ? null
-                : configuredJournalSources.GetValueOrDefault(currentJournalPath),
+            ConfiguredJournalDirectory = configuredSource,
+            ConfiguredSourceChanged = !string.Equals(
+                configuredSource,
+                lastReportedConfiguredJournalDirectory,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+            ),
         };
         lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
+        lastReportedConfiguredJournalDirectory = configuredSource;
         hasCompletedFirstPoll = true;
         return update;
     }
@@ -933,6 +941,8 @@ public sealed record JournalMonitorUpdate(
 
     public bool SessionContextChanged { get; init; }
 
+    public bool ConfiguredSourceChanged { get; init; }
+
     public bool HasChanges =>
         IsBootstrapRead
         || JournalEvents.Count > 0
@@ -943,5 +953,6 @@ public sealed record JournalMonitorUpdate(
         || Market is not null
         || Errors.Count > 0
         || StatusReadErrorRecovered
-        || SessionContextChanged;
+        || SessionContextChanged
+        || ConfiguredSourceChanged;
 }

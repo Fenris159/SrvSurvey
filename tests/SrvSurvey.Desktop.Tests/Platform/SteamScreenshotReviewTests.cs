@@ -137,6 +137,7 @@ public sealed partial class SteamScreenshotSourceTests
             """
             {"timestamp":"1970-01-01T05:06:01Z","event":"Fileheader","part":2}
             {"timestamp":"1970-01-01T05:06:10Z","event":"FSDJump","StarSystem":"Lave"}
+            {"timestamp":"1970-01-01T05:07:00Z","event":"FuelScoop","Total":10}
             """
         );
         await File.WriteAllBytesAsync(Path.Combine(folder, "19700101050653_1.jpg"), [1]);
@@ -204,6 +205,7 @@ public sealed partial class SteamScreenshotSourceTests
                 + """
                 {"timestamp":"1970-01-01T05:06:00Z","event":"LeaveBody","Body":"Earth"}
                 {"timestamp":"1970-01-01T05:06:10Z","event":"Docked","StarSystem":"Sol","StationName":"Test Dock"}
+                {"timestamp":"1970-01-01T05:07:00Z","event":"FuelScoop","Total":10}
                 """
         );
         await File.WriteAllBytesAsync(Path.Combine(folder, "19700101050653_1.jpg"), [1]);

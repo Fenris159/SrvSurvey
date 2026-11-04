@@ -5,7 +5,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class ScreenshotProcessingViewModelTests : IDisposable
+public sealed partial class ScreenshotProcessingViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),

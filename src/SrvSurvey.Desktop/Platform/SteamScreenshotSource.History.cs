@@ -14,8 +14,20 @@ public sealed partial class SteamScreenshotSource
         string? FrontierId,
         string? CommanderName,
         string? SystemName,
-        string? BodyName
+        string? BodyName,
+        CaptureCoverage Coverage
     );
+
+    private sealed class CaptureCoverage
+    {
+        public DateTimeOffset Through { get; set; } = DateTimeOffset.MinValue;
+        public string? LiveJournalPath { get; set; }
+        public string? FrontierId { get; set; }
+    }
+
+    private sealed record PhotoBody(string Name, bool IsPlanet);
+
+    private sealed record PhotoJournal(IReadOnlyList<JournalEventEnvelope> Events, DateTimeOffset Through);
 
     private sealed record JournalFile(string Path, long Length, DateTime Modified);
 
@@ -77,12 +89,13 @@ public sealed partial class SteamScreenshotSource
     {
         var result = new List<CaptureLocation>();
         var session = new JournalSessionState();
-        string? captureBody = null;
+        PhotoBody? captureBody = null;
+        var coverage = new CaptureCoverage();
         JournalPart? previousPart = null;
         foreach (string path in paths)
         {
-            IReadOnlyList<JournalEventEnvelope> entries = await ReadJournalEventsAsync(path, cancellationToken)
-                .ConfigureAwait(false);
+            PhotoJournal journal = await ReadJournalEventsAsync(path, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<JournalEventEnvelope> entries = journal.Events;
             JournalPart? part = ReadJournalPart(path, entries);
             bool continuation =
                 part is not null
@@ -93,31 +106,62 @@ public sealed partial class SteamScreenshotSource
             {
                 session = new();
                 captureBody = null;
+                coverage = new();
             }
-            foreach (JournalEventEnvelope entry in entries)
+            coverage.LiveJournalPath = null;
+            coverage.Through = journal.Through > coverage.Through ? journal.Through : coverage.Through;
+            captureBody = AppendCaptureLocations(
+                entries,
+                session,
+                captureBody,
+                coverage,
+                result,
+                continuation,
+                cancellationToken
+            );
+            if (!session.IsShutdown && !session.IsAtMainMenu)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                // A continuation header describes the same running game session.
-                // Re-applying it would put that session back into the main menu.
-                if (entry.EventName == FileheaderEvent && continuation)
-                {
-                    continue;
-                }
-                session.Apply(entry);
-                captureBody = ResolveCaptureBody(entry, session, captureBody);
-                result.Add(
-                    new(
-                        entry.Timestamp!.Value,
-                        session.FrontierId,
-                        session.CommanderName,
-                        session.IsShutdown || session.IsAtMainMenu ? null : session.SystemName,
-                        captureBody
-                    )
-                );
+                coverage.LiveJournalPath = ResolvePhysicalCapture(path);
+                coverage.FrontierId = session.FrontierId;
             }
             previousPart = part;
         }
         return result;
+    }
+
+    private static PhotoBody? AppendCaptureLocations(
+        IReadOnlyList<JournalEventEnvelope> entries,
+        JournalSessionState session,
+        PhotoBody? captureBody,
+        CaptureCoverage coverage,
+        List<CaptureLocation> result,
+        bool continuation,
+        CancellationToken cancellationToken
+    )
+    {
+        foreach (JournalEventEnvelope entry in entries)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            // A continuation header describes the same running game session.
+            // Re-applying it would put that session back into the main menu.
+            if (entry.EventName == FileheaderEvent && continuation)
+            {
+                continue;
+            }
+            session.Apply(entry);
+            captureBody = ResolveCaptureBody(entry, session, captureBody);
+            result.Add(
+                new(
+                    entry.Timestamp!.Value,
+                    session.FrontierId,
+                    session.CommanderName,
+                    session.IsShutdown || session.IsAtMainMenu ? null : session.SystemName,
+                    captureBody?.Name,
+                    coverage
+                )
+            );
+        }
+        return captureBody;
     }
 
     private static JournalPart? ReadJournalPart(string path, IReadOnlyList<JournalEventEnvelope> entries)
@@ -148,10 +192,7 @@ public sealed partial class SteamScreenshotSource
         return new(parts[1], number);
     }
 
-    private static async Task<IReadOnlyList<JournalEventEnvelope>> ReadJournalEventsAsync(
-        string path,
-        CancellationToken cancellationToken
-    )
+    private static async Task<PhotoJournal> ReadJournalEventsAsync(string path, CancellationToken cancellationToken)
     {
         using var stream = new FileStream(
             path,
@@ -163,6 +204,7 @@ public sealed partial class SteamScreenshotSource
         );
         using var reader = new StreamReader(stream, Encoding.UTF8);
         var result = new List<JournalEventEnvelope>();
+        DateTimeOffset through = DateTimeOffset.MinValue;
         while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             if (
@@ -170,6 +212,10 @@ public sealed partial class SteamScreenshotSource
             )
             {
                 continue;
+            }
+            if (entry.Timestamp.Value > through)
+            {
+                through = entry.Timestamp.Value;
             }
             if (
                 entry.EventName
@@ -183,6 +229,7 @@ public sealed partial class SteamScreenshotSource
                     or "SupercruiseExit"
                     or "ApproachBody"
                     or "Docked"
+                    or "Undocked"
                     or "StartJump"
                     or "Music"
                     or "Shutdown"
@@ -198,10 +245,14 @@ public sealed partial class SteamScreenshotSource
             }
             result.Add(entry);
         }
-        return result;
+        return new(result, through);
     }
 
-    private static string? ResolveCaptureBody(JournalEventEnvelope entry, JournalSessionState session, string? previous)
+    private static PhotoBody? ResolveCaptureBody(
+        JournalEventEnvelope entry,
+        JournalSessionState session,
+        PhotoBody? previous
+    )
     {
         if (session.IsShutdown || session.IsAtMainMenu)
         {
@@ -219,26 +270,40 @@ public sealed partial class SteamScreenshotSource
             or "SupercruiseEntry"
             or "Died"
             or "Resurrect" => null,
-            "Location" or "FSDJump" or "CarrierJump" or "SupercruiseExit" => CaptureText(entry, "Body")
-                ?? CaptureText(entry, "BodyName"),
-            "ApproachBody" => CaptureText(entry, "Body") ?? previous,
-            "Docked" => CaptureText(entry, "Body") ?? previous ?? CaptureText(entry, "StationName"),
+            "Location" or "FSDJump" or "CarrierJump" or "SupercruiseExit" => ReadPhotoBody(entry),
+            "ApproachBody" => CaptureText(entry, "Body") is { } planet ? new(planet, true) : previous,
+            "Docked" => ReadPhotoBody(entry)
+                ?? (previous is { IsPlanet: true } ? previous : null)
+                ?? (CaptureText(entry, "StationName") is { } station ? new(station, false) : previous),
+            "Undocked" => previous is { IsPlanet: true } ? previous : null,
             "Screenshot"
                 when string.Equals(
                     CaptureText(entry, "System"),
                     session.SystemName,
                     StringComparison.OrdinalIgnoreCase
-                ) => CaptureText(entry, "Body") ?? previous,
+                ) => ResolveScreenshotBody(entry, previous),
             _ => previous,
         };
     }
+
+    private static PhotoBody? ResolveScreenshotBody(JournalEventEnvelope entry, PhotoBody? previous) =>
+        CaptureText(entry, "Body") is { } body ? new(body, previous?.Name == body && previous.IsPlanet) : previous;
+
+    private static PhotoBody? ReadPhotoBody(JournalEventEnvelope entry) =>
+        (CaptureText(entry, "Body") ?? CaptureText(entry, "BodyName")) is { } name
+            ? new(name, string.Equals(CaptureText(entry, "BodyType"), "Planet", StringComparison.OrdinalIgnoreCase))
+            : null;
 
     private static string? CaptureText(JournalEventEnvelope entry, string name) =>
         entry.Payload.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
 
-    private static CaptureLocation? FindLocation(IReadOnlyList<CaptureLocation> locations, DateTimeOffset at)
+    private static CaptureLocation? FindLocation(
+        IReadOnlyList<CaptureLocation> locations,
+        DateTimeOffset at,
+        SteamScreenshotLiveSession? liveSession
+    )
     {
         int low = 0;
         int high = locations.Count - 1;
@@ -256,6 +321,21 @@ public sealed partial class SteamScreenshotSource
                 high = middle - 1;
             }
         }
-        return match < 0 ? null : locations[match];
+        if (match < 0)
+        {
+            return null;
+        }
+        CaptureLocation location = locations[match];
+        CaptureCoverage coverage = location.Coverage;
+        bool covered =
+            at <= coverage.Through
+            || (
+                liveSession is not null
+                && at <= liveSession.Through
+                && liveSession.FrontierId == coverage.FrontierId
+                && coverage.LiveJournalPath is not null
+                && PathComparer.Equals(coverage.LiveJournalPath, ResolvePhysicalCapture(liveSession.JournalPath))
+            );
+        return covered ? location : null;
     }
 }
