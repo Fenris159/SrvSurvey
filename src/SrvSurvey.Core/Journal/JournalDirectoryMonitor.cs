@@ -21,6 +21,7 @@ public sealed partial class JournalDirectoryMonitor
     private readonly Dictionary<string, string> companionFileStampErrors;
     private readonly Dictionary<string, string> configuredJournalSources;
     private readonly Func<string, FileStream> openJournalStream;
+    private readonly List<string> journalIdentityReadErrors = [];
     private readonly SemaphoreSlim pollLock = new(1, 1);
     private string? currentJournalPath;
     private long currentJournalOffset;
@@ -196,7 +197,7 @@ public sealed partial class JournalDirectoryMonitor
         };
         lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
         lastReportedConfiguredJournalDirectory = configuredSource;
-        hasCompletedFirstPoll |= journalReadSucceeded || events.Count > 0;
+        hasCompletedFirstPoll |= journalReadSucceeded;
         return update;
     }
 
@@ -206,10 +207,11 @@ public sealed partial class JournalDirectoryMonitor
         CancellationToken cancellationToken
     )
     {
+        journalIdentityReadErrors.Clear();
         try
         {
             await ReadLatestJournalAsync(events, errors, cancellationToken).ConfigureAwait(false);
-            return true;
+            return journalIdentityReadErrors.Count == 0;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -217,6 +219,10 @@ public sealed partial class JournalDirectoryMonitor
             // Deliver that prefix even if the next part cannot currently be opened.
             errors.Add(exception.Message);
             return false;
+        }
+        finally
+        {
+            errors.AddRange(journalIdentityReadErrors.Except(errors, StringComparer.Ordinal));
         }
     }
 
@@ -232,7 +238,10 @@ public sealed partial class JournalDirectoryMonitor
             return;
         }
 
-        if (!PathsEqual(latestJournal.FullName, currentJournalPath))
+        if (
+            !PathsEqual(latestJournal.FullName, currentJournalPath)
+            && !await IsEarlierSessionPartAsync(latestJournal, cancellationToken).ConfigureAwait(false)
+        )
         {
             await ReadSelectedPartsAsync(latestJournal, events, errors, cancellationToken).ConfigureAwait(false);
         }
@@ -430,6 +439,7 @@ public sealed partial class JournalDirectoryMonitor
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            journalIdentityReadErrors.Add(exception.Message);
             return null;
         }
 

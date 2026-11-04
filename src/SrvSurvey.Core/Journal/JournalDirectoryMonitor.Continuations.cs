@@ -80,6 +80,26 @@ public sealed partial class JournalDirectoryMonitor
         }
     }
 
+    // A temporarily missing continuation must not make its already-consumed
+    // predecessor look like a new journal. Keep the cursor until it returns.
+    private async Task<bool> IsEarlierSessionPartAsync(FileInfo candidate, CancellationToken cancellationToken)
+    {
+        if (
+            currentJournalPath is null
+            || !PathsEqual(Path.GetDirectoryName(currentJournalPath)!, candidate.DirectoryName)
+            || !journalIdentityCache.TryGetValue(currentJournalPath, out JournalIdentityCacheEntry? current)
+            || current.Part is not { } currentPart
+        )
+        {
+            return false;
+        }
+        JournalIdentityCacheEntry? identity = await ReadJournalIdentityAsync(candidate, cancellationToken)
+            .ConfigureAwait(false);
+        return identity?.Part is { } candidatePart
+            && string.Equals(currentPart.Series, candidatePart.Series, StringComparison.Ordinal)
+            && candidatePart.Number < currentPart.Number;
+    }
+
     private static string? ReadDeclaredFrontierId(JournalEventEnvelope entry) =>
         entry.EventName is "Commander" or "LoadGame"
         && entry.Payload.TryGetProperty("FID", out JsonElement value)

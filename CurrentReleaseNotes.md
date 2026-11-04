@@ -58,9 +58,10 @@ from RC77.
   commanders follow verified continuation parts on startup and during rotation,
   preserving session context and unread activity. If a later part becomes locked
   or unavailable, already-consumed activity and commands are delivered once and
-  reading resumes after repair. Failed initial reads retain bootstrap safety.
-  Quiet Steam captures also work
-  when Elite is on a nested Gamescope display with no switchable desktop window.
+  reading resumes after repair without replaying the preceding part. Initial
+  replay remains in bootstrap mode through partial or failed reads, so historical
+  commands stay suppressed. Quiet Steam captures also work when Elite is on a
+  nested Gamescope display with no switchable desktop window.
 - **Journey note recovery:** A saved note's pending visit count can finish even
   if another window edits the note before retry. The external text is retained;
   additional unsaved edits still receive conflict protection and can be discarded.
