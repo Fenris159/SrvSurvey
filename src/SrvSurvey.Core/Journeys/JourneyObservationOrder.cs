@@ -27,16 +27,13 @@ internal static class JourneyObservationOrder
         List<JourneyObservedRecord> result
     )
     {
-        var indices = records
-            .Select((record, index) => (record.Identity, index))
-            .ToDictionary(pair => pair.Identity, pair => pair.index, StringComparer.Ordinal);
         int[] degree = new int[records.Length];
         var children = new List<int>[records.Length];
         for (int index = 0; index < records.Length; index++)
         {
             children[index] = [];
         }
-        LinkPredecessors(records, aliases, indices, degree, children, Multiplicities(records));
+        LinkPredecessors(records, aliases, degree, children);
         var ready = new SortedSet<int>(Comparer<int>.Create((left, right) => Compare(records, left, right)));
         for (int index = 0; index < degree.Length; index++)
         {
@@ -71,42 +68,17 @@ internal static class JourneyObservationOrder
     private static void LinkPredecessors(
         JourneyObservedRecord[] records,
         IReadOnlyDictionary<string, string> aliases,
-        Dictionary<string, int> indices,
         int[] degree,
-        List<int>[] children,
-        IReadOnlyDictionary<string, int> multiplicities
+        List<int>[] children
     )
     {
+        var witnesses = new JourneyOrderWitnesses(records, aliases);
         for (int index = 0; index < records.Length; index++)
         {
-            JourneyObservedRecord record = records[index];
-            IEnumerable<SrvSurvey.Core.Journal.JournalOrderEvidence> evidence =
-                record.OrderEvidence
-                ?? record.PreviousIdentities.Select(previous => new SrvSurvey.Core.Journal.JournalOrderEvidence(
-                    previous,
-                    multiplicities.GetValueOrDefault(ContentKey(record.Identity), 1),
-                    multiplicities.GetValueOrDefault(ContentKey(previous), 1)
-                ));
-            foreach (
-                string previousIdentity in evidence
-                    .Where(edge =>
-                        edge.Occurrences >= multiplicities.GetValueOrDefault(ContentKey(record.Identity), 1)
-                        && edge.PreviousOccurrences
-                            >= multiplicities.GetValueOrDefault(ContentKey(edge.PreviousIdentity), 1)
-                    )
-                    .Select(edge => edge.PreviousIdentity)
-            )
+            foreach (int parent in witnesses.Predecessors(index).Where(parent => parent != index))
             {
-                string predecessor = aliases.GetValueOrDefault(previousIdentity, previousIdentity);
-                if (
-                    indices.TryGetValue(predecessor, out int parent)
-                    && parent != index
-                    && !children[parent].Contains(index)
-                )
-                {
-                    degree[index]++;
-                    children[parent].Add(index);
-                }
+                degree[index]++;
+                children[parent].Add(index);
             }
         }
     }
@@ -123,7 +95,9 @@ internal static class JourneyObservationOrder
         foreach (JourneyObservedRecord record in records)
         {
             string key = ContentKey(record.Identity);
-            counts[key] = Math.Max(counts[key], record.SourceOccurrenceCount ?? CanonicalOccurrence(record.Identity));
+            int observed = record.SourceOccurrenceCount ?? CanonicalOccurrence(record.Identity);
+            int witnessed = record.SourceWitnessOccurrences?.Values.DefaultIfEmpty(1).Max() ?? 1;
+            counts[key] = Math.Max(counts[key], Math.Max(observed, witnessed));
             foreach (SrvSurvey.Core.Journal.JournalOrderEvidence edge in record.OrderEvidence ?? [])
             {
                 counts[key] = Math.Max(counts[key], edge.Occurrences);

@@ -82,10 +82,38 @@ public sealed partial class JourneyStore
                 {
                     OrderEvidence = ReadOrderEvidence(row, path),
                     SourceOccurrenceCount = GetInt32(row, "occurrences"),
+                    SourceWitnessOccurrences = ReadWitnessOccurrences(row, path),
                 }
             );
         }
         return records;
+    }
+
+    private static Dictionary<string, int>? ReadWitnessOccurrences(JsonObject row, string path)
+    {
+        if (row["witnesses"] is null)
+        {
+            return null;
+        }
+        if (row["witnesses"] is not JsonObject witnesses)
+        {
+            throw new InvalidDataException($"The journey {path} has invalid source witnesses.");
+        }
+        var result = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach ((string witness, JsonNode? node) in witnesses)
+        {
+            if (
+                string.IsNullOrWhiteSpace(witness)
+                || node is not JsonValue value
+                || !value.TryGetValue<int>(out int count)
+                || count <= 0
+            )
+            {
+                throw new InvalidDataException($"The journey {path} has invalid source witnesses.");
+            }
+            result.Add(witness, count);
+        }
+        return result;
     }
 
     private static List<JournalOrderEvidence>? ReadOrderEvidence(JsonObject row, string path)
@@ -106,6 +134,10 @@ public sealed partial class JourneyStore
                 || GetString(edge, nameof(JournalOrderEvidence.PreviousIdentity)) is not { Length: > 0 } previous
                 || GetInt32(edge, nameof(JournalOrderEvidence.Occurrences)) is not > 0
                 || GetInt32(edge, nameof(JournalOrderEvidence.PreviousOccurrences)) is not > 0
+                || (
+                    edge[nameof(JournalOrderEvidence.Witness)] is not null
+                    && string.IsNullOrWhiteSpace(GetString(edge, nameof(JournalOrderEvidence.Witness)))
+                )
             )
             {
                 throw new InvalidDataException($"The journey {path} has invalid ordering evidence.");
@@ -116,6 +148,9 @@ public sealed partial class JourneyStore
                     GetInt32(edge, nameof(JournalOrderEvidence.Occurrences))!.Value,
                     GetInt32(edge, nameof(JournalOrderEvidence.PreviousOccurrences))!.Value
                 )
+                {
+                    Witness = GetString(edge, nameof(JournalOrderEvidence.Witness)),
+                }
             );
         }
         return result;
@@ -168,6 +203,7 @@ public sealed partial class JourneyStore
                 ["record"] = JsonNode.Parse(record.RawJson),
                 ["order"] = JsonSerializer.SerializeToNode(record.OrderEvidence),
                 ["occurrences"] = record.SourceOccurrenceCount,
+                ["witnesses"] = JsonSerializer.SerializeToNode(record.SourceWitnessOccurrences),
             };
             WriteSet(row, "previous", record.PreviousIdentities);
             array.Add(row);

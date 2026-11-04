@@ -158,6 +158,7 @@ public sealed partial class JourneyJournalProcessor
             SourcePreviousContentIdentities = record.PreviousIdentities,
             SourceOrderEvidence = record.OrderEvidence,
             SourceOccurrenceCount = record.SourceOccurrenceCount,
+            SourceWitnessOccurrences = record.SourceWitnessOccurrences,
         };
     }
 
@@ -212,6 +213,7 @@ public sealed partial class JourneyJournalProcessor
         {
             OrderEvidence = entry.SourceOrderEvidence,
             SourceOccurrenceCount = entry.SourceOccurrenceCount,
+            SourceWitnessOccurrences = entry.SourceWitnessOccurrences?.ToImmutableDictionary(StringComparer.Ordinal),
         };
     }
 
@@ -240,9 +242,22 @@ public sealed partial class JourneyJournalProcessor
             )
             .Distinct()
             .ToArray();
+        var witnesses = (
+            existing.SourceWitnessOccurrences ?? ImmutableDictionary<string, int>.Empty
+        ).ToImmutableDictionary(StringComparer.Ordinal);
+        foreach (
+            (string witness, int total) in prepared.SourceWitnessOccurrences ?? ImmutableDictionary<string, int>.Empty
+        )
+        {
+            witnesses = witnesses.SetItem(witness, Math.Max(witnesses.GetValueOrDefault(witness), total));
+        }
+        bool witnessesChanged =
+            witnesses.Count != (existing.SourceWitnessOccurrences?.Count ?? 0)
+            || witnesses.Any(pair => existing.SourceWitnessOccurrences?.GetValueOrDefault(pair.Key) != pair.Value);
         int count = Math.Max(existing.SourceOccurrenceCount ?? 1, prepared.SourceOccurrenceCount ?? 1);
         if (
-            !previous.SetEquals(existing.PreviousIdentities)
+            witnessesChanged
+            || !previous.SetEquals(existing.PreviousIdentities)
             || count != (existing.SourceOccurrenceCount ?? 1)
             || !evidence.ToHashSet().SetEquals(existing.OrderEvidence ?? LegacyOrder(existing))
         )
@@ -254,6 +269,7 @@ public sealed partial class JourneyJournalProcessor
                     PreviousIdentities = previous,
                     OrderEvidence = evidence,
                     SourceOccurrenceCount = count,
+                    SourceWitnessOccurrences = witnesses,
                 }
             );
             MarkObservationChange();

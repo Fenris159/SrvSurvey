@@ -63,6 +63,7 @@ public sealed record JourneyObservedRecord(
 {
     public IReadOnlyList<JournalOrderEvidence>? OrderEvidence { get; init; }
     public int? SourceOccurrenceCount { get; init; }
+    public IReadOnlyDictionary<string, int>? SourceWitnessOccurrences { get; init; }
 }
 
 public sealed record JourneySystemVisit(

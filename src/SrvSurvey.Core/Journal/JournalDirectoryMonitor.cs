@@ -26,6 +26,8 @@ public sealed partial class JournalDirectoryMonitor
     private string? currentJournalPath;
     private long currentJournalOffset;
     private string? previousJournalContentIdentity;
+    private string? sourceOrderWitnessPath;
+    private string sourceOrderWitness = string.Empty;
     private readonly Dictionary<string, int> currentJournalContentOccurrences = new(StringComparer.Ordinal);
     private byte[] pendingJournalBytes = [];
     private string? statusContentHash;
@@ -508,12 +510,18 @@ public sealed partial class JournalDirectoryMonitor
             return;
         }
 
+        if (!string.Equals(sourceOrderWitnessPath, currentJournalPath, StringComparison.Ordinal))
+        {
+            sourceOrderWitnessPath = currentJournalPath;
+            sourceOrderWitness = "live:" + Guid.NewGuid().ToString("N");
+        }
         await using FileStream stream = openJournalStream(currentJournalPath);
         if (stream.Length < currentJournalOffset)
         {
             currentJournalOffset = 0;
             currentJournalContentOccurrences.Clear();
             previousJournalContentIdentity = null;
+            sourceOrderWitness = "live:" + Guid.NewGuid().ToString("N");
             pendingJournalBytes = [];
         }
 
@@ -551,7 +559,7 @@ public sealed partial class JournalDirectoryMonitor
             lineStart = index + 1;
         }
 
-        JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences);
+        JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences, sourceOrderWitness);
         pendingJournalBytes = combined[lineStart..];
     }
 
@@ -562,7 +570,7 @@ public sealed partial class JournalDirectoryMonitor
         {
             int eventStart = events.Count;
             ParseLine(pendingJournalBytes, currentJournalOffset - pendingJournalBytes.Length, events, errors);
-            JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences);
+            JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences, sourceOrderWitness);
             pendingJournalBytes = [];
         }
     }

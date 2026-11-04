@@ -356,6 +356,10 @@ public sealed partial class JourneyJournalHistoryReader
                         .Concat(entry.SourceOrderEvidence ?? [])
                         .Distinct()
                         .ToArray(),
+                    SourceWitnessOccurrences = MergeWitnessOccurrences(
+                        existing.SourceWitnessOccurrences,
+                        entry.SourceWitnessOccurrences
+                    ),
                     SourceOccurrenceCount = Math.Max(
                         existing.SourceOccurrenceCount ?? 1,
                         entry.SourceOccurrenceCount ?? 1
@@ -368,6 +372,24 @@ public sealed partial class JourneyJournalHistoryReader
                 events.Add(entry);
             }
         }
+    }
+
+    private static Dictionary<string, int> MergeWitnessOccurrences(
+        IReadOnlyDictionary<string, int>? first,
+        IReadOnlyDictionary<string, int>? second
+    )
+    {
+        var result = new Dictionary<string, int>(
+            first ?? System.Collections.Immutable.ImmutableDictionary<string, int>.Empty,
+            StringComparer.Ordinal
+        );
+        foreach (
+            (string witness, int count) in second ?? System.Collections.Immutable.ImmutableDictionary<string, int>.Empty
+        )
+        {
+            result[witness] = Math.Max(result.GetValueOrDefault(witness), count);
+        }
+        return result;
     }
 
     // JourneyStore saves the start 10 milliseconds before the selected arrival.
