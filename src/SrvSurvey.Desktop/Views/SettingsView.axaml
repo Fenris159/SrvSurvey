@@ -428,7 +428,7 @@
         <TextBlock Classes="page-title" Text="Automatic conversion" />
         <TextBlock Classes="muted"
                    TextWrapping="Wrap"
-                   Text="Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux." />
+                   Text="Convert Elite Dangerous BMP screenshots and optional Steam JPEG captures into organized PNG files on Windows or Linux." />
       </StackPanel>
 
       <Border x:Name="ScreenshotProcessingCard"
@@ -440,13 +440,13 @@
               <TextBlock Classes="card-title" Text="Screenshot processor" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="Journal Screenshot events are matched to completed BMP files; each PNG is decoded and verified before it replaces or removes anything." />
+                         Text="Game screenshots use their journal events. Steam captures use their capture time and journal history. Each PNG is verified before the original can be removed." />
             </StackPanel>
             <CheckBox x:Name="ScreenshotEnabledCheckBox"
                       Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding ScreenshotProcessing.Enabled, Mode=TwoWay}"
-                      Content="Convert .bmp screenshots into .png files" />
+                      Content="Enable screenshot processing" />
           </Grid>
 
           <StackPanel Spacing="5">
@@ -459,6 +459,23 @@
                       Click="ChooseScreenshotSourceFolder_Click"
                       Content="Choose folder" />
             </Grid>
+          </StackPanel>
+
+          <StackPanel Spacing="8">
+            <CheckBox x:Name="ProcessSteamScreenshotsCheckBox"
+                      IsChecked="{Binding ScreenshotProcessing.ProcessSteamScreenshots, Mode=TwoWay}"
+                      Content="Process Steam screenshots" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Include Elite's Steam JPEG captures (F12 by default), using the same labels, original-file removal option, and Journey output folder below. Removing Steam originals also removes the local full-size images used by Steam." />
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+              <SelectableTextBlock Text="{Binding ScreenshotProcessing.SteamSourceFolder}"
+                                   VerticalAlignment="Center" TextWrapping="Wrap" />
+              <Button Grid.Column="1" Classes="secondary"
+                      Click="ChooseSteamScreenshotSourceFolder_Click" Content="Choose Steam folder" />
+              <Button Grid.Column="2" Classes="secondary"
+                      Click="DetectSteamScreenshotSourceFolder_Click" Content="Detect automatically" />
+            </Grid>
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding ScreenshotProcessing.SteamSourceDescription}" />
           </StackPanel>
 
           <StackPanel Spacing="5">

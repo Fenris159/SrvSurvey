@@ -1,6 +1,6 @@
 # Joined stream overlay
 
-Enable **For streaming: use joined overlay** in Settings → Overlays → Joined
+Enable **For streaming: use joined overlay** in Settings → Global overlays → Joined
 stream overlay. **Alt+Ctrl+O** toggles it, and its enabled state is saved.
 
 With Elite running, add a **Window Capture** source in OBS. On Windows, select
@@ -56,6 +56,6 @@ its old size, until the source is selected again.
 
 The streaming settings list the names of the composited panels below the count.
 The small **Journal activity and SCO status** indicator is a live panel too, even
-when its journal activity bar is empty. To hide it, open **Settings → Overlays → Journal activity and SCO status**
+when its journal activity bar is empty. To hide it, open **Settings → Global overlays → Journal activity and SCO status**
 and enable **Hide PlotPulse**. Its switch under **Panel availability and shortcuts**
 also controls whether it appears. Fully invisible or empty frames do not count.

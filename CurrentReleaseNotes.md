@@ -1,4 +1,12 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.4
+# SrvSurvey-XP 2.1.3.0-rc.77.5
+
+RC77.5 adds optional Steam screenshot processing for the Journey photo library
+and improves native screenshot conversion with automatic folder detection,
+persistent retries, accurate capture-time location labels and faster lossless
+PNG encoding. Journey edits and background updates retain the correct commander
+through interrupted operations, carrier observations keep personal and squadron
+state separate, mining searches restore consistent results, and Colonization
+Nexus action menus no longer produce empty-context binding warnings.
 
 RC77.4 adds dedicated Squadron Carrier routes, clearer Canonn Prior Scans,
 persistent mining search results and galactic Journey report maps. Personal and
@@ -29,19 +37,31 @@ from RC77.
 
 ## What's changed
 
+- **Guides:** Refresh in-app instructions and the shipped chat reference for
+  Journeys, portable photo reports, Commander readouts, FC/SC Routes, Discord,
+  Stealth Mode, Canonn radar, mining controls and Colonization project filters.
+  Correct Theme control labels, vehicle defaults and Linux overlay guidance;
+  distinguish tested Gamescope versions from current-version claims.
+- **Screenshot preferences in backups:** Keep BMP sources, manual Steam folders
+  and PNG destinations local during portable sync and cross-computer restores.
+  Processing options still follow the user; explicit hardware restore can recover
+  paths from that computer's own backup.
+
 - **Screenshot conversion:** Late or locked BMPs stay pending and are retried
   during live and idle journal polling, including after restarting SrvSurvey.
-  Each capture retains its original
-  system, commander, Guardian details and conversion preferences through travel
-  or settings changes. Repeated journal records do not create duplicate PNGs,
-  and turning conversion off pauses pending work. Failure messages explain the
-  file error while retaining the original BMP. Image reads use managed streams
+  Each capture retains its original system, commander, Guardian details and
+  conversion preferences through travel or settings changes. Repeated journal
+  records do not create duplicate PNGs, and turning conversion off pauses pending
+  work. Failure messages explain the file error while retaining the original BMP. Image reads use managed streams
   to support long Windows paths during decoding and PNG verification. Unchanged
   corrupt files stay pending without repeating costly decoding attempts; a file
   change enables another attempt. Recovery verifies published images before
   cleaning up an original BMP and avoids creating duplicate copies. Concurrent
   captures that choose the same filename retain both images before originals
-  can be removed.
+  can be removed. Live conversion reports each finished capture without waiting
+  for the remaining queue or a Steam history scan. Faster lossless PNG encoding
+  reduces high-resolution processing time while retaining full image quality;
+  PNG files may be slightly larger.
 - **Screenshot folders:** Automatic detection uses the configured Wine/Proton
   journal profile's Pictures folder, with the platform Pictures location as a
   fallback. Windows keeps its known-folder support, including redirected
@@ -56,8 +76,20 @@ from RC77.
   source folder explicitly keeps that choice through later profile changes.
   Preference edits made before a journal is selected keep that first destination
   automatic until the correct profile is known.
-  Native absolute screenshot paths
-  are honored, with a configured-folder fallback for moved or guest files.
+  Native absolute screenshot paths are honored, with a configured-folder
+  fallback for moved or guest files.
+- **Steam screenshots in Journeys:** An optional **Process Steam screenshots**
+  setting detects Elite's capture folder for the Steam account on Windows,
+  Linux and Flatpak, with a manual folder choice when needed. JPEG captures are
+  matched to commander locations using their capture times and journal history,
+  then saved as verified PNGs in the same fixed Journey photo library. Shared
+  label and original-file removal settings apply; unmatched captures stay
+  untouched, and completed imports are remembered across restarts. Processed
+  images appear in Journey galleries and portable HTML reports. Capture-time
+  body labels include stations and other named locations as well as planets;
+  departures clear stale names, and later observations cannot relabel an earlier
+  capture. Partially written images remain pending until a complete decode
+  succeeds, protecting originals when automatic removal is enabled.
 - **Quieter Colonization Nexus:** Reused or closing project action menus no
   longer produce empty-context binding warnings in the application log.
 - **Journey workspace consistency:** Switching commanders or disconnecting

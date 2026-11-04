@@ -30,7 +30,11 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
             1100,
             1500,
             1700
-        );
+        )
+        {
+            ProcessSteamScreenshots = true,
+            SteamSourceFolder = "/steam/screenshots",
+        };
 
         store.Save(preferences);
 

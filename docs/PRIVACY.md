@@ -16,6 +16,14 @@ names, identifiers, and coordinates; cargo and material names and quantities are
 retained so inventory-dependent behavior can be reproduced. Raw exports preserve
 the validated companion snapshots.
 
+## Stealth Mode
+
+[Stealth Mode](stealth-mode.md) delays enabled EDDN, Inara, EDAstro and EDSM
+reports in a persistent local queue until an attributable docking event. It
+does not wait for data sales and does not enable sharing consent. Raven traffic
+and read-only lookups continue. VoxStellar is a separate opt-in and is not held
+by Stealth Mode. Turning Stealth Mode off resumes normal enabled delivery.
+
 ## EDDN
 
 EDDN upload is disabled by default. **Configure EDDN Sharing** opens a dedicated

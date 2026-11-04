@@ -220,6 +220,25 @@ public sealed partial class SettingsView : UserControl
         }
     }
 
+    private async void ChooseSteamScreenshotSourceFolder_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        string? folder = await ChooseFolderAsync(
+            "Choose Elite Dangerous screenshots in your Steam account's 760/remote/359320/screenshots folder"
+        );
+        if (folder is not null && DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.ScreenshotProcessing.SelectSteamSourceFolder(folder);
+        }
+    }
+
+    private void DetectSteamScreenshotSourceFolder_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.ScreenshotProcessing.DetectSteamSourceFolder();
+        }
+    }
+
     private async void ChooseCodexCacheFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
         string? folder = await ChooseFolderAsync("Choose the Codex image cache folder");

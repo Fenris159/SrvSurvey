@@ -138,6 +138,48 @@ public sealed partial class ScreenshotProcessingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task LivePollingReportsEachFinishedCaptureAndRetainsTheRemainingQueueAcrossRestart()
+    {
+        string source = Path.Combine(temporaryDirectory, "source");
+        string target = Path.Combine(temporaryDirectory, "target");
+        string queue = Path.Combine(temporaryDirectory, "queue");
+        Directory.CreateDirectory(source);
+        CreateBitmap(Path.Combine(source, "first.bmp"), SKColors.Cyan);
+        CreateBitmap(Path.Combine(source, "second.bmp"), SKColors.Orange);
+        JournalEventEnvelope[] captures =
+        [
+            Parse(
+                """{"timestamp":"2026-11-03T18:00:00Z","event":"Screenshot","Filename":"first.bmp","System":"Sol","Body":"Earth"}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-11-03T18:00:01Z","event":"Screenshot","Filename":"second.bmp","System":"Sol","Body":"Moon"}"""
+            ),
+        ];
+        ScreenshotProcessingPreferences preferences = Preferences(source, target) with { AddBanner = false };
+        var processor = new ScreenshotProcessingService(() => 320, (_, _) => Task.CompletedTask, queue);
+
+        ScreenshotProcessingResult first = await processor.ProcessLiveAsync(captures, preferences, "Test");
+
+        Assert.Equal(
+            Path.Combine(target, "Sol", "Earth (2026-11-03 180000).png"),
+            Assert.Single(first.Conversions).OutputPath
+        );
+        Assert.Empty(first.Warnings);
+        Assert.Equal(1, first.PendingCount);
+        Assert.False(File.Exists(Path.Combine(target, "Sol", "Moon (2026-11-03 180001).png")));
+        var restarted = new ScreenshotProcessingService(() => 320, (_, _) => Task.CompletedTask, queue);
+        ScreenshotProcessingResult second = await restarted.ProcessLiveAsync([], preferences, "Another commander");
+        string secondPath = Assert.Single(second.Conversions).OutputPath;
+        Assert.Equal(Path.Combine(target, "Sol", "Moon (2026-11-03 180001).png"), secondPath);
+        Assert.Empty(second.Warnings);
+        Assert.Equal(0, second.PendingCount);
+        using var image = SKBitmap.Decode(secondPath);
+        Assert.Equal(SKColors.Orange, image.GetPixel(100, 100));
+        Assert.Empty((await restarted.ProcessLiveAsync([], preferences, "Test")).Conversions);
+        Assert.Equal(2, Directory.GetFiles(Path.Combine(target, "Sol"), "*.png").Length);
+    }
+
+    [Fact]
     public async Task LivePollingRetainsALockedCaptureWithoutWaitingAndHonorsItsOriginalSettings()
     {
         string sourceDirectory = Path.Combine(temporaryDirectory, "source");
@@ -539,7 +581,7 @@ public sealed partial class ScreenshotProcessingServiceTests : IDisposable
         return journalEvent!;
     }
 
-    private static void CreateBitmap(string path, SKColor color)
+    internal static void CreateBitmap(string path, SKColor color)
     {
         const int width = 320;
         const int height = 180;

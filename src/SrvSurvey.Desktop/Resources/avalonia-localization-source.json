@@ -16,6 +16,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "\u0027{0}\u0027 is incomplete or not a supported bitmap image.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
     "Text": "\u0027{0}\u0027 is not a JSON object.",
     "IsFormat": true,
     "SourceKinds": [
@@ -30,14 +38,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationStore.cs"
-  },
-  {
-    "Text": "\u0027{0}\u0027 is not a supported bitmap image.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
     "Text": "\u0027{0}\u0027 uses body number {1}, which is not in the imported body catalog.",
@@ -1625,6 +1625,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
+    "Text": "A completed Journey can be saved as a detailed HTML expedition record.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "A construction contribution has an uncertain server outcome and is retained. Verify its credit on Raven before resubmitting.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1858,6 +1866,14 @@
   },
   {
     "Text": "A manual source does not silently fall back when unavailable. Switch to Automatic or reset detection if your game or desktop setup changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A mineral quality hit is a core find or a find meeting that mineral\u2019s configured percentage threshold under Mining \u003E Settings \u003E Announcements. With no threshold, any find qualifies.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -3587,14 +3603,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Adjust VR overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -3857,14 +3865,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
-  },
-  {
-    "Text": "All entries start checked. Other / unknown controls unrecognized ship types, unavailable boarded status and taxi/multicrew rides where the current vessel is not identified.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "All known signal values",
@@ -4637,6 +4637,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Any attributable docking event, including at a carrier, can release reports. This does not wait for exploration-data sales.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Any surface material",
     "IsFormat": false,
     "SourceKinds": [
@@ -5010,7 +5018,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "ApproachSettlement",
@@ -5716,6 +5724,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Auto-hide colonization overlay until docked enables contextual automatic display at an eligible dock, even if panel availability is off. With that option off, panel availability must be enabled for persistent display. With both off, loading docked does not show the panel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Auto-show known POIs in the current system",
@@ -7169,6 +7185,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Below ranks, faction reputation stays visible in its own row. Expand the full-width Owned fleet list to inspect ships and their locations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Beluga Liner",
     "IsFormat": false,
     "SourceKinds": [
@@ -8195,7 +8219,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "BodyName: {0}",
@@ -9801,6 +9825,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Canonn prior scans and radar",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Canonn prior scans are unavailable: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -10243,6 +10275,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
   },
   {
+    "Text": "Carrier events are matched by identity, not merely by whichever carrier is selected for a route. Ambiguous movements do not overwrite another carrier.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Carrier fuel could not be refreshed: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -10620,7 +10660,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Changing Blue light, Blue dark, Orange dark, Green light, or Green dark for the application never rewrites theme.json or a named overlay state.",
+    "Text": "Changing Blue light, Blue dark, Orange dark, Green light, Green dark, or Monochrome dark for the application never rewrites theme.json or a named overlay state.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -10940,6 +10980,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Choose Elite Dangerous screenshots in your Steam account\u0027s 760/remote/359320/screenshots folder",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml.cs"
+  },
+  {
+    "Text": "Choose Elite\u0027s Steam 760/remote/359320/screenshots folder; other games are not imported.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
+  },
+  {
     "Text": "Choose Guardian map background",
     "IsFormat": false,
     "SourceKinds": [
@@ -10996,6 +11052,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose Personal fleet carrier, Squadron carrier, or both, select the jump events, enable announcements, and Save changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Choose Steam Link for Valve\u0027s free wireless Quest app and pair it directly with the Windows PC running SteamVR.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11004,7 +11068,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Choose Steam folder",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose Use current system to start at the current system, or Use previous visit to choose an earlier arrival.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -11501,6 +11581,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Choose location banners, original-file removal, and Guardian aerial options.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11531,14 +11619,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Choose source and destination folders in Settings.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Choose the Codex image cache folder",
@@ -12690,6 +12770,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
+    "Text": "Colonization initially allows Small, Medium, and Large ships, with Vessel / Vehicle entries unchecked. Other categories initially allow every entry; saved choices take precedence. Other / unknown controls unrecognized ship types, unavailable boarded status and taxi/multicrew rides where the current vessel is not identified.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Colonization shopping",
     "IsFormat": false,
     "SourceKinds": [
@@ -13165,6 +13253,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
   },
   {
+    "Text": "Commander profile and owned fleet",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Commander profile storage is not available.",
     "IsFormat": false,
     "SourceKinds": [
@@ -13619,6 +13715,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Complete an active Journey when finished. Archive completed history to tuck it away, or restore an archived record to the main list.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Complete authorization in your browser. SrvSurvey will update this page when Frontier returns.",
     "IsFormat": false,
     "SourceKinds": [
@@ -13705,6 +13809,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DockToDockViewModel.cs"
+  },
+  {
+    "Text": "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Completion across all galactic regions",
@@ -13865,6 +13977,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
+  },
+  {
+    "Text": "Configure each panel and next-jump display in its own overlay settings. Next-jump information can follow a known carrier request even without an active itinerary.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Configure next-jump and station-information overlays.",
@@ -14741,15 +14861,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Convert .bmp screenshots into .png files",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
-    "Text": "Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux.",
+    "Text": "Convert Elite Dangerous BMP screenshots and optional Steam JPEG captures into organized PNG files on Windows or Linux.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -16610,6 +16722,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
   },
   {
+    "Text": "Debt is hidden at a zero balance. Personal and squadron carrier data retain separate identities.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Debt threshold",
     "IsFormat": false,
     "SourceKinds": [
@@ -16825,6 +16945,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
+  },
+  {
+    "Text": "Delete a historical Journey when it is no longer needed. Deletion removes that Journey record and retains journals, system notes, and photographs.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Delete firegroup configuration",
@@ -17606,6 +17734,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Detect automatically",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Detected source",
@@ -18458,6 +18594,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Dock to release that Commander\u2019s held reports. Later discoveries wait for another docking event; turning Stealth Mode off resumes normal enabled delivery.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Dock-to-dock CSV logging is off.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18504,7 +18648,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Docking access",
@@ -18698,6 +18842,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Downloading EDAstro exploration points of interest and contributing journal events are separate options.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Downloading a Google Drive backup for comparison...",
@@ -18939,6 +19091,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"
+  },
+  {
+    "Text": "EDAstro catalogue and journal sharing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "EDAstro exploration POIs",
@@ -19602,6 +19762,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Editing filters restores matching cached results or clears unmatched results. Search runs a new query; Reset clears the search and returns its reference to the current system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Editing the selected commander survey. Save writes the legacy-compatible file atomically.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19704,6 +19872,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Elite BMP and Steam JPEG screenshots will be converted to verified PNG files.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
   },
   {
     "Text": "Elite Dangerous",
@@ -20067,6 +20243,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
+    "Text": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Enable Steam processing to detect the screenshot folder for your Steam account.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
+  },
+  {
     "Text": "Enable Surface mining",
     "IsFormat": false,
     "SourceKinds": [
@@ -20140,6 +20332,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Enable external data and the downloaded bio-data options when you want community observations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Enable external data in Exploration Overlay Settings to resolve this system.",
     "IsFormat": false,
     "SourceKinds": [
@@ -20196,12 +20396,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
   },
   {
-    "Text": "Enable the filename, folder, banner, or aerial-alignment options you want.",
+    "Text": "Enable screenshot processing",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Enable the limit to evaluate the current system",
@@ -21398,6 +21598,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
   },
   {
+    "Text": "Export a portable Journey report",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Export all CSV\u2026",
     "IsFormat": false,
     "SourceKinds": [
@@ -21839,6 +22047,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "FC Routes and SC Routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "FC and SC auto-copy can coexist. Enabling Route Manager or Boxel auto-copy turns both carrier auto-copy options off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "FDEV-RAVEN",
     "IsFormat": false,
     "SourceKinds": [
@@ -22031,7 +22255,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "FSDOptimalMass",
@@ -22607,7 +22831,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Filename",
@@ -22648,6 +22872,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Filter projects used by Market Search",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Filter systems, rings, minerals or notes",
@@ -23606,7 +23838,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "For Session prospecting yields, choose Average mineral percentage or Finds. Finds places the most frequently prospected mineral first.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "For an earlier visit, type the starting system with autocomplete. Optionally choose Visits on or after (UTC date), then find visits and select the intended dated arrival.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -24887,6 +25135,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/X11KeyboardRecord.cs"
   },
   {
+    "Text": "Game screenshots use their journal events. Steam captures use their capture time and journal history. Each PNG is verified before the original can be removed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Game text entry is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -25121,6 +25377,14 @@
   },
   {
     "Text": "Getting started",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Give the Journey a name and description, then begin. Repeated arrivals at the same system remain separate choices; the results scroll when needed.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -28721,14 +28985,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "In-game overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Inara",
     "IsFormat": false,
     "SourceKinds": [
@@ -29451,14 +29707,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/JournalSettingsStore.cs"
   },
   {
-    "Text": "Journal Screenshot events are matched to completed BMP files; each PNG is decoded and verified before it replaces or removes anything.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
-  },
-  {
     "Text": "Journal activity",
     "IsFormat": false,
     "SourceKinds": [
@@ -29629,6 +29877,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "Journal sharing is off by default and needs no personal API key. Enabling catalogue downloads does not enable contributions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Journal signals, settlement approaches, docking details, and the opt-in destination capture update only this local workspace until review.",
     "IsFormat": false,
     "SourceKinds": [
@@ -29763,6 +30019,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
+  },
+  {
+    "Text": "Journey history comes from Commander journals, not the game\u2019s VisitedStarsCache. Saved history remains readable without the original journals, but reprocessing requires them.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Journey history could not be loaded: {0}",
@@ -29982,6 +30246,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
+    "Text": "Jumping to a new system does not replace completed results, including searches with Force include if viable enabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Jumps",
     "IsFormat": false,
     "SourceKinds": [
@@ -30120,6 +30392,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "Keep completed mining searches through travel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Keep draft",
     "IsFormat": false,
     "SourceKinds": [
@@ -30182,6 +30462,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
+  },
+  {
+    "Text": "Keep the carrier manager\u2019s live journal selected. Orders placed by another squadron member are unavailable if they never reach that journal.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Keep the full six-circle layout visible. Free head look is not reported as panel focus; looking away, low brightness, obscuring windows, and partial bars can produce uncertain readings.",
@@ -31101,6 +31389,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
+    "Text": "LeaveBody",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
+  },
+  {
     "Text": "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31350,6 +31646,14 @@
   },
   {
     "Text": "Link the active Commander\u2019s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Link the intended Commander\u2019s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -31786,7 +32090,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsCoordinator.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Loaded 1 active Raven Colonial project.",
@@ -33165,6 +33469,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Manage Journey history and photographs",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Manage saved firegroups",
     "IsFormat": false,
     "SourceKinds": [
@@ -33548,6 +33860,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Market Search selections are separate from the Show selection used by the shopping overlay and its Focus action. Filtering the available projects does not silently discard selected shopping needs.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Market age (days)",
@@ -34047,6 +34367,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/EddnIntegrationDialog.axaml"
+  },
+  {
+    "Text": "Messages include matching FC or SC itinerary details when available. Startup history is not announced, and there is no offline message backlog. The webhook URL stays local and is excluded from cloud sync.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Meta Horizon Link bridged into SteamVR",
@@ -34773,6 +35101,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Mining overlay readouts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Mining overlay settings can be changed with Elite closed or before a journal has loaded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Mining overlay settings could not be loaded: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -35206,6 +35550,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "MostRecent",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
     "Text": "Mouse wheel: zoom 0.1\u00D7\u201310\u00D7 \u00B7 drag image to pan",
     "IsFormat": false,
     "SourceKinds": [
@@ -35468,7 +35820,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "MusicTrack",
@@ -38191,6 +38543,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
   },
   {
+    "Text": "No unambiguous Steam screenshot folder was detected. Choose the Elite screenshot folder for your Steam account.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
+  },
+  {
     "Text": "No unfiltered Canonn biology coordinates remain for this body.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39084,6 +39444,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Only one owned ship is marked current. Journal observations and Frontier responses are reconciled by their observation times; a Frontier request begun after a journal observation can supersede it, but a delayed response does not displace journal changes made while it was in flight.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Only relic towers store an individual site-survey heading.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39332,7 +39700,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Open Manage themes to Save theme, Load theme, or Reset to default colors. In the position editor, use the check button to save staged panel changes or X to cancel.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Open Market Search to choose from that filtered project list. Previously selected projects hidden by the filters remain under Selected outside filters, where you can remove them.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Open Mining \u003E Settings \u003E Announcements to configure collected, refined, and prospecting messages, material thresholds, core filters, and named presets.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Open Navigation \u003E Journeys; Open Journeys in Travel takes you to the same workspace.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39381,6 +39773,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CarrierRoutesView.axaml"
   },
   {
+    "Text": "Open Settings \u003E Application \u003E Discord carrier announcements, paste the channel\u2019s webhook URL, and use Send test message to check it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Open Settings \u003E Application. Enable Wayland screen capture and enable only the individual trackers you want to test; all start disabled.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39390,6 +39790,14 @@
   },
   {
     "Text": "Open Settings \u003E Global overlays and find VR overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Open Settings \u003E Privacy \u0026 sharing \u003E Configure EDAstro Sharing to review and enable optional journal contributions.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39461,7 +39869,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Open Theme \u003E In-game overlay appearance and choose colors with the picker beside each overlay control.",
+    "Text": "Open Theme \u003E Overlay appearance and choose colors with the picker beside each overlay control.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39469,7 +39877,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Open Theme \u003E Overlay Settings \u003E Edit Overlay Positions.",
+    "Text": "Open Theme \u003E Overlay setup \u003E Edit Overlay Positions.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39477,7 +39885,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Open Theme \u003E Overlay Settings and toggle Bypass Window Management.",
+    "Text": "Open Theme \u003E Overlay setup and toggle Bypass Window Management.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -39619,6 +40027,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+  },
+  {
+    "Text": "Open index.html in a browser. Photograph tiles enlarge when selected; use the viewer controls or arrow keys to move between images and Escape to close.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Open journal",
@@ -40094,6 +40510,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "Optional Discord webhooks announce personal and squadron carrier departures, cancellations, and arrivals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Optional Internal",
     "IsFormat": false,
     "SourceKinds": [
@@ -40537,6 +40961,14 @@
   },
   {
     "Text": "Overlay appearance and saved states",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -43848,6 +44280,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
+    "Text": "Prior Scans shows known biological coordinates for the current body, with a radar and distance guidance.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Prior colour \u0027{0}\u0027 referenced by \u0027{1}\u0027 was not found.",
     "IsFormat": true,
     "SourceKinds": [
@@ -43977,6 +44417,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Process Steam screenshots",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Process historical journals and maintain supporting reference data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -43993,6 +44441,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationProcessPathResolver.cs"
   },
   {
+    "Text": "ProcessSteamScreenshots",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
+  },
+  {
     "Text": "Processing",
     "IsFormat": false,
     "SourceKinds": [
@@ -44002,7 +44458,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
-    "Text": "Processing is opt-in and writes converted output to the configured destination.",
+    "Text": "Processing is opt-in. Converted PNGs use the fixed Journey photo folder shown beside Open folder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Production reconciles refined journal events with usable cargo snapshots. Refinery carryover after the session is shown separately and excluded from the session\u2019s production rate; purchases and transfers are not new production.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -47046,6 +47510,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
+    "Text": "Recent Prospects retains recent prospector observations rather than live asteroid depletion. Low, Medium, and High describe engineering material content; mineral percentages are the original composition snapshot.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Recent active journals are excluded from destructive historical reconstruction paths.",
     "IsFormat": false,
     "SourceKinds": [
@@ -49469,7 +49941,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Retreat",
@@ -51699,14 +52171,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Save a named overlay state when its palette and typography are ready; choose saved states from the dropdown or reload the original defaults.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Save a surface mining location\u0027s center and map its deposits with case-insensitive chat commands.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51909,6 +52373,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.History.cs"
   },
   {
+    "Text": "Save or discard edits before leaving an edited Journey. Switching Commander keeps each profile\u2019s selection and drafts separate.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Save or discard the system notes before selecting another visit.",
     "IsFormat": false,
     "SourceKinds": [
@@ -52078,7 +52550,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "Saved \u0027{0}\u0027, but the Guardian aerial copy failed; the original BMP was retained: {1}",
+    "Text": "Saved \u0027{0}\u0027, but the Guardian aerial copy failed; the original image was retained: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -52086,7 +52558,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
-    "Text": "Saved \u0027{0}\u0027, but the original BMP could not be removed: {1}",
+    "Text": "Saved \u0027{0}\u0027, but the original image could not be removed: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -52774,14 +53246,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/JourneyReportBundleExporter.cs"
   },
   {
-    "Text": "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Screenshot conversion is off.",
     "IsFormat": false,
     "SourceKinds": [
@@ -52838,7 +53302,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
-    "Text": "Screenshot processing can convert new images, organize them, and embed useful site data without changing old captures.",
+    "Text": "Screenshot processing organizes Elite BMP captures and optional Steam JPEG captures as verified PNGs for Journeys, with optional location labels and original-file removal.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -53409,6 +53873,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Select Projects follows the Projects tab\u2019s current system, status, and ordering filters.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Select Refresh to scan commander profiles and the game state.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53535,6 +54007,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
+  },
+  {
+    "Text": "Select a completed Journey and choose Export as HTML. Keep index.html with its images subfolder and share the whole containing folder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Select a completed journey and save any changes before exporting.",
@@ -53681,6 +54161,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Select a visited system to inspect its details and notes. Double-click a listed PNG photograph to open it in the system image viewer.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Select an announcement preset to delete.",
     "IsFormat": false,
     "SourceKinds": [
@@ -53787,6 +54275,14 @@
   },
   {
     "Text": "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Select the Active Commander card to open the optional Frontier account workspace.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -54204,6 +54700,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Set Maximum minerals shown with the number field or one-step up/down arrows. The default is five, with a range of 1\u2013100.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Set Search start date, then decide whether earlier Commander visits and older Spansh body records should count as already complete.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54356,6 +54860,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Set the Projects filters to All projects, Building, or Planning and select the system view you need.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Set the look of the app and your game overlays.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54398,6 +54910,14 @@
   },
   {
     "Text": "Settings \u003E Input provides one source choice for all keyboard shortcuts in the active Commander profile.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Settings \u003E Privacy \u0026 sharing \u003E Stealth Mode holds enabled EDDN, Inara, EDAstro, and EDSM uploads until docking.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -56105,6 +56625,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Shutdown",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
+  },
+  {
     "Text": "Side",
     "IsFormat": false,
     "SourceKinds": [
@@ -56441,12 +56969,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
+    "Text": "Software\\Valve\\Steam",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
     "Text": "Sol",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Sol and Sagittarius A* are coordinate references, not extra travel legs. The map uses the galactic X/Z plane with the same distance scale on both axes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Sol bubble radius (ly, default 200)",
@@ -58190,6 +58734,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Start a Journey from the right visit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Start a boxel search",
     "IsFormat": false,
     "SourceKinds": [
@@ -58388,7 +58940,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Started another SrvSurvey instance for {0}.",
@@ -58598,7 +59150,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.Missions.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Stationary and looking forward, select Test. Deploy rig 1 first to establish the anchor, then check the other five slot readings. Repeat Test after any alignment change.",
@@ -58682,6 +59234,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Stealth Mode does not enable any sharing consent. Raven API traffic and read-only lookups continue; VoxStellar is a separate opt-in and is not held by this setting.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Stealth Mode is off. Enabled sharing services upload normally.",
     "IsFormat": false,
     "SourceKinds": [
@@ -58722,12 +59282,52 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
   },
   {
+    "Text": "Steam JPEGs are matched by capture time to journal locations. Captures without a matching session are left untouched.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
+  },
+  {
     "Text": "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop\u0027s PC-VR streaming also requires Windows.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Steam screenshots could not be processed; originals were retained: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
+  },
+  {
+    "Text": "SteamPath",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
+    "Text": "SteamScreenshot",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "SteamSourceFolder",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ScreenshotProcessingSettingsStore.cs"
   },
   {
     "Text": "SteamVR",
@@ -59139,12 +59739,20 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "SupercruiseEntry",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
+  },
+  {
     "Text": "SupercruiseExit",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
     "Text": "Supported Live journal events can update EDSM flight history, location, credits, ships and loadouts, cargo, materials, backpack and locker inventory, missions, engineering, community goals, statistics, social status, and discoveries.",
@@ -59645,7 +60253,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
-    "Text": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Surface Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
+    "Text": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Journeys, Search, and Bookmarks; Activities groups Mining, Surface Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -61277,6 +61885,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
+    "Text": "The Custom group after Guardian offers five independent colors, Brush 1\u20135, for brush overrides in the overlay editor. They do not replace the theme\u2019s normal color roles.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The D-Scanner, SC-Suite, Data Link Scanner, and Composition Scanner are always available as built-in actions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -61565,6 +62181,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
+    "Text": "The Journey library separates the active expedition from completed and archived records.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The Journey preferences could not be loaded.",
     "IsFormat": false,
     "SourceKinds": [
@@ -61851,6 +62475,70 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationRestartService.cs"
+  },
+  {
+    "Text": "The Steam index contains a duplicate key.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamKeyValues.cs"
+  },
+  {
+    "Text": "The Steam index contains an unexpected brace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamKeyValues.cs"
+  },
+  {
+    "Text": "The Steam index contains an unterminated string.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamKeyValues.cs"
+  },
+  {
+    "Text": "The Steam index is incomplete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamKeyValues.cs"
+  },
+  {
+    "Text": "The Steam index is nested too deeply.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamKeyValues.cs"
+  },
+  {
+    "Text": "The Steam index is too large.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamKeyValues.cs"
+  },
+  {
+    "Text": "The Steam screenshot folder must be an absolute path.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
+  },
+  {
+    "Text": "The Steam screenshot index could not be read; capture filenames will be used where possible: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
     "Text": "The UI settings destination has no parent directory.",
@@ -62469,6 +63157,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "The completed Steam screenshot record is invalid.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
     "Text": "The configured Codex cache path is not absolute; downloads will use {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -62525,7 +63221,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
   },
   {
-    "Text": "The converted screenshot was saved, but the changed original BMP was retained.",
+    "Text": "The converted screenshot was saved, but the changed original image was retained.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -62533,7 +63229,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
   },
   {
-    "Text": "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+    "Text": "The converted screenshot was saved, but the original image could not be verified and was retained.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -62765,6 +63461,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/FssTuningDetector.cs"
   },
   {
+    "Text": "The date filter includes the selected date and excludes earlier visits; All dates clears it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The default browser declined the request.",
     "IsFormat": false,
     "SourceKinds": [
@@ -62883,6 +63587,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs"
+  },
+  {
+    "Text": "The display limit does not truncate the saved session or reports.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The dock-to-dock CSV was left unchanged: {0}",
@@ -64389,6 +65101,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
   },
   {
+    "Text": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The radar shows 78-meter-radius rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
     "IsFormat": false,
     "SourceKinds": [
@@ -64875,6 +65595,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The screenshot could not be encoded as PNG.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
     "Text": "The screenshot folder cannot be opened until the current system is known.",
@@ -65637,6 +66365,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The two carrier-route tabs track personal and squadron carriers simultaneously, with separate routes and overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The unavailable journey\u0027s active selection was cleared. Its saved file was kept. You can begin a new journey.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65894,7 +66630,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
   },
   {
-    "Text": "Theme \u003E Overlay Settings controls display placement for live panels and the position editor.",
+    "Text": "Theme \u003E Overlay setup controls display placement for live panels and the position editor.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -66221,6 +66957,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
+  },
+  {
+    "Text": "This is a ship massacre tracker, not a general mission list. On-foot station contracts are intentionally excluded; mining commodity missions have their own Mining \u003E Missions tab.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "This is an explicit completion rule when Spansh has body records older than the search start date, even when full-FSS completion is required.",
@@ -67224,7 +67968,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/DockToDockSettingsStore.cs"
   },
   {
-    "Text": "Travel \u003E Distance provides current, home, and carrier shortcuts; FC Routes handles carrier journey planning.",
+    "Text": "Travel \u003E Distance provides current, home, and carrier shortcuts. FC Routes plans personal carrier travel; SC Routes plans squadron carrier travel independently.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -68899,7 +69643,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Boxel, Route Manager, and FC Route auto-copy are mutually exclusive.",
+    "Text": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -68924,6 +69668,22 @@
   },
   {
     "Text": "Use Exploration overlay settings to dim or filter low-value bodies while valuable bodies remain highlighted.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use Exploration to browse nearby catalogue entries, open source details, or bookmark a POI. External data must be enabled for catalogue downloads.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use FC Routes for the personal carrier and SC Routes for the squadron carrier. They share saved route bookmarks, while progress and carrier identity stay separate.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -69035,6 +69795,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Route detail to fit the recorded travel points, or Galactic context for a wider reference view. Select a route point to open its history entry; overlapping visits offer a chooser.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Use Save to retain changes. Remove or a saved row\u2019s trash button requests deletion; confirm Yes to remove it or No to keep it.",
     "IsFormat": false,
     "SourceKinds": [
@@ -69044,6 +69812,14 @@
   },
   {
     "Text": "Use Search\u2212/Search\u002B to adjust the movement allowance. Keep the Search bounds inside the capture frame.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use Show bio signals from Canonn on the radar in Exobiology overlay settings to enable the entire Prior Scans panel. Its panel-availability switch and visibility shortcut control the same gate.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -69091,7 +69867,7 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
-    "Text": "Use Theme \u003E Overlay Settings \u003E Edit Overlay Positions to arrange previews, including the rig calibration frame.",
+    "Text": "Use Theme \u003E Overlay setup \u003E Edit Overlay Positions to arrange previews, including the rig calibration frame.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -69099,7 +69875,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Use Theme \u003E Overlay Settings to disable individual overlays or change their triggers.",
+    "Text": "Use Theme \u003E Overlay setup to disable individual overlays or change their triggers.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -69138,6 +69914,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Use automatic BMP detection or choose a source folder in Settings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Use bio signal radius",
@@ -69444,7 +70228,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Use the overlay-settings icon beside a supported navigation category for that activity\u2019s controls. Theme \u003E Overlay Settings opens the complete overlay controls.",
+    "Text": "Use the overlay-settings icon beside a supported navigation category for that activity\u2019s controls. Theme \u003E Overlay setup opens the complete overlay controls.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use the position editor\u2019s Aa control to adjust Header, Title, Value, Body, Detail, and Caption font sizes as a percentage of that panel\u2019s theme baseline and choose brush overrides for those roles.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -70406,7 +71198,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Use a separate EDDN-capable tool when you also want to contribute discoveries to the wider community database.",
+    "Text": "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Configure EDDN Sharing separately in Settings \u003E Privacy \u0026 sharing to contribute to the wider community database. Enable EDDN in only one uploader application at a time.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -73822,7 +74614,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
   },
   {
     "Text": "confirm-center",
@@ -73935,6 +74727,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
+  },
+  {
+    "Text": "creation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
     "Text": "cross-platform",
@@ -74542,7 +75342,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
     "Text": "events",
@@ -74807,6 +75607,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianMapImageCatalog.cs"
+  },
+  {
+    "Text": "filename",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
     "Text": "files",
@@ -76007,6 +76815,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "loginusers.vdf",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
   },
   {
     "Text": "logs",
@@ -77409,6 +78225,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianArtifactGlyphControl.cs"
   },
   {
+    "Text": "remote",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
     "Text": "repeat",
     "IsFormat": false,
     "SourceKinds": [
@@ -77527,6 +78351,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
+  },
+  {
+    "Text": "root",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
   },
   {
     "Text": "route",
@@ -77686,7 +78518,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
+    "Text": "screenshots.vdf",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
     "Text": "search",
@@ -78137,6 +78977,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeOverlaySession.cs"
   },
   {
+    "Text": "steam-completed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.Persistence.cs"
+  },
+  {
     "Text": "steamapps",
     "IsFormat": false,
     "SourceKinds": [
@@ -78542,7 +79390,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
     "Text": "tin",
@@ -79055,6 +79903,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml.cs"
+  },
+  {
+    "Text": "userdata",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
+  },
+  {
+    "Text": "users",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.Detection.cs"
   },
   {
     "Text": "utf-8",

@@ -7,7 +7,7 @@ Open **Settings → Application → Discord carrier announcements**.
 3. Select **Personal fleet carrier**, **Squadron carrier**, or both, and choose which jump events to announce.
 4. Enable announcements and select **Save changes**. Changes take effect when saved.
 
-SrvSurvey posts when a jump is scheduled, cancelled, or confirmed to have arrived. Each message identifies the carrier and includes its itinerary, destination body, and scheduled departure when the game provides them. Discord displays timestamps in each reader's local time. An active matching itinerary from the Fleet Carrier route workspace is included when available.
+SrvSurvey posts when a jump is scheduled, cancelled, or confirmed to have arrived. Each message identifies the carrier and includes its itinerary, destination body, and scheduled departure when the game provides them. Discord displays timestamps in each reader's local time. An active matching itinerary from the matching FC Routes or SC Routes workspace is included when available.
 
 Keep SrvSurvey running with the carrier manager's live journal selected. Personal and squadron carriers are tracked independently by carrier ID. Scheduled and cancelled notifications require the request in that journal; orders placed by a different squadron member cannot be discovered from a journal that does not contain them. A matching `CarrierLocation` at or after departure confirms a tracked request. An explicit `CarrierJump` can also confirm completion for a known owned carrier when its request is unavailable. A login location or countdown alone never triggers an arrival announcement.
 

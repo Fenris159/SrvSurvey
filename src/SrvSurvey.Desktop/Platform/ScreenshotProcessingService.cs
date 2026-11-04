@@ -161,15 +161,17 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     {
         foreach (JournalEventEnvelope entry in journalEvents.Where(entry => entry.EventName == "Screenshot"))
         {
-            string key = JsonSerializer.Serialize(
-                new
-                {
-                    entry.SourceRecordIdentity,
-                    Commander = commanderName,
-                    entry.RawJson,
-                    preferences.SourceFolder,
-                }
-            );
+            string key = IsSteamCapture(entry)
+                ? JsonSerializer.Serialize(new { SteamFile = GetSteamCaptureIdentity(entry) })
+                : JsonSerializer.Serialize(
+                    new
+                    {
+                        entry.SourceRecordIdentity,
+                        Commander = commanderName,
+                        entry.RawJson,
+                        preferences.SourceFolder,
+                    }
+                );
             if (completed.Contains(key) || pending.ContainsKey(key))
             {
                 continue;
@@ -207,6 +209,15 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
                 completed.Add(key);
             }
         }
+    }
+
+    private static bool IsSteamCapture(JournalEventEnvelope entry) =>
+        entry.Payload.TryGetProperty("SteamScreenshot", out JsonElement steam) && steam.ValueKind == JsonValueKind.True;
+
+    private static string? GetSteamCaptureIdentity(JournalEventEnvelope entry)
+    {
+        string? path = GetString(entry, "Filename");
+        return OperatingSystem.IsWindows() ? path?.ToUpperInvariant() : path;
     }
 
     private void PersistNewCapture(string key, PendingScreenshot capture, List<string> warnings)
@@ -250,9 +261,14 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
                 }
                 if (complete)
                 {
+                    RemovePendingCapture(key, capture, warnings);
                     pending.Remove(key);
                     completed.Add(key);
-                    RemovePendingCapture(key, warnings);
+                }
+                if (live && conversion is not null)
+                {
+                    // Report a finished image without waiting for the rest of the persistent queue.
+                    break;
                 }
             }
             catch (Exception exception)
@@ -296,7 +312,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         }
         if (fingerprint is not null && SameFingerprint(fingerprint, capture.Undecodable))
         {
-            throw new InvalidDataException($"'{candidate}' is not a supported bitmap image.");
+            throw new InvalidDataException($"'{candidate}' is incomplete or not a supported bitmap image.");
         }
         string sourcePath = await WaitForCompletedFileAsync(capture.Request.SourcePaths, live, cancellationToken)
             .ConfigureAwait(false);
@@ -306,7 +322,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         {
             capture.Undecodable = fingerprint;
             SavePendingCapture(key, capture);
-            throw new InvalidDataException($"'{sourcePath}' is not a supported bitmap image.");
+            throw new InvalidDataException($"'{sourcePath}' is incomplete or not a supported bitmap image.");
         }
         capture.Undecodable = null;
         capture.Source = fingerprint;
@@ -441,7 +457,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
             {
                 warning =
                     $"Saved '{outputPath}', but the Guardian aerial copy failed; "
-                    + "the original BMP was retained: "
+                    + "the original image was retained: "
                     + exception.Message;
             }
         }
@@ -457,7 +473,33 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         // Managed file streams support long Windows paths without asking the
         // native decoder to reopen a filename through its own file API.
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        return SKBitmap.Decode(stream);
+        using var codec = SKCodec.Create(stream);
+        if (codec is null)
+        {
+            return null;
+        }
+        SKImageInfo info = codec.Info;
+        if (info.AlphaType == SKAlphaType.Unpremul)
+        {
+            info = info.WithAlphaType(SKAlphaType.Premul);
+        }
+        SKBitmap? bitmap = new(info);
+        try
+        {
+            // SKBitmap.Decode also accepts IncompleteInput. Only a complete
+            // decode is safe to publish before optional source deletion.
+            if (codec.GetPixels(info, bitmap.GetPixels()) != SKCodecResult.Success)
+            {
+                return null;
+            }
+            SKBitmap complete = bitmap;
+            bitmap = null;
+            return complete;
+        }
+        finally
+        {
+            bitmap?.Dispose();
+        }
     }
 
     private PublishedImage WritePngAtomically(SKBitmap bitmap, string outputPath)
@@ -465,8 +507,13 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         string temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
         try
         {
-            using (var image = SKImage.FromBitmap(bitmap))
-            using (SKData data = image.Encode(SKEncodedImageFormat.Png, 100))
+            // Lower compression keeps PNG pixels lossless while avoiding long high-resolution encodes.
+            using (SKPixmap pixels = bitmap.PeekPixels())
+            using (
+                SKData data =
+                    pixels.Encode(new SKPngEncoderOptions(SKPngEncoderFilterFlags.AllFilters, 1))
+                    ?? throw new InvalidDataException("The screenshot could not be encoded as PNG.")
+            )
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 data.SaveTo(stream);

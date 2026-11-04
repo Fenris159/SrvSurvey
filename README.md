@@ -90,10 +90,15 @@ The images stay compact on this page. Select any tile to open the full screensho
 
 ### Travel, routes and location tools
 
-- Records journeys with systems, screenshots and statistics, and preserves the
-  active journey across sessions.
+- Records expeditions under **Navigation → Journeys**, with dated starting-visit
+  selection, archive/restore and historical deletion. Completed Journeys export
+  portable HTML reports with a clickable route map and photograph gallery; share
+  the containing folder with its `images` subfolder. Active Journeys survive restarts.
 - Imports and follows routes, including Spansh route results and Fleet Carrier
-  routes, with jump, refuel and neutron-star guidance overlays.
+  routes, with jump, refuel and neutron-star guidance overlays. Dedicated FC Routes
+  and SC Routes track personal and squadron carriers independently, share saved
+  route bookmarks, and can both use auto-copy. Route Manager and Boxel auto-copy
+  turn both carrier auto-copy options off.
 - Provides spherical searches, nearby-system and biology searches, distance
   shortcuts and ground-target navigation.
 - Maintains shared bookmarks for systems, bodies, rings and surface locations
@@ -302,7 +307,9 @@ alignment practical before placing and tracking the rig.
   A read-only Journal column compares Raven amounts with local CAPI totals plus
   later journal transactions; unavailable local totals display N/A.
 - Selects builds with project tags in the Market Search tab, independently of
-  Show in the project list, with combined commodity needs,
+  Show in the project list. Available tags follow the Projects tab’s system/status
+  filters and order; selected projects outside that view remain available to
+  remove under **Selected outside filters**. Search uses combined commodity needs,
   editable search location/radius, and concurrent Spansh/Ardent market results.
   Compact result columns sit inside full-width rows. Expanded commodity tags wrap
   across the available width; scrolling starts after twenty collapsed rows of
@@ -358,8 +365,10 @@ alignment practical before placing and tracking the rig.
 
 - Organizes application, desktop, privacy, data, screenshot and input options in
   a searchable settings workspace.
-- Configures screenshot processing and optional embedded information banners for
-  future captures.
+- [Processes Elite BMP screenshots](docs/SCREENSHOTS.md) and optional Steam JPEG screenshots into the
+  shared Journey PNG library. Sources support automatic detection and manual
+  selection; the fixed output folder has an **Open folder** button. Location
+  labels use capture-time journal context, and original-file removal is optional.
 - Includes in-app feature guides, a chat-command reference and an overlay icon
   glossary.
 - Shows the active journal sources and parsed live state, processes historical
@@ -369,8 +378,13 @@ alignment practical before placing and tracking the rig.
 
 ### Data sharing, updates and recovery
 
-- Keeps EDDN, Inara, EDSM and VoxStellar publication separately controlled and
+- Keeps EDDN, Inara, EDAstro, EDSM and VoxStellar publication separately controlled and
   disabled until their individual opt-in requirements are met.
+- [Stealth Mode](docs/stealth-mode.md) holds enabled EDDN, Inara, EDAstro and EDSM
+  reports across sessions until docking. Raven and read-only lookups continue;
+  VoxStellar has a separate opt-in and is not held by this setting.
+- [Discord carrier announcements](docs/discord-carrier-announcements.md) can post
+  personal and squadron carrier jump events to a channel webhook.
 - Warns against enabling equivalent sharing in more than one Elite Dangerous
   third-party application, avoiding duplicate or conflicting submissions.
 - Uses bounded network requests, validated data shapes and durable retry queues

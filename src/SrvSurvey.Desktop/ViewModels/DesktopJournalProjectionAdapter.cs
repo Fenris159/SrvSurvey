@@ -842,7 +842,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     screenshotStatus.HasLatitudeLongitude
                 )
                 : null,
-            CancellationToken.None
+            frontierId: state.Session.FrontierId,
+            cancellationToken: CancellationToken.None
         );
         ReportScreenshotResult(screenshotResult);
     }
@@ -1374,7 +1375,8 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         {
             ScreenshotProcessingResult screenshots = await dependencies.ScreenshotProcessing.ProcessJournalEventsAsync(
                 [],
-                state.Session.CommanderName
+                state.Session.CommanderName,
+                frontierId: state.Session.FrontierId
             );
             ReportScreenshotResult(screenshots);
         }

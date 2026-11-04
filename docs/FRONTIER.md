@@ -191,3 +191,17 @@ that commander to the disconnected state the next time it attempts to refresh.
 - [EDCD notes for Frontier OAuth 2](https://github.com/EDCD/FDevIDs/blob/master/Frontier%20API/FrontierDevelopments-oAuth2-notes.md)
 - [EDCD catalog of Frontier CAPI endpoints](https://github.com/EDCD/FDevIDs/blob/master/Frontier%20API/FrontierDevelopments-CAPI-endpoints.md)
 - [SrvSurvey privacy statement](PRIVACY.md)
+
+## Commander workspace readouts
+
+Select the sidebar’s Active Commander card to open the Frontier workspace.
+The Commander tab shows ranks, then a permanently visible horizontal faction
+reputation row and a full-width expandable Owned fleet list. Only one owned
+ship is marked current. Debt is omitted when its balance is zero. Current Ship,
+Fleet Carrier, Market, Shipyard, and Community Goals retain their own tabs.
+
+Journal observations and Frontier responses are reconciled using their observed
+times. Frontier freshness uses the request start after throttling, not the
+response arrival time. A request begun after a journal observation can supersede
+it; a delayed response must not replace journal changes made while in flight.
+Personal and squadron carrier identities and readouts remain separate.

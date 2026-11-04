@@ -1,8 +1,8 @@
 # Steam Deck Gaming Mode
 
 This guide targets **native Linux SrvSurvey-XP with Elite Dangerous running
-through Steam/Proton in Gaming Mode**. Use a build from PR #207, or a release
-that explicitly includes its SteamOS changes. An older Linux release does not
+through Steam/Proton in Gaming Mode**. Use a current release that includes
+SteamOS external-overlay support. An older Linux release does not
 gain external-overlay support by following these steps.
 
 The implementation has passed private Gamescope compositor tests. Actual Deck

@@ -30,6 +30,14 @@ public sealed partial class ScreenshotProcessingService
         }
         try
         {
+            string completedDirectory = Path.Combine(pendingQueueDirectory, "steam-completed");
+            if (Directory.Exists(completedDirectory))
+            {
+                foreach (string path in Directory.EnumerateFiles(completedDirectory, "*.json"))
+                {
+                    RecoverCapture(path, isCompleted: true);
+                }
+            }
             foreach (string path in Directory.EnumerateFiles(pendingQueueDirectory, "*.json"))
             {
                 RecoverCapture(path);
@@ -43,7 +51,7 @@ public sealed partial class ScreenshotProcessingService
         recoveryWarningCount = recoveryWarnings.Count;
     }
 
-    private void RecoverCapture(string path)
+    private void RecoverCapture(string path, bool isCompleted = false)
     {
         try
         {
@@ -52,6 +60,19 @@ public sealed partial class ScreenshotProcessingService
                 JsonSerializer.Deserialize<StoredCapture>(stream)
                 ?? throw new InvalidDataException("The pending screenshot record is empty.");
             ValidateStoredCapture(saved);
+            if (isCompleted)
+            {
+                if (!IsSteamCapture(saved.Request.Entry) || saved.CompletedConversion is null)
+                {
+                    throw new InvalidDataException("The completed Steam screenshot record is invalid.");
+                }
+                completed.Add(saved.Key);
+                return;
+            }
+            if (completed.Contains(saved.Key))
+            {
+                return;
+            }
             var capture = new PendingScreenshot(saved.Request)
             {
                 Source = saved.Source,
@@ -172,7 +193,7 @@ public sealed partial class ScreenshotProcessingService
         }
     }
 
-    private void RemovePendingCapture(string key, List<string> warnings)
+    private void RemovePendingCapture(string key, PendingScreenshot capture, List<string> warnings)
     {
         if (pendingQueueDirectory is null)
         {
@@ -180,7 +201,17 @@ public sealed partial class ScreenshotProcessingService
         }
         try
         {
-            File.Delete(GetCapturePath(key));
+            string path = GetCapturePath(key);
+            if (IsSteamCapture(capture.Request.Entry) && capture.CompletedConversion is not null)
+            {
+                string directory = Path.Combine(pendingQueueDirectory, "steam-completed");
+                Directory.CreateDirectory(directory);
+                File.Move(path, Path.Combine(directory, Path.GetFileName(path)), overwrite: true);
+            }
+            else
+            {
+                File.Delete(path);
+            }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -191,7 +222,7 @@ public sealed partial class ScreenshotProcessingService
     private ScreenshotConversion FinishConversion(string key, PendingScreenshot capture)
     {
         ScreenshotConversion conversion = capture.CompletedConversion!;
-        // Publish a verified completion before deleting the BMP. A restart can
+        // Publish a verified completion before deleting the source. A restart can
         // finish cleanup without requiring the original file or duplicating a PNG.
         SavePendingCapture(key, capture);
         if (capture.Request.Preferences.DeleteOriginal && conversion.Warning is null)
@@ -214,7 +245,7 @@ public sealed partial class ScreenshotProcessingService
                 return conversion with
                 {
                     Warning =
-                        "The converted screenshot was saved, but the original BMP could not be verified and was retained.",
+                        "The converted screenshot was saved, but the original image could not be verified and was retained.",
                 };
             }
             SourceFingerprint? current = ReadFingerprint(conversion.SourcePath);
@@ -222,7 +253,7 @@ public sealed partial class ScreenshotProcessingService
             {
                 return conversion with
                 {
-                    Warning = "The converted screenshot was saved, but the changed original BMP was retained.",
+                    Warning = "The converted screenshot was saved, but the changed original image was retained.",
                 };
             }
             File.Delete(conversion.SourcePath);
@@ -233,7 +264,7 @@ public sealed partial class ScreenshotProcessingService
             return conversion with
             {
                 Warning =
-                    $"Saved '{conversion.OutputPath}', but the original BMP could not be removed: {exception.Message}",
+                    $"Saved '{conversion.OutputPath}', but the original image could not be removed: {exception.Message}",
             };
         }
     }

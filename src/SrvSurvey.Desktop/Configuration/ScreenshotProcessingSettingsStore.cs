@@ -42,7 +42,11 @@ public sealed class ScreenshotProcessingSettingsStore
             GetDouble(settings, "AerialAltitudeAlpha") ?? defaults.AerialAltitudeAlpha,
             GetDouble(settings, "AerialAltitudeBeta") ?? defaults.AerialAltitudeBeta,
             GetDouble(settings, "AerialAltitudeGamma") ?? defaults.AerialAltitudeGamma
-        );
+        )
+        {
+            ProcessSteamScreenshots = GetBoolean(settings, "ProcessSteamScreenshots") ?? false,
+            SteamSourceFolder = GetString(settings, "SteamSourceFolder"),
+        };
         return (preferences, automaticSource, target is null);
     }
 
@@ -85,6 +89,8 @@ public sealed class ScreenshotProcessingSettingsStore
             }
 
             settings["Enabled"] = preferences.Enabled;
+            settings["ProcessSteamScreenshots"] = preferences.ProcessSteamScreenshots;
+            settings["SteamSourceFolder"] = preferences.SteamSourceFolder;
             settings["AddBanner"] = preferences.AddBanner;
             settings["DeleteOriginal"] = preferences.DeleteOriginal;
             settings["UseGuardianAerialFolder"] = preferences.UseGuardianAerialFolder;
@@ -223,6 +229,9 @@ public sealed record ScreenshotProcessingPreferences(
     double AerialAltitudeGamma
 )
 {
+    public bool ProcessSteamScreenshots { get; init; }
+    public string? SteamSourceFolder { get; init; }
+
     public static ScreenshotProcessingPreferences CreateDefaults(string? journalDirectory = null)
     {
         return CreateDefaults(

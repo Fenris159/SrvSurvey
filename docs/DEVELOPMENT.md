@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-10-31
+Last updated: 2026-11-03
 
 ## Branch purpose
 
@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.77.4**. Its development tag
-is `xp2-v2.1.3.0-rc.77.4`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.77.4`. The assembly
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.77.5**. Its development tag
+is `xp2-v2.1.3.0-rc.77.5`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.77.5`. The assembly
 `FileVersion` remains numeric at `2.1.3.0` for Windows compatibility.
 
 RC51 is the permanent legacy update anchor. Its release index is schema 1 and
@@ -66,8 +66,10 @@ it runs in editors and every `dotnet build`. Analyzer warnings are treated as
 build errors. Rule-specific exceptions belong in `.editorconfig` and require a
 short rationale. `tools/SonarCloud.ruleset` mirrors the current SonarCloud C#
 quality profile; `Test-ChangedCodeQuality.ps1` enables that full profile and
-reports only findings on changed lines so existing legacy findings do not block
-unrelated work. It also checks null-guarded event subscriptions explicitly
+treats all build warnings as errors, including pre-existing warnings. Only the
+separate `.editorconfig` style check is scoped to changed C# lines. The gate also
+requires 80% line/branch coverage on changed production C#; an analyzer build
+alone does not measure coverage. It also checks null-guarded event subscriptions explicitly
 because SonarCloud can recognize newer null-conditional assignment syntax
 before the installed SDK analyzer does.
 
