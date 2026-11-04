@@ -44,5 +44,7 @@ internal sealed class JournalProjectionState
 
     internal string? ProfileRavenApiKey { get; set; }
 
+    internal bool ProfileRestoredFromDisk { get; set; }
+
     internal bool ProfileIsOdyssey { get; set; } = true;
 }

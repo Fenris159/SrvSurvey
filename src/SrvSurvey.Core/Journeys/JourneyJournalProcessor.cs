@@ -66,7 +66,7 @@ public sealed class JourneyJournalProcessor
             timestamp == Journey.Watermark && Journey.WatermarkRecords is { } prior
                 ? new(prior, StringComparer.Ordinal)
                 : null;
-        if (receipt is not null)
+        if (receipt is not null && (timestamp > Journey.Watermark || Journey.WatermarkRecords is not null))
         {
             records ??= new(StringComparer.Ordinal);
             records.Add(receipt);
@@ -77,11 +77,14 @@ public sealed class JourneyJournalProcessor
     }
 
     private static string? GetRecordReceipt(JournalEventEnvelope entry) =>
-        string.IsNullOrWhiteSpace(entry.SourceRecordIdentity)
-            ? null
-            : entry.SourceRecordIdentity
-                + ":"
-                + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)));
+        entry.SourceContentIdentity
+        ?? (
+            string.IsNullOrWhiteSpace(entry.SourceRecordIdentity)
+                ? null
+                : entry.SourceRecordIdentity
+                    + ":"
+                    + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(entry.RawJson)))
+        );
 
     public JourneyReplaySummary ApplyCatchUp(IEnumerable<JournalEventEnvelope> journalEvents)
     {

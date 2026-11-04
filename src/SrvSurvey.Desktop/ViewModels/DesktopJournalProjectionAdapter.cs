@@ -599,7 +599,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         tick.PreviousFrontierId = state.Session.FrontierId;
         tick.PreviousCommanderName = state.Session.CommanderName;
         state.IsAwaitingCommanderIdentity = context.Update.IsAwaitingCommanderIdentity;
-        if (context.IsBootstrapRead || context.Update.Status is not null)
+        if (context.Update.Status is not null)
         {
             state.LatestStatus = context.Update.Status;
         }

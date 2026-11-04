@@ -409,6 +409,21 @@ public sealed partial class JourneyService
         {
             return stored;
         }
+        if (
+            !CoversVisitedActivity(stored, pending)
+            || (
+                stored.Watermark == pending.Watermark
+                && stored.WatermarkRecords is { } storedRecords
+                && pending.WatermarkRecords is { } pendingRecords
+                && !pendingRecords.IsSupersetOf(storedRecords)
+            )
+        )
+        {
+            throw new IOException(
+                "Journey progress differs between instances. Pending activity was retained; retry after journal catch-up."
+            );
+        }
+        bool storedBoundaryIsNewer = stored.Watermark > pending.Watermark;
         // Journal progress owns visits and the watermark; edits in another instance
         // still own metadata and note-save counts, including on historical visits.
         var notes = stored
@@ -426,19 +441,22 @@ public sealed partial class JourneyService
             .ToArray();
         return stored with
         {
-            Watermark = pending.Watermark,
-            WatermarkRecords = pending.WatermarkRecords,
+            Watermark = storedBoundaryIsNewer ? stored.Watermark : pending.Watermark,
+            WatermarkRecords = storedBoundaryIsNewer ? stored.WatermarkRecords : pending.WatermarkRecords,
             VisitedSystems = visits,
         };
     }
 
     private static bool CoversPendingProgress(JourneyDocument stored, JourneyDocument pending) =>
-        stored.Watermark > pending.Watermark
-        || (
-            stored.Watermark == pending.Watermark
-            && stored.WatermarkRecords is { } savedRecords
-            && pending.WatermarkRecords is { } pendingRecords
-            && savedRecords.IsSupersetOf(pendingRecords)
+        CoversSavedActivity(pending, stored)
+        && (
+            stored.Watermark > pending.Watermark
+            || (
+                stored.Watermark == pending.Watermark
+                && stored.WatermarkRecords is { } savedRecords
+                && pending.WatermarkRecords is { } pendingRecords
+                && savedRecords.IsSupersetOf(pendingRecords)
+            )
         );
 
     private async Task<JourneyDocument> UpdateStoredJourneyLockedAsync(
@@ -638,8 +656,11 @@ public sealed partial class JourneyService
         JourneyJournalReadResult read = await historyReader
             .ReadFromAsync(journey.StartingJournal, journey.FrontierId, isOdyssey, journey.StartTime, cancellationToken)
             .ConfigureAwait(false);
-        (JourneyJournalProcessor processor, bool rebuilt) = CreateCatchUpProcessor(journey, read, isOdyssey);
-        int processed = read.Events.Count(entry => entry.Timestamp > journey.Watermark);
+        (JourneyJournalProcessor processor, bool rebuilt, int processed) = CreateCatchUpProcessor(
+            journey,
+            read,
+            isOdyssey
+        );
         if (rebuilt || processed > 0)
         {
             await journeyStore.SaveAsync(processor.Journey, cancellationToken).ConfigureAwait(false);
@@ -651,7 +672,7 @@ public sealed partial class JourneyService
         return new JourneyServiceResult(processor.Journey, read.Errors, processed);
     }
 
-    private (JourneyJournalProcessor Processor, bool Rebuilt) CreateCatchUpProcessor(
+    private (JourneyJournalProcessor Processor, bool Rebuilt, int Processed) CreateCatchUpProcessor(
         JourneyDocument journey,
         JourneyJournalReadResult read,
         bool isOdyssey
@@ -694,23 +715,25 @@ public sealed partial class JourneyService
                             .ToArray(),
                     }
                 );
-                return (rebuilt, true);
+                return (rebuilt, true, read.Events.Count(entry => entry.Timestamp > journey.Watermark));
             }
         }
         // Missing history must not erase activity that was already saved. Continue from the watermark instead.
         var incremental = new JourneyJournalProcessor(journey, exobiologyCatalog, isOdyssey);
-        incremental.ApplyCatchUp(read.Events);
-        return (incremental, false);
+        JourneyReplaySummary replay = incremental.ApplyCatchUp(read.Events);
+        return (incremental, false, replay.ProcessedEventCount);
     }
 
-    private static bool CoversSavedActivity(JourneyDocument saved, JourneyDocument rebuilt)
+    private static bool CoversSavedActivity(JourneyDocument saved, JourneyDocument rebuilt) =>
+        rebuilt.Watermark >= saved.Watermark && CoversVisitedActivity(saved, rebuilt);
+
+    private static bool CoversVisitedActivity(JourneyDocument saved, JourneyDocument rebuilt)
     {
         var visits = rebuilt.VisitedSystems.ToDictionary(visit => (visit.StarSystem.SystemAddress, visit.Arrived));
-        return rebuilt.Watermark >= saved.Watermark
-            && saved.VisitedSystems.All(visit =>
-                visits.TryGetValue((visit.StarSystem.SystemAddress, visit.Arrived), out JourneySystemVisit? replacement)
-                && CoversVisit(visit, replacement)
-            );
+        return saved.VisitedSystems.All(visit =>
+            visits.TryGetValue((visit.StarSystem.SystemAddress, visit.Arrived), out JourneySystemVisit? replacement)
+            && CoversVisit(visit, replacement)
+        );
     }
 
     private static bool CoversVisit(JourneySystemVisit saved, JourneySystemVisit rebuilt) =>

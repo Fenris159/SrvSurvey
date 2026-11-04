@@ -60,8 +60,10 @@ from RC77.
   or unavailable, already-consumed activity and commands are delivered once and
   reading resumes after repair without replaying the preceding part. Initial
   replay remains in bootstrap mode through partial or failed reads, so historical
-  commands stay suppressed. Quiet Steam captures also work when Elite is on a
-  nested Gamescope display with no switchable desktop window.
+  commands stay suppressed. Partial startup reads also retain the current status
+  and avoid recounting exploration totals already present in a saved profile.
+  Quiet Steam captures also work when Elite is on a nested Gamescope display
+  with no switchable desktop window.
 - **Journey note recovery:** A saved note's pending visit count can finish even
   if another window edits the note before retry. The external text is retained;
   additional unsaved edits still receive conflict protection and can be discarded.
@@ -70,8 +72,13 @@ from RC77.
   through later metadata and note edits, while preserving another window's saved
   metadata and note counts. Staggered readers reconcile exact records at the saved
   watermark, avoiding double counts while retaining distinct same-second events.
-  History replay uses the same source positions as live tracking, including UTF-8
-  and mixed line endings. Readouts identify note-save counts explicitly.
+  Catch-up persists new activity even when it shares the saved timestamp. Older
+  saves retain their unknown replay boundary until a later timestamp, and copied
+  journals with shifted lines do not duplicate saved captures. Reconciliation
+  checks saved visits and activity before retiring pending progress, keeps newer
+  timestamps and retains both snapshots for retry when partial progress conflicts.
+  Live/history matching handles UTF-8 and mixed line endings. Readouts identify
+  note-save counts explicitly.
 
 - **Guides:** Refresh in-app instructions and the shipped chat reference for
   Journeys, portable photo reports, Commander readouts, FC/SC Routes, Discord,

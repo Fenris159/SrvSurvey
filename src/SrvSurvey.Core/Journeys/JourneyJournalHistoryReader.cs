@@ -441,6 +441,7 @@ public sealed partial class JourneyJournalHistoryReader
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
 
+        var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
         int lineNumber = 0;
         await foreach (
             (string line, long offset) in ReadSourceRecordsAsync(stream, cancellationToken).ConfigureAwait(false)
@@ -466,6 +467,7 @@ public sealed partial class JourneyJournalHistoryReader
                 {
                     SourceRecordIdentity =
                         file.Name + ":" + offset.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    SourceContentIdentity = journalEvent.CaptureContentIdentity(file.Name, occurrences),
                 }
             );
         }

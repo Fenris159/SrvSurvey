@@ -25,6 +25,7 @@ public sealed partial class JournalDirectoryMonitor
     private readonly SemaphoreSlim pollLock = new(1, 1);
     private string? currentJournalPath;
     private long currentJournalOffset;
+    private readonly Dictionary<string, int> currentJournalContentOccurrences = new(StringComparer.Ordinal);
     private byte[] pendingJournalBytes = [];
     private string? statusContentHash;
     private string? navRouteContentHash;
@@ -510,6 +511,7 @@ public sealed partial class JournalDirectoryMonitor
         if (stream.Length < currentJournalOffset)
         {
             currentJournalOffset = 0;
+            currentJournalContentOccurrences.Clear();
             pendingJournalBytes = [];
         }
 
@@ -593,15 +595,19 @@ public sealed partial class JournalDirectoryMonitor
             && journalEvent is not null
         )
         {
-            if (currentJournalIsContinuation && journalEvent.EventName == "Fileheader")
-            {
-                return;
-            }
             journalEvent = journalEvent with
             {
                 SourceRecordIdentity =
                     Path.GetFileName(currentJournalPath) + ":" + byteOffset.ToString(CultureInfo.InvariantCulture),
+                SourceContentIdentity = journalEvent.CaptureContentIdentity(
+                    Path.GetFileName(currentJournalPath)!,
+                    currentJournalContentOccurrences
+                ),
             };
+            if (currentJournalIsContinuation && journalEvent.EventName == "Fileheader")
+            {
+                return;
+            }
             if (journalEvent.EventName != "SendText" || RememberTextEvent(byteOffset, journalEvent.RawJson))
             {
                 events.Add(journalEvent);

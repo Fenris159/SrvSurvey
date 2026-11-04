@@ -71,6 +71,7 @@ public sealed partial class JournalDirectoryMonitor
                 SetActiveJournalDirectory(part.DirectoryName);
                 currentJournalPath = part.FullName;
                 currentJournalOffset = 0;
+                currentJournalContentOccurrences.Clear();
                 pendingJournalBytes = [];
                 // Only verified predecessors share a running session. A continuation
                 // header must not reset commander, vehicle or workspace reducers.
