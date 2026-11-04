@@ -151,11 +151,11 @@ public sealed class VrCalibrationPresentationTests : IDisposable
                 .Single(text => text.Text == "VR overlay calibration");
             Assert.Equal(
                 Color.Parse(RavenThemeCatalog.Get(palette).WindowColor),
-                Assert.IsAssignableFrom<ISolidColorBrush>(background.Background).Color
+                Assert.IsType<ISolidColorBrush>(background.Background, exactMatch: false).Color
             );
             Assert.Equal(
                 Color.Parse(RavenThemeCatalog.Get(palette).TextColor),
-                Assert.IsAssignableFrom<ISolidColorBrush>(title.Foreground).Color
+                Assert.IsType<ISolidColorBrush>(title.Foreground, exactMatch: false).Color
             );
         }
         finally
