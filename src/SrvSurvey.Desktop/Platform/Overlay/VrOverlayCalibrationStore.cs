@@ -24,7 +24,7 @@ public sealed class VrOverlayCalibrationStore
     }
 
     /// <summary>Reads calibration after serialized layout recovery.</summary>
-    public VrOverlayCalibrationCatalog Load()
+    public VrOverlayCalibrationCatalog Load(string? profileId = null)
     {
         using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
         OverlayLayoutFileAccess.Recover(dataDirectory);
@@ -36,26 +36,81 @@ public sealed class VrOverlayCalibrationStore
             defaultPlottersPath,
             allowDesktopPrefix: true
         );
-        var overrides = new Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>>(
-            StringComparer.OrdinalIgnoreCase
+        Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>> overrides = LoadModes(
+            GetOverrideDirectory(null)
         );
-        string overrideDirectory = Path.Combine(dataDirectory, "vr");
-        if (Directory.Exists(overrideDirectory))
+        if (profileId == VrPlatformProfileCatalog.MetaVdxrProfileId)
         {
-            foreach (string path in Directory.GetFiles(overrideDirectory, "*.json"))
+            ApplySeatedDefaults(defaults, factoryDefaults);
+            Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>> routeModes = LoadModes(
+                GetOverrideDirectory(profileId)
+            );
+            if (
+                routeModes.Remove(
+                    DefaultCalibrationMode,
+                    out IReadOnlyDictionary<string, VrOverlayCalibration>? routeDefaults
+                )
+            )
             {
-                overrides[Path.GetFileNameWithoutExtension(path)] = LoadFile(path, allowDesktopPrefix: false);
+                foreach (KeyValuePair<string, VrOverlayCalibration> entry in routeDefaults)
+                {
+                    defaults[entry.Key] = entry.Value;
+                }
+            }
+            foreach (KeyValuePair<string, IReadOnlyDictionary<string, VrOverlayCalibration>> mode in routeModes)
+            {
+                var merged = new Dictionary<string, VrOverlayCalibration>(
+                    overrides.GetValueOrDefault(mode.Key) ?? new Dictionary<string, VrOverlayCalibration>(),
+                    StringComparer.Ordinal
+                );
+                foreach (KeyValuePair<string, VrOverlayCalibration> entry in mode.Value)
+                {
+                    merged[entry.Key] = entry.Value;
+                }
+                overrides[mode.Key] = merged;
             }
         }
 
         return new VrOverlayCalibrationCatalog(defaults, factoryDefaults, overrides);
     }
 
+    private static void ApplySeatedDefaults(
+        Dictionary<string, VrOverlayCalibration> defaults,
+        Dictionary<string, VrOverlayCalibration> factoryDefaults
+    )
+    {
+        foreach (string name in factoryDefaults.Keys.ToArray())
+        {
+            VrOverlayCalibration legacyDefault = factoryDefaults[name];
+            factoryDefaults[name] = VrSeatedCalibrationDefaults.Get(name);
+            if (!defaults.TryGetValue(name, out VrOverlayCalibration? saved) || saved == legacyDefault)
+            {
+                defaults[name] = factoryDefaults[name];
+            }
+        }
+    }
+
+    private static Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>> LoadModes(string directory)
+    {
+        var modes = new Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>>(
+            StringComparer.OrdinalIgnoreCase
+        );
+        if (Directory.Exists(directory))
+        {
+            foreach (string path in Directory.GetFiles(directory, "*.json"))
+            {
+                modes[Path.GetFileNameWithoutExtension(path)] = LoadFile(path, allowDesktopPrefix: false);
+            }
+        }
+        return modes;
+    }
+
     /// <summary>Updates calibration under the same folder lease as desktop layout writers.</summary>
     public VrOverlayCalibrationSaveResult Save(
         string plotterName,
         VrOverlayCalibration calibration,
-        string? mode = null
+        string? mode = null,
+        string? profileId = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
@@ -64,6 +119,10 @@ public sealed class VrOverlayCalibrationStore
         using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
         OverlayLayoutFileAccess.Recover(dataDirectory);
         string? normalizedMode = NormalizeMode(mode);
+        if (profileId == VrPlatformProfileCatalog.MetaVdxrProfileId)
+        {
+            return SaveOverride(plotterName, calibration, normalizedMode ?? DefaultCalibrationMode, profileId);
+        }
         return normalizedMode is null
             ? SaveDefault(plotterName, calibration)
             : SaveOverride(plotterName, calibration, normalizedMode);
@@ -112,10 +171,11 @@ public sealed class VrOverlayCalibrationStore
     private VrOverlayCalibrationSaveResult SaveOverride(
         string plotterName,
         VrOverlayCalibration calibration,
-        string mode
+        string mode,
+        string? profileId = null
     )
     {
-        string overrideDirectory = Path.Combine(dataDirectory, "vr");
+        string overrideDirectory = GetOverrideDirectory(profileId);
         string overridePath = Path.Combine(overrideDirectory, $"{mode}.json");
         JsonObject root = File.Exists(overridePath) ? ParseObject(overridePath) : [];
         root[plotterName] = calibration.ToString();
@@ -141,6 +201,13 @@ public sealed class VrOverlayCalibrationStore
 
         return new VrOverlayCalibrationSaveResult(overridePath, backupPath);
     }
+
+    private const string DefaultCalibrationMode = "Default";
+
+    private string GetOverrideDirectory(string? profileId) =>
+        profileId == VrPlatformProfileCatalog.MetaVdxrProfileId
+            ? Path.Combine(dataDirectory, "vr", "vdxr")
+            : Path.Combine(dataDirectory, "vr");
 
     private static Dictionary<string, VrOverlayCalibration> LoadFile(string path, bool allowDesktopPrefix)
     {

@@ -5,6 +5,7 @@
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:overlay="using:SrvSurvey.Desktop.Platform.Overlay"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
              x:Class="SrvSurvey.Desktop.Views.OverlaySettingsView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
@@ -470,6 +471,13 @@
                   </StackPanel>
                 </Grid>
 
+                <StackPanel IsVisible="{Binding VrOverlay.IsVdxr}" Spacing="5">
+                  <CheckBox IsChecked="{Binding VrOverlay.EdvrControllerInput, Mode=TwoWay}"
+                            Content="Experimental EDVR controller input" />
+                  <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                             Text="For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations." />
+                </StackPanel>
+
                 <StackPanel IsVisible="{Binding VrOverlay.IsCustomRuntime}" Spacing="5">
                   <TextBlock Classes="eyebrow" Text="CUSTOM RUNTIME PROCESS" />
                   <TextBox MaxWidth="360"
@@ -541,89 +549,7 @@
                         BorderBrush="{DynamicResource RavenBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="8">
-                  <StackPanel Spacing="14">
-                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="18">
-                      <StackPanel Spacing="4">
-                        <TextBlock Classes="eyebrow" Text="CALIBRATION TARGET" />
-                        <ComboBox MinWidth="280"
-                                  ItemsSource="{Binding VrOverlay.AvailableOverlays}"
-                                  SelectedItem="{Binding VrOverlay.SelectedOverlayName, Mode=TwoWay}" />
-                      </StackPanel>
-                      <StackPanel Grid.Column="1" Spacing="4">
-                        <TextBlock Classes="eyebrow" Text="VEHICLE / GAME MODE" />
-                        <ComboBox MinWidth="200"
-                                  ItemsSource="{Binding VrOverlay.AvailableModes}"
-                                  SelectedItem="{Binding VrOverlay.SelectedMode, Mode=TwoWay}" />
-                        <TextBlock Classes="muted"
-                                   FontSize="11"
-                                   Text="{Binding VrOverlay.CurrentRuntimeMode, StringFormat='Current: {0}'}" />
-                      </StackPanel>
-                      <TextBlock Grid.Column="2"
-                                 VerticalAlignment="Bottom"
-                                 Classes="muted"
-                                 FontSize="11"
-                                 Text="Alt+V opens this editor" />
-                    </Grid>
-
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
-                      <StackPanel Spacing="5">
-                        <TextBlock Classes="eyebrow" Text="SCALE" />
-                        <NumericUpDown Minimum="0.1"
-                                       Maximum="50"
-                                       Increment="0.1"
-                                       FormatString="0.0###"
-                                       Value="{Binding VrOverlay.Scale, Mode=TwoWay}" />
-                      </StackPanel>
-                      <StackPanel Grid.Column="1" Spacing="5">
-                        <TextBlock Classes="eyebrow" Text="POSITION X / Y / Z" />
-                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                          <NumericUpDown Minimum="-1000" Maximum="1000" Increment="0.1"
-                                         FormatString="0.0###"
-                                         Value="{Binding VrOverlay.PositionX, Mode=TwoWay}" />
-                          <NumericUpDown Grid.Column="1" Minimum="-1000" Maximum="1000" Increment="0.1"
-                                         FormatString="0.0###"
-                                         Value="{Binding VrOverlay.PositionY, Mode=TwoWay}" />
-                          <NumericUpDown Grid.Column="2" Minimum="-1000" Maximum="1000" Increment="0.1"
-                                         FormatString="0.0###"
-                                         Value="{Binding VrOverlay.PositionZ, Mode=TwoWay}" />
-                        </Grid>
-                      </StackPanel>
-                      <StackPanel Grid.Column="2" Spacing="5">
-                        <TextBlock Classes="eyebrow" Text="PITCH / YAW / ROLL" />
-                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                          <NumericUpDown Minimum="-360" Maximum="360" Increment="0.1"
-                                         FormatString="0.0###"
-                                         Value="{Binding VrOverlay.RotationPitch, Mode=TwoWay}" />
-                          <NumericUpDown Grid.Column="1" Minimum="-360" Maximum="360" Increment="0.1"
-                                         FormatString="0.0###"
-                                         Value="{Binding VrOverlay.RotationYaw, Mode=TwoWay}" />
-                          <NumericUpDown Grid.Column="2" Minimum="-360" Maximum="360" Increment="0.1"
-                                         FormatString="0.0###"
-                                         Value="{Binding VrOverlay.RotationRoll, Mode=TwoWay}" />
-                        </Grid>
-                      </StackPanel>
-                    </Grid>
-
-                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
-                      <TextBlock VerticalAlignment="Center"
-                                 Classes="muted"
-                                 FontSize="11"
-                                 TextWrapping="Wrap"
-                                 Text="Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays." />
-                      <Button Grid.Column="1"
-                              Classes="secondary"
-                              Command="{Binding VrOverlay.CancelCommand}"
-                              Content="Cancel" />
-                      <Button Grid.Column="2"
-                              Classes="secondary"
-                              Command="{Binding VrOverlay.ResetCommand}"
-                              Content="Reset selected" />
-                      <Button Grid.Column="3"
-                              Classes="primary"
-                              Command="{Binding VrOverlay.SaveCommand}"
-                              Content="Save calibration" />
-                    </Grid>
-                  </StackPanel>
+                  <views:VrCalibrationView DataContext="{Binding VrOverlay}" />
                 </Border>
               </StackPanel>
             </Border>

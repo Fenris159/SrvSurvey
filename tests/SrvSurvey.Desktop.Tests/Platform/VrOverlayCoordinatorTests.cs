@@ -16,6 +16,52 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         $"SrvSurvey-vr-coordinator-tests-{Guid.NewGuid():N}"
     );
 
+    [AvaloniaFact]
+    public void CalibrationPublishesSampleAndHeadsetControlsWithoutMakingADesktopPanelVisible()
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        model.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(model, registry, runtime);
+        Assert.True(model.BeginAdjustment());
+        Assert.Collection(
+            runtime.Frames.Keys.Order(),
+            name => Assert.Equal("PlotAdjustVR", name),
+            name => Assert.Equal("PlotJumpInfo", name)
+        );
+        Assert.Empty(registry.Snapshot());
+        VrOverlayFrame sample = runtime.Frames["PlotJumpInfo"];
+        Assert.Contains(sample.RgbaBytes.Where((_, index) => index % 4 == 3), alpha => alpha > 0);
+        Assert.Equal(1f, runtime.LastAlpha);
+        model.PlaceInFrontCommand.Execute(null);
+        Assert.Equal(10, model.PositionZ);
+        Assert.Equal(0, model.PositionY);
+        Assert.Equal(8, model.Scale);
+        Assert.Equal(0, runtime.ResetCount);
+        model.CancelCommand.Execute(null);
+        Assert.Empty(runtime.Frames);
+        Assert.Equal(20, model.GetCalibration("PlotJumpInfo")!.Scale);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PlaceInFrontFailsWithoutChangingCalibrationWhenHeadTrackingIsUnavailable(bool enabled)
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        model.Enabled = enabled;
+        model.BeginAdjustment();
+        using var coordinator = new VrOverlayCoordinator(
+            model,
+            new OverlayWindowRegistry(),
+            new StubOpenVrRuntime { PoseAvailable = false }
+        );
+        model.PlaceInFrontCommand.Execute(null);
+        Assert.Equal(3, model.PositionZ);
+        Assert.Contains("tracked head pose", model.StatusMessage);
+    }
+
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
@@ -60,6 +106,19 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         {
             window.Close();
         }
+    }
+
+    [Fact]
+    public void ChangingEdvrInputSourceDisablesExistingInteractionUntilTheUserTogglesAgain()
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        model.Enabled = true;
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(model, new OverlayWindowRegistry(), runtime);
+        Assert.True(coordinator.ToggleInteraction());
+        model.EdvrControllerInput = true;
+        Assert.False(coordinator.IsInteractionEnabled);
+        Assert.False(runtime.InteractionEnabled);
     }
 
     [Fact]
@@ -271,6 +330,16 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public Queue<VrOverlayPointerEvent> PointerEvents { get; } = new();
 
+        public Dictionary<string, VrOverlayFrame> Frames { get; } = [];
+
+        public bool PoseAvailable { get; init; } = true;
+
+        public bool TryGetHeadPose(out VrOverlayHeadPose? pose)
+        {
+            pose = PoseAvailable ? new VrOverlayHeadPose(System.Numerics.Vector3.Zero, 0) : null;
+            return PoseAvailable;
+        }
+
         public VrRuntimeProbe ProbeResult { get; init; } = VrRuntimeProbe.Ready();
 
         public VrRuntimeProbe Probe()
@@ -294,10 +363,11 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         {
             LastFrame = frame;
             LastAlpha = alpha;
+            Frames[plotterName] = frame;
             return VrRuntimeResult.Success("Published.");
         }
 
-        public void RemoveOverlay(string plotterName) { }
+        public void RemoveOverlay(string plotterName) => Frames.Remove(plotterName);
 
         public VrRuntimeResult SetInteractionEnabled(bool enabled)
         {

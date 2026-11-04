@@ -26,7 +26,8 @@ public sealed class VrOverlaySettingsStore
                     ? DefaultProfileId
                     : CustomProfileId
             ),
-            runtimeProcessName
+            runtimeProcessName,
+            GetBoolean(settings, "EdvrControllerInput", false)
         );
     }
 
@@ -46,6 +47,7 @@ public sealed class VrOverlaySettingsStore
             settings["Enabled"] = preferences.Enabled;
             settings["RuntimeProfileId"] = preferences.RuntimeProfileId;
             settings["RuntimeProcessName"] = preferences.RuntimeProcessName;
+            settings["EdvrControllerInput"] = preferences.EdvrControllerInput;
         });
     }
 
@@ -67,4 +69,9 @@ public sealed class VrOverlaySettingsStore
     }
 }
 
-public sealed record VrOverlayPreferences(bool Enabled, string RuntimeProfileId, string RuntimeProcessName);
+public sealed record VrOverlayPreferences(
+    bool Enabled,
+    string RuntimeProfileId,
+    string RuntimeProcessName,
+    bool EdvrControllerInput = false
+);

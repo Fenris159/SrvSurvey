@@ -11,6 +11,42 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     );
 
     [Fact]
+    public void VdxrInheritsExistingCustomPlacementsAndModeOverridesWithoutRewritingThem()
+    {
+        (string Data, string Factory) paths = CreateFiles();
+        var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
+        const string profile = VrPlatformProfileCatalog.MetaVdxrProfileId;
+        VrOverlayCalibrationCatalog catalog = store.Load(profile);
+        Assert.Equal(12, catalog.Defaults["PlotJumpInfo"].Scale);
+        Assert.Equal(18, catalog.Resolve("PlotJumpInfo", "testbuggy")!.Scale);
+        var saved = new VrOverlayCalibration(7, new Vector3(0, 1, 9), Vector3.Zero);
+        store.Save("PlotJumpInfo", saved, "testbuggy", profile);
+        VrOverlayCalibrationSaveResult result = store.Save(
+            "PlotJumpInfo",
+            saved with
+            {
+                Scale = 6,
+            },
+            "testbuggy",
+            profile
+        );
+        Assert.NotNull(result.BackupPath);
+        Assert.Equal(6, store.Load(profile).Resolve("PlotJumpInfo", "testbuggy")!.Scale);
+        Assert.Equal(18, store.Load().Resolve("PlotJumpInfo", "testbuggy")!.Scale);
+        Assert.Equal(12, store.Load().Defaults["PlotJumpInfo"].Scale);
+    }
+
+    [Theory]
+    [InlineData("PlotBioStatus", "{ s: 5, p: <0, 3.5, 10>, r: <-15, 0, 0>}")]
+    [InlineData("PlotSysStatus", "{ s: 3.5, p: <-5.5, -3, 9>, r: <15, -25, 0>}")]
+    [InlineData("PlotBioSystem", "{ s: 5, p: <-6.5, 0.5, 9>, r: <0, -35, 0>}")]
+    [InlineData("PlotPulse", "{ s: 5, p: <0, 0, 10>, r: <0, 0, 0>}")]
+    public void SeatedDefaultsUseReportedCockpitPlacements(string name, string expected)
+    {
+        Assert.Equal(expected, VrSeatedCalibrationDefaults.Get(name).ToString());
+    }
+
+    [Fact]
     public void LegacyCalibrationRoundTripsUsingInvariantFormatting()
     {
         const string legacy =

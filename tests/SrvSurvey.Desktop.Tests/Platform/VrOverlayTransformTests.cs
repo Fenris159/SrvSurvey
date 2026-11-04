@@ -7,6 +7,36 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class VrOverlayTransformTests
 {
     [Fact]
+    public void PlaceInFrontUsesCurrentHeadingAndPositionWithoutRetainingOldTiltOrOversizedWidth()
+    {
+        var calibration = new VrOverlayCalibration(20, new Vector3(0, 23, 20), new Vector3(15, -30, 12));
+        VrOverlayCalibration placed = VrOverlayTransform.PlaceInFront(
+            calibration,
+            new VrOverlayHeadPose(new Vector3(2, 1, 3), MathF.PI / 2)
+        );
+        Assert.Equal(8, placed.Scale);
+        Assert.Equal(10, placed.Position.X, 4);
+        Assert.Equal(10, placed.Position.Y, 4);
+        Assert.Equal(-30, placed.Position.Z, 4);
+        Assert.Equal(0, placed.Rotation.X);
+        Assert.Equal(90, placed.Rotation.Y, 4);
+        Assert.Equal(0, placed.Rotation.Z);
+    }
+
+    [Fact]
+    public void PlaceInFrontPreservesSmallerWidthsAndSupportsTheLegacyOpenVrRotationOffset()
+    {
+        var calibration = new VrOverlayCalibration(3, Vector3.Zero, Vector3.Zero);
+        VrOverlayCalibration placed = VrOverlayTransform.PlaceInFront(
+            calibration,
+            new VrOverlayHeadPose(Vector3.Zero, 0, MathF.PI / 2)
+        );
+        Assert.Equal(3, placed.Scale);
+        Assert.Equal(new Vector3(0, 0, 10), placed.Position);
+        Assert.Equal(90, placed.Rotation.Y, 4);
+    }
+
+    [Fact]
     public void LegacyScaleAndCoordinateConversionArePreserved()
     {
         var calibration = new VrOverlayCalibration(20, new Vector3(10, 20, 30), Vector3.Zero);

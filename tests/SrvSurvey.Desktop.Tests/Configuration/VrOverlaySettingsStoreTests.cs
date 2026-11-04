@@ -25,9 +25,9 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new VrOverlaySettingsStore(path);
 
-        store.Save(new VrOverlayPreferences(true, "meta-via-steamvr", "vrcompositor"));
+        store.Save(new VrOverlayPreferences(true, "meta-via-steamvr", "vrcompositor", true));
 
-        Assert.Equal(new VrOverlayPreferences(true, "meta-via-steamvr", "vrcompositor"), store.Load());
+        Assert.Equal(new VrOverlayPreferences(true, "meta-via-steamvr", "vrcompositor", true), store.Load());
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
     }
 

@@ -15,6 +15,95 @@ public sealed class OpenXrOverlayTests : IDisposable
     private const long Now = 100_000;
 
     [Fact]
+    public void ConflictingEdvrAttachmentReportsRecoveryAndKeepsTheFramePublisherAvailable()
+    {
+        using var runtime = new OpenXrOverlayRuntime(
+            () => new OpenXrFrameBridge(MailboxPath, () => Now),
+            () => true,
+            () => true
+        );
+        runtime.Probe();
+        WriteState(OpenXrLayerState.Ready, Now);
+        runtime.Initialize();
+        using var native = new OpenXrInputWriter(MailboxPath + ".input");
+        native.Ready(Now);
+        native.View.Write(40, 2u);
+        native.View.Write(44, -47);
+        VrRuntimeResult result = runtime.SetInteractionEnabled(true);
+        Assert.False(result.Succeeded);
+        Assert.Contains("conflicting OpenXR action attachment (error -47)", result.Message);
+        Assert.Contains("restart Elite", result.Message);
+        OpenXrOverlayFrame frame = Overlay();
+        Assert.True(runtime.PublishOverlay("A", frame.Frame, frame.Calibration, frame.Alpha).Succeeded);
+        Assert.True(runtime.CompleteFrame().Succeeded);
+        Assert.Equal(1u, UInt(ReadPacket(), 24));
+        Assert.Equal(0u, native.View.ReadUInt32(12));
+    }
+
+    [Fact]
+    public void ExperimentalEdvrRuntimePublishesTheOptInAndIdentifiesTheNativeInputPath()
+    {
+        bool enabled = true;
+        using var runtime = new OpenXrOverlayRuntime(
+            () => new OpenXrFrameBridge(MailboxPath, () => Now),
+            () => true,
+            () => enabled
+        );
+        runtime.Probe();
+        using var native = new OpenXrInputWriter(MailboxPath + ".input");
+        Assert.Equal(1u, native.View.ReadUInt32(64));
+        WriteState(OpenXrLayerState.Ready, Now);
+        runtime.Initialize();
+        native.Ready(Now);
+        native.View.Write(68, 2u);
+        VrRuntimeResult activation = runtime.SetInteractionEnabled(true);
+        Assert.True(activation.Succeeded);
+        Assert.StartsWith("Experimental EDVR controller interaction is enabled.", activation.Message);
+        runtime.SetInteractionEnabled(false);
+        enabled = false;
+        runtime.CompleteFrame();
+        Assert.Equal(0u, native.View.ReadUInt32(64));
+        Assert.False(runtime.SetInteractionEnabled(true).Succeeded);
+    }
+
+    [Fact]
+    public void CurrentHeadPlacementUsesFreshNativePoseAndRejectsItAfterOriginReset()
+    {
+        using OpenXrOverlayRuntime runtime = Runtime();
+        Assert.False(runtime.TryGetHeadPose(out _));
+        runtime.Probe();
+        WriteState(OpenXrLayerState.Ready, Now);
+        runtime.Initialize();
+        Assert.False(runtime.TryGetHeadPose(out _));
+        WriteHeadPose(2, Now, 0, new Vector3(2, 1, 3), MathF.PI / 2);
+        Assert.True(runtime.TryGetHeadPose(out VrOverlayHeadPose? pose));
+        Assert.Equal(new Vector3(2, 1, 3), pose!.Position);
+        Assert.Equal(MathF.PI / 2, pose.Yaw);
+        Assert.True(runtime.ResetOrientation().Succeeded);
+        Assert.False(runtime.TryGetHeadPose(out _));
+        WriteHeadPose(4, Now, 1, Vector3.Zero, 0);
+        Assert.True(runtime.TryGetHeadPose(out pose));
+        Assert.Equal(Vector3.Zero, pose!.Position);
+        runtime.Shutdown();
+        Assert.False(runtime.TryGetHeadPose(out _));
+    }
+
+    [Theory]
+    [InlineData(3, Now, 0, 0)] // Partial native write.
+    [InlineData(2, Now - 1001, 0, 0)] // Stale tracking.
+    [InlineData(2, Now + 1, 0, 0)] // Clock mismatch.
+    [InlineData(2, Now, 1, 0)] // Wrong origin.
+    [InlineData(2, Now, 0, float.NaN)]
+    public void HeadPlacementRejectsUncertainNativePose(uint sequence, long timestamp, uint revision, float yaw)
+    {
+        using var bridge = new OpenXrFrameBridge(MailboxPath, () => Now);
+        WriteState(OpenXrLayerState.Ready, Now);
+        WriteHeadPose(sequence, timestamp, revision, Vector3.Zero, yaw);
+        Assert.False(bridge.TryReadHeadPose(0, out VrOverlayHeadPose? pose));
+        Assert.Null(pose);
+    }
+
+    [Fact]
     public void PacketPreservesPixelsAndConvertsCalibrationToMetersAndQuaternion()
     {
         byte[] pixels = [255, 128, 64, 32, 1, 2, 3, 4];
@@ -281,6 +370,7 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.False(router.IsInitialized);
         Assert.False(router.Initialize().Succeeded);
         Assert.Equal("VDXR / OpenXR", router.DisplayName);
+        Assert.False(router.TryGetHeadPose(out _));
         Assert.False(router.PublishOverlay("A", Overlay().Frame, Overlay().Calibration, 1).Succeeded);
         router.CompleteFrame();
         router.RemoveOverlay("A");
@@ -307,9 +397,11 @@ public sealed class OpenXrOverlayTests : IDisposable
         using var router = new VrOverlayRuntimeRouter(() => profile);
         Assert.False(router.IsInitialized);
         Assert.Equal("SteamVR/OpenVR", router.DisplayName);
+        Assert.False(router.TryGetHeadPose(out _));
         profile = VrPlatformProfileCatalog.MetaVdxrProfileId;
         Assert.False(router.IsInitialized);
         Assert.Equal("VDXR / OpenXR", router.DisplayName);
+        Assert.False(router.TryGetHeadPose(out _));
     }
 
     [Fact]
@@ -379,5 +471,24 @@ public sealed class OpenXrOverlayTests : IDisposable
         using MemoryMappedViewAccessor view = mapping.CreateViewAccessor();
         view.Write(40, (uint)state);
         view.Write(32, heartbeat);
+    }
+
+    private void WriteHeadPose(uint sequence, long timestamp, uint revision, Vector3 position, float yaw)
+    {
+        using var file = new FileStream(
+            MailboxPath,
+            FileMode.Open,
+            FileAccess.Write,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        using var writer = new BinaryWriter(file);
+        file.Position = 60;
+        writer.Write(sequence);
+        writer.Write(timestamp);
+        writer.Write(revision);
+        writer.Write(position.X);
+        writer.Write(position.Y);
+        writer.Write(position.Z);
+        writer.Write(yaw);
     }
 }

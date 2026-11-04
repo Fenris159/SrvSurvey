@@ -13,6 +13,103 @@ public sealed class VrOverlayViewModelTests : IDisposable
     );
 
     [Fact]
+    public void ExperimentalEdvrInputIsExplicitPersistedAndOnlyOfferedForTheVdxrRoute()
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        Assert.False(model.EdvrControllerInput);
+        Assert.False(model.IsVdxr);
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.True(model.IsVdxr);
+        model.EdvrControllerInput = true;
+        Assert.True(new VrOverlaySettingsStore(SettingsPath).Load().EdvrControllerInput);
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.SteamVrProfileId);
+        Assert.False(model.IsVdxr);
+        Assert.True(CreateViewModel().EdvrControllerInput);
+        model.EdvrControllerInput = false;
+        Assert.False(new VrOverlaySettingsStore(SettingsPath).Load().EdvrControllerInput);
+    }
+
+    [Fact]
+    public void HeadsetSelectorsCyclePanelsAndModesAndDiscardUnsavedSelectionChanges()
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        bool placeEnabled = false;
+        model.PlaceInFrontCommand.CanExecuteChanged += (_, _) =>
+            placeEnabled = model.PlaceInFrontCommand.CanExecute(null);
+        Assert.False(model.PlaceInFrontCommand.CanExecute(null));
+        model.SetCurrentRuntimeMode("testbuggy");
+        Assert.True(model.BeginAdjustment());
+        Assert.True(model.PlaceInFrontCommand.CanExecute(null));
+        Assert.True(placeEnabled);
+        Assert.Equal("PlotBioStatus", model.SelectedOverlayName);
+        model.PreviousOverlayCommand.Execute(null);
+        Assert.Equal("PlotJumpInfo", model.SelectedOverlayName);
+        model.Scale = 42;
+        model.NextOverlayCommand.Execute(null);
+        Assert.Equal("PlotBioStatus", model.SelectedOverlayName);
+        model.NextOverlayCommand.Execute(null);
+        Assert.Equal("PlotJumpInfo", model.SelectedOverlayName);
+        Assert.Equal(20, model.Scale);
+        model.PreviousModeCommand.Execute(null);
+        Assert.Equal("testbuggy", model.SelectedMode);
+        model.NextModeCommand.Execute(null);
+        Assert.Equal("Default", model.SelectedMode);
+    }
+
+    [Fact]
+    public void VdxrResetUsesSeatedFactoryPlacementAndVehicleResetUsesTheSavedRouteDefault()
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        model.BeginAdjustment();
+        model.SelectedOverlayName = "PlotJumpInfo";
+        model.Scale = 42;
+        model.ResetCommand.Execute(null);
+        Assert.Equal(8, model.Scale);
+        Assert.Equal(4.5, model.PositionY);
+        model.SetCurrentRuntimeMode("testbuggy");
+        model.SelectedMode = "testbuggy";
+        model.PositionY = 35;
+        model.ResetCommand.Execute(null);
+        model.CancelCommand.Execute(null);
+        Assert.Equal(4.5f, model.GetCalibration("PlotJumpInfo", "testbuggy")!.Position.Y);
+    }
+
+    [Fact]
+    public void InvalidRouteCalibrationKeepsThePreviousRouteAndReportsTheLoadFailure()
+    {
+        VrOverlayViewModel model = CreateViewModel();
+        string directory = Path.Combine(temporaryDirectory, "data", "vr", "vdxr");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, "Default.json"), "{\"PlotJumpInfo\":42}");
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.Equal(VrPlatformProfileCatalog.SteamVrProfileId, model.SelectedPlatformProfile.Id);
+        Assert.Contains("could not be loaded", model.StatusMessage);
+    }
+
+    [Fact]
+    public void VdxrUsesSeatedDefaultsAndKeepsSavedPlacementSeparateFromSteamVr()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.True(viewModel.BeginAdjustment());
+        viewModel.SelectedOverlayName = "PlotJumpInfo";
+        Assert.Equal(8, viewModel.Scale);
+        Assert.Equal(4.5, viewModel.PositionY);
+        Assert.Equal(11, viewModel.PositionZ);
+        Assert.Equal(-20, viewModel.RotationPitch);
+
+        viewModel.PositionY = 1;
+        viewModel.SaveCommand.Execute(null);
+        viewModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.SteamVrProfileId);
+        Assert.Equal(20, viewModel.Scale);
+        Assert.Equal(2, viewModel.PositionY);
+        viewModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.Equal(1, viewModel.PositionY);
+        Assert.Equal(8, viewModel.Scale);
+    }
+
+    [Fact]
     public void AdjustmentCanCreateAndReloadCurrentModeOverride()
     {
         VrOverlayViewModel viewModel = CreateViewModel();
@@ -215,7 +312,10 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Directory.CreateDirectory(data);
         Directory.CreateDirectory(factoryDirectory);
         string factory = Path.Combine(factoryDirectory, "plotters.json");
-        File.WriteAllText(factory, "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
+        File.WriteAllText(
+            factory,
+            "{\"PlotJumpInfo\":\"center:0, top:8 { s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\",\"PlotBioStatus\":\"left:0, top:0 { s: 5, p: <0, 0, 10>, r: <0, 0, 0>}\"}"
+        );
         return new VrOverlayViewModel(
             new VrOverlaySettingsStore(SettingsPath),
             new VrOverlayCalibrationStore(data, factory),

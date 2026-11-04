@@ -14,6 +14,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     private readonly VrOverlaySettingsStore settingsStore;
     private readonly VrOverlayCalibrationStore calibrationStore;
     private readonly IReadOnlyList<VrPlatformProfile> platformProfiles;
+    private readonly List<RelayCommand> calibrationCommands = [];
     private readonly RelayCommand saveCommand;
     private readonly RelayCommand resetCommand;
     private readonly RelayCommand cancelCommand;
@@ -33,6 +34,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     private double rotationPitch;
     private double rotationYaw;
     private double rotationRoll;
+    private int adjustmentStepIndex = 1;
     private string statusMessage;
     private VrOverlayConnectionState connectionState;
     private string connectionHeadline;
@@ -72,7 +74,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         }
         try
         {
-            catalog = calibrationStore.Load();
+            catalog = calibrationStore.Load(selectedPlatformProfile.Id);
             statusMessage = preferences.Enabled ? "Waiting for the selected VR session." : "VR overlays are disabled.";
             if (!selectedPlatformProfile.IsAvailable)
             {
@@ -99,6 +101,11 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         ResetCommand = resetCommand;
         CancelCommand = cancelCommand;
         RefreshConnectionCommand = new RelayCommand(RequestConnectionCheck, () => true);
+        PlaceInFrontCommand = CreateCalibrationCommand(() => PlaceInFrontRequested?.Invoke(this, EventArgs.Empty));
+        PreviousOverlayCommand = CreateCalibrationCommand(() => CycleOverlay(-1));
+        NextOverlayCommand = CreateCalibrationCommand(() => CycleOverlay(1));
+        PreviousModeCommand = CreateCalibrationCommand(() => CycleMode(-1));
+        NextModeCommand = CreateCalibrationCommand(() => CycleMode(1));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -106,6 +113,8 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     public event EventHandler? CalibrationChanged;
 
     public event EventHandler? ConnectionCheckRequested;
+
+    public event EventHandler? PlaceInFrontRequested;
 
     public bool Enabled
     {
@@ -164,11 +173,19 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
                 return;
             }
 
+            if (!TryLoadCalibrations(value.Id))
+            {
+                return;
+            }
+
             selectedPlatformProfile = value;
             preferences = preferences with { RuntimeProfileId = value.Id };
             settingsStore.Save(preferences);
+            LoadSelectedCalibration();
+            RefreshAvailableModes();
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsCustomRuntime));
+            OnPropertyChanged(nameof(IsVdxr));
             OnPropertyChanged(nameof(CanEnableOverlays));
             OnPropertyChanged(nameof(PlatformSupportMessage));
             SetConnectionStatus(
@@ -184,7 +201,46 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     public bool CanEnableOverlays => SelectedPlatformProfile.IsAvailable;
 
+    private bool TryLoadCalibrations(string profileId)
+    {
+        try
+        {
+            catalog = calibrationStore.Load(profileId);
+            return true;
+        }
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or FormatException
+                        or OverflowException
+            )
+        {
+            StatusMessage = $"VR calibrations could not be loaded: {exception.Message}";
+            return false;
+        }
+    }
+
     public bool IsCustomRuntime => SelectedPlatformProfile.IsCustom;
+
+    public bool IsVdxr => SelectedPlatformProfile.Id == VrPlatformProfileCatalog.MetaVdxrProfileId;
+
+    public bool EdvrControllerInput
+    {
+        get => preferences.EdvrControllerInput;
+        set
+        {
+            if (preferences.EdvrControllerInput == value)
+            {
+                return;
+            }
+            preferences = preferences with { EdvrControllerInput = value };
+            settingsStore.Save(preferences);
+            OnPropertyChanged();
+            RequestConnectionCheck();
+        }
+    }
 
     public string PlatformSupportMessage
     {
@@ -384,9 +440,68 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     public ICommand RefreshConnectionCommand { get; }
 
+    public ICommand PlaceInFrontCommand { get; }
+
+    public ICommand PreviousOverlayCommand { get; }
+    public ICommand NextOverlayCommand { get; }
+    public ICommand PreviousModeCommand { get; }
+    public ICommand NextModeCommand { get; }
+
+    private void CycleOverlay(int direction)
+    {
+        int index = AvailableOverlays.ToList().IndexOf(SelectedOverlayName!);
+        SelectedOverlayName = AvailableOverlays[
+            (index + direction + AvailableOverlays.Count) % AvailableOverlays.Count
+        ];
+    }
+
+    private void CycleMode(int direction)
+    {
+        int index = AvailableModes.ToList().IndexOf(SelectedMode);
+        SelectedMode = AvailableModes[(index + direction + AvailableModes.Count) % AvailableModes.Count];
+    }
+
+    public IReadOnlyList<string> AdjustmentSteps { get; } = ["Fine", "Normal", "Coarse"];
+
+    public int AdjustmentStepIndex
+    {
+        get => adjustmentStepIndex;
+        set
+        {
+            if (SetField(ref adjustmentStepIndex, Math.Clamp(value, 0, 2)))
+            {
+                OnPropertyChanged(nameof(PositionIncrement));
+                OnPropertyChanged(nameof(RotationIncrement));
+                OnPropertyChanged(nameof(ScaleIncrement));
+            }
+        }
+    }
+
+    private decimal StepMultiplier =>
+        AdjustmentStepIndex switch
+        {
+            0 => 0.1m,
+            2 => 5m,
+            _ => 1m,
+        };
+
+    public decimal PositionIncrement => 0.5m * StepMultiplier;
+
+    public decimal RotationIncrement => StepMultiplier;
+
+    public decimal ScaleIncrement => 0.1m * StepMultiplier;
+
+    public void PlaceInFront(VrOverlayHeadPose pose)
+    {
+        ApplyCalibration(VrOverlayTransform.PlaceInFront(CreateCalibration(), pose));
+        StatusMessage = "Placed the selected panel one metre in front of you. Save to keep this placement.";
+    }
+
+    public void ReportAdjustmentStatus(string message) => StatusMessage = message;
+
     public bool BeginAdjustment()
     {
-        SetAvailableOverlays(catalog.Defaults.Keys);
+        SetAvailableOverlays(catalog.Defaults.Keys.Where(OverlayRuntimePresentationFactory.IsSupported));
         RefreshAvailableModes();
         if (AvailableOverlays.Count == 0)
         {
@@ -396,7 +511,8 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
         IsAdjusting = true;
         SelectedOverlayName ??= AvailableOverlays[0];
-        StatusMessage = "Adjustment mode is active. Save creates a verified plotters.json backup.";
+        StatusMessage =
+            "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.";
         return true;
     }
 
@@ -470,9 +586,10 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             VrOverlayCalibrationSaveResult result = calibrationStore.Save(
                 SelectedOverlayName,
                 CreateCalibration(),
-                SelectedMode == DefaultMode ? null : SelectedMode
+                SelectedMode == DefaultMode ? null : SelectedMode,
+                SelectedPlatformProfile.Id
             );
-            catalog = calibrationStore.Load();
+            catalog = calibrationStore.Load(SelectedPlatformProfile.Id);
             RefreshAvailableModes();
             CalibrationChanged?.Invoke(this, EventArgs.Empty);
             StatusMessage =
@@ -584,11 +701,22 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         );
     }
 
+    private RelayCommand CreateCalibrationCommand(Action action)
+    {
+        var command = new RelayCommand(action, () => HasSelection);
+        calibrationCommands.Add(command);
+        return command;
+    }
+
     private void RaiseCommandStates()
     {
         saveCommand.RaiseCanExecuteChanged();
         resetCommand.RaiseCanExecuteChanged();
         cancelCommand.RaiseCanExecuteChanged();
+        foreach (RelayCommand command in calibrationCommands)
+        {
+            command.RaiseCanExecuteChanged();
+        }
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

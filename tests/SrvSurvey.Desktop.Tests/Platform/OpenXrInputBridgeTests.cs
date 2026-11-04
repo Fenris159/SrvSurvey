@@ -15,6 +15,28 @@ public sealed class OpenXrInputBridgeTests : IDisposable
     public OpenXrInputBridgeTests() => Directory.CreateDirectory(directory);
 
     [Fact]
+    public void EdvrOptInIsPublishedWhilePointerIsOffAndNativeSourceRequiresCurrentAcknowledgement()
+    {
+        using var bridge = new OpenXrInputBridge(InputPath, () => Now);
+        using var native = new OpenXrInputWriter(InputPath);
+        Assert.Equal(0u, native.View.ReadUInt32(64));
+        bridge.SetEdvrControllerInput(true);
+        Assert.Equal(1u, native.View.ReadUInt32(64));
+        Assert.Equal(native.View.ReadUInt64(24), native.View.ReadUInt64(72));
+        Assert.Equal(0u, native.View.ReadUInt32(12));
+        Assert.Equal(0u, native.View.ReadUInt32(8) & 1);
+        native.View.Write(68, 2u);
+        native.Ready(Now);
+        Assert.True(bridge.IsFrameDriven);
+        native.View.Write(80, native.View.ReadUInt64(24) ^ 1UL);
+        Assert.False(bridge.IsFrameDriven);
+        native.Ready(Now, generation: 1);
+        Assert.False(bridge.IsFrameDriven);
+        bridge.SetEdvrControllerInput(false);
+        Assert.Equal(0u, native.View.ReadUInt32(64));
+    }
+
+    [Fact]
     public void ControlHandshakeRejectsOldGameAndPublisherGenerationsAndStopsOnDispose()
     {
         using (var bridge = new OpenXrInputBridge(InputPath, () => Now))
@@ -194,6 +216,7 @@ internal sealed class OpenXrInputWriter : IDisposable
     {
         View.Write(40, 1u);
         View.Write(56, generation ?? View.ReadUInt64(24));
+        View.Write(80, generation ?? View.ReadUInt64(24));
         View.Write(32, now);
     }
 

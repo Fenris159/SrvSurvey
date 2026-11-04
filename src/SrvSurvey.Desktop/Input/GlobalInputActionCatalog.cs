@@ -113,7 +113,7 @@ public static class GlobalInputActionCatalog
             GlobalInputAction.ToggleVrOverlayInteraction,
             "toggleVrOverlayInteraction",
             "Toggle VR overlay interaction",
-            "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+            "Switch VR overlays between passive click-through and controller-pointer interaction.",
             string.Empty
         ),
         Define(GlobalInputAction.MapZoomIn, "mapZoomIn", "Map zoom in", "Increase the active map scale.", "CTRL +"),

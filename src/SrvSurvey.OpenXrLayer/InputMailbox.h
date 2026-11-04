@@ -13,6 +13,7 @@ class InputMailbox
     std::wstring path;
     uint64_t generation = 0;
     int64_t nextAttempt = 0;
+    bool edvrInput = false;
 
   public:
     explicit InputMailbox(std::wstring customPath = {}) : path(std::move(customPath))
@@ -73,6 +74,7 @@ class InputMailbox
     bool Requested(int64_t now, bool &newPublisher)
     {
         newPublisher = false;
+        edvrInput = false;
         if (!Open(now))
             return false;
         for (int attempt = 0; attempt < 3; ++attempt)
@@ -83,6 +85,8 @@ class InputMailbox
             uint32_t magic = data->magic, version = data->version, enabled = data->enabled;
             int64_t timestamp = data->controlTime;
             uint64_t token = data->generation;
+            uint32_t frameInput = data->edvrInput;
+            uint64_t optInGeneration = data->edvrGeneration;
             MemoryBarrier();
             if (before != InterlockedCompareExchange(reinterpret_cast<volatile LONG *>(&data->controlSequence), 0, 0))
                 continue;
@@ -91,17 +95,22 @@ class InputMailbox
                 return false;
             newPublisher = generation != token;
             generation = token;
+            edvrInput = frameInput == 1 && token != 0 && optInGeneration == token;
             return enabled != 0;
         }
         return false;
     }
-    void Report(int64_t now, uint32_t state, XrResult error = XR_SUCCESS)
+    bool EdvrInputRequested() const { return edvrInput; }
+
+    void Report(int64_t now, uint32_t state, XrResult error = XR_SUCCESS, uint32_t source = 0)
     {
         if (!Open(now))
             return;
         data->state = state;
         data->error = error;
         data->acknowledgedGeneration = generation;
+        data->inputSource = source;
+        data->sourceGeneration = generation;
         MemoryBarrier();
         InterlockedExchange64(reinterpret_cast<volatile LONG64 *>(&data->heartbeat), now);
     }

@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Name="CalibrationViewRoot"
+             x:Class="SrvSurvey.Desktop.Views.VrCalibrationView"
+             x:DataType="vm:VrOverlayViewModel">
+  <StackPanel Spacing="12">
+    <TextBlock Classes="card-title" Text="VR overlay calibration" />
+    <WrapPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8" Width="260">
+        <TextBlock Classes="eyebrow" Text="CALIBRATION TARGET" />
+        <ComboBox IsVisible="{Binding !#CalibrationViewRoot.IsInHeadset}" HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableOverlays}"
+                  SelectedItem="{Binding SelectedOverlayName, Mode=TwoWay}" />
+        <Grid IsVisible="{Binding #CalibrationViewRoot.IsInHeadset}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+          <Button Command="{Binding PreviousOverlayCommand}" Content="←" ToolTip.Tip="Previous panel" />
+          <TextBlock Grid.Column="1" Text="{Binding SelectedOverlayName}" VerticalAlignment="Center" TextWrapping="Wrap" />
+          <Button Grid.Column="2" Command="{Binding NextOverlayCommand}" Content="→" ToolTip.Tip="Next panel" />
+        </Grid>
+      </StackPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
+        <TextBlock Classes="eyebrow" Text="VEHICLE / GAME MODE" />
+        <ComboBox IsVisible="{Binding !#CalibrationViewRoot.IsInHeadset}" HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableModes}"
+                  SelectedItem="{Binding SelectedMode, Mode=TwoWay}" />
+        <Grid IsVisible="{Binding #CalibrationViewRoot.IsInHeadset}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+          <Button Command="{Binding PreviousModeCommand}" Content="←" ToolTip.Tip="Previous mode" />
+          <TextBlock Grid.Column="1" Text="{Binding SelectedMode}" VerticalAlignment="Center" TextWrapping="Wrap" />
+          <Button Grid.Column="2" Command="{Binding NextModeCommand}" Content="→" ToolTip.Tip="Next mode" />
+        </Grid>
+        <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                   Text="{Binding CurrentRuntimeMode, StringFormat='Current: {0}'}" />
+      </StackPanel>
+      <StackPanel Spacing="4" Width="220" Margin="0,0,0,8">
+        <TextBlock Classes="eyebrow" Text="ADJUSTMENT STEP" />
+        <ListBox ItemsSource="{Binding AdjustmentSteps}" SelectedIndex="{Binding AdjustmentStepIndex, Mode=TwoWay}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+          <ListBox.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ListBox.ItemsPanel>
+        </ListBox>
+      </StackPanel>
+    </WrapPanel>
+    <TextBlock Classes="muted" TextWrapping="Wrap"
+               Text="The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it." />
+    <WrapPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8">
+        <TextBlock Text="Scale" />
+        <controls:VrCalibrationNumberInput x:Name="ScaleInput" Width="132" Minimum="0.1" Maximum="50"
+              Step="{Binding ScaleIncrement}" FormatString="0.0###" Value="{Binding Scale, Mode=TwoWay}" />
+      </StackPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8">
+        <TextBlock Text="Position X (10 cm units)" />
+        <controls:VrCalibrationNumberInput x:Name="PositionXInput" Width="132" Minimum="-1000" Maximum="1000"
+              Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionX, Mode=TwoWay}" />
+      </StackPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8">
+        <TextBlock Text="Position Y (10 cm units)" />
+        <controls:VrCalibrationNumberInput x:Name="PositionYInput" Width="132" Minimum="-1000" Maximum="1000"
+              Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionY, Mode=TwoWay}" />
+      </StackPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8">
+        <TextBlock Text="Position Z (10 cm units)" />
+        <controls:VrCalibrationNumberInput x:Name="PositionZInput" Width="132" Minimum="-1000" Maximum="1000"
+              Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionZ, Mode=TwoWay}" />
+      </StackPanel>
+    </WrapPanel>
+    <WrapPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8">
+        <TextBlock Text="Pitch (degrees)" />
+        <controls:VrCalibrationNumberInput x:Name="PitchInput" Width="132" Minimum="-360" Maximum="360"
+              Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationPitch, Mode=TwoWay}" />
+      </StackPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8">
+        <TextBlock Text="Yaw (degrees)" />
+        <controls:VrCalibrationNumberInput x:Name="YawInput" Width="132" Minimum="-360" Maximum="360"
+              Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationYaw, Mode=TwoWay}" />
+      </StackPanel>
+      <StackPanel Spacing="4" Margin="0,0,16,8">
+        <TextBlock Text="Roll (degrees)" />
+        <controls:VrCalibrationNumberInput x:Name="RollInput" Width="132" Minimum="-360" Maximum="360"
+              Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationRoll, Mode=TwoWay}" />
+      </StackPanel>
+    </WrapPanel>
+    <WrapPanel>
+      <Button Classes="secondary" Margin="0,0,8,8" Command="{Binding PlaceInFrontCommand}" Content="Place in front of me" />
+      <Button Classes="secondary" Margin="0,0,8,8" Command="{Binding ResetCommand}" Content="Reset selected" />
+      <Button Classes="primary" Margin="0,0,8,8" Command="{Binding SaveCommand}" Content="Save calibration" />
+      <Button Classes="secondary" Margin="0,0,8,8" Command="{Binding CancelCommand}" Content="Close / discard unsaved" />
+    </WrapPanel>
+    <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="12" Text="{Binding StatusMessage}" />
+  </StackPanel>
+</UserControl>

@@ -27,10 +27,20 @@ struct Header
     uint32_t layerState, reserved, renderedCount;
     int32_t lastError;
     uint32_t processId;
-    uint8_t padding[68];
+    uint32_t poseSequence;
+    int64_t poseTimestamp;
+    uint32_t poseOriginRevision;
+    float headPosition[3], headYaw;
+    uint32_t poseReserved;
+    int64_t poseRequestTimestamp;
+    uint8_t padding[24];
 };
 static_assert(sizeof(Header) == 128);
 static_assert(offsetof(Header, layerHeartbeat) == 32);
+static_assert(offsetof(Header, poseSequence) == 60);
+static_assert(offsetof(Header, poseTimestamp) == 64);
+static_assert(offsetof(Header, headYaw) == 88);
+static_assert(offsetof(Header, poseRequestTimestamp) == 96);
 
 inline bool ValidatePacket(std::span<const uint8_t> bytes, int64_t now)
 {

@@ -23,6 +23,7 @@ XrPosef submittedPose{};
 XrPosef headPose{{0, 0, 0, 1}, {1, 2, 3}};
 std::map<XrSwapchain, std::array<uint8_t, 4>> uploadedPixels;
 const XrFrameEndInfo *lastInfo = nullptr;
+std::optional<XrEventDataSessionStateChanged> pendingSessionState;
 XrApiLayerNextInfo tail{};
 struct TestTexture
 {
@@ -33,6 +34,14 @@ struct TestTexture
 
 XrResult XRAPI_CALL Success()
 {
+    return XR_SUCCESS;
+}
+XrResult XRAPI_CALL PollEvent(XrInstance, XrEventDataBuffer *output)
+{
+    if (!pendingSessionState)
+        return XR_EVENT_UNAVAILABLE;
+    std::memcpy(output, &*pendingSessionState, sizeof(XrEventDataSessionStateChanged));
+    pendingSessionState.reset();
     return XR_SUCCESS;
 }
 XrResult XRAPI_CALL Create(const XrInstanceCreateInfo *, const XrApiLayerCreateInfo *info, XrInstance *output)
@@ -186,6 +195,7 @@ XrResult XRAPI_CALL GetProc(XrInstance, const char *name, PFN_xrVoidFunction *ou
         return XR_SUCCESS;                                                                                             \
     }
     PROC("xrStringToPath", InputPath)
+    PROC("xrPollEvent", PollEvent)
     PROC("xrCreateActionSet", InputCreateSet)
     PROC("xrDestroyActionSet", InputDestroySet)
     PROC("xrCreateAction", InputCreateAction)
@@ -355,6 +365,46 @@ void RequireHeading(float yaw)
 }
 } // namespace
 
+void TestHeadPlacementTelemetry(const std::wstring &path)
+{
+    HANDLE file = CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                             nullptr, OPEN_EXISTING, 0, nullptr);
+    Require(file != INVALID_HANDLE_VALUE, "Open pose telemetry fixture");
+    HANDLE mapping = CreateFileMappingW(file, nullptr, PAGE_READWRITE, 0, 0, nullptr);
+    Require(mapping != nullptr, "Map pose telemetry fixture");
+    auto *header = static_cast<Header *>(MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(Header)));
+    Require(header != nullptr, "View pose telemetry fixture");
+    Mailbox writer(path);
+    Require(writer.Open(), "Open native pose writer");
+    header->poseRequestTimestamp = 100000;
+    Require(writer.WantsHeadPose(100000) && writer.WantsHeadPose(101000) && !writer.WantsHeadPose(101001) &&
+            !writer.WantsHeadPose(99999), "Only service a recent pose request");
+    XrPosef anchor{{0, 0, 0, 1}, {1, 2, 3}};
+    XrPosef head{HeadOrientation(1.57079632679f, 0.3f, -0.2f), {2, 3, 3}};
+    writer.ReportHeadPose(head, anchor, 3, 100000);
+    Require(header->poseTimestamp == 100000 && !(header->poseSequence & 1) && header->poseOriginRevision == 3,
+            "Publish a complete pose sample in the current origin");
+    Require(std::abs(header->headPosition[0] - 1) < 0.001f && std::abs(header->headPosition[1] - 1) < 0.001f &&
+            std::abs(header->headPosition[2]) < 0.001f && std::abs(header->headYaw - 1.57079632679f) < 0.001f,
+            "Report current heading and translation relative to the unchanged overlay anchor");
+    anchor.orientation = HeadOrientation(1.57079632679f, 0, 0);
+    head = {HeadOrientation(2.4f, 0, 0), {2, 2, 3}};
+    header->poseSequence = 3; // Recover a writer interrupted during its previous sample.
+    writer.ReportHeadPose(head, anchor, 3, 100000);
+    Require(!(header->poseSequence & 1) && std::abs(header->headPosition[0]) < 0.001f &&
+            std::abs(header->headPosition[2] - 1) < 0.001f &&
+            std::abs(header->headYaw - 0.8292036732f) < 0.001f,
+            "Express translated head poses in a rotated anchor");
+    writer.ClearHeadPose();
+    Require(header->poseTimestamp == 0, "Invalidate pose telemetry on tracking loss");
+    header->poseRequestTimestamp = 0;
+    UnmapViewOfFile(header);
+    CloseHandle(mapping);
+    CloseHandle(file);
+}
+
+#include "EdvrInputTests.h"
+
 int main()
 {
     try
@@ -382,6 +432,8 @@ int main()
                                    XR_API_LAYER_CREATE_INFO_STRUCT_VERSION, sizeof(XrApiLayerCreateInfo)};
         layer.nextInfo = &next;
         XrInstanceCreateInfo createInfo{XR_TYPE_INSTANCE_CREATE_INFO};
+        std::copy_n("Elite Dangerous (EDVR)", sizeof("Elite Dangerous (EDVR)"), createInfo.applicationInfo.applicationName);
+        std::copy_n("EDVR", sizeof("EDVR"), createInfo.applicationInfo.engineName);
         XrInstance instanceHandle{};
         omitProc = true;
         Require(LayerCreateApiLayerInstance(&createInfo, &layer, &instanceHandle) == XR_ERROR_INITIALIZATION_FAILED,
@@ -472,6 +524,7 @@ int main()
         WritePacket(path, 42);
         LayerEndFrame(session->handle, &frame);
         RequireHeading(0);
+        TestHeadPlacementTelemetry(path);
         WritePacket(path, 6, {TestPanel{}}, Now() - 3000);
         Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && lastInfo == &frame,
                 "Expire abandoned overlay packets");
@@ -545,6 +598,11 @@ int main()
         session.reset();
         uploadOwner = nullptr;
         DeleteFileW(path.c_str());
+        TestEdvrFrameDrivenInput(instance, frame, path);
+        TestEdvrInputGatesAndFailures(instance, frame, path);
+        TestEdvrPreservesApplicationInput(instance, frame, path);
+        TestEdvrLateApplicationInput(instance, frame, path);
+        TestEdvrRenderingFailureReleasesControllerActions(instance, frame, path);
         testDevice->Release();
         testDevice = nullptr;
         Require(LayerDestroyInstance(instanceHandle) == XR_SUCCESS && destroyedInstances == 2,

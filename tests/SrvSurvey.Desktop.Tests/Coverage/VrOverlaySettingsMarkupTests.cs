@@ -15,12 +15,17 @@ public sealed class VrOverlaySettingsMarkupTests
         int choose = markup.IndexOf("1 · CHOOSE YOUR HEADSET ROUTE", StringComparison.Ordinal);
         int pair = markup.IndexOf("2 · PAIR AND START", StringComparison.Ordinal);
         int verify = markup.IndexOf("3 · ENABLE AND VERIFY", StringComparison.Ordinal);
-        int calibration = markup.IndexOf("CALIBRATION TARGET", StringComparison.Ordinal);
+        int calibration = markup.IndexOf("VrCalibrationView", StringComparison.Ordinal);
 
         Assert.True(choose >= 0);
         Assert.True(pair > choose);
         Assert.True(verify > pair);
         Assert.True(calibration > verify);
+        string sharedCalibration = File.ReadAllText(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "VrCalibrationView.axaml")
+        );
+        Assert.Contains("CALIBRATION TARGET", sharedCalibration, StringComparison.Ordinal);
+        Assert.Contains("SelectedOverlayName, Mode=TwoWay", sharedCalibration, StringComparison.Ordinal);
         Assert.Contains("VrOverlay.PlatformProfiles", markup, StringComparison.Ordinal);
         Assert.Contains("VrOverlay.ConnectionStateLabel", markup, StringComparison.Ordinal);
         Assert.Contains("VrOverlay.IsCustomRuntime", markup, StringComparison.Ordinal);

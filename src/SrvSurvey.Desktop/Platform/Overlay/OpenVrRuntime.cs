@@ -34,6 +34,12 @@ public interface IVrOverlayRuntime : IDisposable
 
     VrRuntimeResult ResetOrientation();
 
+    bool TryGetHeadPose(out VrOverlayHeadPose? pose)
+    {
+        pose = null;
+        return false;
+    }
+
     void Shutdown();
 }
 
@@ -48,6 +54,30 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
     private bool interactionEnabled;
 
     public bool IsInitialized => system is not null && overlay is not null;
+
+    public bool TryGetHeadPose(out VrOverlayHeadPose? pose)
+    {
+        pose = null;
+        if (system is null)
+        {
+            return false;
+        }
+        var poses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
+        system.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0, poses);
+        if (!poses[0].bPoseIsValid)
+        {
+            return false;
+        }
+        HmdMatrix34_t matrix = poses[0].mDeviceToAbsoluteTracking;
+        var position = Vector3.Transform(
+            new Vector3(matrix.m3, matrix.m7, matrix.m11),
+            Matrix4x4.Transpose(headsetOrientationOffset)
+        );
+        float yaw = VrOverlayTransform.ExtractYaw(matrix);
+        // Legacy OpenVR rotates positions and panel orientations with opposite offset signs.
+        pose = new VrOverlayHeadPose(position, yaw - headsetYawOffset, yaw + headsetYawOffset);
+        return true;
+    }
 
     public VrRuntimeProbe Probe()
     {

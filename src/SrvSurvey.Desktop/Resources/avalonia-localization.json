@@ -1161,6 +1161,10 @@
       "translation": "Aktivitäten"
     },
     {
+      "source": "ADJUSTMENT STEP",
+      "translation": "EINSTELLSCHRITT"
+    },
+    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALIGN GUARDIAN SITE URSPRUNG"
     },
@@ -1829,10 +1833,6 @@
       "translation": "Passen Sie die vorhandene freigegebene Karte an. Hintergrund, Ausrichtung, Masterpunkte und Gruppenbeschriftungen werden in diesen Entwurf kopiert."
     },
     {
-      "source": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-      "translation": "Der Justiermodus ist aktiv. Speichern erstellt ein verifiziertes plotters.json-Backup."
-    },
-    {
       "source": "Advanced setups with an OpenVR-compatible compositor",
       "translation": "Erweiterte Setups mit einem OpenVR-kompatiblen Compositor"
     },
@@ -2055,10 +2055,6 @@
     {
       "source": "Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup.",
       "translation": "Alt+Ctrl+O schaltet dieses Aufnahmefenster um. Der aktivierte Zustand wird beim Start wiederhergestellt."
-    },
-    {
-      "source": "Alt+V opens this editor",
-      "translation": "Alt+V öffnet diesen Editor"
     },
     {
       "source": "Altitude",
@@ -5305,16 +5301,12 @@
       "translation": "Kriterien ändern"
     },
     {
-      "source": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-      "translation": "Ändern Sie Maßstab, Position, Nicken, Gieren und Rollen, während Sie die Live-Vorschau im Headset überprüfen."
+      "source": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+      "translation": "Ändern Sie Maßstab, Position, Neigung, Gierung und Drehung im Desktop-Editor oder im Headset-Kalibrierungsfeld. Normale Schritte sind 5 cm und 1 Grad; Wählen Sie „Fein“ oder „Grob“, verwenden Sie das Mausrad oder halten Sie die Umschalt-/Strg-Taste gedrückt, um vorübergehende Präzisionsänderungen vorzunehmen."
     },
     {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Ändert nur die angezeigte FSS-vollständige Statistik. Es hat keinen Einfluss auf den Abschluss der Boxel-Suche, die nächsten Ziele, die Anzahl der Körper oder die Werte."
-    },
-    {
-      "source": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-      "translation": "Vorschau der Änderungen live in der verbundenen VR-Sitzung. Speichern ist atomar und behält die Desktop-Platzierung sowie unbekannte Overlays bei."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -5633,6 +5625,10 @@
       "translation": "Wählen Sie einen Monitor und eine Größe für Spiel-Overlays."
     },
     {
+      "source": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+      "translation": "Wählen Sie ein Panel und Standard oder den aktuellen Fahrzeug-/Spielmodus. Das ausgewählte Bedienfeld zeigt Beispieldaten an, auch wenn sie im Gameplay ausgeblendet würden."
+    },
+    {
       "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
       "translation": "Wählen Sie eine geplante Raven-Site zum Verlinken aus. Nur der Systemarchitekt kann einen Build ohne Plan starten."
     },
@@ -5843,10 +5839,6 @@
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
       "translation": "Wählen Sie den angezeigten Bildschirm oder Monitor Elite Dangerous und klicken Sie dann auf „Teilen“. Wenn der Picker in der Fensterliste geöffnet wird, wechseln Sie zu seiner Anzeige- oder Bildschirmregisterkarte."
-    },
-    {
-      "source": "Choose the live panel and Default or the current vehicle/game mode.",
-      "translation": "Wählen Sie das Live-Panel und Standard oder den aktuellen Fahrzeug-/Spielmodus."
     },
     {
       "source": "Choose the local flora image folder",
@@ -6081,6 +6073,10 @@
       "translation": "Schließen"
     },
     {
+      "source": "Close / discard unsaved",
+      "translation": "Nicht gespeicherte Dateien schließen / verwerfen"
+    },
+    {
       "source": "Close Elite Dangerous before swapping or restoring this file.",
       "translation": "Schließen Sie Elite Dangerous, bevor Sie diese Datei austauschen oder wiederherstellen."
     },
@@ -6135,6 +6131,10 @@
     {
       "source": "Cmdr: {0} - {1}",
       "translation": "Kommandant: {0} – {1}"
+    },
+    {
+      "source": "Coarse",
+      "translation": "Grob"
     },
     {
       "source": "Cobalt",
@@ -7237,6 +7237,10 @@
       "translation": "Schließen Sie das Headset an und schließen Sie die normale SteamVR-Raum- oder Sitzeinrichtung ab."
     },
     {
+      "source": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+      "translation": "Schließen Sie das Headset an und warten Sie auf eine verfolgte Kopfhaltung, bevor Sie dieses Panel platzieren. VDXR erfordert die passende Ebene OpenXR."
+    },
+    {
       "source": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
       "translation": "Verbinden Sie das Headset mit Meta Horizon Link über USB oder Air Link und rufen Sie PC VR auf."
     },
@@ -7359,6 +7363,10 @@
     {
       "source": "Controller input",
       "translation": "Controller-Eingang"
+    },
+    {
+      "source": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+      "translation": "Die Controller-Eingabe weist einen widersprüchlichen Aktionsanhang OpenXR auf (Fehler -47). Schalten Sie den experimentellen EDVR-Controller-Eingang aus und starten Sie Elite neu. Overlay-Rendering bleibt verfügbar."
     },
     {
       "source": "Controller input is active: {0}.",
@@ -8717,10 +8725,6 @@
       "translation": "Desktop-Tastatur"
     },
     {
-      "source": "Desktop overlay placement and VR calibration are stored independently.",
-      "translation": "Die Platzierung des Desktop-Overlays und die VR-Kalibrierung werden unabhängig voneinander gespeichert."
-    },
-    {
       "source": "Desktop placement and focus",
       "translation": "Desktop-Platzierung und Fokus"
     },
@@ -9905,6 +9909,10 @@
       "translation": "EdsmCard"
     },
     {
+      "source": "EdvrControllerInput",
+      "translation": "EdvrControllerInput"
+    },
+    {
       "source": "Efficiency (%)",
       "translation": "Effizienz (%)"
     },
@@ -10647,6 +10655,18 @@
     {
       "source": "Expedition history, statistics, and reports",
       "translation": "Expeditionsverlauf, Statistiken und Berichte"
+    },
+    {
+      "source": "Experimental EDVR controller input",
+      "translation": "Experimenteller EDVR-Controller-Eingang"
+    },
+    {
+      "source": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+      "translation": "Der Eingang des experimentellen EDVR-Controllers ist ausgeschaltet. Starten Sie Elite neu, nachdem Sie die Eingabequelle geändert haben, bevor Sie die Controller-Interaktion erneut aktivieren."
+    },
+    {
+      "source": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "Die experimentelle EDVR-Controller-Interaktion ist aktiviert. Zeigen Sie auf ein Panel und klicken Sie mit dem Auslöser."
     },
     {
       "source": "Experimental rig bar detection",
@@ -11529,6 +11549,10 @@
       "translation": "Funde"
     },
     {
+      "source": "Fine",
+      "translation": "Bußgeld"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Passen Sie die kommandantspezifische Markierung an, nachdem Sie sie auf der Karte ausgewählt haben."
     },
@@ -11879,6 +11903,14 @@
     {
       "source": "FootZoom",
       "translation": "FußZoom"
+    },
+    {
+      "source": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+      "translation": "Nur für EDVR. Lassen Sie uns SrvSurvey Quest-Controller ohne Unterstützung für Spieleingaben lesen. Starten Sie Elite neu, nachdem Sie diese Option geändert haben, und verwenden Sie dann „VR-Overlay-Interaktion umschalten“, um den Zeiger zu aktivieren. Lassen Sie es für andere Spielintegrationen deaktiviert."
+    },
+    {
+      "source": "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+      "translation": "Aktivieren Sie für EDVR die experimentelle EDVR-Controller-Eingabe unter Theme > Overlay-Setup > VR, installieren Sie die passende Ebene OpenXR und starten Sie Elite neu. Die Option ist standardmäßig deaktiviert und auf erkannte EDVR-Sitzungen beschränkt. Deaktivieren Sie es und starten Sie Elite neu, wenn ein Konflikt mit einer anderen Eingabeebene auftritt. Die Controller-Kompatibilität ist noch experimentell."
     },
     {
       "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -14417,16 +14449,16 @@
       "translation": "In Leamae UK-D d13-890 ist Leamae der Sektor, UK-D d13 identifiziert das Boxel und 890 ist die Systemnummer innerhalb dieser Sequenz."
     },
     {
-      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-      "translation": "Weisen Sie unter „Einstellungen“ > „Globale Overlays“ die Interaktion „VR-Overlay umschalten“ direkt unter der Verknüpfung „Live-Overlay-Interaktion“ zu. Außerdem muss die globale Tastatureingabe aktiviert sein."
-    },
-    {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
       "translation": "Aktivieren Sie unter Einstellungen > Eingabe die Tastenakkorde und wählen Sie Desktop-Verknüpfungseinstellungen aus, wenn Sie Portalbindungen genehmigen oder konfigurieren möchten. Beim Start wird dieses Menü nicht automatisch geöffnet."
     },
     {
       "source": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
       "translation": "Aktivieren Sie in den Overlay-Einstellungen für Surface Mining die Option Bohrgeräte automatisch über das Rhino-HUD verfolgen. Legen Sie die Farbe der Bereitstellungsleiste fest, wenn ein HUD-Mod das übliche helle Grün ändert."
+    },
+    {
+      "source": "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+      "translation": "Weisen Sie unter „Design“ > „Overlay-Setup“ > „VR“ die Option „VR-Overlay-Interaktion umschalten“ zu. Es ist auch unter Einstellungen > Eingabe verfügbar. Die globale Tastatureingabe muss aktiviert sein."
     },
     {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
@@ -18333,12 +18365,20 @@
       "translation": "Nächster Sprung"
     },
     {
+      "source": "Next mode",
+      "translation": "Nächster Modus"
+    },
+    {
       "source": "Next or active direction",
       "translation": "Nächste oder aktive Richtung"
     },
     {
       "source": "Next page",
       "translation": "Nächste Seite"
+    },
+    {
+      "source": "Next panel",
+      "translation": "Nächstes Panel"
     },
     {
       "source": "Next site",
@@ -19273,6 +19313,10 @@
       "translation": "Keiner geplottet"
     },
     {
+      "source": "Normal",
+      "translation": "Normal"
+    },
+    {
       "source": "Normal Supercharge",
       "translation": "Normale Aufladung"
     },
@@ -19653,10 +19697,6 @@
       "translation": "Es können nur kommandantspezifische Rohpunkte entfernt werden."
     },
     {
-      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-      "translation": "Es können nur Steuerelemente aktiviert werden, die bereits durch ein Live-Overlay SrvSurvey angezeigt werden. Bei der VR-Kalibrierung werden weiterhin „Overlays anpassen“ und die entsprechende Verknüpfung verwendet."
-    },
-    {
       "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
       "translation": "Nur von EDAstro angeforderte Ereignistypen in dieser offengelegten Liste: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic und CodexEntry. Neu angeforderte Typen, die diese Version nicht unterstützt, werden im Anwendungsprotokoll aufgeführt und nicht hochgeladen."
     },
@@ -19841,10 +19881,6 @@
       "translation": "Öffnen Sie Einstellungen > Anwendung. Aktivieren Sie die Wayland-Bildschirmaufnahme und aktivieren Sie nur die einzelnen Tracker, die Sie testen möchten. Alle starten deaktiviert."
     },
     {
-      "source": "Open Settings > Global overlays and find VR overlays.",
-      "translation": "Öffnen Sie Einstellungen > Globale Overlays und suchen Sie nach VR-Overlays."
-    },
-    {
       "source": "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
       "translation": "Öffnen Sie Einstellungen > Datenschutz und Freigabe > EDAstro-Freigabe konfigurieren, um optionale Zeitschriftenbeiträge zu überprüfen und zu aktivieren."
     },
@@ -19887,6 +19923,10 @@
     {
       "source": "Open Theme > Overlay setup > Edit Overlay Positions.",
       "translation": "Öffnen Sie Theme > Overlay-Setup > Overlay-Positionen bearbeiten."
+    },
+    {
+      "source": "Open Theme > Overlay setup > VR.",
+      "translation": "Öffnen Sie Theme > Overlay-Setup > VR."
     },
     {
       "source": "Open Theme > Overlay setup and toggle Bypass Window Management.",
@@ -20081,8 +20121,8 @@
       "translation": "Öffnen Sie diese untergeordnete Box"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
-      "translation": "OpenComposite ist keine kompatible Problemumgehung für eigenständige Overlays OpenVR. Möglicherweise ist es bereits Teil Ihres Elite-zu-VDXR-Setups. Die Ebene SrvSurvey OpenXR fügt Panels und Quest-Controller-Eingaben innerhalb dieser Spielsitzung hinzu."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
+      "translation": "OpenComposite ist keine kompatible Problemumgehung für eigenständige Overlays OpenVR. Ein bestehendes Elite-Setup OpenXR kann EDVR oder OpenComposite verwenden. Das EDVR-Rendering wurde auf Quest 3 mit VDXR in Problem Nr. 264 bestätigt; OpenComposite ist nicht erforderlich. Die experimentelle EDVR-Controller-Eingabe stellt bei Aktivierung eigene Frame-gesteuerte Aktionen bereit; Zur Kompatibilität mit echten Headset-Controllern ist noch Feedback erforderlich."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -20925,10 +20965,6 @@
       "translation": "PIN"
     },
     {
-      "source": "PITCH / YAW / ROLL",
-      "translation": "PITCH / GIER / ROLL"
-    },
-    {
       "source": "PLANNED RAVEN SITE",
       "translation": "GEPLANTER RAVEN-STANDORT"
     },
@@ -20951,10 +20987,6 @@
     {
       "source": "POI choice",
       "translation": "POI-Auswahl"
-    },
-    {
-      "source": "POSITION X / Y / Z",
-      "translation": "POSITION X / Y / Z"
     },
     {
       "source": "POW",
@@ -21257,6 +21289,22 @@
       "translation": "Piratenangriff"
     },
     {
+      "source": "Pitch (degrees)",
+      "translation": "Tonhöhe (Grad)"
+    },
+    {
+      "source": "Place in front of me",
+      "translation": "Platz vor mir"
+    },
+    {
+      "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+      "translation": "„Vor mir platzieren“ verschiebt nur das ausgewählte Feld auf Augenhöhe, einen Meter entlang Ihres aktuellen Kurses. Beim Speichern der Kalibrierung bleiben das Ziel und der Modus erhalten; Nicht gespeicherte schließen/verwerfen stellt gespeicherte Werte wieder her. „Auswahl zurücksetzen“ stellt die Routenvorgabe (oder die Standardplatzierung für eine Fahrzeugüberschreibung) wieder her und speichert sie."
+    },
+    {
+      "source": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+      "translation": "Platzieren Sie das ausgewählte Panel einen Meter vor Ihnen. Speichern Sie, um diese Platzierung beizubehalten."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planen Sie eine Bergbaureise"
     },
@@ -21367,6 +21415,10 @@
     {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Bitte warten Sie {0} Sekunden, bevor Sie Frontier erneut aktualisieren."
+    },
+    {
+      "source": "PlotAdjustVR",
+      "translation": "PlotAdjustVR"
     },
     {
       "source": "PlotBioStatus",
@@ -21583,6 +21635,18 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasilien)"
+    },
+    {
+      "source": "Position X (10 cm units)",
+      "translation": "Position X (10-cm-Einheiten)"
+    },
+    {
+      "source": "Position Y (10 cm units)",
+      "translation": "Position Y (10-cm-Einheiten)"
+    },
+    {
+      "source": "Position Z (10 cm units)",
+      "translation": "Position Z (10-cm-Einheiten)"
     },
     {
       "source": "Position editor cleanup failed",
@@ -21981,8 +22045,16 @@
       "translation": "Vorheriges Layout-Backup: {0}"
     },
     {
+      "source": "Previous mode",
+      "translation": "Vorheriger Modus"
+    },
+    {
       "source": "Previous page",
       "translation": "Vorherige Seite"
+    },
+    {
+      "source": "Previous panel",
+      "translation": "Vorheriges Panel"
     },
     {
       "source": "Previous settings backup: {0}",
@@ -25285,6 +25357,10 @@
       "translation": "Felsig | 268.661 CR/t"
     },
     {
+      "source": "Roll (degrees)",
+      "translation": "Rolle (Grad)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Rollback-Backup: {0}"
     },
@@ -25949,6 +26025,10 @@
       "translation": "Probe 1 von 3 aufgezeichnet"
     },
     {
+      "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+      "translation": "Die Probenvorschau ist aktiv. Verwenden Sie die Controller-Interaktionsverknüpfung, um die Steuerelemente des Headsets zu bedienen. Speichern behält das ausgewählte Panel und den ausgewählten Modus bei."
+    },
+    {
       "source": "Sample {0}",
       "translation": "Beispiel {0}"
     },
@@ -26047,10 +26127,6 @@
     {
       "source": "Save calibration",
       "translation": "Kalibrierung speichern"
-    },
-    {
-      "source": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-      "translation": "Speichern Sie die Kalibrierung, um den Schreibvorgang zu überprüfen und ein Backup zu erstellen. Abbrechen stellt die gespeicherten Werte wieder her; „Auswahl zurücksetzen“ stellt die ausgelieferte Platzierung für dieses Ziel wieder her."
     },
     {
       "source": "Save change",
@@ -29605,8 +29681,8 @@
       "translation": "SteamVR Routen erfordern ein fertiges SteamVR Headset. Die Route VDXR wartet auf eine Live-Elite-Sitzung VDXR. Installieren Sie die passende Ebene SrvSurvey OpenXR für die Quest-Controller-Zeiger-Interaktion."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "SteamVR Routen verwenden das Overlay-Backend OpenVR. Die Route VDXR verwendet die Ebene SrvSurvey OpenXR unter Windows x64 mit Direct3D 11; Die Headset-Validierung steht noch aus."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+      "translation": "SteamVR Routen verwenden das Overlay-Backend OpenVR. Die Route VDXR verwendet die Ebene SrvSurvey OpenXR unter Windows x64 mit Direct3D 11. Ein Community-Quest-3-Test bestätigte das Rendern mit EDVR; Die Controller-Interaktion bleibt bei diesem Setup ungeprüft."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -30089,8 +30165,8 @@
       "translation": "Tausch abgeschlossen. Starten Sie Elite Dangerous neu, wenn Sie bereit sind. Ursprüngliches Backup: {0}"
     },
     {
-      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
-      "translation": "Schalter SteamVR überlagert zwischen passivem Click-through und Controller-Zeiger-Interaktion."
+      "source": "Switch VR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Wechseln Sie VR-Overlays zwischen passivem Click-through und Controller-Zeiger-Interaktion."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -31877,6 +31953,10 @@
       "translation": "Das geschützte Update wurde nicht gestartet: {0} Die aktive Installation und das Spielerprofil wurden nicht geändert."
     },
     {
+      "source": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+      "translation": "Das Headset-Kalibrierungsfenster verwendet dieselben Steuerelemente für Ziel, Schrittgröße, Platzierung, Speichern und Schließen wie der Desktop-Editor. Wenn keine Controller-Eingabe verfügbar ist, spiegeln Sie das Fenster SrvSurvey in VR (z. B. mit OpenKneeboard-Fenstererfassung) und verwenden Sie die Maus."
+    },
+    {
       "source": "The headset pose is not currently valid.",
       "translation": "Die Headset-Pose ist derzeit nicht gültig."
     },
@@ -32807,6 +32887,10 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "Der ausgewählte Marker konnte nicht gespeichert werden:"
+    },
+    {
+      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+      "translation": "Das ausgewählte Panel zeigt Beispieldaten. Normale Schritte: 5 cm und 1°. Wählen Sie im Headset „Fein“ oder „Grob“ oder halten Sie die Umschalttaste für fein bzw. die Strg-Taste für grob gedrückt. Scrollen Sie über eine Zahl, um sie anzupassen."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -35189,6 +35273,10 @@
       "translation": "VDXR Controller-Interaktion ist aktiviert. Zeigen Sie auf ein Panel und klicken Sie mit dem Auslöser."
     },
     {
+      "source": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+      "translation": "VDXR verfügt über Standardeinstellungen und separate gespeicherte Platzierungen. Vorhandene benutzerdefinierte Kalibrierungen bleiben als Ausgangspunkt erhalten; „Ausgewählte zurücksetzen“ wendet die sitzende Werksplatzierung an. SteamVR und Desktop-Platzierungen bleiben erhalten."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: Registrieren Sie die Ebene OpenXR aus dem Windows x64-Paket und starten Sie Elite dann neu. Direct3D 11 ist erforderlich."
     },
@@ -35255,6 +35343,10 @@
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
       "translation": "Die VR-Overlay-Anpassung erfasst die Ausrichtung und setzt sie durch spezielle Aktionen zurück. Funktion und Status werden gemeldet, wenn die Laufzeit nicht verfügbar ist."
+    },
+    {
+      "source": "VR overlay calibration",
+      "translation": "VR-Overlay-Kalibrierung"
     },
     {
       "source": "VR overlay controller interaction disabled",
@@ -36169,8 +36261,8 @@
       "translation": "Windows"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Windows Direct3D 11-Route ohne SteamVR. Unterstützt Panels und Quest-Controller-Zeiger-Interaktion; erfordert die Ebene SrvSurvey OpenXR und ein Elite-Setup, das bereits durch VDXR läuft. Die Headset-Validierung steht noch aus."
+      "source": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
+      "translation": "Windows Direct3D 11-Route ohne SteamVR. Das Rendern von Quest 3 wurde von der Community mit EDVR bestätigt (#264). Erfordert die Ebene SrvSurvey OpenXR und ein Elite-Setup, das bereits durch VDXR läuft. Für die EDVR-Controller-Eingabe gibt es unten eine experimentelle Opt-in-Option. Die Controller-Kompatibilität erfordert noch Headset-Tests."
     },
     {
       "source": "Windows Mixed Reality",
@@ -36253,8 +36345,8 @@
       "translation": "Flügel"
     },
     {
-      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-      "translation": "Wenn VR-Overlays angeschlossen sind, verwenden Sie diese Verknüpfung einmal, damit SteamVR Controller-Laserpointer-Klicks senden und zu SrvSurvey Panels scrollen kann."
+      "source": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
+      "translation": "Wenn VR-Overlays angeschlossen sind, verwenden Sie diese Verknüpfung einmal, um Controller-Zeigerklicks und Scrollen auf der ausgewählten Route, einschließlich des Kalibrierungsfelds, zu aktivieren."
     },
     {
       "source": "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
@@ -36367,6 +36459,10 @@
     {
       "source": "YES",
       "translation": "Ja"
+    },
+    {
+      "source": "Yaw (degrees)",
+      "translation": "Gier (Grad)"
     },
     {
       "source": "Years",
@@ -39901,6 +39997,10 @@
       "translation": "Wert"
     },
     {
+      "source": "vdxr",
+      "translation": "vdxr"
+    },
+    {
       "source": "version",
       "translation": "Version"
     },
@@ -42579,6 +42679,10 @@
       "translation": "actividades"
     },
     {
+      "source": "ADJUSTMENT STEP",
+      "translation": "PASO DE AJUSTE"
+    },
+    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALINEAR EL ORIGEN DEL SITIO GUARDIAN"
     },
@@ -43247,10 +43351,6 @@
       "translation": "Ajusta el mapa compartido existente. Su fondo, alineación, puntos maestros y etiquetas de grupo se copian en este borrador."
     },
     {
-      "source": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-      "translation": "El modo de ajuste está activo. Guardar crea una copia de seguridad plotters.json verificada."
-    },
-    {
       "source": "Advanced setups with an OpenVR-compatible compositor",
       "translation": "Configuraciones avanzadas con un compositor compatible con OpenVR"
     },
@@ -43473,10 +43573,6 @@
     {
       "source": "Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup.",
       "translation": "Alt+Ctrl+O alterna esta ventana de captura. Su estado habilitado se restaura al inicio."
-    },
-    {
-      "source": "Alt+V opens this editor",
-      "translation": "Alt+V abre este editor"
     },
     {
       "source": "Altitude",
@@ -46723,16 +46819,12 @@
       "translation": "Cambiar criterios"
     },
     {
-      "source": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-      "translation": "Cambie la escala, la posición, el cabeceo, la orientación y el balanceo mientras consulta la vista previa en vivo en los auriculares."
+      "source": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+      "translation": "Cambie la escala, la posición, la inclinación, la orientación y el balanceo en el editor de escritorio o en el panel de calibración de los auriculares. Los pasos normales son de 5 cm y 1 grado; elija Fino o Grueso, use la rueda del mouse o mantenga presionada la tecla Mayús/Ctrl para realizar cambios temporales de precisión."
     },
     {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Cambia solo la estadística de FSS completo mostrada. No afecta la finalización de la búsqueda en el cuadro, los próximos objetivos, el recuento de cadáveres ni los valores."
-    },
-    {
-      "source": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-      "translation": "Vista previa de los cambios en vivo en la sesión de realidad virtual conectada. Guardar es atómico y conserva la ubicación del escritorio además de superposiciones desconocidas."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -47051,6 +47143,10 @@
       "translation": "Elija un monitor y un tamaño para las superposiciones de juegos."
     },
     {
+      "source": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+      "translation": "Elija un panel y Predeterminado o el vehículo/modo de juego actual. El panel seleccionado muestra datos de muestra incluso cuando el juego los oculta."
+    },
+    {
       "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
       "translation": "Elija un sitio Raven planificado para vincularlo. Sólo el arquitecto del sistema puede iniciar una construcción sin un plan."
     },
@@ -47261,10 +47357,6 @@
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
       "translation": "Elija la pantalla o monitor que se muestra Elite Dangerous, luego haga clic en Compartir. Si el selector se abre en la lista de ventanas, cambie a su pestaña de visualización o pantalla."
-    },
-    {
-      "source": "Choose the live panel and Default or the current vehicle/game mode.",
-      "translation": "Elija el panel en vivo y Predeterminado o el modo de vehículo/juego actual."
     },
     {
       "source": "Choose the local flora image folder",
@@ -47499,6 +47591,10 @@
       "translation": "Cerrar"
     },
     {
+      "source": "Close / discard unsaved",
+      "translation": "Cerrar/descartar no guardados"
+    },
+    {
       "source": "Close Elite Dangerous before swapping or restoring this file.",
       "translation": "Cierre Elite Dangerous antes de intercambiar o restaurar este archivo."
     },
@@ -47553,6 +47649,10 @@
     {
       "source": "Cmdr: {0} - {1}",
       "translation": "Comandante: {0} - {1}"
+    },
+    {
+      "source": "Coarse",
+      "translation": "Grueso"
     },
     {
       "source": "Cobalt",
@@ -48655,6 +48755,10 @@
       "translation": "Conecte los auriculares y complete su configuración normal en sala SteamVR o sentado."
     },
     {
+      "source": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+      "translation": "Conecte los auriculares y espere a que la cabeza adopte una postura de seguimiento antes de colocar este panel. VDXR requiere la capa correspondiente OpenXR."
+    },
+    {
       "source": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
       "translation": "Conecte los auriculares con Meta Horizon Link a través de USB o Air Link e ingrese a PC VR."
     },
@@ -48777,6 +48881,10 @@
     {
       "source": "Controller input",
       "translation": "Entrada del controlador"
+    },
+    {
+      "source": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+      "translation": "La entrada del controlador tiene un archivo adjunto de acción conflictivo OpenXR (error -47). Apague la entrada del controlador EDVR experimental y reinicie Elite. La representación superpuesta sigue estando disponible."
     },
     {
       "source": "Controller input is active: {0}.",
@@ -50135,10 +50243,6 @@
       "translation": "teclado de escritorio"
     },
     {
-      "source": "Desktop overlay placement and VR calibration are stored independently.",
-      "translation": "La ubicación de la superposición del escritorio y la calibración de la realidad virtual se almacenan de forma independiente."
-    },
-    {
       "source": "Desktop placement and focus",
       "translation": "Ubicación y enfoque del escritorio"
     },
@@ -51323,6 +51427,10 @@
       "translation": "EdsmCard"
     },
     {
+      "source": "EdvrControllerInput",
+      "translation": "Entrada del controlador Edvr"
+    },
+    {
       "source": "Efficiency (%)",
       "translation": "Eficiencia (%)"
     },
@@ -52065,6 +52173,18 @@
     {
       "source": "Expedition history, statistics, and reports",
       "translation": "Historial, estadísticas e informes de expediciones."
+    },
+    {
+      "source": "Experimental EDVR controller input",
+      "translation": "Entrada del controlador EDVR experimental"
+    },
+    {
+      "source": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+      "translation": "La entrada del controlador EDVR experimental está desactivada. Reinicie Elite después de cambiar la fuente de entrada antes de habilitar nuevamente la interacción con el controlador."
+    },
+    {
+      "source": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "La interacción del controlador EDVR experimental está habilitada. Apunte a un panel y use el disparador para hacer clic."
     },
     {
       "source": "Experimental rig bar detection",
@@ -52947,6 +53067,10 @@
       "translation": "encuentra"
     },
     {
+      "source": "Fine",
+      "translation": "Bien"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Ajusta el marcador específico del comandante después de seleccionarlo en el mapa."
     },
@@ -53297,6 +53421,14 @@
     {
       "source": "FootZoom",
       "translation": "PieZoom"
+    },
+    {
+      "source": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+      "translation": "Sólo para EDVR. Permite SrvSurvey leer controladores Quest sin soporte de entrada de juego. Reinicie Elite después de cambiar esta opción, luego use Alternar interacción de superposición de VR para habilitar el puntero. Mantenlo apagado para otras integraciones de juegos."
+    },
+    {
+      "source": "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+      "translation": "Para EDVR, habilite la entrada del controlador EDVR experimental en Tema > Configuración de superposición > VR, instale la capa correspondiente OpenXR y reinicie Elite. La opción está desactivada de forma predeterminada y está restringida a sesiones EDVR reconocidas. Deshabilítelo y reinicie Elite si otra capa de entrada entra en conflicto; La compatibilidad del controlador aún es experimental."
     },
     {
       "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -55835,16 +55967,16 @@
       "translation": "En Leamae UK-D d13-890, Leamae es el sector, UK-D d13 identifica el boxel y 890 es el número del sistema dentro de esa secuencia."
     },
     {
-      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-      "translation": "En Configuración > Superposiciones globales, asigne Alternar interacción de superposición de VR directamente debajo del acceso directo de Interacción de superposición en vivo. La entrada de teclado global también debe estar habilitada."
-    },
-    {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
       "translation": "En Configuración > Entrada, habilite las teclas y seleccione Configuración de accesos directos del escritorio cuando desee aprobar o configurar enlaces del portal. El inicio no abre este menú automáticamente."
     },
     {
       "source": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
       "translation": "En la configuración de superposición de Surface Mining, habilite Seguimiento automático de equipos desde el HUD de Rhino. Establezca el color de la barra de implementación si un mod de HUD cambia el verde brillante habitual."
+    },
+    {
+      "source": "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+      "translation": "En Tema > Configuración de superposición > VR, asigne Alternar interacción de superposición de VR. También está disponible en Configuración > Entrada. La entrada de teclado global debe estar habilitada."
     },
     {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
@@ -59751,12 +59883,20 @@
       "translation": "siguiente salto"
     },
     {
+      "source": "Next mode",
+      "translation": "Siguiente modo"
+    },
+    {
       "source": "Next or active direction",
       "translation": "Dirección siguiente o activa"
     },
     {
       "source": "Next page",
       "translation": "Página siguiente"
+    },
+    {
+      "source": "Next panel",
+      "translation": "Panel siguiente"
     },
     {
       "source": "Next site",
@@ -60691,6 +60831,10 @@
       "translation": "Ninguno trazado"
     },
     {
+      "source": "Normal",
+      "translation": "Normal"
+    },
+    {
       "source": "Normal Supercharge",
       "translation": "Sobrecarga normal"
     },
@@ -61071,10 +61215,6 @@
       "translation": "Sólo se pueden eliminar puntos sin procesar específicos del comandante."
     },
     {
-      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-      "translation": "Solo se pueden activar los controles que ya se muestran en una superposición en vivo SrvSurvey. La calibración de realidad virtual todavía utiliza superposiciones de ajuste y su acceso directo dedicado."
-    },
-    {
       "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
       "translation": "Solo los tipos de eventos solicitados por EDAstro dentro de esta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic y CodexEntry. Los tipos solicitados recientemente que esta versión no admite se enumeran en el registro de la aplicación y no se cargan."
     },
@@ -61259,10 +61399,6 @@
       "translation": "Abra Configuración > Aplicación. Habilite la captura de pantalla de Wayland y habilite solo los rastreadores individuales que desee probar; todos comienzan deshabilitados."
     },
     {
-      "source": "Open Settings > Global overlays and find VR overlays.",
-      "translation": "Abra Configuración> Superposiciones globales y busque superposiciones de realidad virtual."
-    },
-    {
       "source": "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
       "translation": "Abra Configuración > Privacidad y uso compartido > Configurar EDAstro Sharing para revisar y habilitar contribuciones de revistas opcionales."
     },
@@ -61305,6 +61441,10 @@
     {
       "source": "Open Theme > Overlay setup > Edit Overlay Positions.",
       "translation": "Abra Tema > Configuración de superposición > Editar posiciones de superposición."
+    },
+    {
+      "source": "Open Theme > Overlay setup > VR.",
+      "translation": "Abra Tema > Configuración de superposición > VR."
     },
     {
       "source": "Open Theme > Overlay setup and toggle Bypass Window Management.",
@@ -61499,8 +61639,8 @@
       "translation": "Abrir este cuadro infantil"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
-      "translation": "OpenComposite no es una solución alternativa compatible para superposiciones independientes OpenVR. Es posible que ya sea parte de su configuración Elite-to-VDXR; la capa SrvSurvey OpenXR agrega paneles y entrada del controlador Quest dentro de esa sesión de juego."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
+      "translation": "OpenComposite no es una solución alternativa compatible para superposiciones independientes OpenVR. Una configuración Elite existente OpenXR puede usar EDVR o OpenComposite. La representación de EDVR se confirmó en Quest 3 con VDXR en el número 264; OpenComposite no es necesario. La entrada del controlador EDVR experimental proporciona sus propias acciones impulsadas por fotogramas cuando se activa; La compatibilidad del controlador de auriculares reales aún necesita comentarios."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -62343,10 +62483,6 @@
       "translation": "PIN"
     },
     {
-      "source": "PITCH / YAW / ROLL",
-      "translation": "CABECIMIENTO / GUIÑADA / RODAMIENTO"
-    },
-    {
       "source": "PLANNED RAVEN SITE",
       "translation": "SITIO PLANIFICADO PARA EL CUERVO"
     },
@@ -62369,10 +62505,6 @@
     {
       "source": "POI choice",
       "translation": "elección de PDI"
-    },
-    {
-      "source": "POSITION X / Y / Z",
-      "translation": "POSICIÓN X / Y / Z"
     },
     {
       "source": "POW",
@@ -62675,6 +62807,22 @@
       "translation": "Ataque pirata"
     },
     {
+      "source": "Pitch (degrees)",
+      "translation": "Paso (grados)"
+    },
+    {
+      "source": "Place in front of me",
+      "translation": "Colócalo frente a mí"
+    },
+    {
+      "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+      "translation": "Colocar frente a mí mueve solo el panel seleccionado al nivel de los ojos, un metro a lo largo de su rumbo actual. Guardar calibración mantiene ese objetivo y modo; Cerrar/descartar valores no guardados restaura los valores guardados. Restablecer selección restaura la ruta predeterminada (o la ubicación predeterminada para una anulación de vehículo) y la guarda."
+    },
+    {
+      "source": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+      "translation": "Coloca el panel seleccionado a un metro frente a ti. Guarde para conservar esta ubicación."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planifica un viaje minero"
     },
@@ -62785,6 +62933,10 @@
     {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Espere {0} segundos antes de actualizar Frontier nuevamente."
+    },
+    {
+      "source": "PlotAdjustVR",
+      "translation": "TrazarAjustarVR"
     },
     {
       "source": "PlotBioStatus",
@@ -63001,6 +63153,18 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasil)"
+    },
+    {
+      "source": "Position X (10 cm units)",
+      "translation": "Posición X (unidades de 10 cm)"
+    },
+    {
+      "source": "Position Y (10 cm units)",
+      "translation": "Posición Y (unidades de 10 cm)"
+    },
+    {
+      "source": "Position Z (10 cm units)",
+      "translation": "Posición Z (unidades de 10 cm)"
     },
     {
       "source": "Position editor cleanup failed",
@@ -63399,8 +63563,16 @@
       "translation": "Copia de seguridad del diseño anterior: {0}"
     },
     {
+      "source": "Previous mode",
+      "translation": "Modo anterior"
+    },
+    {
       "source": "Previous page",
       "translation": "Pagina anterior"
+    },
+    {
+      "source": "Previous panel",
+      "translation": "Panel anterior"
     },
     {
       "source": "Previous settings backup: {0}",
@@ -66703,6 +66875,10 @@
       "translation": "Rocoso | 268.661 CR/t"
     },
     {
+      "source": "Roll (degrees)",
+      "translation": "Rollo (grados)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Revertir copia de seguridad: {0}"
     },
@@ -67367,6 +67543,10 @@
       "translation": "Muestra 1 de 3 grabadas"
     },
     {
+      "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+      "translation": "La vista previa de muestra está activa. Utilice el acceso directo de interacción del controlador para operar los controles de los auriculares. Guardar mantiene el panel y el modo seleccionados."
+    },
+    {
       "source": "Sample {0}",
       "translation": "Ejemplo {0}"
     },
@@ -67465,10 +67645,6 @@
     {
       "source": "Save calibration",
       "translation": "Guardar calibración"
-    },
-    {
-      "source": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-      "translation": "Guarde la calibración para verificar la escritura y conservar una copia de seguridad. Cancelar restaura los valores guardados; Restablecer selección restaura la ubicación enviada para ese objetivo."
     },
     {
       "source": "Save change",
@@ -71023,8 +71199,8 @@
       "translation": "SteamVR las rutas requieren un auricular listo SteamVR. La ruta VDXR espera una sesión Elite en vivo VDXR. Instale la capa correspondiente SrvSurvey OpenXR para la interacción entre el controlador y el puntero de Quest."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "Las rutas SteamVR utilizan el backend superpuesto OpenVR. La ruta VDXR utiliza la capa SrvSurvey OpenXR en Windows x64 con Direct3D 11; La validación del auricular está pendiente."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+      "translation": "Las rutas SteamVR utilizan el backend superpuesto OpenVR. La ruta VDXR utiliza la capa SrvSurvey OpenXR en Windows x64 con Direct3D 11. Una prueba comunitaria de Quest 3 confirmó el renderizado con EDVR; La interacción del controlador permanece sin verificar en esa configuración."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -71507,8 +71683,8 @@
       "translation": "Intercambio completo. Reinicie Elite Dangerous cuando esté listo. Copia de seguridad original: {0}"
     },
     {
-      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
-      "translation": "Cambie las superposiciones SteamVR entre el clic pasivo y la interacción controlador-puntero."
+      "source": "Switch VR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Cambie las superposiciones de realidad virtual entre clics pasivos e interacción controlador-puntero."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -73295,6 +73471,10 @@
       "translation": "La actualización protegida no se inició: {0} La instalación activa y el perfil del jugador no fueron cambiados."
     },
     {
+      "source": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+      "translation": "El panel de calibración de auriculares utiliza los mismos controles de objetivo, tamaño de paso, ubicación, guardar y cerrar que el editor de escritorio. Si la entrada del controlador no está disponible, refleje la ventana SrvSurvey en VR (por ejemplo, con la captura de ventana de OpenKneeboard) y use el mouse."
+    },
+    {
       "source": "The headset pose is not currently valid.",
       "translation": "La pose de los auriculares no es válida actualmente."
     },
@@ -74225,6 +74405,10 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "El marcador seleccionado no se pudo guardar:"
+    },
+    {
+      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+      "translation": "El panel seleccionado muestra datos de muestra. Pasos normales: 5 cm y 1°. Elija Fino o Grueso en el auricular, o mantenga presionada la tecla Mayús para fino / Ctrl para grueso. Desplácese sobre un número para ajustarlo."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -76607,6 +76791,10 @@
       "translation": "VDXR la interacción del controlador está habilitada. Apunte a un panel y use el disparador para hacer clic."
     },
     {
+      "source": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+      "translation": "VDXR tiene valores predeterminados establecidos y ubicaciones guardadas separadas. Las calibraciones personalizadas existentes se conservan como punto de partida; El reinicio seleccionado aplica la ubicación de fábrica asentada. SteamVR y las ubicaciones del escritorio se conservan."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: registre la capa OpenXR del paquete de Windows x64, luego reinicie Elite. Se requiere Direct3D 11."
     },
@@ -76673,6 +76861,10 @@
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
       "translation": "El ajuste de superposición de realidad virtual captura y restablece la orientación mediante acciones dedicadas; La capacidad y el estado se informan cuando el tiempo de ejecución no está disponible."
+    },
+    {
+      "source": "VR overlay calibration",
+      "translation": "Calibración de superposición de realidad virtual"
     },
     {
       "source": "VR overlay controller interaction disabled",
@@ -77587,8 +77779,8 @@
       "translation": "ventanas"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Ruta Windows Direct3D 11 sin SteamVR. Admite paneles e interacción controlador-puntero Quest; requiere la capa SrvSurvey OpenXR y una configuración Elite que ya se ejecuta a través de VDXR. La validación de los auriculares está pendiente."
+      "source": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
+      "translation": "Ruta Windows Direct3D 11 sin SteamVR. La representación de Quest 3 está confirmada por la comunidad con EDVR (#264). Requiere la capa SrvSurvey OpenXR y una configuración Elite que ya se ejecuta a través de VDXR. La entrada del controlador EDVR tiene una opción experimental a continuación; La compatibilidad del controlador aún necesita pruebas de auriculares."
     },
     {
       "source": "Windows Mixed Reality",
@@ -77671,8 +77863,8 @@
       "translation": "alas"
     },
     {
-      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-      "translation": "Con las superposiciones de realidad virtual conectadas, use ese acceso directo una vez para permitir que SteamVR envíe clics del puntero láser del controlador y se desplace a los paneles SrvSurvey."
+      "source": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
+      "translation": "Con las superposiciones de realidad virtual conectadas, use ese acceso directo una vez para habilitar los clics del puntero del controlador y el desplazamiento en la ruta seleccionada, incluido el panel de calibración."
     },
     {
       "source": "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
@@ -77785,6 +77977,10 @@
     {
       "source": "YES",
       "translation": "Sí"
+    },
+    {
+      "source": "Yaw (degrees)",
+      "translation": "Guiñada (grados)"
     },
     {
       "source": "Years",
@@ -81319,6 +81515,10 @@
       "translation": "valor"
     },
     {
+      "source": "vdxr",
+      "translation": "vdxr"
+    },
+    {
       "source": "version",
       "translation": "versión"
     },
@@ -83997,6 +84197,10 @@
       "translation": "activités"
     },
     {
+      "source": "ADJUSTMENT STEP",
+      "translation": "ÉTAPE DE RÉGLAGE"
+    },
+    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALIGNER L'ORIGINE DU SITE GUARDIAN"
     },
@@ -84665,10 +84869,6 @@
       "translation": "Ajustez la carte partagée existante. Son arrière-plan, son alignement, ses points principaux et ses étiquettes de groupe sont copiés dans ce brouillon."
     },
     {
-      "source": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-      "translation": "Le mode réglage est actif. L'enregistrement crée une sauvegarde plotters.json vérifiée."
-    },
-    {
       "source": "Advanced setups with an OpenVR-compatible compositor",
       "translation": "Configurations avancées avec un compositeur compatible OpenVR"
     },
@@ -84891,10 +85091,6 @@
     {
       "source": "Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup.",
       "translation": "Alt+Ctrl+O bascule cette fenêtre de capture. Son état activé est restauré au démarrage."
-    },
-    {
-      "source": "Alt+V opens this editor",
-      "translation": "Alt+V ouvre cet éditeur"
     },
     {
       "source": "Altitude",
@@ -88141,16 +88337,12 @@
       "translation": "Modifier les critères"
     },
     {
-      "source": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-      "translation": "Modifiez l'échelle, la position, le tangage, le lacet et le roulis tout en vérifiant l'aperçu en direct dans le casque."
+      "source": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+      "translation": "Modifiez l'échelle, la position, le tangage, le lacet et le roulis dans l'éditeur de bureau ou dans le panneau d'étalonnage du casque. Les pas normaux sont de 5 cm et 1 degré ; choisissez Fine ou Coarse, utilisez la molette de la souris ou maintenez Shift / Ctrl pour des changements de précision temporaires."
     },
     {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Modifie uniquement la statistique FSS-complete affichée. Cela n’affecte pas l’achèvement de la recherche boxel, les prochaines cibles, le nombre de corps ou les valeurs."
-    },
-    {
-      "source": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-      "translation": "Aperçu des modifications en direct dans la session VR connectée. La sauvegarde est atomique et préserve le placement sur le bureau ainsi que les superpositions inconnues."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -88469,6 +88661,10 @@
       "translation": "Choisissez un moniteur et une taille pour les superpositions de jeu."
     },
     {
+      "source": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+      "translation": "Choisissez un panneau et par défaut ou le mode véhicule/jeu actuel. Le panneau sélectionné affiche des exemples de données même lorsque le jeu les masquerait."
+    },
+    {
       "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
       "translation": "Choisissez un site Raven prévu à lier. Seul l'architecte système peut démarrer une construction sans plan."
     },
@@ -88679,10 +88875,6 @@
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
       "translation": "Choisissez l'affichage ou le moniteur affiché Elite Dangerous, puis cliquez sur Partager. Si le sélecteur s'ouvre sur la liste des fenêtres, passez à son affichage ou à son onglet d'écran."
-    },
-    {
-      "source": "Choose the live panel and Default or the current vehicle/game mode.",
-      "translation": "Choisissez le panneau en direct et par défaut ou le mode véhicule/jeu actuel."
     },
     {
       "source": "Choose the local flora image folder",
@@ -88917,6 +89109,10 @@
       "translation": "Fermer"
     },
     {
+      "source": "Close / discard unsaved",
+      "translation": "Fermer / supprimer les fichiers non enregistrés"
+    },
+    {
       "source": "Close Elite Dangerous before swapping or restoring this file.",
       "translation": "Fermez Elite Dangerous avant d'échanger ou de restaurer ce fichier."
     },
@@ -88971,6 +89167,10 @@
     {
       "source": "Cmdr: {0} - {1}",
       "translation": "Cmdr : {0} - {1}"
+    },
+    {
+      "source": "Coarse",
+      "translation": "Grossier"
     },
     {
       "source": "Cobalt",
@@ -90073,6 +90273,10 @@
       "translation": "Connectez le casque et terminez sa configuration normale en salle SteamVR ou en position assise."
     },
     {
+      "source": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+      "translation": "Connectez le casque et attendez une pose de tête suivie avant de placer ce panneau. VDXR nécessite la couche correspondante OpenXR."
+    },
+    {
       "source": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
       "translation": "Connectez le casque avec Meta Horizon Link via USB ou Air Link et accédez à PC VR."
     },
@@ -90195,6 +90399,10 @@
     {
       "source": "Controller input",
       "translation": "Entrée du contrôleur"
+    },
+    {
+      "source": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+      "translation": "L’entrée du contrôleur présente une pièce jointe d’action en conflit OpenXR (erreur -47). Désactivez l’entrée du contrôleur expérimental EDVR et redémarrez Elite. Le rendu par superposition reste disponible."
     },
     {
       "source": "Controller input is active: {0}.",
@@ -91553,10 +91761,6 @@
       "translation": "Clavier de bureau"
     },
     {
-      "source": "Desktop overlay placement and VR calibration are stored independently.",
-      "translation": "Le placement de la superposition du bureau et l'étalonnage VR sont stockés indépendamment."
-    },
-    {
       "source": "Desktop placement and focus",
       "translation": "Placement et mise au point sur le bureau"
     },
@@ -92741,6 +92945,10 @@
       "translation": "Carte Edsm"
     },
     {
+      "source": "EdvrControllerInput",
+      "translation": "EdvrControllerEntrée"
+    },
+    {
       "source": "Efficiency (%)",
       "translation": "Efficacité (%)"
     },
@@ -93483,6 +93691,18 @@
     {
       "source": "Expedition history, statistics, and reports",
       "translation": "Historique, statistiques et rapports de l'expédition"
+    },
+    {
+      "source": "Experimental EDVR controller input",
+      "translation": "Entrée du contrôleur EDVR expérimental"
+    },
+    {
+      "source": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+      "translation": "L’entrée du contrôleur expérimental EDVR est désactivée. Redémarrez Elite après avoir modifié la source d'entrée avant de réactiver l'interaction du contrôleur."
+    },
+    {
+      "source": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "L’interaction expérimentale du contrôleur EDVR est activée. Pointez sur un panneau et utilisez la gâchette pour cliquer."
     },
     {
       "source": "Experimental rig bar detection",
@@ -94365,6 +94585,10 @@
       "translation": "Trouve"
     },
     {
+      "source": "Fine",
+      "translation": "Bien"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Affinez le marqueur spécifique au commandant après l’avoir sélectionné sur la carte."
     },
@@ -94715,6 +94939,14 @@
     {
       "source": "FootZoom",
       "translation": "Zoom au pied"
+    },
+    {
+      "source": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+      "translation": "Pour EDVR uniquement. Permet SrvSurvey de lire les contrôleurs Quest sans prise en charge des entrées de jeu. Redémarrez Elite après avoir modifié cette option, puis utilisez l'interaction de superposition Toggle VR pour activer le pointeur. Gardez-le désactivé pour d’autres intégrations de jeux."
+    },
+    {
+      "source": "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+      "translation": "Pour EDVR, activez l'entrée du contrôleur expérimental EDVR dans Thème > Configuration de superposition > VR, installez la couche correspondante OpenXR et redémarrez Elite. L'option est désactivée par défaut et est limitée aux sessions EDVR reconnues. Désactivez-le et redémarrez Elite si une autre couche d'entrée est en conflit ; la compatibilité des contrôleurs est encore expérimentale."
     },
     {
       "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -97253,16 +97485,16 @@
       "translation": "Dans Leamae UK-D d13-890, Leamae est le secteur, UK-D d13 identifie le boxel et 890 est le numéro de système dans cette séquence."
     },
     {
-      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-      "translation": "Dans Paramètres > Superpositions globales, attribuez l’interaction Toggle VR overlay directement sous le raccourci d’interaction Live-overlay. La saisie globale au clavier doit également être activée."
-    },
-    {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
       "translation": "Dans Paramètres > Entrée, activez les accords clés et sélectionnez Paramètres de raccourci sur le bureau lorsque vous souhaitez approuver ou configurer les liaisons du portail. Le démarrage n'ouvre pas ce menu automatiquement."
     },
     {
       "source": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
       "translation": "Dans les paramètres de superposition Surface Mining, activez Suivre automatiquement les plates-formes à partir du Rhino HUD. Définissez la couleur de la barre de déploiement si un mod HUD change le vert vif habituel."
+    },
+    {
+      "source": "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+      "translation": "Dans Thème > Configuration de la superposition > VR, attribuez l’interaction de superposition Toggle VR. Il est également disponible dans Paramètres > Entrée. La saisie globale au clavier doit être activée."
     },
     {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
@@ -101169,12 +101401,20 @@
       "translation": "prochain saut"
     },
     {
+      "source": "Next mode",
+      "translation": "Mode suivant"
+    },
+    {
       "source": "Next or active direction",
       "translation": "Direction suivante ou active"
     },
     {
       "source": "Next page",
       "translation": "Page suivante"
+    },
+    {
+      "source": "Next panel",
+      "translation": "Panneau suivant"
     },
     {
       "source": "Next site",
@@ -102109,6 +102349,10 @@
       "translation": "Aucun tracé"
     },
     {
+      "source": "Normal",
+      "translation": "Normale"
+    },
+    {
       "source": "Normal Supercharge",
       "translation": "Suralimentation normale"
     },
@@ -102489,10 +102733,6 @@
       "translation": "Seuls les points bruts spécifiques au commandant peuvent être supprimés."
     },
     {
-      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-      "translation": "Seules les commandes déjà affichées par une superposition en direct SrvSurvey peuvent être activées. L’étalonnage VR utilise toujours les superpositions Ajuster et son raccourci dédié."
-    },
-    {
       "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
       "translation": "Uniquement les types d'événements demandés par EDAstro dans cette liste divulguée : CarrierStats, CarrierJumpRequest, Docked, ScanOrganic et CodexEntry. Les types nouvellement demandés que cette version ne prend pas en charge sont répertoriés dans le journal des applications et ne sont pas téléchargés."
     },
@@ -102677,10 +102917,6 @@
       "translation": "Ouvrez Paramètres > Application. Activez la capture d'écran Wayland et activez uniquement les trackers individuels que vous souhaitez tester ; tous démarrent désactivés."
     },
     {
-      "source": "Open Settings > Global overlays and find VR overlays.",
-      "translation": "Ouvrez Paramètres > Superpositions globales et recherchez les superpositions VR."
-    },
-    {
       "source": "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
       "translation": "Ouvrez Paramètres > Confidentialité et partage > Configurer le partage EDAstro pour consulter et activer les contributions facultatives au journal."
     },
@@ -102723,6 +102959,10 @@
     {
       "source": "Open Theme > Overlay setup > Edit Overlay Positions.",
       "translation": "Ouvrez Thème > Configuration de la superposition > Modifier les positions de superposition."
+    },
+    {
+      "source": "Open Theme > Overlay setup > VR.",
+      "translation": "Ouvrez Thème > Configuration de la superposition > VR."
     },
     {
       "source": "Open Theme > Overlay setup and toggle Bypass Window Management.",
@@ -102917,8 +103157,8 @@
       "translation": "Ouvrez cette boîte enfant"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
-      "translation": "OpenComposite n'est pas une solution de contournement compatible pour les superpositions autonomes OpenVR. Il fait peut-être déjà partie de votre configuration Elite-to-VDXR ; la couche SrvSurvey OpenXR ajoute des panneaux et une entrée du contrôleur Quest au sein de cette session de jeu."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
+      "translation": "OpenComposite n'est pas une solution de contournement compatible pour les superpositions autonomes OpenVR. Une configuration Elite existante OpenXR peut utiliser EDVR ou OpenComposite. Le rendu EDVR a été confirmé sur Quest 3 avec VDXR dans le numéro 264 ; OpenComposite n’est pas requis. L'entrée du contrôleur EDVR expérimental fournit ses propres actions pilotées par les trames lorsqu'elle est activée ; la compatibilité du contrôleur avec un casque réel a encore besoin de commentaires."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -103761,10 +104001,6 @@
       "translation": "NIP"
     },
     {
-      "source": "PITCH / YAW / ROLL",
-      "translation": "tangage/lacet/roulis"
-    },
-    {
       "source": "PLANNED RAVEN SITE",
       "translation": "SITE PRÉVU DU CORBEAU"
     },
@@ -103787,10 +104023,6 @@
     {
       "source": "POI choice",
       "translation": "Choix du POI"
-    },
-    {
-      "source": "POSITION X / Y / Z",
-      "translation": "POSITIONX/Y/Z"
     },
     {
       "source": "POW",
@@ -104093,6 +104325,22 @@
       "translation": "Attaque de pirates"
     },
     {
+      "source": "Pitch (degrees)",
+      "translation": "Pas (degrés)"
+    },
+    {
+      "source": "Place in front of me",
+      "translation": "Place devant moi"
+    },
+    {
+      "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+      "translation": "Placer devant moi déplace uniquement le panneau sélectionné au niveau des yeux, d'un mètre le long de votre cap actuel. Enregistrer l'étalonnage conserve cette cible et ce mode ; Fermer/ignorer les restaurations non enregistrées restaure les valeurs enregistrées. Réinitialiser la sélection restaure l'itinéraire par défaut (ou l'emplacement par défaut pour un remplacement de véhicule) et l'enregistre."
+    },
+    {
+      "source": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+      "translation": "Placez le panneau sélectionné à un mètre devant vous. Enregistrez pour conserver cet emplacement."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planifier un voyage minier"
     },
@@ -104203,6 +104451,10 @@
     {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Veuillez patienter {0} secondes avant d'actualiser à nouveau Frontier."
+    },
+    {
+      "source": "PlotAdjustVR",
+      "translation": "PlotAdjustVR"
     },
     {
       "source": "PlotBioStatus",
@@ -104419,6 +104671,18 @@
     {
       "source": "Português (Brasil)",
       "translation": "Portugais (Brésil)"
+    },
+    {
+      "source": "Position X (10 cm units)",
+      "translation": "Position X (unités de 10 cm)"
+    },
+    {
+      "source": "Position Y (10 cm units)",
+      "translation": "Position Y (unités de 10 cm)"
+    },
+    {
+      "source": "Position Z (10 cm units)",
+      "translation": "Position Z (unités de 10 cm)"
     },
     {
       "source": "Position editor cleanup failed",
@@ -104817,8 +105081,16 @@
       "translation": "Sauvegarde de la mise en page précédente : {0}"
     },
     {
+      "source": "Previous mode",
+      "translation": "Mode précédent"
+    },
+    {
       "source": "Previous page",
       "translation": "Page précédente"
+    },
+    {
+      "source": "Previous panel",
+      "translation": "Panneau précédent"
     },
     {
       "source": "Previous settings backup: {0}",
@@ -108121,6 +108393,10 @@
       "translation": "Rocheux | 268 661 CR/t"
     },
     {
+      "source": "Roll (degrees)",
+      "translation": "Rouleau (degrés)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Sauvegarde de restauration : {0}"
     },
@@ -108785,6 +109061,10 @@
       "translation": "Échantillon 1 sur 3 enregistré"
     },
     {
+      "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+      "translation": "L’aperçu de l’échantillon est actif. Utilisez le raccourci d'interaction du contrôleur pour utiliser les commandes du casque. Enregistrer conserve le panneau et le mode sélectionnés."
+    },
+    {
       "source": "Sample {0}",
       "translation": "Échantillon {0}"
     },
@@ -108883,10 +109163,6 @@
     {
       "source": "Save calibration",
       "translation": "Enregistrer l'étalonnage"
-    },
-    {
-      "source": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-      "translation": "Enregistrez l'étalonnage pour vérifier l'écriture et conserver une sauvegarde. Annuler restaure les valeurs enregistrées ; Réinitialiser la sélection restaure l'emplacement livré pour cette cible."
     },
     {
       "source": "Save change",
@@ -112441,8 +112717,8 @@
       "translation": "Les itinéraires SteamVR nécessitent un casque SteamVR. L'itinéraire VDXR attend une session Elite VDXR en direct. Installez la couche correspondante SrvSurvey OpenXR pour l'interaction contrôleur-pointeur Quest."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "Les itinéraires SteamVR utilisent le backend de superposition OpenVR. La route VDXR utilise la couche SrvSurvey OpenXR sur Windows x64 avec Direct3D 11 ; la validation du casque est en attente."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+      "translation": "Les itinéraires SteamVR utilisent le backend de superposition OpenVR. La route VDXR utilise la couche SrvSurvey OpenXR sur Windows x64 avec Direct3D 11. Un test Community Quest 3 a confirmé le rendu avec EDVR ; l'interaction du contrôleur reste non vérifiée sur cette configuration."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -112925,8 +113201,8 @@
       "translation": "Échange terminé. Redémarrez Elite Dangerous lorsque vous êtes prêt. Sauvegarde d'origine : {0}"
     },
     {
-      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
-      "translation": "Basculez les superpositions SteamVR entre le clic passif et l'interaction contrôleur-pointeur."
+      "source": "Switch VR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Basculez les superpositions VR entre le clic passif et l’interaction contrôleur-pointeur."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -114713,6 +114989,10 @@
       "translation": "La mise à jour protégée n'a pas été lancée : {0} L'installation active et le profil du joueur n'ont pas été modifiés."
     },
     {
+      "source": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+      "translation": "Le panneau d'étalonnage du casque utilise les mêmes commandes de cible, de taille de pas, de placement, d'enregistrement et de fermeture que l'éditeur de bureau. Si l'entrée du contrôleur n'est pas disponible, mettez en miroir la fenêtre SrvSurvey dans VR (par exemple avec la capture de fenêtre OpenKneeboard) et utilisez la souris."
+    },
+    {
       "source": "The headset pose is not currently valid.",
       "translation": "La pose du casque n'est pas valide actuellement."
     },
@@ -115643,6 +115923,10 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "Le marqueur sélectionné n'a pas pu être enregistré :"
+    },
+    {
+      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+      "translation": "Le panneau sélectionné affiche des exemples de données. Pas normaux : 5 cm et 1°. Choisissez Fin ou Grossier dans le casque, ou maintenez Shift pour fin/Ctrl pour grossier. Faites défiler un numéro pour l'ajuster."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -118025,6 +118309,10 @@
       "translation": "L'interaction du contrôleur VDXR est activée. Pointez sur un panneau et utilisez la gâchette pour cliquer."
     },
     {
+      "source": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+      "translation": "VDXR comporte des valeurs par défaut et des emplacements enregistrés distincts. Les étalonnages personnalisés existants sont conservés comme point de départ ; La réinitialisation sélectionnée applique le placement assis en usine. SteamVR et les emplacements de bureau sont conservés."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR : enregistrez la couche OpenXR du package Windows x64, puis redémarrez Elite. Direct3D 11 est requis."
     },
@@ -118091,6 +118379,10 @@
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
       "translation": "L'ajustement de la superposition VR capture et réinitialise l'orientation via des actions dédiées ; la capacité et l’état sont signalés lorsque le runtime n’est pas disponible."
+    },
+    {
+      "source": "VR overlay calibration",
+      "translation": "Calibrage de la superposition VR"
     },
     {
       "source": "VR overlay controller interaction disabled",
@@ -119005,8 +119297,8 @@
       "translation": "Fenêtres"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Route Windows Direct3D 11 sans SteamVR. Prend en charge les panneaux et l'interaction contrôleur-pointeur Quest ; nécessite la couche SrvSurvey OpenXR et une configuration Elite qui traverse déjà VDXR. La validation du casque est en attente."
+      "source": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
+      "translation": "Route Windows Direct3D 11 sans SteamVR. Le rendu Quest 3 est confirmé par la communauté avec EDVR (#264). Nécessite la couche SrvSurvey OpenXR et une configuration Elite qui traverse déjà VDXR. L’entrée du contrôleur EDVR a un opt-in expérimental ci-dessous ; la compatibilité du contrôleur nécessite encore des tests de casque."
     },
     {
       "source": "Windows Mixed Reality",
@@ -119089,8 +119381,8 @@
       "translation": "Ailes"
     },
     {
-      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-      "translation": "Avec les superpositions VR connectées, utilisez ce raccourci une fois pour permettre à SteamVR d'envoyer des clics de pointeur laser du contrôleur et de faire défiler vers les panneaux SrvSurvey."
+      "source": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
+      "translation": "Avec les superpositions VR connectées, utilisez ce raccourci une fois pour activer les clics du pointeur du contrôleur et le défilement sur l'itinéraire sélectionné, y compris le panneau d'étalonnage."
     },
     {
       "source": "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
@@ -119203,6 +119495,10 @@
     {
       "source": "YES",
       "translation": "Oui"
+    },
+    {
+      "source": "Yaw (degrees)",
+      "translation": "Lacet (degrés)"
     },
     {
       "source": "Years",
@@ -122737,6 +123033,10 @@
       "translation": "valeur"
     },
     {
+      "source": "vdxr",
+      "translation": "vdxr"
+    },
+    {
       "source": "version",
       "translation": "version"
     },
@@ -125415,6 +125715,10 @@
       "translation": "atividades"
     },
     {
+      "source": "ADJUSTMENT STEP",
+      "translation": "ETAPA DE AJUSTE"
+    },
+    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALINHAR ORIGEM DO SITE GUARDIAN"
     },
@@ -126083,10 +126387,6 @@
       "translation": "Ajuste o mapa compartilhado existente. Seu plano de fundo, alinhamento, pontos mestres e rótulos de grupo são copiados neste rascunho."
     },
     {
-      "source": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-      "translation": "O modo de ajuste está ativo. Salvar cria um backup plotters.json verificado."
-    },
-    {
       "source": "Advanced setups with an OpenVR-compatible compositor",
       "translation": "Configurações avançadas com um compositor compatível com OpenVR"
     },
@@ -126309,10 +126609,6 @@
     {
       "source": "Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup.",
       "translation": "Alt+Ctrl+O alterna esta janela de captura. Seu estado habilitado é restaurado na inicialização."
-    },
-    {
-      "source": "Alt+V opens this editor",
-      "translation": "Alt+V abre este editor"
     },
     {
       "source": "Altitude",
@@ -129559,16 +129855,12 @@
       "translation": "Alterar critérios"
     },
     {
-      "source": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-      "translation": "Altere escala, posição, inclinação, guinada e rotação enquanto verifica a visualização ao vivo no fone de ouvido."
+      "source": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+      "translation": "Altere escala, posição, inclinação, guinada e rotação no editor de desktop ou no painel de calibração do headset. Os passos normais são de 5 cm e 1 grau; escolha Fino ou Grosso, use a roda do mouse ou segure Shift / Ctrl para alterações temporárias de precisão."
     },
     {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Altera apenas a estatística completa do FSS exibida. Não afeta a conclusão da busca no boxel, próximos alvos, contagens de corpos ou valores."
-    },
-    {
-      "source": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-      "translation": "Pré-visualização de alterações ao vivo na sessão de VR conectada. Salvar é atômico e preserva o posicionamento da área de trabalho, além de sobreposições desconhecidas."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -129887,6 +130179,10 @@
       "translation": "Escolha um monitor e tamanho para sobreposições de jogo."
     },
     {
+      "source": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+      "translation": "Escolha um painel e Padrão ou o modo de jogo/veículo atual. O painel selecionado mostra dados de amostra mesmo quando o jogo os oculta."
+    },
+    {
       "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
       "translation": "Escolha um site Raven planejado para vincular. Somente o arquiteto do sistema pode iniciar uma construção sem um plano."
     },
@@ -130097,10 +130393,6 @@
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
       "translation": "Escolha o monitor ou exibição Elite Dangerous e clique em Compartilhar. Se o seletor abrir na lista de janelas, alterne para sua exibição ou guia de tela."
-    },
-    {
-      "source": "Choose the live panel and Default or the current vehicle/game mode.",
-      "translation": "Escolha o painel ao vivo e Padrão ou o veículo/modo de jogo atual."
     },
     {
       "source": "Choose the local flora image folder",
@@ -130335,6 +130627,10 @@
       "translation": "Fechar"
     },
     {
+      "source": "Close / discard unsaved",
+      "translation": "Fechar/descartar não salvo"
+    },
+    {
       "source": "Close Elite Dangerous before swapping or restoring this file.",
       "translation": "Feche Elite Dangerous antes de trocar ou restaurar este arquivo."
     },
@@ -130389,6 +130685,10 @@
     {
       "source": "Cmdr: {0} - {1}",
       "translation": "Comandante: {0} - {1}"
+    },
+    {
+      "source": "Coarse",
+      "translation": "Grosso"
     },
     {
       "source": "Cobalt",
@@ -131491,6 +131791,10 @@
       "translation": "Conecte o fone de ouvido e conclua a configuração normal da sala SteamVR ou sentado."
     },
     {
+      "source": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+      "translation": "Conecte o fone de ouvido e aguarde uma pose de cabeça rastreada antes de colocar este painel. VDXR requer a camada correspondente OpenXR."
+    },
+    {
       "source": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
       "translation": "Conecte o fone de ouvido com Meta Horizon Link via USB ou Air Link e entre no PC VR."
     },
@@ -131613,6 +131917,10 @@
     {
       "source": "Controller input",
       "translation": "Entrada do controlador"
+    },
+    {
+      "source": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+      "translation": "A entrada do controlador possui um anexo de ação conflitante OpenXR (erro -47). Desligue a entrada do controlador Experimental EDVR e reinicie o Elite. A renderização de sobreposição permanece disponível."
     },
     {
       "source": "Controller input is active: {0}.",
@@ -132971,10 +133279,6 @@
       "translation": "Teclado de mesa"
     },
     {
-      "source": "Desktop overlay placement and VR calibration are stored independently.",
-      "translation": "O posicionamento da sobreposição da área de trabalho e a calibração VR são armazenados de forma independente."
-    },
-    {
       "source": "Desktop placement and focus",
       "translation": "Posicionamento e foco na área de trabalho"
     },
@@ -134159,6 +134463,10 @@
       "translation": "Cartão Edsm"
     },
     {
+      "source": "EdvrControllerInput",
+      "translation": "EdvrControllerInput"
+    },
+    {
       "source": "Efficiency (%)",
       "translation": "Eficiência (%)"
     },
@@ -134901,6 +135209,18 @@
     {
       "source": "Expedition history, statistics, and reports",
       "translation": "Histórico de expedição, estatísticas e relatórios"
+    },
+    {
+      "source": "Experimental EDVR controller input",
+      "translation": "Entrada experimental do controlador EDVR"
+    },
+    {
+      "source": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+      "translation": "A entrada experimental do controlador EDVR está desligada. Reinicie o Elite após alterar a fonte de entrada antes de ativar a interação do controlador novamente."
+    },
+    {
+      "source": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "A interação experimental do controlador EDVR está habilitada. Aponte para um painel e use o gatilho para clicar."
     },
     {
       "source": "Experimental rig bar detection",
@@ -135783,6 +136103,10 @@
       "translation": "Descobertas"
     },
     {
+      "source": "Fine",
+      "translation": "Multar"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Ajuste o marcador específico do comandante após selecioná-lo no mapa."
     },
@@ -136133,6 +136457,14 @@
     {
       "source": "FootZoom",
       "translation": "Zoom de pé"
+    },
+    {
+      "source": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+      "translation": "Apenas para EDVR. Permite SrvSurvey ler controladores Quest sem suporte para entrada de jogo. Reinicie o Elite depois de alterar esta opção e use Alternar interação de sobreposição de VR para ativar o ponteiro. Mantenha-o desativado para outras integrações de jogos."
+    },
+    {
+      "source": "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+      "translation": "Para EDVR, habilite a entrada do controlador Experimental EDVR em Tema > Configuração de sobreposição > VR, instale a camada correspondente OpenXR e reinicie o Elite. A opção está desativada por padrão e restrita a sessões EDVR reconhecidas. Desative-o e reinicie o Elite se outra camada de entrada entrar em conflito; a compatibilidade do controlador ainda é experimental."
     },
     {
       "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -138671,16 +139003,16 @@
       "translation": "Em Leamae UK-D d13-890, Leamae é o setor, UK-D d13 identifica o boxel e 890 é o número do sistema dentro dessa sequência."
     },
     {
-      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-      "translation": "Em Configurações > Sobreposições globais, atribua a interação Alternar sobreposição de VR diretamente abaixo do atalho de interação de sobreposição ao vivo. A entrada global do teclado também deve estar habilitada."
-    },
-    {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
       "translation": "Em Configurações > Entrada, habilite acordes de teclas e selecione Configurações de atalho da área de trabalho quando desejar aprovar ou configurar vinculações de portal. A inicialização não abre este menu automaticamente."
     },
     {
       "source": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
       "translation": "Nas configurações de sobreposição do Surface Mining, ative Rastrear automaticamente as plataformas do Rhino HUD. Defina a cor da barra de implantação se um mod do HUD mudar para o verde brilhante usual."
+    },
+    {
+      "source": "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+      "translation": "Em Tema > Configuração de sobreposição > VR, atribua a interação Alternar sobreposição de VR. Também está disponível em Configurações > Entrada. A entrada global do teclado deve estar habilitada."
     },
     {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
@@ -142587,12 +142919,20 @@
       "translation": "Próximo salto"
     },
     {
+      "source": "Next mode",
+      "translation": "Próximo modo"
+    },
+    {
       "source": "Next or active direction",
       "translation": "Direção seguinte ou ativa"
     },
     {
       "source": "Next page",
       "translation": "Próxima página"
+    },
+    {
+      "source": "Next panel",
+      "translation": "Próximo painel"
     },
     {
       "source": "Next site",
@@ -143527,6 +143867,10 @@
       "translation": "Nenhum plotado"
     },
     {
+      "source": "Normal",
+      "translation": "Normal"
+    },
+    {
       "source": "Normal Supercharge",
       "translation": "Sobrecarga normal"
     },
@@ -143907,10 +144251,6 @@
       "translation": "Somente pontos brutos específicos do comandante podem ser removidos."
     },
     {
-      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-      "translation": "Somente os controles já mostrados por uma sobreposição ao vivo SrvSurvey podem ser ativados. A calibração VR ainda usa sobreposições de ajuste e seu atalho dedicado."
-    },
-    {
       "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
       "translation": "Somente tipos de eventos solicitados pela EDAstro nesta lista divulgada: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic e CodexEntry. Os tipos recentemente solicitados que esta versão não suporta são listados no log do aplicativo e não são carregados."
     },
@@ -144095,10 +144435,6 @@
       "translation": "Abra Configurações > Aplicativo. Habilite a captura de tela do Wayland e habilite apenas os rastreadores individuais que você deseja testar; todos começam desabilitados."
     },
     {
-      "source": "Open Settings > Global overlays and find VR overlays.",
-      "translation": "Abra Configurações > Sobreposições globais e encontre sobreposições de VR."
-    },
-    {
       "source": "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
       "translation": "Abra Configurações > Privacidade e compartilhamento > Configurar compartilhamento EDAstro para revisar e ativar contribuições opcionais de periódicos."
     },
@@ -144141,6 +144477,10 @@
     {
       "source": "Open Theme > Overlay setup > Edit Overlay Positions.",
       "translation": "Abra Tema > Configuração de sobreposição > Editar posições de sobreposição."
+    },
+    {
+      "source": "Open Theme > Overlay setup > VR.",
+      "translation": "Abra Tema > Configuração de sobreposição > VR."
     },
     {
       "source": "Open Theme > Overlay setup and toggle Bypass Window Management.",
@@ -144335,8 +144675,8 @@
       "translation": "Abra este boxel infantil"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
-      "translation": "OpenComposite não é uma solução alternativa compatível para sobreposições independentes OpenVR. Pode já fazer parte da sua configuração Elite-to-VDXR; a camada SrvSurvey OpenXR adiciona painéis e entrada do controlador Quest nessa sessão de jogo."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
+      "translation": "OpenComposite não é uma solução alternativa compatível para sobreposições independentes OpenVR. Uma configuração Elite existente OpenXR pode usar EDVR ou OpenComposite. A renderização do EDVR foi confirmada na Quest 3 com VDXR na edição #264; OpenComposite não é necessário. A entrada experimental do controlador EDVR fornece suas próprias ações orientadas por quadros quando ativada; a compatibilidade do controlador de fone de ouvido real ainda precisa de feedback."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -145179,10 +145519,6 @@
       "translation": "PIN"
     },
     {
-      "source": "PITCH / YAW / ROLL",
-      "translation": "PASSO / GUINA / ROLO"
-    },
-    {
       "source": "PLANNED RAVEN SITE",
       "translation": "LOCAL PLANEJADO DO RAVEN"
     },
@@ -145205,10 +145541,6 @@
     {
       "source": "POI choice",
       "translation": "Escolha do PI"
-    },
-    {
-      "source": "POSITION X / Y / Z",
-      "translation": "POSIÇÃO X/Y/Z"
     },
     {
       "source": "POW",
@@ -145511,6 +145843,22 @@
       "translation": "Ataque pirata"
     },
     {
+      "source": "Pitch (degrees)",
+      "translation": "Passo (graus)"
+    },
+    {
+      "source": "Place in front of me",
+      "translation": "Coloque na minha frente"
+    },
+    {
+      "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+      "translation": "Colocar à minha frente move apenas o painel selecionado para o nível dos olhos, um metro ao longo de sua direção atual. Salvar calibração mantém esse alvo e modo; Fechar/descartar valores não salvos restaura valores salvos. Redefinir selecionado restaura o padrão da rota (ou o posicionamento padrão para uma substituição de veículo) e o salva."
+    },
+    {
+      "source": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+      "translation": "Coloque o painel selecionado um metro à sua frente. Salve para manter este posicionamento."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Planeje uma viagem de mineração"
     },
@@ -145621,6 +145969,10 @@
     {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Aguarde {0} segundos antes de atualizar Frontier novamente."
+    },
+    {
+      "source": "PlotAdjustVR",
+      "translation": "PlotAdjustVR"
     },
     {
       "source": "PlotBioStatus",
@@ -145837,6 +146189,18 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasil)"
+    },
+    {
+      "source": "Position X (10 cm units)",
+      "translation": "Posição X (unidades de 10 cm)"
+    },
+    {
+      "source": "Position Y (10 cm units)",
+      "translation": "Posição Y (unidades de 10 cm)"
+    },
+    {
+      "source": "Position Z (10 cm units)",
+      "translation": "Posição Z (unidades de 10 cm)"
     },
     {
       "source": "Position editor cleanup failed",
@@ -146235,8 +146599,16 @@
       "translation": "Backup de layout anterior: {0}"
     },
     {
+      "source": "Previous mode",
+      "translation": "Modo anterior"
+    },
+    {
       "source": "Previous page",
       "translation": "Página anterior"
+    },
+    {
+      "source": "Previous panel",
+      "translation": "Painel anterior"
     },
     {
       "source": "Previous settings backup: {0}",
@@ -149539,6 +149911,10 @@
       "translation": "Rochoso | 268.661 CR/t"
     },
     {
+      "source": "Roll (degrees)",
+      "translation": "Rolar (graus)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Backup de reversão: {0}"
     },
@@ -150203,6 +150579,10 @@
       "translation": "Amostra 1 de 3 gravada"
     },
     {
+      "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+      "translation": "A visualização da amostra está ativa. Use o atalho de interação do controlador para operar os controles do fone de ouvido. Salvar mantém o painel e o modo selecionados."
+    },
+    {
       "source": "Sample {0}",
       "translation": "Amostra {0}"
     },
@@ -150301,10 +150681,6 @@
     {
       "source": "Save calibration",
       "translation": "Salvar calibração"
-    },
-    {
-      "source": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-      "translation": "Salve a calibração para verificar a gravação e preservar um backup. Cancelar restaura os valores salvos; Redefinir selecionado restaura a veiculação enviada para esse destino."
     },
     {
       "source": "Save change",
@@ -153859,8 +154235,8 @@
       "translation": "SteamVR exigem um fone de ouvido pronto SteamVR. A rota VDXR aguarda uma sessão Elite VDXR ao vivo. Instale a camada correspondente SrvSurvey OpenXR para interação controlador-ponteiro Quest."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "As rotas SteamVR usam o backend de sobreposição OpenVR. A rota VDXR usa a camada SrvSurvey OpenXR no Windows x64 com Direct3D 11; a validação do fone de ouvido está pendente."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+      "translation": "As rotas SteamVR usam o backend de sobreposição OpenVR. A rota VDXR usa a camada SrvSurvey OpenXR no Windows x64 com Direct3D 11. Um teste da comunidade Quest 3 confirmou a renderização com EDVR; a interação do controlador permanece não verificada nessa configuração."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -154343,8 +154719,8 @@
       "translation": "Troca concluída. Reinicie Elite Dangerous quando estiver pronto. Backup original: {0}"
     },
     {
-      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
-      "translation": "Alternar sobreposições SteamVR entre clique passivo e interação ponteiro-controlador."
+      "source": "Switch VR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Alterne as sobreposições de VR entre clique passivo e interação controlador-ponteiro."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -156131,6 +156507,10 @@
       "translation": "A atualização protegida não foi iniciada: {0} A instalação ativa e o perfil do jogador não foram alterados."
     },
     {
+      "source": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+      "translation": "O painel de calibração do headset usa os mesmos controles de alvo, tamanho do passo, posicionamento, salvamento e fechamento do editor de desktop. Se a entrada do controlador não estiver disponível, espelhe a janela SrvSurvey em VR (por exemplo, com captura de janela OpenKneeboard) e use o mouse."
+    },
+    {
       "source": "The headset pose is not currently valid.",
       "translation": "A pose do fone de ouvido não é válida no momento."
     },
@@ -157061,6 +157441,10 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "O marcador selecionado não pôde ser salvo:"
+    },
+    {
+      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+      "translation": "O painel selecionado mostra dados de amostra. Passos normais: 5 cm e 1°. Escolha Fino ou Grosso no fone de ouvido ou segure Shift para fino / Ctrl para grosso. Role sobre um número para ajustá-lo."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -159443,6 +159827,10 @@
       "translation": "VDXR a interação do controlador está habilitada. Aponte para um painel e use o gatilho para clicar."
     },
     {
+      "source": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+      "translation": "VDXR possui padrões estabelecidos e canais salvos separados. As calibrações personalizadas existentes são mantidas como ponto de partida; A redefinição selecionada aplica o posicionamento de fábrica assentado. SteamVR e os posicionamentos de desktop são preservados."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: registre a camada OpenXR do pacote Windows x64 e reinicie o Elite. Direct3D 11 é necessário."
     },
@@ -159509,6 +159897,10 @@
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
       "translation": "O ajuste de sobreposição de VR captura e redefine a orientação por meio de ações dedicadas; capacidade e status são relatados quando o tempo de execução não está disponível."
+    },
+    {
+      "source": "VR overlay calibration",
+      "translation": "Calibração de sobreposição VR"
     },
     {
       "source": "VR overlay controller interaction disabled",
@@ -160423,8 +160815,8 @@
       "translation": "Windows"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Rota do Windows Direct3D 11 sem SteamVR. Suporta painéis e interação controlador-ponteiro Quest; requer a camada SrvSurvey OpenXR e uma configuração Elite que já é executada em VDXR. A validação do fone de ouvido está pendente."
+      "source": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
+      "translation": "Rota do Windows Direct3D 11 sem SteamVR. A renderização da Quest 3 é confirmada pela comunidade com EDVR (#264). Requer a camada SrvSurvey OpenXR e uma configuração Elite que já seja executada em VDXR. A entrada do controlador EDVR tem uma opção experimental abaixo; a compatibilidade do controlador ainda precisa de testes de fone de ouvido."
     },
     {
       "source": "Windows Mixed Reality",
@@ -160507,8 +160899,8 @@
       "translation": "Asas"
     },
     {
-      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-      "translation": "Com as sobreposições VR conectadas, use esse atalho uma vez para permitir que SteamVR envie cliques do ponteiro laser do controlador e role para os painéis SrvSurvey."
+      "source": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
+      "translation": "Com as sobreposições VR conectadas, use esse atalho uma vez para ativar os cliques do ponteiro do controlador e a rolagem na rota selecionada, incluindo o painel de calibração."
     },
     {
       "source": "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
@@ -160621,6 +161013,10 @@
     {
       "source": "YES",
       "translation": "sim"
+    },
+    {
+      "source": "Yaw (degrees)",
+      "translation": "Guinada (graus)"
     },
     {
       "source": "Years",
@@ -164155,6 +164551,10 @@
       "translation": "valor"
     },
     {
+      "source": "vdxr",
+      "translation": "vdxr"
+    },
+    {
       "source": "version",
       "translation": "versão"
     },
@@ -166833,6 +167233,10 @@
       "translation": "деятельность"
     },
     {
+      "source": "ADJUSTMENT STEP",
+      "translation": "ЭТАП РЕГУЛИРОВКИ"
+    },
+    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ВЫРАВНИТЬ ПРОИСХОЖДЕНИЕ САЙТА GUARDIAN"
     },
@@ -167501,10 +167905,6 @@
       "translation": "Настройте существующую общую карту. Его фон, выравнивание, основные точки и метки групп копируются в этот черновик."
     },
     {
-      "source": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-      "translation": "Режим настройки активен. При сохранении создается проверенная резервная копия plotters.json."
-    },
-    {
       "source": "Advanced setups with an OpenVR-compatible compositor",
       "translation": "Расширенные настройки с помощью OpenVR-совместимого композитора"
     },
@@ -167727,10 +168127,6 @@
     {
       "source": "Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup.",
       "translation": "Alt+Ctrl+O переключает это окно захвата. Его включенное состояние восстанавливается при запуске."
-    },
-    {
-      "source": "Alt+V opens this editor",
-      "translation": "Alt+V открывает этот редактор"
     },
     {
       "source": "Altitude",
@@ -170977,16 +171373,12 @@
       "translation": "Изменить критерии"
     },
     {
-      "source": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-      "translation": "Изменяйте масштаб, положение, наклон, рысканье и крен, проверяя предварительный просмотр в реальном времени на гарнитуре."
+      "source": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+      "translation": "Изменяйте масштаб, положение, наклон, поворот и вращение в настольном редакторе или на панели калибровки гарнитуры. Нормальные шаги — 5 см и 1 градус; выберите «Точный» или «Грубый», используйте колесо мыши или удерживайте Shift/Ctrl для временного изменения точности."
     },
     {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Изменяет только отображаемую полную статистику FSS. Это не влияет на завершение поиска по боксу, следующие цели, количество тел или значения."
-    },
-    {
-      "source": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-      "translation": "Предварительный просмотр изменений в реальном времени в подключенном сеансе VR. Сохранение является атомарным и сохраняет расположение рабочего стола, а также неизвестные наложения."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -171305,6 +171697,10 @@
       "translation": "Выберите монитор и размер для игровых наложений."
     },
     {
+      "source": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+      "translation": "Выберите панель и режим «По умолчанию» или текущий режим автомобиля/игры. На выбранной панели отображаются примеры данных, даже если игровой процесс скрывает их."
+    },
+    {
       "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
       "translation": "Выберите планируемый сайт Raven для создания ссылки. Только системный архитектор может начать сборку без плана."
     },
@@ -171515,10 +171911,6 @@
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
       "translation": "Выберите дисплей или монитор Elite Dangerous, затем нажмите «Поделиться». Если средство выбора открывается в списке окон, переключитесь на его отображение или вкладку экрана."
-    },
-    {
-      "source": "Choose the live panel and Default or the current vehicle/game mode.",
-      "translation": "Выберите живую панель и режим «По умолчанию» или текущий режим автомобиля/игры."
     },
     {
       "source": "Choose the local flora image folder",
@@ -171753,6 +172145,10 @@
       "translation": "Закрыть"
     },
     {
+      "source": "Close / discard unsaved",
+      "translation": "Закрыть/отменить несохраненное"
+    },
+    {
       "source": "Close Elite Dangerous before swapping or restoring this file.",
       "translation": "Закройте Elite Dangerous перед заменой или восстановлением этого файла."
     },
@@ -171807,6 +172203,10 @@
     {
       "source": "Cmdr: {0} - {1}",
       "translation": "Командир: {0} - {1}"
+    },
+    {
+      "source": "Coarse",
+      "translation": "Грубый"
     },
     {
       "source": "Cobalt",
@@ -172909,6 +173309,10 @@
       "translation": "Подключите гарнитуру и выполните обычную настройку в комнате SteamVR или сидя."
     },
     {
+      "source": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+      "translation": "Подключите гарнитуру и дождитесь отслеживаемого положения головы, прежде чем размещать эту панель. VDXR требует соответствующего слоя OpenXR."
+    },
+    {
       "source": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
       "translation": "Подключите гарнитуру с помощью Meta Horizon Link через USB или Air Link и войдите в PC VR."
     },
@@ -173031,6 +173435,10 @@
     {
       "source": "Controller input",
       "translation": "Вход контроллера"
+    },
+    {
+      "source": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+      "translation": "На входе контроллера имеется конфликтующее вложение действия OpenXR (ошибка -47). Отключите вход контроллера Experimental EDVR и перезапустите Elite. Наложение рендеринга остается доступным."
     },
     {
       "source": "Controller input is active: {0}.",
@@ -174389,10 +174797,6 @@
       "translation": "Настольная клавиатура"
     },
     {
-      "source": "Desktop overlay placement and VR calibration are stored independently.",
-      "translation": "Расположение наложения на рабочем столе и калибровка VR сохраняются независимо."
-    },
-    {
       "source": "Desktop placement and focus",
       "translation": "Размещение рабочего стола и фокус"
     },
@@ -175577,6 +175981,10 @@
       "translation": "ЭдсмКард"
     },
     {
+      "source": "EdvrControllerInput",
+      "translation": "Эдврконтроллеринпут"
+    },
+    {
       "source": "Efficiency (%)",
       "translation": "Эффективность (%)"
     },
@@ -176319,6 +176727,18 @@
     {
       "source": "Expedition history, statistics, and reports",
       "translation": "История экспедиций, статистика и отчеты"
+    },
+    {
+      "source": "Experimental EDVR controller input",
+      "translation": "Экспериментальный вход контроллера EDVR"
+    },
+    {
+      "source": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+      "translation": "Вход экспериментального контроллера EDVR отключен. Перезапустите Elite после изменения источника входного сигнала, прежде чем снова включить взаимодействие с контроллером."
+    },
+    {
+      "source": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "Включено экспериментальное взаимодействие с контроллером EDVR. Наведите курсор на панель и нажмите триггер."
     },
     {
       "source": "Experimental rig bar detection",
@@ -177201,6 +177621,10 @@
       "translation": "Находки"
     },
     {
+      "source": "Fine",
+      "translation": "Отлично"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "Точная настройка маркера командира после его выбора на карте."
     },
@@ -177551,6 +177975,14 @@
     {
       "source": "FootZoom",
       "translation": "ФутЗум"
+    },
+    {
+      "source": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+      "translation": "Только для ЭДВР. Давайте SrvSurvey прочитаем контроллеры Quest без поддержки игрового ввода. Перезапустите Elite после изменения этого параметра, затем используйте взаимодействие «Переключить наложение VR», чтобы включить указатель. Отключите его для интеграции с другими играми."
+    },
+    {
+      "source": "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+      "translation": "Для EDVR включите вход экспериментального контроллера EDVR в разделе «Тема» > «Настройка наложения» > «VR», установите соответствующий слой OpenXR и перезапустите Elite. По умолчанию эта опция отключена и доступна только для распознанных сеансов EDVR. Отключите его и перезапустите Elite, если конфликтует другой входной слой; совместимость контроллера все еще находится на стадии эксперимента."
     },
     {
       "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -180089,16 +180521,16 @@
       "translation": "В Leamae UK-D d13-890 Leamae — это сектор, UK-D d13 идентифицирует бокс, а 890 — это системный номер в этой последовательности."
     },
     {
-      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-      "translation": "В меню «Настройки» > «Глобальные наложения» назначьте «Переключить взаимодействие с наложением VR» непосредственно под ярлыком взаимодействия с Live-overlay. Глобальный ввод с клавиатуры также должен быть включен."
-    },
-    {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
       "translation": "В разделе «Настройки» > «Ввод» включите сочетания клавиш и выберите «Настройки ярлыков на рабочем столе», если вы хотите утвердить или настроить привязки портала. При запуске это меню не открывается автоматически."
     },
     {
       "source": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
       "translation": "В настройках наложения Surface Mining включите «Автоматически отслеживать буровые установки из Rhino HUD». Установите цвет панели развертывания, если мод HUD меняет обычный ярко-зеленый цвет."
+    },
+    {
+      "source": "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+      "translation": "В разделе «Тема» > «Настройка наложения» > «VR» назначьте «Переключить взаимодействие наложения VR». Он также доступен в «Настройки» > «Ввод». Глобальный ввод с клавиатуры должен быть включен."
     },
     {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
@@ -184005,12 +184437,20 @@
       "translation": "Следующий прыжок"
     },
     {
+      "source": "Next mode",
+      "translation": "Следующий режим"
+    },
+    {
       "source": "Next or active direction",
       "translation": "Следующее или активное направление"
     },
     {
       "source": "Next page",
       "translation": "Следующая страница"
+    },
+    {
+      "source": "Next panel",
+      "translation": "Следующая панель"
     },
     {
       "source": "Next site",
@@ -184945,6 +185385,10 @@
       "translation": "Ничего не нанесено на график"
     },
     {
+      "source": "Normal",
+      "translation": "Нормальный"
+    },
+    {
       "source": "Normal Supercharge",
       "translation": "Обычный суперзаряд"
     },
@@ -185325,10 +185769,6 @@
       "translation": "Удалить можно только необработанные точки, относящиеся к командиру."
     },
     {
-      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-      "translation": "Могут быть активированы только элементы управления, уже отображенные в реальном наложении SrvSurvey. Калибровка VR по-прежнему использует наложения настройки и специальный ярлык."
-    },
-    {
       "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
       "translation": "Только типы событий, запрошенные EDAstro, в этом раскрытом списке: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic и CodexEntry. Новые запрошенные типы, которые не поддерживаются этой версией, перечислены в журнале приложения и не загружаются."
     },
@@ -185513,10 +185953,6 @@
       "translation": "Откройте «Настройки» > «Приложение». Включите захват экрана Wayland и включите только отдельные трекеры, которые вы хотите протестировать; все запуски отключены."
     },
     {
-      "source": "Open Settings > Global overlays and find VR overlays.",
-      "translation": "Откройте «Настройки» > «Глобальные наложения» и найдите наложения VR."
-    },
-    {
       "source": "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
       "translation": "Откройте «Настройки» > «Конфиденциальность и обмен» > «Настроить общий доступ к EDAstro», чтобы просмотреть и включить дополнительные записи в журнале."
     },
@@ -185559,6 +185995,10 @@
     {
       "source": "Open Theme > Overlay setup > Edit Overlay Positions.",
       "translation": "Откройте «Тема» > «Настройка наложения» > «Редактировать позиции наложения»."
+    },
+    {
+      "source": "Open Theme > Overlay setup > VR.",
+      "translation": "Откройте «Тема» > «Настройка наложения» > «VR»."
     },
     {
       "source": "Open Theme > Overlay setup and toggle Bypass Window Management.",
@@ -185753,8 +186193,8 @@
       "translation": "Открыть этот дочерний ящик"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
-      "translation": "OpenComposite не является совместимым решением для автономных наложений OpenVR. Возможно, он уже является частью вашей установки Elite-to-VDXR; слой SrvSurvey OpenXR добавляет панели и входные данные контроллера Quest в рамках этого игрового сеанса."
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
+      "translation": "OpenComposite не является совместимым решением для автономных наложений OpenVR. Существующая установка Elite OpenXR может использовать EDVR или OpenComposite. Рендеринг EDVR был подтвержден в Quest 3 с помощью VDXR в выпуске № 264; OpenComposite не требуется. Экспериментальный вход контроллера EDVR обеспечивает собственные действия, управляемые кадрами, если он включен; Совместимость с реальным контроллером гарнитуры все еще требует обратной связи."
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -186597,10 +187037,6 @@
       "translation": "ПИН-код"
     },
     {
-      "source": "PITCH / YAW / ROLL",
-      "translation": "ТЯГ / РЫСКАНИЕ / Крен"
-    },
-    {
       "source": "PLANNED RAVEN SITE",
       "translation": "ПЛАНИРУЕМАЯ ПЛОЩАДКА ВОРОНА"
     },
@@ -186623,10 +187059,6 @@
     {
       "source": "POI choice",
       "translation": "Выбор POI"
-    },
-    {
-      "source": "POSITION X / Y / Z",
-      "translation": "ПОЛОЖЕНИЕ X/Y/Z"
     },
     {
       "source": "POW",
@@ -186929,6 +187361,22 @@
       "translation": "Пиратская атака"
     },
     {
+      "source": "Pitch (degrees)",
+      "translation": "Шаг (градусы)"
+    },
+    {
+      "source": "Place in front of me",
+      "translation": "Поместите передо мной"
+    },
+    {
+      "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+      "translation": "«Место передо мной» перемещает только выбранную панель на уровень глаз, на один метр вдоль вашего текущего курса. Сохранение калибровки сохраняет эту цель и режим; Закрытие/отмена несохраненных значений восстанавливает сохраненные значения. Сбросить выбранное восстанавливает маршрут по умолчанию (или расположение по умолчанию для переопределения транспортного средства) и сохраняет его."
+    },
+    {
+      "source": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+      "translation": "Разместите выбранную панель на расстоянии одного метра перед собой. Сохраните, чтобы сохранить это место."
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "Запланируйте поездку на добычу полезных ископаемых"
     },
@@ -187039,6 +187487,10 @@
     {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Пожалуйста, подождите {0} секунд, прежде чем снова обновить Frontier секунд."
+    },
+    {
+      "source": "PlotAdjustVR",
+      "translation": "ГрафикAdjustVR"
     },
     {
       "source": "PlotBioStatus",
@@ -187255,6 +187707,18 @@
     {
       "source": "Português (Brasil)",
       "translation": "Португальский (Бразилия)"
+    },
+    {
+      "source": "Position X (10 cm units)",
+      "translation": "Позиция X (блоки по 10 см)"
+    },
+    {
+      "source": "Position Y (10 cm units)",
+      "translation": "Позиция Y (размеры 10 см)"
+    },
+    {
+      "source": "Position Z (10 cm units)",
+      "translation": "Позиция Z (размеры 10 см)"
     },
     {
       "source": "Position editor cleanup failed",
@@ -187653,8 +188117,16 @@
       "translation": "Предыдущая резервная копия макета: {0}"
     },
     {
+      "source": "Previous mode",
+      "translation": "Предыдущий режим"
+    },
+    {
       "source": "Previous page",
       "translation": "Предыдущая страница"
+    },
+    {
+      "source": "Previous panel",
+      "translation": "Предыдущая панель"
     },
     {
       "source": "Previous settings backup: {0}",
@@ -190957,6 +191429,10 @@
       "translation": "Рокки | 268 661 CR/т"
     },
     {
+      "source": "Roll (degrees)",
+      "translation": "Крен (градусы)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Резервная копия для отката: {0}"
     },
@@ -191621,6 +192097,10 @@
       "translation": "Образец 1 из 3 записан"
     },
     {
+      "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+      "translation": "Предварительный просмотр образца активен. Используйте ярлык взаимодействия с контроллером для управления элементами управления гарнитуры. Сохранить сохраняет выбранную панель и режим."
+    },
+    {
       "source": "Sample {0}",
       "translation": "Пример {0}"
     },
@@ -191719,10 +192199,6 @@
     {
       "source": "Save calibration",
       "translation": "Сохранить калибровку"
-    },
-    {
-      "source": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-      "translation": "Сохраните калибровку, чтобы проверить запись и сохранить резервную копию. Отмена восстанавливает сохраненные значения; Сбросить выбранное восстанавливает отправленное место размещения для этой цели."
     },
     {
       "source": "Save change",
@@ -195277,8 +195753,8 @@
       "translation": "Для маршрутов SteamVR требуется готовая гарнитура SteamVR. Маршрут VDXR ожидает живого сеанса Elite VDXR. Установите соответствующий слой SrvSurvey OpenXR для взаимодействия контроллера и указателя Quest."
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "Маршруты SteamVR используют оверлейный сервер OpenVR. Маршрут VDXR использует слой SrvSurvey OpenXR в Windows x64 с Direct3D 11; Ожидается проверка гарнитуры."
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+      "translation": "Маршруты SteamVR используют оверлейный сервер OpenVR. Маршрут VDXR использует слой SrvSurvey OpenXR в Windows x64 с Direct3D 11. Тест сообщества Quest 3 подтвердил рендеринг с EDVR; Взаимодействие контроллера при этой настройке остается непроверенным."
     },
     {
       "source": "SteamVR/OpenVR",
@@ -195761,8 +196237,8 @@
       "translation": "Обмен завершен. Перезапустите Elite Dangerous, когда будете готовы. Исходная резервная копия: {0}"
     },
     {
-      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
-      "translation": "Переключение SteamVR между пассивным переходом по клику и взаимодействием контроллера-указателя."
+      "source": "Switch VR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "Переключайте наложения VR между пассивным переходом по клику и взаимодействием контроллера и указателя."
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -197549,6 +198025,10 @@
       "translation": "Защищенное обновление не запускалось: {0} Активная установка и профиль игрока не менялись."
     },
     {
+      "source": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+      "translation": "Панель калибровки гарнитуры использует те же элементы управления целью, размером шага, размещением, сохранением и закрытием, что и редактор рабочего стола. Если вход контроллера недоступен, отразите окно SrvSurvey в VR (например, с помощью захвата окна OpenKneeboard) и используйте мышь."
+    },
+    {
       "source": "The headset pose is not currently valid.",
       "translation": "Поза гарнитуры в настоящее время недействительна."
     },
@@ -198479,6 +198959,10 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "Выбранный маркер не удалось сохранить:"
+    },
+    {
+      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+      "translation": "На выбранной панели отображаются образцы данных. Обычные шаги: 5 см и 1°. Выберите «Точный» или «Грубый» в гарнитуре или удерживайте Shift для точного или Ctrl для грубого. Прокрутите число, чтобы настроить его."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -200861,6 +201345,10 @@
       "translation": "VDXR взаимодействие с контроллером включено. Наведите курсор на панель и нажмите триггер."
     },
     {
+      "source": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+      "translation": "VDXR имеет фиксированные настройки по умолчанию и отдельные сохраненные места размещения. Существующие пользовательские калибровки сохраняются в качестве отправной точки; При выборе сброса применяется заводское расположение. SteamVR и размещение на рабочем столе сохраняются."
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR: зарегистрируйте слой OpenXR из пакета Windows x64, затем перезапустите Elite. Требуется Direct3D 11."
     },
@@ -200927,6 +201415,10 @@
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
       "translation": "Настройка наложения VR фиксирует и сбрасывает ориентацию с помощью специальных действий; о возможностях и статусе сообщается, когда среда выполнения недоступна."
+    },
+    {
+      "source": "VR overlay calibration",
+      "translation": "Калибровка наложения VR"
     },
     {
       "source": "VR overlay controller interaction disabled",
@@ -201841,8 +202333,8 @@
       "translation": "Окна"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Маршрут Windows Direct3D 11 без SteamVR. Поддерживает панели и взаимодействие контроллера и указателя Quest; требуется уровень SrvSurvey OpenXR и установка Elite, которая уже работает через VDXR. Ожидается проверка гарнитуры."
+      "source": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
+      "translation": "Маршрут Windows Direct3D 11 без SteamVR. Рендеринг Quest 3 подтвержден сообществом с помощью EDVR (#264). Требуется уровень SrvSurvey OpenXR и элитная установка, которая уже работает через VDXR. Вход контроллера EDVR имеет экспериментальную опцию ниже; совместимость контроллера все еще требует тестирования гарнитуры."
     },
     {
       "source": "Windows Mixed Reality",
@@ -201925,8 +202417,8 @@
       "translation": "Крылья"
     },
     {
-      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-      "translation": "При подключенных наложениях VR используйте этот ярлык один раз, чтобы позволить SteamVR отправлять щелчки лазерной указки контроллера и прокручивать панели SrvSurvey."
+      "source": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
+      "translation": "При подключенных наложениях VR используйте этот ярлык один раз, чтобы активировать щелчки указателя контроллера и прокрутку выбранного маршрута, включая панель калибровки."
     },
     {
       "source": "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
@@ -202039,6 +202531,10 @@
     {
       "source": "YES",
       "translation": "да"
+    },
+    {
+      "source": "Yaw (degrees)",
+      "translation": "Отклонение от курса (градусы)"
     },
     {
       "source": "Years",
@@ -205573,6 +206069,10 @@
       "translation": "ценность"
     },
     {
+      "source": "vdxr",
+      "translation": "vdxr"
+    },
+    {
       "source": "version",
       "translation": "версия"
     },
@@ -208251,6 +208751,10 @@
       "translation": "活动"
     },
     {
+      "source": "ADJUSTMENT STEP",
+      "translation": "调整步骤"
+    },
+    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "对齐监护人网站来源"
     },
@@ -208919,10 +209423,6 @@
       "translation": "调整现有的共享地图。其背景、对齐方式、主点和组标签将复制到此草稿中。"
     },
     {
-      "source": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-      "translation": "调整模式已激活。保存创建经过验证的 plotters.json 备份。"
-    },
-    {
       "source": "Advanced setups with an OpenVR-compatible compositor",
       "translation": "使用兼容 OpenVR 的合成器进行高级设置"
     },
@@ -209145,10 +209645,6 @@
     {
       "source": "Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup.",
       "translation": "Alt+Ctrl+O 切换此捕获窗口。其启用状态在启动时恢复。"
-    },
-    {
-      "source": "Alt+V opens this editor",
-      "translation": "Alt+V 打开此编辑器"
     },
     {
       "source": "Altitude",
@@ -212395,16 +212891,12 @@
       "translation": "变更标准"
     },
     {
-      "source": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-      "translation": "在检查耳机中的实时预览时更改比例、位置、俯仰、偏航和滚动。"
+      "source": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+      "translation": "在桌面编辑器或耳机校准面板中更改比例、位置、俯仰、偏航和滚动。正常步长为 5 厘米和 1 度；选择“精细”或“粗略”，使用鼠标滚轮或按住 Shift / Ctrl 进行临时精度更改。"
     },
     {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "仅更改显示的 FSS 完整统计数据。它不会影响框搜索完成、下一个目标、主体计数或值。"
-    },
-    {
-      "source": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-      "translation": "在连接的 VR 会话中实时更改预览。保存是原子性的，保留桌面位置以及未知的覆盖层。"
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -212723,6 +213215,10 @@
       "translation": "选择游戏叠加层的显示器和尺寸。"
     },
     {
+      "source": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+      "translation": "选择一个面板和默认或当前车辆/游戏模式。即使游戏玩法会隐藏样本数据，所选面板也会显示样本数据。"
+    },
+    {
       "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
       "translation": "选择要链接的计划 Raven 站点。只有系统架构师才能在没有计划的情况下开始构建。"
     },
@@ -212933,10 +213429,6 @@
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
       "translation": "选择显示 Elite Dangerous 的显示器或监视器，然后单击共享。如果选取器在窗口列表中打开，请切换到其显示或屏幕选项卡。"
-    },
-    {
-      "source": "Choose the live panel and Default or the current vehicle/game mode.",
-      "translation": "选择实时面板和默认或当前车辆/游戏模式。"
     },
     {
       "source": "Choose the local flora image folder",
@@ -213171,6 +213663,10 @@
       "translation": "关闭"
     },
     {
+      "source": "Close / discard unsaved",
+      "translation": "关闭/放弃未保存的"
+    },
+    {
       "source": "Close Elite Dangerous before swapping or restoring this file.",
       "translation": "在交换或恢复此文件之前关闭 Elite Dangerous。"
     },
@@ -213225,6 +213721,10 @@
     {
       "source": "Cmdr: {0} - {1}",
       "translation": "指挥：{0} - {1}"
+    },
+    {
+      "source": "Coarse",
+      "translation": "粗"
     },
     {
       "source": "Cobalt",
@@ -214327,6 +214827,10 @@
       "translation": "连接耳机并完成正常的 SteamVR 房间或座位设置。"
     },
     {
+      "source": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+      "translation": "连接耳机并等待跟踪的头部姿势，然后再放置此面板。 VDXR 需要匹配的OpenXR 层。"
+    },
+    {
       "source": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
       "translation": "通过 USB 将耳机连接到 Meta Horizo​​n Link 或 Air Link 并进入 PC VR。"
     },
@@ -214449,6 +214953,10 @@
     {
       "source": "Controller input",
       "translation": "控制器输入"
+    },
+    {
+      "source": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+      "translation": "控制器输入具有冲突的 OpenXR 操作附件（错误 -47）。关闭实验 EDVR 控制器输入并重新启动 Elite。叠加渲染仍然可用。"
     },
     {
       "source": "Controller input is active: {0}.",
@@ -215807,10 +216315,6 @@
       "translation": "桌面键盘"
     },
     {
-      "source": "Desktop overlay placement and VR calibration are stored independently.",
-      "translation": "桌面叠加放置和 VR 校准是独立存储的。"
-    },
-    {
       "source": "Desktop placement and focus",
       "translation": "桌面放置和焦点"
     },
@@ -216995,6 +217499,10 @@
       "translation": "教育卡"
     },
     {
+      "source": "EdvrControllerInput",
+      "translation": "Edvr控制器输入"
+    },
+    {
       "source": "Efficiency (%)",
       "translation": "效率 （％）"
     },
@@ -217737,6 +218245,18 @@
     {
       "source": "Expedition history, statistics, and reports",
       "translation": "探险历史、统计数据和报告"
+    },
+    {
+      "source": "Experimental EDVR controller input",
+      "translation": "实验 EDVR 控制器输入"
+    },
+    {
+      "source": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+      "translation": "实验 EDVR 控制器输入关闭。更改输入源后重新启动 Elite，然后再次启用控制器交互。"
+    },
+    {
+      "source": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "实验性 EDVR 控制器交互已启用。指向面板并使用触发器单击。"
     },
     {
       "source": "Experimental rig bar detection",
@@ -218619,6 +219139,10 @@
       "translation": "发现"
     },
     {
+      "source": "Fine",
+      "translation": "美好的"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "在地图上选择指挥官特定标记后对其进行微调。"
     },
@@ -218969,6 +219493,14 @@
     {
       "source": "FootZoom",
       "translation": "足部变焦"
+    },
+    {
+      "source": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+      "translation": "仅适用于 EDVR。让 SrvSurvey 在没有游戏输入支持的情况下读取 Quest 控制器。更改此选项后重新启动 Elite，然后使用切换 VR 叠加交互来启用指针。对于其他游戏集成，请将其关闭。"
+    },
+    {
+      "source": "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+      "translation": "对于 EDVR，在主题 > 叠加设置 > VR 中启用实验 EDVR 控制器输入，安装匹配的 OpenXR 层，然后重新启动 Elite。该选项默认关闭，并且仅限于已识别的 EDVR 会话。如果另一个输入层冲突，则禁用它并重新启动 Elite；控制器兼容性仍处于实验阶段。"
     },
     {
       "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -221507,16 +222039,16 @@
       "translation": "在 Leamae UK-D d13-890 中，Leamae 是扇区，UK-D d13 标识 boxel，890 是该序列中的系统编号。"
     },
     {
-      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-      "translation": "在“设置”>“全局叠加”中，直接在“实时叠加交互”快捷方式下方分配“切换 VR 叠加交互”。还必须启用全局键盘输入。"
-    },
-    {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
       "translation": "当您想要批准或配置门户绑定时，在“设置”>“输入”中，启用键和弦并选择桌面快捷方式设置。启动时不会自动打开此菜单。"
     },
     {
       "source": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
       "translation": "在地表采矿覆盖设置中，启用从 Rhino HUD 自动跟踪钻机。如果 HUD mod 更改了通常的亮绿色，请设置部署栏颜色。"
+    },
+    {
+      "source": "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+      "translation": "在主题 > 叠加设置 > VR 中，指定切换 VR 叠加交互。也可在“设置”>“输入”中使用。必须启用全局键盘输入。"
     },
     {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
@@ -225423,12 +225955,20 @@
       "translation": "下一跳"
     },
     {
+      "source": "Next mode",
+      "translation": "下一个模式"
+    },
+    {
       "source": "Next or active direction",
       "translation": "下一个或活动方向"
     },
     {
       "source": "Next page",
       "translation": "下一页"
+    },
+    {
+      "source": "Next panel",
+      "translation": "下一个面板"
     },
     {
       "source": "Next site",
@@ -226363,6 +226903,10 @@
       "translation": "未绘制"
     },
     {
+      "source": "Normal",
+      "translation": "普通的"
+    },
+    {
       "source": "Normal Supercharge",
       "translation": "正常增压"
     },
@@ -226743,10 +227287,6 @@
       "translation": "只能删除指挥官特定的原始点。"
     },
     {
-      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-      "translation": "仅可激活实时 SrvSurvey 叠加层已显示的控件。 VR 校准仍然使用调整叠加及其专用快捷方式。"
-    },
-    {
       "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
       "translation": "此公开列表中仅 EDAstro 请求的事件类型：CarrierStats、CarrierJumpRequest、Docked、ScanOrganic 和 CodexEntry。该版本不支持的新请求类型会在应用程序日志中列出，并且不会上传。"
     },
@@ -226931,10 +227471,6 @@
       "translation": "打开设置 > 应用程序。启用 Wayland 屏幕捕获并仅启用您想要测试的单个跟踪器；全部启动禁用。"
     },
     {
-      "source": "Open Settings > Global overlays and find VR overlays.",
-      "translation": "打开“设置”>“全局叠加层”并找到“VR 叠加层”。"
-    },
-    {
       "source": "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
       "translation": "打开设置 > 隐私和共享 > 配置 EDAstro 共享以查看并启用可选的期刊贡献。"
     },
@@ -226977,6 +227513,10 @@
     {
       "source": "Open Theme > Overlay setup > Edit Overlay Positions.",
       "translation": "打开主题 > 叠加设置 > 编辑叠加位置。"
+    },
+    {
+      "source": "Open Theme > Overlay setup > VR.",
+      "translation": "打开主题 > 叠加设置 > VR。"
     },
     {
       "source": "Open Theme > Overlay setup and toggle Bypass Window Management.",
@@ -227171,8 +227711,8 @@
       "translation": "打开这个子盒子"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
-      "translation": "OpenComposite 不是独立 OpenVR 覆盖的兼容解决方法。它可能已经是您的 Elite-to-VDXR 设置的一部分； SrvSurvey OpenXR 层在该游戏会话中添加面板和任务控制器输入。"
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
+      "translation": "OpenComposite 不是独立 OpenVR 覆盖的兼容解决方法。现有的 Elite OpenXR 设置可以使用 EDVR 或 OpenComposite。 EDVR 渲染在第 264 期的 Quest 3 上得到了确认VDXR； OpenComposite 不是必需的。实验性 EDVR 控制器输入在选择时提供其自己的帧驱动操作；真实耳机控制器的兼容性仍需要反馈。"
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -228015,10 +228555,6 @@
       "translation": "密码"
     },
     {
-      "source": "PITCH / YAW / ROLL",
-      "translation": "俯仰/偏航/横滚"
-    },
-    {
       "source": "PLANNED RAVEN SITE",
       "translation": "计划中的乌鸦地点"
     },
@@ -228041,10 +228577,6 @@
     {
       "source": "POI choice",
       "translation": "兴趣点选择"
-    },
-    {
-      "source": "POSITION X / Y / Z",
-      "translation": "位置 X/Y/Z"
     },
     {
       "source": "POW",
@@ -228347,6 +228879,22 @@
       "translation": "海盗袭击"
     },
     {
+      "source": "Pitch (degrees)",
+      "translation": "螺距（度）"
+    },
+    {
+      "source": "Place in front of me",
+      "translation": "放在我面前"
+    },
+    {
+      "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+      "translation": "在我面前的位置仅将选定的面板移动到视线水平，沿当前航向一米。保存校准保留该目标和模式；关闭/丢弃未保存的内容可恢复保存的值。选择“重置”可恢复默认路线（或车辆覆盖的默认位置）并保存。"
+    },
+    {
+      "source": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+      "translation": "将选定的面板放置在您面前一米处。保存以保留此展示位置。"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "计划一次采矿之旅"
     },
@@ -228457,6 +229005,10 @@
     {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "请等待 {0} 秒，然后再次刷新 Frontier。"
+    },
+    {
+      "source": "PlotAdjustVR",
+      "translation": "情节调整VR"
     },
     {
       "source": "PlotBioStatus",
@@ -228673,6 +229225,18 @@
     {
       "source": "Português (Brasil)",
       "translation": "葡萄牙语（巴西）"
+    },
+    {
+      "source": "Position X (10 cm units)",
+      "translation": "位置 X（10 厘米单位）"
+    },
+    {
+      "source": "Position Y (10 cm units)",
+      "translation": "位置 Y（10 厘米单位）"
+    },
+    {
+      "source": "Position Z (10 cm units)",
+      "translation": "位置 Z（10 厘米单位）"
     },
     {
       "source": "Position editor cleanup failed",
@@ -229071,8 +229635,16 @@
       "translation": "先前的布局备份：{0}"
     },
     {
+      "source": "Previous mode",
+      "translation": "以前的模式"
+    },
+    {
       "source": "Previous page",
       "translation": "上一页"
+    },
+    {
+      "source": "Previous panel",
+      "translation": "上一个面板"
     },
     {
       "source": "Previous settings backup: {0}",
@@ -232375,6 +232947,10 @@
       "translation": "洛基 | 268,661 冷轧/吨"
     },
     {
+      "source": "Roll (degrees)",
+      "translation": "滚动（度）"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "回滚备份：{0}"
     },
@@ -233039,6 +233615,10 @@
       "translation": "记录了 3 个样本中的第 1 个"
     },
     {
+      "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+      "translation": "示例预览处于活动状态。使用控制器交互快捷方式操作耳机控件。保存保留选定的面板和模式。"
+    },
+    {
       "source": "Sample {0}",
       "translation": "示例 {0}"
     },
@@ -233137,10 +233717,6 @@
     {
       "source": "Save calibration",
       "translation": "保存校准"
-    },
-    {
-      "source": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-      "translation": "保存校准以验证写入并保存备份。取消恢复保存的值；重置所选内容可恢复该目标的已发货展示位置。"
     },
     {
       "source": "Save change",
@@ -236695,8 +237271,8 @@
       "translation": "SteamVR 路线需要准备好的 SteamVR 耳机。 VDXR 路线等待实时精英 VDXR 会话。安装匹配的 SrvSurvey OpenXR 层以进行 Quest 控制器指针交互。"
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "SteamVR 路由使用 OpenVR 覆盖后端。 VDXR 路线在具有 Direct3D 11 的 Windows x64 上使用 SrvSurvey OpenXR 层；耳机验证正在等待中。"
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+      "translation": "SteamVR 路由使用 OpenVR 覆盖后端。 VDXR 路线在 Windows x64 上使用 Direct3D 11 的 SrvSurvey OpenXR 层。社区 Quest 3 测试确认使用 EDVR 进行渲染；该设置上的控制器交互仍未得到验证。"
     },
     {
       "source": "SteamVR/OpenVR",
@@ -237179,8 +237755,8 @@
       "translation": "交换完成。准备好后重新启动 Elite Dangerous。原始备份：{0}"
     },
     {
-      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
-      "translation": "开关 SteamVR 在被动点击和控制器指针交互之间叠加。"
+      "source": "Switch VR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "在被动点击和控制器指针交互之间切换 VR 叠加。"
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -238967,6 +239543,10 @@
       "translation": "未启动受保护的更新：{0} 活动安装和玩家配置文件未更改。"
     },
     {
+      "source": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+      "translation": "耳机校准面板使用与桌面编辑器相同的目标、步长、放置、保存和关闭控件。如果控制器输入不可用，请将 SrvSurvey 窗口镜像到 VR（例如使用 OpenKneeboard 窗口捕获）并使用鼠标。"
+    },
+    {
       "source": "The headset pose is not currently valid.",
       "translation": "耳机姿势当前无效。"
     },
@@ -239897,6 +240477,10 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "无法保存所选标记："
+    },
+    {
+      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+      "translation": "所选面板显示示例数据。正常步长：5 厘米和 1°。在耳机中选择“精细”或“粗略”，或按住 Shift 进行精细/按住 Ctrl 进行粗调。滚动数字进行调整。"
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -242279,6 +242863,10 @@
       "translation": "VDXR 控制器交互已启用。指向面板并使用触发器单击。"
     },
     {
+      "source": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+      "translation": "VDXR 具有默认座位和单独保存的位置。保留现有的自定义校准作为起点；选定的重置将应用固定的工厂放置。 SteamVR 和桌面放置将被保留。"
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "VDXR：从 Windows x64 包注册 OpenXR 层，然后重新启动 Elite。需要 Direct3D 11。"
     },
@@ -242345,6 +242933,10 @@
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
       "translation": "VR叠加调整通过专用动作捕捉和重置方向；当运行时不可用时，会报告功能和状态。"
+    },
+    {
+      "source": "VR overlay calibration",
+      "translation": "VR叠加校准"
     },
     {
       "source": "VR overlay controller interaction disabled",
@@ -243259,8 +243851,8 @@
       "translation": "视窗"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "Windows Direct3D 11 路线没有 SteamVR。支持面板和 Quest 控制器指针交互；需要 SrvSurvey OpenXR 层和已运行 VDXR 的 Elite 设置。耳机验证正在等待中。"
+      "source": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
+      "translation": "Windows Direct3D 11 路线没有 SteamVR。 Quest 3 渲染经过 EDVR 社区确认 (#264)。需要 SrvSurvey OpenXR 层和已运行的 Elite 设置 VDXR。 EDVR 控制器输入具有以下实验性选择加入；控制器兼容性仍需要耳机测试。"
     },
     {
       "source": "Windows Mixed Reality",
@@ -243343,8 +243935,8 @@
       "translation": "翅膀"
     },
     {
-      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-      "translation": "连接 VR 叠加层后，使用该快捷方式一次即可让 SteamVR 发送控制器激光指针点击并滚动到 SrvSurvey 面板。"
+      "source": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
+      "translation": "连接 VR 叠加层后，使用该快捷方式一次即可启用控制器指针单击并在选定的路线（包括校准面板）上滚动。"
     },
     {
       "source": "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
@@ -243457,6 +244049,10 @@
     {
       "source": "YES",
       "translation": "是的"
+    },
+    {
+      "source": "Yaw (degrees)",
+      "translation": "偏航（度）"
     },
     {
       "source": "Years",
@@ -246991,6 +247587,10 @@
       "translation": "价值"
     },
     {
+      "source": "vdxr",
+      "translation": "vdxr"
+    },
+    {
       "source": "version",
       "translation": "版本"
     },
@@ -249669,6 +250269,10 @@
       "translation": "* ACTIVITIES >>>!"
     },
     {
+      "source": "ADJUSTMENT STEP",
+      "translation": "* ADJUSTMENT STEP >>>!"
+    },
+    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "* ALIGN GUARDIAN SITE ORIGIN >>>!"
     },
@@ -250337,10 +250941,6 @@
       "translation": "* ADJUST THE EXISTING SHARED MAP. ITS BACKGROUND, ALIGNMENT, MASTER POINTS, AND GROUP LABELS ARE COPIED INTO THIS DRAFT. >>>!"
     },
     {
-      "source": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-      "translation": "* ADJUSTMENT MODE IS ACTIVE. SAVE CREATES A VERIFIED PLOTTERS.JSON BACKUP. >>>!"
-    },
-    {
       "source": "Advanced setups with an OpenVR-compatible compositor",
       "translation": "* ADVANCED SETUPS WITH AN OPENVR-COMPATIBLE COMPOSITOR >>>!"
     },
@@ -250563,10 +251163,6 @@
     {
       "source": "Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup.",
       "translation": "* ALT+CTRL+O TOGGLES THIS CAPTURE WINDOW. ITS ENABLED STATE IS RESTORED AT STARTUP. >>>!"
-    },
-    {
-      "source": "Alt+V opens this editor",
-      "translation": "* ALT+V OPENS THIS EDITOR >>>!"
     },
     {
       "source": "Altitude",
@@ -253813,16 +254409,12 @@
       "translation": "* CHANGE CRITERIA >>>!"
     },
     {
-      "source": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-      "translation": "* CHANGE SCALE, POSITION, PITCH, YAW, AND ROLL WHILE CHECKING THE LIVE PREVIEW IN THE HEADSET. >>>!"
+      "source": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+      "translation": "* CHANGE SCALE, POSITION, PITCH, YAW, AND ROLL IN THE DESKTOP EDITOR OR THE HEADSET CALIBRATION PANEL. NORMAL STEPS ARE 5 CM AND 1 DEGREE; CHOOSE FINE OR COARSE, USE THE MOUSE WHEEL, OR HOLD SHIFT / CTRL FOR TEMPORARY PRECISION CHANGES. >>>!"
     },
     {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "* CHANGES ONLY THE DISPLAYED FSS-COMPLETE STATISTIC. IT DOES NOT AFFECT BOXEL-SEARCH COMPLETION, NEXT TARGETS, BODY COUNTS, OR VALUES. >>>!"
-    },
-    {
-      "source": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-      "translation": "* CHANGES PREVIEW LIVE IN THE CONNECTED VR SESSION. SAVE IS ATOMIC AND PRESERVES DESKTOP PLACEMENT PLUS UNKNOWN OVERLAYS. >>>!"
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -254141,6 +254733,10 @@
       "translation": "* CHOOSE A MONITOR AND SIZE FOR GAME OVERLAYS. >>>!"
     },
     {
+      "source": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+      "translation": "* CHOOSE A PANEL AND DEFAULT OR THE CURRENT VEHICLE/GAME MODE. THE SELECTED PANEL SHOWS SAMPLE DATA EVEN WHEN GAMEPLAY WOULD HIDE IT. >>>!"
+    },
+    {
       "source": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
       "translation": "* CHOOSE A PLANNED RAVEN SITE TO LINK. ONLY THE SYSTEM ARCHITECT CAN START A BUILD WITHOUT A PLAN. >>>!"
     },
@@ -254351,10 +254947,6 @@
     {
       "source": "Choose the display or monitor showing Elite Dangerous, then click Share. If the picker opens on the window list, switch to its display or screen tab.",
       "translation": "* CHOOSE THE DISPLAY OR MONITOR SHOWING ELITE DANGEROUS, THEN CLICK SHARE. IF THE PICKER OPENS ON THE WINDOW LIST, SWITCH TO ITS DISPLAY OR SCREEN TAB. >>>!"
-    },
-    {
-      "source": "Choose the live panel and Default or the current vehicle/game mode.",
-      "translation": "* CHOOSE THE LIVE PANEL AND DEFAULT OR THE CURRENT VEHICLE/GAME MODE. >>>!"
     },
     {
       "source": "Choose the local flora image folder",
@@ -254589,6 +255181,10 @@
       "translation": "* CLOSE >>>!"
     },
     {
+      "source": "Close / discard unsaved",
+      "translation": "* CLOSE / DISCARD UNSAVED >>>!"
+    },
+    {
       "source": "Close Elite Dangerous before swapping or restoring this file.",
       "translation": "* CLOSE ELITE DANGEROUS BEFORE SWAPPING OR RESTORING THIS FILE. >>>!"
     },
@@ -254643,6 +255239,10 @@
     {
       "source": "Cmdr: {0} - {1}",
       "translation": "* CMDR: {0} - {1} >>>!"
+    },
+    {
+      "source": "Coarse",
+      "translation": "* COARSE >>>!"
     },
     {
       "source": "Cobalt",
@@ -255745,6 +256345,10 @@
       "translation": "* CONNECT THE HEADSET AND COMPLETE ITS NORMAL STEAMVR ROOM OR SEATED SETUP. >>>!"
     },
     {
+      "source": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+      "translation": "* CONNECT THE HEADSET AND WAIT FOR A TRACKED HEAD POSE BEFORE PLACING THIS PANEL. VDXR REQUIRES THE MATCHING OPENXR LAYER. >>>!"
+    },
+    {
       "source": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
       "translation": "* CONNECT THE HEADSET WITH META HORIZON LINK OVER USB OR AIR LINK AND ENTER PC VR. >>>!"
     },
@@ -255867,6 +256471,10 @@
     {
       "source": "Controller input",
       "translation": "* CONTROLLER INPUT >>>!"
+    },
+    {
+      "source": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+      "translation": "* CONTROLLER INPUT HAS A CONFLICTING OPENXR ACTION ATTACHMENT (ERROR -47). TURN OFF EXPERIMENTAL EDVR CONTROLLER INPUT AND RESTART ELITE. OVERLAY RENDERING REMAINS AVAILABLE. >>>!"
     },
     {
       "source": "Controller input is active: {0}.",
@@ -257225,10 +257833,6 @@
       "translation": "* DESKTOP KEYBOARD >>>!"
     },
     {
-      "source": "Desktop overlay placement and VR calibration are stored independently.",
-      "translation": "* DESKTOP OVERLAY PLACEMENT AND VR CALIBRATION ARE STORED INDEPENDENTLY. >>>!"
-    },
-    {
       "source": "Desktop placement and focus",
       "translation": "* DESKTOP PLACEMENT AND FOCUS >>>!"
     },
@@ -258413,6 +259017,10 @@
       "translation": "* EDSMCARD >>>!"
     },
     {
+      "source": "EdvrControllerInput",
+      "translation": "* EDVRCONTROLLERINPUT >>>!"
+    },
+    {
       "source": "Efficiency (%)",
       "translation": "* EFFICIENCY (%) >>>!"
     },
@@ -259155,6 +259763,18 @@
     {
       "source": "Expedition history, statistics, and reports",
       "translation": "* EXPEDITION HISTORY, STATISTICS, AND REPORTS >>>!"
+    },
+    {
+      "source": "Experimental EDVR controller input",
+      "translation": "* EXPERIMENTAL EDVR CONTROLLER INPUT >>>!"
+    },
+    {
+      "source": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+      "translation": "* EXPERIMENTAL EDVR CONTROLLER INPUT IS OFF. RESTART ELITE AFTER CHANGING THE INPUT SOURCE BEFORE ENABLING CONTROLLER INTERACTION AGAIN. >>>!"
+    },
+    {
+      "source": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "* EXPERIMENTAL EDVR CONTROLLER INTERACTION IS ENABLED. POINT AT A PANEL AND USE THE TRIGGER TO CLICK. >>>!"
     },
     {
       "source": "Experimental rig bar detection",
@@ -260037,6 +260657,10 @@
       "translation": "* FINDS >>>!"
     },
     {
+      "source": "Fine",
+      "translation": "* FINE >>>!"
+    },
+    {
       "source": "Fine-tune the commander-specific marker after selecting it on the map.",
       "translation": "* FINE-TUNE THE COMMANDER-SPECIFIC MARKER AFTER SELECTING IT ON THE MAP. >>>!"
     },
@@ -260387,6 +261011,14 @@
     {
       "source": "FootZoom",
       "translation": "* FOOTZOOM >>>!"
+    },
+    {
+      "source": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+      "translation": "* FOR EDVR ONLY. LETS SRVSURVEY READ QUEST CONTROLLERS WITHOUT GAME INPUT SUPPORT. RESTART ELITE AFTER CHANGING THIS OPTION, THEN USE TOGGLE VR OVERLAY INTERACTION TO ENABLE THE POINTER. KEEP IT OFF FOR OTHER GAME INTEGRATIONS. >>>!"
+    },
+    {
+      "source": "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+      "translation": "* FOR EDVR, ENABLE EXPERIMENTAL EDVR CONTROLLER INPUT IN THEME > OVERLAY SETUP > VR, INSTALL THE MATCHING OPENXR LAYER, AND RESTART ELITE. THE OPTION IS OFF BY DEFAULT AND IS RESTRICTED TO RECOGNIZED EDVR SESSIONS. DISABLE IT AND RESTART ELITE IF ANOTHER INPUT LAYER CONFLICTS; CONTROLLER COMPATIBILITY IS STILL EXPERIMENTAL. >>>!"
     },
     {
       "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -262925,16 +263557,16 @@
       "translation": "* IN LEAMAE UK-D D13-890, LEAMAE IS THE SECTOR, UK-D D13 IDENTIFIES THE BOXEL, AND 890 IS THE SYSTEM NUMBER WITHIN THAT SEQUENCE. >>>!"
     },
     {
-      "source": "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-      "translation": "* IN SETTINGS > GLOBAL OVERLAYS, ASSIGN TOGGLE VR OVERLAY INTERACTION DIRECTLY BELOW THE LIVE-OVERLAY INTERACTION SHORTCUT. GLOBAL KEYBOARD INPUT MUST ALSO BE ENABLED. >>>!"
-    },
-    {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
       "translation": "* IN SETTINGS > INPUT, ENABLE KEY CHORDS AND SELECT DESKTOP SHORTCUT SETTINGS WHEN YOU WANT TO APPROVE OR CONFIGURE PORTAL BINDINGS. STARTUP DOES NOT OPEN THIS MENU AUTOMATICALLY. >>>!"
     },
     {
       "source": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
       "translation": "* IN SURFACE MINING OVERLAY SETTINGS, ENABLE AUTOMATICALLY TRACK RIGS FROM THE RHINO HUD. SET DEPLOYMENT BAR COLOR IF A HUD MOD CHANGES THE USUAL BRIGHT GREEN. >>>!"
+    },
+    {
+      "source": "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+      "translation": "* IN THEME > OVERLAY SETUP > VR, ASSIGN TOGGLE VR OVERLAY INTERACTION. IT IS ALSO AVAILABLE IN SETTINGS > INPUT. GLOBAL KEYBOARD INPUT MUST BE ENABLED. >>>!"
     },
     {
       "source": "In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears.",
@@ -266841,12 +267473,20 @@
       "translation": "* NEXT JUMP >>>!"
     },
     {
+      "source": "Next mode",
+      "translation": "* NEXT MODE >>>!"
+    },
+    {
       "source": "Next or active direction",
       "translation": "* NEXT OR ACTIVE DIRECTION >>>!"
     },
     {
       "source": "Next page",
       "translation": "* NEXT PAGE >>>!"
+    },
+    {
+      "source": "Next panel",
+      "translation": "* NEXT PANEL >>>!"
     },
     {
       "source": "Next site",
@@ -267781,6 +268421,10 @@
       "translation": "* NONE PLOTTED >>>!"
     },
     {
+      "source": "Normal",
+      "translation": "* NORMAL >>>!"
+    },
+    {
       "source": "Normal Supercharge",
       "translation": "* NORMAL SUPERCHARGE >>>!"
     },
@@ -268161,10 +268805,6 @@
       "translation": "* ONLY COMMANDER-SPECIFIC RAW POINTS CAN BE REMOVED. >>>!"
     },
     {
-      "source": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-      "translation": "* ONLY CONTROLS ALREADY SHOWN BY A LIVE SRVSURVEY OVERLAY CAN BE ACTIVATED. VR CALIBRATION STILL USES ADJUST OVERLAYS AND ITS DEDICATED SHORTCUT. >>>!"
-    },
-    {
       "source": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
       "translation": "* ONLY EVENT TYPES REQUESTED BY EDASTRO WITHIN THIS DISCLOSED LIST: CARRIERSTATS, CARRIERJUMPREQUEST, DOCKED, SCANORGANIC, AND CODEXENTRY. NEWLY REQUESTED TYPES THAT THIS VERSION DOES NOT SUPPORT ARE LISTED IN THE APPLICATION LOG AND ARE NOT UPLOADED. >>>!"
     },
@@ -268349,10 +268989,6 @@
       "translation": "* OPEN SETTINGS > APPLICATION. ENABLE WAYLAND SCREEN CAPTURE AND ENABLE ONLY THE INDIVIDUAL TRACKERS YOU WANT TO TEST; ALL START DISABLED. >>>!"
     },
     {
-      "source": "Open Settings > Global overlays and find VR overlays.",
-      "translation": "* OPEN SETTINGS > GLOBAL OVERLAYS AND FIND VR OVERLAYS. >>>!"
-    },
-    {
       "source": "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
       "translation": "* OPEN SETTINGS > PRIVACY & SHARING > CONFIGURE EDASTRO SHARING TO REVIEW AND ENABLE OPTIONAL JOURNAL CONTRIBUTIONS. >>>!"
     },
@@ -268395,6 +269031,10 @@
     {
       "source": "Open Theme > Overlay setup > Edit Overlay Positions.",
       "translation": "* OPEN THEME > OVERLAY SETUP > EDIT OVERLAY POSITIONS. >>>!"
+    },
+    {
+      "source": "Open Theme > Overlay setup > VR.",
+      "translation": "* OPEN THEME > OVERLAY SETUP > VR. >>>!"
     },
     {
       "source": "Open Theme > Overlay setup and toggle Bypass Window Management.",
@@ -268589,8 +269229,8 @@
       "translation": "* OPEN THIS CHILD BOXEL >>>!"
     },
     {
-      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
-      "translation": "* OPENCOMPOSITE IS NOT A COMPATIBLE WORKAROUND FOR STANDALONE OPENVR OVERLAYS. IT MAY ALREADY BE PART OF YOUR ELITE-TO-VDXR SETUP; THE SRVSURVEY OPENXR LAYER ADDS PANELS AND QUEST CONTROLLER INPUT WITHIN THAT GAME SESSION. >>>!"
+      "source": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
+      "translation": "* OPENCOMPOSITE IS NOT A COMPATIBLE WORKAROUND FOR STANDALONE OPENVR OVERLAYS. AN EXISTING ELITE OPENXR SETUP CAN USE EDVR OR OPENCOMPOSITE. EDVR RENDERING WAS CONFIRMED ON QUEST 3 WITH VDXR IN ISSUE #264; OPENCOMPOSITE IS NOT REQUIRED. EXPERIMENTAL EDVR CONTROLLER INPUT SUPPLIES ITS OWN FRAME-DRIVEN ACTIONS WHEN OPTED IN; REAL-HEADSET CONTROLLER COMPATIBILITY STILL NEEDS FEEDBACK. >>>!"
     },
     {
       "source": "OpenThemeWorkspaceButton",
@@ -269433,10 +270073,6 @@
       "translation": "* PIN >>>!"
     },
     {
-      "source": "PITCH / YAW / ROLL",
-      "translation": "* PITCH / YAW / ROLL >>>!"
-    },
-    {
       "source": "PLANNED RAVEN SITE",
       "translation": "* PLANNED RAVEN SITE >>>!"
     },
@@ -269459,10 +270095,6 @@
     {
       "source": "POI choice",
       "translation": "* POI CHOICE >>>!"
-    },
-    {
-      "source": "POSITION X / Y / Z",
-      "translation": "* POSITION X / Y / Z >>>!"
     },
     {
       "source": "POW",
@@ -269765,6 +270397,22 @@
       "translation": "* PIRATE ATTACK >>>!"
     },
     {
+      "source": "Pitch (degrees)",
+      "translation": "* PITCH (DEGREES) >>>!"
+    },
+    {
+      "source": "Place in front of me",
+      "translation": "* PLACE IN FRONT OF ME >>>!"
+    },
+    {
+      "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+      "translation": "* PLACE IN FRONT OF ME MOVES ONLY THE SELECTED PANEL TO EYE LEVEL, ONE METRE ALONG YOUR CURRENT HEADING. SAVE CALIBRATION KEEPS THAT TARGET AND MODE; CLOSE / DISCARD UNSAVED RESTORES SAVED VALUES. RESET SELECTED RESTORES THE ROUTE DEFAULT (OR THE DEFAULT PLACEMENT FOR A VEHICLE OVERRIDE) AND SAVES IT. >>>!"
+    },
+    {
+      "source": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+      "translation": "* PLACED THE SELECTED PANEL ONE METRE IN FRONT OF YOU. SAVE TO KEEP THIS PLACEMENT. >>>!"
+    },
+    {
       "source": "Plan a mining trip",
       "translation": "* PLAN A MINING TRIP >>>!"
     },
@@ -269875,6 +270523,10 @@
     {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "* PLEASE WAIT {0} SECONDS BEFORE REFRESHING FRONTIER AGAIN. >>>!"
+    },
+    {
+      "source": "PlotAdjustVR",
+      "translation": "* PLOTADJUSTVR >>>!"
     },
     {
       "source": "PlotBioStatus",
@@ -270091,6 +270743,18 @@
     {
       "source": "Português (Brasil)",
       "translation": "* PORTUGUÊS (BRASIL) >>>!"
+    },
+    {
+      "source": "Position X (10 cm units)",
+      "translation": "* POSITION X (10 CM UNITS) >>>!"
+    },
+    {
+      "source": "Position Y (10 cm units)",
+      "translation": "* POSITION Y (10 CM UNITS) >>>!"
+    },
+    {
+      "source": "Position Z (10 cm units)",
+      "translation": "* POSITION Z (10 CM UNITS) >>>!"
     },
     {
       "source": "Position editor cleanup failed",
@@ -270489,8 +271153,16 @@
       "translation": "* PREVIOUS LAYOUT BACKUP: {0} >>>!"
     },
     {
+      "source": "Previous mode",
+      "translation": "* PREVIOUS MODE >>>!"
+    },
+    {
       "source": "Previous page",
       "translation": "* PREVIOUS PAGE >>>!"
+    },
+    {
+      "source": "Previous panel",
+      "translation": "* PREVIOUS PANEL >>>!"
     },
     {
       "source": "Previous settings backup: {0}",
@@ -273793,6 +274465,10 @@
       "translation": "* ROCKY | 268,661 CR/T >>>!"
     },
     {
+      "source": "Roll (degrees)",
+      "translation": "* ROLL (DEGREES) >>>!"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "* ROLLBACK BACKUP: {0} >>>!"
     },
@@ -274457,6 +275133,10 @@
       "translation": "* SAMPLE 1 OF 3 RECORDED >>>!"
     },
     {
+      "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+      "translation": "* SAMPLE PREVIEW IS ACTIVE. USE THE CONTROLLER-INTERACTION SHORTCUT TO OPERATE THE HEADSET CONTROLS. SAVE KEEPS THE SELECTED PANEL AND MODE. >>>!"
+    },
+    {
       "source": "Sample {0}",
       "translation": "* SAMPLE {0} >>>!"
     },
@@ -274555,10 +275235,6 @@
     {
       "source": "Save calibration",
       "translation": "* SAVE CALIBRATION >>>!"
-    },
-    {
-      "source": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-      "translation": "* SAVE CALIBRATION TO VERIFY THE WRITE AND PRESERVE A BACKUP. CANCEL RESTORES THE SAVED VALUES; RESET SELECTED RESTORES THE SHIPPED PLACEMENT FOR THAT TARGET. >>>!"
     },
     {
       "source": "Save change",
@@ -278113,8 +278789,8 @@
       "translation": "* STEAMVR ROUTES REQUIRE A READY STEAMVR HEADSET. THE VDXR ROUTE WAITS FOR A LIVE ELITE VDXR SESSION. INSTALL THE MATCHING SRVSURVEY OPENXR LAYER FOR QUEST CONTROLLER-POINTER INTERACTION. >>>!"
     },
     {
-      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
-      "translation": "* STEAMVR ROUTES USE THE OPENVR OVERLAY BACKEND. THE VDXR ROUTE USES THE SRVSURVEY OPENXR LAYER ON WINDOWS X64 WITH DIRECT3D 11; HEADSET VALIDATION IS PENDING. >>>!"
+      "source": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+      "translation": "* STEAMVR ROUTES USE THE OPENVR OVERLAY BACKEND. THE VDXR ROUTE USES THE SRVSURVEY OPENXR LAYER ON WINDOWS X64 WITH DIRECT3D 11. A COMMUNITY QUEST 3 TEST CONFIRMED RENDERING WITH EDVR; CONTROLLER INTERACTION REMAINS UNVERIFIED ON THAT SETUP. >>>!"
     },
     {
       "source": "SteamVR/OpenVR",
@@ -278597,8 +279273,8 @@
       "translation": "* SWAP COMPLETE. RESTART ELITE DANGEROUS WHEN READY. ORIGINAL BACKUP: {0} >>>!"
     },
     {
-      "source": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
-      "translation": "* SWITCH STEAMVR OVERLAYS BETWEEN PASSIVE CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. >>>!"
+      "source": "Switch VR overlays between passive click-through and controller-pointer interaction.",
+      "translation": "* SWITCH VR OVERLAYS BETWEEN PASSIVE CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. >>>!"
     },
     {
       "source": "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.",
@@ -280385,6 +281061,10 @@
       "translation": "* THE GUARDED UPDATE WAS NOT STARTED: {0} THE ACTIVE INSTALLATION AND PLAYER PROFILE WERE NOT CHANGED. >>>!"
     },
     {
+      "source": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+      "translation": "* THE HEADSET CALIBRATION PANEL USES THE SAME TARGET, STEP-SIZE, PLACEMENT, SAVE, AND CLOSE CONTROLS AS THE DESKTOP EDITOR. IF CONTROLLER INPUT IS UNAVAILABLE, MIRROR THE SRVSURVEY WINDOW INTO VR (FOR EXAMPLE WITH OPENKNEEBOARD WINDOW CAPTURE) AND USE THE MOUSE. >>>!"
+    },
+    {
       "source": "The headset pose is not currently valid.",
       "translation": "* THE HEADSET POSE IS NOT CURRENTLY VALID. >>>!"
     },
@@ -281315,6 +281995,10 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "* THE SELECTED MARKER COULD NOT BE SAVED: >>>!"
+    },
+    {
+      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+      "translation": "* THE SELECTED PANEL SHOWS SAMPLE DATA. NORMAL STEPS: 5 CM AND 1°. CHOOSE FINE OR COARSE IN THE HEADSET, OR HOLD SHIFT FOR FINE / CTRL FOR COARSE. SCROLL OVER A NUMBER TO ADJUST IT. >>>!"
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -283697,6 +284381,10 @@
       "translation": "* VDXR CONTROLLER INTERACTION IS ENABLED. POINT AT A PANEL AND USE THE TRIGGER TO CLICK. >>>!"
     },
     {
+      "source": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+      "translation": "* VDXR HAS SEATED DEFAULTS AND SEPARATE SAVED PLACEMENTS. EXISTING CUSTOM CALIBRATIONS ARE RETAINED AS A STARTING POINT; RESET SELECTED APPLIES THE SEATED FACTORY PLACEMENT. STEAMVR AND DESKTOP PLACEMENTS ARE PRESERVED. >>>!"
+    },
+    {
       "source": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
       "translation": "* VDXR: REGISTER THE OPENXR LAYER FROM THE WINDOWS X64 PACKAGE, THEN RESTART ELITE. DIRECT3D 11 IS REQUIRED. >>>!"
     },
@@ -283763,6 +284451,10 @@
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
       "translation": "* VR OVERLAY ADJUSTMENT CAPTURES AND RESETS ORIENTATION THROUGH DEDICATED ACTIONS; CAPABILITY AND STATUS ARE REPORTED WHEN THE RUNTIME IS UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "VR overlay calibration",
+      "translation": "* VR OVERLAY CALIBRATION >>>!"
     },
     {
       "source": "VR overlay controller interaction disabled",
@@ -284677,8 +285369,8 @@
       "translation": "* WINDOWS >>>!"
     },
     {
-      "source": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
-      "translation": "* WINDOWS DIRECT3D 11 ROUTE WITHOUT STEAMVR. SUPPORTS PANELS AND QUEST CONTROLLER-POINTER INTERACTION; REQUIRES THE SRVSURVEY OPENXR LAYER AND AN ELITE SETUP THAT ALREADY RUNS THROUGH VDXR. HEADSET VALIDATION IS PENDING. >>>!"
+      "source": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
+      "translation": "* WINDOWS DIRECT3D 11 ROUTE WITHOUT STEAMVR. QUEST 3 RENDERING IS COMMUNITY-CONFIRMED WITH EDVR (#264). REQUIRES THE SRVSURVEY OPENXR LAYER AND AN ELITE SETUP THAT ALREADY RUNS THROUGH VDXR. EDVR CONTROLLER INPUT HAS AN EXPERIMENTAL OPT-IN BELOW; CONTROLLER COMPATIBILITY STILL NEEDS HEADSET TESTING. >>>!"
     },
     {
       "source": "Windows Mixed Reality",
@@ -284761,8 +285453,8 @@
       "translation": "* WINGS >>>!"
     },
     {
-      "source": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
-      "translation": "* WITH VR OVERLAYS CONNECTED, USE THAT SHORTCUT ONCE TO LET STEAMVR SEND CONTROLLER LASER-POINTER CLICKS AND SCROLLING TO SRVSURVEY PANELS. >>>!"
+      "source": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
+      "translation": "* WITH VR OVERLAYS CONNECTED, USE THAT SHORTCUT ONCE TO ENABLE CONTROLLER-POINTER CLICKS AND SCROLLING ON THE SELECTED ROUTE, INCLUDING THE CALIBRATION PANEL. >>>!"
     },
     {
       "source": "With either choice, overlays use a tool window classification that avoids KDE notification and popup animations. The setting does not apply to native Wayland windows or the combined Gamescope presenter.",
@@ -284875,6 +285567,10 @@
     {
       "source": "YES",
       "translation": "* YES >>>!"
+    },
+    {
+      "source": "Yaw (degrees)",
+      "translation": "* YAW (DEGREES) >>>!"
     },
     {
       "source": "Years",
@@ -288407,6 +289103,10 @@
     {
       "source": "value",
       "translation": "* VALUE >>>!"
+    },
+    {
+      "source": "vdxr",
+      "translation": "* VDXR >>>!"
     },
     {
       "source": "version",

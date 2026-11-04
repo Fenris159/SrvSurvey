@@ -17,6 +17,9 @@ public sealed class VrOverlayCoordinator : IDisposable
     private readonly OverlayDispatcherTimer interactionTimer;
     private VrOverlayInputRouter? inputRouter;
     private readonly HashSet<string> published = new(StringComparer.Ordinal);
+    private readonly VrOverlayCalibrationSession calibrationSession = new();
+    private IReadOnlyList<RegisteredOverlayWindow> calibrationRegistrations = [];
+    private bool synchronizing;
     private bool disposed;
 
     public VrOverlayCoordinator(
@@ -30,13 +33,19 @@ public sealed class VrOverlayCoordinator : IDisposable
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         this.registry = registry ?? OverlayWindowRegistry.Shared;
-        this.runtime = runtime ?? new VrOverlayRuntimeRouter(() => viewModel.SelectedPlatformProfile.Id);
+        this.runtime =
+            runtime
+            ?? new VrOverlayRuntimeRouter(
+                () => viewModel.SelectedPlatformProfile.Id,
+                edvrControllerInput: () => viewModel.EdvrControllerInput
+            );
         this.processDetector = processDetector ?? IsProcessRunning;
         this.modeProvider = modeProvider ?? (() => null);
         this.inputRouter = inputRouter;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.CalibrationChanged += OnCalibrationChanged;
         viewModel.ConnectionCheckRequested += OnConnectionCheckRequested;
+        viewModel.PlaceInFrontRequested += OnPlaceInFrontRequested;
         this.registry.Changed += OnRegistryChanged;
         timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
@@ -107,9 +116,11 @@ public sealed class VrOverlayCoordinator : IDisposable
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.CalibrationChanged -= OnCalibrationChanged;
         viewModel.ConnectionCheckRequested -= OnConnectionCheckRequested;
+        viewModel.PlaceInFrontRequested -= OnPlaceInFrontRequested;
         registry.Changed -= OnRegistryChanged;
         inputRouter?.Dispose();
         inputRouter = null;
+        calibrationSession.Dispose();
         runtime.Dispose();
     }
 
@@ -132,8 +143,10 @@ public sealed class VrOverlayCoordinator : IDisposable
 
         var registrations = registry
             .Snapshot()
+            .Concat(calibrationRegistrations)
             .Where(registration => registration.IsVisible)
-            .ToDictionary(registration => registration.PlotterName, StringComparer.Ordinal);
+            .GroupBy(registration => registration.PlotterName, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Last(), StringComparer.Ordinal);
         foreach (VrOverlayPointerEvent pointerEvent in runtime.PollPointerEvents())
         {
             if (pointerEvent.Kind == VrOverlayPointerEventKind.Reset)
@@ -163,12 +176,40 @@ public sealed class VrOverlayCoordinator : IDisposable
         Synchronize();
     }
 
+    private void OnPlaceInFrontRequested(object? sender, EventArgs eventArgs)
+    {
+        if (viewModel.Enabled && runtime.IsInitialized && runtime.TryGetHeadPose(out VrOverlayHeadPose? pose))
+        {
+            viewModel.PlaceInFront(pose!);
+        }
+        else
+        {
+            viewModel.ReportAdjustmentStatus(
+                "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer."
+            );
+        }
+    }
+
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
+        if (eventArgs.PropertyName == nameof(VrOverlayViewModel.EdvrControllerInput) && IsInteractionEnabled)
+        {
+            ToggleInteraction();
+        }
         if (eventArgs.PropertyName == nameof(VrOverlayViewModel.SelectedPlatformProfile))
         {
             published.Clear();
             ShutdownRuntime();
+            calibrationSession.Dispose();
+            calibrationRegistrations = [];
+        }
+        if (
+            eventArgs.PropertyName
+            is nameof(VrOverlayViewModel.IsAdjusting)
+                or nameof(VrOverlayViewModel.SelectedOverlayName)
+        )
+        {
+            inputRouter?.Reset();
         }
 
         if (
@@ -181,6 +222,9 @@ public sealed class VrOverlayCoordinator : IDisposable
                     or nameof(VrOverlayViewModel.RotationPitch)
                     or nameof(VrOverlayViewModel.RotationYaw)
                     or nameof(VrOverlayViewModel.RotationRoll)
+                    or nameof(VrOverlayViewModel.IsAdjusting)
+                    or nameof(VrOverlayViewModel.SelectedOverlayName)
+                    or nameof(VrOverlayViewModel.SelectedMode)
         )
         {
             Synchronize();
@@ -189,17 +233,45 @@ public sealed class VrOverlayCoordinator : IDisposable
 
     private void Synchronize()
     {
-        if (disposed)
+        if (disposed || synchronizing)
         {
             return;
         }
 
+        synchronizing = true;
+        try
+        {
+            SynchronizeCore();
+        }
+        finally
+        {
+            synchronizing = false;
+        }
+    }
+
+    private void SynchronizeCore()
+    {
         IReadOnlyList<RegisteredOverlayWindow> registrations = registry.Snapshot();
         viewModel.SetCurrentRuntimeMode(modeProvider());
         if (!TryEnsureVrRuntimeReady())
         {
+            calibrationSession.Dispose();
+            calibrationRegistrations = [];
             return;
         }
+
+        VrOverlayHeadPose? pose = null;
+        if (viewModel.IsAdjusting)
+        {
+            runtime.TryGetHeadPose(out pose);
+        }
+        calibrationRegistrations = calibrationSession.Refresh(viewModel, pose);
+        registrations = registrations
+            .Where(registration =>
+                !calibrationRegistrations.Any(sample => sample.PlotterName == registration.PlotterName)
+            )
+            .Concat(calibrationRegistrations)
+            .ToArray();
 
         (HashSet<string>? active, string? lastError) = PublishRegistrations(registrations);
         RemoveStaleOverlays(active);
@@ -349,7 +421,10 @@ public sealed class VrOverlayCoordinator : IDisposable
             return false;
         }
 
-        VrOverlayCalibration? calibration = viewModel.GetCalibration(registration.PlotterName, modeProvider());
+        VrOverlayCalibration? calibration =
+            registration.PlotterName == VrOverlayCalibrationSession.ControlsPlotterName
+                ? calibrationSession.ControlsCalibration
+                : viewModel.GetCalibration(registration.PlotterName, modeProvider());
         if (calibration is null)
         {
             return false;
@@ -367,7 +442,9 @@ public sealed class VrOverlayCoordinator : IDisposable
                 registration.PlotterName,
                 frame,
                 calibration,
-                registration.PresentationVisual is null ? 1f : (float)registration.Window.Opacity
+                calibrationSession.Owns(registration) || registration.PresentationVisual is null
+                    ? 1f
+                    : (float)registration.Window.Opacity
             );
             if (result.Succeeded)
             {

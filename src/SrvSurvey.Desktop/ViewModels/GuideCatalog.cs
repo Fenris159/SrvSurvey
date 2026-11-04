@@ -1536,14 +1536,14 @@ public static class GuideCatalog
             "Choose the connection route",
             "SrvSurvey uses SteamVR's OpenVR overlay compositor because it can place a companion panel over another running VR application.",
             [
-                "Open Settings > Global overlays and find VR overlays.",
+                "Open Theme > Overlay setup > VR.",
                 "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
                 "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
                 "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
                 "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
             ],
             [
-                "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+                "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
                 "Changing connection routes does not erase overlay positions or vehicle-mode calibrations.",
             ]
         );
@@ -1581,7 +1581,7 @@ public static class GuideCatalog
             [
                 "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop's PC-VR streaming also requires Windows.",
                 "ALVR supports Windows and Linux, but its Linux setup and SteamVR on Linux are experimental; Elite additionally runs through Proton.",
-                "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+                "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
                 "SteamVR routes require a ready SteamVR headset. The VDXR route waits for a live Elite VDXR session. Install the matching SrvSurvey OpenXR layer for Quest controller-pointer interaction.",
             ]
         );
@@ -1609,13 +1609,13 @@ public static class GuideCatalog
             "Each live panel keeps its own default placement and can also have ship, SRV, fighter, taxi, or on-foot overrides.",
             [
                 "Select Adjust overlays or press the configured Adjust VR overlay shortcut while the runtime is connected.",
-                "Choose the live panel and Default or the current vehicle/game mode.",
-                "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
-                "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
+                "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+                "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
+                "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
             ],
             [
                 "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
-                "Desktop overlay placement and VR calibration are stored independently.",
+                "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
             ]
         );
     }
@@ -1626,14 +1626,15 @@ public static class GuideCatalog
             "Interact with panels in the headset",
             "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
             [
-                "In Settings > Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-                "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+                "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
+                "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
                 "Use the shortcut again when finished. SrvSurvey restores passive click-through mode automatically when VR overlays are disabled or the runtime disconnects.",
             ],
             [
-                "On VDXR, release the controller buttons before enabling interaction, then point the cursor at a panel. Trigger clicks, grip right-clicks, thumbstick press middle-clicks, and thumbstick tilt scrolls. Toggle off to return those controls to Elite. Panel placement still uses Adjust VR overlays.",
+                "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+                "On VDXR, release the controller buttons before enabling interaction, then point the cursor at a panel. Trigger clicks, grip right-clicks, thumbstick press middle-clicks, and thumbstick tilt scrolls. Toggle off to return those controls to Elite. Adjust VR overlays opens the calibration panel in the headset as well as desktop settings.",
                 "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
-                "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
+                "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
             ]
         );
     }

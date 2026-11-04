@@ -1,5 +1,13 @@
 # VR overlay modernization and headset interoperability
 
+> Update, 2026-11-04: this document records the earlier source investigation.
+> [Issue #264](https://github.com/Fenris159/SrvSurvey/issues/264) subsequently
+> confirmed Quest 3 + EDVR + VDXR overlay rendering on real hardware without
+> OpenComposite. Controller input was not tested. Use the current
+> [VDXR setup guide](../vr-vdxr.md) and [calibration guide and acceptance
+> checklist](../vr-calibration.md) for setup and remaining validation.
+
+
 Date checked: 2026-09-20
 
 Current SrvSurvey revision: `0da966b9c863d686c8696298bfd4cf2635b83812`

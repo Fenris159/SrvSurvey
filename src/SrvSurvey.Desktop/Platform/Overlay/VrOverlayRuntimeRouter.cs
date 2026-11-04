@@ -1,11 +1,17 @@
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 /// <summary>Owns one transport at a time and releases it when the connection route changes.</summary>
-public sealed class VrOverlayRuntimeRouter(Func<string> profile, Func<bool, IVrOverlayRuntime>? factory = null)
-    : IVrOverlayRuntime
+public sealed class VrOverlayRuntimeRouter(
+    Func<string> profile,
+    Func<bool, IVrOverlayRuntime>? factory = null,
+    Func<bool>? edvrControllerInput = null
+) : IVrOverlayRuntime
 {
     private readonly Func<bool, IVrOverlayRuntime> factory =
-        factory ?? (direct => direct ? new OpenXrOverlayRuntime() : new OpenVrRuntime());
+        factory
+        ?? (
+            direct => direct ? new OpenXrOverlayRuntime(edvrControllerInput: edvrControllerInput) : new OpenVrRuntime()
+        );
     private IVrOverlayRuntime? active;
     private bool direct;
 
@@ -44,6 +50,8 @@ public sealed class VrOverlayRuntimeRouter(Func<string> profile, Func<bool, IVrO
     public void RemoveOverlay(string plotterName) => Current.RemoveOverlay(plotterName);
 
     public VrRuntimeResult ResetOrientation() => Current.ResetOrientation();
+
+    public bool TryGetHeadPose(out VrOverlayHeadPose? pose) => Current.TryGetHeadPose(out pose);
 
     public VrRuntimeResult SetInteractionEnabled(bool enabled) => Current.SetInteractionEnabled(enabled);
 
