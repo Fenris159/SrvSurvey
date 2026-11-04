@@ -576,7 +576,7 @@ internal sealed partial class JourneyWorkspaceSession : INotifyPropertyChanged
         try
         {
             JourneyServiceResult result = await StartAttachedAsync(() => journeyService.ApplyLiveAsync(journalEvents));
-            if (result.ProcessedEventCount == 0 || result.Journey is null)
+            if (!result.HasChanges || result.Journey is null)
             {
                 return;
             }

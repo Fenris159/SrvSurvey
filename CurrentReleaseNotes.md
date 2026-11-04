@@ -101,7 +101,9 @@ from RC77.
   source's tail. Known order between arrivals and activity survives repeated
   entries between them, and growing live journals keep the same attribution
   across polling boundaries. Conflicting copies retain the saved Journey until
-  repaired. Pending observations can also finish saving after another window
+  repaired. Corrections from already-known records refresh the Journey workspace
+  immediately while retaining unsaved edits. Pending observations can also finish
+  saving after another window
   concludes the Journey, without restoring its active selection.
   Live/history matching handles UTF-8 and mixed line endings. Readouts identify
   note-save counts explicitly.

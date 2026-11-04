@@ -264,7 +264,8 @@ public sealed partial class JourneyService
             {
                 pendingLiveProgress = activeProcessor.Journey;
             }
-            if (HasPendingProgress(activeProcessor.Journey))
+            bool hasChanges = HasPendingProgress(activeProcessor.Journey);
+            if (hasChanges)
             {
                 await UpdateStoredJourneyLockedAsync(
                         activeProcessor.Journey,
@@ -274,7 +275,7 @@ public sealed partial class JourneyService
                     .ConfigureAwait(false);
             }
 
-            return new JourneyServiceResult(activeProcessor.Journey, [], processed);
+            return new JourneyServiceResult(activeProcessor.Journey, [], processed) { HasChanges = hasChanges };
         }
         finally
         {
@@ -668,7 +669,8 @@ public sealed partial class JourneyService
         );
         activeProcessor = processor;
         activeIsOdyssey = isOdyssey;
-        if (rebuilt || processed > 0 || processor.HasRecordMetadataChanges)
+        bool hasChanges = rebuilt || processed > 0 || processor.HasRecordMetadataChanges;
+        if (hasChanges)
         {
             // Keep the read and its projection until the leased merge succeeds.
             // A failed catch-up save must not discard learned boundary identities.
@@ -677,7 +679,7 @@ public sealed partial class JourneyService
             await UpdateStoredJourneyLockedAsync(processor.Journey, static latest => latest, cancellationToken)
                 .ConfigureAwait(false);
         }
-        return new JourneyServiceResult(processor.Journey, read.Errors, processed);
+        return new JourneyServiceResult(processor.Journey, read.Errors, processed) { HasChanges = hasChanges };
     }
 
     private (JourneyJournalProcessor Processor, bool Rebuilt, int Processed) CreateCatchUpProcessor(
@@ -791,6 +793,9 @@ public sealed record JourneyServiceResult(
 {
     public static JourneyServiceResult Empty { get; } = new(null, [], 0);
     public JourneyRecoveryReference? Recovery { get; init; }
+
+    /// <summary>Includes saved evidence and retries even when no new journal records were counted.</summary>
+    public bool HasChanges { get; init; } = ProcessedEventCount > 0;
 }
 
 public sealed record JourneyRecoveryReference(string FrontierId, bool IsOdyssey, string FileName);
