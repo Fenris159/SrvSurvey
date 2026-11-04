@@ -48,13 +48,16 @@ from RC77.
   sample data even when gameplay would hide a panel. Place in front of me moves
   the selected panel to eye level, one metre along the current headset heading.
   Samples and held input are cleared when calibration closes or the route changes.
+  Busy scenes reserve space for the calibration controls and selected sample
+  within the runtime's panel limit.
 - **VDXR placement:** Seated defaults follow the live-testing feedback. VDXR saves
   placements separately from SteamVR, retains existing custom calibration as a
   starting point, and supports route-specific resets and vehicle-mode overrides.
 - **Experimental EDVR controller input:** An opt-in OpenXR-layer path supplies
   controller actions for recognized EDVR sessions. It is off by default, requires
   the matching layer and an Elite restart, and leaves overlay rendering available
-  when input is unavailable. Real-headset and other-layer compatibility still
+  when input is unavailable. Application input ownership is retained across
+  recreated sessions. Real-headset and other-layer compatibility still
   need feedback; the guides document setup, status messages and recovery.
 - **VR guides:** Corrected navigation, mirrored-window fallback, reported Quest 3
   rendering compatibility, and a live-testing checklist address issues #264/#265.

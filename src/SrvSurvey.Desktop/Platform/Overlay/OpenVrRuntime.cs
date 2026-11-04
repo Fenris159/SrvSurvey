@@ -13,6 +13,9 @@ public interface IVrOverlayRuntime : IDisposable
 
     string DisplayName => "SteamVR/OpenVR";
 
+    /// <summary>Maximum number of panels accepted in one frame.</summary>
+    int MaximumOverlays => int.MaxValue;
+
     VrRuntimeResult CompleteFrame() => VrRuntimeResult.Success("Overlay frame completed.");
 
     VrRuntimeProbe Probe();

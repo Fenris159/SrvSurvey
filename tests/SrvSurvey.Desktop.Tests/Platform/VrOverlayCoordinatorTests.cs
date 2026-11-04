@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
@@ -42,6 +43,75 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         model.CancelCommand.Execute(null);
         Assert.Empty(runtime.Frames);
         Assert.Equal(20, model.GetCalibration("PlotJumpInfo")!.Scale);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(15, 16, 16, false)]
+    [InlineData(16, 16, 16, true)]
+    [InlineData(16, int.MaxValue, 18, false)]
+    public void CalibrationReservesRuntimeCapacityForItsControlsAndSample(
+        int liveCount,
+        int capacity,
+        int expected,
+        bool selectedIsLive
+    )
+    {
+        string[] liveNames = OverlayLayoutCatalog
+            .Supported.Select(definition => definition.Name)
+            .Where(name => name != "PlotBioStatus" && (selectedIsLive || name != "PlotJumpInfo"))
+            .OrderByDescending(name => name == "PlotJumpInfo")
+            .Take(liveCount)
+            .ToArray();
+        var placements = liveNames
+            .Append("PlotBioStatus")
+            .Append("PlotJumpInfo")
+            .Distinct(StringComparer.Ordinal)
+            .ToDictionary(name => name, _ => "left:0, top:0 { s: 5, p: <0, 0, 10>, r: <0, 0, 0>}");
+        string data = Path.Combine(temporaryDirectory, "data");
+        Directory.CreateDirectory(data);
+        File.WriteAllText(Path.Combine(data, "plotters.json"), JsonSerializer.Serialize(placements));
+        VrOverlayViewModel model = CreateViewModel();
+        model.SetAvailableOverlays(["PlotJumpInfo"]);
+        model.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+        var windows = new List<Window>();
+        try
+        {
+            foreach (string name in liveNames.Prepend("PlotBioStatus"))
+            {
+                var window = new Window
+                {
+                    Width = 20,
+                    Height = 20,
+                    WindowDecorations = WindowDecorations.None,
+                    Content = new Border { Background = Brushes.Orange },
+                };
+                windows.Add(window);
+                registry.Register(window, name);
+                if (name != "PlotBioStatus")
+                {
+                    window.Show();
+                }
+            }
+            var runtime = new StubOpenVrRuntime { MaximumOverlays = capacity };
+            using var coordinator = new VrOverlayCoordinator(model, registry, runtime);
+            Assert.Equal(liveCount, runtime.Frames.Count);
+            Assert.True(model.BeginAdjustment());
+            Assert.Equal(expected, runtime.Frames.Count);
+            Assert.Contains("PlotAdjustVR", runtime.Frames.Keys);
+            Assert.Contains("PlotJumpInfo", runtime.Frames.Keys);
+            Assert.DoesNotContain("PlotBioStatus", runtime.Frames.Keys);
+            model.CancelCommand.Execute(null);
+            Assert.Equal(liveCount, runtime.Frames.Count);
+            Assert.DoesNotContain("PlotAdjustVR", runtime.Frames.Keys);
+        }
+        finally
+        {
+            foreach (Window window in windows)
+            {
+                window.Close();
+            }
+        }
     }
 
     [AvaloniaTheory]
@@ -313,6 +383,8 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     private sealed class StubOpenVrRuntime : IVrOverlayRuntime
     {
         public bool IsInitialized { get; private set; }
+
+        public int MaximumOverlays { get; init; } = int.MaxValue;
 
         public int ResetCount { get; private set; }
 

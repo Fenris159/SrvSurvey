@@ -39,6 +39,8 @@ static_assert(sizeof(Header) == 128);
 static_assert(offsetof(Header, layerHeartbeat) == 32);
 static_assert(offsetof(Header, poseSequence) == 60);
 static_assert(offsetof(Header, poseTimestamp) == 64);
+static_assert(offsetof(Header, poseOriginRevision) == 72);
+static_assert(offsetof(Header, headPosition) == 76);
 static_assert(offsetof(Header, headYaw) == 88);
 static_assert(offsetof(Header, poseRequestTimestamp) == 96);
 

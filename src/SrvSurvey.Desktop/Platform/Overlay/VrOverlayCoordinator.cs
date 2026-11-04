@@ -256,7 +256,8 @@ public sealed class VrOverlayCoordinator : IDisposable
     private void SynchronizeCore()
     {
         IReadOnlyList<RegisteredOverlayWindow> registrations = registry.Snapshot();
-        viewModel.SetCurrentRuntimeMode(modeProvider());
+        string? runtimeMode = modeProvider();
+        viewModel.SetCurrentRuntimeMode(runtimeMode);
         if (!TryEnsureVrRuntimeReady())
         {
             calibrationSession.Dispose();
@@ -270,14 +271,21 @@ public sealed class VrOverlayCoordinator : IDisposable
             runtime.TryGetHeadPose(out pose);
         }
         calibrationRegistrations = calibrationSession.Refresh(viewModel, pose);
+        // Reserve transport capacity for the calibration controls and selected sample.
+        int capacity = Math.Max(0, runtime.MaximumOverlays);
+        int liveCapacity = Math.Max(0, capacity - calibrationRegistrations.Count);
         registrations = registrations
             .Where(registration =>
-                !calibrationRegistrations.Any(sample => sample.PlotterName == registration.PlotterName)
+                registration.IsVisible
+                && !calibrationRegistrations.Any(sample => sample.PlotterName == registration.PlotterName)
+                && viewModel.GetCalibration(registration.PlotterName, runtimeMode) is not null
             )
+            .Take(liveCapacity)
             .Concat(calibrationRegistrations)
+            .Take(capacity)
             .ToArray();
 
-        (HashSet<string>? active, string? lastError) = PublishRegistrations(registrations);
+        (HashSet<string>? active, string? lastError) = PublishRegistrations(registrations, runtimeMode);
         RemoveStaleOverlays(active);
         VrRuntimeResult completion = runtime.CompleteFrame();
         if (!completion.Succeeded)
@@ -308,14 +316,15 @@ public sealed class VrOverlayCoordinator : IDisposable
     }
 
     private (HashSet<string> Active, string? LastError) PublishRegistrations(
-        IReadOnlyList<RegisteredOverlayWindow> registrations
+        IReadOnlyList<RegisteredOverlayWindow> registrations,
+        string? runtimeMode
     )
     {
         var active = new HashSet<string>(StringComparer.Ordinal);
         string? lastError = null;
         foreach (RegisteredOverlayWindow registration in registrations)
         {
-            if (TryPublishRegistration(registration, active, out string? error) && error is not null)
+            if (TryPublishRegistration(registration, active, runtimeMode, out string? error) && error is not null)
             {
                 lastError = error;
             }
@@ -417,7 +426,12 @@ public sealed class VrOverlayCoordinator : IDisposable
         runtime.Shutdown();
     }
 
-    private bool TryPublishRegistration(RegisteredOverlayWindow registration, HashSet<string> active, out string? error)
+    private bool TryPublishRegistration(
+        RegisteredOverlayWindow registration,
+        HashSet<string> active,
+        string? runtimeMode,
+        out string? error
+    )
     {
         error = null;
         if (!registration.IsVisible)
@@ -428,7 +442,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         VrOverlayCalibration? calibration =
             registration.PlotterName == VrOverlayCalibrationSession.ControlsPlotterName
                 ? calibrationSession.ControlsCalibration
-                : viewModel.GetCalibration(registration.PlotterName, modeProvider());
+                : viewModel.GetCalibration(registration.PlotterName, runtimeMode);
         if (calibration is null)
         {
             return false;

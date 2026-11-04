@@ -37,6 +37,8 @@ into additional rows on narrow windows and keep readable numeric boxes.
 Selecting another target or mode discards unsaved changes to the previous
 selection. Save each placement before moving on. The sample identifies the
 selected panel; the calibration control panel is a separate surface below it.
+If the runtime reaches its panel limit, the controls and selected sample take
+priority. Temporarily omitted live panels return when calibration closes.
 
 **Reset VR orientation** recenters the whole arrangement using the selected
 backend's existing origin behavior. Use **Place in front of me** to recover a

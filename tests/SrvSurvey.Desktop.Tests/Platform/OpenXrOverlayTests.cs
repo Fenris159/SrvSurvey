@@ -370,6 +370,7 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.False(router.IsInitialized);
         Assert.False(router.Initialize().Succeeded);
         Assert.Equal("VDXR / OpenXR", router.DisplayName);
+        Assert.Equal(16, router.MaximumOverlays);
         Assert.False(router.TryGetHeadPose(out _));
         Assert.False(router.PublishOverlay("A", Overlay().Frame, Overlay().Calibration, 1).Succeeded);
         router.CompleteFrame();
@@ -397,10 +398,12 @@ public sealed class OpenXrOverlayTests : IDisposable
         using var router = new VrOverlayRuntimeRouter(() => profile);
         Assert.False(router.IsInitialized);
         Assert.Equal("SteamVR/OpenVR", router.DisplayName);
+        Assert.Equal(int.MaxValue, router.MaximumOverlays);
         Assert.False(router.TryGetHeadPose(out _));
         profile = VrPlatformProfileCatalog.MetaVdxrProfileId;
         Assert.False(router.IsInitialized);
         Assert.Equal("VDXR / OpenXR", router.DisplayName);
+        Assert.Equal(16, router.MaximumOverlays);
         Assert.False(router.TryGetHeadPose(out _));
     }
 

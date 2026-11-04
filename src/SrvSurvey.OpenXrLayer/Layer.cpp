@@ -998,6 +998,7 @@ XrResult XRAPI_CALL LayerAttachSets(XrSession handle, const XrSessionActionSetsA
     std::lock_guard lock(session->mutex);
     std::lock_guard inputLock(instance.inputMutex);
     session->gameInputObserved = true;
+    instance.gameInputObserved = true;
     if (session->frameInputOwned)
     {
         BlockFrameInput(*session);
@@ -1039,6 +1040,10 @@ XrResult XRAPI_CALL LayerSyncActions(XrSession handle, const XrActionsSyncInfo *
         return XR_ERROR_HANDLE_INVALID;
     std::lock_guard lock(session->mutex);
     session->gameInputObserved = true;
+    {
+        std::lock_guard inputLock(session->instance->inputMutex);
+        session->instance->gameInputObserved = true;
+    }
     if (session->frameInputOwned)
     {
         BlockFrameInput(*session);

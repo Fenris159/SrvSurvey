@@ -601,6 +601,10 @@ int main()
         TestEdvrFrameDrivenInput(instance, frame, path);
         TestEdvrInputGatesAndFailures(instance, frame, path);
         TestEdvrPreservesApplicationInput(instance, frame, path);
+        TestEdvrSuggestedApplicationBindingsPreventIndependentAttachment(instance, frame, path);
+        TestEdvrFrameServicesPendingHeadPoseRequest(instance, frame, path);
+        TestEdvrPriorApplicationInputSurvivesSessionRecreation(instance, frame, path, false);
+        TestEdvrPriorApplicationInputSurvivesSessionRecreation(instance, frame, path, true);
         TestEdvrLateApplicationInput(instance, frame, path);
         TestEdvrRenderingFailureReleasesControllerActions(instance, frame, path);
         testDevice->Release();

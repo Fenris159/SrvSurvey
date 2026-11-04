@@ -33,6 +33,7 @@ public sealed class VrOverlayRuntimeRouter(
 
     public bool IsInitialized => Current.IsInitialized;
     public string DisplayName => Current.DisplayName;
+    public int MaximumOverlays => Current.MaximumOverlays;
 
     public VrRuntimeProbe Probe() => Current.Probe();
 

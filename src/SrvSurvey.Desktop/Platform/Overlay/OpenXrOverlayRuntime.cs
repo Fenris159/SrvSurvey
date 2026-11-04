@@ -31,6 +31,8 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
 
     public string DisplayName => "VDXR / OpenXR";
 
+    public int MaximumOverlays => OpenXrFramePacket.MaximumOverlays;
+
     public bool TryGetHeadPose(out VrOverlayHeadPose? pose)
     {
         pose = null;

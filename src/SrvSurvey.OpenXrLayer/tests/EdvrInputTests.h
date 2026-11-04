@@ -31,6 +31,10 @@ class EdvrFrameFixture
         instance->edvr = originalIdentity && recognized;
         instance->gameInputObserved = false;
         instance->input.reset();
+        StartSession(instance);
+    }
+    void StartSession(const std::shared_ptr<Instance> &instance)
+    {
         session = std::make_shared<Session>(path, [this] { return now; });
         session->handle = reinterpret_cast<XrSession>(uintptr_t(5));
         session->instance = instance;
@@ -44,6 +48,15 @@ class EdvrFrameFixture
         XrSessionBeginInfo begin{XR_TYPE_SESSION_BEGIN_INFO};
         Require(LayerBeginSession(session->handle, &begin) == XR_SUCCESS, "Start EDVR fixture session");
         Focus(true);
+    }
+    void RecreateSession()
+    {
+        auto instance = session->instance;
+        Require(LayerDestroySession(session->handle) == XR_SUCCESS, "Destroy the first EDVR session");
+        session.reset();
+        attachedSets.clear();
+        synchronizedSets.clear();
+        StartSession(instance);
     }
     ~EdvrFrameFixture()
     {
@@ -174,7 +187,7 @@ void TestEdvrInputGatesAndFailures(const std::shared_ptr<Instance> &instance, co
 }
 
 void TestEdvrRenderingFailureReleasesControllerActions(const std::shared_ptr<Instance> &instance,
-                                                      const XrFrameEndInfo &frame, const std::wstring &path)
+                                                       const XrFrameEndInfo &frame, const std::wstring &path)
 {
     EdvrFrameFixture fixture(instance, frame, path);
     fixture.Frame();
@@ -218,6 +231,79 @@ void TestEdvrPreservesApplicationInput(const std::shared_ptr<Instance> &instance
     fixture.Frame();
     Require(submittedLayers == 3 && synchronizedSets.size() == 3 && synchronizedSets[0].actionSet == gameSet,
             "Frame submission never overwrites the application's active action sets");
+}
+
+void TestEdvrPriorApplicationInputSurvivesSessionRecreation(const std::shared_ptr<Instance> &instance,
+                                                            const XrFrameEndInfo &frame,
+                                                            const std::wstring &path, bool throughSync)
+{
+    EdvrFrameFixture fixture(instance, frame, path);
+    if (throughSync)
+    {
+        XrActionsSyncInfo sync{XR_TYPE_ACTIONS_SYNC_INFO};
+        Require(LayerSyncActions(fixture.session->handle, &sync) == XR_SUCCESS,
+                "Observe application synchronization in the first session");
+    }
+    else
+    {
+        XrActionSet gameSet = reinterpret_cast<XrActionSet>(uintptr_t(77));
+        XrSessionActionSetsAttachInfo attach{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+        attach.countActionSets = 1;
+        attach.actionSets = &gameSet;
+        Require(LayerAttachSets(fixture.session->handle, &attach) == XR_SUCCESS,
+                "Observe application attachment in the first session");
+    }
+    fixture.RecreateSession();
+    uint32_t beforeFrame = attachCalls;
+    fixture.Frame();
+    Require(attachCalls == beforeFrame && submittedLayers == 2,
+            throughSync ? "Prior game sync prevents independent attachment in a recreated session"
+                        : "Prior game attachment prevents independent attachment in a recreated session");
+}
+
+void TestEdvrSuggestedApplicationBindingsPreventIndependentAttachment(
+    const std::shared_ptr<Instance> &instance, const XrFrameEndInfo &frame, const std::wstring &path)
+{
+    EdvrFrameFixture fixture(instance, frame, path);
+    EnsureInput(*instance, true);
+    XrActionSuggestedBinding gameBinding{reinterpret_cast<XrAction>(uintptr_t(44)), 45};
+    XrInteractionProfileSuggestedBinding bindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
+    bindings.interactionProfile = instance->input->touchProfile;
+    bindings.countSuggestedBindings = 1;
+    bindings.suggestedBindings = &gameBinding;
+    Require(LayerSuggestBindings(instance->handle, &bindings) == XR_SUCCESS,
+            "Suggest application bindings before any session attachment");
+    uint32_t beforeFrame = attachCalls;
+    fixture.Frame();
+    Require(attachCalls == beforeFrame && submittedLayers == 2,
+            "Application binding suggestions alone prevent independent EDVR attachment");
+}
+
+void TestEdvrFrameServicesPendingHeadPoseRequest(const std::shared_ptr<Instance> &instance,
+                                                 const XrFrameEndInfo &frame, const std::wstring &path)
+{
+    EdvrFrameFixture fixture(instance, frame, path, false);
+    WritePacket(fixture.path, 4, {TestPanel{}}, fixture.now, 7);
+    fixture.Frame();
+    HANDLE file = CreateFileW(fixture.path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+    Require(file != INVALID_HANDLE_VALUE, "Open frame-driven pose telemetry fixture");
+    HANDLE mapping = CreateFileMappingW(file, nullptr, PAGE_READWRITE, 0, 0, nullptr);
+    Require(mapping != nullptr, "Map frame-driven pose telemetry fixture");
+    auto *header = static_cast<Header *>(MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(Header)));
+    Require(header != nullptr, "View frame-driven pose telemetry fixture");
+    header->poseRequestTimestamp = 100000;
+    headPose = {HeadOrientation(1.57079632679f, 0.3f, -0.2f), {2, 3, 3}};
+    fixture.Frame();
+    Require(header->poseTimestamp == 100000 && header->poseOriginRevision == 7 &&
+                std::abs(header->headPosition[0] - 1) < 0.001f &&
+                std::abs(header->headPosition[1] - 1) < 0.001f &&
+                std::abs(header->headPosition[2]) < 0.001f &&
+                std::abs(header->headYaw - 1.57079632679f) < 0.001f,
+            "A pending request publishes the located head pose through the frame loop");
+    UnmapViewOfFile(header);
+    CloseHandle(mapping);
+    CloseHandle(file);
 }
 
 void TestEdvrLateApplicationInput(const std::shared_ptr<Instance> &instance, const XrFrameEndInfo &frame,
