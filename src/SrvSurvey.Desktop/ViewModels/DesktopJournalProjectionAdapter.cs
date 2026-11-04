@@ -599,10 +599,17 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         tick.PreviousFrontierId = state.Session.FrontierId;
         tick.PreviousCommanderName = state.Session.CommanderName;
         state.IsAwaitingCommanderIdentity = context.Update.IsAwaitingCommanderIdentity;
-        if (context.Update.Status is not null)
+        string? statusSource = Path.GetDirectoryName(context.Update.JournalPath);
+        bool sourceChanged = !string.Equals(
+            statusSource,
+            state.LatestStatusSource,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        );
+        if (sourceChanged || context.Update.Status is not null)
         {
             state.LatestStatus = context.Update.Status;
         }
+        state.LatestStatusSource = statusSource;
     }
 
     /// <summary>

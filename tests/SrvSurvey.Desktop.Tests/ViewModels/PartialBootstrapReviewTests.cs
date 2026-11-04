@@ -79,6 +79,19 @@ public sealed class PartialBootstrapReviewTests
             CommanderProfileLoadResult stored = await store.LoadAsync("F123", true);
             Assert.Equal(existingProfile ? 11 : 2, stored.Data!.Exploration.JumpCount);
             Assert.Equal(existingProfile ? 110 : 30, stored.Data.Exploration.DistanceTravelled);
+            string changedSource = Path.Combine(root, "another-journal-source");
+            Directory.CreateDirectory(changedSource);
+            await model.ApplyMonitorUpdateAsync(
+                first with
+                {
+                    JournalPath = Path.Combine(changedSource, "Journal.2026-11-04T050000.01.log"),
+                    JournalEvents = [],
+                    Status = null,
+                    Errors = [],
+                },
+                true
+            );
+            Assert.Null(model.CurrentVrOverlayMode);
         }
         finally
         {

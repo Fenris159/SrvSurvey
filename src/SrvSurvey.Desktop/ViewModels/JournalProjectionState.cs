@@ -24,6 +24,8 @@ internal sealed class JournalProjectionState
     internal bool ProviderCargoSessionEnded { get; set; }
     internal DateTimeOffset? ProviderCargoSessionEndedAt { get; set; }
 
+    internal string? LatestStatusSource { get; set; }
+
     internal EliteStatus? LatestStatus { get; set; }
 
     internal CargoSnapshot? LatestCargo { get; set; }

@@ -62,9 +62,10 @@ from RC77.
   replay remains in bootstrap mode through partial or failed reads, so historical
   commands stay suppressed. Partial startup reads also retain the current status
   and avoid recounting exploration totals already present in a saved profile.
+  Retained status is cleared when polling switches to another journal directory.
   Quiet Steam captures also work when Elite is on a nested Gamescope display
   with no switchable desktop window.
-- **Journey note recovery:** A saved note's pending visit count can finish even
+- **Journey recovery and shared writes:** A saved note's pending visit count can finish even
   if another window edits the note before retry. The external text is retained;
   additional unsaved edits still receive conflict protection and can be discarded.
   Journey edits read and write under one shared file lease so independent windows
@@ -75,8 +76,16 @@ from RC77.
   Catch-up persists new activity even when it shares the saved timestamp. Older
   saves retain their unknown replay boundary until a later timestamp, and copied
   journals with shifted lines do not duplicate saved captures. Reconciliation
-  checks saved visits and activity before retiring pending progress, keeps newer
-  timestamps and retains both snapshots for retry when partial progress conflicts.
+  retains individual record identities throughout the tracked history and merges
+  pending observations against the latest saved Journey, including different
+  captures with equal totals. Late observations update their original visits
+  without reopening departures or losing newer timestamps. Refresh and conclude
+  flush pending records first. Catch-up receipts also survive failed saves and
+  later metadata edits. Earlier byte-position receipts remain compatible, and
+  known live records stay deduplicated even at an incomplete legacy boundary.
+  Late body-count reports retain the newer observation, including same-time final
+  scan results. Older snapshots without reliable coverage keep ambiguous pending
+  activity available for recovery.
   Live/history matching handles UTF-8 and mixed line endings. Readouts identify
   note-save counts explicitly.
 

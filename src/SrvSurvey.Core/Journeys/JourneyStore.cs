@@ -322,6 +322,8 @@ public sealed partial class JourneyStore(
             }
         }
 
+        DateTimeOffset watermark = GetDateTimeOffset(root, "watermark") ?? startTime;
+        RecordedProgress? progress = ReadRecordedProgress(root, watermark);
         return new JourneyDocument(
             fileName,
             path,
@@ -336,7 +338,11 @@ public sealed partial class JourneyStore(
             visits
         )
         {
-            WatermarkRecords = ReadWatermarkRecords(root, GetDateTimeOffset(root, "watermark") ?? startTime),
+            WatermarkRecords = ReadWatermarkRecords(root, watermark),
+            WatermarkRecordsComplete = ReadBoundaryCompleteness(root, watermark),
+            RecordTrackingStart = progress?.From,
+            RecordTrackingStartComplete = progress?.Complete ?? false,
+            RecordedJournalRecords = progress?.Records,
             IsArchived = root["archived"] is JsonValue archived && archived.TryGetValue<bool>(out bool value) && value,
         };
     }
@@ -367,7 +373,12 @@ public sealed partial class JourneyStore(
             ReadStringIntDictionary(root, "subCats"),
             ReadStringIntDictionary(root, "saaSignals"),
             ReadStringIntDictionary(root, "fssSignals")
-        );
+        )
+        {
+            BodyCountObservedAt = GetDateTimeOffset(root, "bodyCountObservedAt"),
+            BodyCountIsFinal =
+                root["bodyCountIsFinal"] is JsonValue flag && flag.TryGetValue<bool>(out bool final) && final,
+        };
     }
 
     private static JourneySystemReference? ParseStarReference(JsonNode? node)
@@ -485,6 +496,7 @@ public sealed partial class JourneyStore(
             root[WatermarkRecordsPropertyName] = new JsonObject
             {
                 ["timestamp"] = journey.Watermark,
+                ["complete"] = journey.WatermarkRecordsComplete ?? true,
                 ["records"] = new JsonArray(records.Select(record => (JsonNode?)JsonValue.Create(record)).ToArray()),
             };
         }
@@ -492,6 +504,7 @@ public sealed partial class JourneyStore(
         {
             root.Remove(WatermarkRecordsPropertyName);
         }
+        WriteRecordedProgress(root, journey);
         root[VisitedSystemsPropertyName] = MergeVisits(
             root[VisitedSystemsPropertyName] as JsonArray,
             journey.VisitedSystems
@@ -551,6 +564,16 @@ public sealed partial class JourneyStore(
             star.Position.Z.ToString(CultureInfo.InvariantCulture)
         );
         root["arrived"] = visit.Arrived;
+        if (visit.BodyCountObservedAt is { } observed)
+        {
+            root["bodyCountObservedAt"] = observed;
+            root["bodyCountIsFinal"] = visit.BodyCountIsFinal;
+        }
+        else
+        {
+            root.Remove("bodyCountObservedAt");
+            root.Remove("bodyCountIsFinal");
+        }
         if (visit.Departed is { } departed)
         {
             root["departed"] = departed;

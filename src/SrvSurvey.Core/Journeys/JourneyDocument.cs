@@ -19,6 +19,14 @@ public sealed record JourneyDocument(
     /// <summary>Exact source records represented at the watermark; absent in legacy documents.</summary>
     public IReadOnlySet<string>? WatermarkRecords { get; init; }
 
+    /// <summary>Null preserves compatibility with older exact boundary receipts.</summary>
+    public bool? WatermarkRecordsComplete { get; init; }
+
+    /// <summary>Identity coverage starts here; older unknown history remains part of the saved baseline.</summary>
+    public DateTimeOffset? RecordTrackingStart { get; init; }
+    public bool RecordTrackingStartComplete { get; init; }
+    public IReadOnlySet<string>? RecordedJournalRecords { get; init; }
+
     public bool IsArchived { get; init; }
 
     public bool IsActive => EndTime is null;
@@ -40,6 +48,9 @@ public sealed record JourneySystemVisit(
     IReadOnlyDictionary<string, int>? FssSignals
 )
 {
+    public DateTimeOffset? BodyCountObservedAt { get; init; }
+    public bool BodyCountIsFinal { get; init; }
+
     public bool HasCompletedFss => Counts.BodyCount > 0 && Counts.BodyScans >= Counts.BodyCount;
 }
 

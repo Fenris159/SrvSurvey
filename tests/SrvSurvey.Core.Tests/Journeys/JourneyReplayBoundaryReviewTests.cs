@@ -14,7 +14,15 @@ public sealed partial class JourneyServiceTests
     public async Task LegacyBoundaryRemainsUnknownUntilNewerActivityArrives()
     {
         JourneyDocument saved = await BeginBoundaryJourneyAsync();
-        await new JourneyStore(DataDirectory).SaveAsync(saved with { WatermarkRecords = null });
+        await new JourneyStore(DataDirectory).SaveAsync(
+            saved with
+            {
+                WatermarkRecords = null,
+                WatermarkRecordsComplete = null,
+                RecordTrackingStart = null,
+                RecordedJournalRecords = null,
+            }
+        );
         JourneyService legacy = BoundaryService([JournalDirectory, Path.Combine(temporaryDirectory, "unavailable")]);
         await legacy.InitializeActiveAsync("F123", true);
         var monitor = new JournalDirectoryMonitor(JournalDirectory, "F123");
@@ -123,12 +131,12 @@ public sealed partial class JourneyServiceTests
                 SourceRecordIdentity = "J2:2",
             };
             await other.ApplyLiveAsync([touchdown]);
-            await Assert.ThrowsAsync<IOException>(() => pending.ApplyLiveAsync([music]));
+            await pending.ApplyLiveAsync([music]);
             JourneyDocument conflicted = (
                 await new JourneyStore(DataDirectory).LoadAsync("F123", saved.FileName)
             ).Journey!;
             Assert.Equal(1, conflicted.CurrentSystem!.Counts.Touchdowns);
-            Assert.Equal(0, conflicted.CurrentSystem.Counts.Screenshots);
+            Assert.Equal(1, conflicted.CurrentSystem.Counts.Screenshots);
             Assert.Equal(1, pending.ActiveJourney!.CurrentSystem!.Counts.Screenshots);
             await pending.ApplyLiveAsync([touchdown]);
             Assert.Equal(1, pending.ActiveJourney.CurrentSystem.Counts.Touchdowns);

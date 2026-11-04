@@ -28,6 +28,8 @@ public sealed partial class JourneyService
         {
             activeProcessor = null;
             pendingLiveProgress = null;
+            pendingJournalEvents.Clear();
+            pendingHistoryReplay = null;
             return JourneyServiceResult.Empty;
         }
         string fileName;
@@ -53,6 +55,8 @@ public sealed partial class JourneyService
             {
                 activeProcessor = null;
                 pendingLiveProgress = null;
+                pendingJournalEvents.Clear();
+                pendingHistoryReplay = null;
                 if (
                     !await profileStore
                         .TryReplaceActiveJourneyAsync(
@@ -87,6 +91,8 @@ public sealed partial class JourneyService
         {
             activeProcessor = null;
             pendingLiveProgress = null;
+            pendingJournalEvents.Clear();
+            pendingHistoryReplay = null;
             if (
                 !await profileStore
                     .TryReplaceActiveJourneyAsync(
@@ -134,6 +140,11 @@ public sealed partial class JourneyService
         CancellationToken cancellationToken
     )
     {
+        if (HasPendingProgress(journey))
+        {
+            journey = await UpdateStoredJourneyLockedAsync(journey, static latest => latest, cancellationToken)
+                .ConfigureAwait(false);
+        }
         if (
             replay
             || activeProcessor?.Journey.FileName != journey.FileName
@@ -143,6 +154,8 @@ public sealed partial class JourneyService
         {
             activeProcessor = new(journey, exobiologyCatalog, isOdyssey);
             pendingLiveProgress = null;
+            pendingJournalEvents.Clear();
+            pendingHistoryReplay = null;
             activeIsOdyssey = isOdyssey;
         }
         IReadOnlyList<string> warnings = upgradeWarning is null ? [] : [upgradeWarning];
@@ -169,6 +182,8 @@ public sealed partial class JourneyService
     {
         activeProcessor = null;
         pendingLiveProgress = null;
+        pendingJournalEvents.Clear();
+        pendingHistoryReplay = null;
         RecoveryReference = new(frontierId, isOdyssey, fileName);
         log?.Invoke($"Journeys: unavailable active selection for {frontierId}: {error}");
         return new(
@@ -243,6 +258,8 @@ public sealed partial class JourneyService
             {
                 activeProcessor = null;
                 pendingLiveProgress = null;
+                pendingJournalEvents.Clear();
+                pendingHistoryReplay = null;
             }
             if (RecoveryReference == expected)
             {
@@ -338,6 +355,8 @@ public sealed partial class JourneyService
     {
         activeProcessor = null;
         pendingLiveProgress = null;
+        pendingJournalEvents.Clear();
+        pendingHistoryReplay = null;
         return new(
             null,
             ["The active journey selection changed while loading. Refresh Journeys to load the latest selection."],
