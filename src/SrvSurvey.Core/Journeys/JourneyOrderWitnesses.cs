@@ -83,6 +83,34 @@ internal sealed class JourneyOrderWitnesses
         return result;
     }
 
+    internal JourneySourcePlacement[] Placements()
+    {
+        return witnessedCounts
+            .Keys.Select(key => key.Witness)
+            .Distinct(StringComparer.Ordinal)
+            .Select(CreatePlacement)
+            .ToArray();
+    }
+
+    private JourneySourcePlacement CreatePlacement(string witness)
+    {
+        var parents = new Dictionary<int, HashSet<int>>();
+        for (int index = 0; index < records.Length; index++)
+        {
+            HashSet<int>? preceding = witnessedParents.GetValueOrDefault((witness, index));
+            if (records[index].SourceWitnessOccurrences?.ContainsKey(witness) == true || preceding is not null)
+            {
+                parents.TryAdd(index, []);
+            }
+            foreach (int parent in preceding ?? [])
+            {
+                parents[index].Add(parent);
+                parents.TryAdd(parent, []);
+            }
+        }
+        return new JourneySourcePlacement(records, parents);
+    }
+
     private void AddUnambiguousAncestors(int child, string witness, HashSet<int> result)
     {
         if (!IsUnambiguous(child, witness))

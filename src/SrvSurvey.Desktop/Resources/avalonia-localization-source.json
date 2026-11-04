@@ -63661,6 +63661,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
+  },
+  {
     "Text": "The editor contains JSON null.",
     "IsFormat": false,
     "SourceKinds": [

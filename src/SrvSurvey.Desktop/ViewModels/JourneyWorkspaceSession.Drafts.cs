@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Journeys;
+using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -19,7 +20,9 @@ internal sealed partial class JourneyWorkspaceSession
             systemNotes.IsDirty ? SelectedSystemNotes : null,
             SelectedSystem is { } system ? (system.Visit.StarSystem.SystemAddress, system.Visit.Arrived) : null,
             ShowArchived,
-            systemNotes.CountUpdate
+            systemNotes.CountUpdate,
+            systemNotes.Context,
+            systemNotes.Loaded
         );
     }
 
@@ -43,11 +46,16 @@ internal sealed partial class JourneyWorkspaceSession
             RaiseLibraryState();
             SelectVisibleJourney(draft.FileName);
         }
-        if (draft.System is { } identity)
+        if (draft.System is not null || draft.NotesContext is not null)
         {
-            SelectedSystem = VisitedSystems.FirstOrDefault(item =>
-                item.Visit.StarSystem.SystemAddress == identity.Address && item.Visit.Arrived == identity.Arrived
-            );
+            SelectedSystem =
+                VisitedSystems.FirstOrDefault(item =>
+                    item.Visit.StarSystem.SystemAddress == draft.System?.Address
+                    && item.Visit.Arrived == draft.System?.Arrived
+                )
+                ?? VisitedSystems.FirstOrDefault(item =>
+                    item.Visit.StarSystem.SystemAddress == draft.NotesContext?.SystemAddress
+                );
         }
         await LoadSelectedSystemAsync(SelectedSystem);
         if (draft.Name is not null)
@@ -58,10 +66,16 @@ internal sealed partial class JourneyWorkspaceSession
         {
             JourneyDescription = draft.Description;
         }
-        if (SelectedSystem is not null && draft.Notes is not null)
+        if (draft.Notes is not null)
         {
-            SelectedSystemNotes = draft.Notes;
-            systemNotes = systemNotes with { CountUpdate = draft.CountUpdate };
+            systemNotes = new SystemNoteDraft(
+                draft.NotesBaseline ?? systemNotes.Loaded,
+                draft.Notes,
+                draft.CountUpdate,
+                draft.NotesContext ?? systemNotes.Context
+            );
+            OnPropertyChanged(nameof(SelectedSystemNotes));
+            OnPropertyChanged(nameof(CanEditSystemNotes));
             RaiseDirtyState();
             RaiseCommands();
         }
@@ -78,7 +92,9 @@ internal sealed record JourneyEditDraft(
     string? Notes,
     (long Address, DateTimeOffset Arrived)? System,
     bool Archived,
-    JourneyNoteCountUpdate? CountUpdate = null
+    JourneyNoteCountUpdate? CountUpdate = null,
+    SystemNoteContext? NotesContext = null,
+    string? NotesBaseline = null
 );
 
 internal sealed class JourneyNoteCountUpdate(JourneyDocument journey, long address, DateTimeOffset arrived)

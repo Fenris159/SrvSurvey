@@ -31729,6 +31729,10 @@
       "translation": "Der Punkt ist ein Scan-/Probenort und der Kreis ist der Radius seiner Kolonie. Warnung im Inneren bedeutet zu nah; Erfolg außerhalb bedeutet gültigen Abstand."
     },
     {
+      "source": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+      "translation": "Das bearbeitete System ist nicht mehr ausgewählt. Ihre Notizen wurden beibehalten; Stellen Sie das System wieder her oder verwerfen Sie den Entwurf."
+    },
+    {
       "source": "The editor contains JSON null.",
       "translation": "Der Editor enthält JSON null."
     },
@@ -73141,6 +73145,10 @@
     {
       "source": "The dot is a scan/sample location and the circle is its colony radius. Warning inside means too close; success outside means valid spacing.",
       "translation": "El punto es una ubicación de escaneo/muestra y el círculo es el radio de su colonia. Advertencia en el interior significa demasiado cerca; el éxito en el exterior significa un espaciamiento válido."
+    },
+    {
+      "source": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+      "translation": "El sistema editado ya no está seleccionado. Sus notas fueron retenidas; restaurar ese sistema o descartar el borrador."
     },
     {
       "source": "The editor contains JSON null.",
@@ -114557,6 +114565,10 @@
       "translation": "Le point est un emplacement de numérisation/échantillon et le cercle est le rayon de sa colonie. Avertissement à l'intérieur signifie trop près ; le succès à l’extérieur signifie un espacement valide."
     },
     {
+      "source": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+      "translation": "Le système édité n'est plus sélectionné. Vos notes ont été conservées ; restaurer ce système ou supprimer le brouillon."
+    },
+    {
       "source": "The editor contains JSON null.",
       "translation": "L'éditeur contient JSON null."
     },
@@ -155969,6 +155981,10 @@
     {
       "source": "The dot is a scan/sample location and the circle is its colony radius. Warning inside means too close; success outside means valid spacing.",
       "translation": "O ponto é um local de varredura/amostra e o círculo é o raio da colônia. Aviso dentro significa muito perto; sucesso fora significa espaçamento válido."
+    },
+    {
+      "source": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+      "translation": "O sistema editado não está mais selecionado. Suas anotações foram retidas; restaurar esse sistema ou descartar o rascunho."
     },
     {
       "source": "The editor contains JSON null.",
@@ -197385,6 +197401,10 @@
       "translation": "Точка — это место сканирования/образца, а круг — радиус колонии. Предупреждение внутри означает слишком близко; успех снаружи означает допустимый интервал."
     },
     {
+      "source": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+      "translation": "Отредактированная система больше не выбрана. Ваши записи были сохранены; восстановите эту систему или откажитесь от проекта."
+    },
+    {
       "source": "The editor contains JSON null.",
       "translation": "Редактор содержит значение JSON null."
     },
@@ -238799,6 +238819,10 @@
       "translation": "点是扫描/采样位置，圆圈是其菌落半径。警告内侧表示距离太近；外部成功意味着有效的间距。"
     },
     {
+      "source": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+      "translation": "不再选择已编辑的系统。您的笔记已被保留；恢复该系统或放弃草稿。"
+    },
+    {
       "source": "The editor contains JSON null.",
       "translation": "编辑器包含 JSON null。"
     },
@@ -280211,6 +280235,10 @@
     {
       "source": "The dot is a scan/sample location and the circle is its colony radius. Warning inside means too close; success outside means valid spacing.",
       "translation": "* THE DOT IS A SCAN/SAMPLE LOCATION AND THE CIRCLE IS ITS COLONY RADIUS. WARNING INSIDE MEANS TOO CLOSE; SUCCESS OUTSIDE MEANS VALID SPACING. >>>!"
+    },
+    {
+      "source": "The edited system is no longer selected. Your notes were retained; restore that system or discard the draft.",
+      "translation": "* THE EDITED SYSTEM IS NO LONGER SELECTED. YOUR NOTES WERE RETAINED; RESTORE THAT SYSTEM OR DISCARD THE DRAFT. >>>!"
     },
     {
       "source": "The editor contains JSON null.",

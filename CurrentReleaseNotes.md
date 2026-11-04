@@ -100,10 +100,13 @@ from RC77.
   cycles from omitted duplicate captures or linking a new source to another
   source's tail. Known order between arrivals and activity survives repeated
   entries between them, and growing live journals keep the same attribution
-  across polling boundaries. Conflicting copies retain the saved Journey until
-  repaired. Corrections from already-known records refresh the Journey workspace
-  immediately while retaining unsaved edits. Pending observations can also finish
-  saving after another window
+  across polling boundaries. Partial copies also retain a repeated capture's
+  placement before or after an arrival. Conflicting copies retain the saved
+  Journey until repaired. Corrections from already-known records refresh the Journey workspace
+  immediately while retaining unsaved edits. If a corrected visit disappears,
+  unsaved system notes stay attached to their original system, including across
+  commander changes; they cannot be saved to another destination. Pending
+  observations can also finish saving after another window
   concludes the Journey, without restoring its active selection.
   Live/history matching handles UTF-8 and mixed line endings. Readouts identify
   note-save counts explicitly.

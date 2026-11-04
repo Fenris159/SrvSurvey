@@ -27,60 +27,13 @@ internal static class JourneyObservationOrder
         List<JourneyObservedRecord> result
     )
     {
-        int[] degree = new int[records.Length];
-        var children = new List<int>[records.Length];
-        for (int index = 0; index < records.Length; index++)
-        {
-            children[index] = [];
-        }
-        LinkPredecessors(records, aliases, degree, children);
-        var ready = new SortedSet<int>(Comparer<int>.Create((left, right) => Compare(records, left, right)));
-        for (int index = 0; index < degree.Length; index++)
-        {
-            if (degree[index] == 0)
-            {
-                ready.Add(index);
-            }
-        }
-        int written = 0;
-        while (ready.Count > 0)
-        {
-            int index = ready.Min;
-            ready.Remove(index);
-            result.Add(records[index]);
-            written++;
-            foreach (int child in children[index])
-            {
-                if (--degree[child] == 0)
-                {
-                    ready.Add(child);
-                }
-            }
-        }
-        if (written != records.Length)
-        {
-            throw new IOException(
-                "Journal copies contain conflicting record order; Journey observations were retained for recovery."
-            );
-        }
-    }
-
-    private static void LinkPredecessors(
-        JourneyObservedRecord[] records,
-        IReadOnlyDictionary<string, string> aliases,
-        int[] degree,
-        List<int>[] children
-    )
-    {
         var witnesses = new JourneyOrderWitnesses(records, aliases);
-        for (int index = 0; index < records.Length; index++)
-        {
-            foreach (int parent in witnesses.Predecessors(index).Where(parent => parent != index))
-            {
-                degree[index]++;
-                children[parent].Add(index);
-            }
-        }
+        var schedule = new JourneyObservationSchedule(
+            records,
+            witnesses,
+            (left, right) => Compare(records, left, right)
+        );
+        result.AddRange(schedule.Sort().Select(index => records[index]));
     }
 
     internal static Dictionary<string, int> Multiplicities(IReadOnlyList<JourneyObservedRecord> records)
@@ -126,7 +79,7 @@ internal static class JourneyObservationOrder
         return identity.Length - last - 1 == 64 ? identity[..prior] + ":" + identity[(last + 1)..] : identity;
     }
 
-    private static int CanonicalOccurrence(string identity)
+    internal static int CanonicalOccurrence(string identity)
     {
         string key = ContentKey(identity);
         return
