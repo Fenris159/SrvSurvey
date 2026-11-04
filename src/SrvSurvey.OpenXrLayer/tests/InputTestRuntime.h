@@ -6,6 +6,7 @@ std::vector<uint32_t> priorities;
 std::vector<XrActionSuggestedBinding> suggested;
 std::vector<XrActionSet> attachedSets;
 std::vector<XrActiveActionSet> synchronizedSets;
+std::map<XrAction, XrActionSet> actionOwners;
 const void *inputNext = nullptr;
 XrResult syncResult = XR_SUCCESS, attachResult = XR_SUCCESS;
 uint32_t attachCalls = 0;
@@ -30,10 +31,11 @@ XrResult XRAPI_CALL InputDestroySet(XrActionSet)
     ++destroyedActionSets;
     return XR_SUCCESS;
 }
-XrResult XRAPI_CALL InputCreateAction(XrActionSet, const XrActionCreateInfo *info, XrAction *output)
+XrResult XRAPI_CALL InputCreateAction(XrActionSet set, const XrActionCreateInfo *info, XrAction *output)
 {
     Require(info->countSubactionPaths == 2, "Create two-handed actions");
     *output = reinterpret_cast<XrAction>(nextInputHandle++);
+    actionOwners[*output] = set;
     return XR_SUCCESS;
 }
 XrResult XRAPI_CALL InputSuggest(XrInstance, const XrInteractionProfileSuggestedBinding *info)
@@ -51,7 +53,9 @@ XrResult XRAPI_CALL InputAttach(XrSession, const XrSessionActionSetsAttachInfo *
 }
 XrResult XRAPI_CALL InputSync(XrSession, const XrActionsSyncInfo *info)
 {
-    synchronizedSets.assign(info->activeActionSets, info->activeActionSets + info->countActiveActionSets);
+    synchronizedSets.clear();
+    if (info->countActiveActionSets)
+        synchronizedSets.assign(info->activeActionSets, info->activeActionSets + info->countActiveActionSets);
     inputNext = info->next;
     return syncResult;
 }
@@ -62,31 +66,42 @@ XrResult XRAPI_CALL InputSpace(XrSession, const XrActionSpaceCreateInfo *, XrSpa
     *output = reinterpret_cast<XrSpace>(nextInputHandle++);
     return XR_SUCCESS;
 }
-XrResult XRAPI_CALL InputPose(XrSession, const XrActionStateGetInfo *, XrActionStatePose *value)
+bool InputActionActive(const XrActionStateGetInfo *info)
 {
-    value->isActive = XR_TRUE;
+    auto owner = actionOwners.find(info->action);
+    return owner != actionOwners.end() && syncResult == XR_SUCCESS &&
+           std::any_of(synchronizedSets.begin(), synchronizedSets.end(), [&](const auto &set) {
+               return set.actionSet == owner->second &&
+                      (set.subactionPath == XR_NULL_PATH || set.subactionPath == info->subactionPath);
+           });
+}
+XrResult XRAPI_CALL InputPose(XrSession, const XrActionStateGetInfo *info, XrActionStatePose *value)
+{
+    value->isActive = InputActionActive(info) ? XR_TRUE : XR_FALSE;
     return XR_SUCCESS;
 }
-XrResult XRAPI_CALL InputBoolean(XrSession, const XrActionStateGetInfo *, XrActionStateBoolean *value)
+XrResult XRAPI_CALL InputBoolean(XrSession, const XrActionStateGetInfo *info, XrActionStateBoolean *value)
 {
-    value->isActive = XR_TRUE;
-    value->currentState = controllerButtons ? XR_TRUE : XR_FALSE;
+    value->isActive = InputActionActive(info) ? XR_TRUE : XR_FALSE;
+    value->currentState = value->isActive && controllerButtons ? XR_TRUE : XR_FALSE;
     return XR_SUCCESS;
 }
-XrResult XRAPI_CALL InputVector(XrSession, const XrActionStateGetInfo *, XrActionStateVector2f *value)
+XrResult XRAPI_CALL InputVector(XrSession, const XrActionStateGetInfo *info, XrActionStateVector2f *value)
 {
-    value->isActive = XR_TRUE;
+    value->isActive = InputActionActive(info) ? XR_TRUE : XR_FALSE;
     value->currentState = {0, 0};
     return XR_SUCCESS;
 }
 class InputFixture
 {
     HANDLE file{}, mapping{};
+    std::function<int64_t()> clock;
 
   public:
     std::wstring path;
     InputHeader *header = nullptr;
-    explicit InputFixture(const std::wstring &framePath) : path(framePath + L".input")
+    explicit InputFixture(const std::wstring &framePath, std::function<int64_t()> timeProvider = Now)
+        : clock(std::move(timeProvider)), path(framePath + L".input")
     {
         file = CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, CREATE_ALWAYS, 0, nullptr);
@@ -99,14 +114,23 @@ class InputFixture
         header->magic = InputMagic;
         header->version = InputVersion;
         header->generation = 123;
-        header->controlTime = Now();
+        header->controlTime = clock();
         header->eventSequence = 1; // Recover an interrupted native writer after a game restart.
     }
     void Enable(bool enabled)
     {
         ++header->controlSequence;
         header->enabled = enabled;
-        header->controlTime = Now();
+        header->controlTime = clock();
+        MemoryBarrier();
+        ++header->controlSequence;
+    }
+    void EnableEdvr(bool enabled)
+    {
+        ++header->controlSequence;
+        header->edvrInput = enabled ? 1 : 0;
+        header->edvrGeneration = enabled ? header->generation : 0;
+        header->controlTime = clock();
         MemoryBarrier();
         ++header->controlSequence;
     }

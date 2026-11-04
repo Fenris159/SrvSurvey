@@ -4,17 +4,24 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
 {
+    private const int ActionSetsAlreadyAttachedError = -47;
     private readonly Func<OpenXrFrameBridge> createBridge;
     private readonly Func<bool> platformSupported;
+    private readonly Func<bool> edvrControllerInput;
     private readonly Dictionary<string, OpenXrOverlayFrame> frames = new(StringComparer.Ordinal);
     private OpenXrFrameBridge? bridge;
     private uint originRevision;
     private bool interactionEnabled;
     private readonly Dictionary<ulong, string> identities = [];
 
-    public OpenXrOverlayRuntime(Func<OpenXrFrameBridge>? createBridge = null, Func<bool>? platformSupported = null)
+    public OpenXrOverlayRuntime(
+        Func<OpenXrFrameBridge>? createBridge = null,
+        Func<bool>? platformSupported = null,
+        Func<bool>? edvrControllerInput = null
+    )
     {
         this.createBridge = createBridge ?? (() => new OpenXrFrameBridge(OpenXrFrameBridge.DefaultPath));
+        this.edvrControllerInput = edvrControllerInput ?? (() => false);
         this.platformSupported =
             platformSupported
             ?? (() => OperatingSystem.IsWindows() && RuntimeInformation.ProcessArchitecture == Architecture.X64);
@@ -23,6 +30,14 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     public bool IsInitialized { get; private set; }
 
     public string DisplayName => "VDXR / OpenXR";
+
+    public int MaximumOverlays => OpenXrFramePacket.MaximumOverlays;
+
+    public bool TryGetHeadPose(out VrOverlayHeadPose? pose)
+    {
+        pose = null;
+        return IsInitialized && bridge is not null && bridge.TryReadHeadPose(originRevision, out pose);
+    }
 
     public VrRuntimeProbe Probe()
     {
@@ -34,6 +49,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
         try
         {
             bridge ??= createBridge();
+            bridge.SetEdvrControllerInput(edvrControllerInput());
             if (!IsInitialized)
             {
                 bridge.Publish(OpenXrFramePacket.Encode(frames, originRevision));
@@ -94,6 +110,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     {
         try
         {
+            bridge?.SetEdvrControllerInput(edvrControllerInput());
             bridge?.Publish(OpenXrFramePacket.Encode(frames, originRevision));
             return VrRuntimeResult.Success("Published the OpenXR overlay frames.");
         }
@@ -124,19 +141,31 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
 
     public VrRuntimeResult SetInteractionEnabled(bool enabled)
     {
+        if (enabled && edvrControllerInput() && bridge?.InputError == ActionSetsAlreadyAttachedError)
+        {
+            return VrRuntimeResult.Failure(
+                "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available."
+            );
+        }
+        if (enabled && bridge?.IsFrameDrivenInput == true && !edvrControllerInput())
+        {
+            return VrRuntimeResult.Failure(
+                "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again."
+            );
+        }
         if (enabled && (!IsInitialized || bridge?.IsInputReady != true))
         {
             return VrRuntimeResult.Failure(
-                $"Waiting for VDXR controller input (OpenXR error {bridge?.InputError ?? 0}). Update the OpenXR layer and restart Elite before using this shortcut."
+                $"Waiting for VDXR controller input (OpenXR error {bridge?.InputError ?? 0}). Update the OpenXR layer and restart Elite before using this shortcut. For EDVR, enable Experimental EDVR controller input in the VR settings."
             );
         }
         interactionEnabled = enabled;
         bridge?.SetInteractionEnabled(enabled);
-        return VrRuntimeResult.Success(
-            enabled
-                ? "VDXR controller interaction is enabled. Point at a panel and use the trigger to click."
-                : "VR overlays are click-through again."
-        );
+        string enabledMessage =
+            bridge?.IsFrameDrivenInput == true
+                ? "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click."
+                : "VDXR controller interaction is enabled. Point at a panel and use the trigger to click.";
+        return VrRuntimeResult.Success(enabled ? enabledMessage : "VR overlays are click-through again.");
     }
 
     public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents()

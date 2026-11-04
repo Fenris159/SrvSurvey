@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <atomic>
 #include <d3d11.h>
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -36,11 +37,13 @@ class Mailbox
     uint8_t *data = nullptr;
     std::wstring path;
     int64_t nextOpenAttempt = 0;
+    std::function<int64_t()> clock;
     uint32_t cachedSequence = 0;
     bool cacheValid = false;
 
   public:
-    explicit Mailbox(std::wstring customPath = {}) : path(std::move(customPath))
+    explicit Mailbox(std::wstring customPath = {}, std::function<int64_t()> timeProvider = Now)
+        : path(std::move(customPath)), clock(std::move(timeProvider))
     {
     }
     ~Mailbox()
@@ -56,9 +59,9 @@ class Mailbox
     {
         if (data)
             return true;
-        if (Now() < nextOpenAttempt)
+        if (clock() < nextOpenAttempt)
             return false;
-        nextOpenAttempt = Now() + 1000;
+        nextOpenAttempt = clock() + 1000;
         if (path.empty())
         {
             PWSTR folder = nullptr;
@@ -109,7 +112,7 @@ class Mailbox
                 continue;
             Header current{};
             std::memcpy(&current, data, sizeof(current));
-            int64_t now = Now();
+            int64_t now = clock();
             if (current.magic != Magic || current.version != Version || current.timestamp <= 0 ||
                 now < current.timestamp || now - current.timestamp > 2000)
                 return false;
@@ -129,7 +132,7 @@ class Mailbox
             std::memcpy(packet.data(), data, length);
             MemoryBarrier();
             LONG after = InterlockedCompareExchange(sequence, 0, 0);
-            if (before == after && ValidatePacket(packet, Now()))
+            if (before == after && ValidatePacket(packet, clock()))
             {
                 cachedSequence = static_cast<uint32_t>(before);
                 cacheValid = true;
@@ -143,7 +146,7 @@ class Mailbox
         if (!Open())
             return false;
         auto *header = reinterpret_cast<Header *>(data);
-        int64_t age = Now() - header->timestamp;
+        int64_t age = clock() - header->timestamp;
         return header->magic == Magic && header->version == Version && header->timestamp > 0 && age >= 0 && age <= 2000;
     }
     void Report(uint32_t state, XrResult error = XR_SUCCESS, uint32_t rendered = 0)
@@ -156,8 +159,41 @@ class Mailbox
         header->lastError = error;
         header->processId = GetCurrentProcessId();
         MemoryBarrier();
-        InterlockedExchange64(reinterpret_cast<volatile LONG64 *>(data + 32), Now());
+        InterlockedExchange64(reinterpret_cast<volatile LONG64 *>(data + 32), clock());
     }
+    bool WantsHeadPose(int64_t now)
+    {
+        auto *header = reinterpret_cast<Header *>(data);
+        int64_t age = now - header->poseRequestTimestamp;
+        return header->poseRequestTimestamp > 0 && age >= 0 && age <= 1000;
+    }
+    void ReportHeadPose(const XrPosef &head, const XrPosef &anchor, uint32_t revision, int64_t timestamp)
+    {
+        auto yaw = [](const XrQuaternionf &q) {
+            return std::atan2(2 * (q.w * q.y + q.x * q.z), 1 - 2 * (q.x * q.x + q.y * q.y));
+        };
+        auto *header = reinterpret_cast<Header *>(data);
+        float heading = yaw(anchor.orientation), dx = head.position.x - anchor.position.x;
+        float dz = head.position.z - anchor.position.z;
+        auto *sequence = reinterpret_cast<volatile LONG *>(&header->poseSequence);
+        uint32_t writing = (static_cast<uint32_t>(InterlockedCompareExchange(sequence, 0, 0)) & ~1u) + 1u;
+        InterlockedExchange(sequence, static_cast<LONG>(writing));
+        MemoryBarrier();
+        header->poseTimestamp = timestamp;
+        header->poseOriginRevision = revision;
+        header->headPosition[0] = std::cos(heading) * dx - std::sin(heading) * dz;
+        header->headPosition[1] = head.position.y - anchor.position.y;
+        header->headPosition[2] = std::sin(heading) * dx + std::cos(heading) * dz;
+        header->headYaw = yaw(head.orientation) - heading;
+        MemoryBarrier();
+        InterlockedExchange(sequence, static_cast<LONG>(writing + 1u));
+    }
+    void ClearHeadPose()
+    {
+        if (data)
+            InterlockedExchange64(reinterpret_cast<volatile LONG64 *>(data + 64), 0);
+    }
+
 };
 
 struct Instance
@@ -189,7 +225,8 @@ struct Instance
     std::shared_ptr<InteractionActions> input;
     std::mutex inputMutex;
     uint32_t inputSessions = 0;
-    bool elite = false, vdxr = false;
+    bool elite = false, vdxr = false, edvr = false;
+    bool gameInputObserved = false;
 };
 struct Texture
 {
@@ -201,9 +238,10 @@ struct Texture
 };
 struct Session
 {
-    explicit Session(std::wstring mailboxPath = {})
-        : mailbox(mailboxPath),
-          input(std::make_unique<InteractionSession>(mailboxPath.empty() ? std::wstring{} : mailboxPath + L".input"))
+    explicit Session(std::wstring mailboxPath = {}, std::function<int64_t()> timeProvider = Now)
+        : mailbox(mailboxPath, timeProvider),
+          input(std::make_unique<InteractionSession>(mailboxPath.empty() ? std::wstring{} : mailboxPath + L".input")),
+          clock(std::move(timeProvider))
     {
     }
     ~Session()
@@ -221,12 +259,15 @@ struct Session
     std::map<uint64_t, Texture> textures;
     Mailbox mailbox;
     std::unique_ptr<InteractionSession> input;
+    std::function<int64_t()> clock;
     Texture cursorTexture;
     std::vector<uint8_t> packet;
     std::mutex mutex;
     std::atomic<bool> shouldRender{false};
     bool running = false, anchored = false, failed = false;
     bool uploadsPending = false;
+    bool gameInputObserved = false, frameInputAttempted = false, frameInputOwned = false, frameInputBlocked = false;
+    bool frameActionsActive = false;
     XrResult lastError = XR_SUCCESS;
     uint32_t originRevision = 0, maximumLayers = 0;
     XrTime pendingSpaceChange = 0;
@@ -493,6 +534,35 @@ std::optional<XrCompositionLayerQuad> CursorQuad(Session &session, const Pointer
     return quad;
 }
 
+bool UpdateFrameInput(Session &session, int64_t now);
+
+XrResult SyncFrameActions(Session &session, bool enabled)
+{
+    std::array<XrActiveActionSet, 2> active{};
+    XrActionsSyncInfo sync{XR_TYPE_ACTIONS_SYNC_INFO};
+    if (enabled)
+    {
+        for (size_t index = 0; index < active.size(); ++index)
+            active[index] = {session.input->actions->sets[index], XR_NULL_PATH};
+        sync.countActiveActionSets = static_cast<uint32_t>(active.size());
+        sync.activeActionSets = active.data();
+    }
+    XrResult result = session.instance->syncActions(session.handle, &sync);
+    if (XR_SUCCEEDED(result))
+        session.frameActionsActive = enabled && result == XR_SUCCESS;
+    else if (enabled)
+        session.frameActionsActive = true;
+    return result;
+}
+
+void SuspendFrameInput(Session &session)
+{
+    if (session.frameInputOwned && !session.frameInputBlocked && session.running && session.frameActionsActive)
+        session.input->Synced(SyncFrameActions(session, false), false);
+    else
+        session.input->Cancel();
+}
+
 XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
 {
     auto session = FindSession(handle);
@@ -511,15 +581,16 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
         }
         if (s.failed)
         {
+            SuspendFrameInput(s);
             s.mailbox.Report(4, s.lastError);
             return s.instance->endFrame(handle, info);
         }
         s.mailbox.Report(1);
-        bool interaction =
-            s.input->Requested(Now(), s.running && s.shouldRender && s.input->focused && s.mailbox.IsPublishing());
+        bool interaction = UpdateFrameInput(s, s.clock());
         if (!s.running || !s.shouldRender || !info->layerCount || !s.mailbox.Read(s.packet))
         {
-            s.input->Cancel();
+            s.mailbox.ClearHeadPose();
+            SuspendFrameInput(s);
             return s.instance->endFrame(handle, info);
         }
         Header header{};
@@ -538,12 +609,24 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
                 XR_SPACE_LOCATION_ORIENTATION_VALID_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT;
             if ((location.locationFlags & valid) != valid)
             {
-                s.input->Cancel();
+                s.mailbox.ClearHeadPose();
+                SuspendFrameInput(s);
                 return s.instance->endFrame(handle, info);
             }
             s.anchor = HeadingAnchor(location.pose);
             s.originRevision = header.originRevision;
             s.anchored = true;
+        }
+        if (s.mailbox.WantsHeadPose(s.clock()))
+        {
+            XrSpaceLocation location{XR_TYPE_SPACE_LOCATION};
+            XrResult located = s.instance->locateSpace(s.view, s.local, info->displayTime, &location);
+            constexpr XrSpaceLocationFlags valid =
+                XR_SPACE_LOCATION_ORIENTATION_VALID_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT;
+            if (XR_SUCCEEDED(located) && (location.locationFlags & valid) == valid)
+                s.mailbox.ReportHeadPose(location.pose, s.anchor, header.originRevision, s.clock());
+            else
+                s.mailbox.ClearHeadPose();
         }
         std::vector<XrCompositionLayerQuad> quads;
         quads.reserve(header.count + 1);
@@ -587,7 +670,7 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
             else
                 ++it;
         }
-        auto pointer = s.input->Update(s.local, surfaces, info->displayTime, Now());
+        auto pointer = s.input->Update(s.local, surfaces, info->displayTime, s.clock());
         if (interaction && pointer.cursor && layers.size() < s.maximumLayers)
         {
             try
@@ -599,20 +682,22 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
                     layers.push_back(reinterpret_cast<const XrCompositionLayerBaseHeader *>(&quads.back()));
                 }
                 else
-                    pointer = s.input->Update(XR_NULL_HANDLE, {}, info->displayTime, Now());
+                    pointer = s.input->Update(XR_NULL_HANDLE, {}, info->displayTime, s.clock());
             }
             catch (XrResult error)
             {
-                s.input->Fail(error, Now());
+                s.input->Fail(error, s.clock());
+                SuspendFrameInput(s);
                 pointer = {};
             }
             catch (...)
             {
-                s.input->Fail(XR_ERROR_RUNTIME_FAILURE, Now());
+                s.input->Fail(XR_ERROR_RUNTIME_FAILURE, s.clock());
+                SuspendFrameInput(s);
                 pointer = {};
             } // Input decoration must never reject Elite's frame.
         }
-        s.input->Publish(pointer, Now());
+        s.input->Publish(pointer, s.clock());
         XrFrameEndInfo augmented = *info;
         augmented.layerCount = static_cast<uint32_t>(layers.size());
         augmented.layers = layers.data();
@@ -620,7 +705,7 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
         s.mailbox.Report(XR_SUCCEEDED(result) ? 1 : 4, result, static_cast<uint32_t>(quads.size()));
         if (XR_FAILED(result))
         {
-            s.input->Cancel();
+            SuspendFrameInput(s);
             s.failed = true;
             s.lastError = result;
         }
@@ -628,14 +713,14 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
     }
     catch (XrResult error)
     {
-        s.input->Cancel();
+        SuspendFrameInput(s);
         s.failed = true;
         s.lastError = error;
         s.mailbox.Report(4, error);
     }
     catch (...)
     {
-        s.input->Cancel();
+        SuspendFrameInput(s);
         s.failed = true;
         s.lastError = XR_ERROR_RUNTIME_FAILURE;
         s.mailbox.Report(4, s.lastError);
@@ -671,10 +756,13 @@ XrResult XRAPI_CALL LayerEndSession(XrSession handle)
     if (!session)
         return XR_ERROR_HANDLE_INVALID;
     std::lock_guard lock(session->mutex);
+    if (session->frameInputOwned && !session->frameInputBlocked && session->running)
+        session->input->Synced(SyncFrameActions(*session, false), false);
     XrResult result = session->instance->endSession(handle);
     if (XR_SUCCEEDED(result))
     {
         session->running = false;
+        session->input->focused = false;
         session->input->Cancel();
         if (session->instance->elite)
             session->mailbox.Report(0);
@@ -812,12 +900,82 @@ void EnsureInput(Instance &instance, bool newBindings = false)
         instance.input->Initialize();
     }
 }
+
+void AttachFrameInput(Session &session, int64_t now)
+{
+    auto &instance = *session.instance;
+    session.frameInputAttempted = true;
+    EnsureInput(instance);
+    if (!instance.input || !instance.input->ready)
+    {
+        session.input->Fail(instance.input ? instance.input->error.load() : XR_ERROR_RUNTIME_FAILURE, now);
+        return;
+    }
+    XrSessionActionSetsAttachInfo info{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+    info.countActionSets = static_cast<uint32_t>(instance.input->sets.size());
+    info.actionSets = instance.input->sets.data();
+    XrResult result = instance.attachSets(session.handle, &info);
+    if (XR_SUCCEEDED(result))
+    {
+        ++instance.inputSessions;
+        session.frameInputOwned = true;
+        session.input->source = 2;
+        session.input->Attach(instance.input, session.handle, result);
+    }
+    else
+        session.input->Fail(result, now);
+}
+
+// Explicit EDVR opt-in owns the one-shot attachment; ordinary applications retain their attach/sync path.
+bool UpdateFrameInput(Session &session, int64_t now)
+{
+    bool publishing = session.mailbox.IsPublishing();
+    bool available = session.running && session.shouldRender && session.input->focused && publishing;
+    bool enabled = session.input->Requested(now, available, session.frameInputOwned);
+    std::lock_guard inputLock(session.instance->inputMutex);
+    try
+    {
+        if (session.instance->edvr && session.running && publishing && session.input->mailbox.EdvrInputRequested() &&
+            !session.gameInputObserved && !session.instance->gameInputObserved && !session.input->setsAttached &&
+            !session.frameInputAttempted)
+            AttachFrameInput(session, now);
+        if (!session.frameInputOwned || session.frameInputBlocked)
+            return enabled;
+        enabled = session.input->Requested(now, available, true);
+        if (!session.running)
+            return false;
+        XrResult result = SyncFrameActions(session, enabled);
+        session.input->Synced(result, enabled);
+        session.input->Report(now);
+        return enabled && result == XR_SUCCESS;
+    }
+    catch (XrResult failure)
+    {
+        session.input->Fail(failure, now);
+    }
+    catch (...)
+    {
+        session.input->Fail(XR_ERROR_RUNTIME_FAILURE, now);
+    }
+    return false;
+}
+
+void BlockFrameInput(Session &session)
+{
+    if (!session.frameInputOwned || session.frameInputBlocked)
+        return;
+    session.frameInputBlocked = true;
+    SyncFrameActions(session, false);
+    session.input->Fail(XR_ERROR_ACTIONSETS_ALREADY_ATTACHED, session.clock());
+}
+
 XrResult XRAPI_CALL LayerSuggestBindings(XrInstance handle, const XrInteractionProfileSuggestedBinding *info)
 {
     auto instance = FindInstance(handle);
     if (!instance)
         return XR_ERROR_HANDLE_INVALID;
     std::lock_guard lock(instance->inputMutex);
+    instance->gameInputObserved = true;
     try
     {
         EnsureInput(*instance, true);
@@ -839,6 +997,13 @@ XrResult XRAPI_CALL LayerAttachSets(XrSession handle, const XrSessionActionSetsA
     auto &instance = *session->instance;
     std::lock_guard lock(session->mutex);
     std::lock_guard inputLock(instance.inputMutex);
+    session->gameInputObserved = true;
+    instance.gameInputObserved = true;
+    if (session->frameInputOwned)
+    {
+        BlockFrameInput(*session);
+        return instance.attachSets(handle, info);
+    }
     try
     {
         EnsureInput(instance);
@@ -874,9 +1039,19 @@ XrResult XRAPI_CALL LayerSyncActions(XrSession handle, const XrActionsSyncInfo *
     if (!session)
         return XR_ERROR_HANDLE_INVALID;
     std::lock_guard lock(session->mutex);
+    session->gameInputObserved = true;
+    {
+        std::lock_guard inputLock(session->instance->inputMutex);
+        session->instance->gameInputObserved = true;
+    }
+    if (session->frameInputOwned)
+    {
+        BlockFrameInput(*session);
+        return session->instance->syncActions(handle, info);
+    }
     try
     {
-        bool enabled = session->input->Requested(Now(), session->running && session->input->focused &&
+        bool enabled = session->input->Requested(session->clock(), session->running && session->input->focused &&
                                                             session->shouldRender && session->mailbox.IsPublishing());
         if (enabled && info)
         {
@@ -951,6 +1126,8 @@ XrResult XRAPI_CALL LayerCreateApiLayerInstance(const XrInstanceCreateInfo *info
     {
         auto instance = std::make_shared<Instance>();
         instance->handle = *output;
+        instance->edvr = std::strcmp(info->applicationInfo.applicationName, "Elite Dangerous (EDVR)") == 0 &&
+                         std::strcmp(info->applicationInfo.engineName, "EDVR") == 0;
         instance->getProc = next->nextGetInstanceProcAddr;
 #define BIND(field, api)                                                                                               \
     if (!Bind(*instance, api, instance->field))                                                                        \

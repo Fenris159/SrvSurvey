@@ -2322,6 +2322,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "ADJUSTMENT STEP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "ALIGN GUARDIAN SITE ORIGIN",
     "IsFormat": false,
     "SourceKinds": [
@@ -3659,14 +3667,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
-    "Text": "Adjustment mode is active. Save creates a verified plotters.json backup.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
-  },
-  {
     "Text": "Advanced setups with an OpenVR-compatible compositor",
     "IsFormat": false,
     "SourceKinds": [
@@ -4109,14 +4109,6 @@
   },
   {
     "Text": "Alt\u002BCtrl\u002BO toggles this capture window. Its enabled state is restored at startup.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Alt\u002BV opens this editor",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -8900,7 +8892,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "CANCELLATION COOLDOWN",
@@ -10636,7 +10628,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
-    "Text": "Change scale, position, pitch, yaw, and roll while checking the live preview in the headset.",
+    "Text": "Change scale, position, pitch, yaw, and roll in the desktop editor or the headset calibration panel. Normal steps are 5 cm and 1 degree; choose Fine or Coarse, use the mouse wheel, or hold Shift / Ctrl for temporary precision changes.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -10650,14 +10642,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
-  },
-  {
-    "Text": "Changes preview live in the connected VR session. Save is atomic and preserves desktop placement plus unknown overlays.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Changes saved. Next system: {0}.",
@@ -11293,6 +11277,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Choose a panel and Default or the current vehicle/game mode. The selected panel shows sample data even when gameplay would hide it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Choose a planned Raven site to link. Only the system architect can start a build without a plan.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11715,14 +11707,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/WaylandScreenSharePromptDialog.axaml"
-  },
-  {
-    "Text": "Choose the live panel and Default or the current vehicle/game mode.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Choose the local flora image folder",
@@ -12190,6 +12174,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
+    "Text": "Close / discard unsaved",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "Close Elite Dangerous before swapping or restoring this file.",
     "IsFormat": false,
     "SourceKinds": [
@@ -12300,6 +12292,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
+  },
+  {
+    "Text": "Coarse",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "Cobalt",
@@ -14516,6 +14516,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
+    "Text": "Connect the headset and wait for a tracked head pose before placing this panel. VDXR requires the matching OpenXR layer.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
     "Text": "Connect the headset with Meta Horizon Link over USB or Air Link and enter PC VR.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14763,6 +14771,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Controller input has a conflicting OpenXR action attachment (error -47). Turn off Experimental EDVR controller input and restart Elite. Overlay rendering remains available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Controller input is active: {0}.",
@@ -16840,7 +16856,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemePresetCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationStore.cs"
   },
   {
     "Text": "Default colour not found for \u0027{0}\u0027.",
@@ -17483,14 +17499,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardInputDiagnostics.cs"
-  },
-  {
-    "Text": "Desktop overlay placement and VR calibration are stored independently.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Desktop placement and focus",
@@ -19874,6 +19882,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
+    "Text": "EdvrControllerInput",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/VrOverlaySettingsStore.cs"
+  },
+  {
     "Text": "Efficiency (%)",
     "IsFormat": false,
     "SourceKinds": [
@@ -21364,6 +21380,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Experimental EDVR controller input",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Experimental EDVR controller input is off. Restart Elite after changing the input source before enabling controller interaction again.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Experimental EDVR controller interaction is enabled. Point at a panel and use the trigger to click.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Experimental rig bar detection",
@@ -23132,6 +23172,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
+    "Text": "Fine",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Fine-tune the commander-specific marker after selecting it on the map.",
     "IsFormat": false,
     "SourceKinds": [
@@ -23836,6 +23884,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/HumanSiteSettingsStore.cs"
+  },
+  {
+    "Text": "For EDVR only. Lets SrvSurvey read Quest controllers without game input support. Restart Elite after changing this option, then use Toggle VR overlay interaction to enable the pointer. Keep it off for other game integrations.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "For EDVR, enable Experimental EDVR controller input in Theme \u003E Overlay setup \u003E VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
@@ -28929,14 +28993,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "In Settings \u003E Global overlays, assign Toggle VR overlay interaction directly below the Live-overlay interaction shortcut. Global keyboard input must also be enabled.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "In Settings \u003E Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28946,6 +29002,14 @@
   },
   {
     "Text": "In Surface Mining overlay settings, enable Automatically track rigs from the Rhino HUD. Set Deployment bar color if a HUD mod changes the usual bright green.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "In Theme \u003E Overlay setup \u003E VR, assign Toggle VR overlay interaction. It is also available in Settings \u003E Input. Global keyboard input must be enabled.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -36797,6 +36861,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"
   },
   {
+    "Text": "Next mode",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "Next or active direction",
     "IsFormat": false,
     "SourceKinds": [
@@ -36811,6 +36883,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Next panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Next site",
@@ -38680,6 +38760,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Normal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Normal Supercharge",
     "IsFormat": false,
     "SourceKinds": [
@@ -39444,14 +39532,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
-    "Text": "Only controls already shown by a live SrvSurvey overlay can be activated. VR calibration still uses Adjust overlays and its dedicated shortcut.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Only event types requested by EDAstro within this disclosed list: CarrierStats, CarrierJumpRequest, Docked, ScanOrganic, and CodexEntry. Newly requested types that this version does not support are listed in the application log and are not uploaded.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39821,14 +39901,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Open Settings \u003E Global overlays and find VR overlays.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
     "Text": "Open Settings \u003E Privacy \u0026 sharing \u003E Configure EDAstro Sharing to review and enable optional journal contributions.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39910,6 +39982,14 @@
   },
   {
     "Text": "Open Theme \u003E Overlay setup \u003E Edit Overlay Positions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Open Theme \u003E Overlay setup \u003E VR.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -40302,7 +40382,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
-    "Text": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. It may already be part of your Elite-to-VDXR setup; the SrvSurvey OpenXR layer adds panels and Quest controller input within that game session.",
+    "Text": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -41993,14 +42073,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
   },
   {
-    "Text": "PITCH / YAW / ROLL",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "PLANNED RAVEN SITE",
     "IsFormat": false,
     "SourceKinds": [
@@ -42047,14 +42119,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
-  },
-  {
-    "Text": "POSITION X / Y / Z",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "POW",
@@ -42658,6 +42722,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Pitch (degrees)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Place in front of me",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Placed the selected panel one metre in front of you. Save to keep this placement.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Plan a mining trip",
     "IsFormat": false,
     "SourceKinds": [
@@ -42882,6 +42978,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
+    "Text": "PlotAdjustVR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationSession.cs"
   },
   {
     "Text": "PlotBioStatus",
@@ -43314,6 +43418,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
+  },
+  {
+    "Text": "Position X (10 cm units)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Position Y (10 cm units)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Position Z (10 cm units)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Position editor cleanup failed",
@@ -44111,12 +44239,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Previous mode",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "Previous page",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
+  },
+  {
+    "Text": "Previous panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Previous settings backup: {0}",
@@ -49445,7 +49589,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Reset text and icon scales and brush overrides in this panel",
@@ -50729,6 +50873,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Roll (degrees)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Rollback backup: {0}",
@@ -52066,6 +52218,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Sample {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -52264,15 +52424,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Save calibration to verify the write and preserve a backup. Cancel restores the saved values; Reset selected restores the shipped placement for that target.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Save change",
@@ -52929,9 +53081,10 @@
     "Text": "Scale",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayTypographyScale.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Scale from the operating-system baseline in 5% steps.",
@@ -59402,7 +59555,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11; headset validation is pending.",
+    "Text": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -60373,7 +60526,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
   },
   {
-    "Text": "Switch SteamVR overlays between passive click-through and controller-pointer interaction.",
+    "Text": "Switch VR overlays between passive click-through and controller-pointer interaction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -63957,6 +64110,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The headset pose is not currently valid.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65819,6 +65980,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "The selected panel shows sample data. Normal steps: 5 cm and 1\u00B0. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "The selected profile UI settings are not valid JSON.",
@@ -70588,6 +70757,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
+    "Text": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.",
     "IsFormat": false,
     "SourceKinds": [
@@ -70601,7 +70778,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "VISIT",
@@ -70723,6 +70900,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "VR overlay calibration",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "VR overlay controller interaction disabled",
@@ -72553,7 +72738,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
-    "Text": "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+    "Text": "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -72721,7 +72906,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "With VR overlays connected, use that shortcut once to let SteamVR send controller laser-pointer clicks and scrolling to SrvSurvey panels.",
+    "Text": "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -72951,6 +73136,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Yaw (degrees)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Years",
@@ -80015,6 +80208,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "vdxr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
   },
   {
     "Text": "version",

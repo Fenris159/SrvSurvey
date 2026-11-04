@@ -68,7 +68,7 @@ public static class VrPlatformProfileCatalog
             "Meta Quest — VDXR",
             "Quest 3 and other Virtual Desktop headsets on Windows x64",
             "SrvSurvey OpenXR layer direct to VDXR",
-            "Windows Direct3D 11 route without SteamVR. Supports panels and Quest controller-pointer interaction; requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. Headset validation is pending.",
+            "Windows Direct3D 11 route without SteamVR. Quest 3 rendering is community-confirmed with EDVR (#264). Requires the SrvSurvey OpenXR layer and an Elite setup that already runs through VDXR. EDVR controller input has an experimental opt-in below; controller compatibility still needs headset testing.",
             [
                 "Run Install-OpenXrLayer.ps1 from the OpenXR folder in the Windows package to register the layer for your Windows account.",
                 "Keep your existing VDXR setup. Restart Elite after installing the layer and confirm Virtual Desktop reports Runtime: VDXR.",

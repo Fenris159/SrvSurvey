@@ -1,4 +1,5 @@
 using System.IO.MemoryMappedFiles;
+using System.Numerics;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -78,9 +79,45 @@ public sealed class OpenXrFrameBridge : IDisposable
 
     public int LastError => view.ReadInt32(52);
 
+    /// <summary>Reads a fresh pose in the current overlay-origin coordinates, rejecting partial native writes.</summary>
+    public bool TryReadHeadPose(uint originRevision, out VrOverlayHeadPose? pose)
+    {
+        pose = null;
+        view.Write(96, clock());
+        uint before = view.ReadUInt32(60);
+        Thread.MemoryBarrier();
+        long timestamp = view.ReadInt64(64);
+        uint revision = view.ReadUInt32(72);
+        var position = new Vector3(view.ReadSingle(76), view.ReadSingle(80), view.ReadSingle(84));
+        float yaw = view.ReadSingle(88);
+        Thread.MemoryBarrier();
+        long age = clock() - timestamp;
+        if (
+            (before & 1) != 0
+            || before != view.ReadUInt32(60)
+            || timestamp <= 0
+            || age is < 0 or > 1000
+            || revision != originRevision
+            || ReadState() != OpenXrLayerState.Ready
+            || !float.IsFinite(position.X)
+            || !float.IsFinite(position.Y)
+            || !float.IsFinite(position.Z)
+            || !float.IsFinite(yaw)
+        )
+        {
+            return false;
+        }
+        pose = new VrOverlayHeadPose(position, yaw);
+        return true;
+    }
+
     public bool IsInputReady => input.IsReady;
 
     public int InputError => input.LastError;
+
+    public bool IsFrameDrivenInput => input.IsFrameDriven;
+
+    public void SetEdvrControllerInput(bool enabled) => input.SetEdvrControllerInput(enabled);
 
     public void SetInteractionEnabled(bool enabled) => input.SetEnabled(enabled);
 
@@ -119,6 +156,8 @@ public sealed class OpenXrFrameBridge : IDisposable
         view.Write(0, 0u);
         view.Write(16, 0L);
         view.Write(32, 0L);
+        view.Write(64, 0L);
+        view.Write(96, 0L);
         Thread.MemoryBarrier();
         view.Write(8, ++sequence);
         view.Flush();

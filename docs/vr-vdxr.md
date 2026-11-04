@@ -2,8 +2,27 @@
 
 SrvSurvey can publish overlay panels and return Quest controller input into an Elite Dangerous OpenXR
 session using Virtual Desktop's VDXR runtime, without SteamVR in the rendering
-path. This integration requires Windows x64 and Direct3D 11. Physical
-Quest 3 validation is still required before treating it as supported.
+path. This integration requires Windows x64 and Direct3D 11. A community
+Quest 3 test confirmed rendering with EDVR; controller interaction and the new
+calibration workflow still require headset validation.
+
+## Reported working configuration
+
+The [live report in #264](https://github.com/Fenris159/SrvSurvey/issues/264)
+confirmed panels rendering and a connected VDXR status with:
+
+- SrvSurvey-XP **2.1.3.0-rc.77.4**, Windows x64 zip and registered layer.
+- Meta Quest 3, Virtual Desktop Streamer **1.34.25**, VDXR **1.1.0** (`6da20fe`).
+- Elite Dangerous Odyssey through **EDVR v0.22.0-rc.4**, a D3D11 proxy using
+  Khronos OpenXR loader **1.1.46**. OpenComposite was not used or required.
+- Windows 11 **26200**, RTX 5090.
+- OpenKneeboard **1.12.14**, COVAS:NEXT's ElectronVR layer, and Virtual Desktop's
+  `oculus_compatibility` layer loaded alongside SrvSurvey without reported conflicts.
+
+This is a report about that installed combination, not blanket validation of
+all versions, other runtimes, performance, or controller input. The reporter did
+not test controller interaction. See [calibration and remaining live acceptance
+checks](vr-calibration.md).
 
 ## Version target
 
@@ -11,13 +30,14 @@ The integration targets the latest stable Virtual Desktop app available for
 Quest 3 through the [Meta store](https://www.meta.com/experiences/virtual-desktop/2017050365004772/),
 paired with the normal Windows Streamer download from
 [Virtual Desktop](https://www.vrdesktop.net/) and its bundled VDXR runtime.
-Use the current OpenComposite `openxr` build when Elite needs OpenVR-to-OpenXR
-translation. Beta channels and older-version downgrades are not prerequisites.
+Use an Elite setup that already works with VDXR, such as EDVR or OpenComposite
+when OpenVR-to-OpenXR translation is needed. OpenComposite is optional. Beta
+channels and older-version downgrades are not prerequisites.
 
 At the 2026-10-14 source check, the official Windows Streamer installer reports
 version **1.34.22.0**. That is a dated compatibility target, not a requirement
 to stay on that version after stable updates. Record the actual Quest app,
-Streamer, and OpenComposite versions when performing headset acceptance checks;
+Streamer, VDXR, and EDVR or OpenComposite versions when performing headset acceptance checks;
 those results establish which installed combination has been verified.
 
 ## Try the integration
@@ -47,9 +67,10 @@ those results establish which installed combination has been verified.
    incompatible route is still shown, but overlays are off until an available
    route is chosen. Runtime installation and headset readiness are checked after
    choosing a compatible route.
-4. Wait for the connection status to identify an active VDXR session. Trigger
-   a visible gameplay panel, then adjust its saved VR position, rotation, scale,
-   and opacity. **Reset headset orientation** captures a new placement origin.
+4. Wait for the connection status to identify an active VDXR session. Open
+   the calibration editor from **Theme > Overlay setup > VR > Adjust overlays**.
+   Select a panel to show sample data without triggering it in-game, then adjust
+   position, rotation, and scale. See the [calibration guide](vr-calibration.md). **Reset headset orientation** captures a new placement origin.
 
 Enable global keyboard input and use **Toggle VR overlay interaction** to
 activate the Quest controller cursor. Release any held buttons first, then point
@@ -57,8 +78,42 @@ at a panel. Trigger is left-click, grip is right-click, thumbstick press is
 middle-click, and thumbstick tilt scrolls vertically or horizontally. Either
 controller can operate the single pointer. Use the shortcut again to restore
 click-through mode and return these controller inputs to Elite. Interaction is
-limited to controls already exposed by each panel; placement still uses the
-calibration controls.
+available for panel controls and the headset calibration panel. For EDVR, the
+initial independent controller path requires the experimental option described
+below. Real-headset compatibility remains unverified; a mirrored SrvSurvey
+window and the mouse remain available if the input handshake is unavailable.
+
+## Experimental EDVR controller input
+
+The reported EDVR version does not attach or synchronize OpenXR actions. Enable
+**Experimental EDVR controller input** in **Theme > Overlay setup > VR** to try
+SrvSurvey's independent path. The option is off by default. It requires the
+matching native OpenXR layer from this package, the **Meta Quest — VDXR** route,
+and a recognized EDVR session.
+
+1. Install the complete updated Windows package and register its OpenXR layer.
+2. Choose Meta Quest — VDXR, enable VR overlays, and check the experimental option.
+3. Restart Elite. Release held buttons, then use **Toggle VR overlay interaction**.
+4. Confirm **Experimental EDVR controller interaction is enabled**, and try
+   selecting, moving, saving, and closing a calibration target from the headset.
+5. Toggle interaction off when done. Restart Elite after changing the experimental
+   option or switching game integrations.
+
+The layer attaches its own action sets once and synchronizes them from the
+frame loop. It deactivates those sets while interaction is off, focus is lost,
+or the publisher becomes stale. Input initialization and synchronization errors
+leave overlay rendering available. A game that already attaches actions keeps
+the existing application-driven input path.
+
+OpenXR cannot replace an attachment later in the same session. If EDVR or
+another layer tries a late attachment/sync after independent input takes over,
+SrvSurvey cancels its pointer and preserves the application's runtime result.
+Disable the option and restart Elite if this conflicts with another input
+integration. Include the displayed native error and installed layer versions
+in feedback. This is an initial implementation with fake-runtime coverage;
+Quest 3 controller behavior and coexistence with OpenKneeboard / COVAS still
+need live testing. See [the source investigation](research/edvr-controller-input.md)
+and [acceptance checklist](vr-calibration.md#completion-and-live-acceptance).
 
 Only `EliteDangerous64.exe` with
 the actual runtime name `VirtualDesktopXR` receives panels. Other processes and
@@ -90,15 +145,16 @@ stereo perspective. The source image does not need an artificial perspective
 warp or curved geometry
 ([OpenXR quad geometry](https://registry.khronos.org/OpenXR/specs/1.1/man/html/XrCompositionLayerQuad.html)).
 
-Both implemented backends, SteamVR/OpenVR and VDXR/OpenXR, apply the same saved
-per-panel calibration. In **Settings > Global overlays > VR overlays**, choose
+Both implemented backends, SteamVR/OpenVR and VDXR/OpenXR, support per-panel
+calibration. VDXR has separate seated defaults and saves; existing custom shared
+calibrations are retained as a starting point. In **Theme > Overlay setup > VR**, choose
 **Adjust overlays**, select a panel and vehicle/game mode, then change:
 
 - **Position X / Y / Z** to move it sideways, vertically, and nearer or farther.
 - **Pitch / yaw / roll** to tilt, turn, and rotate it.
 - **Scale** to change its physical size while preserving its image aspect ratio.
 
-Changes preview in the connected VR session. Save preserves the calibration for
+Changes preview with sample data for the selected target in the connected VR session. Save preserves the calibration for
 that panel and mode. Editing a panel's 3D placement and clicking controls inside
 that panel are separate operations.
 
@@ -107,7 +163,7 @@ your head during reset does not tilt the whole panel arrangement; each panel's
 saved pitch and roll still apply.
 
 **Toggle VR overlay interaction** uses the selected SteamVR or VDXR backend. On
-VDXR the native layer adds its own OpenXR actions alongside OpenComposite's game
+VDXR the native layer adds its own OpenXR actions alongside the game's
 actions, intersects controller aim rays with the submitted panels, draws a
 cursor, and returns clicks and scrolling to the existing Avalonia controls.
 Aim tracking has normal priority; buttons and scrolling use a higher-priority
@@ -182,8 +238,10 @@ publishes the enabled flag and a generation token; the layer acknowledges that
 token and writes a bounded ring of 64 pointer events under a sequence counter.
 The reader cancels capture on stale health, torn events, invalid values, or ring
 overflow, then discards those events. It never replays uncertain clicks. Input
-is sampled from the game's existing action synchronization; OpenComposite
-synchronizes after frame submission, so the next frame reads that state. The
+is sampled from the game's existing action synchronization in the normal path;
+OpenComposite synchronizes after frame submission, so the next frame reads that
+state. With experimental EDVR input, the layer synchronizes its own actions
+before sampling them in the frame loop. The
 cursor updates at game-frame rate even though panel images refresh every 250 ms.
 A cursor reserves one composition-layer slot while interaction is enabled.
 

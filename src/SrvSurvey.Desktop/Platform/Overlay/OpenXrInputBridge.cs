@@ -19,6 +19,7 @@ public sealed class OpenXrInputBridge : IDisposable
     private uint controlSequence;
     private uint readCount;
     private bool enabled;
+    private bool edvrControllerInput;
 
     public OpenXrInputBridge(string path, Func<long> clock)
     {
@@ -58,6 +59,7 @@ public sealed class OpenXrInputBridge : IDisposable
     }
 
     public bool IsReady => State == 1;
+    public bool IsFrameDriven => IsReady && view.ReadUInt64(80) == generation && view.ReadUInt32(68) == 2;
     public int LastError => view.ReadInt32(44);
 
     private uint State
@@ -82,6 +84,12 @@ public sealed class OpenXrInputBridge : IDisposable
 
     public void Refresh() => WriteControl(clock());
 
+    public void SetEdvrControllerInput(bool value)
+    {
+        edvrControllerInput = value;
+        Refresh();
+    }
+
     private void WriteControl(long timestamp)
     {
         view.Write(8, ++controlSequence);
@@ -91,6 +99,8 @@ public sealed class OpenXrInputBridge : IDisposable
         view.Write(12, enabled ? 1u : 0u);
         view.Write(16, timestamp);
         view.Write(24, generation);
+        view.Write(64, edvrControllerInput ? 1u : 0u);
+        view.Write(72, edvrControllerInput ? generation : 0UL);
         Thread.MemoryBarrier();
         view.Write(8, ++controlSequence);
     }

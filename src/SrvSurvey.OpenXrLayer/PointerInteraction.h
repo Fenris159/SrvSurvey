@@ -41,10 +41,16 @@ struct InputHeader
     int32_t error;
     uint32_t eventSequence, eventCount;
     uint64_t acknowledgedGeneration;
-    uint8_t padding[64];
+    uint32_t edvrInput, inputSource;
+    uint64_t edvrGeneration, sourceGeneration;
+    uint8_t padding[40];
     PointerEvent events[InputEventCapacity];
 };
 static_assert(offsetof(InputHeader, events) == 128);
+static_assert(offsetof(InputHeader, edvrInput) == 64);
+static_assert(offsetof(InputHeader, inputSource) == 68);
+static_assert(offsetof(InputHeader, edvrGeneration) == 72);
+static_assert(offsetof(InputHeader, sourceGeneration) == 80);
 static_assert(sizeof(InputHeader) <= InputCapacity);
 struct Point3
 {

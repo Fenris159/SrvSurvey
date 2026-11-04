@@ -13,6 +13,9 @@ public interface IVrOverlayRuntime : IDisposable
 
     string DisplayName => "SteamVR/OpenVR";
 
+    /// <summary>Maximum number of panels accepted in one frame.</summary>
+    int MaximumOverlays => int.MaxValue;
+
     VrRuntimeResult CompleteFrame() => VrRuntimeResult.Success("Overlay frame completed.");
 
     VrRuntimeProbe Probe();
@@ -34,6 +37,12 @@ public interface IVrOverlayRuntime : IDisposable
 
     VrRuntimeResult ResetOrientation();
 
+    bool TryGetHeadPose(out VrOverlayHeadPose? pose)
+    {
+        pose = null;
+        return false;
+    }
+
     void Shutdown();
 }
 
@@ -48,6 +57,27 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
     private bool interactionEnabled;
 
     public bool IsInitialized => system is not null && overlay is not null;
+
+    public bool TryGetHeadPose(out VrOverlayHeadPose? pose)
+    {
+        pose = null;
+        if (system is null)
+        {
+            return false;
+        }
+        var poses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
+        system.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0, poses);
+        if (!poses[0].bPoseIsValid)
+        {
+            return false;
+        }
+        pose = VrOverlayTransform.FromOpenVrHeadPose(
+            poses[0].mDeviceToAbsoluteTracking,
+            headsetYawOffset,
+            headsetOrientationOffset
+        );
+        return true;
+    }
 
     public VrRuntimeProbe Probe()
     {

@@ -1,4 +1,10 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.5
+# SrvSurvey-XP 2.1.3.0-rc.77.6
+
+RC77.6 improves VR overlay calibration with readable controls, fine and coarse
+adjustments, sample panels independent of gameplay, and a calibration panel in
+the headset. VDXR gains seated defaults, separate saved placements and an
+experimental EDVR controller-input option. Updated guides explain the reported
+Quest 3 / EDVR setup, controller limitations and the remaining headset checks.
 
 RC77.5 adds optional Steam screenshot processing for the Journey photo library
 and improves native screenshot conversion with automatic folder detection,
@@ -37,6 +43,24 @@ from RC77.
 
 ## What's changed
 
+- **VR calibration:** A shared desktop and headset editor keeps all seven fields
+  readable, offers normal/fine/coarse steps and mouse-wheel adjustment, and shows
+  sample data even when gameplay would hide a panel. Place in front of me moves
+  the selected panel to eye level, one metre along the current headset heading.
+  Samples and held input are cleared when calibration closes or the route changes.
+  Calibration reserves transport slots for its controls and selected sample;
+  OpenXR's separate composition-layer budget can still omit published panels.
+- **VDXR placement:** Seated defaults follow the live-testing feedback. VDXR saves
+  placements separately from SteamVR, retains existing custom calibration as a
+  starting point, and supports route-specific resets and vehicle-mode overrides.
+- **Experimental EDVR controller input:** An opt-in OpenXR-layer path supplies
+  controller actions for recognized EDVR sessions. It is off by default, requires
+  the matching layer and an Elite restart, and leaves overlay rendering available
+  when input is unavailable. Application input ownership is retained across
+  recreated sessions. Real-headset and other-layer compatibility still
+  need feedback; the guides document setup, status messages and recovery.
+- **VR guides:** Corrected navigation, mirrored-window fallback, reported Quest 3
+  rendering compatibility, and a live-testing checklist address issues #264/#265.
 - **Screenshot retry responsiveness:** Live processing bounds durable Steam
   admissions and conversion attempts, so large libraries do not flood the recovery
   queue in one poll. Ready images keep progressing past unreadable captures even

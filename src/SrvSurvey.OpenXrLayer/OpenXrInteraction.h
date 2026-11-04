@@ -165,6 +165,7 @@ class InteractionSession
     std::array<XrSpace, 2> spaces{};
     PointerInteraction pointer;
     bool active = false;
+    bool inputAvailable = true;
     XrResult error = XR_SUCCESS;
     static void Check(XrResult result)
     {
@@ -177,6 +178,7 @@ class InteractionSession
     std::shared_ptr<InteractionActions> actions;
     XrSession session{};
     bool attached = false, setsAttached = false, focused = false;
+    uint32_t source = 1;
     explicit InteractionSession(std::wstring path = {}) : mailbox(std::move(path))
     {
     }
@@ -236,14 +238,15 @@ class InteractionSession
             error = XR_ERROR_RUNTIME_FAILURE;
         }
     }
-    bool Requested(int64_t now, bool available)
+    bool Requested(int64_t now, bool available, bool independent = false)
     {
         bool publisherChanged = false;
         bool requested = mailbox.Requested(now, publisherChanged);
-        if (publisherChanged || !requested || !available)
+        inputAvailable = !independent || mailbox.EdvrInputRequested();
+        if (publisherChanged || !requested || !available || !inputAvailable)
             Cancel();
         Report(now);
-        return requested && available && attached && actions->ready && error == XR_SUCCESS;
+        return requested && available && inputAvailable && attached && actions->ready && error == XR_SUCCESS;
     }
     void Synced(XrResult result, bool enabled)
     {
@@ -262,7 +265,8 @@ class InteractionSession
     void Report(int64_t now)
     {
         XrResult failure = error != XR_SUCCESS ? error : (actions ? actions->error.load() : XR_SUCCESS);
-        mailbox.Report(now, failure != XR_SUCCESS ? 2u : (attached && actions->ready ? 1u : 0u), failure);
+        mailbox.Report(now, failure != XR_SUCCESS ? 2u : (inputAvailable && attached && actions->ready ? 1u : 0u),
+                       failure, attached ? source : 0);
     }
     void Publish(const PointerUpdate &update, int64_t now)
     {

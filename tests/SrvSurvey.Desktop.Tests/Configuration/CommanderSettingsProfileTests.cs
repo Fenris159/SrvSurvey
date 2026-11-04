@@ -43,6 +43,44 @@ public sealed class CommanderSettingsProfileTests
         );
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SeatedVdxrPlacementsMigrateIntoNewAndPreviouslyInitializedCommanderProfiles(bool existingProfile)
+    {
+        using var temp = new ProfileSyncTestRoot();
+        temp.Write("data", "vr/vdxr/Default.json", """{"PlotJumpInfo":"{ s: 7, p: <0, 1, 10>, r: <0, 0, 0>}"}""");
+        temp.Write("data", "vr/vdxr/testbuggy.json", """{"PlotJumpInfo":"{ s: 3, p: <0, 2, 9>, r: <0, 0, 0>}"}""");
+        AppDataPaths first = temp.Paths with { SettingsFrontierId = "F123" };
+        if (existingProfile)
+        {
+            Directory.CreateDirectory(first.OverlaySettingsDirectory);
+            File.WriteAllText(Path.Combine(first.OverlaySettingsDirectory, ".profile-initialized"), "");
+            File.WriteAllText(Path.Combine(first.OverlaySettingsDirectory, ".vr-profile-initialized"), "");
+        }
+        CommanderSettingsProfile.Prepare(first);
+        var store = new VrOverlayCalibrationStore(first.OverlaySettingsDirectory);
+        VrOverlayCalibrationCatalog catalog = store.Load(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        Assert.Equal(7, catalog.Resolve("PlotJumpInfo", null)!.Scale);
+        Assert.Equal(3, catalog.Resolve("PlotJumpInfo", "testbuggy")!.Scale);
+        store.Save(
+            "PlotJumpInfo",
+            new(4, new(0, 0, 10), new(0, 0, 0)),
+            profileId: VrPlatformProfileCatalog.MetaVdxrProfileId
+        );
+        temp.Write("data", "vr/vdxr/Default.json", """{"PlotJumpInfo":"{ s: 9, p: <0, 1, 10>, r: <0, 0, 0>}"}""");
+        CommanderSettingsProfile.Prepare(first);
+        CommanderSettingsProfile.Prepare(temp.Paths with { SettingsFrontierId = "F456" });
+        Assert.Equal(4, store.Load(VrPlatformProfileCatalog.MetaVdxrProfileId).Resolve("PlotJumpInfo", null)!.Scale);
+        Assert.Equal(
+            9,
+            new VrOverlayCalibrationStore((temp.Paths with { SettingsFrontierId = "F456" }).OverlaySettingsDirectory)
+                .Load(VrPlatformProfileCatalog.MetaVdxrProfileId)
+                .Resolve("PlotJumpInfo", null)!
+                .Scale
+        );
+    }
+
     /// <summary>Rejects unsafe commander identifiers before profile initialization creates any directories.</summary>
     [Fact]
     public void RejectsInvalidCommanderIdBeforeCreatingSettingsPaths()
