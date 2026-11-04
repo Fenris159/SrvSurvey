@@ -41,6 +41,12 @@ The startup guard has a 45-second acquisition limit and honors cancellation. If 
 
 When Google explicitly reports expired or revoked authorization, SrvSurvey asks you to **Disconnect**, then **Link Google Drive** again. Failed refreshes preserve shared authorization, including a newer login saved by another Commander instance. Successful linking clears cached cloud history and selection before enabling account actions. A rejected publisher client setup produces a separate message rather than asking users to repeatedly re-link. Error descriptions and authorization tokens are excluded from diagnostics.
 
+Screenshot processing choices (including Steam processing, labels and original-file
+removal) are portable preferences. BMP sources, manually selected Steam screenshot
+folders, and the Journey PNG destination stay local to each computer. Those paths
+are restored only when explicitly restoring hardware settings from that same
+machine’s backup. This applies to both installation and Commander-specific settings.
+
 ## Recovery and history
 
 SrvSurvey retains ten recent local recovery snapshots and ten cloud backups per machine. Expand **Restore a Google Drive backup** and refresh history to select a snapshot. The optional hardware restore is limited to backups created on this machine. The same hardware option also applies to imported local backups; leave it off when moving between computers.

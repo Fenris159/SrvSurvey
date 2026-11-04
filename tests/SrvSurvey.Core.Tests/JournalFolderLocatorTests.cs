@@ -4,6 +4,47 @@ namespace SrvSurvey.Core.Tests;
 
 public sealed class JournalFolderLocatorTests
 {
+    [Theory]
+    [InlineData(
+        "steamapps/compatdata/359320/pfx/drive_c/users/steamuser/Saved Games/Frontier Developments/Elite Dangerous",
+        "steamapps/compatdata/359320/pfx/drive_c/users/steamuser/Pictures/Frontier Developments/Elite Dangerous"
+    )]
+    [InlineData(
+        "Games/Elite/drive_c/users/Explorer/Saved Games/Frontier Developments/Elite Dangerous",
+        "Games/Elite/drive_c/users/Explorer/Pictures/Frontier Developments/Elite Dangerous"
+    )]
+    public void ScreenshotDirectoryUsesTheConfiguredWineProfile(string journal, string expected)
+    {
+        string root = Path.GetTempPath();
+        string actual = JournalFolderLocator.ResolveScreenshotDirectory(
+            Path.Combine(root, journal.Replace('/', Path.DirectorySeparatorChar)),
+            Path.Combine(root, "native-pictures")
+        );
+
+        Assert.Equal(Path.Combine(root, expected.Replace('/', Path.DirectorySeparatorChar)), actual);
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("relative/journals", false)]
+    [InlineData("archive/Saved Games/Frontier Developments/Elite Dangerous", true)]
+    [InlineData("users/Native/Saved Games/Frontier Developments/Elite Dangerous", true)]
+    [InlineData("invalid\0/journals", true)]
+    public void ScreenshotDirectoryKeepsTheNativePicturesFallbackForUnknownJournalLocations(
+        string? journal,
+        bool absolute
+    )
+    {
+        string root = Path.GetTempPath();
+        string? path = absolute ? Path.Combine(root, journal!.Replace('/', Path.DirectorySeparatorChar)) : journal;
+
+        Assert.Equal(
+            Path.Combine(root, "native-pictures", "Frontier Developments", "Elite Dangerous"),
+            JournalFolderLocator.ResolveScreenshotDirectory(path, Path.Combine(root, "native-pictures"))
+        );
+    }
+
     [Fact]
     public void ResolvePrefersConfiguredPath()
     {

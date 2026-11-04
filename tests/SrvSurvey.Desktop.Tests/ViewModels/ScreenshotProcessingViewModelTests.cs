@@ -5,7 +5,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class ScreenshotProcessingViewModelTests : IDisposable
+public sealed partial class ScreenshotProcessingViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
@@ -41,6 +41,147 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         Assert.Equal(1_500, saved.AerialAltitudeBeta);
         Assert.Equal(5_000, saved.AerialAltitudeGamma);
         Assert.Contains("disabled", viewModel.StatusMessage);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AutomaticSourceFollowsTheJournalWhileOutputStaysFixedAcrossRestarts(bool overrideSource)
+    {
+        string first = Path.Combine(temporaryDirectory, "first", "drive_c", "users", "steamuser");
+        string second = Path.Combine(temporaryDirectory, "second", "drive_c", "users", "steamuser");
+        string firstJournal = Path.Combine(first, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        string secondJournal = Path.Combine(second, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "settings.json"));
+        var model = new ScreenshotProcessingViewModel(store, journalDirectory: firstJournal);
+        model.UpdateJournalDirectory(secondJournal);
+
+        Assert.Equal(Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous"), model.SourceFolder);
+        Assert.Equal(
+            Path.Combine(first, "Pictures", "Frontier Developments", "Elite Dangerous", "converted"),
+            model.TargetFolder
+        );
+
+        string custom = Path.Combine(first, "Pictures", "Frontier Developments", "Elite Dangerous");
+        if (overrideSource)
+        {
+            model.SourceFolder = custom;
+        }
+        else
+        {
+            model.TargetFolder = Path.Combine(temporaryDirectory, "legacy-output");
+        }
+        model.UpdateJournalDirectory(firstJournal);
+        model.AddBanner = false;
+        model.UpdateJournalDirectory(secondJournal);
+        string expectedSource = overrideSource
+            ? custom
+            : Path.Combine(second, "Pictures", "Frontier Developments", "Elite Dangerous");
+        string expectedTarget = overrideSource
+            ? Path.Combine(first, "Pictures", "Frontier Developments", "Elite Dangerous", "converted")
+            : Path.Combine(temporaryDirectory, "legacy-output");
+        Assert.Equal(expectedSource, model.SourceFolder);
+        Assert.Equal(expectedTarget, model.TargetFolder);
+        var reopened = new ScreenshotProcessingViewModel(store, journalDirectory: secondJournal);
+        Assert.Equal(expectedSource, reopened.SourceFolder);
+        Assert.Equal(expectedTarget, reopened.TargetFolder);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PreferenceEditsBeforeJournalSelectionKeepTheFirstOutputAutomatic(bool externallySelectedOutput)
+    {
+        string first = Path.Combine(
+            temporaryDirectory,
+            "first",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        string second = Path.Combine(
+            temporaryDirectory,
+            "second",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "settings.json"));
+        var model = new ScreenshotProcessingViewModel(store, journalDirectory: first, deferOutputInitialization: true);
+        string custom = Path.Combine(temporaryDirectory, "existing-output");
+        if (externallySelectedOutput)
+        {
+            store.Save(store.Load(first) with { TargetFolder = custom }, first, useAutomaticTarget: false);
+        }
+        model.Enabled = true;
+        model.UpdateJournalDirectory(second);
+        string expected = externallySelectedOutput
+            ? custom
+            : Path.Combine(
+                temporaryDirectory,
+                "second",
+                "drive_c",
+                "users",
+                "steamuser",
+                "Pictures",
+                "Frontier Developments",
+                "Elite Dangerous",
+                "converted"
+            );
+        Assert.Equal(expected, model.TargetFolder);
+        Assert.Equal(expected, new ScreenshotProcessingViewModel(store, journalDirectory: second).TargetFolder);
+    }
+
+    [Fact]
+    public void ExplicitlyPickingTheDisplayedSourceKeepsItManualAcrossProfilesAndRestart()
+    {
+        string first = Path.Combine(
+            temporaryDirectory,
+            "first",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        string second = Path.Combine(
+            temporaryDirectory,
+            "second",
+            "drive_c",
+            "users",
+            "steamuser",
+            "Saved Games",
+            "Frontier Developments",
+            "Elite Dangerous"
+        );
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "settings.json"));
+        var model = new ScreenshotProcessingViewModel(store, journalDirectory: first);
+        string selected = model.SourceFolder;
+        model.SelectSourceFolder(selected);
+        model.UpdateJournalDirectory(second);
+        Assert.Equal(selected, model.SourceFolder);
+        Assert.Equal(selected, new ScreenshotProcessingViewModel(store, journalDirectory: second).SourceFolder);
+    }
+
+    [Fact]
+    public void OutputPinFailureRetainsAnAbsoluteDestinationAndReportsTheError()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        string blocker = Path.Combine(temporaryDirectory, "not-a-directory");
+        File.WriteAllText(blocker, "block settings creation");
+        var model = new ScreenshotProcessingViewModel(
+            new ScreenshotProcessingSettingsStore(Path.Combine(blocker, "settings.json"))
+        );
+        Assert.True(Path.IsPathFullyQualified(model.TargetFolder));
+        Assert.Contains("could not be saved", model.StatusMessage, StringComparison.Ordinal);
+        Assert.Equal("block settings creation", File.ReadAllText(blocker));
     }
 
     [Fact]

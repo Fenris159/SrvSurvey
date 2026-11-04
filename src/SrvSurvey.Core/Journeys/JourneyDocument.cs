@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Journeys;
@@ -16,11 +17,53 @@ public sealed record JourneyDocument(
     IReadOnlyList<JourneySystemVisit> VisitedSystems
 )
 {
+    /// <summary>Exact source records represented at the watermark; absent in legacy documents.</summary>
+    public IReadOnlySet<string>? WatermarkRecords { get; init; }
+
+    /// <summary>Null preserves compatibility with older exact boundary receipts.</summary>
+    public bool? WatermarkRecordsComplete { get; init; }
+
+    /// <summary>Identity coverage starts here; older unknown history remains part of the saved baseline.</summary>
+    public DateTimeOffset? RecordTrackingStart { get; init; }
+    public bool RecordTrackingStartComplete { get; init; }
+    public IReadOnlySet<string>? RecordedJournalRecords { get; init; }
+
+    public JourneyObservationHistory? ObservationHistory { get; init; }
+
     public bool IsArchived { get; init; }
 
     public bool IsActive => EndTime is null;
 
     public JourneySystemVisit? CurrentSystem => VisitedSystems.LastOrDefault(visit => visit.Departed is null);
+}
+
+public sealed record JourneyObservationHistory(
+    JourneyProgressBaseline Baseline,
+    IReadOnlyList<JourneyObservedRecord> Records,
+    DateTimeOffset Through,
+    string ProjectionSignature
+);
+
+public sealed record JourneyProgressBaseline(
+    DateTimeOffset Watermark,
+    IReadOnlyList<JourneySystemVisit> VisitedSystems,
+    IReadOnlySet<string> KnownRecords,
+    IReadOnlyList<JourneyObservedRecord> Context,
+    bool IsOriginKnown,
+    bool IsOdyssey
+);
+
+public sealed record JourneyObservedRecord(
+    string Identity,
+    DateTimeOffset Timestamp,
+    string RawJson,
+    string? SourceRecordIdentity,
+    IReadOnlySet<string> PreviousIdentities
+)
+{
+    public IReadOnlyList<JournalOrderEvidence>? OrderEvidence { get; init; }
+    public int? SourceOccurrenceCount { get; init; }
+    public IReadOnlyDictionary<string, int>? SourceWitnessOccurrences { get; init; }
 }
 
 public sealed record JourneySystemVisit(
@@ -37,6 +80,9 @@ public sealed record JourneySystemVisit(
     IReadOnlyDictionary<string, int>? FssSignals
 )
 {
+    public DateTimeOffset? BodyCountObservedAt { get; init; }
+    public bool BodyCountIsFinal { get; init; }
+
     public bool HasCompletedFss => Counts.BodyCount > 0 && Counts.BodyScans >= Counts.BodyCount;
 }
 

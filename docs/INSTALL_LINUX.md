@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.77.4**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.77.5**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -51,7 +51,7 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.77.4-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.77.5-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/SrvSurvey.AppImage"
 cd "$HOME/Applications/SrvSurvey"
 chmod +x SrvSurvey.AppImage
@@ -65,7 +65,7 @@ pass its explicit dispatcher option:
 ./SrvSurvey.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.77.4` with the downloaded version. Keeping the installed name
+Replace `2.1.3.0-rc.77.5` with the downloaded version. Keeping the installed name
 as `SrvSurvey.AppImage` gives launchers and the in-application updater a stable
 path. Keep it in this folder instead of moving internal files out of the
 AppImage.
@@ -123,7 +123,7 @@ point to the same location. Keep all files together and run
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey/portable"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.77.4-linux-x64.tar.gz" \
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.77.5-linux-x64.tar.gz" \
     -C "$HOME/Applications/SrvSurvey/portable"
 cd "$HOME/Applications/SrvSurvey/portable"
 chmod +x SrvSurvey.Desktop
@@ -178,12 +178,15 @@ printf 'session=%s\nDISPLAY=%s\nWAYLAND_DISPLAY=%s\n' \
 
 ### Overlay window strategy
 
-SrvSurvey keeps its established separate-window overlay implementation on
-ordinary X11 and XWayland desktops. When the process environment identifies a
-Gamescope session, live overlay controls are instead placed in one transparent
-window matching the Elite client area. This avoids asking Gamescope to stack
-many independent overlay windows while preserving the existing behavior on
-KWin, Mutter, Xfwm, Muffin, and Windows.
+SrvSurvey normally uses separate overlay windows on X11 and XWayland desktops.
+A verified Gamescope external-overlay session requires one combined canvas.
+There is also an environment-based fallback on X11/XWayland: a nonempty
+`GAMESCOPE_WAYLAND_DISPLAY` or `GAMESCOPE_DISPLAY`, or a Gamescope-valued
+`XDG_CURRENT_DESKTOP`, selects the combined host unless an explicit separate-window
+override applies. Inherited variables can therefore affect desktop launches even
+when only Elite is inside nested Gamescope. Check the logged selection when
+troubleshooting. Ordinary KWin, Mutter, Xfwm, Muffin and Windows sessions retain
+separate overlays by default.
 
 The selected strategy is recorded in the application log as `Overlay
 presentation`. These diagnostic overrides take effect after restarting
@@ -193,16 +196,19 @@ SrvSurvey:
 # Force one combined host on X11 or XWayland.
 SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
 
-# Force the established separate-window path, including inside Gamescope.
+# Request separate windows on an ordinary desktop host.
 SRVSURVEY_OVERLAY_HOST=separate ./SrvSurvey.Desktop
 ```
 
 Place the variable before the AppImage command in the same way when using the
-AppImage. Pure native Wayland remains unavailable because topmost placement,
+AppImage. A verified Gamescope external-overlay session retains its required
+combined canvas even when `separate` is requested. Pure native Wayland remains
+unavailable because topmost placement,
 global positioning, game-window tracking, and click-through still require the
 X11/XWayland integration in this package.
 
-Run Elite Dangerous and SrvSurvey as the same desktop user on the same display.
+Run Elite Dangerous and SrvSurvey as the same desktop user. A verified nested
+game display can differ from SrvSurvey’s desktop display.
 Do not start SrvSurvey with `sudo` or from an unrelated SSH session. If Elite is
 inside Gamescope, follow the
 [Gaming Mode guide](STEAMOS_GAMING_MODE.md) or the

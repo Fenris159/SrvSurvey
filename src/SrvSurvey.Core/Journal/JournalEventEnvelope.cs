@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace SrvSurvey.Core.Journal;
@@ -13,6 +15,40 @@ public sealed record JournalEventEnvelope(
     [System.Text.Json.Serialization.JsonIgnore]
     [Newtonsoft.Json.JsonIgnore]
     public string? SourceRecordIdentity { get; init; }
+
+    /// <summary>Matches identical-content occurrences in same-named journal copies, even when byte positions shift.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public string? SourceContentIdentity { get; init; }
+
+    /// <summary>Preserves physical record order when partial or shifted copies are reconciled.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public string? SourcePreviousContentIdentity { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public IReadOnlySet<string>? SourcePreviousContentIdentities { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public IReadOnlyList<JournalOrderEvidence>? SourceOrderEvidence { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public int? SourceOccurrenceCount { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public IReadOnlyDictionary<string, int>? SourceWitnessOccurrences { get; init; }
+
+    internal string CaptureContentIdentity(string fileName, Dictionary<string, int> occurrences)
+    {
+        string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(RawJson)));
+        int occurrence = occurrences.GetValueOrDefault(hash);
+        occurrences[hash] = occurrence + 1;
+        return fileName + ":" + hash + ":" + occurrence.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
 
     public static bool TryParse(string line, out JournalEventEnvelope? journalEvent, out string? error)
     {
@@ -64,4 +100,9 @@ public sealed record JournalEventEnvelope(
             return false;
         }
     }
+}
+
+public sealed record JournalOrderEvidence(string PreviousIdentity, int Occurrences, int PreviousOccurrences)
+{
+    public string? Witness { get; init; }
 }

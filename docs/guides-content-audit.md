@@ -1,6 +1,49 @@
-# In-app Guides content audit
+# Guides content audit
 
-Audited against the current desktop workspaces on 2026-10-10. The catalog is
+## RC77.5 review — 2026-11-03
+
+Reviewed all 19 in-app guide categories, the symbol glossary, and all 12 shipped
+chat-reference topics. Cross-checked active user guides in README and docs for
+navigation labels, settings, current source behavior, release examples and local
+links. Research, parity reports, UX plans and the earlier audit below are dated
+engineering records; their original conclusions are not current how-to promises.
+
+| Area | Gap or dated information corrected | Source checked |
+| --- | --- | --- |
+| Commander | Missing six-tab readout, faction row, owned-fleet current state and zero-debt behavior | Frontier views, Commander profile, Frontier journal reconciliation |
+| Journeys | Navigation location, dated system autocomplete/visit selection, archive/delete, photo viewer and portable HTML report were missing | JourneysView, Journey session, JourneyReport and gallery |
+| Screenshot processing | Source versus output ownership, Steam opt-in, capture-time labels, retries and Journey integration needed a complete workflow | Screenshot settings/store/service, Steam source and Journey photo lookup; new SCREENSHOTS.md |
+| Screenshot sync | Manual Steam folders were incorrectly treated as portable; fixed ownership and added universal temporary-profile restore tests | ProfileSyncPolicy and capture/apply behavior |
+| Theme and editor | Obsolete Overlay Settings/In-game labels, Refresh preview/Apply to overlays and half-point instructions | ThemeView, OverlayPositionEditorWindow and theme settings |
+| Overlay controls | Five custom brushes, Colonization vehicle defaults, Prior Scans radar gate and docked visibility needed explanation | Overlay settings, category defaults and Colonization coordinator |
+| Colonization | Select Projects did not explain Projects filters or retained hidden selections | Colonization Market Search and project filters |
+| Mining | Missing offline settings, yield sorting/limit, quality-hit definition, refinery carryover and Recent Prospects semantics | Mining overlay settings and session tracker |
+| Mining searches | Travel persistence versus manual filter edits was unclear | Surface Mining/Powerplay search ownership |
+| Carrier routes | Dedicated FC/SC state, shared library, simultaneous overlays and auto-copy arbitration were absent | Travel route workspaces and carrier observation ownership |
+| Discord | Webhook setup and matching FC/SC itinerary needed to be discoverable | Application settings and announcement service |
+| Privacy | Stealth Mode and EDAstro were missing; VoxStellar guide unnecessarily required a separate EDDN tool | Provider publishers, privacy settings and stealth-mode.md |
+| Missions | Massacre tracker scope could be mistaken for all station missions | CombatState mission acceptance |
+| Chat commands | Missing waypoint navigation and explicit survey completion | MineMapService command handling |
+| Linux | Corrected KWin OSD and same-display claims; distinguish verified Gamescope hosting from its environment-selected fallback | Native overlay host policy and Overlay_Troubleshooting.md |
+| Developer/platform docs | Full warning gate was described as changed-line-only; stream category and SteamOS PR reference were stale | Quality gate, current settings and host code |
+| Version examples | Installation/development examples and release notes needed RC77.5 | Desktop project and release workflow |
+
+The Ubuntu Gamescope guide now identifies September 2026 versions as a tested
+configuration, rather than claiming they remain the newest packages. Device-only
+Steam Deck and VDXR validation limits are retained. Symbol definitions and other
+accurate guidance are preserved. No external service policy or vendor package
+version is re-certified by this source-based audit.
+
+All relative file links across 69 Markdown files resolved during this audit.
+
+Validation uses existing guide navigation/search/markup/localization tests and
+the repository quality gate. The new sync regression uses fictional folders in
+isolated profiles, covers global and Commander settings, and first reproduced
+the incorrect folder replacement before the production fix.
+
+## Earlier audit — 2026-10-10
+
+Audited against the desktop workspaces on 2026-10-10. The catalog is
 `src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs`; chat-command help comes from
 the shipped `chat-commands-guide.json`. This audit changes help and its reader;
 it does not change game actions or network publication.

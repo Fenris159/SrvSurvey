@@ -3,7 +3,18 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Storage;
 
-public sealed class SystemNoteStore
+public interface ISystemNoteStore
+{
+    Task<SystemNoteLoadResult> LoadAsync(
+        string frontierId,
+        string systemName,
+        long systemAddress,
+        CancellationToken cancellationToken = default
+    );
+    Task<string> SaveAsync(SystemNoteContext context, string? notes, CancellationToken cancellationToken = default);
+}
+
+public sealed class SystemNoteStore : ISystemNoteStore
 {
     private readonly LegacySystemDataFileStore fileStore;
 

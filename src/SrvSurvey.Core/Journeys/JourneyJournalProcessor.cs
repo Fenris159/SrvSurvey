@@ -5,7 +5,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Journeys;
 
-public sealed class JourneyJournalProcessor
+public sealed partial class JourneyJournalProcessor
 {
     private readonly ExobiologyReferenceCatalog exobiologyCatalog;
     private readonly Dictionary<BodyKey, BodyState> bodies = [];
@@ -17,76 +17,49 @@ public sealed class JourneyJournalProcessor
         bool isOdyssey
     )
     {
-        Journey = journey ?? throw new ArgumentNullException(nameof(journey));
+        ArgumentNullException.ThrowIfNull(journey);
+        State = InitializeRecordTracking(journey);
         this.exobiologyCatalog = exobiologyCatalog ?? throw new ArgumentNullException(nameof(exobiologyCatalog));
         this.isOdyssey = isOdyssey;
+        InitializeObservationHistory(journey);
     }
 
-    public JourneyDocument Journey { get; private set; }
+    private JourneyDocument state = null!;
+    private bool snapshotDirty;
+    private JourneyDocument State
+    {
+        get => state;
+        set
+        {
+            state = value;
+            snapshotDirty = true;
+        }
+    }
+    public JourneyDocument Journey => Snapshot();
 
     public void UpdateJourney(JourneyDocument journey)
     {
-        ArgumentNullException.ThrowIfNull(journey);
-        if (
-            !string.Equals(journey.FrontierId, Journey.FrontierId, StringComparison.Ordinal)
-            || !string.Equals(journey.FileName, Journey.FileName, StringComparison.Ordinal)
-        )
+        lock (stateLock)
         {
-            throw new ArgumentException("The replacement document must represent the same journey.", nameof(journey));
-        }
+            ArgumentNullException.ThrowIfNull(journey);
+            if (
+                !string.Equals(journey.FrontierId, State.FrontierId, StringComparison.Ordinal)
+                || !string.Equals(journey.FileName, State.FileName, StringComparison.Ordinal)
+            )
+            {
+                throw new ArgumentException(
+                    "The replacement document must represent the same journey.",
+                    nameof(journey)
+                );
+            }
 
-        Journey = journey;
+            State = InitializeRecordTracking(journey);
+            InitializeObservationHistory(journey);
+            HasRecordMetadataChanges = false;
+        }
     }
 
-    public bool Apply(JournalEventEnvelope journalEvent)
-    {
-        ArgumentNullException.ThrowIfNull(journalEvent);
-        if (journalEvent.Timestamp is not { } timestamp || timestamp < Journey.Watermark)
-        {
-            return false;
-        }
-
-        ApplyEvent(journalEvent);
-        Journey = Journey with { Watermark = timestamp };
-        return true;
-    }
-
-    public JourneyReplaySummary ApplyCatchUp(IEnumerable<JournalEventEnvelope> journalEvents)
-    {
-        ArgumentNullException.ThrowIfNull(journalEvents);
-        DateTimeOffset startingWatermark = Journey.Watermark;
-        int processed = 0;
-        int ignored = 0;
-
-        foreach (JournalEventEnvelope journalEvent in journalEvents)
-        {
-            if (journalEvent.Timestamp is not { } timestamp)
-            {
-                ignored++;
-                continue;
-            }
-
-            if (timestamp <= startingWatermark)
-            {
-                PrimeEvent(journalEvent);
-                ignored++;
-                continue;
-            }
-
-            if (Apply(journalEvent))
-            {
-                processed++;
-            }
-            else
-            {
-                ignored++;
-            }
-        }
-
-        return new JourneyReplaySummary(Journey, processed, ignored);
-    }
-
-    private void PrimeEvent(JournalEventEnvelope journalEvent)
+    private void PrimeEvent(JournalEventEnvelope journalEvent, bool replaceEqual = true)
     {
         if (journalEvent.EventName == "Fileheader")
         {
@@ -94,7 +67,7 @@ public sealed class JourneyJournalProcessor
         }
         else if (journalEvent.EventName == "Scan")
         {
-            PrimeBody(journalEvent.Payload, Journey.CurrentSystem);
+            PrimeBody(journalEvent.Payload, CurrentVisit, journalEvent.Timestamp!.Value, replaceEqual);
         }
     }
 
@@ -118,15 +91,15 @@ public sealed class JourneyJournalProcessor
                 break;
 
             case "FSSDiscoveryScan":
-                ApplyBodyCount(root, "BodyCount");
+                ApplyBodyCount(root, "BodyCount", journalEvent.Timestamp!.Value);
                 break;
 
             case "FSSAllBodiesFound":
-                ApplyBodyCount(root, "Count");
+                ApplyBodyCount(root, "Count", journalEvent.Timestamp!.Value);
                 break;
 
             case "Scan":
-                ApplyScan(root);
+                ApplyScan(root, journalEvent.Timestamp!.Value);
                 break;
 
             case "SAAScanComplete":
@@ -171,34 +144,7 @@ public sealed class JourneyJournalProcessor
             return;
         }
 
-        var visits = Journey.VisitedSystems.ToList();
-        int currentIndex = FindCurrentIndex(visits);
-        if (currentIndex >= 0 && visits[currentIndex].StarSystem.SystemAddress == systemReference.SystemAddress)
-        {
-            return;
-        }
-
-        if (currentIndex >= 0)
-        {
-            visits[currentIndex] = visits[currentIndex] with { Departed = timestamp };
-        }
-
-        visits.Add(
-            new JourneySystemVisit(
-                systemReference,
-                timestamp,
-                null,
-                JourneyCounts.Empty,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-            )
-        );
-        Journey = Journey with { VisitedSystems = visits };
+        ApplyArrivalAtTime(systemReference, timestamp);
     }
 
     private void ApplyDeparture(JsonElement root, DateTimeOffset timestamp)
@@ -208,23 +154,43 @@ public sealed class JourneyJournalProcessor
             return;
         }
 
-        UpdateCurrent(visit => visit with { Departed = timestamp });
+        UpdateCurrent(visit =>
+            visit with
+            {
+                Departed = visit.Departed is { } prior && prior < timestamp ? prior : timestamp,
+            }
+        );
     }
 
-    private void ApplyBodyCount(JsonElement root, string propertyName)
+    private void ApplyBodyCount(JsonElement root, string propertyName, DateTimeOffset timestamp)
     {
         if (GetInt32(root, propertyName) is not { } bodyCount)
         {
             return;
         }
 
-        UpdateCurrent(visit => visit with { Counts = visit.Counts with { BodyCount = bodyCount } });
+        bool final = propertyName == "Count";
+        UpdateCurrent(visit =>
+        {
+            DateTimeOffset? observed =
+                visit.BodyCountObservedAt ?? (visit.Counts.BodyCount > 0 ? State.Watermark : null);
+            if (observed > timestamp || (observed == timestamp && visit.BodyCountIsFinal && !final))
+            {
+                return visit;
+            }
+            return visit with
+            {
+                Counts = visit.Counts with { BodyCount = bodyCount },
+                BodyCountObservedAt = timestamp,
+                BodyCountIsFinal = final,
+            };
+        });
     }
 
-    private void ApplyScan(JsonElement root)
+    private void ApplyScan(JsonElement root, DateTimeOffset timestamp)
     {
-        JourneySystemVisit? current = Journey.CurrentSystem;
-        BodyState? body = PrimeBody(root, current);
+        JourneySystemVisit? current = CurrentVisit;
+        BodyState? body = PrimeBody(root, current, timestamp);
         if (
             current is null
             || body is null
@@ -258,7 +224,7 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyDetailedSurfaceScan(JsonElement root)
     {
-        JourneySystemVisit? current = Journey.CurrentSystem;
+        JourneySystemVisit? current = CurrentVisit;
         if (current is null || GetInt32(root, "BodyID") is not { } bodyId)
         {
             return;
@@ -292,7 +258,7 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyTouchdown(JsonElement root)
     {
-        JourneySystemVisit? current = Journey.CurrentSystem;
+        JourneySystemVisit? current = CurrentVisit;
         string? bodyName = GetString(root, "Body");
         if (current is null || string.IsNullOrWhiteSpace(bodyName))
         {
@@ -323,7 +289,7 @@ public sealed class JourneyJournalProcessor
 
     private void ApplySurfaceSignals(JsonElement root)
     {
-        JourneySystemVisit? current = Journey.CurrentSystem;
+        JourneySystemVisit? current = CurrentVisit;
         if (
             current is null
             || !root.TryGetProperty("Signals", out JsonElement signals)
@@ -355,7 +321,7 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyFssSignal(JsonElement root)
     {
-        JourneySystemVisit? current = Journey.CurrentSystem;
+        JourneySystemVisit? current = CurrentVisit;
         string? signalType = GetString(root, "SignalType");
         if (current is null || string.IsNullOrWhiteSpace(signalType))
         {
@@ -371,7 +337,7 @@ public sealed class JourneyJournalProcessor
 
     private void ApplyCodexEntry(JsonElement root)
     {
-        JourneySystemVisit? current = Journey.CurrentSystem;
+        JourneySystemVisit? current = CurrentVisit;
         if (current is null || GetInt64(root, "EntryID") is not { } entryId)
         {
             return;
@@ -432,7 +398,12 @@ public sealed class JourneyJournalProcessor
         );
     }
 
-    private BodyState? PrimeBody(JsonElement root, JourneySystemVisit? current)
+    private BodyState? PrimeBody(
+        JsonElement root,
+        JourneySystemVisit? current,
+        DateTimeOffset timestamp,
+        bool replaceEqual = true
+    )
     {
         int? bodyId = GetInt32(root, "BodyID");
         long? systemAddress = GetInt64(root, "SystemAddress") ?? current?.StarSystem.SystemAddress;
@@ -444,6 +415,11 @@ public sealed class JourneyJournalProcessor
 
         var key = new BodyKey(systemAddress.Value, bodyId.Value);
         BodyState body = bodies.GetValueOrDefault(key) ?? new BodyState(key);
+        if (body.ObservedAt > timestamp || (!replaceEqual && body.ObservedAt == timestamp))
+        {
+            return body;
+        }
+        body.ObservedAt = timestamp;
         body.BodyClass = bodyClass;
         body.IsTerraformable = GetString(root, "TerraformState") == "Terraformable";
         double? planetMass = GetDouble(root, "MassEM");
@@ -474,15 +450,15 @@ public sealed class JourneyJournalProcessor
 
     private void UpdateCurrent(Func<JourneySystemVisit, JourneySystemVisit> update)
     {
-        var visits = Journey.VisitedSystems.ToList();
-        int index = FindCurrentIndex(visits);
+        var visits = State.VisitedSystems.ToList();
+        int index = applyingVisitIndex ?? FindCurrentIndex(visits);
         if (index < 0)
         {
             return;
         }
 
         visits[index] = update(visits[index]);
-        Journey = Journey with { VisitedSystems = visits };
+        State = State with { VisitedSystems = visits };
     }
 
     private static int FindCurrentIndex(List<JourneySystemVisit> visits)
@@ -546,10 +522,9 @@ public sealed class JourneyJournalProcessor
 
     private readonly record struct BodyKey(long SystemAddress, int BodyId);
 
-    private sealed class BodyState(BodyKey key)
+    private sealed record BodyState(BodyKey Key)
     {
-        public BodyKey Key { get; } = key;
-
+        public DateTimeOffset ObservedAt { get; set; }
         public string? BodyClass { get; set; }
 
         public bool IsTerraformable { get; set; }

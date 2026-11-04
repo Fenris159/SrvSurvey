@@ -25,6 +25,35 @@ public static class JournalFolderLocator
     private static readonly string[] JournalSegments = ["Saved Games", "Frontier Developments", "Elite Dangerous"];
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
+    /// <summary>Uses the configured Wine profile's Pictures directory, with the platform's native Pictures as fallback.</summary>
+    public static string ResolveScreenshotDirectory(string? journalDirectory, string picturesDirectory)
+    {
+        string fallback = Path.Combine(picturesDirectory, JournalSegments[1], JournalSegments[2]);
+        string? path = journalDirectory?.Trim().Trim('"');
+        if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path))
+        {
+            return fallback;
+        }
+        DirectoryInfo journal;
+        try
+        {
+            journal = new DirectoryInfo(path);
+        }
+        catch (ArgumentException)
+        {
+            return fallback;
+        }
+        DirectoryInfo? profile = journal.Parent?.Parent?.Parent;
+        return
+            string.Equals(journal.Name, JournalSegments[2], StringComparison.OrdinalIgnoreCase)
+            && string.Equals(journal.Parent?.Name, JournalSegments[1], StringComparison.OrdinalIgnoreCase)
+            && string.Equals(journal.Parent?.Parent?.Name, JournalSegments[0], StringComparison.OrdinalIgnoreCase)
+            && string.Equals(profile?.Parent?.Name, "users", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(profile?.Parent?.Parent?.Name, "drive_c", StringComparison.OrdinalIgnoreCase)
+            ? Path.Combine(profile!.FullName, "Pictures", JournalSegments[1], JournalSegments[2])
+            : fallback;
+    }
+
     public static JournalFolderResolution ResolveCurrent(string? configuredPath = null)
     {
         return ResolveCurrentWithSettings(configuredPath is null ? [] : [configuredPath], null);

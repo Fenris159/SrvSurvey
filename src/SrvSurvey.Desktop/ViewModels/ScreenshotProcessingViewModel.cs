@@ -6,25 +6,124 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
+public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChanged
 {
     private readonly ScreenshotProcessingSettingsStore settingsStore;
     private readonly IScreenshotProcessingService processingService;
     private ScreenshotProcessingPreferences preferences;
     private string statusMessage;
+    private string? journalDirectory;
+    private bool automaticSource;
+    private bool outputUninitialized;
+    private bool outputPinPending;
 
     public ScreenshotProcessingViewModel(
         ScreenshotProcessingSettingsStore settingsStore,
-        IScreenshotProcessingService? processingService = null
+        IScreenshotProcessingService? processingService = null,
+        string? journalDirectory = null,
+        string? pendingQueueDirectory = null,
+        bool deferOutputInitialization = false,
+        SteamScreenshotSource? steamScreenshotSource = null,
+        TimeProvider? timeProvider = null
     )
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.processingService = processingService ?? new ScreenshotProcessingService();
-        preferences = settingsStore.Load();
+        this.processingService =
+            processingService ?? new ScreenshotProcessingService(pendingQueueDirectory: pendingQueueDirectory);
+        this.journalDirectory = journalDirectory;
+        steamSource = steamScreenshotSource ?? new SteamScreenshotSource();
+        steamClock = timeProvider ?? TimeProvider.System;
+        bool automaticOutput;
+        (preferences, automaticSource, automaticOutput) = settingsStore.LoadWithFolderModes(journalDirectory);
         statusMessage = CreateReadyStatus(preferences);
+        RefreshSteamSource();
+        outputUninitialized = automaticOutput || !Path.IsPathFullyQualified(preferences.TargetFolder);
+        if (outputUninitialized)
+        {
+            preferences = preferences with
+            {
+                TargetFolder = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory).TargetFolder,
+            };
+            if (!deferOutputInitialization)
+            {
+                InitializeOutputFolder();
+            }
+        }
     }
 
+    internal bool IsGameWindowAvailable => processingService.IsGameWindowAvailable;
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void InitializeOutputFolder()
+    {
+        if (outputUninitialized)
+        {
+            outputUninitialized = false;
+            outputPinPending = true;
+            preferences = preferences with
+            {
+                TargetFolder = ScreenshotProcessingPreferences.CreateDefaults(journalDirectory).TargetFolder,
+            };
+        }
+        if (!outputPinPending)
+        {
+            return;
+        }
+        try
+        {
+            preferences = preferences with { TargetFolder = settingsStore.PinOutputFolder(preferences.TargetFolder) };
+            outputPinPending = false;
+            StatusMessage = CreateReadyStatus(preferences);
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        {
+            StatusMessage =
+                "The screenshot output folder is fixed for this session but could not be saved: " + exception.Message;
+        }
+        OnPropertyChanged(nameof(TargetFolder));
+    }
+
+    public void UpdateJournalDirectory(string directory)
+    {
+        if (!string.Equals(journalDirectory, directory, PathComparison))
+        {
+            journalDirectory = directory;
+            lastSteamScan = null;
+            RefreshSteamSource();
+            var defaults = ScreenshotProcessingPreferences.CreateDefaults(directory);
+            ScreenshotProcessingPreferences updated = preferences with
+            {
+                SourceFolder = automaticSource ? defaults.SourceFolder : preferences.SourceFolder,
+            };
+            if (preferences != updated)
+            {
+                preferences = updated;
+                OnPropertyChanged(nameof(SourceFolder));
+                StatusMessage = CreateReadyStatus(preferences);
+            }
+        }
+        InitializeOutputFolder();
+    }
+
+    public void SelectSourceFolder(string folder)
+    {
+        ArgumentNullException.ThrowIfNull(folder);
+        automaticSource = false;
+        string next = folder.Trim();
+        if (next == preferences.SourceFolder)
+        {
+            SavePreferences();
+        }
+        else
+        {
+            SourceFolder = next;
+        }
+    }
+
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     public bool Enabled
     {
@@ -59,13 +158,36 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     public string SourceFolder
     {
         get => preferences.SourceFolder;
-        set => Update(preferences with { SourceFolder = value?.Trim() ?? string.Empty });
+        set
+        {
+            string next = value?.Trim() ?? string.Empty;
+            if (next == preferences.SourceFolder)
+            {
+                return;
+            }
+            automaticSource = false;
+            Update(preferences with { SourceFolder = next });
+        }
     }
 
     public string TargetFolder
     {
         get => preferences.TargetFolder;
-        set => Update(preferences with { TargetFolder = value?.Trim() ?? string.Empty });
+        set
+        {
+            string next = value?.Trim() ?? string.Empty;
+            bool pinExplicitTarget = outputUninitialized;
+            outputUninitialized = false;
+            if (next == preferences.TargetFolder)
+            {
+                if (pinExplicitTarget)
+                {
+                    SavePreferences();
+                }
+                return;
+            }
+            Update(preferences with { TargetFolder = next });
+        }
     }
 
     public string BannerColor
@@ -104,6 +226,36 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         private set => SetField(ref statusMessage, value);
     }
 
+    public async Task OpenOutputFolderAsync(Func<DirectoryInfo, Task<bool>> directoryLauncher)
+    {
+        ArgumentNullException.ThrowIfNull(directoryLauncher);
+        try
+        {
+            Runtime.DesktopExternalEffectPolicy.ThrowIfDisabled();
+            if (!Path.IsPathFullyQualified(TargetFolder))
+            {
+                throw new InvalidOperationException("The converted screenshot folder must be an absolute path.");
+            }
+            DirectoryInfo directory = Directory.CreateDirectory(TargetFolder);
+            bool launched = await directoryLauncher(directory);
+            StatusMessage = launched
+                ? "Opened the converted screenshot folder."
+                : "The converted screenshot folder could not be opened.";
+        }
+        catch (Exception exception)
+            when (exception
+                    is ArgumentException
+                        or InvalidOperationException
+                        or IOException
+                        or NotSupportedException
+                        or UnauthorizedAccessException
+                        or System.Runtime.InteropServices.ExternalException
+            )
+        {
+            StatusMessage = "The converted screenshot folder could not be opened: " + exception.Message;
+        }
+    }
+
     public bool ToggleBanner()
     {
         AddBanner = !AddBanner;
@@ -116,17 +268,38 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         string? commanderName,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
         ScreenshotNavigationContext? navigationContext = null,
+        string? frontierId = null,
+        SteamScreenshotLiveSession? liveSession = null,
         CancellationToken cancellationToken = default
     )
     {
-        ScreenshotProcessingResult result = await processingService.ProcessAsync(
-            journalEvents,
-            preferences,
-            commanderName,
-            guardianContexts,
-            navigationContext,
-            cancellationToken
-        );
+        if (outputPinPending)
+        {
+            InitializeOutputFolder();
+        }
+        ScreenshotProcessingResult result =
+            processingService.HasPendingWork || journalEvents.Any(entry => entry.EventName == "Screenshot")
+                ? await processingService.ProcessLiveAsync(
+                    journalEvents,
+                    preferences,
+                    commanderName,
+                    guardianContexts,
+                    navigationContext,
+                    cancellationToken
+                )
+                : ScreenshotProcessingResult.Empty;
+        // A completed image should reach the overlay before a Steam history scan or another conversion starts.
+        ScreenshotProcessingResult steam =
+            result.Conversions.Count == 0
+                ? await ProcessSteamScreenshotsAsync(frontierId, liveSession, cancellationToken)
+                : ScreenshotProcessingResult.Empty;
+        result = new(
+            result.Conversions.Concat(steam.Conversions).ToArray(),
+            result.Warnings.Concat(steam.Warnings).ToArray()
+        )
+        {
+            PendingCount = processingService.PendingCount,
+        };
         if (result.Conversions.Count == 0 && result.Warnings.Count == 0)
         {
             return result;
@@ -136,7 +309,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         {
             0 => "No screenshots were converted.",
             1 => $"Saved screenshot: {result.Conversions[0].OutputPath}",
-            _ => $"Saved {result.Conversions.Count:N0} screenshots to " + preferences.TargetFolder + ".",
+            _ => $"Saved {result.Conversions.Count:N0} screenshots.",
         };
         StatusMessage = result.Warnings.Count == 0 ? converted : converted + " " + string.Join(" ", result.Warnings);
         return result;
@@ -151,9 +324,21 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
 
         preferences = updated;
         OnPropertyChanged(propertyName);
+        SavePreferences();
+    }
+
+    private void SavePreferences()
+    {
         try
         {
-            settingsStore.Save(preferences);
+            settingsStore.Save(
+                preferences,
+                journalDirectory,
+                useAutomaticSource: automaticSource,
+                useAutomaticTarget: false,
+                preserveTargetFolder: outputUninitialized
+            );
+            outputPinPending = false;
             StatusMessage = CreateReadyStatus(preferences);
         }
         catch (Exception exception)
@@ -171,17 +356,22 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             return "Screenshot conversion is off.";
         }
 
-        if (!Path.IsPathFullyQualified(preferences.SourceFolder) || !Directory.Exists(preferences.SourceFolder))
+        if (
+            !preferences.ProcessSteamScreenshots
+            && (!Path.IsPathFullyQualified(preferences.SourceFolder) || !Directory.Exists(preferences.SourceFolder))
+        )
         {
             return "Choose an existing absolute screenshot source folder.";
         }
 
         if (!Path.IsPathFullyQualified(preferences.TargetFolder))
         {
-            return "Choose an absolute screenshot target folder.";
+            return "The converted screenshot folder must be an absolute path.";
         }
 
-        return "New Elite BMP screenshots will be converted to verified PNG files.";
+        return preferences.ProcessSteamScreenshots
+            ? "Elite BMP and Steam JPEG screenshots will be converted to verified PNG files."
+            : "New Elite BMP screenshots will be converted to verified PNG files.";
     }
 
     private static double NormalizeAerialAltitude(double value)

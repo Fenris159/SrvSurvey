@@ -162,9 +162,10 @@ public sealed partial class JourneysView : UserControl
             return;
         }
 
+        JourneyHtmlExport? report = null;
         try
         {
-            JourneyHtmlExport? report = await model.CreateHtmlReportAsync();
+            report = await model.CreateHtmlReportAsync();
             if (report is null)
             {
                 return;
@@ -179,7 +180,7 @@ public sealed partial class JourneysView : UserControl
             );
             if (destination is null)
             {
-                model.SetExportStatus("Journey report export canceled.");
+                model.SetExportStatus(report, "Journey report export canceled.");
                 return;
             }
 
@@ -195,7 +196,10 @@ public sealed partial class JourneysView : UserControl
                         or ArgumentException
             )
         {
-            model.SetExportStatus("The journey report could not be saved: " + exception.Message);
+            if (report is not null)
+            {
+                model.SetExportStatus(report, "The journey report could not be saved: " + exception.Message);
+            }
         }
     }
 }

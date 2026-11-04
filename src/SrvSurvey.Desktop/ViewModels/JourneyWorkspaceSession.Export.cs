@@ -4,7 +4,7 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed partial class JourneyWorkspaceViewModel
+internal sealed partial class JourneyWorkspaceSession
 {
     public async Task SaveHtmlReportAsync(JourneyHtmlExport report, string destination)
     {
@@ -12,31 +12,17 @@ public sealed partial class JourneyWorkspaceViewModel
         {
             return;
         }
-        int version = contextVersion;
+        using BusyScope busy = BeginBusy();
         try
         {
-            IsBusy = true;
             StatusMessage = "Copying report images and preparing previews...";
             string folder = await JourneyReportBundleExporter.SaveAsync(report, destination);
-            if (version == contextVersion)
-            {
-                StatusMessage =
-                    $"Journey report exported to {folder}. Open index.html to view it, and share the entire folder to include its images.";
-            }
+            StatusMessage =
+                $"Journey report exported to {folder}. Open index.html to view it, and share the entire folder to include its images.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            if (version == contextVersion)
-            {
-                StatusMessage = "The journey report could not be saved: " + exception.Message;
-            }
-        }
-        finally
-        {
-            if (version == contextVersion)
-            {
-                IsBusy = false;
-            }
+            StatusMessage = "The journey report could not be saved: " + exception.Message;
         }
     }
 

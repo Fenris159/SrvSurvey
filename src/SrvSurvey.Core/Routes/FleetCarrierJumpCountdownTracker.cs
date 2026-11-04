@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
 
-namespace SrvSurvey.Desktop.ViewModels;
+namespace SrvSurvey.Core.Routes;
 
 public sealed class FleetCarrierJumpCountdownTracker
 {

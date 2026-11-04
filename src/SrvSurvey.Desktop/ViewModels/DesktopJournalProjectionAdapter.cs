@@ -590,13 +590,26 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
     private void ApplySessionBaseline(JournalProjectionContext context, JournalProjectionTick tick)
     {
+        string? screenshotDirectory =
+            context.Update.ConfiguredJournalDirectory ?? Path.GetDirectoryName(context.Update.JournalPath);
+        if (screenshotDirectory is not null)
+        {
+            dependencies.ScreenshotProcessing.UpdateJournalDirectory(screenshotDirectory);
+        }
         tick.PreviousFrontierId = state.Session.FrontierId;
         tick.PreviousCommanderName = state.Session.CommanderName;
         state.IsAwaitingCommanderIdentity = context.Update.IsAwaitingCommanderIdentity;
-        if (context.IsBootstrapRead || context.Update.Status is not null)
+        string? statusSource = Path.GetDirectoryName(context.Update.JournalPath);
+        bool sourceChanged = !string.Equals(
+            statusSource,
+            state.LatestStatusSource,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        );
+        if (sourceChanged || context.Update.Status is not null)
         {
             state.LatestStatus = context.Update.Status;
         }
+        state.LatestStatusSource = statusSource;
     }
 
     /// <summary>
@@ -836,8 +849,29 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     screenshotStatus.HasLatitudeLongitude
                 )
                 : null,
-            CancellationToken.None
+            frontierId: state.Session.FrontierId,
+            cancellationToken: CancellationToken.None,
+            liveSession: GetLiveScreenshotSession(context.Update)
         );
+        ReportScreenshotResult(screenshotResult);
+    }
+
+    private SteamScreenshotLiveSession? GetLiveScreenshotSession(JournalMonitorUpdate update) =>
+        dependencies.ScreenshotProcessing.Enabled
+        && dependencies.ScreenshotProcessing.ProcessSteamScreenshots
+        && !dependencies.IsDiagnosticReplay()
+        && !update.IsAwaitingCommanderIdentity
+        && !state.Session.IsShutdown
+        && !state.Session.IsAtMainMenu
+        && dependencies.ScreenshotProcessing.IsGameWindowAvailable
+        && dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount)
+        && update.JournalPath is { } path
+        && state.Session.FrontierId is { } frontierId
+            ? dependencies.ScreenshotProcessing.CreateLiveSession(path, frontierId)
+            : null;
+
+    private void ReportScreenshotResult(ScreenshotProcessingResult screenshotResult)
+    {
         if (screenshotResult.Conversions.Count > 0)
         {
             dependencies.Journey.RefreshScreenshotAvailability();
@@ -1359,6 +1393,16 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
     private async Task ApplyIdleHousekeepingAsync(JournalMonitorUpdate update)
     {
+        if (!dependencies.IsDiagnosticReplay())
+        {
+            ScreenshotProcessingResult screenshots = await dependencies.ScreenshotProcessing.ProcessJournalEventsAsync(
+                [],
+                state.Session.CommanderName,
+                frontierId: state.Session.FrontierId,
+                liveSession: GetLiveScreenshotSession(update)
+            );
+            ReportScreenshotResult(screenshots);
+        }
         DateTimeOffset now = DateTimeOffset.UtcNow;
         if (now - state.LastIdleHousekeepingAt < TimeSpan.FromSeconds(5))
         {

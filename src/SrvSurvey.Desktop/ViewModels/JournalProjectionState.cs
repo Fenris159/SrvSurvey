@@ -24,6 +24,8 @@ internal sealed class JournalProjectionState
     internal bool ProviderCargoSessionEnded { get; set; }
     internal DateTimeOffset? ProviderCargoSessionEndedAt { get; set; }
 
+    internal string? LatestStatusSource { get; set; }
+
     internal EliteStatus? LatestStatus { get; set; }
 
     internal CargoSnapshot? LatestCargo { get; set; }
@@ -43,6 +45,8 @@ internal sealed class JournalProjectionState
     internal string? ProfileCommanderName { get; set; }
 
     internal string? ProfileRavenApiKey { get; set; }
+
+    internal bool ProfileRestoredFromDisk { get; set; }
 
     internal bool ProfileIsOdyssey { get; set; } = true;
 }

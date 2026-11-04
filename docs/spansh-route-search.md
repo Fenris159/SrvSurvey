@@ -9,8 +9,8 @@ automatically retains this itinerary, its progress, notes, and tracking settings
 when the workspace closes or the application restarts. **Save As** separately
 adds a named copy to the route library. Clipboard imports behave the same way.
 
-Working routes are separate for each commander and for the ship and Fleet Carrier
-workspaces. Reopening or reloading either workspace restores its working route.
+Working routes are separate for each commander and for the ship, FC Routes, and
+SC Routes workspaces. Reopening or reloading a workspace restores its working route.
 A successful new search or import replaces it; an empty, failed, or cancelled
 search preserves it. **New** clears the working route, **Reset** restarts its
 progress, and **Undo** restores the saved baseline. Retaining a working copy

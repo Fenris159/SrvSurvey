@@ -6,7 +6,7 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Journeys;
 
-public sealed class JourneyJournalHistoryReader
+public sealed partial class JourneyJournalHistoryReader
 {
     private static readonly StringComparer PathComparer = OperatingSystem.IsWindows()
         ? StringComparer.OrdinalIgnoreCase
@@ -278,7 +278,7 @@ public sealed class JourneyJournalHistoryReader
 
         var events = new List<JournalEventEnvelope>();
         var diagnostics = new ReadDiagnostics();
-        var seen = new HashSet<(string Journal, int Occurrence, string Json)>();
+        var seen = new Dictionary<(string Journal, int Occurrence, string Json), int>();
         FileInfo[] files = EnumerateJournalFiles(descending: false, diagnostics).ToArray();
         string missingMessage = $"The starting journal was not found for this commander: {startingJournal}";
         FileInfo startingFile =
@@ -317,7 +317,7 @@ public sealed class JourneyJournalHistoryReader
         string fileName,
         bool isStartingFile,
         DateTimeOffset boundary,
-        HashSet<(string Journal, int Occurrence, string Json)> seen,
+        Dictionary<(string Journal, int Occurrence, string Json), int> seen,
         List<JournalEventEnvelope> events
     )
     {
@@ -328,11 +328,68 @@ public sealed class JourneyJournalHistoryReader
             int occurrence = occurrences.GetValueOrDefault(entry.RawJson);
             occurrences[entry.RawJson] = occurrence + 1;
             // Keep the starting preamble for scan context; overlapping files contribute from the time boundary.
-            if ((isStartingFile || entry.Timestamp >= boundary) && seen.Add((fileName, occurrence, entry.RawJson)))
+            if (!isStartingFile && entry.Timestamp < boundary)
             {
+                continue;
+            }
+            (string, int, string) key = (fileName, occurrence, entry.RawJson);
+            if (seen.TryGetValue(key, out int existingIndex))
+            {
+                JournalEventEnvelope existing = events[existingIndex];
+                var predecessors = new HashSet<string>(
+                    existing.SourcePreviousContentIdentities ?? new HashSet<string>(),
+                    StringComparer.Ordinal
+                );
+                if (existing.SourcePreviousContentIdentity is { } prior)
+                {
+                    predecessors.Add(prior);
+                }
+                if (entry.SourcePreviousContentIdentity is { } incoming)
+                {
+                    predecessors.Add(incoming);
+                }
+                predecessors.UnionWith(entry.SourcePreviousContentIdentities ?? new HashSet<string>());
+                events[existingIndex] = existing with
+                {
+                    SourcePreviousContentIdentities = predecessors,
+                    SourceOrderEvidence = (existing.SourceOrderEvidence ?? [])
+                        .Concat(entry.SourceOrderEvidence ?? [])
+                        .Distinct()
+                        .ToArray(),
+                    SourceWitnessOccurrences = MergeWitnessOccurrences(
+                        existing.SourceWitnessOccurrences,
+                        entry.SourceWitnessOccurrences
+                    ),
+                    SourceOccurrenceCount = Math.Max(
+                        existing.SourceOccurrenceCount ?? 1,
+                        entry.SourceOccurrenceCount ?? 1
+                    ),
+                };
+            }
+            else
+            {
+                seen[key] = events.Count;
                 events.Add(entry);
             }
         }
+    }
+
+    private static Dictionary<string, int> MergeWitnessOccurrences(
+        IReadOnlyDictionary<string, int>? first,
+        IReadOnlyDictionary<string, int>? second
+    )
+    {
+        var result = new Dictionary<string, int>(
+            first ?? System.Collections.Immutable.ImmutableDictionary<string, int>.Empty,
+            StringComparer.Ordinal
+        );
+        foreach (
+            (string witness, int count) in second ?? System.Collections.Immutable.ImmutableDictionary<string, int>.Empty
+        )
+        {
+            result[witness] = Math.Max(result.GetValueOrDefault(witness), count);
+        }
+        return result;
     }
 
     // JourneyStore saves the start 10 milliseconds before the selected arrival.
@@ -440,10 +497,13 @@ public sealed class JourneyJournalHistoryReader
             16 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
 
+        var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
         int lineNumber = 0;
-        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
+        string? previousIdentity = null;
+        await foreach (
+            (string line, long offset) in ReadSourceRecordsAsync(stream, cancellationToken).ConfigureAwait(false)
+        )
         {
             lineNumber++;
             if (string.IsNullOrWhiteSpace(line))
@@ -460,9 +520,18 @@ public sealed class JourneyJournalHistoryReader
                 continue;
             }
 
+            journalEvent = journalEvent with
+            {
+                SourcePreviousContentIdentity = previousIdentity,
+                SourceRecordIdentity =
+                    file.Name + ":" + offset.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                SourceContentIdentity = journalEvent.CaptureContentIdentity(file.Name, occurrences),
+            };
+            previousIdentity = journalEvent.SourceContentIdentity;
             events.Add(journalEvent);
         }
 
+        JournalSourceOrdering.Attach(events, 0, occurrences);
         return new JournalFileReadResult(file.Name, events, errors);
     }
 

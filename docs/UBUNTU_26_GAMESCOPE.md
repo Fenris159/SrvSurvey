@@ -52,8 +52,9 @@ interaction was verified on 2026-09-26, with:
 | Resolution exposed to Elite | 3840x2160 at 120 Hz |
 | Mouse sensitivity multiplier | `2.25` for this scaling/resolution ratio |
 
-Ubuntu 26.04 currently packages Gamescope `3.16.20+ds-1`, while `3.16.29` is
-the newest numbered upstream tag as of the verification date. This guide uses
+At the September 2026 verification dates above, Ubuntu 26.04 packaged Gamescope
+`3.16.20+ds-1` and this setup used upstream tag `3.16.29`. These are the tested
+versions, not a claim about the latest available packages. This guide uses
 a versioned, side-by-side install under `~/.local/opt`; it does not overwrite
 Ubuntu's package. See the [Ubuntu package](https://packages.ubuntu.com/source/resolute/gamescope)
 and [upstream 3.16.29 source](https://github.com/ValveSoftware/gamescope/tree/3.16.29).
@@ -135,7 +136,7 @@ Do not combine this test with pointer-warp scripts, `XGrabPointer` helpers, or
 Wine `MouseWarpOverride` settings. They change the input path and make the
 result difficult to diagnose.
 
-## 3. Build the current Gamescope tag side by side
+## 3. Build the tested Gamescope tag side by side
 
 ### Install build dependencies
 

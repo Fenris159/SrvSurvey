@@ -62,6 +62,8 @@
     "Summary": "Create a saved surface mining-location map from its measured border, then mark mineral or metal deposits from anywhere inside it.",
     "Steps": [
       ".mining survey — Start the guided border, center, and surface-scanner workflow. Run it again before center setup is complete to restart at the border, or during the scan route to return to waypoint 1. The overlay keeps deposit commands visible while scanning and closes 10 seconds after its final rig reminder.",
+      ".mining waypoint next or .mining waypoint prev — Skip ahead or return to a guided survey waypoint after border and center setup. Previous can reopen the last waypoint after completion.",
+      ".mining survey complete — Finish the active guided survey and show its final rig reminder.",
       ".mining <bearing> <border radius km> <location number> — From the orange border while facing the location marker, save the measured radius and calculated center. Example: .mining 120 6.44 4.",
       ".mining center here — Move the selected map center to your live coordinates without moving its deposit markers.",
       ".alignment — Toggle a red guide at the exact center of the Elite window. Use the Rhino driving view to align a distant location circle, then read its bearing from the visible compass; turret mode does not show the required bearing.",

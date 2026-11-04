@@ -75,6 +75,8 @@ internal static partial class ProfileSyncPolicy
         "Detection",
         "FssTuningDetector",
         "SourceFolder",
+        "SteamSourceFolder",
+        "UseAutomaticSourceFolder",
         "TargetFolder",
         "CacheDirectory",
         "LocalFloraDirectory",

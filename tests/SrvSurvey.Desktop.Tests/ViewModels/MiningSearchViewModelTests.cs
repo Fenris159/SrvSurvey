@@ -69,6 +69,7 @@ public sealed class MiningSearchViewModelTests
 
             model.Security = "High";
             Assert.Empty(model.AcquireRows);
+            Assert.Equal(string.Empty, model.Status);
             model.Security = "";
             Assert.Equal(key, model.PowerplayCacheKey());
             Assert.Equal(result.Target, Assert.Single(model.AcquireRows).Target);
@@ -253,6 +254,13 @@ public sealed class MiningSearchViewModelTests
                 restore();
                 Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
             }
+
+            model.LoadOptions(new MiningSearchPreferences { Reference = "Lave" });
+            Assert.Equal("Lave", model.Reference);
+            Assert.Empty(model.MeritRows);
+            Assert.Empty(model.Status);
+            model.RestoreLastCompletedPowerplaySearch();
+            Assert.Equal("Achenar", Assert.Single(model.MeritRows).Name);
 
             model.PledgedPower = "Any";
             cache.Save(

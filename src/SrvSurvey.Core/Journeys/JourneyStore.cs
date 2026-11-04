@@ -11,12 +11,16 @@ namespace SrvSurvey.Core.Journeys;
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The store is application-scoped and its semaphore may still have in-flight waiters."
 )]
-public sealed partial class JourneyStore(string dataDirectory)
+public sealed partial class JourneyStore(
+    string dataDirectory,
+    Func<string, CancellationToken, Task<FileStream>>? acquireMutationLease = null
+)
 {
     private const string JsonFileExtension = ".json";
     private const string CodexNewPropertyName = "codexNew";
     private const int CurrentSchemaVersion = 1;
     private const string VisitedSystemsPropertyName = "visitedSystems";
+    private const string WatermarkRecordsPropertyName = "watermarkRecords";
 
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
@@ -26,7 +30,7 @@ public sealed partial class JourneyStore(string dataDirectory)
     internal Task<FileStream> AcquireMutationAsync(string frontierId, CancellationToken cancellationToken)
     {
         ValidateFolderName(frontierId, nameof(frontierId));
-        return FileMutationLease.AcquireAsync(
+        return (acquireMutationLease ?? FileMutationLease.AcquireAsync)(
             Path.Combine(GetJourneyDirectory(frontierId), ".journey"),
             cancellationToken
         );
@@ -196,6 +200,45 @@ public sealed partial class JourneyStore(string dataDirectory)
         }
     }
 
+    internal async Task<JourneyDocument> UpdateAsync(
+        string frontierId,
+        string fileName,
+        Func<JourneyDocument, JourneyDocument> update,
+        CancellationToken cancellationToken,
+        CancellationToken? leaseCancellationToken = null
+    )
+    {
+        ValidateFolderName(frontierId, nameof(frontierId));
+        string normalized = NormalizeFileName(fileName);
+        string path = Path.Combine(GetJourneyDirectory(frontierId), normalized + JsonFileExtension);
+        CancellationToken acquisition = leaseCancellationToken ?? cancellationToken;
+        cancellationToken.ThrowIfCancellationRequested();
+        await saveLock.WaitAsync(acquisition).ConfigureAwait(false);
+        try
+        {
+            await using FileStream lease = await AcquireMutationAsync(frontierId, acquisition).ConfigureAwait(false);
+            JsonObjectReadResult read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+            JsonObject root =
+                read.Root
+                ?? throw new InvalidDataException(read.Error ?? "The Journey could not be loaded for editing.");
+            JourneyDocument latest = ParseJourney(frontierId, path, root);
+            JourneyDocument saved = update(latest);
+            if (saved.FrontierId != latest.FrontierId || saved.FileName != latest.FileName)
+            {
+                throw new InvalidOperationException("A Journey update cannot change its owner or file identity.");
+            }
+            if (!ReferenceEquals(saved, latest))
+            {
+                await WriteJourneyAsync(path, root, saved, cancellationToken).ConfigureAwait(false);
+            }
+            return saved;
+        }
+        finally
+        {
+            saveLock.Release();
+        }
+    }
+
     public async Task<bool> IncrementNoteCountAsync(
         string frontierId,
         string journeyFileName,
@@ -203,24 +246,30 @@ public sealed partial class JourneyStore(string dataDirectory)
         CancellationToken cancellationToken = default
     )
     {
-        JourneyLoadResult result = await LoadAsync(frontierId, journeyFileName, cancellationToken)
+        bool found = false;
+        await UpdateAsync(
+                frontierId,
+                journeyFileName,
+                journey =>
+                {
+                    JourneySystemVisit[] visits = journey.VisitedSystems.ToArray();
+                    int index = Array.FindLastIndex(visits, visit => visit.StarSystem.SystemAddress == systemAddress);
+                    if (index < 0)
+                    {
+                        return journey;
+                    }
+                    found = true;
+                    JourneySystemVisit visit = visits[index];
+                    visits[index] = visit with
+                    {
+                        Counts = visit.Counts with { Notes = checked(visit.Counts.Notes + 1) },
+                    };
+                    return journey with { VisitedSystems = visits };
+                },
+                cancellationToken
+            )
             .ConfigureAwait(false);
-        if (result.Journey is not { } journey)
-        {
-            throw new InvalidDataException(result.Error ?? "The active journey could not be loaded.");
-        }
-
-        JourneySystemVisit[] visits = journey.VisitedSystems.ToArray();
-        int index = Array.FindLastIndex(visits, visit => visit.StarSystem.SystemAddress == systemAddress);
-        if (index < 0)
-        {
-            return false;
-        }
-
-        JourneySystemVisit visit = visits[index];
-        visits[index] = visit with { Counts = visit.Counts with { Notes = checked(visit.Counts.Notes + 1) } };
-        await SaveAsync(journey with { VisitedSystems = visits }, cancellationToken).ConfigureAwait(false);
-        return true;
+        return found;
     }
 
     private static async Task<JourneyLoadResult> LoadPathAsync(
@@ -275,6 +324,8 @@ public sealed partial class JourneyStore(string dataDirectory)
             }
         }
 
+        DateTimeOffset watermark = GetDateTimeOffset(root, "watermark") ?? startTime;
+        RecordedProgress? progress = ReadRecordedProgress(root, watermark);
         return new JourneyDocument(
             fileName,
             path,
@@ -289,9 +340,21 @@ public sealed partial class JourneyStore(string dataDirectory)
             visits
         )
         {
+            ObservationHistory = ReadObservationHistory(root, path),
+            WatermarkRecords = ReadWatermarkRecords(root, watermark),
+            WatermarkRecordsComplete = ReadBoundaryCompleteness(root, watermark),
+            RecordTrackingStart = progress?.From,
+            RecordTrackingStartComplete = progress?.Complete ?? false,
+            RecordedJournalRecords = progress?.Records,
             IsArchived = root["archived"] is JsonValue archived && archived.TryGetValue<bool>(out bool value) && value,
         };
     }
+
+    private static HashSet<string>? ReadWatermarkRecords(JsonObject root, DateTimeOffset watermark) =>
+        root[WatermarkRecordsPropertyName] is JsonObject boundary
+        && GetDateTimeOffset(boundary, "timestamp") == watermark
+            ? ReadStringSet(boundary, "records")
+            : null;
 
     private static JourneySystemVisit ParseVisit(string path, int index, JsonObject root)
     {
@@ -313,7 +376,12 @@ public sealed partial class JourneyStore(string dataDirectory)
             ReadStringIntDictionary(root, "subCats"),
             ReadStringIntDictionary(root, "saaSignals"),
             ReadStringIntDictionary(root, "fssSignals")
-        );
+        )
+        {
+            BodyCountObservedAt = GetDateTimeOffset(root, "bodyCountObservedAt"),
+            BodyCountIsFinal =
+                root["bodyCountIsFinal"] is JsonValue flag && flag.TryGetValue<bool>(out bool final) && final,
+        };
     }
 
     private static JourneySystemReference? ParseStarReference(JsonNode? node)
@@ -426,6 +494,21 @@ public sealed partial class JourneyStore(string dataDirectory)
         }
 
         root["watermark"] = journey.Watermark;
+        if (journey.WatermarkRecords is { } records)
+        {
+            root[WatermarkRecordsPropertyName] = new JsonObject
+            {
+                ["timestamp"] = journey.Watermark,
+                ["complete"] = journey.WatermarkRecordsComplete ?? true,
+                ["records"] = new JsonArray(records.Select(record => (JsonNode?)JsonValue.Create(record)).ToArray()),
+            };
+        }
+        else
+        {
+            root.Remove(WatermarkRecordsPropertyName);
+        }
+        WriteRecordedProgress(root, journey);
+        WriteObservationHistory(root, journey);
         root[VisitedSystemsPropertyName] = MergeVisits(
             root[VisitedSystemsPropertyName] as JsonArray,
             journey.VisitedSystems
@@ -485,6 +568,16 @@ public sealed partial class JourneyStore(string dataDirectory)
             star.Position.Z.ToString(CultureInfo.InvariantCulture)
         );
         root["arrived"] = visit.Arrived;
+        if (visit.BodyCountObservedAt is { } observed)
+        {
+            root["bodyCountObservedAt"] = observed;
+            root["bodyCountIsFinal"] = visit.BodyCountIsFinal;
+        }
+        else
+        {
+            root.Remove("bodyCountObservedAt");
+            root.Remove("bodyCountIsFinal");
+        }
         if (visit.Departed is { } departed)
         {
             root["departed"] = departed;

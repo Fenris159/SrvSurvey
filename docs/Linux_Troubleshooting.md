@@ -4,7 +4,7 @@ This page collects common problems and fixes for the Linux AppImage / portable b
 
 ## Overlay windows do not appear or stay behind Elite Dangerous
 
-**Most common on KDE Plasma.** Plasma is stricter about window layers over exclusive full-screen applications. Current builds automatically use KWin's on-screen-display type when the window manager advertises it.
+**Most common on KDE Plasma.** Plasma is stricter about window layers over exclusive full-screen applications. Current separate overlay windows use the utility/tool classification. Bypass Window Management is optional; if overlays still remain behind the game, use the KDE layer rule described below.
 
 → See the dedicated **[Overlay Troubleshooting](Overlay_Troubleshooting.md)** guide for behavior details and a manual KDE Plasma Layer rule if the automatic path is insufficient.
 
@@ -42,9 +42,9 @@ Install the X11 runtime packages listed in [INSTALL_LINUX.md](INSTALL_LINUX.md#d
 
 ## Overlays do not follow the Elite window / game not detected
 
-- Confirm `DISPLAY` is set and both programs are on the same display.
+- Confirm SrvSurvey has an accessible X11/XWayland `DISPLAY`. Elite may use a separate verified nested game display; the desktop overlay host can follow a supported Gamescope outer window.
 - Both must run as the same desktop user (never start SrvSurvey with `sudo`).
-- If Elite is inside a nested Gamescope session, first test both programs in a normal X11/XWayland desktop session.
+- For nested Gamescope, follow the [current discovery and host instructions](Overlay_Troubleshooting.md#desktop-mode-including-normal-steamproton-launches). A normal X11/XWayland session can help isolate compositor problems.
 - On CachyOS, follow the [same-session Gamescope setup](CACHYOS_GAMESCOPE.md#5-launch-elite-and-srvsurvey-in-the-same-gamescope-session) so Elite and SrvSurvey inherit the same nested display.
 - Pure Wayland without XWayland is not a supported full-functionality mode.
 

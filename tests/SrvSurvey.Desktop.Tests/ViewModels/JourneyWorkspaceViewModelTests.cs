@@ -182,9 +182,12 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
         Assert.Contains("current location could not be found", model.StartStatus, StringComparison.Ordinal);
     }
 
-    private JourneyWorkspaceViewModel CreateViewModel()
+    private JourneyWorkspaceViewModel CreateViewModel(
+        Func<string, string?>? screenshotDirectoryProvider = null,
+        ISystemNoteStore? noteStore = null
+    )
     {
-        var noteStore = new SystemNoteStore(DataDirectory);
+        ISystemNoteStore resolvedNoteStore = noteStore ?? new SystemNoteStore(DataDirectory);
         var settingsStore = new SystemNotesSettingsStore(DataDirectory);
         return new JourneyWorkspaceViewModel(
             new JourneyService(
@@ -193,8 +196,9 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
                 new CommanderProfileStore(DataDirectory),
                 new ExobiologyReferenceCatalog([])
             ),
-            noteStore,
-            settingsStore
+            resolvedNoteStore,
+            settingsStore,
+            screenshotDirectoryProvider
         );
     }
 

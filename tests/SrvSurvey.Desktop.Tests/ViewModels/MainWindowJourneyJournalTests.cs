@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -13,6 +14,130 @@ public sealed class MainWindowJourneyJournalTests : IDisposable
         Path.GetTempPath(),
         $"SrvSurvey-journey-journal-folders-{Guid.NewGuid():N}"
     );
+
+    [Fact]
+    public async Task LateConvertedScreenshotAppearsInTheOriginalJourneySystemAndPortableReport()
+    {
+        string profile = Path.Combine(directory, "proton", "drive_c", "users", "steamuser");
+        string journals = Path.Combine(profile, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        string pictures = Path.Combine(profile, "Pictures", "Frontier Developments", "Elite Dangerous");
+        Directory.CreateDirectory(journals);
+        Directory.CreateDirectory(pictures);
+        string journal = Path.Combine(journals, "Journal.1970-01-01T050000.01.log");
+        await File.WriteAllTextAsync(
+            journal,
+            """
+            {"timestamp":"1970-01-01T05:00:00Z","event":"Fileheader","Odyssey":true}
+            {"timestamp":"1970-01-01T05:00:01Z","event":"Commander","FID":"F123","Name":"Test"}
+            {"timestamp":"1970-01-01T05:00:02Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0],"Docked":false}
+            """ + "\n"
+        );
+        var paths = new AppDataPaths(
+            Path.Combine(directory, "config"),
+            Path.Combine(directory, "data"),
+            Path.Combine(directory, "cache"),
+            []
+        );
+        new UiSettingsDocumentStore(paths.UiSettingsPath).Update(root =>
+            root["Screenshots"] = new JsonObject { ["Enabled"] = true, ["AddBanner"] = false }
+        );
+        var processor = new ScreenshotProcessingService(() => 320, (_, _) => Task.CompletedTask);
+        await using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder => builder.WithAppDataPaths(paths).WithScreenshotProcessingService(processor)
+        );
+        await model.RefreshAsync();
+        model.Notifications.Enabled = true;
+        model.Notifications.ShowScreenshot = true;
+        await model.Journey.StartNewJourneyAsync();
+        model.Journey.NewJourneyName = "Screenshot expedition";
+        await model.Journey.BeginJourneyAsync();
+        Assert.True(model.Journey.HasActiveJourney, model.Journey.StartStatus);
+        await File.AppendAllTextAsync(
+            journal,
+            """{"timestamp":"1970-01-01T05:06:53Z","event":"Screenshot","Filename":"\\ED_Pictures\\late.bmp","System":"Sol","Body":"Earth"}"""
+                + "\n"
+        );
+        await model.RefreshAsync();
+        Assert.Empty(model.Journey.ScreenshotFiles);
+        await File.AppendAllTextAsync(
+            journal,
+            """{"timestamp":"1970-01-01T05:07:00Z","event":"FSDJump","StarSystem":"Lave","SystemAddress":43,"StarPos":[10,0,0]}"""
+                + "\n"
+        );
+        await model.RefreshAsync();
+        model.Journey.SelectedSystem = model.Journey.VisitedSystems.Single(item => item.Name == "Sol");
+        string anotherSource = Path.Combine(directory, "another-source");
+        Directory.CreateDirectory(anotherSource);
+        model.ScreenshotProcessing.SourceFolder = anotherSource;
+        model.ScreenshotProcessing.AddBanner = true;
+        model.ScreenshotProcessing.DeleteOriginal = true;
+        string original = Path.Combine(pictures, "late.bmp");
+        await File.WriteAllBytesAsync(
+            original,
+            Convert.FromBase64String("Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAATCwAAEwsAAAAAAAAAAAAA/wAAAA==")
+        );
+        var visible = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(model.Journey.ScreenshotFiles) && model.Journey.ScreenshotFiles.Count == 1)
+            {
+                visible.TrySetResult();
+            }
+        }
+        model.Journey.PropertyChanged += OnChanged;
+        using var cancellation = new CancellationTokenSource();
+        Task monitoring = model.MonitorAsync(TimeSpan.Zero, cancellation.Token);
+        try
+        {
+            try
+            {
+                await visible.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            catch (TimeoutException)
+            { /* The assertion below reports the missing Journey image. */
+            }
+            string expected = Path.Combine(pictures, "converted", "Sol", "Earth (1970-01-01 050653).png");
+            Assert.True(
+                File.Exists(expected),
+                $"Expected converted PNG at '{expected}'. "
+                    + $"Screenshot status: {model.ScreenshotProcessing.StatusMessage} "
+                    + $"Source: {model.ScreenshotProcessing.SourceFolder}; target: {model.ScreenshotProcessing.TargetFolder}; "
+                    + $"pending: {processor.PendingCount}; monitoring: {monitoring.Status}; "
+                    + $"journal status: {model.StatusMessage}"
+            );
+            Assert.Equal([expected], model.Journey.ScreenshotFiles);
+        }
+        finally
+        {
+            await cancellation.CancelAsync();
+            await monitoring;
+            model.Journey.PropertyChanged -= OnChanged;
+        }
+        Assert.Contains(
+            model.Notifications.Messages,
+            message => message.Text == "Saved 'Earth (1970-01-01 050653).png' with no banner"
+        );
+        string png = Assert.Single(model.Journey.ScreenshotFiles);
+        using (var image = SkiaSharp.SKBitmap.Decode(png))
+        {
+            Assert.NotNull(image);
+            Assert.Equal(SkiaSharp.SKColors.Blue, image.GetPixel(0, 0));
+        }
+        Assert.True(File.Exists(original));
+        Assert.Equal(1, model.Journey.VisitedSystems.Single(item => item.Name == "Sol").Visit.Counts.Screenshots);
+        Assert.Equal(0, model.Journey.VisitedSystems.Single(item => item.Name == "Lave").Visit.Counts.Screenshots);
+        await model.Journey.ConfirmConcludeAsync();
+        JourneyHtmlExport report = Assert.IsType<JourneyHtmlExport>(await model.Journey.CreateHtmlReportAsync());
+        Assert.Equal(png, Assert.Single(report.Images).SourcePath);
+        Assert.Contains("images/42/0001-preview.png", report.Html, StringComparison.Ordinal);
+        string folder = await JourneyReportBundleExporter.SaveAsync(report, Path.Combine(directory, "exports"));
+        Assert.Equal(
+            await File.ReadAllBytesAsync(png),
+            await File.ReadAllBytesAsync(Path.Combine(folder, "images", "42", "0001.png"))
+        );
+        Assert.True(File.Exists(Path.Combine(folder, "images", "42", "0001-preview.png")));
+    }
 
     [Theory]
     [InlineData(false, false)]

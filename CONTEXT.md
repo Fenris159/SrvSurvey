@@ -68,3 +68,15 @@ The workspace's category-filtered window for configuring its overlay panels and 
 **Keyboard activation**:
 A configured shortcut candidate from the desktop hook, the game display, or the Wayland portal, after focus evidence has been sampled.
 _Avoid_: Global keyboard hook event, raw key press
+
+**Carrier observation**:
+Evidence of one personal or squadron carrier’s identity, location, fuel, or jump state. Each observation retains its source and time; evidence about one carrier does not describe the other carrier.
+_Avoid_: Carrier route state, combined carrier cache
+
+**Journey workspace activation**:
+One commander’s current Journey readout, selected visits, and unfinished edits. Returning to a commander starts a fresh activation using the latest saved history and retained dirty fields; an older activation’s work does not describe the current readout.
+_Avoid_: Journey window state, shared Journey cache
+
+**Accepted mining search**:
+A completed mining readout together with the reference system and filter choices that produced it. Travel does not retarget that readout; manually editing filters selects matching saved results or clears an unmatched readout.
+_Avoid_: Live mining results, current-system search results

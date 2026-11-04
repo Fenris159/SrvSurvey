@@ -32,6 +32,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private IEdsmPublisher? edsmPublisher;
     private OverlayThemeSettingsViewModel? overlayThemeSettings;
     private IScreenshotProcessingService? screenshotProcessingService;
+    private TimeProvider? screenshotTimeProvider;
     private StationInfoSettingsStore? stationInfoSettingsStore;
     private ISystemBodyDataClient? systemBodyDataClient;
     private IExplorationPoiClient? explorationPoiClient;
@@ -78,6 +79,7 @@ internal sealed class MainWindowViewModelTestBuilder
                 {
                     OverlayThemeSettings = overlayThemeSettings,
                     ScreenshotProcessingService = screenshotProcessingService,
+                    ScreenshotTimeProvider = screenshotTimeProvider,
                     GuardianOverlaySettingsStore = guardianOverlaySettingsStore,
                     DesktopBehaviorSettingsStore = desktopBehaviorSettingsStore,
                 },
@@ -167,6 +169,9 @@ internal sealed class MainWindowViewModelTestBuilder
 
     public MainWindowViewModelTestBuilder WithOverlayThemeSettings(OverlayThemeSettingsViewModel value) =>
         Set(ref overlayThemeSettings, value);
+
+    public MainWindowViewModelTestBuilder WithScreenshotTimeProvider(TimeProvider value) =>
+        Set(ref screenshotTimeProvider, value);
 
     public MainWindowViewModelTestBuilder WithScreenshotProcessingService(IScreenshotProcessingService value) =>
         Set(ref screenshotProcessingService, value);

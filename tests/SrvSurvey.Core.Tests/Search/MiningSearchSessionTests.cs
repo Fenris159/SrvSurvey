@@ -367,15 +367,10 @@ public sealed class MiningSearchSessionTests
         session.UseStore(store, "surface");
         string originalKey = session.FilterKey();
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        Task search = session.RunAsync(
+        Task search = session.RunAndCaptureAsync(
             _ => release.Task,
-            outcome =>
-            {
-                if (outcome.Kind == MiningSearchOutcomeKind.Completed)
-                {
-                    session.Save(new Snapshot("Sol results"));
-                }
-            }
+            _ => { },
+            capture: () => new Snapshot("Sol results")
         );
         reference = "Lave";
         release.SetResult();
@@ -561,6 +556,149 @@ public sealed class MiningSearchSessionTests
         await search;
         Assert.Equal([MiningSearchOutcomeKind.Started], outcomes);
         Assert.False(session.IsBusy);
+    }
+
+    [Fact]
+    public async Task AcceptedSearchOwnsItsReferenceAcrossTravelRestoreAndReset()
+    {
+        string reference = "Sol";
+        var store = new InMemoryMiningSearchResultStore();
+        using var session = new MiningSearchSession<Snapshot>(
+            new StubMiningSearchProvider(),
+            "surface",
+            () => new { Reference = reference }
+        );
+        session.UseStore(store, "surface");
+        session.Reference.Move("Sol", reference, out _);
+        reference = session.Reference.Edit(reference, out _);
+
+        await session.RunAndCaptureAsync(
+            _ => Task.CompletedTask,
+            _ => { },
+            capture: () => new Snapshot("One recorded place")
+        );
+        Assert.False(session.Reference.Move("Wille", reference, out _));
+        Assert.Equal("Sol", session.AcceptedResult!.Reference);
+        Assert.Equal("One recorded place", session.AcceptedResult.Snapshot.Status);
+        Assert.Equal("One recorded place", session.LoadLast()!.Status);
+
+        session.Reset(() => reference = session.Reference.Edit(session.Reference.CurrentSystem, out _));
+        Assert.Null(session.AcceptedResult);
+        Assert.Equal("Wille", reference);
+        Assert.True(session.Reference.Move("Lave", reference, out string next));
+        reference = session.Reference.Edit(next, out _);
+        Assert.Equal("Lave", reference);
+
+        Snapshot saved = session.LoadLast()!;
+        session.RestoreResult(saved, () => reference = session.Reference.Edit("Lave", out _), pinReference: true);
+        Assert.False(session.Reference.Move("Achenar", reference, out _));
+        Assert.Equal("Lave", session.AcceptedResult!.Reference);
+        Assert.Equal("One recorded place", session.AcceptedResult.Snapshot.Status);
+    }
+
+    [Fact]
+    public async Task IncompleteReplacementKeepsTheAcceptedReadoutAndSavedResult()
+    {
+        var store = new InMemoryMiningSearchResultStore();
+        using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());
+        session.UseStore(store, "surface");
+        await session.RunAndCaptureAsync(
+            _ => Task.CompletedTask,
+            _ => { },
+            capture: () => new Snapshot("Successful result")
+        );
+
+        await session.RunAndCaptureAsync(
+            token =>
+            {
+                session.MarkIncomplete(token);
+                return Task.CompletedTask;
+            },
+            _ => { },
+            capture: () => new Snapshot("Incomplete replacement")
+        );
+
+        Assert.Equal("Successful result", session.AcceptedResult!.Snapshot.Status);
+        Assert.Equal("Successful result", session.LoadLast()!.Status);
+        Assert.True(session.HasIncompleteResult);
+    }
+
+    [Fact]
+    public async Task RestoringAReadoutSupersedesAnUnfinishedSearch()
+    {
+        using MiningSearchSession<Snapshot> session = Create(new StubMiningSearchProvider());
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task search = session.RunAndCaptureAsync(_ => release.Task, _ => { }, () => new Snapshot("Late result"));
+        Assert.True(session.IsBusy);
+
+        session.RestoreResult(new Snapshot("Restored result"), () => { }, pinReference: false);
+        release.SetResult();
+        await search;
+
+        Assert.False(session.IsBusy);
+        Assert.Equal("Restored result", session.AcceptedResult!.Snapshot.Status);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FilterChangesReconcileOnlyAfterTheRunningSearchFinishes(bool hasSavedResult)
+    {
+        string filter = "original";
+        string rows = "partial";
+        var store = new InMemoryMiningSearchResultStore();
+        using var session = new MiningSearchSession<Snapshot>(
+            new StubMiningSearchProvider(),
+            "surface",
+            () => new { filter }
+        );
+        session.UseStore(store, "surface");
+        if (hasSavedResult)
+        {
+            filter = "edited";
+            session.Save(new("cached edited result"));
+            filter = "original";
+        }
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task search = session.RunAndCaptureAsync(
+            async _ =>
+            {
+                await release.Task;
+                rows = "old run result";
+            },
+            _ => { },
+            () => new(rows)
+        );
+        filter = "edited";
+        session.RestoreSaved(saved => rows = saved.Status, () => rows = "empty");
+        Assert.True(session.IsBusy);
+        Assert.Equal("partial", rows);
+        release.SetResult();
+        await search;
+        Assert.False(session.IsBusy);
+        Assert.Equal(hasSavedResult ? "cached edited result" : "empty", rows);
+    }
+
+    [Fact]
+    public void RestoredSavedResultsStayPinnedAndResetFollowsTheFirstKnownLocation()
+    {
+        string reference = "Sol";
+        using var session = new MiningSearchSession<Snapshot>(
+            new StubMiningSearchProvider(),
+            "surface",
+            () => new { reference }
+        );
+        session.UseStore(new InMemoryMiningSearchResultStore(), "surface");
+        session.Reference.Move("Sol", reference, out _);
+        reference = session.Reference.Edit(reference, out _);
+        session.Save(new("saved result"));
+        session.RestoreSaved(_ => { }, () => throw new InvalidOperationException("Expected saved result"));
+        Assert.False(session.Reference.Move("Lave", reference, out _));
+        using var empty = new MiningSearchSession<Snapshot>(new StubMiningSearchProvider(), "surface", () => new { });
+        empty.Reference.Edit("Old reference", out _);
+        empty.Reset(() => { });
+        Assert.True(empty.Reference.Move("Achenar", "Old reference", out string next));
+        Assert.Equal("Achenar", next);
     }
 
     private static MiningSearchSession<Snapshot> Create(StubMiningSearchProvider provider) =>

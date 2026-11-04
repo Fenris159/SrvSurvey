@@ -47,6 +47,9 @@ public sealed partial class JourneyService
             )
             {
                 activeProcessor = null;
+                pendingLiveProgress = null;
+                pendingJournalEvents.Clear();
+                pendingHistoryReplay = null;
             }
             foreach (bool odyssey in new[] { true, false })
             {

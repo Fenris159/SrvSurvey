@@ -4560,6 +4560,45 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task ScreenshotConversionFindsItsSourceFromTheConfiguredProtonJournal()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string profile = Path.Combine(temp.Paths.DataDirectory, "proton", "drive_c", "users", "steamuser");
+        string journals = Path.Combine(profile, "Saved Games", "Frontier Developments", "Elite Dangerous");
+        string pictures = Path.Combine(profile, "Pictures", "Frontier Developments", "Elite Dangerous");
+        Directory.CreateDirectory(journals);
+        Directory.CreateDirectory(pictures);
+        string journalPath = Path.Combine(journals, "Journal.2026-11-03T050000.01.log");
+        await File.WriteAllTextAsync(journalPath, """{"event":"Commander","FID":"F123","Name":"Test"}""" + "\n");
+        await File.WriteAllBytesAsync(
+            Path.Combine(pictures, "source.bmp"),
+            Convert.FromBase64String("Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAATCwAAEwsAAAAAAAAAAAAA/wAAAA==")
+        );
+        new UiSettingsDocumentStore(temp.Paths.UiSettingsPath).Update(root =>
+            root["Screenshots"] = new JsonObject { ["Enabled"] = true, ["AddBanner"] = false }
+        );
+        await using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder => builder.WithAppDataPaths(temp.Paths)
+        );
+        await model.RefreshAsync();
+        await File.AppendAllTextAsync(
+            journalPath,
+            """{"timestamp":"2026-11-03T05:06:53Z","event":"Screenshot","Filename":"\\ED_Pictures\\source.bmp","System":"Sol","Body":"Earth"}"""
+                + "\n"
+        );
+
+        await model.RefreshAsync();
+
+        string output = Path.Combine(pictures, "converted", "Sol", "Earth (2026-11-03 050653).png");
+        Assert.True(File.Exists(output), model.ScreenshotProcessing.StatusMessage);
+        using var image = SkiaSharp.SKBitmap.Decode(output);
+        Assert.NotNull(image);
+        Assert.Equal(SkiaSharp.SKColors.Blue, image.GetPixel(0, 0));
+        Assert.True(File.Exists(Path.Combine(pictures, "source.bmp")));
+    }
+
+    [Fact]
     public async Task EnabledMigratedQuestRunsOnlyForLiveDesktopJournalEvents()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-quest-tests-{Guid.NewGuid():N}");

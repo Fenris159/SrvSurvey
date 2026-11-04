@@ -40,7 +40,6 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
     private readonly ISpanshRouteClient spanshClient;
     private readonly FollowRouteKind routeKind;
     private readonly Func<DateTimeOffset> utcNow;
-    private readonly FleetCarrierJumpCountdownTracker carrierJumpCountdown = new();
     private readonly SemaphoreSlim bioProgressLock = new(1, 1);
     private readonly AsyncCommand openWindowCommand;
     private readonly AsyncCommand refreshCommand;
@@ -129,6 +128,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         this.spanshClient = spanshClient ?? throw new ArgumentNullException(nameof(spanshClient));
         routeKind = options.Kind;
         dedicatedCarrier = options.DedicatedCarrier;
+        carrierObservations = new CarrierObservationSession(dedicatedCarrier is not null);
         selectedCarrierKind = dedicatedCarrier ?? FollowRouteCarrierKind.Personal;
         carrierSnapshotSource = options.CarrierSnapshotSource;
         refreshCarrierSnapshot = options.RefreshCarrierSnapshot;
@@ -1074,7 +1074,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         address = null;
         if (
             !string.Equals(journalEvent.EventName, arrivalEvent, StringComparison.Ordinal)
-            || !MatchesCarrierArrival(journalEvent, nextHop)
+            || (IsFleetCarrierWorkspace && !carrierObservations.AcceptsArrival(journalEvent, nextHop))
         )
         {
             return false;
@@ -1180,23 +1180,19 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
 
         DateTimeOffset now = utcNow();
         double? projectedFuel = CarrierFuelAfterJump;
-        ObserveCarrierFuel(journalEvents);
-        ReadObservedCarrierFuel();
-        bool changed = false;
-        foreach (JournalEventEnvelope journalEvent in journalEvents.Where(MatchesSelectedCarrier))
-        {
-            changed |= carrierJumpCountdown.Apply(journalEvent, now);
-        }
-
+        carrierObservations.Apply(journalEvents, null, selectedCarrierKind, draftHops, now);
+        latestCarrierFuel = carrierObservations.Fuel;
+        PresentCarrierFuel();
+        bool changed = carrierObservations.Countdown != carrierJumpCountdownState;
         if (changed)
         {
             if (
-                carrierJumpCountdown.Current.Kind == FleetCarrierJumpCountdownKind.PostJumpCooldown
+                carrierObservations.Countdown.Kind == FleetCarrierJumpCountdownKind.PostJumpCooldown
                 && CarrierJumpKind != FleetCarrierJumpCountdownKind.PostJumpCooldown
             )
             {
                 carrierArrivedFuelEstimate = projectedFuel;
-                carrierArrivedFuelSystem = carrierJumpCountdown.Current.Destination;
+                carrierArrivedFuelSystem = carrierObservations.Countdown.Destination;
             }
             ApplyCarrierJumpCountdownState();
         }
@@ -1205,7 +1201,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public void RefreshCarrierJumpCountdown()
     {
-        if (IsFleetCarrierWorkspace && carrierJumpCountdown.Refresh(utcNow()))
+        if (IsFleetCarrierWorkspace && carrierObservations.RefreshCountdown(utcNow()))
         {
             ApplyCarrierJumpCountdownState();
         }
@@ -2623,15 +2619,13 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     private void ResetCarrierJumpCountdown()
     {
-        if (carrierJumpCountdown.Reset())
-        {
-            ApplyCarrierJumpCountdownState();
-        }
+        carrierObservations.ResetCountdown();
+        ApplyCarrierJumpCountdownState();
     }
 
     private void ApplyCarrierJumpCountdownState()
     {
-        FleetCarrierJumpCountdownState next = carrierJumpCountdown.Current;
+        FleetCarrierJumpCountdownState next = carrierObservations.Countdown;
         if (next == carrierJumpCountdownState)
         {
             return;

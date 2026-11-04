@@ -212,7 +212,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         {
             ShowMessage(
                 $"Saved '{Path.GetFileName(conversion.OutputPath)}' with"
-                    + (includedBanner ? string.Empty : " no")
+                    + ((conversion.IncludedBanner ?? includedBanner) ? string.Empty : " no")
                     + " banner"
             );
         }

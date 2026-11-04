@@ -9,7 +9,7 @@ namespace SrvSurvey.Core.Journal;
     "CA1001:Types that own disposable fields should be disposable",
     Justification = "The monitor is process-scoped and its poll gate may have in-flight waiters."
 )]
-public sealed class JournalDirectoryMonitor
+public sealed partial class JournalDirectoryMonitor
 {
     private const int StatusReadFailureReportThreshold = 2;
 
@@ -19,9 +19,16 @@ public sealed class JournalDirectoryMonitor
     private readonly Dictionary<string, HashSet<(long ByteOffset, string RawJson)>> observedTextEvents;
     private readonly Func<string, CompanionFileStampReadResult> companionFileStampReader;
     private readonly Dictionary<string, string> companionFileStampErrors;
+    private readonly Dictionary<string, string> configuredJournalSources;
+    private readonly Func<string, FileStream> openJournalStream;
+    private readonly List<string> journalIdentityReadErrors = [];
     private readonly SemaphoreSlim pollLock = new(1, 1);
     private string? currentJournalPath;
     private long currentJournalOffset;
+    private string? previousJournalContentIdentity;
+    private string? sourceOrderWitnessPath;
+    private string sourceOrderWitness = string.Empty;
+    private readonly Dictionary<string, int> currentJournalContentOccurrences = new(StringComparer.Ordinal);
     private byte[] pendingJournalBytes = [];
     private string? statusContentHash;
     private string? navRouteContentHash;
@@ -39,6 +46,7 @@ public sealed class JournalDirectoryMonitor
     private bool isAutomaticIdentityScanIncomplete;
     private bool isAwaitingCommanderIdentity;
     private bool lastReportedAwaitingCommanderIdentity;
+    private string? lastReportedConfiguredJournalDirectory;
     private string? activeJournalDirectory;
 
     /// <summary>Monitors a single journal directory for the selected commander.</summary>
@@ -61,7 +69,8 @@ public sealed class JournalDirectoryMonitor
     internal JournalDirectoryMonitor(
         IReadOnlyList<string> journalDirectories,
         string? targetFrontierId,
-        Func<string, CompanionFileStampReadResult> companionFileStampReader
+        Func<string, CompanionFileStampReadResult> companionFileStampReader,
+        Func<string, FileStream>? openJournalStream = null
     )
     {
         ArgumentNullException.ThrowIfNull(journalDirectories);
@@ -81,14 +90,26 @@ public sealed class JournalDirectoryMonitor
 
         this.targetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId) ? null : targetFrontierId.Trim();
         this.companionFileStampReader = companionFileStampReader;
+        this.openJournalStream = openJournalStream ?? OpenJournalStream;
         journalIdentityCache = new Dictionary<string, JournalIdentityCacheEntry>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
         observedTextEvents = new Dictionary<string, HashSet<(long ByteOffset, string RawJson)>>(pathComparer);
+        configuredJournalSources = new Dictionary<string, string>(pathComparer);
         companionFileStampErrors = new Dictionary<string, string>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
     }
+
+    private static FileStream OpenJournalStream(string path) =>
+        new(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            16 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
 
     public event EventHandler<JournalEventEnvelope>? JournalEventReceived;
 
@@ -148,9 +169,13 @@ public sealed class JournalDirectoryMonitor
 
         var events = new List<JournalEventEnvelope>();
         var errors = new List<string>();
-        await ReadLatestJournalAsync(events, errors, cancellationToken).ConfigureAwait(false);
+        bool journalReadSucceeded = await ReadJournalBatchAsync(events, errors, cancellationToken)
+            .ConfigureAwait(false);
         CompanionPollResults companions = await PollAllCompanionsAsync(errors, cancellationToken).ConfigureAwait(false);
         bool sessionContextChanged = isAwaitingCommanderIdentity != lastReportedAwaitingCommanderIdentity;
+        string? configuredSource = currentJournalPath is null
+            ? null
+            : configuredJournalSources.GetValueOrDefault(currentJournalPath);
 
         var update = new JournalMonitorUpdate(
             currentJournalPath,
@@ -167,10 +192,42 @@ public sealed class JournalDirectoryMonitor
             StatusReadErrorRecovered = companions.StatusReadErrorRecovered,
             IsAwaitingCommanderIdentity = isAwaitingCommanderIdentity,
             SessionContextChanged = sessionContextChanged,
+            ConfiguredJournalDirectory = configuredSource,
+            ConfiguredSourceChanged = !string.Equals(
+                configuredSource,
+                lastReportedConfiguredJournalDirectory,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+            ),
         };
         lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
-        hasCompletedFirstPoll = true;
+        lastReportedConfiguredJournalDirectory = configuredSource;
+        hasCompletedFirstPoll |= journalReadSucceeded;
         return update;
+    }
+
+    private async Task<bool> ReadJournalBatchAsync(
+        List<JournalEventEnvelope> events,
+        List<string> errors,
+        CancellationToken cancellationToken
+    )
+    {
+        journalIdentityReadErrors.Clear();
+        try
+        {
+            await ReadLatestJournalAsync(events, errors, cancellationToken).ConfigureAwait(false);
+            return journalIdentityReadErrors.Count == 0;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // Cursors and chat dedup state already describe any consumed prefix.
+            // Deliver that prefix even if the next part cannot currently be opened.
+            errors.Add(exception.Message);
+            return false;
+        }
+        finally
+        {
+            errors.AddRange(journalIdentityReadErrors.Except(errors, StringComparer.Ordinal));
+        }
     }
 
     private async Task ReadLatestJournalAsync(
@@ -185,16 +242,17 @@ public sealed class JournalDirectoryMonitor
             return;
         }
 
-        if (!PathsEqual(latestJournal.FullName, currentJournalPath))
+        if (
+            !PathsEqual(latestJournal.FullName, currentJournalPath)
+            && !await IsEarlierSessionPartAsync(latestJournal, cancellationToken).ConfigureAwait(false)
+        )
         {
-            FlushPendingLine(events, errors);
-            SetActiveJournalDirectory(latestJournal.DirectoryName);
-            currentJournalPath = latestJournal.FullName;
-            currentJournalOffset = 0;
-            pendingJournalBytes = [];
+            await ReadSelectedPartsAsync(latestJournal, events, errors, cancellationToken).ConfigureAwait(false);
         }
-
-        await ReadJournalAppendAsync(events, errors, cancellationToken).ConfigureAwait(false);
+        else
+        {
+            await ReadJournalAppendAsync(events, errors, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private async Task<CompanionPollResults> PollAllCompanionsAsync(
@@ -287,6 +345,7 @@ public sealed class JournalDirectoryMonitor
     /// <summary>Selects the commander's newest physical journal without treating folder aliases as separate sources.</summary>
     private async Task<FileInfo?> FindLatestJournalAsync(CancellationToken cancellationToken)
     {
+        configuredJournalSources.Clear();
         FileInfo[] journals = journalDirectories
             .Where(Directory.Exists)
             .SelectMany(EnumerateJournalFiles)
@@ -339,7 +398,10 @@ public sealed class JournalDirectoryMonitor
             ? !string.IsNullOrWhiteSpace(frontierId)
             : string.Equals(frontierId, targetFrontierId, StringComparison.OrdinalIgnoreCase);
 
-    private async Task<string?> ReadFrontierIdAsync(FileInfo journal, CancellationToken cancellationToken)
+    private async Task<JournalIdentityCacheEntry?> ReadJournalIdentityAsync(
+        FileInfo journal,
+        CancellationToken cancellationToken
+    )
     {
         journal.Refresh();
         if (
@@ -348,60 +410,66 @@ public sealed class JournalDirectoryMonitor
             && cached.LastWriteTimeUtc == journal.LastWriteTimeUtc
         )
         {
-            return cached.FrontierId;
+            return cached;
         }
 
         string? frontierId = null;
+        JournalEventEnvelope? header = null;
+        long length = journal.Length;
+        DateTime modified = journal.LastWriteTimeUtc;
         try
         {
-            await using var stream = new FileStream(
-                journal.FullName,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete,
-                16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan
-            );
+            await using FileStream stream = openJournalStream(journal.FullName);
             using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
                 if (
                     !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _)
                     || journalEvent is null
-                    || (journalEvent.EventName != "Commander" && journalEvent.EventName != "LoadGame")
-                    || !journalEvent.Payload.TryGetProperty("FID", out JsonElement value)
-                    || value.ValueKind != System.Text.Json.JsonValueKind.String
                 )
                 {
                     continue;
                 }
-
-                frontierId = value.GetString();
-                break;
+                if (journalEvent.EventName == "Fileheader")
+                {
+                    header ??= journalEvent;
+                }
+                frontierId = ReadDeclaredFrontierId(journalEvent);
+                if (frontierId is not null)
+                {
+                    break;
+                }
             }
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            journalIdentityReadErrors.Add(exception.Message);
             return null;
         }
 
-        journal.Refresh();
-        journalIdentityCache[journal.FullName] = new JournalIdentityCacheEntry(
-            journal.Length,
-            journal.LastWriteTimeUtc,
-            frontierId
+        var identity = new JournalIdentityCacheEntry(
+            length,
+            modified,
+            frontierId,
+            JournalFilePart.Read(journal.FullName, header)
         );
-        return frontierId;
+        journalIdentityCache[journal.FullName] = identity;
+        return identity;
     }
 
     /// <summary>Enumerates physical journal paths so Steam aliases share one cursor and command history.</summary>
-    private static FileInfo[] EnumerateJournalFiles(string journalDirectory)
+    private FileInfo[] EnumerateJournalFiles(string journalDirectory)
     {
         try
         {
-            return new DirectoryInfo(ResolveJournalDirectory(journalDirectory))
+            FileInfo[] files = new DirectoryInfo(ResolveJournalDirectory(journalDirectory))
                 .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
                 .ToArray();
+            foreach (FileInfo file in files)
+            {
+                configuredJournalSources.TryAdd(file.FullName, journalDirectory);
+            }
+            return files;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -442,17 +510,18 @@ public sealed class JournalDirectoryMonitor
             return;
         }
 
-        await using var stream = new FileStream(
-            currentJournalPath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete,
-            16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan
-        );
+        if (!string.Equals(sourceOrderWitnessPath, currentJournalPath, StringComparison.Ordinal))
+        {
+            sourceOrderWitnessPath = currentJournalPath;
+            sourceOrderWitness = "live:" + Guid.NewGuid().ToString("N");
+        }
+        await using FileStream stream = openJournalStream(currentJournalPath);
         if (stream.Length < currentJournalOffset)
         {
             currentJournalOffset = 0;
+            currentJournalContentOccurrences.Clear();
+            previousJournalContentIdentity = null;
+            sourceOrderWitness = "live:" + Guid.NewGuid().ToString("N");
             pendingJournalBytes = [];
         }
 
@@ -471,6 +540,7 @@ public sealed class JournalDirectoryMonitor
         Buffer.BlockCopy(pendingJournalBytes, 0, combined, 0, pendingJournalBytes.Length);
         Buffer.BlockCopy(appended, 0, combined, pendingJournalBytes.Length, appended.Length);
 
+        int eventStart = events.Count;
         int lineStart = 0;
         for (int index = 0; index < combined.Length; index++)
         {
@@ -489,6 +559,7 @@ public sealed class JournalDirectoryMonitor
             lineStart = index + 1;
         }
 
+        JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences, sourceOrderWitness);
         pendingJournalBytes = combined[lineStart..];
     }
 
@@ -497,7 +568,9 @@ public sealed class JournalDirectoryMonitor
     {
         if (pendingJournalBytes.Length > 0)
         {
+            int eventStart = events.Count;
             ParseLine(pendingJournalBytes, currentJournalOffset - pendingJournalBytes.Length, events, errors);
+            JournalSourceOrdering.Attach(events, eventStart, currentJournalContentOccurrences, sourceOrderWitness);
             pendingJournalBytes = [];
         }
     }
@@ -538,9 +611,19 @@ public sealed class JournalDirectoryMonitor
         {
             journalEvent = journalEvent with
             {
+                SourcePreviousContentIdentity = previousJournalContentIdentity,
                 SourceRecordIdentity =
                     Path.GetFileName(currentJournalPath) + ":" + byteOffset.ToString(CultureInfo.InvariantCulture),
+                SourceContentIdentity = journalEvent.CaptureContentIdentity(
+                    Path.GetFileName(currentJournalPath)!,
+                    currentJournalContentOccurrences
+                ),
             };
+            previousJournalContentIdentity = journalEvent.SourceContentIdentity;
+            if (currentJournalIsContinuation && journalEvent.EventName == "Fileheader")
+            {
+                return;
+            }
             if (journalEvent.EventName != "SendText" || RememberTextEvent(byteOffset, journalEvent.RawJson))
             {
                 events.Add(journalEvent);
@@ -579,7 +662,12 @@ public sealed class JournalDirectoryMonitor
             );
     }
 
-    private sealed record JournalIdentityCacheEntry(long Length, DateTime LastWriteTimeUtc, string? FrontierId);
+    private sealed record JournalIdentityCacheEntry(
+        long Length,
+        DateTime LastWriteTimeUtc,
+        string? FrontierId,
+        JournalFilePart? Part
+    );
 
     private async Task<StatusCompanionPollResult> PollStatusCompanionAsync(
         List<string> errors,
@@ -913,11 +1001,16 @@ public sealed record JournalMonitorUpdate(
     ShipLockerSnapshot? ShipLocker = null
 )
 {
+    /// <summary>The selected journal's configured source, retaining its Wine profile when physical files are linked.</summary>
+    public string? ConfiguredJournalDirectory { get; init; }
+
     public bool StatusReadErrorRecovered { get; init; }
 
     public bool IsAwaitingCommanderIdentity { get; init; }
 
     public bool SessionContextChanged { get; init; }
+
+    public bool ConfiguredSourceChanged { get; init; }
 
     public bool HasChanges =>
         IsBootstrapRead
@@ -929,5 +1022,6 @@ public sealed record JournalMonitorUpdate(
         || Market is not null
         || Errors.Count > 0
         || StatusReadErrorRecovered
-        || SessionContextChanged;
+        || SessionContextChanged
+        || ConfiguredSourceChanged;
 }

@@ -46,7 +46,7 @@ public static class GuideCatalog
                         [],
                         [
                             "Select the Active Commander card to open the current Frontier profile. Overview remains at the top of the sidebar.",
-                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Surface Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
+                            "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Journeys, Search, and Bookmarks; Activities groups Mining, Surface Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
                             "Diagnostics, Settings, Theme, and Guides remain in the utility area. The small overlay-settings button beside supported activities opens only that activity's overlay controls.",
                             "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
@@ -68,7 +68,7 @@ public static class GuideCatalog
                         "Most overlays appear only when their information is useful, then hide when that game context ends.",
                         [
                             "Play normally; entering FSS, approaching a body, landing, opening the Galaxy Map, or docking can activate the relevant overlay.",
-                            "Use Theme > Overlay Settings to disable individual overlays or change their triggers.",
+                            "Use Theme > Overlay setup to disable individual overlays or change their triggers.",
                             "Use the global overlay visibility shortcut when you need to hide or restore every detached overlay at once.",
                         ],
                         [
@@ -93,6 +93,18 @@ public static class GuideCatalog
                             "Location and body follow the newest location, approach, touchdown, and departure events.",
                             "Exploration totals combine jump, scan, mapping, landing, distance, and estimated reward state for the active profile.",
                             "Exobiology totals show samples and rewards that have not yet been sold.",
+                        ]
+                    ),
+                    Section(
+                        "Commander profile and owned fleet",
+                        "Select the Active Commander card to open the optional Frontier account workspace.",
+                        [
+                            "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
+                            "Below ranks, faction reputation stays visible in its own row. Expand the full-width Owned fleet list to inspect ships and their locations.",
+                        ],
+                        [
+                            "Only one owned ship is marked current. Journal observations and Frontier responses are reconciled by their observation times; a Frontier request begun after a journal observation can supersede it, but a delayed response does not displace journal changes made while it was in flight.",
+                            "Debt is hidden at a zero balance. Personal and squadron carrier data retain separate identities.",
                         ]
                     ),
                     Section(
@@ -164,15 +176,15 @@ public static class GuideCatalog
                     ),
                     Section(
                         "Exploration screenshots",
-                        "Screenshot processing can convert new images, organize them, and embed useful site data without changing old captures.",
+                        "Screenshot processing organizes Elite BMP captures and optional Steam JPEG captures as verified PNGs for Journeys, with optional location labels and original-file removal.",
                         [
-                            "Choose source and destination folders in Settings.",
-                            "Enable the filename, folder, banner, or aerial-alignment options you want.",
+                            "Use automatic BMP detection or choose a source folder in Settings.",
+                            "Choose location banners, original-file removal, and Guardian aerial options.",
                             "Use the screenshot-data shortcut to enable or disable banners for future images.",
                         ],
                         [
                             "Guardian aerial images can be rotated and aligned using per-layout altitude guidance.",
-                            "Processing is opt-in and writes converted output to the configured destination.",
+                            "Processing is opt-in. Converted PNGs use the fixed Journey photo folder shown beside Open folder.",
                         ]
                     ),
                 ]
@@ -200,6 +212,17 @@ public static class GuideCatalog
                             GuideIconKind.BiologyRewardKnown,
                             GuideIconKind.BiologyRewardPredicted,
                             GuideIconKind.BiologyRewardUnknown,
+                        ]
+                    ),
+                    Section(
+                        "Canonn prior scans and radar",
+                        "Prior Scans shows known biological coordinates for the current body, with a radar and distance guidance.",
+                        [
+                            "Enable external data and the downloaded bio-data options when you want community observations.",
+                            "Use Show bio signals from Canonn on the radar in Exobiology overlay settings to enable the entire Prior Scans panel. Its panel-availability switch and visibility shortcut control the same gate.",
+                        ],
+                        [
+                            "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
                         ]
                     ),
                     Section(
@@ -262,7 +285,7 @@ public static class GuideCatalog
                         ],
                         [
                             "Surface Survey and its mini tracker hide while operating the Rhino or returning to its parked location on foot.",
-                            "Use Theme > Overlay Settings > Edit Overlay Positions to arrange previews, including the rig calibration frame.",
+                            "Use Theme > Overlay setup > Edit Overlay Positions to arrange previews, including the rig calibration frame.",
                         ]
                     ),
                     Section(
@@ -442,6 +465,44 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "Start a Journey from the right visit",
+                        "Open Navigation > Journeys; Open Journeys in Travel takes you to the same workspace.",
+                        [
+                            "Choose Use current system to start at the current system, or Use previous visit to choose an earlier arrival.",
+                            "For an earlier visit, type the starting system with autocomplete. Optionally choose Visits on or after (UTC date), then find visits and select the intended dated arrival.",
+                            "Give the Journey a name and description, then begin. Repeated arrivals at the same system remain separate choices; the results scroll when needed.",
+                        ],
+                        [
+                            "The date filter includes the selected date and excludes earlier visits; All dates clears it.",
+                            "Journey history comes from Commander journals, not the game’s VisitedStarsCache. Saved history remains readable without the original journals, but reprocessing requires them.",
+                        ]
+                    ),
+                    Section(
+                        "Manage Journey history and photographs",
+                        "The Journey library separates the active expedition from completed and archived records.",
+                        [
+                            "Complete an active Journey when finished. Archive completed history to tuck it away, or restore an archived record to the main list.",
+                            "Delete a historical Journey when it is no longer needed. Deletion removes that Journey record and retains journals, system notes, and photographs.",
+                            "Select a visited system to inspect its details and notes. Double-click a listed PNG photograph to open it in the system image viewer.",
+                        ],
+                        [
+                            "Save or discard edits before leaving an edited Journey. Switching Commander keeps each profile’s selection and drafts separate.",
+                            "Photographs are organized by system and body, so a system’s list can include images from earlier return visits. Enable screenshot processing in Settings to create these PNGs.",
+                        ]
+                    ),
+                    Section(
+                        "Export a portable Journey report",
+                        "A completed Journey can be saved as a detailed HTML expedition record.",
+                        [
+                            "Select a completed Journey and choose Export as HTML. Keep index.html with its images subfolder and share the whole containing folder.",
+                            "Open index.html in a browser. Photograph tiles enlarge when selected; use the viewer controls or arrow keys to move between images and Escape to close.",
+                            "Use Route detail to fit the recorded travel points, or Galactic context for a wider reference view. Select a route point to open its history entry; overlapping visits offer a chooser.",
+                        ],
+                        [
+                            "Sol and Sagittarius A* are coordinate references, not extra travel legs. The map uses the galactic X/Z plane with the same distance scale on both axes.",
+                        ]
+                    ),
+                    Section(
                         "Spherical search",
                         "A spherical search finds candidate systems inside a radius around a central coordinate.",
                         [
@@ -502,7 +563,7 @@ public static class GuideCatalog
                         [
                             "Use Refresh boxel to merge systems from the local Commander profile, the active route, and Spansh. Community databases contain only submitted observations, so an unknown system is not proof that it does not exist.",
                             "If the known data ends too early, enter Expected systems and select Apply. This extends the suffix range SrvSurvey will track without claiming that every generated name exists in the game.",
-                            "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Boxel, Route Manager, and FC Route auto-copy are mutually exclusive.",
+                            "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
                             "When Require FSS is off, an FSD jump into a matching system completes it. When it is on, new local visits wait for Elite to write FSSAllBodiesFound; enabled earlier-history rules still count matching systems as complete.",
                             "Hover over a row's System actions button to Complete, Reopen, Defer, or Start Here. Deferred systems remain unfinished, move to the end of the table, and are skipped until you return to them.",
                             "Start Here defers every unfinished system before the chosen row in the current sort direction. Use Show Only Deferred when you are ready to return to skipped systems.",
@@ -563,7 +624,7 @@ public static class GuideCatalog
                             "SrvSurvey does not upload journal history read during startup or replay. Captured reports survive restarts in a private local retry queue. Turning the option off removes retained work, and multiple simultaneous Elite windows pause new VoxStellar publication to avoid attributing data to the wrong Commander.",
                         ],
                         [
-                            "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Use a separate EDDN-capable tool when you also want to contribute discoveries to the wider community database.",
+                            "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Configure EDDN Sharing separately in Settings > Privacy & sharing to contribute to the wider community database. Enable EDDN in only one uploader application at a time.",
                         ]
                     ),
                 ]
@@ -687,6 +748,7 @@ public static class GuideCatalog
                         [
                             "A gold target circle means the Commander is outside the objective radius; the accent color means the Commander is inside it.",
                             "Massacre rows show progress only for compatible active missions and avoid double-crediting one bounty event to the same mission giver.",
+                            "This is a ship massacre tracker, not a general mission list. On-foot station contracts are intentionally excluded; mining commodity missions have their own Mining > Missions tab.",
                         ]
                     ),
                     Section(
@@ -731,6 +793,17 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "Filter projects used by Market Search",
+                        "Select Projects follows the Projects tab’s current system, status, and ordering filters.",
+                        [
+                            "Set the Projects filters to All projects, Building, or Planning and select the system view you need.",
+                            "Open Market Search to choose from that filtered project list. Previously selected projects hidden by the filters remain under Selected outside filters, where you can remove them.",
+                        ],
+                        [
+                            "Market Search selections are separate from the Show selection used by the shopping overlay and its Focus action. Filtering the available projects does not silently discard selected shopping needs.",
+                        ]
+                    ),
+                    Section(
                         "Primary port order safety",
                         "Creating a project preserves Raven’s existing primary port.",
                         [],
@@ -759,6 +832,7 @@ public static class GuideCatalog
                             "Need is the remaining project requirement; FC is the cargo on linked carriers; Ship is the current usable ship inventory.",
                             "A check means that source has enough for the row. A direction marker calls out the next useful item or focused project. Dimmed rows are unavailable or already satisfied.",
                             "The overlay can focus a project or planned site, the docked build site, or all visible projects depending on game context and settings.",
+                            "Auto-hide colonization overlay until docked enables contextual automatic display at an eligible dock, even if panel availability is off. With that option off, panel availability must be enabled for persistent display. With both off, loading docked does not show the panel.",
                             "Fresh Market and Cargo events reconcile carrier and ship totals. Ambiguous multi-client cargo is excluded until a fresh unambiguous file write arrives.",
                         ]
                     ),
@@ -815,7 +889,7 @@ public static class GuideCatalog
                             "FSS overlays follow FSS focus; body and biology overlays follow the current body; maps follow nearby site or surface state; travel overlays follow targets and routes; shopping follows active construction context.",
                             "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
                             "Manual show shortcuts do not fabricate live data; the full position editor is the intentional offline preview surface.",
-                            "Use the overlay-settings icon beside a supported navigation category for that activity’s controls. Theme > Overlay Settings opens the complete overlay controls.",
+                            "Use the overlay-settings icon beside a supported navigation category for that activity’s controls. Theme > Overlay setup opens the complete overlay controls.",
                             "When overlays compete for the same context, SrvSurvey hides lower-priority panels first and restores them from their current settings and game state when the blocker ends.",
                         ]
                     ),
@@ -828,7 +902,7 @@ public static class GuideCatalog
                             "The gate follows the vessel you are aboard: SRV, Scorpion, Rhino and Nomad have separate entries; Fighters covers all fighter variants. On foot is independent of your parked ship.",
                         ],
                         [
-                            "All entries start checked. Other / unknown controls unrecognized ship types, unavailable boarded status and taxi/multicrew rides where the current vessel is not identified.",
+                            "Colonization initially allows Small, Medium, and Large ships, with Vessel / Vehicle entries unchecked. Other categories initially allow every entry; saved choices take precedence. Other / unknown controls unrecognized ship types, unavailable boarded status and taxi/multicrew rides where the current vessel is not identified.",
                             "Firegroups has a dedicated overlay settings window with its own exceptions. The button in global overlay settings controls the other Status & utilities panels. Panels shared by several settings categories must be allowed in each of those categories.",
                             "These filters only hide overlays; enabling a vehicle does not bypass the panel’s normal game-state trigger, visibility switch or focus rules. Editor previews remain available.",
                         ]
@@ -837,7 +911,7 @@ public static class GuideCatalog
                         "Edit all overlay positions",
                         "The position editor can display realistic simulated overlays without Elite running.",
                         [
-                            "Open Theme > Overlay Settings > Edit Overlay Positions.",
+                            "Open Theme > Overlay setup > Edit Overlay Positions.",
                             "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
                             "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
                             "Use the check button to save every staged position, or X to close and restore the original layout.",
@@ -860,19 +934,20 @@ public static class GuideCatalog
                         "Overlay appearance and saved states",
                         "The in-game palette is independent from the application light/dark theme.",
                         [
-                            "Open Theme > In-game overlay appearance and choose colors with the picker beside each overlay control.",
-                            "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
-                            "Use Refresh preview to apply unsaved colors and typography to open overlays and position previews, then Apply to overlays to keep them or Discard changes to restore theme.json.",
-                            "Save a named overlay state when its palette and typography are ready; choose saved states from the dropdown or reload the original defaults.",
+                            "Open Theme > Overlay appearance and choose colors with the picker beside each overlay control.",
+                            "Use the position editor’s Aa control to adjust Header, Title, Value, Body, Detail, and Caption font sizes as a percentage of that panel’s theme baseline and choose brush overrides for those roles.",
+                            "Use Preview on overlays to inspect unsaved colors, then Apply colors to keep them or Discard changes to return to the saved palette.",
+                            "Open Manage themes to Save theme, Load theme, or Reset to default colors. In the position editor, use the check button to save staged panel changes or X to cancel.",
                         ],
                         [
-                            "Changing Blue light, Blue dark, Orange dark, Green light, or Green dark for the application never rewrites theme.json or a named overlay state.",
+                            "Changing Blue light, Blue dark, Orange dark, Green light, Green dark, or Monochrome dark for the application never rewrites theme.json or a named overlay state.",
+                            "The Custom group after Guardian offers five independent colors, Brush 1–5, for brush overrides in the overlay editor. They do not replace the theme’s normal color roles.",
                             "Imported legacy overlay colors, positions, scale, and opacity remain in the overlay control group.",
                         ]
                     ),
                     Section(
                         "Choose an overlay monitor",
-                        "Theme > Overlay Settings controls display placement for live panels and the position editor.",
+                        "Theme > Overlay setup controls display placement for live panels and the position editor.",
                         [
                             "Choose Overlay monitor, or leave Automatic to follow Elite’s display and use the primary display when Elite is not detected.",
                             "Enable Keep overlays on the selected monitor to constrain dragging to that display. Reopen the position editor after changing the monitor.",
@@ -885,7 +960,7 @@ public static class GuideCatalog
                         "Bypass Window Management on Linux",
                         "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
                         [
-                            "Open Theme > Overlay Settings and toggle Bypass Window Management.",
+                            "Open Theme > Overlay setup and toggle Bypass Window Management.",
                             "Restart SrvSurvey when **App Restart Required appears. The choice applies to both live overlays and the position editor.",
                         ],
                         [
@@ -975,7 +1050,7 @@ public static class GuideCatalog
                         [],
                         [
                             "Application theme changes the main Avalonia windows. Choose Blue light/dark, Orange dark, Green light/dark, or the low-glare Monochrome dark palette.",
-                            "In-game overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
+                            "Overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
                             "Neither selector writes into the other control group, so a light application can use a dark orange overlay palette or any custom combination.",
                         ]
                     ),
@@ -1064,6 +1139,18 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "Stealth Mode",
+                        "Settings > Privacy & sharing > Stealth Mode holds enabled EDDN, Inara, EDAstro, and EDSM uploads until docking.",
+                        [
+                            "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
+                            "Dock to release that Commander’s held reports. Later discoveries wait for another docking event; turning Stealth Mode off resumes normal enabled delivery.",
+                        ],
+                        [
+                            "Any attributable docking event, including at a carrier, can release reports. This does not wait for exploration-data sales.",
+                            "Stealth Mode does not enable any sharing consent. Raven API traffic and read-only lookups continue; VoxStellar is a separate opt-in and is not held by this setting.",
+                        ]
+                    ),
+                    Section(
                         "EDDN sharing",
                         "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
                         [
@@ -1089,6 +1176,17 @@ public static class GuideCatalog
                         ]
                     ),
                     Section(
+                        "EDAstro catalogue and journal sharing",
+                        "Downloading EDAstro exploration points of interest and contributing journal events are separate options.",
+                        [
+                            "Use Exploration to browse nearby catalogue entries, open source details, or bookmark a POI. External data must be enabled for catalogue downloads.",
+                            "Open Settings > Privacy & sharing > Configure EDAstro Sharing to review and enable optional journal contributions.",
+                        ],
+                        [
+                            "Journal sharing is off by default and needs no personal API key. Enabling catalogue downloads does not enable contributions.",
+                        ]
+                    ),
+                    Section(
                         "EDSM synchronization",
                         "Direct EDSM synchronization follows the active Commander and is enabled by saving that profile's personal API key.",
                         [
@@ -1106,7 +1204,7 @@ public static class GuideCatalog
                         "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
                         [],
                         [
-                            "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
+                            "Screenshot settings offer a game BMP source, optional Steam JPEG processing with automatic detection and a manual fallback, shared location labels, and optional original-file removal. The fixed Journey PNG folder is displayed beside Open folder. Steam captures are matched to journal locations by capture time; unmatched captures remain untouched. High-resolution game captures are identified using the Elite game client dimensions.",
                             "Notifications and the dedicated stream overlay can be enabled without changing ordinary overlay positions.",
                             "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
                         ]
@@ -1209,8 +1307,31 @@ public static class GuideCatalog
                         ],
                         [
                             "Cargo transfers and purchases do not count as mining production. Mission cargo is allocated once across active mining missions.",
+                            "Production reconciles refined journal events with usable cargo snapshots. Refinery carryover after the session is shown separately and excluded from the session’s production rate; purchases and transfers are not new production.",
                             "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
                             "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
+                        ]
+                    ),
+                    Section(
+                        "Mining overlay readouts",
+                        "Mining overlay settings can be changed with Elite closed or before a journal has loaded.",
+                        [
+                            "For Session prospecting yields, choose Average mineral percentage or Finds. Finds places the most frequently prospected mineral first.",
+                            "Set Maximum minerals shown with the number field or one-step up/down arrows. The default is five, with a range of 1–100.",
+                        ],
+                        [
+                            "The display limit does not truncate the saved session or reports.",
+                            "A mineral quality hit is a core find or a find meeting that mineral’s configured percentage threshold under Mining > Settings > Announcements. With no threshold, any find qualifies.",
+                            "Recent Prospects retains recent prospector observations rather than live asteroid depletion. Low, Medium, and High describe engineering material content; mineral percentages are the original composition snapshot.",
+                        ]
+                    ),
+                    Section(
+                        "Keep completed mining searches through travel",
+                        "Completed surface-mining and Powerplay merit searches retain the reference system and results used for that search.",
+                        [],
+                        [
+                            "Jumping to a new system does not replace completed results, including searches with Force include if viable enabled.",
+                            "Editing filters restores matching cached results or clears unmatched results. Search runs a new query; Reset clears the search and returns its reference to the current system.",
                         ]
                     ),
                     Section(
@@ -1364,7 +1485,31 @@ public static class GuideCatalog
                         ],
                         [
                             "Frontier supplies capacity, finances, and services. Raven supplies linked cargo inventory and follows your Raven cargo-sync preference.",
-                            "Travel > Distance provides current, home, and carrier shortcuts; FC Routes handles carrier journey planning.",
+                            "Travel > Distance provides current, home, and carrier shortcuts. FC Routes plans personal carrier travel; SC Routes plans squadron carrier travel independently.",
+                        ]
+                    ),
+                    Section(
+                        "FC Routes and SC Routes",
+                        "The two carrier-route tabs track personal and squadron carriers simultaneously, with separate routes and overlays.",
+                        [
+                            "Use FC Routes for the personal carrier and SC Routes for the squadron carrier. They share saved route bookmarks, while progress and carrier identity stay separate.",
+                            "Configure each panel and next-jump display in its own overlay settings. Next-jump information can follow a known carrier request even without an active itinerary.",
+                            "FC and SC auto-copy can coexist. Enabling Route Manager or Boxel auto-copy turns both carrier auto-copy options off.",
+                        ],
+                        [
+                            "Carrier events are matched by identity, not merely by whichever carrier is selected for a route. Ambiguous movements do not overwrite another carrier.",
+                        ]
+                    ),
+                    Section(
+                        "Discord carrier announcements",
+                        "Optional Discord webhooks announce personal and squadron carrier departures, cancellations, and arrivals.",
+                        [
+                            "Open Settings > Application > Discord carrier announcements, paste the channel’s webhook URL, and use Send test message to check it.",
+                            "Choose Personal fleet carrier, Squadron carrier, or both, select the jump events, enable announcements, and Save changes.",
+                        ],
+                        [
+                            "Keep the carrier manager’s live journal selected. Orders placed by another squadron member are unavailable if they never reach that journal.",
+                            "Messages include matching FC or SC itinerary details when available. Startup history is not announced, and there is no offline message backlog. The webhook URL stays local and is excluded from cloud sync.",
                         ]
                     ),
                     Section(

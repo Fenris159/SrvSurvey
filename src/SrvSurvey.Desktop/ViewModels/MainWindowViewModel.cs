@@ -483,7 +483,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 );
             ScreenshotProcessing = new ScreenshotProcessingViewModel(
                 new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
-                screenshotProcessingService
+                screenshotProcessingService,
+                ResolvePrimaryJournalPath(folderResolution),
+                AppDataPaths.ScreenshotQueueDirectory,
+                deferOutputInitialization: true,
+                timeProvider: overlay.ScreenshotTimeProvider
             );
             construction.Checkpoint?.Invoke(MainWindowViewModelConstructionCheckpoint.OverlayReady);
             DockToDock = new DockToDockViewModel(
@@ -2841,7 +2845,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     }
 
     /// <summary>Projects monitor updates and services retained Raven work even when the journal poll is idle.</summary>
-    private Task ApplyMonitorUpdateAsync(
+    internal Task ApplyMonitorUpdateAsync(
         JournalMonitorUpdate update,
         bool isManualRefresh,
         CancellationToken cancellationToken = default
@@ -3002,7 +3006,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         )
         {
             activeProfileCommanderName = journalState.CommanderName ?? activeProfileCommanderName;
-            return false;
+            return projectionState.ProfileRestoredFromDisk;
         }
 
         CommanderProfileLoadResult result = await commanderProfileStore.LoadAsync(
@@ -3010,6 +3014,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             isOdyssey,
             CancellationToken.None
         );
+        projectionState.ProfileRestoredFromDisk = result.Data is not null && result.Exists;
         loadedSystemHistoryKey = null;
         loadedSystemBodyDataKey = null;
         ResetSystemBodyDataRetryContext();

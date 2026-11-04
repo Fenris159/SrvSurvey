@@ -138,9 +138,9 @@
                     <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel SizeChanged="SystemsPanel_SizeChanged" /></ItemsPanelTemplate></ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
                       <DataTemplate x:DataType="vm:ColonizationNexusScope">
-                        <Border Classes="nexus-system">
+                        <Border x:Name="NexusSystemRoot" Classes="nexus-system">
                           <StackPanel Spacing="7">
-                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="5">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="5">
                               <Button Classes="nexus-icon nexus-copy" behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}" AutomationProperties.Name="Copy system name">
                                 <PathIcon Width="15" Height="17" Data="{StaticResource NexusCopyIcon}" />
                               </Button>
@@ -148,18 +148,27 @@
                                 <TextBlock Foreground="{DynamicResource RavenAccentBrush}" FontWeight="SemiBold" Text="{Binding SystemName}" TextTrimming="CharacterEllipsis" />
                               </HyperlinkButton>
                               <TextBlock Grid.Column="2" Classes="eyebrow" Text="{Binding Kind}" VerticalAlignment="Center" Margin="6,0" />
-                              <Button Grid.Column="3" Classes="nexus-icon nexus-remove-system" Command="{Binding #NexusRoot.DataContext.RemoveSystemCommand}" CommandParameter="{Binding}"
-                                      IsEnabled="{Binding #NexusRoot.DataContext.CanRemoveSystems}" ToolTip.Tip="{Binding #NexusRoot.DataContext.SystemRemovalHint}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Remove system from Nexus">
-                                <Path Data="{StaticResource RavenTrashIcon}" Stroke="{DynamicResource RavenAccentBrush}" StrokeThickness="1.5" Width="18" Height="18" Stretch="Uniform" />
-                              </Button>
-                              <Button Grid.Column="4" Classes="nexus-icon nexus-privacy" Command="{Binding #NexusRoot.DataContext.TogglePrivacyCommand}"
-                                      ToolTip.Tip="{Binding #NexusRoot.DataContext.PrivacyHint}" AutomationProperties.Name="{Binding #NexusRoot.DataContext.PrivacyHint}">
-                                <Grid>
-                                  <PathIcon Width="17" Height="20" IsVisible="{Binding #NexusRoot.DataContext.IsPublic}" Data="M 7,10 V 6 A 5,5 0 0 1 17,6 H 15 A 3,3 0 0 0 9,6 V 10 H 18 V 22 H 2 V 10 Z M 9,14 V 18 H 11 V 14 Z" />
-                                  <PathIcon Width="17" Height="20" IsVisible="{Binding !#NexusRoot.DataContext.IsPublic}" Data="M 5,10 V 6 A 5,5 0 0 1 15,6 V 10 H 18 V 22 H 2 V 10 Z M 7,10 H 13 V 6 A 3,3 0 0 0 7,6 Z M 9,14 V 18 H 11 V 14 Z" />
-                                </Grid>
-                              </Button>
-                              <Button Grid.Column="5" Classes="nexus-play" Command="{Binding OpenReportCommand}" ToolTip.Tip="Open remaining needs for this system" AutomationProperties.Name="Open remaining needs for this system">
+                              <!-- Bind actions directly to the nullable root context so teardown never traverses a null model. -->
+                              <ContentControl Grid.Column="3" Content="{Binding #NexusRoot.DataContext}">
+                                <ContentControl.ContentTemplate>
+                                  <DataTemplate x:DataType="vm:ColonizationNexusViewModel">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                      <Button Classes="nexus-icon nexus-remove-system" Command="{Binding RemoveSystemCommand}" CommandParameter="{Binding #NexusSystemRoot.DataContext}"
+                                              IsEnabled="{Binding CanRemoveSystems}" ToolTip.Tip="{Binding SystemRemovalHint}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Remove system from Nexus">
+                                        <Path Data="{StaticResource RavenTrashIcon}" Stroke="{DynamicResource RavenAccentBrush}" StrokeThickness="1.5" Width="18" Height="18" Stretch="Uniform" />
+                                      </Button>
+                                      <Button Classes="nexus-icon nexus-privacy" Command="{Binding TogglePrivacyCommand}"
+                                              ToolTip.Tip="{Binding PrivacyHint}" AutomationProperties.Name="{Binding PrivacyHint}">
+                                        <Grid>
+                                          <PathIcon Width="17" Height="20" IsVisible="{Binding IsPublic}" Data="M 7,10 V 6 A 5,5 0 0 1 17,6 H 15 A 3,3 0 0 0 9,6 V 10 H 18 V 22 H 2 V 10 Z M 9,14 V 18 H 11 V 14 Z" />
+                                          <PathIcon Width="17" Height="20" IsVisible="{Binding !IsPublic}" Data="M 5,10 V 6 A 5,5 0 0 1 15,6 V 10 H 18 V 22 H 2 V 10 Z M 7,10 H 13 V 6 A 3,3 0 0 0 7,6 Z M 9,14 V 18 H 11 V 14 Z" />
+                                        </Grid>
+                                      </Button>
+                                    </StackPanel>
+                                  </DataTemplate>
+                                </ContentControl.ContentTemplate>
+                              </ContentControl>
+                              <Button Grid.Column="4" Classes="nexus-play" Command="{Binding OpenReportCommand}" ToolTip.Tip="Open remaining needs for this system" AutomationProperties.Name="Open remaining needs for this system">
                                 <PathIcon Width="13" Height="16" Data="M 1,1 L 13,8 L 1,15 Z" />
                               </Button>
                             </Grid>
