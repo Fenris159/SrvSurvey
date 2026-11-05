@@ -53,6 +53,10 @@
       "translation": "**App-Neustart erforderlich"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Warnung: Der hier genannte Architekt kann das System an diesen Kommandanten binden. Bitte überprüfen Sie, ob er korrekt ist."
     },
@@ -407,6 +411,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · KOPPELN UND STARTEN"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Auto"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -2807,6 +2815,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorisieren Sie SrvSurvey im Browser und lassen Sie zu, dass der Rückruflink geöffnet wird SrvSurvey. Kehren Sie zur App zurück und überprüfen Sie den verknüpften Commander."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -32537,6 +32549,10 @@
       "translation": "Das Panel wird beim Andocken oder Öffnen aktivierter Spielpanels automatisch angezeigt. Für eine dauerhafte Anzeige schalten Sie diese Option aus und aktivieren Sie „Kolonisierungswaren“. Schalten Sie beide aus, um es verborgen zu halten. Die Verknüpfung kann es immer noch umschalten."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "Das Panel passt sich automatisch seinem Inhalt an. Positions- und Wachstumseinstellungen steuern die verankerte Expansion; Das Zielkartenlimit und das Spielansichtsfenster begrenzen seine Höhe."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "Die Nutzlast wird direkt auf https://voxstellar.com/webhooks/v1/system als Commander + Daten gepostet und mit HMAC-SHA256 signiert. SrvSurvey sendet keinen Startverlauf oder wiedergegebene Journaleinträge. Wenn Sie die Option deaktivieren, werden Einträge in der Warteschlange ungültig, deren Hochladen noch nicht begonnen hat."
     },
@@ -41687,6 +41703,10 @@
       "translation": "**Se requiere reiniciar la aplicación"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Advertencia: El arquitecto nombrado aquí puede bloquear el sistema para ese comandante; verifique que sea correcto."
     },
@@ -42041,6 +42061,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · EMPAREJAR Y COMENZAR"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Automático"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -44441,6 +44465,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorice SrvSurvey en el navegador y permita que se abra el enlace de devolución de llamada SrvSurvey. Regrese a la aplicación y verifique el Commander vinculado."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -74171,6 +74199,10 @@
       "translation": "El panel aparece automáticamente al acoplar o abrir paneles de juego habilitados. Para una visualización persistente, desactívela y habilite los productos de colonización. Apague ambos para mantenerlo oculto; el acceso directo aún puede alternarlo."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "El panel ajusta automáticamente el tamaño a su contenido. Los entornos de posición y crecimiento controlan su expansión anclada; el límite de la tarjeta de destino y la ventana gráfica del juego limitan su altura."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "La carga útil se publica directamente en https://voxstellar.com/webhooks/v1/system como comandante + datos y se firma con HMAC-SHA256. SrvSurvey no envía el historial de inicio ni las entradas del diario reproducidas. Desactivar la opción invalida las entradas en cola que no han comenzado a cargarse."
     },
@@ -83321,6 +83353,10 @@
       "translation": "** Redémarrage de l'application requis"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Avertissement : l'architecte nommé ici peut verrouiller le système sur ce commandant, veuillez vérifier qu'il est correct."
     },
@@ -83675,6 +83711,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · APPAIREZ ET DÉMARREZ"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Automatique"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -86075,6 +86115,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorisez SrvSurvey dans le navigateur et autorisez l'ouverture du lien de rappel SrvSurvey. Revenez à l'application et vérifiez le Commander lié."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -115805,6 +115849,10 @@
       "translation": "Le panneau apparaît automatiquement lors de l'amarrage ou de l'ouverture des panneaux de jeu activés. Pour un affichage persistant, désactivez cette option et activez les produits de colonisation. Désactivez les deux pour le garder caché ; le raccourci peut toujours le basculer."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "Le panneau s'adapte automatiquement à son contenu. Les paramètres de position et de croissance contrôlent son expansion ancrée ; la limite de la carte de destination et la fenêtre de jeu limitent sa hauteur."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "La charge utile est publiée directement sur https://voxstellar.com/webhooks/v1/system en tant que commandant + données et signée avec HMAC-SHA256. SrvSurvey n'envoie pas l'historique de démarrage ni les entrées de journal relues. La désactivation de l'option invalide les entrées en file d'attente dont le téléchargement n'a pas encore commencé."
     },
@@ -124955,6 +125003,10 @@
       "translation": "**É necessário reiniciar o aplicativo"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Aviso: O arquiteto mencionado aqui pode bloquear o sistema para esse comandante, verifique se está correto."
     },
@@ -125309,6 +125361,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · PAR E INICIAR"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Automático"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -127709,6 +127765,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorize SrvSurvey no navegador e permita a abertura do link de retorno de chamada SrvSurvey. Volte ao aplicativo e verifique o Commander vinculado."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -157439,6 +157499,10 @@
       "translation": "O painel aparece automaticamente ao encaixar ou abrir painéis de jogo habilitados. Para exibição persistente, desligue esta opção e ative Mercadorias de colonização. Desligue ambos para mantê-los ocultos; o atalho ainda pode alterná-lo."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "O painel é dimensionado automaticamente de acordo com seu conteúdo. As configurações de posição e crescimento controlam sua expansão ancorada; o limite do cartão de destino e a janela de visualização do jogo limitam sua altura."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "A carga útil é postada diretamente em https://voxstellar.com/webhooks/v1/system como comandante + dados e assinada com HMAC-SHA256. SrvSurvey não envia histórico de inicialização ou entradas de diário reproduzidas. Desativar a opção invalida as entradas na fila que ainda não começaram a ser carregadas."
     },
@@ -166589,6 +166653,10 @@
       "translation": "**Требуется перезагрузка приложения."
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Авто"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Предупреждение: указанный здесь архитектор может привязать систему к этому командиру, пожалуйста, убедитесь, что это правильно."
     },
@@ -166943,6 +167011,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · СОПРЯЖЕНИЕ И СТАРТ"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Авто"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -169343,6 +169415,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Авторизуйтесь SrvSurvey в браузере и разрешите открытие ссылки обратного вызова SrvSurvey. Вернитесь в приложение и проверьте связанный Commander."
+    },
+    {
+      "source": "Auto",
+      "translation": "Авто"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -199073,6 +199149,10 @@
       "translation": "Панель появляется автоматически при закреплении или открытии включенных игровых панелей. Для постоянного отображения отключите это и включите товары колонизации. Выключите оба, чтобы скрыть их; ярлык все еще может переключать его."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "Панель автоматически изменяется в соответствии со своим содержимым. Параметры позиции и роста контролируют его закрепленное расширение; предел карты назначения и область просмотра игры ограничивают его высоту."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "Полезная нагрузка размещается непосредственно на https://voxstellar.com/webhooks/v1/system как «командир + данные» и подписывается HMAC-SHA256. SrvSurvey не отправляет историю запуска или воспроизведенные записи журнала. Отключение этой опции делает недействительными записи в очереди, которые еще не начали загрузку."
     },
@@ -208223,6 +208303,10 @@
       "translation": "**需要重新启动应用程序"
     },
     {
+      "source": "*,Auto",
+      "translation": "*，汽车"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*警告：此处指定的架构师可以将系统锁定到该指挥官，请验证其是否正确。"
     },
@@ -208577,6 +208661,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · 配对并开始"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,自动"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -210977,6 +211065,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "在浏览器中授权SrvSurvey并允许回调链接打开SrvSurvey。返回应用程序并检查链接的指挥官。"
+    },
+    {
+      "source": "Auto",
+      "translation": "汽车"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -240707,6 +240799,10 @@
       "translation": "当对接或打开启用的游戏面板时，该面板会自动出现。要持久显示，请关闭此功能并启用殖民商品。将两者都关闭以使其隐藏；快捷方式仍然可以切换它。"
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "面板会根据其内容自动调整大小。位置和增长设置控制其锚定扩张；目的地卡限制和游戏视口限制其高度。"
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "有效负载作为指挥官 + 数据直接发布到 https://voxstellar.com/webhooks/v1/system 并使用 HMAC-SHA256 进行签名。 SrvSurvey 不发送启动历史记录或重播的日志条目。关闭该选项将使尚未开始上传的排队条目无效。"
     },
@@ -249857,6 +249953,10 @@
       "translation": "* **APP RESTART REQUIRED >>>!"
     },
     {
+      "source": "*,Auto",
+      "translation": "* *,AUTO >>>!"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "* *WARNING: THE ARCHITECT NAMED HERE CAN LOCK THE SYSTEM TO THAT COMMANDER, PLEASE VERIFY IT IS CORRECT. >>>!"
     },
@@ -250211,6 +250311,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "* 2 · PAIR AND START >>>!"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "* 2*,4*,AUTO >>>!"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -252611,6 +252715,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "* AUTHORIZE SRVSURVEY IN THE BROWSER AND ALLOW THE CALLBACK LINK TO OPEN SRVSURVEY. RETURN TO THE APP AND CHECK THE LINKED COMMANDER. >>>!"
+    },
+    {
+      "source": "Auto",
+      "translation": "* AUTO >>>!"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -282339,6 +282447,10 @@
     {
       "source": "The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it.",
       "translation": "* THE PANEL APPEARS AUTOMATICALLY WHEN DOCKING OR OPENING ENABLED GAME PANELS. FOR PERSISTENT DISPLAY, TURN THIS OFF AND ENABLE COLONIZATION COMMODITIES. TURN BOTH OFF TO KEEP IT HIDDEN; THE SHORTCUT CAN STILL TOGGLE IT. >>>!"
+    },
+    {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "* THE PANEL AUTOMATICALLY SIZES TO ITS CONTENT. POSITION AND GROWTH SETTINGS CONTROL ITS ANCHORED EXPANSION; THE DESTINATION-CARD LIMIT AND GAME VIEWPORT CAP ITS HEIGHT. >>>!"
     },
     {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",

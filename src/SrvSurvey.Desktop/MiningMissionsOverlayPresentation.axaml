@@ -39,20 +39,20 @@
                </StackPanel>
                <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
                 <TextBlock Classes="type-detail" Text="On board:" Margin="0,0,4,0" VerticalAlignment="Center" />
-                <TextBlock x:Name="CargoProgressValue" Classes="type-value" Text="{Binding OnBoard, StringFormat='{}{0:N0}'}" Foreground="{DynamicResource RavenWarningBrush}" />
+                <TextBlock x:Name="CargoProgressValue" Classes="type-value" Text="{Binding OnBoard, StringFormat='{}{0:N0}'}" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" />
                 <TextBlock Classes="type-detail" Text="t" Margin="4,0,0,0" VerticalAlignment="Center" />
                </WrapPanel>
               </Grid>
               <ProgressBar Height="4" Value="{Binding CargoPercentage}" Maximum="100" Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
               <WrapPanel>
-               <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,10,0">
-                <TextBlock Classes="type-detail" Text="Delivered:" VerticalAlignment="Center" />
-                <TextBlock x:Name="DeliveryProgressValue" Classes="type-value" Text="{Binding DeliveryAmount}" Foreground="{DynamicResource RavenSuccessBrush}" />
-               </StackPanel>
-               <StackPanel Orientation="Horizontal" Spacing="4">
-                <TextBlock Classes="type-detail" Text="Need:" VerticalAlignment="Center" />
-                <TextBlock Classes="type-value" Text="{Binding Remaining, StringFormat='{}{0:N0}'}" Foreground="{DynamicResource RavenDangerBrush}" />
-               </StackPanel>
+               <WrapPanel Margin="0,0,10,0">
+                <TextBlock Classes="type-detail" Text="Delivered:" VerticalAlignment="Center" Margin="0,0,4,0" TextWrapping="Wrap" />
+                <TextBlock x:Name="DeliveryProgressValue" Classes="type-value" Text="{Binding DeliveryAmount}" Foreground="{DynamicResource RavenSuccessBrush}" TextWrapping="Wrap" />
+               </WrapPanel>
+               <WrapPanel>
+                <TextBlock Classes="type-detail" Text="Need:" VerticalAlignment="Center" Margin="0,0,4,0" TextWrapping="Wrap" />
+                <TextBlock Classes="type-value" Text="{Binding Remaining, StringFormat='{}{0:N0}'}" Foreground="{DynamicResource RavenDangerBrush}" TextWrapping="Wrap" />
+               </WrapPanel>
               </WrapPanel>
               <ProgressBar Height="4" Value="{Binding DeliveryPercentage}" Maximum="100" Foreground="{DynamicResource RavenSuccessBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
              </StackPanel>

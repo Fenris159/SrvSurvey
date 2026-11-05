@@ -80,14 +80,17 @@ public sealed partial class MiningWorkspaceViewModel
             card.UpdateTime(now);
             activityChanged |= wasActive != card.IsActive;
         }
+        if (activityChanged)
+        {
+            state.Missions.UpdateCargo(Cargo, now);
+            cachedMissions = null;
+            InvalidateMissionCards();
+            Changed(nameof(Missions));
+        }
         MiningMissionCardViewModel[] tracked = ReadTrackedMissionCards();
         if (cachedTrackedMissionCards is null || !cachedTrackedMissionCards.SequenceEqual(tracked))
         {
             cachedTrackedMissionCards = tracked;
-        }
-        if (activityChanged)
-        {
-            cachedMissionDestinations = null;
         }
         foreach (MiningMissionDestinationViewModel destinationGroup in TrackedMissionDestinations)
         {

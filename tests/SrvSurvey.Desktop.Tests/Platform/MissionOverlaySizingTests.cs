@@ -19,6 +19,68 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MissionOverlaySizingTests
 {
+    [AvaloniaTheory]
+    [InlineData(LegacyHorizontalAnchor.Left, LegacyVerticalAnchor.Top)]
+    [InlineData(LegacyHorizontalAnchor.Right, LegacyVerticalAnchor.Bottom)]
+    [InlineData(LegacyHorizontalAnchor.Center, LegacyVerticalAnchor.Middle)]
+    public void MiningDestinationGrowthFollowsSavedAnchorsAndStopsAtTheVisibleLimit(
+        LegacyHorizontalAnchor horizontal,
+        LegacyVerticalAnchor vertical
+    )
+    {
+        const string plotter = "PlotMiningMissions";
+        using var fixture = new MissionFixture(plotter);
+        fixture.SetDestinationLimit(2);
+        fixture.SetMissionCount(1);
+        var placement = new LegacyOverlayPlacement(
+            horizontal,
+            horizontal == LegacyHorizontalAnchor.Center ? 0 : 24,
+            vertical,
+            vertical == LegacyVerticalAnchor.Middle ? 0 : 40,
+            1,
+            SizeOverride: new(900, 900)
+        );
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement> { [plotter] = placement },
+            null,
+            null
+        );
+        using var host = new HostedOverlayTestHarness(new OverlayWindowRegistry(), overlayLayout: layout);
+        host.GameWindow = host.GameWindow with { ClientBounds = new PixelRect(0, 0, 1280, 720) };
+        using HostedOverlayWindow hosted = host.Session.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                plotter,
+                _ => fixture.Window,
+                (bounds, size) => OverlayWindowPlacement.MiddleLeft(bounds, size)
+            )
+        );
+        hosted.Reconcile(true);
+        Settle(fixture.Window, host);
+        PixelSize initial = OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter));
+        Assert.Equal(layout.GetPosition(plotter, host.GameWindow.ClientBounds, initial), fixture.Window.Position);
+
+        fixture.SetMissionCount(3);
+        Settle(fixture.Window, host);
+        PixelSize capped = OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter));
+        Assert.True(capped.Height > initial.Height + 100);
+        Assert.Equal(layout.GetPosition(plotter, host.GameWindow.ClientBounds, capped), fixture.Window.Position);
+        fixture.SetMissionCount(20);
+        Settle(fixture.Window, host);
+        Assert.Equal(capped, OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter)));
+
+        fixture.AddLongMission("Independent Industrial Workers of the Outer Colonies Cooperative");
+        Settle(fixture.Window, host);
+        PixelSize wider = OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter));
+        Assert.True(wider.Width > initial.Width + 100);
+        Assert.Equal(layout.GetPosition(plotter, host.GameWindow.ClientBounds, wider), fixture.Window.Position);
+
+        fixture.SetMissionCount(1);
+        Settle(fixture.Window, host);
+        Assert.Equal(initial, OverlayWindowMetrics.GetPixelSize(new(fixture.Window, plotter)));
+        Assert.Equal(layout.GetPosition(plotter, host.GameWindow.ClientBounds, initial), fixture.Window.Position);
+        Assert.Equal(placement, layout.Placements[plotter]);
+    }
+
     /// <summary>Wide viewports keep the presentation cap, and narrowing then widening restores it.</summary>
     [AvaloniaTheory]
     [InlineData("PlotMiningMissions")]
@@ -359,6 +421,8 @@ public sealed class MissionOverlaySizingTests
         }
 
         public Window Window { get; }
+
+        public void SetDestinationLimit(int count) => mining.Workspace.MissionDestinationLimit = count;
 
         public void AddLongMission(string name)
         {

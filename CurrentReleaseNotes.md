@@ -62,6 +62,9 @@ from RC77.
   Use Commodity Short Tags starts enabled. The tags reuse Powerplay mining search
   codes and colors, and Reference displays each tag beside its full commodity name.
   Both settings persist per commander and can be edited with the game closed.
+  The panel automatically sizes to its content and follows saved placement anchors
+  as it expands or contracts. Large readouts wrap inside the panel, and narrow
+  workspaces reflow their destination summaries.
 - **VR calibration:** A shared desktop and headset editor keeps all seven fields
   readable, offers normal/fine/coarse steps and mouse-wheel adjustment, and shows
   sample data even when gameplay would hide a panel. Place in front of me moves

@@ -25,7 +25,10 @@ internal sealed class OverlayContentPlacement
     )
     {
         var nextKey = PositionKey.From(placement);
-        if (key != nextKey || referenceBounds != reference || followPlacementAnchors)
+        bool followHorizontalPlacement =
+            followPlacementAnchors
+            && (placement?.GrowthDirection ?? OverlayGrowthDirection.Automatic) == OverlayGrowthDirection.Automatic;
+        if (key != nextKey || referenceBounds != reference || followHorizontalPlacement)
         {
             key = nextKey;
             referenceBounds = reference;
@@ -39,6 +42,11 @@ internal sealed class OverlayContentPlacement
                     placement?.GrowthAnchor
                 ) == LegacyHorizontalAnchor.Right;
             corner = new PixelPoint(requested.X + (alignRight ? size.Width : 0), requested.Y);
+        }
+        else if (followPlacementAnchors)
+        {
+            // An explicit horizontal growth direction keeps its edge while height follows the saved vertical anchor.
+            corner = new PixelPoint(corner.X, requested.Y);
         }
         visibleBounds = viewport ?? monitorBounds;
         return GetPosition(size);

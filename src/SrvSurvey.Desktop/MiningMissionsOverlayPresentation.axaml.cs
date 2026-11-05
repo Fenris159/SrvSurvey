@@ -16,6 +16,8 @@ public sealed partial class MiningMissionsOverlayPresentation
 
     public bool AutoHeight => true;
 
+    public bool FollowPlacementAnchors => true;
+
     void IOverlayPanelViewportAware.SetAvailableHeight(double height) => MissionPanel.MaxHeight = height;
 
     public MiningMissionsOverlayPresentation()

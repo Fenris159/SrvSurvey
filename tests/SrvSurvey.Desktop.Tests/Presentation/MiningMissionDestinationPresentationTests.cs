@@ -2,11 +2,14 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Mining;
+using SrvSurvey.Desktop.Behaviors;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Tests.ViewModels;
@@ -19,6 +22,17 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MiningMissionDestinationPresentationTests
 {
+    private static readonly string[] ExpectedPresetNames =
+    [
+        "Default",
+        "Monochrome Companion",
+        "Nebula Cyan",
+        "Toxic Green",
+        "Crimson Wake",
+        "Void Amethyst",
+        "Cerulean Gold",
+    ];
+
     [AvaloniaTheory]
     [InlineData("orange-dark")]
     [InlineData("blue-light")]
@@ -29,10 +43,61 @@ public sealed class MiningMissionDestinationPresentationTests
             MiningStore.Export(
                 new MiningCommanderData
                 {
-                    Missions = Enumerable
-                        .Range(1, 8)
-                        .Select(id => Mission(id, "Bertrandite", "Bismark Legacy", fixture.Now))
-                        .ToList(),
+                    Missions =
+                    [
+                        Mission(1, "Bertrandite", "Bismark Legacy", fixture.Now) with
+                        {
+                            Required = 704,
+                            Delivered = 704,
+                            OnBoard = 0,
+                        },
+                        Mission(2, "Bertrandite", "Bismark Legacy", fixture.Now) with
+                        {
+                            Required = 652,
+                            Delivered = 0,
+                            OnBoard = 180,
+                        },
+                        Mission(3, "Gallite", "Bismark Legacy", fixture.Now) with
+                        {
+                            Required = 772,
+                            Delivered = 120,
+                            OnBoard = 96,
+                        },
+                        Mission(4, "Indite", "Bismark Legacy", fixture.Now) with
+                        {
+                            Required = 844,
+                            Delivered = 0,
+                            OnBoard = 64,
+                        },
+                        Mission(5, "Gold", "Kepler Gateway", fixture.Now) with
+                        {
+                            DestinationSystem = "HIP 13644",
+                            Required = 180,
+                            Delivered = 60,
+                            OnBoard = 40,
+                        },
+                        Mission(6, "Osmium", "Kepler Gateway", fixture.Now) with
+                        {
+                            DestinationSystem = "HIP 13644",
+                            Required = 240,
+                            Delivered = 0,
+                            OnBoard = 30,
+                        },
+                        Mission(7, "Silver", "Krylov Enterprise", fixture.Now) with
+                        {
+                            DestinationSystem = "LFT 37",
+                            Required = 300,
+                            Delivered = 80,
+                            OnBoard = 60,
+                        },
+                        Mission(8, "Platinum", "Krylov Enterprise", fixture.Now) with
+                        {
+                            DestinationSystem = "LFT 37",
+                            Required = 120,
+                            Delivered = 20,
+                            OnBoard = 25,
+                        },
+                    ],
                 }
             )
         );
@@ -58,16 +123,183 @@ public sealed class MiningMissionDestinationPresentationTests
                 .Where(border => border.Classes.Contains("mining-mission-card"))
                 .ToArray();
             Assert.Equal(8, cards.Length);
+            Assert.All(fixture.Workspace.MissionCards, mission => Assert.True(mission.IsTracked));
+            Assert.Equal(3, fixture.Workspace.TrackedMissionDestinations.Count);
+            Assert.Equal(
+                8,
+                fixture.Workspace.TrackedMissionDestinations.Sum(destination => destination.TrackedMissions)
+            );
             Point[] positions = cards.Select(card => card.TranslatePoint(default, view)!.Value).ToArray();
             Assert.All(positions.Take(4), point => Assert.Equal(positions[0].Y, point.Y));
             Assert.True(positions[4].Y > positions[0].Y + 100);
             Assert.All(cards, card => Assert.InRange(card.Bounds.Width, 220, 260));
-            Save(window, "mining-destinations-workspace-" + theme + ".png");
+            Save(window, "mining-missions-workspace-eight-tracked-" + theme + ".png");
         }
         finally
         {
             window.Close();
             themes.Select(original);
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LargeOverlayTotalsStayInsideTheLocationWidthAtMaximumValueSize(bool useTags)
+    {
+        using var fixture = new MiningMissionFixture();
+        fixture.Workspace.Restore(
+            MiningStore.Export(
+                new MiningCommanderData
+                {
+                    Missions = Enumerable
+                        .Range(1, 2)
+                        .Select(id =>
+                            Mission(id, "Bertrandite", "S", fixture.Now) with
+                            {
+                                DestinationSystem = "A",
+                                Required = 10000,
+                                Delivered = 5000,
+                                OnBoard = 3000,
+                            }
+                        )
+                        .ToList(),
+                }
+            )
+        );
+        fixture.Workspace.UseCommodityShortTags = useTags;
+        using var model = new MiningMissionsOverlayViewModel(fixture.Workspace);
+        var window = new MiningMissionsOverlayWindow(model);
+        try
+        {
+            OverlayThemeResources.Apply(
+                window,
+                LegacyOverlayLayout.Empty,
+                "PlotMiningMissions",
+                new OverlayWindowRegistry()
+            );
+            window.Show();
+            Settle(window);
+            MiningMissionsOverlayPresentation presentation = Assert.Single(
+                window.GetVisualDescendants().OfType<MiningMissionsOverlayPresentation>()
+            );
+            OverlayTypographyResources.Apply(presentation, new OverlayTypographyScale(0, 0, 100, 0, 0, 0));
+            Settle(window);
+            Border card = Assert.Single(DestinationCards(presentation));
+            TextBlock delivery = Assert.Single(
+                card.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == "10,000/20,000"
+            );
+            Assert.Equal(28, delivery.FontSize);
+            Assert.InRange(presentation.Bounds.Width, 240, 270);
+            Assert.All(
+                card.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible),
+                text => AssertFitsHorizontally(text, card)
+            );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task SystemOnlyDestinationKeepsItsVisibleCopyAction()
+    {
+        using var fixture = new MiningMissionFixture();
+        fixture.Workspace.Restore(
+            MiningStore.Export(
+                new MiningCommanderData
+                {
+                    Missions = [Mission(1, "Gold", "", fixture.Now) with { DestinationSystem = "Sol" }],
+                }
+            )
+        );
+        var view = new MiningMissionCardsView { DataContext = fixture.Workspace };
+        var window = new Window
+        {
+            Width = 900,
+            Height = 700,
+            Content = view,
+        };
+        try
+        {
+            window.Show();
+            Settle(window);
+            Border summary = Assert.Single(
+                view.GetVisualDescendants().OfType<Border>(),
+                border => border.Classes.Contains("mining-destination-summary")
+            );
+            Button copy = Assert.Single(
+                summary.GetVisualDescendants().OfType<Button>(),
+                button => Equals(ClipboardCopyBehavior.GetText(button), "Sol")
+            );
+            Assert.True(Assert.IsType<TextBlock>(copy.Content).IsEffectivelyVisible);
+            copy.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.Equal("Sol", await window.Clipboard!.TryGetTextAsync());
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void SummaryReadoutsStayInsideTheirColumnWhenTheWorkspaceNarrows()
+    {
+        using var fixture = new MiningMissionFixture();
+        fixture.Workspace.Restore(
+            MiningStore.Export(
+                new MiningCommanderData
+                {
+                    Missions =
+                    [
+                        Mission(1, "Bertrandite", "Bismark Legacy", fixture.Now) with
+                        {
+                            Required = 1988,
+                            Delivered = 704,
+                        },
+                        Mission(2, "Hydrogen Peroxide", "Bismark Legacy", fixture.Now) with
+                        {
+                            Required = 2000,
+                        },
+                    ],
+                }
+            )
+        );
+        fixture.Workspace.UseCommodityShortTags = false;
+        var view = new MiningMissionCardsView { DataContext = fixture.Workspace, Margin = new Thickness(16) };
+        var window = new Window
+        {
+            Width = 500,
+            Height = 1150,
+            Content = new ScrollViewer { Content = view },
+        };
+        try
+        {
+            window.Show();
+            foreach (int width in new[] { 500, 1050, 500 })
+            {
+                window.Width = width;
+                Settle(window);
+                Border summary = Assert.Single(
+                    view.GetVisualDescendants().OfType<Border>(),
+                    border => border.Classes.Contains("mining-destination-summary")
+                );
+                ItemsControl commodities = Assert.Single(summary.GetVisualDescendants().OfType<ItemsControl>());
+                Assert.Contains(
+                    commodities.GetVisualDescendants().OfType<TextBlock>(),
+                    text => text.Text == "Delivered: 704/1,988"
+                );
+                Assert.All(
+                    commodities.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible),
+                    text => AssertFitsHorizontally(text, commodities)
+                );
+            }
+        }
+        finally
+        {
+            window.Close();
         }
     }
 
@@ -499,6 +731,7 @@ public sealed class MiningMissionDestinationPresentationTests
     [AvaloniaFact]
     public void NamedThemePresetsApplyTheirPaletteToTheLiveMissionPanel()
     {
+        Assert.Equal(ExpectedPresetNames, OverlayThemePresetCatalog.Presets.Select(preset => preset.Name));
         using var fixture = new MiningMissionFixture();
         fixture.Feed("""{"event":"Loadout","Ship":"Python","CargoCapacity":512}""");
         fixture.Workspace.Restore(
@@ -531,10 +764,33 @@ public sealed class MiningMissionDestinationPresentationTests
             );
             window.Show();
             foreach (
-                (string preset, string primary, string header, string valueColor, string textColor) in new[]
+                (
+                    string preset,
+                    string primary,
+                    string header,
+                    string valueColor,
+                    string textColor,
+                    string success,
+                    string danger,
+                    string background
+                ) in new[]
                 {
-                    ("Void Amethyst", "#C9A0FF", "#7FFFD4", "#7FFFD4", "#E8E0F5"),
-                    ("Default", "#FF6F00", "#CC0003", "#FFFF00", "#FFFFFF"),
+                    ("Default", "#FF6F00", "#CC0003", "#FFFF00", "#FFFFFF", "#00FF00", "#FF0000", "#000000"),
+                    (
+                        "Monochrome Companion",
+                        "#C8CBD0",
+                        "#D4BF8F",
+                        "#D4BF8F",
+                        "#D7D4CC",
+                        "#91B69B",
+                        "#CF8C86",
+                        "#111315"
+                    ),
+                    ("Nebula Cyan", "#5EC8F2", "#FFE8A3", "#FFE8A3", "#D6EEF9", "#00FF00", "#FF0000", "#000000"),
+                    ("Toxic Green", "#5CFF9E", "#FFF066", "#FFF066", "#D8FFE8", "#00FF00", "#FF0000", "#000000"),
+                    ("Crimson Wake", "#FF6B6B", "#FFD966", "#FFD966", "#FFE4E4", "#00FF00", "#FF0000", "#000000"),
+                    ("Void Amethyst", "#C9A0FF", "#7FFFD4", "#7FFFD4", "#E8E0F5", "#00FF00", "#FF0000", "#000000"),
+                    ("Cerulean Gold", "#3D9EE8", "#FFCC33", "#FFCC33", "#C8E4FA", "#00FF00", "#FF0000", "#000000"),
                 }
             )
             {
@@ -542,6 +798,18 @@ public sealed class MiningMissionDestinationPresentationTests
                 Assert.True(editor.ApplyCommand.CanExecute(null));
                 editor.ApplyCommand.Execute(null);
                 Settle(window);
+                MiningMissionsOverlayPresentation presentation = Assert.Single(
+                    window.GetVisualDescendants().OfType<MiningMissionsOverlayPresentation>()
+                );
+                Assert.Equal(
+                    Color.Parse(background),
+                    Assert
+                        .IsType<ISolidColorBrush>(
+                            presentation.FindControl<Border>("MissionPanel")!.Background,
+                            exactMatch: false
+                        )
+                        .Color
+                );
                 TextBlock station = window
                     .GetVisualDescendants()
                     .OfType<TextBlock>()
@@ -577,8 +845,8 @@ public sealed class MiningMissionDestinationPresentationTests
                     );
                     string expectedColor = readout switch
                     {
-                        "20/100" => "#00FF00",
-                        "50" => "#FF0000",
+                        "20/100" => success,
+                        "50" => danger,
                         _ => valueColor,
                     };
                     Assert.Equal(
@@ -594,10 +862,38 @@ public sealed class MiningMissionDestinationPresentationTests
                     Color.Parse("#B98966"),
                     Assert.IsType<ISolidColorBrush>(tag.Background, exactMatch: false).Color
                 );
+                TextBlock code = Assert.Single(tag.GetVisualDescendants().OfType<TextBlock>());
+                Assert.Equal("BRT", code.Text);
+                Assert.Equal(
+                    Color.Parse("#111111"),
+                    Assert.IsType<ISolidColorBrush>(code.Foreground, exactMatch: false).Color
+                );
+                ProgressBar[] bars = presentation.GetVisualDescendants().OfType<ProgressBar>().ToArray();
+                Assert.Equal(2, bars.Length);
+                Assert.Equal(
+                    Color.Parse(primary),
+                    Assert.IsType<ISolidColorBrush>(bars[0].Foreground, exactMatch: false).Color
+                );
+                Assert.Equal(
+                    Color.Parse(success),
+                    Assert.IsType<ISolidColorBrush>(bars[1].Foreground, exactMatch: false).Color
+                );
                 Save(
                     window,
-                    "mining-missions-overlay-values-" + preset.Replace(' ', '-').ToLowerInvariant() + "-rc77-7.png"
+                    "mining-missions-overlay-all-presets-" + preset.Replace(' ', '-').ToLowerInvariant() + ".png"
                 );
+                fixture.Workspace.UseCommodityShortTags = false;
+                Settle(window);
+                TextBlock fullName = Assert.Single(
+                    window.GetVisualDescendants().OfType<TextBlock>(),
+                    text => text.Text == "Bertrandite" && text.IsEffectivelyVisible
+                );
+                Assert.Equal(
+                    Color.Parse(textColor),
+                    Assert.IsType<ISolidColorBrush>(fullName.Foreground, exactMatch: false).Color
+                );
+                fixture.Workspace.UseCommodityShortTags = true;
+                Settle(window);
             }
         }
         finally
@@ -608,6 +904,13 @@ public sealed class MiningMissionDestinationPresentationTests
             themes.Select(originalApp);
             OverlayThemeResources.RefreshAll();
         }
+    }
+
+    private static void AssertFitsHorizontally(TextBlock text, Control container)
+    {
+        Point position = text.TranslatePoint(default, container)!.Value;
+        Assert.InRange(position.X, -1, container.Bounds.Width + 1);
+        Assert.InRange(position.X + Math.Max(text.Bounds.Width, text.TextLayout.Width), 0, container.Bounds.Width + 1);
     }
 
     private static MiningMission Mission(int id, string commodity, string station, DateTimeOffset now) =>

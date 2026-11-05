@@ -10,11 +10,11 @@
    <ItemsControl.ItemTemplate>
     <DataTemplate x:DataType="vm:MiningMissionDestinationViewModel">
      <Border Classes="mining-destination-summary" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,6,0,8">
-      <Grid ColumnDefinitions="2*,4*,Auto" ColumnSpacing="12">
+      <Grid ColumnDefinitions="2*,4*,Auto" ColumnSpacing="12" RowSpacing="6" SizeChanged="Summary_SizeChanged">
        <StackPanel Spacing="2">
         <TextBlock Text="{Binding Heading}" FontWeight="SemiBold" TextWrapping="Wrap" />
-        <Button Classes="link" Padding="0" MinHeight="0" HorizontalAlignment="Left" behaviors:ClipboardCopyBehavior.Text="{Binding System}">
-         <TextBlock Text="{Binding System}" TextWrapping="Wrap" IsVisible="{Binding HasStation}" />
+        <Button Classes="link" Padding="0" MinHeight="0" HorizontalAlignment="Left" behaviors:ClipboardCopyBehavior.Text="{Binding System}" IsVisible="{Binding HasSystem}">
+         <TextBlock Text="{Binding System}" TextWrapping="Wrap" />
         </Button>
        </StackPanel>
        <StackPanel Grid.Column="2" Spacing="2" MaxWidth="150">
@@ -32,9 +32,9 @@
             <TextBlock Text="{Binding Commodity}" IsVisible="{Binding !UseShortTags}" TextWrapping="Wrap" MaxWidth="120" />
            </StackPanel>
            <WrapPanel Grid.Column="1" VerticalAlignment="Center">
-            <TextBlock Text="{Binding CargoProgress}" Margin="0,0,12,0" />
-            <TextBlock Text="{Binding DeliveryProgress}" Margin="0,0,12,0" Foreground="{DynamicResource RavenSuccessBrush}" />
-            <TextBlock Text="{Binding Needed}" />
+            <TextBlock Text="{Binding CargoProgress}" Margin="0,0,12,0" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding DeliveryProgress}" Margin="0,0,12,0" Foreground="{DynamicResource RavenSuccessBrush}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Needed}" TextWrapping="Wrap" />
            </WrapPanel>
            <ProgressBar Grid.Row="1" Grid.ColumnSpan="2" Height="4" Value="{Binding DeliveryPercentage}" Maximum="100" Foreground="{DynamicResource RavenSuccessBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
           </Grid>

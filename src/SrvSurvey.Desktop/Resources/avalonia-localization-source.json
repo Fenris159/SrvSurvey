@@ -104,6 +104,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "*,Auto",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml.cs"
+  },
+  {
     "Text": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
     "IsFormat": false,
     "SourceKinds": [
@@ -815,6 +823,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "2*,4*,Auto",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml.cs"
   },
   {
     "Text": "2,450 need | 620 FC | 96 ship",
@@ -5620,6 +5636,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Auto",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml.cs"
   },
   {
     "Text": "Auto Fitting Rigs to a Splat",
@@ -65276,6 +65300,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander \u002B data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",

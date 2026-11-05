@@ -30,6 +30,7 @@ public sealed class MiningMissionDestinationViewModel : WorkspaceObservable
 
     public string System { get; }
     public string Station { get; }
+    public bool HasSystem => System.Length > 0;
     public bool HasStation => Station.Length > 0;
     public string Heading
     {
@@ -105,7 +106,7 @@ public sealed class MiningMissionCommodityTotalsViewModel
     {
         Commodity = missions[0].Commodity;
         Required = missions.Sum(mission => (long)mission.Required);
-        Delivered = missions.Sum(mission => (long)mission.Delivered);
+        Delivered = missions.Sum(mission => (long)Math.Min(mission.Delivered, mission.Required));
         OnBoard = missions.Sum(mission => (long)mission.OnBoard);
         Remaining = missions.Sum(mission => (long)mission.Remaining);
         UseShortTags = useShortTags;

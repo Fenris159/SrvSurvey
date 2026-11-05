@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
@@ -7,6 +8,52 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningMissionDestinationTests
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 4, 18, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void ExcessDeliveredCargoCannotCompleteAnotherMissionAtTheSameDestination()
+    {
+        MiningMissionDestinationViewModel destination = Assert.Single(
+            MiningMissionDestinationViewModel.Create(
+                [Card(1, "Gold", 100, delivered: 250), Card(2, "Gold", 100, delivered: 20)],
+                true
+            )
+        );
+        MiningMissionCommodityTotalsViewModel gold = Assert.Single(destination.Commodities);
+        Assert.Equal(120, gold.Delivered);
+        Assert.Equal("120/200", gold.DeliveryAmount);
+        Assert.Equal(80, gold.Remaining);
+        Assert.False(destination.IsComplete);
+    }
+
+    [Fact]
+    public void ExpiryReassignsOnboardCargoAndUpdatesNeedAndTripsWithoutAnotherJournalEvent()
+    {
+        using var fixture = new MiningMissionFixture();
+        fixture.Feed("""{"event":"Loadout","Ship":"Python","CargoCapacity":10}""");
+        fixture.Accept(1);
+        DateTimeOffset firstExpiry = fixture.Now.AddDays(1);
+        fixture.Now = fixture.Now.AddHours(1);
+        fixture.Accept(2);
+        fixture.Feed(
+            """{"event":"Music","MusicTrack":"Docked"}""",
+            cargo: new CargoSnapshot(fixture.Now, "Cargo", "Ship", 8, [new("platinum", null, 8, 0)])
+        );
+        using var overlay = new MiningMissionsOverlayViewModel(fixture.Workspace);
+        MiningMissionDestinationViewModel initial = Assert.Single(overlay.Destinations);
+        Assert.Equal(12, Assert.Single(initial.Commodities).Remaining);
+        Assert.Equal(2, initial.EstimatedTrips);
+
+        fixture.Now = firstExpiry;
+        fixture.Workspace.Tick();
+
+        MiningMissionDestinationViewModel remaining = Assert.Single(overlay.Destinations);
+        MiningMissionCommodityTotalsViewModel platinum = Assert.Single(remaining.Commodities);
+        Assert.Equal(1, remaining.TrackedMissions);
+        Assert.Equal(8, platinum.OnBoard);
+        Assert.Equal(2, platinum.Remaining);
+        Assert.Equal(1, remaining.EstimatedTrips);
+        Assert.Equal(8, fixture.Workspace.MissionCards.Single(mission => mission.Id == 2).OnBoard);
+    }
 
     [Fact]
     public void FiveOfSevenMissionsSumOnlyTheSelectedCommodityRequirements()
