@@ -15,6 +15,7 @@ public sealed partial class ColonizationViewModelTests
         "plan:42:cached",
     ];
 
+    /// <summary>ALL links or unlinks each distinct positive market ID once per eligible shown build.</summary>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -51,6 +52,7 @@ public sealed partial class ColonizationViewModelTests
         );
     }
 
+    /// <summary>Bulk actions use the visible Show selection, preserving other carrier links and assignment metadata.</summary>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -97,6 +99,7 @@ public sealed partial class ColonizationViewModelTests
         );
     }
 
+    /// <summary>Only the Building filter with checked projects and available carrier identities permits bulk writes.</summary>
     [Fact]
     public async Task BulkCarrierCommandsRequireBuildingFilterAvailableCarriersAndCheckedProject()
     {
@@ -132,6 +135,7 @@ public sealed partial class ColonizationViewModelTests
         Assert.True(model.LinkCarrierToSelectedProjectsCommand.CanExecute(null));
     }
 
+    /// <summary>A rejected request preserves that project and reports its failure while subsequent projects continue.</summary>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -191,6 +195,7 @@ public sealed partial class ColonizationViewModelTests
         Assert.False(model.IsBusy);
     }
 
+    /// <summary>Commander changes, disabling and disposal stop the remaining writes and discard late local updates.</summary>
     [Theory]
     [InlineData("commander")]
     [InlineData("disabled")]
@@ -247,9 +252,11 @@ public sealed partial class ColonizationViewModelTests
         return model;
     }
 
+    /// <summary>Exercises the same bulk selection and failure scenarios for linking and unlinking.</summary>
     private static Task ChangeProjectCarriersAsync(ColonizationViewModel model, bool link) =>
         link ? model.LinkCarrierToSelectedProjectsAsync() : model.UnlinkCarrierFromSelectedProjectsAsync();
 
+    /// <summary>Provides shown, hidden, completed, synthetic and out-of-system projects with existing carrier assignments.</summary>
     private static StubRavenColonialClient ProjectCarrierClient() =>
         new()
         {

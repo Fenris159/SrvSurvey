@@ -484,6 +484,7 @@ public sealed partial class ColonizationShoppingPresentationTests
         public IReadOnlyList<ColonizationProject> ActiveProjects { get; set; } =
             ColonizationShoppingViewModelTests.Projects();
 
+        /// <summary>Routes specific architect-map responses before generic architect routes and returns isolated market-search fixtures.</summary>
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken

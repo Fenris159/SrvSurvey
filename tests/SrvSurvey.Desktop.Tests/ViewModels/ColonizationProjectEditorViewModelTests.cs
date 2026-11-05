@@ -1083,6 +1083,7 @@ public sealed partial class ColonizationProjectEditorViewModelTests
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 
+        /// <summary>Records the creation payload and allows tests to hold Raven acknowledgement before returning a real build ID.</summary>
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
             CancellationToken cancellationToken = default

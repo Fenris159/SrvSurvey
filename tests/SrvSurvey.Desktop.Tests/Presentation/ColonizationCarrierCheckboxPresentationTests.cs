@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 
 public sealed partial class ColonizationShoppingPresentationTests
 {
+    /// <summary>Checks only the requested market identities, independently of display names and roster ordering.</summary>
     private static void SetCarrierChecks(CarrierMultiSelect picker, long marketId)
     {
         ColonizationCarrierSelectionViewModel selection = Assert.IsType<ColonizationCarrierSelectionViewModel>(
@@ -27,6 +28,7 @@ public sealed partial class ColonizationShoppingPresentationTests
         selection.Items.Single(item => item.MarketId == marketId).IsSelected = true;
     }
 
+    /// <summary>Pointer and keyboard changes keep the popup open and preserve the three-carrier subset when reopened.</summary>
     [AvaloniaFact]
     public void CarrierCheckboxPickerKeepsThreeOfSevenCheckedAcrossClicksKeyboardAndReopening()
     {
@@ -64,7 +66,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             ClickCarrierControl(button);
             Flyout flyout = Assert.IsType<Flyout>(button.Flyout);
             Assert.True(flyout.IsOpen);
-            Control content = Assert.IsAssignableFrom<Control>(flyout.Content);
+            Control content = Assert.IsType<Control>(flyout.Content, exactMatch: false);
             CheckBox[] boxes = content.GetVisualDescendants().OfType<CheckBox>().ToArray();
             Assert.Equal(7, boxes.Length);
             foreach (

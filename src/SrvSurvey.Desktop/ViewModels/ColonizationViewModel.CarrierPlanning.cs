@@ -53,11 +53,13 @@ public sealed partial class ColonizationViewModel
             planningCarrierSelectionRevision = CommanderName is null
                 ? 0
                 : settingsStore.LoadPlanningCarrierRevision(CommanderName);
-            ColonizationShoppingState? savedSearch = shoppingSession?.Search;
-            if (savedSearch is not null && savedSearch.CarrierSelectionRevision > planningCarrierSelectionRevision)
+            ColonizationCarrierSelectionState? savedSelection = CommanderName is null
+                ? null
+                : settingsStore.LoadShoppingCarrierSelection(CommanderName);
+            if (savedSelection is not null && savedSelection.Revision > planningCarrierSelectionRevision)
             {
-                planningCarrierSelectionRevision = savedSearch.CarrierSelectionRevision;
-                CarrierSelection.Restore(savedSearch.SelectedCarrierMarketIds, savedSearch.SelectedCarrierMarketId);
+                planningCarrierSelectionRevision = savedSelection.Revision;
+                CarrierSelection.Restore(savedSelection.MarketIds, savedSelection.MarketId);
             }
             else
             {

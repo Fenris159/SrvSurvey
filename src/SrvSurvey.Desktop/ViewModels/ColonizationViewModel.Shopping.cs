@@ -221,6 +221,7 @@ public sealed partial class ColonizationViewModel
         }
         string? commander = CommanderName;
         int version = shoppingSelectionVersion;
+        long ownerCarrierSelectionRevision = planningCarrierSelectionRevision;
         string[] ids = selected.Select(project => project.BuildId).ToArray();
         bool matches =
             shoppingSession is not null
@@ -240,7 +241,13 @@ public sealed partial class ColonizationViewModel
                 {
                     return;
                 }
-                var session = new ColonizationShoppingSession(ids, state);
+                var session = new ColonizationShoppingSession(
+                    ids,
+                    state with
+                    {
+                        CarrierSelectionRevision = ownerCarrierSelectionRevision,
+                    }
+                );
                 if (string.Equals(commander, CommanderName, StringComparison.OrdinalIgnoreCase))
                 {
                     shoppingSession = session;
@@ -250,11 +257,12 @@ public sealed partial class ColonizationViewModel
                     }
                     ReconcileWishList();
                     OnPropertyChanged(nameof(SearchMarketsButtonText));
+                    ownerCarrierSelectionRevision = planningCarrierSelectionRevision;
                     session = (shoppingSession ?? session) with
                     {
                         Search = (shoppingSession?.Search ?? state) with
                         {
-                            CarrierSelectionRevision = planningCarrierSelectionRevision,
+                            CarrierSelectionRevision = ownerCarrierSelectionRevision,
                         },
                     };
                     shoppingSession = session;

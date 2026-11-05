@@ -84,3 +84,9 @@ public sealed record ColonizationShoppingState
 }
 
 internal sealed record ColonizationShoppingSession(IReadOnlyList<string> ProjectIds, ColonizationShoppingState? Search);
+
+/// <summary>Retains carrier preferences independently of the disposable Market Search workspace.</summary>
+internal sealed record ColonizationCarrierSelectionState(long MarketId, IReadOnlyList<long>? MarketIds, long Revision)
+{
+    internal bool IsValid => MarketId >= 0 && Revision >= 0 && (MarketIds is null || MarketIds.All(id => id > 0));
+}

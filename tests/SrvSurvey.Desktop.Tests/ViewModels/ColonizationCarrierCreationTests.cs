@@ -5,6 +5,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class ColonizationProjectEditorViewModelTests
 {
+    /// <summary>Creation freezes the reviewed carrier set and links it only after Raven acknowledges the build.</summary>
     [Theory]
     [InlineData(false, 0)]
     [InlineData(true, 43)]
@@ -145,6 +146,7 @@ public sealed partial class ColonizationProjectEditorViewModelTests
         Assert.Contains(expectedMessage, editor.StatusMessage);
     }
 
+    /// <summary>A commander change retires the old publication and prevents remaining carrier links from being sent.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -214,6 +216,7 @@ public sealed partial class ColonizationProjectEditorViewModelTests
         Assert.True(editor.IsConfirmationPending);
     }
 
+    /// <summary>Prepares a manual build or an existing planned site with two available fleet carriers.</summary>
     private async Task<ColonizationProjectEditorViewModel> PrepareCarrierCreationAsync(
         StubRavenColonialClient client,
         bool fromPlan,

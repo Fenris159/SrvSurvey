@@ -5,6 +5,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed partial class ColonizationViewModelTests
 {
+    /// <summary>Roster changes retain checked identities and never include newly discovered carriers implicitly.</summary>
     [Fact]
     public void CarrierCheckboxSelectionSurvivesRenamingReorderingAndAddedCarriersWithoutWidening()
     {
@@ -152,6 +153,7 @@ public sealed partial class ColonizationViewModelTests
         Assert.Equal("3 carriers selected", model.CarrierSelection.SelectionNote);
     }
 
+    /// <summary>Selects the hand-picked first, third and seventh carriers used by cargo and persistence scenarios.</summary>
     private static void CheckThreeCarriers(ColonizationCarrierSelectionViewModel selection)
     {
         selection.ClearCommand.Execute(null);
@@ -176,6 +178,7 @@ public sealed partial class ColonizationViewModelTests
 
 public sealed partial class ColonizationProjectEditorViewModelTests
 {
+    /// <summary>Manual and planned creation wait for a real build ID before linking the three checked carrier identities.</summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

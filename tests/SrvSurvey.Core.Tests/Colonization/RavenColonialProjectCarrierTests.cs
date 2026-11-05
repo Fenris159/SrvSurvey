@@ -5,6 +5,7 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class RavenColonialProjectCarrierTests
 {
+    /// <summary>Both operations use an escaped build ID, a numeric 64-bit market ID and no request body.</summary>
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -54,6 +55,7 @@ public sealed class RavenColonialProjectCarrierTests
         Assert.Equal(1, sent);
     }
 
+    /// <summary>Runs the same HTTP contract checks against linking and unlinking.</summary>
     private static Task ChangeAsync(RavenColonialClient client, bool link, string buildId, long marketId) =>
         link ? client.LinkProjectCarrierAsync(buildId, marketId) : client.UnlinkProjectCarrierAsync(buildId, marketId);
 

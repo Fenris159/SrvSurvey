@@ -113,6 +113,84 @@ public sealed partial class ColonizationProjectEditorViewModelTests
 
 public sealed partial class ColonizationViewModelTests
 {
+    /// <summary>A departing search retains its own revision while another commander's profile is becoming active.</summary>
+    [Fact]
+    public async Task CarrierReviewOutgoingCommanderRetainsItsSavedSelectionRevision()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new([Project("build-1", "Port", 1_000)], [], null, SevenCheckboxCarriers()),
+        };
+        var store = new ColonizationSettingsStore(Path.Combine(directory, "ui.json"));
+        store.SaveEnabled(true);
+        store.SavePlanningCarrier("Test Cmdr", 0, null, revision: 7);
+        store.SaveShopping(
+            "Test Cmdr",
+            new ColonizationShoppingSession(
+                ["build-1"],
+                new ColonizationShoppingState
+                {
+                    SelectedCarrierMarketIds = [3_700_000_001, 3_700_000_003, 3_700_000_007],
+                    CarrierSelectionRevision = 8,
+                }
+            )
+        );
+        using ColonizationViewModel model = Create(client);
+        await model.SetCommanderAsync("Test Cmdr");
+        using ColonizationShoppingViewModel shopping = model.CreateShopping(
+            model.Projects.Select(row => row.Project).ToArray(),
+            new ColonizationShoppingViewModelTests.SearchStub([])
+        );
+        Assert.Equal(700, Assert.Single(shopping.Needs).Remaining);
+        await model.SetCommanderAsync("Other Cmdr");
+        Assert.Equal(8, store.LoadShopping("Test Cmdr")!.Search!.CarrierSelectionRevision);
+        await model.SetCommanderAsync("Test Cmdr");
+        Assert.Equal("3 carriers selected", model.CarrierSelection.SelectionNote);
+    }
+
+    /// <summary>Clearing disposable search tags cannot delete the only durable recovered carrier choice.</summary>
+    [Fact]
+    public async Task CarrierReviewRecoveredSelectionSurvivesClearingTheLastShoppingTagAndRestart()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new([Project("build-1", "Port", 1_000)], [], null, SevenCheckboxCarriers()),
+        };
+        var store = new ColonizationSettingsStore(Path.Combine(directory, "ui.json"));
+        store.SaveEnabled(true);
+        store.SavePlanningCarrier("Test Cmdr", 0, null, revision: 7);
+        // A legacy sidecar has no independent carrier-preference record yet.
+        await File.WriteAllTextAsync(
+            Path.Combine(directory, "ui.json.shopping.json"),
+            """
+            {
+              "Version": 1,
+              "TEST CMDR": {
+                "ProjectIds": ["build-1"],
+                "Search": {
+                  "SelectedCarrierMarketIds": [3700000001, 3700000003, 3700000007],
+                  "CarrierSelectionRevision": 8
+                }
+              }
+            }
+            """
+        );
+        using (ColonizationViewModel model = Create(client))
+        {
+            await model.SetCommanderAsync("Test Cmdr");
+            Assert.Equal("3 carriers selected", model.CarrierSelection.SelectionNote);
+            Assert.Single(model.Projects).IsShoppingSelected = false;
+            Assert.Empty(store.LoadShopping("Test Cmdr")!.ProjectIds);
+            Assert.Null(store.LoadShopping("Test Cmdr")!.Search);
+        }
+        using ColonizationViewModel reopened = Create(client);
+        await reopened.SetCommanderAsync("Test Cmdr");
+        Assert.Equal(
+            new long[] { 3_700_000_001, 3_700_000_003, 3_700_000_007 },
+            reopened.CarrierSelection.CaptureSelectedIds().Order()
+        );
+    }
+
     /// <summary>Explicitly checked inventory contributes the same quantities to Loaded, shopping and overlay readouts.</summary>
     [Fact]
     public async Task CarrierReviewCheckedUnlinkedCarriersCountConsistentlyInEveryCargoReadout()
