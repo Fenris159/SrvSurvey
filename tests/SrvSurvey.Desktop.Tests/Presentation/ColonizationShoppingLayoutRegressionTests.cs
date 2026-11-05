@@ -9,6 +9,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -70,6 +71,7 @@ public sealed partial class ColonizationShoppingPresentationTests
         }
     }
 
+    /// <summary>Clearing and selecting carriers through the view recalculates needs and preserves the difference toggle.</summary>
     [AvaloniaFact]
     public async Task CarrierDifferenceSelectorShowsAllLinkedChoicesAndRecalculatesTags()
     {
@@ -102,7 +104,7 @@ public sealed partial class ColonizationShoppingPresentationTests
         try
         {
             window.Show();
-            ComboBox selector = window.FindControl<ComboBox>("ShoppingCarrier")!;
+            CarrierMultiSelect selector = window.FindControl<CarrierMultiSelect>("ShoppingCarrier")!;
             Assert.True(selector.IsEffectivelyVisible);
             Assert.True(model.UseCarrierDifference);
             ToggleSwitch toggle = window.FindControl<ToggleSwitch>("CarrierDifferenceToggle")!;
@@ -112,9 +114,17 @@ public sealed partial class ColonizationShoppingPresentationTests
             LeftClick(window, toggle);
             Assert.True(model.UseCarrierDifference);
             Assert.True(selector.IsEffectivelyVisible);
-            Assert.Equal("ALL", Assert.IsType<ColonizationCarrierChoice>(selector.SelectedItem).Label);
-            Assert.Equal(2, selector.ItemCount);
-            selector.SelectedItem = model.CarrierOptions[1];
+            Assert.Equal(
+                "All carriers",
+                Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).Summary
+            );
+            Assert.Single(Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).Items);
+            ColonizationCarrierSelectionViewModel selection = Assert.IsType<ColonizationCarrierSelectionViewModel>(
+                selector.DataContext
+            );
+            selection.ClearCommand.Execute(null);
+            Assert.Contains("Steel: 100", model.NeedsText);
+            SetCarrierChecks(selector, 42);
             Assert.Contains("Steel: 75", model.NeedsText);
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);

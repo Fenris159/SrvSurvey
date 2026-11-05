@@ -479,10 +479,12 @@ public sealed partial class ColonizationShoppingPresentationTests
         public ConcurrentBag<string> MarketSources { get; } = [];
         public IReadOnlyList<ColonizationFleetCarrier> LinkedCarriers { get; init; } = [];
         public ColonizationSystemRecord? SystemRecord { get; init; }
+        public string? SystemArchitect { get; init; }
         public Dictionary<string, ColonizationSystemRecord> AdditionalSystems { get; init; } = [];
         public IReadOnlyList<ColonizationProject> ActiveProjects { get; set; } =
             ColonizationShoppingViewModelTests.Projects();
 
+        /// <summary>Routes specific architect-map responses before generic architect routes and returns isolated market-search fixtures.</summary>
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -507,6 +509,8 @@ public sealed partial class ColonizationShoppingPresentationTests
             string json = path switch
             {
                 _ when path.EndsWith("/map/architect", StringComparison.Ordinal) => SystemMapJson,
+                _ when path.EndsWith("/architect", StringComparison.Ordinal) && SystemArchitect is not null =>
+                    JsonSerializer.Serialize(SystemArchitect),
                 _ when AdditionalSystems.TryGetValue(path, out ColonizationSystemRecord? system) =>
                     JsonSerializer.Serialize(system),
                 _ when (

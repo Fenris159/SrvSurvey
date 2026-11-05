@@ -118,6 +118,7 @@ public sealed partial class ColonizationViewModel
         OnPropertyChanged(nameof(MarketSearchWorkspace));
     }
 
+    /// <summary>Updates saved commodity needs from the current project tags and checked carrier inventory.</summary>
     private void ReconcileWishList()
     {
         IReadOnlyList<ColonizationShoppingNeed> needs = ColonizationShopping.Aggregate(
@@ -138,7 +139,8 @@ public sealed partial class ColonizationViewModel
             needs = ColonizationShopping.SubtractCarrierCargo(
                 needs,
                 LinkedFleetCarriers,
-                carrierSearch.SelectedCarrierMarketId
+                carrierSearch.SelectedCarrierMarketId,
+                carrierSearch.SelectedCarrierMarketIds
             );
         }
         if (hasCurrentShoppingProjects && shoppingSession?.Search is { } search)
@@ -206,6 +208,7 @@ public sealed partial class ColonizationViewModel
     internal Func<IColonizationMarketSearch> MarketSearchFactory { get; set; } =
         static () => new ColonizationMarketSearchClient();
 
+    /// <summary>Restores a matching search and synchronizes checked carriers and selection revisions with its commander.</summary>
     internal ColonizationShoppingViewModel CreateShopping(
         IReadOnlyList<ColonizationProject> selected,
         IColonizationMarketSearch? marketSearch = null,
@@ -218,6 +221,7 @@ public sealed partial class ColonizationViewModel
         }
         string? commander = CommanderName;
         int version = shoppingSelectionVersion;
+        long ownerCarrierSelectionRevision = planningCarrierSelectionRevision;
         string[] ids = selected.Select(project => project.BuildId).ToArray();
         bool matches =
             shoppingSession is not null
@@ -237,20 +241,31 @@ public sealed partial class ColonizationViewModel
                 {
                     return;
                 }
-                var session = new ColonizationShoppingSession(ids, state);
+                var session = new ColonizationShoppingSession(
+                    ids,
+                    state with
+                    {
+                        CarrierSelectionRevision = ownerCarrierSelectionRevision,
+                    }
+                );
                 if (string.Equals(commander, CommanderName, StringComparison.OrdinalIgnoreCase))
                 {
                     shoppingSession = session;
-                    if (planningCarrierMarketId != state.SelectedCarrierMarketId)
+                    if (!CarrierSelection.Matches(state.SelectedCarrierMarketIds, state.SelectedCarrierMarketId))
                     {
-                        planningCarrierMarketId = state.SelectedCarrierMarketId;
-                        OnPropertyChanged(nameof(SelectedPlanningCarrierMarketId));
-                        OnPropertyChanged(nameof(SelectedPlanningCarrier));
-                        SavePlanningCarrier();
-                        UpdateCommodityPlan();
+                        CarrierSelection.Restore(state.SelectedCarrierMarketIds, state.SelectedCarrierMarketId);
                     }
                     ReconcileWishList();
                     OnPropertyChanged(nameof(SearchMarketsButtonText));
+                    ownerCarrierSelectionRevision = planningCarrierSelectionRevision;
+                    session = (shoppingSession ?? session) with
+                    {
+                        Search = (shoppingSession?.Search ?? state) with
+                        {
+                            CarrierSelectionRevision = ownerCarrierSelectionRevision,
+                        },
+                    };
+                    shoppingSession = session;
                 }
                 settingsStore.SaveShopping(commander, session);
             },
@@ -260,7 +275,18 @@ public sealed partial class ColonizationViewModel
             OpenWishListCommand = wishListCommand,
         };
         shoppingWorkspace = model;
-        model.UpdateCarriers(LinkedFleetCarriers, preferredCarrierMarketId ?? planningCarrierMarketId);
+        if (preferredCarrierMarketId.HasValue)
+        {
+            model.UpdateCarriers(LinkedFleetCarriers, preferredCarrierMarketId.Value);
+        }
+        else
+        {
+            model.UpdatePlanningCarriers(
+                LinkedFleetCarriers,
+                CarrierSelection.CapturePreference(),
+                planningCarrierMarketId
+            );
+        }
         model.SaveWorkspace();
         OnPropertyChanged(nameof(MarketSearchWorkspace));
         return model;
@@ -301,6 +327,7 @@ public sealed partial class ColonizationViewModel
         OnPropertyChanged(nameof(SearchMarketsButtonText));
     }
 
+    /// <summary>Preserves search state across project-tag changes and retires the obsolete workspace before reopening.</summary>
     private void SaveShoppingSelection()
     {
         ColonizationShoppingState? state = shoppingWorkspace?.CaptureState() ?? shoppingSession?.Search;
@@ -314,9 +341,12 @@ public sealed partial class ColonizationViewModel
         ReconcileWishList();
         OnPropertyChanged(nameof(SearchMarketsButtonText));
         SaveShoppingSession("The shopping selection could not be saved to disk.");
-        EnsureMarketSearchWorkspace(state?.SelectedCarrierMarketId);
+        EnsureMarketSearchWorkspace(
+            state?.SelectedCarrierMarketIds is not null ? null : state?.SelectedCarrierMarketId
+        );
     }
 
+    /// <summary>Stamps the current carrier revision into the saved search and reports recoverable storage failures.</summary>
     private void SaveShoppingSession(string failureMessage)
     {
         if (CommanderName is null || shoppingSession is null)
@@ -325,6 +355,13 @@ public sealed partial class ColonizationViewModel
         }
         try
         {
+            if (shoppingSession.Search is { } search)
+            {
+                shoppingSession = shoppingSession with
+                {
+                    Search = search with { CarrierSelectionRevision = planningCarrierSelectionRevision },
+                };
+            }
             settingsStore.SaveShopping(CommanderName, shoppingSession);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)

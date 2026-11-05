@@ -9,6 +9,14 @@ public sealed partial class ColonizationViewModel
 
     internal Task CurrentSystemPlanningTask { get; private set; } = Task.CompletedTask;
 
+    /// <summary>Retires a read started before project mutations and queues a fresh snapshot afterward.</summary>
+    private void PauseCurrentSystemPlanning()
+    {
+        bool wasReading = !CurrentSystemPlanningTask.IsCompleted;
+        CancelCurrentPlannedSystemRead(clearPending: false);
+        currentSystemPlanningPending |= wasReading;
+    }
+
     private void RefreshCurrentPlannedSystem()
     {
         CancelCurrentPlannedSystemRead();

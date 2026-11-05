@@ -189,6 +189,10 @@
       "translation": "1 Bauprojekt"
     },
     {
+      "source": "1 carrier selected",
+      "translation": "1 Anbieter ausgewählt"
+    },
+    {
       "source": "1 geological signal unidentified",
       "translation": "1 geologisches Signal nicht identifiziert"
     },
@@ -1935,6 +1939,10 @@
     {
       "source": "All Systems",
       "translation": "Alle Systeme"
+    },
+    {
+      "source": "All carriers",
+      "translation": "Alle Träger"
     },
     {
       "source": "All dates",
@@ -5153,6 +5161,18 @@
       "translation": "Der Treibstoff des Trägers wurde vom aktuellen Wegpunkt aus neu berechnet."
     },
     {
+      "source": "Carrier linking was skipped because no valid build ID was returned.",
+      "translation": "Die Carrier-Verknüpfung wurde übersprungen, da keine gültige Build-ID zurückgegeben wurde."
+    },
+    {
+      "source": "Carrier links added: {0}. Failed: {1}.",
+      "translation": "Carrier-Links hinzugefügt: {0}. Fehlgeschlagen: {1}."
+    },
+    {
+      "source": "Carrier links removed: {0}. Failed: {1}.",
+      "translation": "Entfernte Trägerverbindungen: {0}. Fehlgeschlagen: {1}."
+    },
+    {
       "source": "Carrier name or callsign",
       "translation": "Name oder Rufzeichen des Netzbetreibers"
     },
@@ -5227,6 +5247,14 @@
     {
       "source": "CarrierType",
       "translation": "CarrierType"
+    },
+    {
+      "source": "Carriers are linked after the build is created.",
+      "translation": "Träger werden nach der Erstellung des Builds verknüpft."
+    },
+    {
+      "source": "Carriers linked: {0} of {1}.",
+      "translation": "Verknüpfte Träger: {0} oder {1}."
     },
     {
       "source": "Carriers to announce",
@@ -5733,6 +5761,10 @@
       "translation": "Wählen Sie ein SrvSurvey Profil oder einen Anwendungsdatenordner zum Importieren aus."
     },
     {
+      "source": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+      "translation": "Wählen Sie einen verfügbaren Mobilfunkanbieter aus oder deaktivieren Sie die Mobilfunkanbieterverknüpfung, bevor Sie diesen Build überprüfen."
+    },
+    {
       "source": "Choose an end date",
       "translation": "Wählen Sie ein Enddatum"
     },
@@ -5779,6 +5811,10 @@
     {
       "source": "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
       "translation": "Wenn Sie die Aufnahmequelle erneut auswählen, wird die Desktop-Auswahl sofort geöffnet, auch wenn Elite nicht ausgeführt wird. Wählen Sie den Bildschirm aus, auf dem Elite ausgeführt werden soll, und klicken Sie auf „Teilen“."
+    },
+    {
+      "source": "Choose carriers",
+      "translation": "Wählen Sie Spediteure"
     },
     {
       "source": "Choose file",
@@ -5995,6 +6031,10 @@
     {
       "source": "Clear search",
       "translation": "Suche löschen"
+    },
+    {
+      "source": "Clear selection",
+      "translation": "Klare Auswahl"
     },
     {
       "source": "Clear surface trackers",
@@ -7907,6 +7947,10 @@
     {
       "source": "Created {0}. It was added to the active project list.",
       "translation": "Erstellt {0}. Es wurde zur aktiven Projektliste hinzugefügt."
+    },
+    {
+      "source": "Created {0}. Linking carriers...",
+      "translation": "Erstellt {0}. Anbieter verknüpfen..."
     },
     {
       "source": "Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -15861,6 +15905,18 @@
       "translation": "Napfschnecken"
     },
     {
+      "source": "Link 1 carrier after creation.",
+      "translation": "Verknüpfen Sie 1 Träger nach der Erstellung."
+    },
+    {
+      "source": "Link 1 carrier after this build is created.",
+      "translation": "Verknüpfen Sie 1 Träger, nachdem dieser Build erstellt wurde."
+    },
+    {
+      "source": "Link Carrier To Selected Projects",
+      "translation": "Link Carrier zu ausgewählten Projekten"
+    },
+    {
       "source": "Link Google Drive",
       "translation": "Verknüpfen Sie Google Drive"
     },
@@ -15873,12 +15929,32 @@
       "translation": "Verknüpfen Sie ein Frontier-Konto"
     },
     {
+      "source": "Link carriers to this build",
+      "translation": "Verknüpfen Sie Träger mit diesem Build"
+    },
+    {
+      "source": "Link carriers to your commander in Raven to make them available here.",
+      "translation": "Verknüpfen Sie Träger mit Ihrem Kommandanten in Raven, um sie hier verfügbar zu machen."
+    },
+    {
+      "source": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Verknüpfen Sie markierte Träger mit markierten Projekten, die den aktuellen Filtern entsprechen. Planungsprojekte werden immer übersprungen."
+    },
+    {
       "source": "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
       "translation": "Verknüpfen Sie das Konto des aktiven Kommandanten Frontier, um persönliche Informationen zu Flottenträgern und Geschwaderträgern zu laden. Verwenden Sie bei Bedarf „Aktualisieren“. Zwischengespeicherte Daten und Abklingzeiten verhindern wiederholte Anfragen."
     },
     {
       "source": "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
       "translation": "Verknüpfen Sie das Konto des vorgesehenen Kommandanten Frontier und verwenden Sie dann „Kommandant“, „Aktuelles Schiff“, „Flottenträger“, „Markt“, „Werft“ und „Community-Ziele“, um die Messwerte zu überprüfen."
+    },
+    {
+      "source": "Link {0} carriers after creation.",
+      "translation": "Verknüpfen Sie {0}-Träger nach der Erstellung."
+    },
+    {
+      "source": "Link {0} carriers after this build is created.",
+      "translation": "Verknüpfen Sie {0}-Träger, nachdem dieser Build erstellt wurde."
     },
     {
       "source": "Linked",
@@ -15903,6 +15979,10 @@
     {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Verbundene Staffelladung von RavenColonial. Kapazität und Finanzen stammen aus der letzten Aktualisierung Frontier."
+    },
+    {
+      "source": "Linking carrier to selected projects...",
+      "translation": "Träger mit ausgewählten Projekten verknüpfen..."
     },
     {
       "source": "Linux",
@@ -17937,6 +18017,10 @@
       "translation": "Mehrere SrvSurvey Instanzen"
     },
     {
+      "source": "Multiple carriers",
+      "translation": "Mehrere Träger"
+    },
+    {
       "source": "Multiple commanders",
       "translation": "Mehrere Kommandeure"
     },
@@ -18959,6 +19043,10 @@
     {
       "source": "No legacy UI preference translation was required.",
       "translation": "Es war keine Übersetzung der Legacy-Benutzeroberflächeneinstellungen erforderlich."
+    },
+    {
+      "source": "No linked carriers available.",
+      "translation": "Keine verbundenen Anbieter verfügbar."
     },
     {
       "source": "No live Guardian site detected",
@@ -21437,6 +21525,14 @@
       "translation": "Planung"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanningCarrierSelectionRevisions"
+    },
+    {
+      "source": "PlanningCarrierSelections",
+      "translation": "PlanningCarrierSelections"
+    },
+    {
       "source": "PlanningCarriers",
       "translation": "Planungsträger"
     },
@@ -22509,8 +22605,8 @@
       "translation": "Quest veröffentlichen"
     },
     {
-      "source": "Publish {0} in {1} with {2} cargo remaining?",
-      "translation": "{0} in {1} mit {2} verbleibender Ladung veröffentlichen?"
+      "source": "Publish {0} in {1} with {2} cargo remaining?{3}",
+      "translation": "Veröffentlichen Sie {0} in {1} mit verbleibender {2}-Fracht? {3}"
     },
     {
       "source": "Publish/link current carrier",
@@ -27169,6 +27265,10 @@
       "translation": "Wählen Sie ein besuchtes System aus, um dessen Details und Notizen zu überprüfen. Doppelklicken Sie auf ein aufgelistetes PNG-Foto, um es im Systembildbetrachter zu öffnen."
     },
     {
+      "source": "Select all",
+      "translation": "Alles auswählen"
+    },
+    {
       "source": "Select an announcement preset to delete.",
       "translation": "Wählen Sie eine Ansagevoreinstellung zum Löschen aus."
     },
@@ -27187,6 +27287,10 @@
     {
       "source": "Select an organism to load its reference image.",
       "translation": "Wählen Sie einen Organismus aus, um sein Referenzbild zu laden."
+    },
+    {
+      "source": "Select carriers",
+      "translation": "Wählen Sie Spediteure aus"
     },
     {
       "source": "Select deposits directly on Surface Mining > Survey map.",
@@ -34605,8 +34709,20 @@
       "translation": "Unbegrenzt"
     },
     {
+      "source": "Unlink Carrier From Selected Projects",
+      "translation": "Trennen Sie den Träger von ausgewählten Projekten"
+    },
+    {
       "source": "Unlink Frontier",
       "translation": "Verknüpfung aufheben Frontier"
+    },
+    {
+      "source": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Heben Sie die Verknüpfung aktivierter Träger mit aktivierten Projekten auf, die den aktuellen Filtern entsprechen. Planungsprojekte werden immer übersprungen."
+    },
+    {
+      "source": "Unlinking carrier from selected projects...",
+      "translation": "Verknüpfung des Netzbetreibers mit ausgewählten Projekten wird aufgehoben..."
     },
     {
       "source": "Unloaned",
@@ -40497,6 +40613,10 @@
       "translation": "{0} ROUTE-SPRINGE"
     },
     {
+      "source": "{0} Retry failed links from My build projects.",
+      "translation": "{0} Versuchen Sie fehlgeschlagene Links von „Meine Build-Projekte“ erneut."
+    },
+    {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Für die Veröffentlichung sind eine Überprüfung und Bestätigung erforderlich."
     },
@@ -40627,6 +40747,10 @@
     {
       "source": "{0} cargo is already current.",
       "translation": "{0} Ladung ist bereits aktuell."
+    },
+    {
+      "source": "{0} carriers selected",
+      "translation": "{0} Träger ausgewählt"
     },
     {
       "source": "{0} cloud backups · at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",
@@ -41837,6 +41961,10 @@
     {
       "source": "1 build project",
       "translation": "1 proyecto de construcción"
+    },
+    {
+      "source": "1 carrier selected",
+      "translation": "1 transportista seleccionado"
     },
     {
       "source": "1 geological signal unidentified",
@@ -43585,6 +43713,10 @@
     {
       "source": "All Systems",
       "translation": "Todos los sistemas"
+    },
+    {
+      "source": "All carriers",
+      "translation": "Todos los transportistas"
     },
     {
       "source": "All dates",
@@ -46803,6 +46935,18 @@
       "translation": "Combustible del portaaviones recalculado a partir del punto de ruta actual."
     },
     {
+      "source": "Carrier linking was skipped because no valid build ID was returned.",
+      "translation": "Se omitió la vinculación del operador porque no se devolvió ningún ID de compilación válido."
+    },
+    {
+      "source": "Carrier links added: {0}. Failed: {1}.",
+      "translation": "Se agregaron enlaces de operador: {0}. Error: {1}."
+    },
+    {
+      "source": "Carrier links removed: {0}. Failed: {1}.",
+      "translation": "Enlaces de operador eliminados: {0}. Error: {1}."
+    },
+    {
       "source": "Carrier name or callsign",
       "translation": "Nombre del operador o indicativo de llamada"
     },
@@ -46877,6 +47021,14 @@
     {
       "source": "CarrierType",
       "translation": "Tipo de operador"
+    },
+    {
+      "source": "Carriers are linked after the build is created.",
+      "translation": "Los transportistas se vinculan después de crear la compilación."
+    },
+    {
+      "source": "Carriers linked: {0} of {1}.",
+      "translation": "Transportistas vinculados: {0} de {1}."
     },
     {
       "source": "Carriers to announce",
@@ -47383,6 +47535,10 @@
       "translation": "Elija un perfil SrvSurvey o una carpeta de datos de aplicación para importar."
     },
     {
+      "source": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+      "translation": "Elija un operador disponible o desactive la vinculación de operadores antes de revisar esta compilación."
+    },
+    {
       "source": "Choose an end date",
       "translation": "Elige una fecha de finalización"
     },
@@ -47429,6 +47585,10 @@
     {
       "source": "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
       "translation": "Elegir fuente de captura nuevamente abre el selector de escritorio inmediatamente, incluso sin que Elite se esté ejecutando. Seleccione la pantalla donde se ejecutará Elite y haga clic en Compartir."
+    },
+    {
+      "source": "Choose carriers",
+      "translation": "Elige transportistas"
     },
     {
       "source": "Choose file",
@@ -47645,6 +47805,10 @@
     {
       "source": "Clear search",
       "translation": "Borrar búsqueda"
+    },
+    {
+      "source": "Clear selection",
+      "translation": "Borrar selección"
     },
     {
       "source": "Clear surface trackers",
@@ -49557,6 +49721,10 @@
     {
       "source": "Created {0}. It was added to the active project list.",
       "translation": "Creado {0}. Fue agregado a la lista de proyectos activos."
+    },
+    {
+      "source": "Created {0}. Linking carriers...",
+      "translation": "Creado {0}. Vinculando operadores..."
     },
     {
       "source": "Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -57511,6 +57679,18 @@
       "translation": "lapas"
     },
     {
+      "source": "Link 1 carrier after creation.",
+      "translation": "Enlace 1 transportista después de la creación."
+    },
+    {
+      "source": "Link 1 carrier after this build is created.",
+      "translation": "Vincular 1 operador después de crear esta compilación."
+    },
+    {
+      "source": "Link Carrier To Selected Projects",
+      "translation": "Enlace Carrier a proyectos seleccionados"
+    },
+    {
       "source": "Link Google Drive",
       "translation": "Vincular Google Drive"
     },
@@ -57523,12 +57703,32 @@
       "translation": "Vincular una cuenta Frontier"
     },
     {
+      "source": "Link carriers to this build",
+      "translation": "Vincular operadores a esta compilación"
+    },
+    {
+      "source": "Link carriers to your commander in Raven to make them available here.",
+      "translation": "Vincula los portaaviones con tu comandante en Raven para que estén disponibles aquí."
+    },
+    {
+      "source": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Vincular transportistas marcados a Mostrar proyectos marcados que coincidan con los filtros actuales. Los proyectos de planificación siempre se omiten."
+    },
+    {
       "source": "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
       "translation": "Vincula la cuenta del comandante activo Frontier para cargar información personal de Fleet Carrier y Squadron Carrier. Utilice Actualizar cuando sea necesario; los datos almacenados en caché y los tiempos de reutilización evitan solicitudes repetidas."
     },
     {
       "source": "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
       "translation": "Vincula la cuenta del Comandante deseado Frontier, luego usa Comandante, Barco actual, Transportista de flota, Mercado, Astillero y Objetivos de la comunidad para inspeccionar sus lecturas."
+    },
+    {
+      "source": "Link {0} carriers after creation.",
+      "translation": "Vincular transportistas {0} después de la creación."
+    },
+    {
+      "source": "Link {0} carriers after this build is created.",
+      "translation": "Vincule los operadores {0} después de crear esta compilación."
     },
     {
       "source": "Linked",
@@ -57553,6 +57753,10 @@
     {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Carga del escuadrón vinculado de RavenColonial. La capacidad y las finanzas provienen de la última actualización Frontier."
+    },
+    {
+      "source": "Linking carrier to selected projects...",
+      "translation": "Vinculando transportista a proyectos seleccionados..."
     },
     {
       "source": "Linux",
@@ -59587,6 +59791,10 @@
       "translation": "Múltiples SrvSurvey instancias"
     },
     {
+      "source": "Multiple carriers",
+      "translation": "Múltiples transportistas"
+    },
+    {
       "source": "Multiple commanders",
       "translation": "Múltiples comandantes"
     },
@@ -60609,6 +60817,10 @@
     {
       "source": "No legacy UI preference translation was required.",
       "translation": "No se requirió ninguna traducción de preferencias de UI heredadas."
+    },
+    {
+      "source": "No linked carriers available.",
+      "translation": "No hay operadores vinculados disponibles."
     },
     {
       "source": "No live Guardian site detected",
@@ -63087,6 +63299,14 @@
       "translation": "Planificación"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanificaciónTransportistaSelecciónRevisiones"
+    },
+    {
+      "source": "PlanningCarrierSelections",
+      "translation": "PlanificaciónSelecciones de transportista"
+    },
+    {
       "source": "PlanningCarriers",
       "translation": "PlanificaciónTransportistas"
     },
@@ -64159,8 +64379,8 @@
       "translation": "Publicar misión"
     },
     {
-      "source": "Publish {0} in {1} with {2} cargo remaining?",
-      "translation": "¿Publicar {0} en {1} con {2} carga restante?"
+      "source": "Publish {0} in {1} with {2} cargo remaining?{3}",
+      "translation": "¿Publicar {0} en {1} con carga restante de {2}?{3}"
     },
     {
       "source": "Publish/link current carrier",
@@ -68819,6 +69039,10 @@
       "translation": "Seleccione un sistema visitado para inspeccionar sus detalles y notas. Haga doble clic en una fotografía PNG listada para abrirla en el visor de imágenes del sistema."
     },
     {
+      "source": "Select all",
+      "translation": "Seleccionar todo"
+    },
+    {
       "source": "Select an announcement preset to delete.",
       "translation": "Seleccione un anuncio preestablecido para eliminar."
     },
@@ -68837,6 +69061,10 @@
     {
       "source": "Select an organism to load its reference image.",
       "translation": "Seleccione un organismo para cargar su imagen de referencia."
+    },
+    {
+      "source": "Select carriers",
+      "translation": "Seleccionar transportistas"
     },
     {
       "source": "Select deposits directly on Surface Mining > Survey map.",
@@ -76255,8 +76483,20 @@
       "translation": "Ilimitado"
     },
     {
+      "source": "Unlink Carrier From Selected Projects",
+      "translation": "Desvincular transportista de proyectos seleccionados"
+    },
+    {
       "source": "Unlink Frontier",
       "translation": "Desvincular Frontier"
+    },
+    {
+      "source": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Desvincular los transportistas marcados de los proyectos Mostrar marcados que coincidan con los filtros actuales. Los proyectos de planificación siempre se omiten."
+    },
+    {
+      "source": "Unlinking carrier from selected projects...",
+      "translation": "Desvinculando operador de proyectos seleccionados..."
     },
     {
       "source": "Unloaned",
@@ -82147,6 +82387,10 @@
       "translation": "{0} SALTOS DE RUTA"
     },
     {
+      "source": "{0} Retry failed links from My build projects.",
+      "translation": "{0} Reintentar enlaces fallidos desde Mis proyectos de compilación."
+    },
+    {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Se requiere revisión y confirmación para publicar."
     },
@@ -82277,6 +82521,10 @@
     {
       "source": "{0} cargo is already current.",
       "translation": "{0} la carga ya está vigente."
+    },
+    {
+      "source": "{0} carriers selected",
+      "translation": "Transportistas {0} seleccionados"
     },
     {
       "source": "{0} cloud backups · at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",
@@ -83487,6 +83735,10 @@
     {
       "source": "1 build project",
       "translation": "1 projet de construction"
+    },
+    {
+      "source": "1 carrier selected",
+      "translation": "1 transporteur sélectionné"
     },
     {
       "source": "1 geological signal unidentified",
@@ -85235,6 +85487,10 @@
     {
       "source": "All Systems",
       "translation": "Tous les systèmes"
+    },
+    {
+      "source": "All carriers",
+      "translation": "Tous les transporteurs"
     },
     {
       "source": "All dates",
@@ -88453,6 +88709,18 @@
       "translation": "Carburant du transporteur recalculé à partir du waypoint actuel."
     },
     {
+      "source": "Carrier linking was skipped because no valid build ID was returned.",
+      "translation": "La liaison avec l'opérateur a été ignorée car aucun ID de build valide n'a été renvoyé."
+    },
+    {
+      "source": "Carrier links added: {0}. Failed: {1}.",
+      "translation": "Liens de transporteur ajoutés : {0}. Échec : {1}."
+    },
+    {
+      "source": "Carrier links removed: {0}. Failed: {1}.",
+      "translation": "Liens d'opérateur supprimés : {0}. Échec : {1}."
+    },
+    {
       "source": "Carrier name or callsign",
       "translation": "Nom de l'opérateur ou indicatif d'appel"
     },
@@ -88527,6 +88795,14 @@
     {
       "source": "CarrierType",
       "translation": "Type de transporteur"
+    },
+    {
+      "source": "Carriers are linked after the build is created.",
+      "translation": "Les transporteurs sont liés après la création de la build."
+    },
+    {
+      "source": "Carriers linked: {0} of {1}.",
+      "translation": "Transporteurs liés : {0} ou {1}."
     },
     {
       "source": "Carriers to announce",
@@ -89033,6 +89309,10 @@
       "translation": "Choisissez un profil SrvSurvey ou un dossier de données d'application à importer."
     },
     {
+      "source": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+      "translation": "Choisissez un opérateur disponible ou désactivez la liaison entre opérateurs avant d'examiner cette version."
+    },
+    {
       "source": "Choose an end date",
       "translation": "Choisissez une date de fin"
     },
@@ -89079,6 +89359,10 @@
     {
       "source": "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
       "translation": "Choisir à nouveau la source de capture ouvre immédiatement le sélecteur de bureau, même sans l'exécution d'Elite. Sélectionnez l'écran sur lequel Elite s'exécutera et cliquez sur Partager."
+    },
+    {
+      "source": "Choose carriers",
+      "translation": "Choisissez les transporteurs"
     },
     {
       "source": "Choose file",
@@ -89295,6 +89579,10 @@
     {
       "source": "Clear search",
       "translation": "Effacer la recherche"
+    },
+    {
+      "source": "Clear selection",
+      "translation": "Effacer la sélection"
     },
     {
       "source": "Clear surface trackers",
@@ -91207,6 +91495,10 @@
     {
       "source": "Created {0}. It was added to the active project list.",
       "translation": "Créé {0}. Il a été ajouté à la liste des projets actifs."
+    },
+    {
+      "source": "Created {0}. Linking carriers...",
+      "translation": "Créé {0}. Relier les transporteurs..."
     },
     {
       "source": "Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -99161,6 +99453,18 @@
       "translation": "Patelles"
     },
     {
+      "source": "Link 1 carrier after creation.",
+      "translation": "Lier 1 transporteur après création."
+    },
+    {
+      "source": "Link 1 carrier after this build is created.",
+      "translation": "Lier 1 transporteur après la création de cette version."
+    },
+    {
+      "source": "Link Carrier To Selected Projects",
+      "translation": "Lier le transporteur aux projets sélectionnés"
+    },
+    {
       "source": "Link Google Drive",
       "translation": "Associer Google Drive"
     },
@@ -99173,12 +99477,32 @@
       "translation": "Associer un compte Frontier"
     },
     {
+      "source": "Link carriers to this build",
+      "translation": "Lier les opérateurs à cette version"
+    },
+    {
+      "source": "Link carriers to your commander in Raven to make them available here.",
+      "translation": "Liez les transporteurs à votre commandant dans Raven pour les rendre disponibles ici."
+    },
+    {
+      "source": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Liez les transporteurs cochés aux projets cochés Afficher correspondant aux filtres actuels. Les projets de planification sont toujours ignorés."
+    },
+    {
       "source": "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
       "translation": "Liez le compte du commandant actif Frontier pour charger les informations personnelles sur le Fleet Carrier et le Squadron Carrier. Utilisez Actualiser si nécessaire ; les données mises en cache et les temps de recharge empêchent les demandes répétées."
     },
     {
       "source": "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
       "translation": "Liez le compte du commandant prévu Frontier, puis utilisez les objectifs du commandant, du navire actuel, du transporteur de flotte, du marché, du chantier naval et de la communauté pour inspecter ses lectures."
+    },
+    {
+      "source": "Link {0} carriers after creation.",
+      "translation": "Liez les transporteurs {0} après la création."
+    },
+    {
+      "source": "Link {0} carriers after this build is created.",
+      "translation": "Liez les transporteurs {0} après la création de cette version."
     },
     {
       "source": "Linked",
@@ -99203,6 +99527,10 @@
     {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Cargaison d'escadron liée de RavenColonial. La capacité et les finances proviennent de la dernière actualisation Frontier."
+    },
+    {
+      "source": "Linking carrier to selected projects...",
+      "translation": "Relier l'opérateur aux projets sélectionnés..."
     },
     {
       "source": "Linux",
@@ -101237,6 +101565,10 @@
       "translation": "Plusieurs SrvSurvey instances"
     },
     {
+      "source": "Multiple carriers",
+      "translation": "Plusieurs transporteurs"
+    },
+    {
       "source": "Multiple commanders",
       "translation": "Plusieurs commandants"
     },
@@ -102259,6 +102591,10 @@
     {
       "source": "No legacy UI preference translation was required.",
       "translation": "Aucune traduction des préférences d’interface utilisateur héritées n’était requise."
+    },
+    {
+      "source": "No linked carriers available.",
+      "translation": "Aucun opérateur lié disponible."
     },
     {
       "source": "No live Guardian site detected",
@@ -104737,6 +105073,14 @@
       "translation": "Planification"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanningCarrierSelectionRévisions"
+    },
+    {
+      "source": "PlanningCarrierSelections",
+      "translation": "PlanificationCarrierSelections"
+    },
+    {
       "source": "PlanningCarriers",
       "translation": "PlanificationCarriers"
     },
@@ -105809,8 +106153,8 @@
       "translation": "Publier la quête"
     },
     {
-      "source": "Publish {0} in {1} with {2} cargo remaining?",
-      "translation": "Publier {0} dans {1} avec {2} cargaison restante ?"
+      "source": "Publish {0} in {1} with {2} cargo remaining?{3}",
+      "translation": "Publier {0} dans {1} avec la cargaison {2} restante ? {3}"
     },
     {
       "source": "Publish/link current carrier",
@@ -110469,6 +110813,10 @@
       "translation": "Sélectionnez un système visité pour inspecter ses détails et ses notes. Double-cliquez sur une photographie PNG répertoriée pour l'ouvrir dans la visionneuse d'images système."
     },
     {
+      "source": "Select all",
+      "translation": "Tout sélectionner"
+    },
+    {
       "source": "Select an announcement preset to delete.",
       "translation": "Sélectionnez un préréglage d'annonce à supprimer."
     },
@@ -110487,6 +110835,10 @@
     {
       "source": "Select an organism to load its reference image.",
       "translation": "Sélectionnez un organisme pour charger son image de référence."
+    },
+    {
+      "source": "Select carriers",
+      "translation": "Sélectionnez les transporteurs"
     },
     {
       "source": "Select deposits directly on Surface Mining > Survey map.",
@@ -117905,8 +118257,20 @@
       "translation": "Illimité"
     },
     {
+      "source": "Unlink Carrier From Selected Projects",
+      "translation": "Dissocier le transporteur des projets sélectionnés"
+    },
+    {
       "source": "Unlink Frontier",
       "translation": "Dissocier Frontier"
+    },
+    {
+      "source": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Dissocier les transporteurs cochés des projets cochés Afficher correspondant aux filtres actuels. Les projets de planification sont toujours ignorés."
+    },
+    {
+      "source": "Unlinking carrier from selected projects...",
+      "translation": "Dissociation de l'opérateur des projets sélectionnés..."
     },
     {
       "source": "Unloaned",
@@ -123797,6 +124161,10 @@
       "translation": "{0} SAUTS D'ITINÉRAIRE"
     },
     {
+      "source": "{0} Retry failed links from My build projects.",
+      "translation": "{0} Réessayez les liens ayant échoué à partir de Mes projets de build."
+    },
+    {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Un examen et une confirmation sont nécessaires pour la publication."
     },
@@ -123927,6 +124295,10 @@
     {
       "source": "{0} cargo is already current.",
       "translation": "La cargaison {0} est déjà à jour."
+    },
+    {
+      "source": "{0} carriers selected",
+      "translation": "Transporteurs {0} sélectionnés"
     },
     {
       "source": "{0} cloud backups · at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",
@@ -125137,6 +125509,10 @@
     {
       "source": "1 build project",
       "translation": "1 projeto de construção"
+    },
+    {
+      "source": "1 carrier selected",
+      "translation": "1 operadora selecionada"
     },
     {
       "source": "1 geological signal unidentified",
@@ -126885,6 +127261,10 @@
     {
       "source": "All Systems",
       "translation": "Todos os sistemas"
+    },
+    {
+      "source": "All carriers",
+      "translation": "Todas as operadoras"
     },
     {
       "source": "All dates",
@@ -130103,6 +130483,18 @@
       "translation": "Combustível do transportador recalculado a partir do waypoint atual."
     },
     {
+      "source": "Carrier linking was skipped because no valid build ID was returned.",
+      "translation": "A vinculação da operadora foi ignorada porque nenhum ID de build válido foi retornado."
+    },
+    {
+      "source": "Carrier links added: {0}. Failed: {1}.",
+      "translation": "Links de operadora adicionados: {0}. Falha: {1}."
+    },
+    {
+      "source": "Carrier links removed: {0}. Failed: {1}.",
+      "translation": "Links da operadora removidos: {0}. Falha: {1}."
+    },
+    {
       "source": "Carrier name or callsign",
       "translation": "Nome da operadora ou indicativo"
     },
@@ -130177,6 +130569,14 @@
     {
       "source": "CarrierType",
       "translation": "Tipo de operadora"
+    },
+    {
+      "source": "Carriers are linked after the build is created.",
+      "translation": "As operadoras são vinculadas após a criação da compilação."
+    },
+    {
+      "source": "Carriers linked: {0} of {1}.",
+      "translation": "Operadoras vinculadas: {0} de {1}."
     },
     {
       "source": "Carriers to announce",
@@ -130683,6 +131083,10 @@
       "translation": "Escolha um perfil SrvSurvey ou uma pasta de dados do aplicativo para importar."
     },
     {
+      "source": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+      "translation": "Escolha uma operadora disponível ou desative a vinculação da operadora antes de revisar esta versão."
+    },
+    {
       "source": "Choose an end date",
       "translation": "Escolha uma data de término"
     },
@@ -130729,6 +131133,10 @@
     {
       "source": "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
       "translation": "Escolher a fonte de captura novamente abre o seletor de desktop imediatamente, mesmo sem o Elite em execução. Selecione a tela onde o Elite será executado e clique em Compartilhar."
+    },
+    {
+      "source": "Choose carriers",
+      "translation": "Escolha operadoras"
     },
     {
       "source": "Choose file",
@@ -130945,6 +131353,10 @@
     {
       "source": "Clear search",
       "translation": "Limpar pesquisa"
+    },
+    {
+      "source": "Clear selection",
+      "translation": "Limpar seleção"
     },
     {
       "source": "Clear surface trackers",
@@ -132857,6 +133269,10 @@
     {
       "source": "Created {0}. It was added to the active project list.",
       "translation": "Criado {0}. Foi adicionado à lista de projetos ativos."
+    },
+    {
+      "source": "Created {0}. Linking carriers...",
+      "translation": "{0} criado. Vinculando operadoras..."
     },
     {
       "source": "Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -140811,6 +141227,18 @@
       "translation": "Lapas"
     },
     {
+      "source": "Link 1 carrier after creation.",
+      "translation": "Link 1 operadora após criação."
+    },
+    {
+      "source": "Link 1 carrier after this build is created.",
+      "translation": "Transportadora do link 1 após a criação desta compilação."
+    },
+    {
+      "source": "Link Carrier To Selected Projects",
+      "translation": "Vincule a operadora aos projetos selecionados"
+    },
+    {
       "source": "Link Google Drive",
       "translation": "Vincular o Google Drive"
     },
@@ -140823,12 +141251,32 @@
       "translation": "Vincular uma conta Frontier"
     },
     {
+      "source": "Link carriers to this build",
+      "translation": "Vincular operadoras a esta versão"
+    },
+    {
+      "source": "Link carriers to your commander in Raven to make them available here.",
+      "translation": "Vincule transportadores ao seu comandante em Raven para disponibilizá-los aqui."
+    },
+    {
+      "source": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Vincule as operadoras verificadas aos projetos de exibição marcados que correspondem aos filtros atuais. Os projetos de planejamento são sempre ignorados."
+    },
+    {
       "source": "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
       "translation": "Vincule a conta do Comandante ativo Frontier para carregar informações pessoais do Transportador de Frota e do Transportador de Esquadrão. Use Atualizar quando necessário; dados armazenados em cache e resfriamento evitam solicitações repetidas."
     },
     {
       "source": "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
       "translation": "Vincule a conta do Comandante pretendido Frontier e use Comandante, Navio Atual, Transportador de Frota, Mercado, Estaleiro e Metas da Comunidade para inspecionar suas leituras."
+    },
+    {
+      "source": "Link {0} carriers after creation.",
+      "translation": "Vincule as operadoras {0} após a criação."
+    },
+    {
+      "source": "Link {0} carriers after this build is created.",
+      "translation": "Vincule as operadoras {0} após a criação desta compilação."
     },
     {
       "source": "Linked",
@@ -140853,6 +141301,10 @@
     {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Carga do esquadrão vinculado da RavenColonial. A capacidade e as finanças são da última atualização Frontier."
+    },
+    {
+      "source": "Linking carrier to selected projects...",
+      "translation": "Vinculando operadora a projetos selecionados..."
     },
     {
       "source": "Linux",
@@ -142887,6 +143339,10 @@
       "translation": "Várias instâncias SrvSurvey"
     },
     {
+      "source": "Multiple carriers",
+      "translation": "Múltiplas operadoras"
+    },
+    {
       "source": "Multiple commanders",
       "translation": "Vários comandantes"
     },
@@ -143909,6 +144365,10 @@
     {
       "source": "No legacy UI preference translation was required.",
       "translation": "Nenhuma tradução de preferências de UI herdada foi necessária."
+    },
+    {
+      "source": "No linked carriers available.",
+      "translation": "Nenhuma operadora vinculada disponível."
     },
     {
       "source": "No live Guardian site detected",
@@ -146387,6 +146847,14 @@
       "translation": "Planejamento"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanningCarrierSelectionRevisões"
+    },
+    {
+      "source": "PlanningCarrierSelections",
+      "translation": "PlanejamentoCarrierSelections"
+    },
+    {
       "source": "PlanningCarriers",
       "translation": "Planejando Transportadoras"
     },
@@ -147459,8 +147927,8 @@
       "translation": "Publicar missão"
     },
     {
-      "source": "Publish {0} in {1} with {2} cargo remaining?",
-      "translation": "Publicar {0} em {1} com {2} carga restante?"
+      "source": "Publish {0} in {1} with {2} cargo remaining?{3}",
+      "translation": "Publicar {0} em {1} com carga {2} restante?{3}"
     },
     {
       "source": "Publish/link current carrier",
@@ -152119,6 +152587,10 @@
       "translation": "Selecione um sistema visitado para inspecionar seus detalhes e notas. Clique duas vezes em uma fotografia PNG listada para abri-la no visualizador de imagens do sistema."
     },
     {
+      "source": "Select all",
+      "translation": "Selecionar tudo"
+    },
+    {
       "source": "Select an announcement preset to delete.",
       "translation": "Selecione uma predefinição de anúncio para excluir."
     },
@@ -152137,6 +152609,10 @@
     {
       "source": "Select an organism to load its reference image.",
       "translation": "Selecione um organismo para carregar sua imagem de referência."
+    },
+    {
+      "source": "Select carriers",
+      "translation": "Selecione as operadoras"
     },
     {
       "source": "Select deposits directly on Surface Mining > Survey map.",
@@ -159555,8 +160031,20 @@
       "translation": "Ilimitado"
     },
     {
+      "source": "Unlink Carrier From Selected Projects",
+      "translation": "Desvincular operadora dos projetos selecionados"
+    },
+    {
       "source": "Unlink Frontier",
       "translation": "Desvincular Frontier"
+    },
+    {
+      "source": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Desvincular operadoras verificadas de projetos Mostrar marcados que correspondam aos filtros atuais. Os projetos de planejamento são sempre ignorados."
+    },
+    {
+      "source": "Unlinking carrier from selected projects...",
+      "translation": "Desvinculando transportadora dos projetos selecionados..."
     },
     {
       "source": "Unloaned",
@@ -165447,6 +165935,10 @@
       "translation": "{0} SALTOS DE ROTA"
     },
     {
+      "source": "{0} Retry failed links from My build projects.",
+      "translation": "{0} Tente novamente links com falha de Meus projetos de construção."
+    },
+    {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Revisão e confirmação são necessárias para publicar."
     },
@@ -165577,6 +166069,10 @@
     {
       "source": "{0} cargo is already current.",
       "translation": "{0} carga já está atual."
+    },
+    {
+      "source": "{0} carriers selected",
+      "translation": "Operadoras {0} selecionadas"
     },
     {
       "source": "{0} cloud backups · at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",
@@ -166787,6 +167283,10 @@
     {
       "source": "1 build project",
       "translation": "1 строительный проект"
+    },
+    {
+      "source": "1 carrier selected",
+      "translation": "Выбран 1 оператор связи"
     },
     {
       "source": "1 geological signal unidentified",
@@ -168535,6 +169035,10 @@
     {
       "source": "All Systems",
       "translation": "Все системы"
+    },
+    {
+      "source": "All carriers",
+      "translation": "Все операторы связи"
     },
     {
       "source": "All dates",
@@ -171753,6 +172257,18 @@
       "translation": "Топливо носителя пересчитано с текущей точки маршрута."
     },
     {
+      "source": "Carrier linking was skipped because no valid build ID was returned.",
+      "translation": "Привязка оператора связи была пропущена, поскольку не был возвращен действительный идентификатор сборки."
+    },
+    {
+      "source": "Carrier links added: {0}. Failed: {1}.",
+      "translation": "Добавлены ссылки на операторов связи: {0}. Ошибка: {1}."
+    },
+    {
+      "source": "Carrier links removed: {0}. Failed: {1}.",
+      "translation": "Удалены ссылки на операторов связи: {0}. Ошибка: {1}."
+    },
+    {
       "source": "Carrier name or callsign",
       "translation": "Имя оператора связи или позывной"
     },
@@ -171827,6 +172343,14 @@
     {
       "source": "CarrierType",
       "translation": "Тип оператора связи"
+    },
+    {
+      "source": "Carriers are linked after the build is created.",
+      "translation": "Носители связываются после создания сборки."
+    },
+    {
+      "source": "Carriers linked: {0} of {1}.",
+      "translation": "Связанные операторы связи: {0} или {1}."
     },
     {
       "source": "Carriers to announce",
@@ -172333,6 +172857,10 @@
       "translation": "Выберите профиль SrvSurvey или папку данных приложения для импорта."
     },
     {
+      "source": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+      "translation": "Прежде чем просматривать эту сборку, выберите доступного оператора связи или отключите привязку оператора связи."
+    },
+    {
       "source": "Choose an end date",
       "translation": "Выберите дату окончания"
     },
@@ -172379,6 +172907,10 @@
     {
       "source": "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
       "translation": "При повторном выборе источника захвата окно выбора рабочего стола сразу открывается, даже если Elite не запущена. Выберите дисплей, на котором будет работать Elite, и нажмите «Поделиться»."
+    },
+    {
+      "source": "Choose carriers",
+      "translation": "Выберите перевозчиков"
     },
     {
       "source": "Choose file",
@@ -172595,6 +173127,10 @@
     {
       "source": "Clear search",
       "translation": "Очистить поиск"
+    },
+    {
+      "source": "Clear selection",
+      "translation": "Очистить выбор"
     },
     {
       "source": "Clear surface trackers",
@@ -174507,6 +175043,10 @@
     {
       "source": "Created {0}. It was added to the active project list.",
       "translation": "Создано {0}. Он был добавлен в список активных проектов."
+    },
+    {
+      "source": "Created {0}. Linking carriers...",
+      "translation": "Проект {0} создан. Привязываем авианосцы..."
     },
     {
       "source": "Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -182461,6 +183001,18 @@
       "translation": "Блюдечки"
     },
     {
+      "source": "Link 1 carrier after creation.",
+      "translation": "Привязать 1 авианосец после создания."
+    },
+    {
+      "source": "Link 1 carrier after this build is created.",
+      "translation": "Привязать 1 авианосец после создания этого проекта."
+    },
+    {
+      "source": "Link Carrier To Selected Projects",
+      "translation": "Связать перевозчика с выбранными проектами"
+    },
+    {
       "source": "Link Google Drive",
       "translation": "Привязать Google Диск"
     },
@@ -182473,12 +183025,32 @@
       "translation": "Привяжите аккаунт Frontier"
     },
     {
+      "source": "Link carriers to this build",
+      "translation": "Привяжите операторов связи к этой сборке"
+    },
+    {
+      "source": "Link carriers to your commander in Raven to make them available here.",
+      "translation": "Свяжите авианосцы со своим командиром в Raven, чтобы сделать их доступными здесь."
+    },
+    {
+      "source": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Свяжите отмеченных операторов связи с отмеченными. Показать проекты, соответствующие текущим фильтрам. Проекты планирования всегда пропускаются."
+    },
+    {
       "source": "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
       "translation": "Свяжите учетную запись активного командира Frontier, чтобы загрузить личную информацию о авианосце флота и авианосце эскадрильи. Используйте «Обновить», когда это необходимо; кэшированные данные и время восстановления предотвращают повторные запросы."
     },
     {
       "source": "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
       "translation": "Свяжите учетную запись предполагаемого командира Frontier, затем используйте «Командир», «Текущий корабль», «Перевозчик флота», «Рынок», «Верфь» и «Цели сообщества», чтобы просмотреть его показания."
+    },
+    {
+      "source": "Link {0} carriers after creation.",
+      "translation": "Привязать авианосцы ({0}) после создания."
+    },
+    {
+      "source": "Link {0} carriers after this build is created.",
+      "translation": "Привязать авианосцы ({0}) после создания этого проекта."
     },
     {
       "source": "Linked",
@@ -182503,6 +183075,10 @@
     {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "Связанный эскадрильный груз от RavenColonial. Емкость и финансы взяты из последнего Frontier обновления."
+    },
+    {
+      "source": "Linking carrier to selected projects...",
+      "translation": "Связывание оператора связи с выбранными проектами..."
     },
     {
       "source": "Linux",
@@ -184537,6 +185113,10 @@
       "translation": "Несколько экземпляров SrvSurvey"
     },
     {
+      "source": "Multiple carriers",
+      "translation": "Несколько операторов связи"
+    },
+    {
       "source": "Multiple commanders",
       "translation": "Несколько командиров"
     },
@@ -185559,6 +186139,10 @@
     {
       "source": "No legacy UI preference translation was required.",
       "translation": "Перевод предпочтений устаревшего пользовательского интерфейса не требовался."
+    },
+    {
+      "source": "No linked carriers available.",
+      "translation": "Нет доступных связанных операторов связи."
     },
     {
       "source": "No live Guardian site detected",
@@ -188037,6 +188621,14 @@
       "translation": "Планирование"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "ПланированиеВыборперевозчикаРевизии"
+    },
+    {
+      "source": "PlanningCarrierSelections",
+      "translation": "ПланированиеВыбор перевозчика"
+    },
+    {
       "source": "PlanningCarriers",
       "translation": "ПланированиеПеревозчики"
     },
@@ -189109,8 +189701,8 @@
       "translation": "Опубликовать квест"
     },
     {
-      "source": "Publish {0} in {1} with {2} cargo remaining?",
-      "translation": "Опубликовать {0} в {1} с оставшимся грузом {2}?"
+      "source": "Publish {0} in {1} with {2} cargo remaining?{3}",
+      "translation": "Опубликовать {0} в {1} с оставшимся грузом {2}? {3}"
     },
     {
       "source": "Publish/link current carrier",
@@ -193769,6 +194361,10 @@
       "translation": "Выберите посещенную систему, чтобы просмотреть ее детали и примечания. Дважды щелкните фотографию PNG из списка, чтобы открыть ее в средстве просмотра изображений системы."
     },
     {
+      "source": "Select all",
+      "translation": "Выбрать все"
+    },
+    {
       "source": "Select an announcement preset to delete.",
       "translation": "Выберите набор настроек объявлений, который нужно удалить."
     },
@@ -193787,6 +194383,10 @@
     {
       "source": "Select an organism to load its reference image.",
       "translation": "Выберите организм, чтобы загрузить его эталонное изображение."
+    },
+    {
+      "source": "Select carriers",
+      "translation": "Выберите операторов связи"
     },
     {
       "source": "Select deposits directly on Surface Mining > Survey map.",
@@ -201205,8 +201805,20 @@
       "translation": "Безлимитный"
     },
     {
+      "source": "Unlink Carrier From Selected Projects",
+      "translation": "Отключить оператора связи от выбранных проектов"
+    },
+    {
       "source": "Unlink Frontier",
       "translation": "Отсоединить Frontier"
+    },
+    {
+      "source": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "Отсоединить отмеченных операторов от отмеченных. Показать проекты, соответствующие текущим фильтрам. Проекты планирования всегда пропускаются."
+    },
+    {
+      "source": "Unlinking carrier from selected projects...",
+      "translation": "Отмена связи оператора связи с выбранными проектами..."
     },
     {
       "source": "Unloaned",
@@ -207097,6 +207709,10 @@
       "translation": "{0} ПРЫЖКИ МАРШРУТА"
     },
     {
+      "source": "{0} Retry failed links from My build projects.",
+      "translation": "{0} Повторить неудачные ссылки из моих проектов сборки."
+    },
+    {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} Для публикации требуется проверка и подтверждение."
     },
@@ -207227,6 +207843,10 @@
     {
       "source": "{0} cargo is already current.",
       "translation": "{0} груз уже текущий."
+    },
+    {
+      "source": "{0} carriers selected",
+      "translation": "Выбраны операторы связи {0}"
     },
     {
       "source": "{0} cloud backups · at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",
@@ -208437,6 +209057,10 @@
     {
       "source": "1 build project",
       "translation": "1 构建项目"
+    },
+    {
+      "source": "1 carrier selected",
+      "translation": "已选择 1 家运营商"
     },
     {
       "source": "1 geological signal unidentified",
@@ -210185,6 +210809,10 @@
     {
       "source": "All Systems",
       "translation": "所有星系"
+    },
+    {
+      "source": "All carriers",
+      "translation": "所有运营商"
     },
     {
       "source": "All dates",
@@ -213403,6 +214031,18 @@
       "translation": "从当前航路点重新计算航母燃油。"
     },
     {
+      "source": "Carrier linking was skipped because no valid build ID was returned.",
+      "translation": "由于未返回有效的版本 ID，因此跳过了运营商链接。"
+    },
+    {
+      "source": "Carrier links added: {0}. Failed: {1}.",
+      "translation": "添加运营商链接：{0}。失败：{1}。"
+    },
+    {
+      "source": "Carrier links removed: {0}. Failed: {1}.",
+      "translation": "运营商链接已删除：{0}。失败：{1}。"
+    },
+    {
       "source": "Carrier name or callsign",
       "translation": "承运人名称或呼号"
     },
@@ -213477,6 +214117,14 @@
     {
       "source": "CarrierType",
       "translation": "运营商类型"
+    },
+    {
+      "source": "Carriers are linked after the build is created.",
+      "translation": "创建构建后将链接运营商。"
+    },
+    {
+      "source": "Carriers linked: {0} of {1}.",
+      "translation": "链接的运营商：{0} 或 {1}。"
     },
     {
       "source": "Carriers to announce",
@@ -213983,6 +214631,10 @@
       "translation": "选择要导入的 SrvSurvey 配置文件或应用程序数据文件夹。"
     },
     {
+      "source": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+      "translation": "选择一个可用的运营商，或在查看此版本之前关闭运营商链接。"
+    },
+    {
       "source": "Choose an end date",
       "translation": "选择结束日期"
     },
@@ -214029,6 +214681,10 @@
     {
       "source": "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
       "translation": "再次选择捕获源，即使没有运行 Elite，也会立即打开桌面选择器。选择 Elite 将运行的显示器，然后单击共享。"
+    },
+    {
+      "source": "Choose carriers",
+      "translation": "选择运营商"
     },
     {
       "source": "Choose file",
@@ -214245,6 +214901,10 @@
     {
       "source": "Clear search",
       "translation": "清除搜索"
+    },
+    {
+      "source": "Clear selection",
+      "translation": "清除选择"
     },
     {
       "source": "Clear surface trackers",
@@ -216157,6 +216817,10 @@
     {
       "source": "Created {0}. It was added to the active project list.",
       "translation": "已创建 {0}。它已添加到活动项目列表中。"
+    },
+    {
+      "source": "Created {0}. Linking carriers...",
+      "translation": "创建了 {0}。链接运营商..."
     },
     {
       "source": "Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -224111,6 +224775,18 @@
       "translation": "帽贝"
     },
     {
+      "source": "Link 1 carrier after creation.",
+      "translation": "创建后链接1个运营商。"
+    },
+    {
+      "source": "Link 1 carrier after this build is created.",
+      "translation": "创建此版本后链接 1 运营商。"
+    },
+    {
+      "source": "Link Carrier To Selected Projects",
+      "translation": "将运营商链接到选定的项目"
+    },
+    {
       "source": "Link Google Drive",
       "translation": "链接 Google 云端硬盘"
     },
@@ -224123,12 +224799,32 @@
       "translation": "关联Frontier账户"
     },
     {
+      "source": "Link carriers to this build",
+      "translation": "将运营商链接到此版本"
+    },
+    {
+      "source": "Link carriers to your commander in Raven to make them available here.",
+      "translation": "将航母与您在 Raven 的指挥官联系起来，以便在此处使用它们。"
+    },
+    {
+      "source": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "将选中的运营商链接到选中的显示与当前过滤器匹配的项目。规划项目总是被跳过。"
+    },
+    {
       "source": "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
       "translation": "链接现役指挥官 Frontier 帐户以加载个人舰队航母和中队航母信息。需要时使用刷新；缓存数据和冷却时间可防止重复请求。"
     },
     {
       "source": "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
       "translation": "链接目标指挥官 Frontier 帐户，然后使用指挥官、当前船舶、舰队承运人、市场、造船厂和社区目标来检查其读数。"
+    },
+    {
+      "source": "Link {0} carriers after creation.",
+      "translation": "创建后链接{0}载体。"
+    },
+    {
+      "source": "Link {0} carriers after this build is created.",
+      "translation": "创建此版本后链接 {0} 运营商。"
     },
     {
       "source": "Linked",
@@ -224153,6 +224849,10 @@
     {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "来自 RavenColonial 的链接中队货物。产能和财务来自上次 Frontier 刷新。"
+    },
+    {
+      "source": "Linking carrier to selected projects...",
+      "translation": "正在将运营商链接到选定的项目..."
     },
     {
       "source": "Linux",
@@ -226187,6 +226887,10 @@
       "translation": "多个 SrvSurvey 实例"
     },
     {
+      "source": "Multiple carriers",
+      "translation": "多个运营商"
+    },
+    {
       "source": "Multiple commanders",
       "translation": "多名指挥官"
     },
@@ -227209,6 +227913,10 @@
     {
       "source": "No legacy UI preference translation was required.",
       "translation": "不需要旧版 UI 首选项翻译。"
+    },
+    {
+      "source": "No linked carriers available.",
+      "translation": "没有可用的链接运营商。"
     },
     {
       "source": "No live Guardian site detected",
@@ -229687,6 +230395,14 @@
       "translation": "规划"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "规划运营商选择修订"
+    },
+    {
+      "source": "PlanningCarrierSelections",
+      "translation": "规划运营商选择"
+    },
+    {
       "source": "PlanningCarriers",
       "translation": "规划运营商"
     },
@@ -230759,8 +231475,8 @@
       "translation": "发布任务"
     },
     {
-      "source": "Publish {0} in {1} with {2} cargo remaining?",
-      "translation": "在 {1} 中发布 {0} 并剩余 {2} 货物？"
+      "source": "Publish {0} in {1} with {2} cargo remaining?{3}",
+      "translation": "在{1}中发布{0}，剩余{2}货物？{3}"
     },
     {
       "source": "Publish/link current carrier",
@@ -235419,6 +236135,10 @@
       "translation": "选择一个访问过的系统来检查其详细信息和注释。双击列出的 PNG 照片可在系统图像查看器中将其打开。"
     },
     {
+      "source": "Select all",
+      "translation": "选择全部"
+    },
+    {
       "source": "Select an announcement preset to delete.",
       "translation": "选择要删除的公告预设。"
     },
@@ -235437,6 +236157,10 @@
     {
       "source": "Select an organism to load its reference image.",
       "translation": "选择一个生物体来加载其参考图像。"
+    },
+    {
+      "source": "Select carriers",
+      "translation": "选择运营商"
     },
     {
       "source": "Select deposits directly on Surface Mining > Survey map.",
@@ -242855,8 +243579,20 @@
       "translation": "无限"
     },
     {
+      "source": "Unlink Carrier From Selected Projects",
+      "translation": "取消运营商与选定项目的链接"
+    },
+    {
       "source": "Unlink Frontier",
       "translation": "取消链接 Frontier"
+    },
+    {
+      "source": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "取消选中的运营商与选中的与当前过滤器匹配的显示项目的链接。规划项目总是被跳过。"
+    },
+    {
+      "source": "Unlinking carrier from selected projects...",
+      "translation": "正在取消运营商与选定项目的链接..."
     },
     {
       "source": "Unloaned",
@@ -248747,6 +249483,10 @@
       "translation": "{0} 路线跳转"
     },
     {
+      "source": "{0} Retry failed links from My build projects.",
+      "translation": "{0} 重试“我的构建项目”中的失败链接。"
+    },
+    {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "{0} 需要审核和确认才能发布。"
     },
@@ -248877,6 +249617,10 @@
     {
       "source": "{0} cargo is already current.",
       "translation": "{0} 货物已经是最新的。"
+    },
+    {
+      "source": "{0} carriers selected",
+      "translation": "{0} 已选择运营商"
     },
     {
       "source": "{0} cloud backups · at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",
@@ -250087,6 +250831,10 @@
     {
       "source": "1 build project",
       "translation": "* 1 BUILD PROJECT >>>!"
+    },
+    {
+      "source": "1 carrier selected",
+      "translation": "* 1 CARRIER SELECTED >>>!"
     },
     {
       "source": "1 geological signal unidentified",
@@ -251835,6 +252583,10 @@
     {
       "source": "All Systems",
       "translation": "* ALL SYSTEMS >>>!"
+    },
+    {
+      "source": "All carriers",
+      "translation": "* ALL CARRIERS >>>!"
     },
     {
       "source": "All dates",
@@ -255053,6 +255805,18 @@
       "translation": "* CARRIER FUEL RECALCULATED FROM THE CURRENT WAYPOINT. >>>!"
     },
     {
+      "source": "Carrier linking was skipped because no valid build ID was returned.",
+      "translation": "* CARRIER LINKING WAS SKIPPED BECAUSE NO VALID BUILD ID WAS RETURNED. >>>!"
+    },
+    {
+      "source": "Carrier links added: {0}. Failed: {1}.",
+      "translation": "* CARRIER LINKS ADDED: {0}. FAILED: {1}. >>>!"
+    },
+    {
+      "source": "Carrier links removed: {0}. Failed: {1}.",
+      "translation": "* CARRIER LINKS REMOVED: {0}. FAILED: {1}. >>>!"
+    },
+    {
       "source": "Carrier name or callsign",
       "translation": "* CARRIER NAME OR CALLSIGN >>>!"
     },
@@ -255127,6 +255891,14 @@
     {
       "source": "CarrierType",
       "translation": "* CARRIERTYPE >>>!"
+    },
+    {
+      "source": "Carriers are linked after the build is created.",
+      "translation": "* CARRIERS ARE LINKED AFTER THE BUILD IS CREATED. >>>!"
+    },
+    {
+      "source": "Carriers linked: {0} of {1}.",
+      "translation": "* CARRIERS LINKED: {0} OF {1}. >>>!"
     },
     {
       "source": "Carriers to announce",
@@ -255633,6 +256405,10 @@
       "translation": "* CHOOSE AN SRVSURVEY PROFILE OR APPLICATION-DATA FOLDER TO IMPORT. >>>!"
     },
     {
+      "source": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+      "translation": "* CHOOSE AN AVAILABLE CARRIER, OR TURN OFF CARRIER LINKING BEFORE REVIEWING THIS BUILD. >>>!"
+    },
+    {
       "source": "Choose an end date",
       "translation": "* CHOOSE AN END DATE >>>!"
     },
@@ -255679,6 +256455,10 @@
     {
       "source": "Choose capture source again opens the desktop picker immediately, even without Elite running. Select the display where Elite will run and click Share.",
       "translation": "* CHOOSE CAPTURE SOURCE AGAIN OPENS THE DESKTOP PICKER IMMEDIATELY, EVEN WITHOUT ELITE RUNNING. SELECT THE DISPLAY WHERE ELITE WILL RUN AND CLICK SHARE. >>>!"
+    },
+    {
+      "source": "Choose carriers",
+      "translation": "* CHOOSE CARRIERS >>>!"
     },
     {
       "source": "Choose file",
@@ -255895,6 +256675,10 @@
     {
       "source": "Clear search",
       "translation": "* CLEAR SEARCH >>>!"
+    },
+    {
+      "source": "Clear selection",
+      "translation": "* CLEAR SELECTION >>>!"
     },
     {
       "source": "Clear surface trackers",
@@ -257807,6 +258591,10 @@
     {
       "source": "Created {0}. It was added to the active project list.",
       "translation": "* CREATED {0}. IT WAS ADDED TO THE ACTIVE PROJECT LIST. >>>!"
+    },
+    {
+      "source": "Created {0}. Linking carriers...",
+      "translation": "* CREATED {0}. LINKING CARRIERS... >>>!"
     },
     {
       "source": "Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -265761,6 +266549,18 @@
       "translation": "* LIMPETS >>>!"
     },
     {
+      "source": "Link 1 carrier after creation.",
+      "translation": "* LINK 1 CARRIER AFTER CREATION. >>>!"
+    },
+    {
+      "source": "Link 1 carrier after this build is created.",
+      "translation": "* LINK 1 CARRIER AFTER THIS BUILD IS CREATED. >>>!"
+    },
+    {
+      "source": "Link Carrier To Selected Projects",
+      "translation": "* LINK CARRIER TO SELECTED PROJECTS >>>!"
+    },
+    {
       "source": "Link Google Drive",
       "translation": "* LINK GOOGLE DRIVE >>>!"
     },
@@ -265773,12 +266573,32 @@
       "translation": "* LINK A FRONTIER ACCOUNT >>>!"
     },
     {
+      "source": "Link carriers to this build",
+      "translation": "* LINK CARRIERS TO THIS BUILD >>>!"
+    },
+    {
+      "source": "Link carriers to your commander in Raven to make them available here.",
+      "translation": "* LINK CARRIERS TO YOUR COMMANDER IN RAVEN TO MAKE THEM AVAILABLE HERE. >>>!"
+    },
+    {
+      "source": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "* LINK CHECKED CARRIERS TO CHECKED SHOW PROJECTS MATCHING THE CURRENT FILTERS. PLANNING PROJECTS ARE ALWAYS SKIPPED. >>>!"
+    },
+    {
       "source": "Link the active Commander’s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
       "translation": "* LINK THE ACTIVE COMMANDER’S FRONTIER ACCOUNT TO LOAD PERSONAL FLEET CARRIER AND SQUADRON CARRIER INFORMATION. USE REFRESH WHEN NEEDED; CACHED DATA AND COOLDOWNS PREVENT REPEATED REQUESTS. >>>!"
     },
     {
       "source": "Link the intended Commander’s Frontier account, then use Commander, Current Ship, Fleet Carrier, Market, Shipyard, and Community Goals to inspect its readouts.",
       "translation": "* LINK THE INTENDED COMMANDER’S FRONTIER ACCOUNT, THEN USE COMMANDER, CURRENT SHIP, FLEET CARRIER, MARKET, SHIPYARD, AND COMMUNITY GOALS TO INSPECT ITS READOUTS. >>>!"
+    },
+    {
+      "source": "Link {0} carriers after creation.",
+      "translation": "* LINK {0} CARRIERS AFTER CREATION. >>>!"
+    },
+    {
+      "source": "Link {0} carriers after this build is created.",
+      "translation": "* LINK {0} CARRIERS AFTER THIS BUILD IS CREATED. >>>!"
     },
     {
       "source": "Linked",
@@ -265803,6 +266623,10 @@
     {
       "source": "Linked squadron cargo from RavenColonial. Capacity and finances are from the last Frontier refresh.",
       "translation": "* LINKED SQUADRON CARGO FROM RAVENCOLONIAL. CAPACITY AND FINANCES ARE FROM THE LAST FRONTIER REFRESH. >>>!"
+    },
+    {
+      "source": "Linking carrier to selected projects...",
+      "translation": "* LINKING CARRIER TO SELECTED PROJECTS... >>>!"
     },
     {
       "source": "Linux",
@@ -267837,6 +268661,10 @@
       "translation": "* MULTIPLE SRVSURVEY INSTANCES >>>!"
     },
     {
+      "source": "Multiple carriers",
+      "translation": "* MULTIPLE CARRIERS >>>!"
+    },
+    {
       "source": "Multiple commanders",
       "translation": "* MULTIPLE COMMANDERS >>>!"
     },
@@ -268859,6 +269687,10 @@
     {
       "source": "No legacy UI preference translation was required.",
       "translation": "* NO LEGACY UI PREFERENCE TRANSLATION WAS REQUIRED. >>>!"
+    },
+    {
+      "source": "No linked carriers available.",
+      "translation": "* NO LINKED CARRIERS AVAILABLE. >>>!"
     },
     {
       "source": "No live Guardian site detected",
@@ -271337,6 +272169,14 @@
       "translation": "* PLANNING >>>!"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "* PLANNINGCARRIERSELECTIONREVISIONS >>>!"
+    },
+    {
+      "source": "PlanningCarrierSelections",
+      "translation": "* PLANNINGCARRIERSELECTIONS >>>!"
+    },
+    {
       "source": "PlanningCarriers",
       "translation": "* PLANNINGCARRIERS >>>!"
     },
@@ -272409,8 +273249,8 @@
       "translation": "* PUBLISH QUEST >>>!"
     },
     {
-      "source": "Publish {0} in {1} with {2} cargo remaining?",
-      "translation": "* PUBLISH {0} IN {1} WITH {2} CARGO REMAINING? >>>!"
+      "source": "Publish {0} in {1} with {2} cargo remaining?{3}",
+      "translation": "* PUBLISH {0} IN {1} WITH {2} CARGO REMAINING?{3} >>>!"
     },
     {
       "source": "Publish/link current carrier",
@@ -277069,6 +277909,10 @@
       "translation": "* SELECT A VISITED SYSTEM TO INSPECT ITS DETAILS AND NOTES. DOUBLE-CLICK A LISTED PNG PHOTOGRAPH TO OPEN IT IN THE SYSTEM IMAGE VIEWER. >>>!"
     },
     {
+      "source": "Select all",
+      "translation": "* SELECT ALL >>>!"
+    },
+    {
       "source": "Select an announcement preset to delete.",
       "translation": "* SELECT AN ANNOUNCEMENT PRESET TO DELETE. >>>!"
     },
@@ -277087,6 +277931,10 @@
     {
       "source": "Select an organism to load its reference image.",
       "translation": "* SELECT AN ORGANISM TO LOAD ITS REFERENCE IMAGE. >>>!"
+    },
+    {
+      "source": "Select carriers",
+      "translation": "* SELECT CARRIERS >>>!"
     },
     {
       "source": "Select deposits directly on Surface Mining > Survey map.",
@@ -284505,8 +285353,20 @@
       "translation": "* UNLIMITED >>>!"
     },
     {
+      "source": "Unlink Carrier From Selected Projects",
+      "translation": "* UNLINK CARRIER FROM SELECTED PROJECTS >>>!"
+    },
+    {
       "source": "Unlink Frontier",
       "translation": "* UNLINK FRONTIER >>>!"
+    },
+    {
+      "source": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+      "translation": "* UNLINK CHECKED CARRIERS FROM CHECKED SHOW PROJECTS MATCHING THE CURRENT FILTERS. PLANNING PROJECTS ARE ALWAYS SKIPPED. >>>!"
+    },
+    {
+      "source": "Unlinking carrier from selected projects...",
+      "translation": "* UNLINKING CARRIER FROM SELECTED PROJECTS... >>>!"
     },
     {
       "source": "Unloaned",
@@ -290397,6 +291257,10 @@
       "translation": "* {0} ROUTE JUMPS >>>!"
     },
     {
+      "source": "{0} Retry failed links from My build projects.",
+      "translation": "* {0} RETRY FAILED LINKS FROM MY BUILD PROJECTS. >>>!"
+    },
+    {
       "source": "{0} Review and confirmation are required to publish.",
       "translation": "* {0} REVIEW AND CONFIRMATION ARE REQUIRED TO PUBLISH. >>>!"
     },
@@ -290527,6 +291391,10 @@
     {
       "source": "{0} cargo is already current.",
       "translation": "* {0} CARGO IS ALREADY CURRENT. >>>!"
+    },
+    {
+      "source": "{0} carriers selected",
+      "translation": "* {0} CARRIERS SELECTED >>>!"
     },
     {
       "source": "{0} cloud backups · at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",

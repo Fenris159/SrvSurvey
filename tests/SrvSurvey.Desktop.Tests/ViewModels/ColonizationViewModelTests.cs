@@ -3130,7 +3130,7 @@ public sealed partial class ColonizationViewModelTests : IDisposable
         return result!;
     }
 
-    private sealed class StubRavenColonialClient : IRavenColonialClient, IRavenColonialPlanningSystemReader
+    private sealed partial class StubRavenColonialClient : IRavenColonialClient, IRavenColonialPlanningSystemReader
     {
         public IReadOnlyList<ColonizationSystemRecord> DiscoveredPlanningSystems { get; set; } = [];
 

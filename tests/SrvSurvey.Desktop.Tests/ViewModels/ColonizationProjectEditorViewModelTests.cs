@@ -945,7 +945,7 @@ public sealed partial class ColonizationProjectEditorViewModelTests
         );
     }
 
-    private sealed class StubRavenColonialClient : IRavenColonialClient
+    private sealed partial class StubRavenColonialClient : IRavenColonialClient
     {
         public IReadOnlyList<ColonizationSystemSite> Sites { get; set; } = [];
 
@@ -1083,6 +1083,7 @@ public sealed partial class ColonizationProjectEditorViewModelTests
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 
+        /// <summary>Records the creation payload and allows tests to hold Raven acknowledgement before returning a real build ID.</summary>
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
             CancellationToken cancellationToken = default
@@ -1090,6 +1091,11 @@ public sealed partial class ColonizationProjectEditorViewModelTests
         {
             CreateCount++;
             LastCreated = project;
+            CreationStarted?.TrySetResult();
+            if (CreationResponse is not null)
+            {
+                return CreationResponse;
+            }
             return Task.FromResult<ColonizationProject?>(
                 new ColonizationProject
                 {

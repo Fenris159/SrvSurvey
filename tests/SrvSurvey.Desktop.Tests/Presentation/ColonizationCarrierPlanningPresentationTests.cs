@@ -6,6 +6,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -166,10 +167,8 @@ public sealed partial class ColonizationShoppingPresentationTests
         try
         {
             window.Show();
-            ComboBox selector = view.FindControl<ComboBox>("PlanningCarrierSelector")!;
-            selector.SelectedItem = main.Colonization.PlanningCarrierOptions.Single(choice =>
-                choice.MarketId == selectedMarketId
-            );
+            CarrierMultiSelect selector = view.FindControl<CarrierMultiSelect>("PlanningCarrierSelector")!;
+            SetCarrierChecks(selector, selectedMarketId);
             Assert.Equal(before, Assert.Single(main.Colonization.Projects).CarrierCoverageText);
             handler.ActiveProjects =
             [
@@ -182,7 +181,10 @@ public sealed partial class ColonizationShoppingPresentationTests
             await main.Colonization.RefreshAsync();
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.Equal(selectedMarketId, main.Colonization.SelectedPlanningCarrier.MarketId);
-            Assert.Equal(selectedMarketId, Assert.IsType<ColonizationCarrierChoice>(selector.SelectedItem).MarketId);
+            Assert.Equal(
+                selectedMarketId,
+                Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).LegacyMarketId
+            );
             Assert.Equal(500, Assert.Single(main.Colonization.Projects).Project.RemainingRequired);
             Assert.Equal(after, Assert.Single(main.Colonization.Projects).CarrierCoverageText);
             Assert.Contains(view.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == after);
@@ -231,9 +233,9 @@ public sealed partial class ColonizationShoppingPresentationTests
             main.Colonization.SetCommanderProfile("F123", true, "test-key");
             await main.Colonization.SetCommanderAsync("Example Cmdr");
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
-            ComboBox selector = view.FindControl<ComboBox>("PlanningCarrierSelector")!;
+            CarrierMultiSelect selector = view.FindControl<CarrierMultiSelect>("PlanningCarrierSelector")!;
             Assert.Equal(43, main.Colonization.SelectedPlanningCarrier.MarketId);
-            Assert.Equal(43, Assert.IsType<ColonizationCarrierChoice>(selector.SelectedItem).MarketId);
+            Assert.Equal(43, Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).LegacyMarketId);
             Assert.Equal(43, store.LoadPlanningCarrier("Example Cmdr"));
             await main.Colonization.RefreshAsync();
             Assert.Equal(43, main.Colonization.SelectedPlanningCarrier.MarketId);
@@ -285,10 +287,13 @@ public sealed partial class ColonizationShoppingPresentationTests
             {
                 Assert.NotNull(frame);
             }
-            ComboBox selector = view.FindControl<ComboBox>("PlanningCarrierSelector")!;
-            Assert.Equal("ALL", Assert.IsType<ColonizationCarrierChoice>(selector.SelectedItem).Label);
-            Assert.Equal(2, selector.ItemCount);
-            selector.SelectedItem = main.Colonization.PlanningCarrierOptions[1];
+            CarrierMultiSelect selector = view.FindControl<CarrierMultiSelect>("PlanningCarrierSelector")!;
+            Assert.Equal(
+                "All carriers",
+                Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).Summary
+            );
+            Assert.Single(Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).Items);
+            SetCarrierChecks(selector, 43);
             Assert.Equal(43, main.Colonization.SelectedPlanningCarrier.MarketId);
             Assert.Equal("22.73%", main.Colonization.Projects[0].CarrierCoverageText);
             Button heading = view.FindControl<Button>("ProjectSortLoaded")!;

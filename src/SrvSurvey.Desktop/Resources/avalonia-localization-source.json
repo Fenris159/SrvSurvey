@@ -377,6 +377,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
   },
   {
+    "Text": "1 carrier selected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCarrierSelectionViewModel.cs"
+  },
+  {
     "Text": "1 geological signal unidentified",
     "IsFormat": false,
     "SourceKinds": [
@@ -3873,6 +3881,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.SystemFilter.cs"
+  },
+  {
+    "Text": "All carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCarrierSelectionViewModel.cs"
   },
   {
     "Text": "All dates",
@@ -10331,6 +10347,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Carrier linking was skipped because no valid build ID was returned.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
+    "Text": "Carrier links added: {0}. Failed: {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectCarriers.cs"
+  },
+  {
+    "Text": "Carrier links removed: {0}. Failed: {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectCarriers.cs"
+  },
+  {
     "Text": "Carrier name or callsign",
     "IsFormat": false,
     "SourceKinds": [
@@ -10481,6 +10521,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.Journal.cs"
+  },
+  {
+    "Text": "Carriers are linked after the build is created.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
+    "Text": "Carriers linked: {0} of {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
   },
   {
     "Text": "Carriers to announce",
@@ -11493,6 +11549,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Choose an available carrier, or turn off carrier linking before reviewing this build.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
     "Text": "Choose an end date",
     "IsFormat": false,
     "SourceKinds": [
@@ -11587,6 +11651,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/CarrierMultiSelect.axaml"
   },
   {
     "Text": "Choose file",
@@ -12019,6 +12091,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuidesView.axaml"
+  },
+  {
+    "Text": "Clear selection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/CarrierMultiSelect.axaml"
   },
   {
     "Text": "Clear surface trackers",
@@ -15861,6 +15941,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "Created {0}. Linking carriers...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
   },
   {
     "Text": "Creates or updates the current Mining Location Signal. Bearing must be 0\u2013359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
@@ -31829,6 +31917,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
   },
   {
+    "Text": "Link 1 carrier after creation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
+    "Text": "Link 1 carrier after this build is created.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
+    "Text": "Link Carrier To Selected Projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Link Google Drive",
     "IsFormat": false,
     "SourceKinds": [
@@ -31853,6 +31965,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Link carriers to this build",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Link carriers to your commander in Raven to make them available here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
+    "Text": "Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Link the active Commander\u2019s Frontier account to load personal Fleet Carrier and Squadron Carrier information. Use Refresh when needed; cached data and cooldowns prevent repeated requests.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31867,6 +32003,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Link {0} carriers after creation.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
+    "Text": "Link {0} carriers after this build is created.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
   },
   {
     "Text": "Linked",
@@ -31915,6 +32067,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Linking carrier to selected projects...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectCarriers.cs"
   },
   {
     "Text": "Linux",
@@ -35999,6 +36159,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml"
   },
   {
+    "Text": "Multiple carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCarrierSelectionViewModel.cs"
+  },
+  {
     "Text": "Multiple commanders",
     "IsFormat": false,
     "SourceKinds": [
@@ -38052,6 +38220,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "No linked carriers available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/CarrierMultiSelect.axaml"
   },
   {
     "Text": "No live Guardian site detected",
@@ -43019,6 +43195,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectFilters.cs"
   },
   {
+    "Text": "PlanningCarrierSelectionRevisions",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.CarrierManifest.cs"
+  },
+  {
+    "Text": "PlanningCarrierSelections",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/ColonizationSettingsStore.CarrierManifest.cs"
+  },
+  {
     "Text": "PlanningCarriers",
     "IsFormat": false,
     "SourceKinds": [
@@ -45172,7 +45364,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
   },
   {
-    "Text": "Publish {0} in {1} with {2} cargo remaining?",
+    "Text": "Publish {0} in {1} with {2} cargo remaining?{3}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -54514,6 +54706,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Select all",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/CarrierMultiSelect.axaml"
+  },
+  {
     "Text": "Select an announcement preset to delete.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54553,6 +54753,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "Select carriers",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCarrierSelectionViewModel.cs"
   },
   {
     "Text": "Select deposits directly on Surface Mining \u003E Survey map.",
@@ -69419,12 +69627,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Unlink Carrier From Selected Projects",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Unlink Frontier",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
+  },
+  {
+    "Text": "Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Unlinking carrier from selected projects...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectCarriers.cs"
   },
   {
     "Text": "Unloaned",
@@ -81211,6 +81443,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "{0} Retry failed links from My build projects.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.Carriers.cs"
+  },
+  {
     "Text": "{0} Review and confirmation are required to publish.",
     "IsFormat": true,
     "SourceKinds": [
@@ -81473,6 +81713,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
+  },
+  {
+    "Text": "{0} carriers selected",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCarrierSelectionViewModel.cs"
   },
   {
     "Text": "{0} cloud backups \u00B7 at least {1} MiB used by SrvSurvey; size unavailable for {2} backups",

@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Controls.CarrierMultiSelect"
+             x:DataType="vm:ColonizationCarrierSelectionViewModel">
+  <StackPanel Spacing="4">
+    <Button x:Name="CarrierPickerButton" Classes="secondary"
+            HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+            Padding="12,6" MinHeight="40" AutomationProperties.Name="Choose carriers">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBlock Text="{Binding Summary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+        <Path Grid.Column="1" Data="M 0,0 L 4,4 L 8,0" Width="8" Height="4"
+              Stroke="{DynamicResource RavenTextBrush}" StrokeThickness="1" VerticalAlignment="Center" />
+      </Grid>
+      <Button.Flyout>
+        <Flyout Placement="BottomEdgeAlignedLeft" FlyoutPresenterClasses="carrier-picker">
+          <StackPanel MinWidth="260" MaxWidth="420" Spacing="8">
+            <WrapPanel>
+              <Button Classes="link" Content="Select all" Command="{Binding SelectAllCommand}" Margin="0,0,18,0" />
+              <Button Classes="link" Content="Clear selection" Command="{Binding ClearCommand}" />
+            </WrapPanel>
+            <ScrollViewer MaxHeight="300" HorizontalScrollBarVisibility="Disabled">
+              <ItemsControl x:Name="CarrierCheckboxItems" ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ColonizationCarrierSelectionItem">
+                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,3" Padding="4,5">
+                      <TextBlock Text="{Binding Label}" TextWrapping="Wrap" MaxWidth="340" />
+                    </CheckBox>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+            <TextBlock Classes="muted" FontSize="12" Text="{Binding SelectionNote}" />
+            <TextBlock Classes="muted" Text="No linked carriers available." IsVisible="{Binding HasNoCarriers}" />
+          </StackPanel>
+        </Flyout>
+      </Button.Flyout>
+    </Button>
+    <TextBlock x:Name="CarrierSelectionNote" Classes="muted" FontSize="12"
+               Text="{Binding SelectionNote}" TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>

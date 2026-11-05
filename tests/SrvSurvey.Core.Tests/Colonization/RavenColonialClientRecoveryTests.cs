@@ -9,15 +9,20 @@ public sealed partial class RavenColonialClientTests
     [Fact]
     public async Task TimesOutStalledResponseBody()
     {
+        var clock = new RequestDeadlineClock();
+        var body = new FailingBodyStream(stall: true);
         using var handler = new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StreamContent(new FailingBodyStream(stall: true)),
+            Content = new StreamContent(body),
         });
         using var http = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(100) };
-        var client = new RavenColonialClient(http, new Uri("https://example.test/"));
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
-            await client.GetSystemSitesAsync("42").WaitAsync(TimeSpan.FromSeconds(2))
-        );
+        var client = new RavenColonialClient(http, new Uri("https://example.test/"), clock);
+        Task request = client.GetSystemSitesAsync("42");
+        Assert.Equal(TimeSpan.FromMilliseconds(100), clock.DueTime);
+        Assert.True(body.LastReadToken.CanBeCanceled);
+        clock.Expire();
+        Assert.True(body.LastReadToken.IsCancellationRequested);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => request);
     }
 
     /// <summary>Routes truncated response-body I/O through the recoverable HTTP failure boundary.</summary>
@@ -188,17 +193,50 @@ public sealed partial class RavenColonialClientTests
     /// <summary>Provides a response body which either waits for cancellation or fails on its first read.</summary>
     private sealed class FailingBodyStream(bool stall) : MemoryStream
     {
+        public CancellationToken LastReadToken { get; private set; }
+
         /// <summary>Simulates a stalled or truncated body at the actual asynchronous read boundary.</summary>
         public override async ValueTask<int> ReadAsync(
             Memory<byte> buffer,
             CancellationToken cancellationToken = default
         )
         {
+            LastReadToken = cancellationToken;
             if (stall)
             {
                 await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             }
             throw new IOException("Response ended prematurely.");
+        }
+    }
+
+    private sealed class RequestDeadlineClock : TimeProvider
+    {
+        private TimerCallback? callback;
+        private object? callbackState;
+        public TimeSpan? DueTime { get; private set; }
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            this.callback = callback;
+            callbackState = state;
+            DueTime = dueTime;
+            return new RequestTimer();
+        }
+
+        public void Expire() => callback!(callbackState);
+
+        private sealed class RequestTimer : ITimer
+        {
+            public bool Change(TimeSpan dueTime, TimeSpan period) =>
+                throw new NotSupportedException("This clock creates one deadline per request.");
+
+            public void Dispose()
+            {
+                // This manual clock allocates no operating-system timer.
+            }
+
+            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
         }
     }
 }

@@ -663,6 +663,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             UseCarrierDifference = UseCarrierDifference,
             HasCarrierDifferencePreference = true,
             SelectedCarrierMarketId = selectedCarrierMarketId,
+            SelectedCarrierMarketIds = CarrierSelection.CapturePreference(),
             ShowSearchCriteria = ShowSearchCriteria,
             ExcludedCommodities = Needs
                 .Where(need => !need.IsManuallySelected)
@@ -682,6 +683,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             CompletedRadius = completedRadius,
         };
 
+    /// <summary>Restores search criteria, carrier choices and wish-list state before reconciling current requirements.</summary>
     private void Restore(ColonizationShoppingState state)
     {
         appliedPurchaseIds = state.AppliedPurchaseIds;
@@ -703,7 +705,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
         useArdent = state.UseArdent;
         localMarketQuotes = state.LocalMarketQuotes;
         useCarrierDifference = state.EffectiveUseCarrierDifference;
-        selectedCarrierMarketId = state.SelectedCarrierMarketId;
+        RestoreCarrierSelection(state.SelectedCarrierMarketIds, state.SelectedCarrierMarketId);
         showSearchCriteria = state.ShowSearchCriteria;
         quotes = state.Quotes;
         SetWarnings(

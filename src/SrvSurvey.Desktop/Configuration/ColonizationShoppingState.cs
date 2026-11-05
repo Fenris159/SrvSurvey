@@ -18,6 +18,8 @@ public sealed record ColonizationShoppingState
     public bool UseCarrierDifference { get; init; } = true;
     public bool HasCarrierDifferencePreference { get; init; }
     public long SelectedCarrierMarketId { get; init; }
+    public IReadOnlyList<long>? SelectedCarrierMarketIds { get; init; }
+    public long CarrierSelectionRevision { get; init; }
     public bool ShowShortSupply { get; init; } = true;
     public bool ExcludeLocalCommodities { get; init; }
     public bool IncludeOutdatedLocalMarkets { get; init; } = true;
@@ -47,6 +49,8 @@ public sealed record ColonizationShoppingState
 
     internal bool IsValid =>
         SelectedCarrierMarketId >= 0
+        && CarrierSelectionRevision >= 0
+        && (SelectedCarrierMarketIds is null || SelectedCarrierMarketIds.All(id => id > 0))
         && ReferenceSystem is not null
         && RadiusText is not null
         && MaximumAgeText is not null
@@ -80,3 +84,9 @@ public sealed record ColonizationShoppingState
 }
 
 internal sealed record ColonizationShoppingSession(IReadOnlyList<string> ProjectIds, ColonizationShoppingState? Search);
+
+/// <summary>Retains carrier preferences independently of the disposable Market Search workspace.</summary>
+internal sealed record ColonizationCarrierSelectionState(long MarketId, IReadOnlyList<long>? MarketIds, long Revision)
+{
+    internal bool IsValid => MarketId >= 0 && Revision >= 0 && (MarketIds is null || MarketIds.All(id => id > 0));
+}
