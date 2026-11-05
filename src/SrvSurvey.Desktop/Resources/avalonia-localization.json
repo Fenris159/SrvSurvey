@@ -53,6 +53,10 @@
       "translation": "**App-Neustart erforderlich"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Warnung: Der hier genannte Architekt kann das System an diesen Kommandanten binden. Bitte überprüfen Sie, ob er korrekt ist."
     },
@@ -407,6 +411,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · KOPPELN UND STARTEN"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Auto"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -2807,6 +2815,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorisieren Sie SrvSurvey im Browser und lassen Sie zu, dass der Rückruflink geöffnet wird SrvSurvey. Kehren Sie zur App zurück und überprüfen Sie den verknüpften Commander."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -6737,6 +6749,10 @@
       "translation": "Füllung der Warenzeile (Farbe + Alpha)"
     },
     {
+      "source": "Commodity tags",
+      "translation": "Warenanhänger"
+    },
+    {
       "source": "Commodity:",
       "translation": "Ware:"
     },
@@ -8609,6 +8625,14 @@
       "translation": "Geliefert"
     },
     {
+      "source": "Delivered:",
+      "translation": "Geliefert:"
+    },
+    {
+      "source": "Delivered: {0}",
+      "translation": "Geliefert: {0}"
+    },
+    {
       "source": "Delivered: {0}/{1} t",
       "translation": "Geliefert: {0}/{1} t"
     },
@@ -8805,6 +8829,10 @@
       "translation": "Ziel"
     },
     {
+      "source": "Destination cards before scrolling",
+      "translation": "Zielkarten vor dem Scrollen"
+    },
+    {
       "source": "Destination coordinates are unavailable:",
       "translation": "Zielkoordinaten sind nicht verfügbar:"
     },
@@ -8815,6 +8843,10 @@
     {
       "source": "Destination distance is unknown",
       "translation": "Zielentfernung ist unbekannt"
+    },
+    {
+      "source": "Destination not reported",
+      "translation": "Ziel nicht gemeldet"
     },
     {
       "source": "Destination system",
@@ -9757,6 +9789,14 @@
       "translation": "Adler"
     },
     {
+      "source": "Earliest:",
+      "translation": "Früheste:"
+    },
+    {
+      "source": "Earliest: {0}",
+      "translation": "Früheste: {0}"
+    },
+    {
       "source": "Earth-like",
       "translation": "Erdähnlich"
     },
@@ -10483,6 +10523,18 @@
     {
       "source": "Estimated",
       "translation": "Geschätzte"
+    },
+    {
+      "source": "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+      "translation": "„Geschätzte Fahrten“ dividiert den verbleibenden Bedarf des Reiseziels durch die Frachtkapazität Ihres aktuellen Schiffs und rundet auf. Bordfracht wird bereits vom Bedarf abgezogen; Ein Bindestrich bedeutet, dass die Ladekapazität noch nicht gemeldet wurde."
+    },
+    {
+      "source": "Estimated Trips:",
+      "translation": "Geschätzte Fahrten:"
+    },
+    {
+      "source": "Estimated Trips: {0}",
+      "translation": "Geschätzte Fahrten: {0}"
     },
     {
       "source": "Estimated net worth",
@@ -12259,6 +12311,10 @@
     {
       "source": "FuelCapacity",
       "translation": "Kraftstoffkapazität"
+    },
+    {
+      "source": "Full commodity names",
+      "translation": "Vollständige Warennamen"
     },
     {
       "source": "Full-area completion audit",
@@ -14447,6 +14503,10 @@
     {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "In Leamae UK-D d13-890 ist Leamae der Sektor, UK-D d13 identifiziert das Boxel und 890 ist die Systemnummer innerhalb dieser Sequenz."
+    },
+    {
+      "source": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+      "translation": "Wählen Sie in den Mining-Overlay-Einstellungen „Zielkarten vor dem Scrollen“ und „Kurzbezeichnungen für Rohstoffe verwenden“ aus. Kurze Tags werden aktiviert und verwenden dieselben Farben wie die Powerplay-Mining-Suche. Die Referenz verknüpft jedes Tag mit seinem vollständigen Warennamen."
     },
     {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
@@ -18201,6 +18261,14 @@
       "translation": "Bei vertikalem Schub ist mehr Vorsicht geboten"
     },
     {
+      "source": "Need:",
+      "translation": "Brauchen:"
+    },
+    {
+      "source": "Need: {0}",
+      "translation": "Bedarf: {0}"
+    },
+    {
       "source": "Needed",
       "translation": "Benötigt"
     },
@@ -19637,8 +19705,20 @@
       "translation": "An Bord"
     },
     {
+      "source": "On board:",
+      "translation": "An Bord:"
+    },
+    {
       "source": "On board: 73/236 t",
       "translation": "An Bord: 73/236 t"
+    },
+    {
+      "source": "On board: {0}",
+      "translation": "An Bord: {0}"
+    },
+    {
+      "source": "On board: {0} t",
+      "translation": "An Bord: {0} t"
     },
     {
       "source": "On board: {0}/{1} t",
@@ -27125,6 +27205,10 @@
       "translation": "Wählen Sie Mineralien und Bergbautyp aus. Herkömmliche Ringsuchen unterstützen Kern-, Laseroberflächen-, Oberflächenablagerungen und Unteroberflächenablagerungen. Wählen Sie Planetary Mining für landbare Tagebaukörper."
     },
     {
+      "source": "Select missions below to preview their combined destination requirements.",
+      "translation": "Wählen Sie unten Missionen aus, um eine Vorschau ihrer kombinierten Zielanforderungen anzuzeigen."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Wählen Sie ein System aus oder geben Sie es ein"
     },
@@ -27771,6 +27855,10 @@
     {
       "source": "Shipyard | Outfitting | Vista",
       "translation": "Werft | Ausstattung | Vista"
+    },
+    {
+      "source": "ShipyardBuy",
+      "translation": "WerftKaufen"
     },
     {
       "source": "ShipyardSwap",
@@ -31097,6 +31185,10 @@
       "translation": "Für die Routen Link / Air Link, Steam Link, Virtual Desktop SteamVR und ALVR ist SteamVR erforderlich. Für die separate Route VDXR ist SteamVR nicht erforderlich. Direkte Meta Laufzeit-Overlays werden weiterhin nicht unterstützt."
     },
     {
+      "source": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+      "translation": "Das Overlay „Bergbaumissionen“ zeigt eine Karte pro Zielstation mit separaten Warensummen, der ausgewählten Missionsanzahl und dem frühesten verfolgten Ablauf. Verschiedene Stationen im selben System bleiben getrennt."
+    },
+    {
       "source": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
       "translation": "Der Nexus wurde erstellt, einige Details konnten jedoch nicht gespeichert werden. Korrigieren Sie die Einträge und wählen Sie „Nexus-Setup beenden“, um denselben Nexus erneut zu versuchen."
     },
@@ -32457,6 +32549,10 @@
       "translation": "Das Panel wird beim Andocken oder Öffnen aktivierter Spielpanels automatisch angezeigt. Für eine dauerhafte Anzeige schalten Sie diese Option aus und aktivieren Sie „Kolonisierungswaren“. Schalten Sie beide aus, um es verborgen zu halten. Die Verknüpfung kann es immer noch umschalten."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "Das Panel passt sich automatisch seinem Inhalt an. Positions- und Wachstumseinstellungen steuern die verankerte Expansion; Das Zielkartenlimit und das Spielansichtsfenster begrenzen seine Höhe."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "Die Nutzlast wird direkt auf https://voxstellar.com/webhooks/v1/system als Commander + Daten gepostet und mit HMAC-SHA256 signiert. SrvSurvey sendet keinen Startverlauf oder wiedergegebene Journaleinträge. Wenn Sie die Option deaktivieren, werden Einträge in der Warteschlange ungültig, deren Hochladen noch nicht begonnen hat."
     },
@@ -33649,6 +33745,10 @@
       "translation": "Um eine vorhandene Markierung zu verschieben, löschen Sie sie zunächst, fahren Sie zur neuen Position und drücken Sie erneut ihren Akkord, um sie dort zu setzen."
     },
     {
+      "source": "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+      "translation": "Um in älteren Sitzungen akzeptierte Missionen wiederherzustellen, verwenden Sie „Mining“ > „Suchen“ > „Lokale Entdeckungen/Tagebücher importieren“ > „Frühere Tagebücher importieren“. Wählen Sie die Journale aus, die die ursprüngliche Annahme und nachfolgende Missionsaktualisierungen enthalten."
+    },
+    {
       "source": "Toggle FSS information",
       "translation": "FSS-Informationen umschalten"
     },
@@ -33897,12 +33997,20 @@
       "translation": "TrackMaterialCollection"
     },
     {
+      "source": "Tracked destinations",
+      "translation": "Verfolgte Ziele"
+    },
+    {
       "source": "Tracked local projects could not be refreshed: {0}",
       "translation": "Verfolgte lokale Projekte konnten nicht aktualisiert werden: {0}"
     },
     {
       "source": "Tracked locations",
       "translation": "Verfolgte Standorte"
+    },
+    {
+      "source": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+      "translation": "Verfolgte Missionen werden nach Station und System kombiniert. Deaktivieren Sie kurze Tags, um die vollständigen Warennamen anzuzeigen."
     },
     {
       "source": "Tracker",
@@ -34825,6 +34933,10 @@
       "translation": "Verwenden Sie „Verbindung prüfen“, nachdem Sie Laufzeiten geändert oder eine Headset-Verbindung repariert haben."
     },
     {
+      "source": "Use Commodity Short Tags",
+      "translation": "Verwenden Sie Commodity-Short-Tags"
+    },
+    {
       "source": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
       "translation": "Verwenden Sie „Nächstes kopieren“ oder aktivieren Sie „Nächstes System automatisch kopieren“ in Galaxy Map und fügen Sie dann den Namen in die Galaxy Map ein. Die automatische Kopie des Carriers schließt sich gegenseitig mit der automatischen Kopie von Boxel und Route Manager aus, während FC Routes und SC Routes sie beide aktivieren können. Wenn Sie das automatische Kopieren in Boxel oder Route Manager starten, werden beide Anbieteroptionen deaktiviert. Durch die Aktivierung der automatischen Kopie des Mobilfunkanbieters werden Boxel und Route Manager deaktiviert."
     },
@@ -35003,6 +35115,10 @@
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Verwenden Sie heruntergeladene Biodaten von Canonn und Spansh"
+    },
+    {
+      "source": "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+      "translation": "Verwenden Sie das Kontrollkästchen „Spur“ jeder Karte, um Missionen auszuwählen. Die kompakte Zusammenfassung über den Karten fasst ausgewählte Warenanforderungen für jede Zielstation und jedes Zielsystem zusammen."
     },
     {
       "source": "Use global opacity",
@@ -37933,6 +38049,10 @@
       "translation": "Kraftstofftank"
     },
     {
+      "source": "full-names",
+      "translation": "vollständige Namen"
+    },
+    {
       "source": "function",
       "translation": "Funktion"
     },
@@ -38611,6 +38731,10 @@
     {
       "source": "mission 2",
       "translation": "Mission 2"
+    },
+    {
+      "source": "missions tracked",
+      "translation": "Missionen verfolgt"
     },
     {
       "source": "molybdenum",
@@ -39371,6 +39495,10 @@
     {
       "source": "shipname",
       "translation": "Schiffsname"
+    },
+    {
+      "source": "short-tags",
+      "translation": "Kurz-Tags"
     },
     {
       "source": "shortcuts",
@@ -40797,6 +40925,10 @@
       "translation": "{0} Nachrichten • {1} ungelesen"
     },
     {
+      "source": "{0} missions tracked",
+      "translation": "{0} Missionen verfolgt"
+    },
+    {
       "source": "{0} must be a number.",
       "translation": "{0} muss eine Zahl sein."
     },
@@ -41571,6 +41703,10 @@
       "translation": "**Se requiere reiniciar la aplicación"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Advertencia: El arquitecto nombrado aquí puede bloquear el sistema para ese comandante; verifique que sea correcto."
     },
@@ -41925,6 +42061,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · EMPAREJAR Y COMENZAR"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Automático"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -44325,6 +44465,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorice SrvSurvey en el navegador y permita que se abra el enlace de devolución de llamada SrvSurvey. Regrese a la aplicación y verifique el Commander vinculado."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -48255,6 +48399,10 @@
       "translation": "Relleno de fila de productos básicos (color + alfa)"
     },
     {
+      "source": "Commodity tags",
+      "translation": "Etiquetas de productos básicos"
+    },
+    {
       "source": "Commodity:",
       "translation": "Producto:"
     },
@@ -50127,6 +50275,14 @@
       "translation": "Entregado"
     },
     {
+      "source": "Delivered:",
+      "translation": "Entregado:"
+    },
+    {
+      "source": "Delivered: {0}",
+      "translation": "Entregado: {0}"
+    },
+    {
       "source": "Delivered: {0}/{1} t",
       "translation": "Entregado: {0}/{1} t"
     },
@@ -50323,6 +50479,10 @@
       "translation": "Destino"
     },
     {
+      "source": "Destination cards before scrolling",
+      "translation": "Tarjetas de destino antes de desplazarse"
+    },
+    {
       "source": "Destination coordinates are unavailable:",
       "translation": "Las coordenadas de destino no están disponibles:"
     },
@@ -50333,6 +50493,10 @@
     {
       "source": "Destination distance is unknown",
       "translation": "La distancia del destino es desconocida."
+    },
+    {
+      "source": "Destination not reported",
+      "translation": "Destino no informado"
     },
     {
       "source": "Destination system",
@@ -51275,6 +51439,14 @@
       "translation": "águila"
     },
     {
+      "source": "Earliest:",
+      "translation": "Lo más temprano:"
+    },
+    {
+      "source": "Earliest: {0}",
+      "translation": "Más temprano: {0}"
+    },
+    {
       "source": "Earth-like",
       "translation": "parecido a la tierra"
     },
@@ -52001,6 +52173,18 @@
     {
       "source": "Estimated",
       "translation": "Estimado"
+    },
+    {
+      "source": "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+      "translation": "Los viajes estimados dividen las necesidades restantes del destino por la capacidad de carga actual de su barco y redondean. La carga a bordo ya está deducida de la Necesidad; un guión significa que aún no se ha informado la capacidad de carga."
+    },
+    {
+      "source": "Estimated Trips:",
+      "translation": "Viajes estimados:"
+    },
+    {
+      "source": "Estimated Trips: {0}",
+      "translation": "Viajes estimados: {0}"
     },
     {
       "source": "Estimated net worth",
@@ -53777,6 +53961,10 @@
     {
       "source": "FuelCapacity",
       "translation": "Capacidad de combustible"
+    },
+    {
+      "source": "Full commodity names",
+      "translation": "Nombres completos de los productos básicos"
     },
     {
       "source": "Full-area completion audit",
@@ -55965,6 +56153,10 @@
     {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "En Leamae UK-D d13-890, Leamae es el sector, UK-D d13 identifica el boxel y 890 es el número del sistema dentro de esa secuencia."
+    },
+    {
+      "source": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+      "translation": "En la configuración de superposición de minería, elija Tarjetas de destino antes de desplazarse y Usar etiquetas cortas de productos básicos. Las etiquetas cortas comienzan habilitadas y usan los mismos colores que la búsqueda de minería de Powerplay; La referencia empareja cada etiqueta con el nombre completo del producto."
     },
     {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
@@ -59719,6 +59911,14 @@
       "translation": "Necesita más cuidado con el empuje vertical."
     },
     {
+      "source": "Need:",
+      "translation": "Necesidad:"
+    },
+    {
+      "source": "Need: {0}",
+      "translation": "Necesidad: {0}"
+    },
+    {
       "source": "Needed",
       "translation": "Necesario"
     },
@@ -61155,8 +61355,20 @@
       "translation": "a bordo"
     },
     {
+      "source": "On board:",
+      "translation": "A bordo:"
+    },
+    {
       "source": "On board: 73/236 t",
       "translation": "A bordo: 73/236 t"
+    },
+    {
+      "source": "On board: {0}",
+      "translation": "A bordo: {0}"
+    },
+    {
+      "source": "On board: {0} t",
+      "translation": "A bordo: {0} t"
     },
     {
       "source": "On board: {0}/{1} t",
@@ -68643,6 +68855,10 @@
       "translation": "Seleccione minerales y tipo de minería. Las búsquedas de anillo tradicionales admiten núcleo, superficie láser, depósito de superficie y depósito de subsuperficie; Elija Planetary Mining para cuerpos de minería a cielo abierto que se puedan aterrizar."
     },
     {
+      "source": "Select missions below to preview their combined destination requirements.",
+      "translation": "Seleccione las misiones a continuación para obtener una vista previa de sus requisitos de destino combinados."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Seleccione o escriba un sistema"
     },
@@ -69289,6 +69505,10 @@
     {
       "source": "Shipyard | Outfitting | Vista",
       "translation": "Astillero | Equipamiento | vista"
+    },
+    {
+      "source": "ShipyardBuy",
+      "translation": "AstilleroComprar"
     },
     {
       "source": "ShipyardSwap",
@@ -72615,6 +72835,10 @@
       "translation": "Las rutas Link / Air Link, Steam Link, Virtual Desktop SteamVR y ALVR requieren SteamVR. La ruta separada VDXR no requiere SteamVR; Las superposiciones de tiempo de ejecución directas Meta siguen sin ser compatibles."
     },
     {
+      "source": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+      "translation": "La superposición de Misiones mineras muestra una tarjeta por estación de destino, con totales de productos separados, el recuento de misiones seleccionadas y el vencimiento más temprano registrado. Las diferentes estaciones del mismo sistema permanecen separadas."
+    },
+    {
       "source": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
       "translation": "Se creó el Nexus, pero no se pudieron guardar algunos detalles. Corrija las entradas y elija Finalizar la configuración de Nexus para volver a intentar este mismo Nexus."
     },
@@ -73975,6 +74199,10 @@
       "translation": "El panel aparece automáticamente al acoplar o abrir paneles de juego habilitados. Para una visualización persistente, desactívela y habilite los productos de colonización. Apague ambos para mantenerlo oculto; el acceso directo aún puede alternarlo."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "El panel ajusta automáticamente el tamaño a su contenido. Los entornos de posición y crecimiento controlan su expansión anclada; el límite de la tarjeta de destino y la ventana gráfica del juego limitan su altura."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "La carga útil se publica directamente en https://voxstellar.com/webhooks/v1/system como comandante + datos y se firma con HMAC-SHA256. SrvSurvey no envía el historial de inicio ni las entradas del diario reproducidas. Desactivar la opción invalida las entradas en cola que no han comenzado a cargarse."
     },
@@ -75167,6 +75395,10 @@
       "translation": "Para mover un marcador existente, bórrelo primero, conduzca hasta la nueva posición y presione su cuerda nuevamente para colocarlo allí."
     },
     {
+      "source": "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+      "translation": "Para recuperar misiones aceptadas en sesiones anteriores, use Minería > Buscar > Descubrimientos locales/importar diarios > Importar diarios anteriores. Seleccione las revistas que contienen la aceptación original y las actualizaciones posteriores de la misión."
+    },
+    {
       "source": "Toggle FSS information",
       "translation": "Alternar información FSS"
     },
@@ -75415,12 +75647,20 @@
       "translation": "Colección de materiales de seguimiento"
     },
     {
+      "source": "Tracked destinations",
+      "translation": "Destinos rastreados"
+    },
+    {
       "source": "Tracked local projects could not be refreshed: {0}",
       "translation": "Los proyectos locales rastreados no se pudieron actualizar: {0}"
     },
     {
       "source": "Tracked locations",
       "translation": "Ubicaciones rastreadas"
+    },
+    {
+      "source": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+      "translation": "Las misiones rastreadas se combinan por estación y sistema. Desactive las etiquetas cortas para mostrar los nombres completos de los productos."
     },
     {
       "source": "Tracker",
@@ -76343,6 +76583,10 @@
       "translation": "Utilice Comprobar conexión después de cambiar los tiempos de ejecución o reparar una conexión de auriculares."
     },
     {
+      "source": "Use Commodity Short Tags",
+      "translation": "Utilice etiquetas cortas de productos básicos"
+    },
+    {
       "source": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
       "translation": "Utilice Copiar siguiente o habilite Copia automática del siguiente sistema en Galaxy Map y luego pegue el nombre en Galaxy Map. La copia automática del operador es mutuamente excluyente con la copia automática de Boxel y Route Manager, mientras que FC Routes y SC Routes pueden habilitarla. Iniciar la copia automática en Boxel o Route Manager desactiva ambas opciones de operador; Al habilitar la copia automática del operador se desactiva Boxel y Route Manager."
     },
@@ -76521,6 +76765,10 @@
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Utilice datos biográficos descargados de Canonn y Spansh"
+    },
+    {
+      "source": "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+      "translation": "Utilice la casilla de verificación Seguimiento de cada tarjeta para seleccionar misiones. El resumen compacto sobre las tarjetas combina los requisitos de productos seleccionados para cada estación y sistema de destino."
     },
     {
       "source": "Use global opacity",
@@ -79451,6 +79699,10 @@
       "translation": "tanque de combustible"
     },
     {
+      "source": "full-names",
+      "translation": "nombres completos"
+    },
+    {
       "source": "function",
       "translation": "función"
     },
@@ -80129,6 +80381,10 @@
     {
       "source": "mission 2",
       "translation": "misión 2"
+    },
+    {
+      "source": "missions tracked",
+      "translation": "misiones rastreadas"
     },
     {
       "source": "molybdenum",
@@ -80889,6 +81145,10 @@
     {
       "source": "shipname",
       "translation": "nombre del barco"
+    },
+    {
+      "source": "short-tags",
+      "translation": "etiquetas cortas"
     },
     {
       "source": "shortcuts",
@@ -82315,6 +82575,10 @@
       "translation": "{0} mensajes • {1} no leídos"
     },
     {
+      "source": "{0} missions tracked",
+      "translation": "Misiones {0} rastreadas"
+    },
+    {
       "source": "{0} must be a number.",
       "translation": "{0} debe ser un número."
     },
@@ -83089,6 +83353,10 @@
       "translation": "** Redémarrage de l'application requis"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Avertissement : l'architecte nommé ici peut verrouiller le système sur ce commandant, veuillez vérifier qu'il est correct."
     },
@@ -83443,6 +83711,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · APPAIREZ ET DÉMARREZ"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Automatique"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -85843,6 +86115,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorisez SrvSurvey dans le navigateur et autorisez l'ouverture du lien de rappel SrvSurvey. Revenez à l'application et vérifiez le Commander lié."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -89773,6 +90049,10 @@
       "translation": "Remplissage de la ligne de produits (couleur + alpha)"
     },
     {
+      "source": "Commodity tags",
+      "translation": "Étiquettes de produits"
+    },
+    {
       "source": "Commodity:",
       "translation": "Marchandise:"
     },
@@ -91645,6 +91925,14 @@
       "translation": "Livré"
     },
     {
+      "source": "Delivered:",
+      "translation": "Livré:"
+    },
+    {
+      "source": "Delivered: {0}",
+      "translation": "Livré : {0}"
+    },
+    {
       "source": "Delivered: {0}/{1} t",
       "translation": "Livré : {0}/{1} t"
     },
@@ -91841,6 +92129,10 @@
       "translation": "Destination"
     },
     {
+      "source": "Destination cards before scrolling",
+      "translation": "Cartes de destination avant de faire défiler"
+    },
+    {
       "source": "Destination coordinates are unavailable:",
       "translation": "Les coordonnées de destination ne sont pas disponibles :"
     },
@@ -91851,6 +92143,10 @@
     {
       "source": "Destination distance is unknown",
       "translation": "La distance de destination est inconnue"
+    },
+    {
+      "source": "Destination not reported",
+      "translation": "Destination non signalée"
     },
     {
       "source": "Destination system",
@@ -92793,6 +93089,14 @@
       "translation": "aigle"
     },
     {
+      "source": "Earliest:",
+      "translation": "Le plus tôt :"
+    },
+    {
+      "source": "Earliest: {0}",
+      "translation": "Le plus ancien : {0}"
+    },
+    {
       "source": "Earth-like",
       "translation": "semblable à la Terre"
     },
@@ -93519,6 +93823,18 @@
     {
       "source": "Estimated",
       "translation": "Estimé"
+    },
+    {
+      "source": "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+      "translation": "Les voyages estimés divisent les besoins restants de la destination par la capacité de chargement actuelle de votre navire et arrondissent. Le fret à bord est déjà déduit du besoin ; un tiret signifie que la capacité de chargement n'a pas encore été signalée."
+    },
+    {
+      "source": "Estimated Trips:",
+      "translation": "Déplacements estimés :"
+    },
+    {
+      "source": "Estimated Trips: {0}",
+      "translation": "Déplacements estimés : {0}"
     },
     {
       "source": "Estimated net worth",
@@ -95295,6 +95611,10 @@
     {
       "source": "FuelCapacity",
       "translation": "Capacité de carburant"
+    },
+    {
+      "source": "Full commodity names",
+      "translation": "Noms complets des produits"
     },
     {
       "source": "Full-area completion audit",
@@ -97483,6 +97803,10 @@
     {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "Dans Leamae UK-D d13-890, Leamae est le secteur, UK-D d13 identifie le boxel et 890 est le numéro de système dans cette séquence."
+    },
+    {
+      "source": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+      "translation": "Dans les paramètres de superposition minière, choisissez Cartes de destination avant de faire défiler et Utiliser les balises courtes de matières premières. Les balises courtes sont activées et utilisent les mêmes couleurs que la recherche minière Powerplay ; La référence associe chaque balise à son nom complet de produit."
     },
     {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
@@ -101237,6 +101561,14 @@
       "translation": "Besoin de plus de soins avec la poussée verticale"
     },
     {
+      "source": "Need:",
+      "translation": "Besoin:"
+    },
+    {
+      "source": "Need: {0}",
+      "translation": "Besoin : {0}"
+    },
+    {
       "source": "Needed",
       "translation": "Nécessaire"
     },
@@ -102673,8 +103005,20 @@
       "translation": "À bord"
     },
     {
+      "source": "On board:",
+      "translation": "A bord :"
+    },
+    {
       "source": "On board: 73/236 t",
       "translation": "A bord : 73/236 t"
+    },
+    {
+      "source": "On board: {0}",
+      "translation": "À bord : {0}"
+    },
+    {
+      "source": "On board: {0} t",
+      "translation": "À bord : {0}"
     },
     {
       "source": "On board: {0}/{1} t",
@@ -110161,6 +110505,10 @@
       "translation": "Sélectionnez les minéraux et le type d'exploitation minière. Les recherches d'anneaux traditionnelles prennent en charge les dépôts de base, de surface laser, de dépôt de surface et de sous-surface ; choisissez Planetary Mining pour les corps miniers à ciel ouvert atterrissables."
     },
     {
+      "source": "Select missions below to preview their combined destination requirements.",
+      "translation": "Sélectionnez les missions ci-dessous pour prévisualiser leurs exigences de destination combinées."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Sélectionnez ou saisissez un système"
     },
@@ -110807,6 +111155,10 @@
     {
       "source": "Shipyard | Outfitting | Vista",
       "translation": "Chantier naval | Pourvoirie | Vue"
+    },
+    {
+      "source": "ShipyardBuy",
+      "translation": "Chantier navalAcheter"
     },
     {
       "source": "ShipyardSwap",
@@ -114133,6 +114485,10 @@
       "translation": "Les itinéraires Link / Air Link, Steam Link, Virtual Desktop SteamVR et ALVR nécessitent SteamVR. L'itinéraire séparé VDXR ne nécessite pas SteamVR ; Les superpositions d'exécution directes Meta ne sont pas prises en charge."
     },
     {
+      "source": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+      "translation": "La superposition des missions minières affiche une carte par station de destination, avec des totaux de produits distincts, le nombre de missions sélectionnées et la première expiration suivie. Les différentes stations du même système restent séparées."
+    },
+    {
       "source": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
       "translation": "Le Nexus a été créé, mais certains détails n'ont pas pu être enregistrés. Corrigez les entrées et choisissez Terminer la configuration du Nexus pour réessayer ce même Nexus."
     },
@@ -115493,6 +115849,10 @@
       "translation": "Le panneau apparaît automatiquement lors de l'amarrage ou de l'ouverture des panneaux de jeu activés. Pour un affichage persistant, désactivez cette option et activez les produits de colonisation. Désactivez les deux pour le garder caché ; le raccourci peut toujours le basculer."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "Le panneau s'adapte automatiquement à son contenu. Les paramètres de position et de croissance contrôlent son expansion ancrée ; la limite de la carte de destination et la fenêtre de jeu limitent sa hauteur."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "La charge utile est publiée directement sur https://voxstellar.com/webhooks/v1/system en tant que commandant + données et signée avec HMAC-SHA256. SrvSurvey n'envoie pas l'historique de démarrage ni les entrées de journal relues. La désactivation de l'option invalide les entrées en file d'attente dont le téléchargement n'a pas encore commencé."
     },
@@ -116685,6 +117045,10 @@
       "translation": "Pour déplacer un marqueur existant, effacez-le d'abord, dirigez-vous vers la nouvelle position et appuyez à nouveau sur sa corde pour l'y placer."
     },
     {
+      "source": "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+      "translation": "Pour récupérer les missions acceptées dans les sessions plus anciennes, utilisez Mining > Rechercher > Découvertes locales / importer des journaux > Importer des journaux antérieurs. Sélectionnez les journaux contenant l'acceptation originale et les mises à jour de mission ultérieures."
+    },
+    {
       "source": "Toggle FSS information",
       "translation": "Basculer les informations FSS"
     },
@@ -116933,12 +117297,20 @@
       "translation": "PisteMatérielCollection"
     },
     {
+      "source": "Tracked destinations",
+      "translation": "Destinations suivies"
+    },
+    {
       "source": "Tracked local projects could not be refreshed: {0}",
       "translation": "Les projets locaux suivis n'ont pas pu être actualisés : {0}"
     },
     {
       "source": "Tracked locations",
       "translation": "Emplacements suivis"
+    },
+    {
+      "source": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+      "translation": "Les missions suivies sont combinées par station et par système. Désactivez les balises courtes pour afficher les noms complets des produits."
     },
     {
       "source": "Tracker",
@@ -117861,6 +118233,10 @@
       "translation": "Utilisez Vérifier la connexion après avoir modifié les temps d'exécution ou réparé la connexion d'un casque."
     },
     {
+      "source": "Use Commodity Short Tags",
+      "translation": "Utiliser des balises courtes de produits"
+    },
+    {
       "source": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
       "translation": "Utilisez Copier ensuite ou activez Copie automatique du système suivant dans Galaxy Map, puis collez le nom dans Galaxy Map. La copie automatique du transporteur s'exclut mutuellement avec la copie automatique de Boxel et de Route Manager, tandis que les routes FC et SC peuvent toutes deux l'activer. Le démarrage de la copie automatique dans Boxel ou Route Manager désactive les deux options de transporteur ; l'activation de la copie automatique du transporteur désactive Boxel et Route Manager."
     },
@@ -118039,6 +118415,10 @@
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Utiliser les données biologiques téléchargées depuis Canonn et Spansh"
+    },
+    {
+      "source": "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+      "translation": "Utilisez la case à cocher Piste de chaque carte pour sélectionner des missions. Le résumé compact au-dessus des cartes combine les exigences de produits sélectionnées pour chaque station et système de destination."
     },
     {
       "source": "Use global opacity",
@@ -120969,6 +121349,10 @@
       "translation": "réservoir de carburant"
     },
     {
+      "source": "full-names",
+      "translation": "noms complets"
+    },
+    {
       "source": "function",
       "translation": "fonction"
     },
@@ -121647,6 +122031,10 @@
     {
       "source": "mission 2",
       "translation": "mission 2"
+    },
+    {
+      "source": "missions tracked",
+      "translation": "missions suivies"
     },
     {
       "source": "molybdenum",
@@ -122407,6 +122795,10 @@
     {
       "source": "shipname",
       "translation": "nom du navire"
+    },
+    {
+      "source": "short-tags",
+      "translation": "balises courtes"
     },
     {
       "source": "shortcuts",
@@ -123833,6 +124225,10 @@
       "translation": "{0} messages • {1} non lus"
     },
     {
+      "source": "{0} missions tracked",
+      "translation": "Missions {0} suivies"
+    },
+    {
       "source": "{0} must be a number.",
       "translation": "{0} doit être un nombre."
     },
@@ -124607,6 +125003,10 @@
       "translation": "**É necessário reiniciar o aplicativo"
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Auto"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Aviso: O arquiteto mencionado aqui pode bloquear o sistema para esse comandante, verifique se está correto."
     },
@@ -124961,6 +125361,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · PAR E INICIAR"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Automático"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -127361,6 +127765,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Autorize SrvSurvey no navegador e permita a abertura do link de retorno de chamada SrvSurvey. Volte ao aplicativo e verifique o Commander vinculado."
+    },
+    {
+      "source": "Auto",
+      "translation": "Auto"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -131291,6 +131699,10 @@
       "translation": "Preenchimento da linha de mercadorias (cor + alfa)"
     },
     {
+      "source": "Commodity tags",
+      "translation": "Etiquetas de mercadorias"
+    },
+    {
       "source": "Commodity:",
       "translation": "Mercadoria:"
     },
@@ -133163,6 +133575,14 @@
       "translation": "Entregue"
     },
     {
+      "source": "Delivered:",
+      "translation": "Entregue:"
+    },
+    {
+      "source": "Delivered: {0}",
+      "translation": "Entregue: {0}"
+    },
+    {
       "source": "Delivered: {0}/{1} t",
       "translation": "Entregue: {0}/{1} t"
     },
@@ -133359,6 +133779,10 @@
       "translation": "Destino"
     },
     {
+      "source": "Destination cards before scrolling",
+      "translation": "Cartões de destino antes de rolar"
+    },
+    {
       "source": "Destination coordinates are unavailable:",
       "translation": "As coordenadas de destino não estão disponíveis:"
     },
@@ -133369,6 +133793,10 @@
     {
       "source": "Destination distance is unknown",
       "translation": "A distância do destino é desconhecida"
+    },
+    {
+      "source": "Destination not reported",
+      "translation": "Destino não informado"
     },
     {
       "source": "Destination system",
@@ -134311,6 +134739,14 @@
       "translation": "águia"
     },
     {
+      "source": "Earliest:",
+      "translation": "Mais antigo:"
+    },
+    {
+      "source": "Earliest: {0}",
+      "translation": "Mais antigo: {0}"
+    },
+    {
       "source": "Earth-like",
       "translation": "Semelhante à Terra"
     },
@@ -135037,6 +135473,18 @@
     {
       "source": "Estimated",
       "translation": "Estimado"
+    },
+    {
+      "source": "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+      "translation": "As viagens estimadas dividem as necessidades restantes do destino pela capacidade de carga atual do seu navio e arredondam. A carga a bordo já é descontada da Necessidade; um travessão significa que a capacidade de carga ainda não foi informada."
+    },
+    {
+      "source": "Estimated Trips:",
+      "translation": "Viagens estimadas:"
+    },
+    {
+      "source": "Estimated Trips: {0}",
+      "translation": "Viagens estimadas: {0}"
     },
     {
       "source": "Estimated net worth",
@@ -136813,6 +137261,10 @@
     {
       "source": "FuelCapacity",
       "translation": "Capacidade de Combustível"
+    },
+    {
+      "source": "Full commodity names",
+      "translation": "Nomes completos de mercadorias"
     },
     {
       "source": "Full-area completion audit",
@@ -139001,6 +139453,10 @@
     {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "Em Leamae UK-D d13-890, Leamae é o setor, UK-D d13 identifica o boxel e 890 é o número do sistema dentro dessa sequência."
+    },
+    {
+      "source": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+      "translation": "Nas configurações de sobreposição de mineração, escolha Cartões de destino antes de rolar e Usar tags curtas de commodities. Tags curtas começam habilitadas e usam as mesmas cores da pesquisa de mineração Powerplay; A referência emparelha cada tag com seu nome completo de mercadoria."
     },
     {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
@@ -142755,6 +143211,14 @@
       "translation": "Precisa de mais cuidado com o impulso vertical"
     },
     {
+      "source": "Need:",
+      "translation": "Precisar:"
+    },
+    {
+      "source": "Need: {0}",
+      "translation": "Necessidade: {0}"
+    },
+    {
       "source": "Needed",
       "translation": "Necessário"
     },
@@ -144191,8 +144655,20 @@
       "translation": "A bordo"
     },
     {
+      "source": "On board:",
+      "translation": "A bordo:"
+    },
+    {
       "source": "On board: 73/236 t",
       "translation": "A bordo: 73/236 t"
+    },
+    {
+      "source": "On board: {0}",
+      "translation": "A bordo: {0}"
+    },
+    {
+      "source": "On board: {0} t",
+      "translation": "A bordo: {0} t"
     },
     {
       "source": "On board: {0}/{1} t",
@@ -151679,6 +152155,10 @@
       "translation": "Selecione minerais e tipo de mineração. As pesquisas de anel tradicionais suportam Core, Laser Surface, Surface Deposit e Sub Surface Deposit; escolha Mineração Planetária para corpos de mineração de superfície pousáveis."
     },
     {
+      "source": "Select missions below to preview their combined destination requirements.",
+      "translation": "Selecione as missões abaixo para visualizar seus requisitos de destino combinados."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Selecione ou digite um sistema"
     },
@@ -152325,6 +152805,10 @@
     {
       "source": "Shipyard | Outfitting | Vista",
       "translation": "Estaleiro | Equipamento | Vista"
+    },
+    {
+      "source": "ShipyardBuy",
+      "translation": "EstaleiroComprar"
     },
     {
       "source": "ShipyardSwap",
@@ -155651,6 +156135,10 @@
       "translation": "As rotas Link / Air Link, Steam Link, Virtual Desktop SteamVR e ALVR exigem SteamVR. A rota separada VDXR não requer SteamVR; sobreposições de tempo de execução diretas Meta permanecem sem suporte."
     },
     {
+      "source": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+      "translation": "A sobreposição de Missões de Mineração mostra um cartão por estação de destino, com totais de mercadorias separados, a contagem de missões selecionadas e o vencimento mais antigo rastreado. Diferentes estações no mesmo sistema permanecem separadas."
+    },
+    {
       "source": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
       "translation": "O Nexus foi criado, mas alguns detalhes não puderam ser salvos. Corrija as entradas e escolha Concluir configuração do Nexus para tentar novamente o mesmo Nexus."
     },
@@ -157011,6 +157499,10 @@
       "translation": "O painel aparece automaticamente ao encaixar ou abrir painéis de jogo habilitados. Para exibição persistente, desligue esta opção e ative Mercadorias de colonização. Desligue ambos para mantê-los ocultos; o atalho ainda pode alterná-lo."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "O painel é dimensionado automaticamente de acordo com seu conteúdo. As configurações de posição e crescimento controlam sua expansão ancorada; o limite do cartão de destino e a janela de visualização do jogo limitam sua altura."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "A carga útil é postada diretamente em https://voxstellar.com/webhooks/v1/system como comandante + dados e assinada com HMAC-SHA256. SrvSurvey não envia histórico de inicialização ou entradas de diário reproduzidas. Desativar a opção invalida as entradas na fila que ainda não começaram a ser carregadas."
     },
@@ -158203,6 +158695,10 @@
       "translation": "Para mover um marcador existente, limpe-o primeiro, dirija até a nova posição e pressione seu acorde novamente para colocá-lo ali."
     },
     {
+      "source": "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+      "translation": "Para recuperar missões aceitas em sessões mais antigas, use Mineração > Localizar > Descobertas locais/importar diários > Importar diários anteriores. Selecione os diários que contêm a aceitação original e as atualizações subsequentes da missão."
+    },
+    {
       "source": "Toggle FSS information",
       "translation": "Alternar informações do FSS"
     },
@@ -158451,12 +158947,20 @@
       "translation": "TrackMaterialCollection"
     },
     {
+      "source": "Tracked destinations",
+      "translation": "Destinos rastreados"
+    },
+    {
       "source": "Tracked local projects could not be refreshed: {0}",
       "translation": "Não foi possível atualizar os projetos locais rastreados: {0}"
     },
     {
       "source": "Tracked locations",
       "translation": "Locais rastreados"
+    },
+    {
+      "source": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+      "translation": "As missões rastreadas são combinadas por estação e sistema. Desative as tags curtas para mostrar os nomes completos das mercadorias."
     },
     {
       "source": "Tracker",
@@ -159379,6 +159883,10 @@
       "translation": "Use Verificar conexão após alterar tempos de execução ou reparar uma conexão de fone de ouvido."
     },
     {
+      "source": "Use Commodity Short Tags",
+      "translation": "Use tags curtas de commodities"
+    },
+    {
       "source": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
       "translation": "Use Copiar próximo ou ative Copiar automaticamente o próximo sistema no Galaxy Map e cole o nome no Galaxy Map. A cópia automática da operadora é mutuamente exclusiva com a cópia automática do Boxel e do Route Manager, enquanto as rotas FC e SC podem ativá-la. Iniciar a cópia automática no Boxel ou Route Manager desativa ambas as opções de operadora; ativar a cópia automática da operadora desativa o Boxel e o Route Manager."
     },
@@ -159557,6 +160065,10 @@
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Use dados biográficos baixados de Canonn e Spansh"
+    },
+    {
+      "source": "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+      "translation": "Use a caixa de seleção Rastrear de cada carta para selecionar missões. O resumo compacto acima dos cartões combina requisitos de mercadorias selecionados para cada estação e sistema de destino."
     },
     {
       "source": "Use global opacity",
@@ -162487,6 +162999,10 @@
       "translation": "tanque de combustível"
     },
     {
+      "source": "full-names",
+      "translation": "nomes completos"
+    },
+    {
       "source": "function",
       "translation": "função"
     },
@@ -163165,6 +163681,10 @@
     {
       "source": "mission 2",
       "translation": "missão 2"
+    },
+    {
+      "source": "missions tracked",
+      "translation": "missões rastreadas"
     },
     {
       "source": "molybdenum",
@@ -163925,6 +164445,10 @@
     {
       "source": "shipname",
       "translation": "nome do navio"
+    },
+    {
+      "source": "short-tags",
+      "translation": "tags curtas"
     },
     {
       "source": "shortcuts",
@@ -165351,6 +165875,10 @@
       "translation": "{0} mensagens • {1} não lidas"
     },
     {
+      "source": "{0} missions tracked",
+      "translation": "Missões {0} rastreadas"
+    },
+    {
       "source": "{0} must be a number.",
       "translation": "{0} deve ser um número."
     },
@@ -166125,6 +166653,10 @@
       "translation": "**Требуется перезагрузка приложения."
     },
     {
+      "source": "*,Auto",
+      "translation": "*,Авто"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*Предупреждение: указанный здесь архитектор может привязать систему к этому командиру, пожалуйста, убедитесь, что это правильно."
     },
@@ -166479,6 +167011,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · СОПРЯЖЕНИЕ И СТАРТ"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,Авто"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -168879,6 +169415,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "Авторизуйтесь SrvSurvey в браузере и разрешите открытие ссылки обратного вызова SrvSurvey. Вернитесь в приложение и проверьте связанный Commander."
+    },
+    {
+      "source": "Auto",
+      "translation": "Авто"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -172809,6 +173349,10 @@
       "translation": "Заливка товарной строки (цвет + альфа)"
     },
     {
+      "source": "Commodity tags",
+      "translation": "Товарные бирки"
+    },
+    {
       "source": "Commodity:",
       "translation": "Товар:"
     },
@@ -174681,6 +175225,14 @@
       "translation": "Доставленный"
     },
     {
+      "source": "Delivered:",
+      "translation": "Доставленный:"
+    },
+    {
+      "source": "Delivered: {0}",
+      "translation": "Доставлено: {0}"
+    },
+    {
       "source": "Delivered: {0}/{1} t",
       "translation": "Доставлено: {0}/{1} t"
     },
@@ -174877,6 +175429,10 @@
       "translation": "Пункт назначения"
     },
     {
+      "source": "Destination cards before scrolling",
+      "translation": "Карточки назначения перед прокруткой"
+    },
+    {
       "source": "Destination coordinates are unavailable:",
       "translation": "Координаты пункта назначения недоступны:"
     },
@@ -174887,6 +175443,10 @@
     {
       "source": "Destination distance is unknown",
       "translation": "Расстояние до пункта назначения неизвестно"
+    },
+    {
+      "source": "Destination not reported",
+      "translation": "Место назначения не указано"
     },
     {
       "source": "Destination system",
@@ -175829,6 +176389,14 @@
       "translation": "орел"
     },
     {
+      "source": "Earliest:",
+      "translation": "Самое раннее:"
+    },
+    {
+      "source": "Earliest: {0}",
+      "translation": "Самый ранний: {0}"
+    },
+    {
       "source": "Earth-like",
       "translation": "земной"
     },
@@ -176555,6 +177123,18 @@
     {
       "source": "Estimated",
       "translation": "Предполагаемый"
+    },
+    {
+      "source": "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+      "translation": "Расчетное количество поездок делит оставшиеся потребности пункта назначения на грузоподъемность вашего текущего корабля и округляет его в большую сторону. Бортовой груз уже вычтен из потребности; прочерк означает, что грузоподъемность еще не указана."
+    },
+    {
+      "source": "Estimated Trips:",
+      "translation": "Предполагаемые поездки:"
+    },
+    {
+      "source": "Estimated Trips: {0}",
+      "translation": "Предполагаемое количество поездок: {0}"
     },
     {
       "source": "Estimated net worth",
@@ -178331,6 +178911,10 @@
     {
       "source": "FuelCapacity",
       "translation": "ТопливоЕмкость"
+    },
+    {
+      "source": "Full commodity names",
+      "translation": "Полные товарные наименования"
     },
     {
       "source": "Full-area completion audit",
@@ -180519,6 +181103,10 @@
     {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "В Leamae UK-D d13-890 Leamae — это сектор, UK-D d13 идентифицирует бокс, а 890 — это системный номер в этой последовательности."
+    },
+    {
+      "source": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+      "translation": "В настройках наложения Mining перед прокруткой выберите «Карты назначения» и «Использовать короткие теги товаров». Короткие теги сначала включены и используют те же цвета, что и поиск по майнингу Powerplay; Ссылка связывает каждый тег с его полным товарным наименованием."
     },
     {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
@@ -184273,6 +184861,14 @@
       "translation": "Требуется больше осторожности при вертикальной тяге"
     },
     {
+      "source": "Need:",
+      "translation": "Нуждаться:"
+    },
+    {
+      "source": "Need: {0}",
+      "translation": "Нужно: {0}"
+    },
+    {
       "source": "Needed",
       "translation": "Нужный"
     },
@@ -185709,8 +186305,20 @@
       "translation": "На борту"
     },
     {
+      "source": "On board:",
+      "translation": "На борту:"
+    },
+    {
       "source": "On board: 73/236 t",
       "translation": "На борту: 73/236 т."
+    },
+    {
+      "source": "On board: {0}",
+      "translation": "На борту: {0}"
+    },
+    {
+      "source": "On board: {0} t",
+      "translation": "На борту: {0} t"
     },
     {
       "source": "On board: {0}/{1} t",
@@ -193197,6 +193805,10 @@
       "translation": "Выберите минералы и тип добычи. Традиционный кольцевой поиск поддерживает керн, лазерную поверхность, поверхностное отложение и подповерхностное отложение; выберите «Планетарная добыча» для приземляемых тел для добычи полезных ископаемых."
     },
     {
+      "source": "Select missions below to preview their combined destination requirements.",
+      "translation": "Выберите миссии ниже, чтобы просмотреть их совокупные требования к месту назначения."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Выберите или введите систему"
     },
@@ -193843,6 +194455,10 @@
     {
       "source": "Shipyard | Outfitting | Vista",
       "translation": "Верфь | Экипировка | Виста"
+    },
+    {
+      "source": "ShipyardBuy",
+      "translation": "ВерфьКупить"
     },
     {
       "source": "ShipyardSwap",
@@ -197169,6 +197785,10 @@
       "translation": "Маршруты Link / Air Link, Steam Link, Virtual Desktop SteamVR и ALVR требуют SteamVR. Отдельный маршрут VDXR не требует SteamVR; прямые Meta оверлеи времени выполнения остаются неподдерживаемыми."
     },
     {
+      "source": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+      "translation": "Наложение миссий по добыче полезных ископаемых показывает по одной карте для каждой станции назначения с отдельным общим количеством товаров, количеством выбранных миссий и самым ранним отслеживаемым сроком действия. Различные станции в одной системе остаются отдельными."
+    },
+    {
       "source": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
       "translation": "Нексус был создан, но некоторые детали сохранить не удалось. Исправьте записи и выберите «Завершить настройку Nexus», чтобы повторить попытку того же Nexus."
     },
@@ -198529,6 +199149,10 @@
       "translation": "Панель появляется автоматически при закреплении или открытии включенных игровых панелей. Для постоянного отображения отключите это и включите товары колонизации. Выключите оба, чтобы скрыть их; ярлык все еще может переключать его."
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "Панель автоматически изменяется в соответствии со своим содержимым. Параметры позиции и роста контролируют его закрепленное расширение; предел карты назначения и область просмотра игры ограничивают его высоту."
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "Полезная нагрузка размещается непосредственно на https://voxstellar.com/webhooks/v1/system как «командир + данные» и подписывается HMAC-SHA256. SrvSurvey не отправляет историю запуска или воспроизведенные записи журнала. Отключение этой опции делает недействительными записи в очереди, которые еще не начали загрузку."
     },
@@ -199721,6 +200345,10 @@
       "translation": "Чтобы переместить существующий маркер, сначала очистите его, переместитесь в новое положение и снова нажмите на его хорду, чтобы установить его там."
     },
     {
+      "source": "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+      "translation": "Чтобы восстановить миссии, принятые в старых сеансах, используйте «Горное дело» > «Найти» > «Локальные открытия/импортировать журналы» > «Импортировать более ранние журналы». Выберите журналы, содержащие исходное принятие и последующие обновления миссии."
+    },
+    {
       "source": "Toggle FSS information",
       "translation": "Переключить информацию FSS"
     },
@@ -199969,12 +200597,20 @@
       "translation": "ТрекМатериалКоллекция"
     },
     {
+      "source": "Tracked destinations",
+      "translation": "Отслеживаемые направления"
+    },
+    {
       "source": "Tracked local projects could not be refreshed: {0}",
       "translation": "Не удалось обновить отслеживаемые локальные проекты: {0}."
     },
     {
       "source": "Tracked locations",
       "translation": "Отслеживаемые местоположения"
+    },
+    {
+      "source": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+      "translation": "Отслеживаемые миссии объединяются по станциям и системам. Отключите короткие теги, чтобы отображались полные названия товаров."
     },
     {
       "source": "Tracker",
@@ -200897,6 +201533,10 @@
       "translation": "Используйте «Проверить соединение» после изменения времени выполнения или восстановления подключения гарнитуры."
     },
     {
+      "source": "Use Commodity Short Tags",
+      "translation": "Используйте короткие теги товаров"
+    },
+    {
       "source": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
       "translation": "Используйте «Копировать далее» или включите «Автоматическое копирование следующей системы» на карте галактики, затем вставьте имя в карту галактики. Автокопирование оператора связи является взаимоисключающим с автокопированием Boxel и Route Manager, в то время как маршруты FC и SC Routes могут включать его. Запуск автоматического копирования в Boxel или Route Manager отключает оба варианта оператора связи; включение автоматического копирования оператора связи отключает Boxel и Route Manager."
     },
@@ -201075,6 +201715,10 @@
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "Использовать загруженные биоданные из Canonn и Spansh"
+    },
+    {
+      "source": "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+      "translation": "Используйте флажок «Отслеживать» на каждой карте, чтобы выбирать миссии. Компактное резюме над картами объединяет требования к выбранным товарам для каждой станции и системы назначения."
     },
     {
       "source": "Use global opacity",
@@ -204005,6 +204649,10 @@
       "translation": "топливный бак"
     },
     {
+      "source": "full-names",
+      "translation": "полные имена"
+    },
+    {
       "source": "function",
       "translation": "функция"
     },
@@ -204683,6 +205331,10 @@
     {
       "source": "mission 2",
       "translation": "миссия 2"
+    },
+    {
+      "source": "missions tracked",
+      "translation": "отслеживаемые миссии"
     },
     {
       "source": "molybdenum",
@@ -205443,6 +206095,10 @@
     {
       "source": "shipname",
       "translation": "название корабля"
+    },
+    {
+      "source": "short-tags",
+      "translation": "короткие теги"
     },
     {
       "source": "shortcuts",
@@ -206869,6 +207525,10 @@
       "translation": "{0} сообщения • {1} непрочитано"
     },
     {
+      "source": "{0} missions tracked",
+      "translation": "Отслеживаемые миссии {0}"
+    },
+    {
       "source": "{0} must be a number.",
       "translation": "{0} должен быть числом."
     },
@@ -207643,6 +208303,10 @@
       "translation": "**需要重新启动应用程序"
     },
     {
+      "source": "*,Auto",
+      "translation": "*，汽车"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "*警告：此处指定的架构师可以将系统锁定到该指挥官，请验证其是否正确。"
     },
@@ -207997,6 +208661,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "2 · 配对并开始"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "2*,4*,自动"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -210397,6 +211065,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "在浏览器中授权SrvSurvey并允许回调链接打开SrvSurvey。返回应用程序并检查链接的指挥官。"
+    },
+    {
+      "source": "Auto",
+      "translation": "汽车"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -214327,6 +214999,10 @@
       "translation": "商品行填充（颜色+alpha）"
     },
     {
+      "source": "Commodity tags",
+      "translation": "商品标签"
+    },
+    {
       "source": "Commodity:",
       "translation": "商品："
     },
@@ -216199,6 +216875,14 @@
       "translation": "发表"
     },
     {
+      "source": "Delivered:",
+      "translation": "发表："
+    },
+    {
+      "source": "Delivered: {0}",
+      "translation": "已交付：{0}"
+    },
+    {
       "source": "Delivered: {0}/{1} t",
       "translation": "已交付：{0}/{1}"
     },
@@ -216395,6 +217079,10 @@
       "translation": "目的地"
     },
     {
+      "source": "Destination cards before scrolling",
+      "translation": "滚动前的目的地卡"
+    },
+    {
       "source": "Destination coordinates are unavailable:",
       "translation": "目的地坐标不可用："
     },
@@ -216405,6 +217093,10 @@
     {
       "source": "Destination distance is unknown",
       "translation": "目的地距离未知"
+    },
+    {
+      "source": "Destination not reported",
+      "translation": "未报告目的地"
     },
     {
       "source": "Destination system",
@@ -217347,6 +218039,14 @@
       "translation": "鹰"
     },
     {
+      "source": "Earliest:",
+      "translation": "最早："
+    },
+    {
+      "source": "Earliest: {0}",
+      "translation": "最早的：{0}"
+    },
+    {
       "source": "Earth-like",
       "translation": "类地"
     },
@@ -218073,6 +218773,18 @@
     {
       "source": "Estimated",
       "translation": "估计"
+    },
+    {
+      "source": "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+      "translation": "预计行程将目的地的剩余需求除以当前船舶的货运能力并四舍五入。船上货物已从需要中扣除；破折号表示尚未报告货运能力。"
+    },
+    {
+      "source": "Estimated Trips:",
+      "translation": "预计行程："
+    },
+    {
+      "source": "Estimated Trips: {0}",
+      "translation": "预计行程：{0}"
     },
     {
       "source": "Estimated net worth",
@@ -219849,6 +220561,10 @@
     {
       "source": "FuelCapacity",
       "translation": "燃油容量"
+    },
+    {
+      "source": "Full commodity names",
+      "translation": "商品全名"
     },
     {
       "source": "Full-area completion audit",
@@ -222037,6 +222753,10 @@
     {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "在 Leamae UK-D d13-890 中，Leamae 是扇区，UK-D d13 标识 boxel，890 是该序列中的系统编号。"
+    },
+    {
+      "source": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+      "translation": "在“挖掘覆盖”设置中，在滚动前选择“目标”卡并使用“商品短标签”。短标签开始启用并使用与Powerplay挖掘搜索相同的颜色；参考将每个标签与其完整的商品名称配对。"
     },
     {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
@@ -225791,6 +226511,14 @@
       "translation": "需要更加小心垂直推力"
     },
     {
+      "source": "Need:",
+      "translation": "需要："
+    },
+    {
+      "source": "Need: {0}",
+      "translation": "需要：{0}"
+    },
+    {
       "source": "Needed",
       "translation": "需要"
     },
@@ -227227,8 +227955,20 @@
       "translation": "船上"
     },
     {
+      "source": "On board:",
+      "translation": "船上："
+    },
+    {
       "source": "On board: 73/236 t",
       "translation": "船上：73/236 吨"
+    },
+    {
+      "source": "On board: {0}",
+      "translation": "船上：{0}"
+    },
+    {
+      "source": "On board: {0} t",
+      "translation": "船上：{0} t"
     },
     {
       "source": "On board: {0}/{1} t",
@@ -234715,6 +235455,10 @@
       "translation": "选择矿物和采矿类型。传统环搜索支持核心、激光表面、表面沉积和次表面沉积；对于可登陆的地表采矿体，请选择行星采矿。"
     },
     {
+      "source": "Select missions below to preview their combined destination requirements.",
+      "translation": "选择下面的任务以预览其综合目的地要求。"
+    },
+    {
       "source": "Select or type a system",
       "translation": "选择或输入系统"
     },
@@ -235361,6 +236105,10 @@
     {
       "source": "Shipyard | Outfitting | Vista",
       "translation": "船厂|舾装|维斯塔"
+    },
+    {
+      "source": "ShipyardBuy",
+      "translation": "船厂购买"
     },
     {
       "source": "ShipyardSwap",
@@ -238687,6 +239435,10 @@
       "translation": "Link / Air Link、Steam Link、Virtual Desktop SteamVR 和 ALVR 路由需要 SteamVR。单独的VDXR路线不需要SteamVR；直接 Meta 运行时覆盖仍然不受支持。"
     },
     {
+      "source": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+      "translation": "采矿任务叠加显示每个目的地站一张卡，其中包含单独的商品总数、选定的任务计数以及最早跟踪的到期时间。同一系统中的不同站点保持独立。"
+    },
+    {
       "source": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
       "translation": "Nexus 已创建，但某些详细信息无法保存。更正条目并选择“完成 Nexus 设置”以重试同一 Nexus。"
     },
@@ -240047,6 +240799,10 @@
       "translation": "当对接或打开启用的游戏面板时，该面板会自动出现。要持久显示，请关闭此功能并启用殖民商品。将两者都关闭以使其隐藏；快捷方式仍然可以切换它。"
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "面板会根据其内容自动调整大小。位置和增长设置控制其锚定扩张；目的地卡限制和游戏视口限制其高度。"
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "有效负载作为指挥官 + 数据直接发布到 https://voxstellar.com/webhooks/v1/system 并使用 HMAC-SHA256 进行签名。 SrvSurvey 不发送启动历史记录或重播的日志条目。关闭该选项将使尚未开始上传的排队条目无效。"
     },
@@ -241239,6 +241995,10 @@
       "translation": "要移动现有标记，请先将其清除，移动到新位置，然后再次按下其和弦将其设置在那里。"
     },
     {
+      "source": "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+      "translation": "要恢复旧会话中接受的任务，请使用“挖掘”>“查找”>“本地发现/导入日志”>“导入早期日志”。选择包含原始接受和后续任务更新的日志。"
+    },
+    {
       "source": "Toggle FSS information",
       "translation": "切换 FSS 信息"
     },
@@ -241487,12 +242247,20 @@
       "translation": "轨迹素材集合"
     },
     {
+      "source": "Tracked destinations",
+      "translation": "追踪目的地"
+    },
+    {
       "source": "Tracked local projects could not be refreshed: {0}",
       "translation": "无法刷新跟踪的本地项目：{0}"
     },
     {
       "source": "Tracked locations",
       "translation": "追踪地点"
+    },
+    {
+      "source": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+      "translation": "跟踪任务按站点和系统组合。关闭短标签以显示完整的商品名称。"
     },
     {
       "source": "Tracker",
@@ -242415,6 +243183,10 @@
       "translation": "在更改运行时间或修复耳机连接后使用检查连接。"
     },
     {
+      "source": "Use Commodity Short Tags",
+      "translation": "使用商品短标签"
+    },
+    {
       "source": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
       "translation": "使用复制下一个系统，或在 Galaxy Map 中启用自动复制下一个系统，然后将名称粘贴到 Galaxy Map 中。运营商自动复制与 Boxel 和 Route Manager 自动复制互斥，而 FC 路由和 SC 路由都可以启用它。在 Boxel 或 Route Manager 中启动自动复制会关闭两个运营商选项；启用运营商自动复制会关闭 Boxel 和路线管理器。"
     },
@@ -242593,6 +243365,10 @@
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "使用从 Canonn 和 Spansh 下载的生物数据"
+    },
+    {
+      "source": "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+      "translation": "使用每张卡的跟踪复选框来选择任务。卡片上方的紧凑摘要结合了每个目的地站和系统的选定商品要求。"
     },
     {
       "source": "Use global opacity",
@@ -245523,6 +246299,10 @@
       "translation": "油箱"
     },
     {
+      "source": "full-names",
+      "translation": "全名"
+    },
+    {
       "source": "function",
       "translation": "功能"
     },
@@ -246201,6 +246981,10 @@
     {
       "source": "mission 2",
       "translation": "任务2"
+    },
+    {
+      "source": "missions tracked",
+      "translation": "跟踪任务"
     },
     {
       "source": "molybdenum",
@@ -246961,6 +247745,10 @@
     {
       "source": "shipname",
       "translation": "船名"
+    },
+    {
+      "source": "short-tags",
+      "translation": "短标签"
     },
     {
       "source": "shortcuts",
@@ -248387,6 +249175,10 @@
       "translation": "{0} 消息 • {1} 未读"
     },
     {
+      "source": "{0} missions tracked",
+      "translation": "{0} 任务跟踪"
+    },
+    {
       "source": "{0} must be a number.",
       "translation": "{0} 必须是数字。"
     },
@@ -249161,6 +249953,10 @@
       "translation": "* **APP RESTART REQUIRED >>>!"
     },
     {
+      "source": "*,Auto",
+      "translation": "* *,AUTO >>>!"
+    },
+    {
       "source": "*Warning: The architect named here can lock the system to that commander, please verify it is correct.",
       "translation": "* *WARNING: THE ARCHITECT NAMED HERE CAN LOCK THE SYSTEM TO THAT COMMANDER, PLEASE VERIFY IT IS CORRECT. >>>!"
     },
@@ -249515,6 +250311,10 @@
     {
       "source": "2 · PAIR AND START",
       "translation": "* 2 · PAIR AND START >>>!"
+    },
+    {
+      "source": "2*,4*,Auto",
+      "translation": "* 2*,4*,AUTO >>>!"
     },
     {
       "source": "2,450 need | 620 FC | 96 ship",
@@ -251915,6 +252715,10 @@
     {
       "source": "Authorize SrvSurvey in the browser and allow the callback link to open SrvSurvey. Return to the app and check the linked Commander.",
       "translation": "* AUTHORIZE SRVSURVEY IN THE BROWSER AND ALLOW THE CALLBACK LINK TO OPEN SRVSURVEY. RETURN TO THE APP AND CHECK THE LINKED COMMANDER. >>>!"
+    },
+    {
+      "source": "Auto",
+      "translation": "* AUTO >>>!"
     },
     {
       "source": "Auto Fitting Rigs to a Splat",
@@ -255845,6 +256649,10 @@
       "translation": "* COMMODITY ROW FILL (COLOUR + ALPHA) >>>!"
     },
     {
+      "source": "Commodity tags",
+      "translation": "* COMMODITY TAGS >>>!"
+    },
+    {
       "source": "Commodity:",
       "translation": "* COMMODITY: >>>!"
     },
@@ -257717,6 +258525,14 @@
       "translation": "* DELIVERED >>>!"
     },
     {
+      "source": "Delivered:",
+      "translation": "* DELIVERED: >>>!"
+    },
+    {
+      "source": "Delivered: {0}",
+      "translation": "* DELIVERED: {0} >>>!"
+    },
+    {
       "source": "Delivered: {0}/{1} t",
       "translation": "* DELIVERED: {0}/{1} T >>>!"
     },
@@ -257913,6 +258729,10 @@
       "translation": "* DESTINATION >>>!"
     },
     {
+      "source": "Destination cards before scrolling",
+      "translation": "* DESTINATION CARDS BEFORE SCROLLING >>>!"
+    },
+    {
       "source": "Destination coordinates are unavailable:",
       "translation": "* DESTINATION COORDINATES ARE UNAVAILABLE: >>>!"
     },
@@ -257923,6 +258743,10 @@
     {
       "source": "Destination distance is unknown",
       "translation": "* DESTINATION DISTANCE IS UNKNOWN >>>!"
+    },
+    {
+      "source": "Destination not reported",
+      "translation": "* DESTINATION NOT REPORTED >>>!"
     },
     {
       "source": "Destination system",
@@ -258865,6 +259689,14 @@
       "translation": "* EAGLE >>>!"
     },
     {
+      "source": "Earliest:",
+      "translation": "* EARLIEST: >>>!"
+    },
+    {
+      "source": "Earliest: {0}",
+      "translation": "* EARLIEST: {0} >>>!"
+    },
+    {
       "source": "Earth-like",
       "translation": "* EARTH-LIKE >>>!"
     },
@@ -259591,6 +260423,18 @@
     {
       "source": "Estimated",
       "translation": "* ESTIMATED >>>!"
+    },
+    {
+      "source": "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+      "translation": "* ESTIMATED TRIPS DIVIDES THE DESTINATION'S REMAINING NEEDS BY YOUR CURRENT SHIP'S CARGO CAPACITY AND ROUNDS UP. ONBOARD CARGO IS ALREADY DEDUCTED FROM NEED; A DASH MEANS CARGO CAPACITY HAS NOT BEEN REPORTED YET. >>>!"
+    },
+    {
+      "source": "Estimated Trips:",
+      "translation": "* ESTIMATED TRIPS: >>>!"
+    },
+    {
+      "source": "Estimated Trips: {0}",
+      "translation": "* ESTIMATED TRIPS: {0} >>>!"
     },
     {
       "source": "Estimated net worth",
@@ -261367,6 +262211,10 @@
     {
       "source": "FuelCapacity",
       "translation": "* FUELCAPACITY >>>!"
+    },
+    {
+      "source": "Full commodity names",
+      "translation": "* FULL COMMODITY NAMES >>>!"
     },
     {
       "source": "Full-area completion audit",
@@ -263555,6 +264403,10 @@
     {
       "source": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
       "translation": "* IN LEAMAE UK-D D13-890, LEAMAE IS THE SECTOR, UK-D D13 IDENTIFIES THE BOXEL, AND 890 IS THE SYSTEM NUMBER WITHIN THAT SEQUENCE. >>>!"
+    },
+    {
+      "source": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+      "translation": "* IN MINING OVERLAY SETTINGS, CHOOSE DESTINATION CARDS BEFORE SCROLLING AND USE COMMODITY SHORT TAGS. SHORT TAGS START ENABLED AND USE THE SAME COLORS AS POWERPLAY MINING SEARCH; REFERENCE PAIRS EACH TAG WITH ITS FULL COMMODITY NAME. >>>!"
     },
     {
       "source": "In Settings > Input, enable key chords and select Desktop shortcut settings when you want to approve or configure portal bindings. Startup does not open this menu automatically.",
@@ -267309,6 +268161,14 @@
       "translation": "* NEED MORE CARE WITH VERTICAL THRUST >>>!"
     },
     {
+      "source": "Need:",
+      "translation": "* NEED: >>>!"
+    },
+    {
+      "source": "Need: {0}",
+      "translation": "* NEED: {0} >>>!"
+    },
+    {
       "source": "Needed",
       "translation": "* NEEDED >>>!"
     },
@@ -268745,8 +269605,20 @@
       "translation": "* ON BOARD >>>!"
     },
     {
+      "source": "On board:",
+      "translation": "* ON BOARD: >>>!"
+    },
+    {
       "source": "On board: 73/236 t",
       "translation": "* ON BOARD: 73/236 T >>>!"
+    },
+    {
+      "source": "On board: {0}",
+      "translation": "* ON BOARD: {0} >>>!"
+    },
+    {
+      "source": "On board: {0} t",
+      "translation": "* ON BOARD: {0} T >>>!"
     },
     {
       "source": "On board: {0}/{1} t",
@@ -276233,6 +277105,10 @@
       "translation": "* SELECT MINERALS AND MINING TYPE. TRADITIONAL RING SEARCHES SUPPORT CORE, LASER SURFACE, SURFACE DEPOSIT, AND SUB SURFACE DEPOSIT; CHOOSE PLANETARY MINING FOR LANDABLE SURFACE-MINING BODIES. >>>!"
     },
     {
+      "source": "Select missions below to preview their combined destination requirements.",
+      "translation": "* SELECT MISSIONS BELOW TO PREVIEW THEIR COMBINED DESTINATION REQUIREMENTS. >>>!"
+    },
+    {
       "source": "Select or type a system",
       "translation": "* SELECT OR TYPE A SYSTEM >>>!"
     },
@@ -276879,6 +277755,10 @@
     {
       "source": "Shipyard | Outfitting | Vista",
       "translation": "* SHIPYARD | OUTFITTING | VISTA >>>!"
+    },
+    {
+      "source": "ShipyardBuy",
+      "translation": "* SHIPYARDBUY >>>!"
     },
     {
       "source": "ShipyardSwap",
@@ -280205,6 +281085,10 @@
       "translation": "* THE LINK / AIR LINK, STEAM LINK, VIRTUAL DESKTOP STEAMVR, AND ALVR ROUTES REQUIRE STEAMVR. THE SEPARATE VDXR ROUTE DOES NOT REQUIRE STEAMVR; DIRECT META RUNTIME OVERLAYS REMAIN UNSUPPORTED. >>>!"
     },
     {
+      "source": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+      "translation": "* THE MINING MISSIONS OVERLAY SHOWS ONE CARD PER DESTINATION STATION, WITH SEPARATE COMMODITY TOTALS, THE SELECTED MISSION COUNT, AND THE EARLIEST TRACKED EXPIRY. DIFFERENT STATIONS IN THE SAME SYSTEM STAY SEPARATE. >>>!"
+    },
+    {
       "source": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
       "translation": "* THE NEXUS WAS CREATED, BUT SOME DETAILS COULD NOT BE SAVED. CORRECT THE ENTRIES AND CHOOSE FINISH NEXUS SETUP TO RETRY THIS SAME NEXUS. >>>!"
     },
@@ -281565,6 +282449,10 @@
       "translation": "* THE PANEL APPEARS AUTOMATICALLY WHEN DOCKING OR OPENING ENABLED GAME PANELS. FOR PERSISTENT DISPLAY, TURN THIS OFF AND ENABLE COLONIZATION COMMODITIES. TURN BOTH OFF TO KEEP IT HIDDEN; THE SHORTCUT CAN STILL TOGGLE IT. >>>!"
     },
     {
+      "source": "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+      "translation": "* THE PANEL AUTOMATICALLY SIZES TO ITS CONTENT. POSITION AND GROWTH SETTINGS CONTROL ITS ANCHORED EXPANSION; THE DESTINATION-CARD LIMIT AND GAME VIEWPORT CAP ITS HEIGHT. >>>!"
+    },
+    {
       "source": "The payload is posted directly to https://voxstellar.com/webhooks/v1/system as commander + data and signed with HMAC-SHA256. SrvSurvey does not send startup history or replayed journal entries. Turning the option off invalidates queued entries that have not begun uploading.",
       "translation": "* THE PAYLOAD IS POSTED DIRECTLY TO HTTPS://VOXSTELLAR.COM/WEBHOOKS/V1/SYSTEM AS COMMANDER + DATA AND SIGNED WITH HMAC-SHA256. SRVSURVEY DOES NOT SEND STARTUP HISTORY OR REPLAYED JOURNAL ENTRIES. TURNING THE OPTION OFF INVALIDATES QUEUED ENTRIES THAT HAVE NOT BEGUN UPLOADING. >>>!"
     },
@@ -282757,6 +283645,10 @@
       "translation": "* TO MOVE AN EXISTING MARKER, CLEAR IT FIRST, DRIVE TO THE NEW POSITION, AND PRESS ITS CHORD AGAIN TO SET IT THERE. >>>!"
     },
     {
+      "source": "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+      "translation": "* TO RECOVER MISSIONS ACCEPTED IN OLDER SESSIONS, USE MINING > FIND > LOCAL DISCOVERIES / IMPORT JOURNALS > IMPORT EARLIER JOURNALS. SELECT THE JOURNALS CONTAINING THE ORIGINAL ACCEPTANCE AND SUBSEQUENT MISSION UPDATES. >>>!"
+    },
+    {
       "source": "Toggle FSS information",
       "translation": "* TOGGLE FSS INFORMATION >>>!"
     },
@@ -283005,12 +283897,20 @@
       "translation": "* TRACKMATERIALCOLLECTION >>>!"
     },
     {
+      "source": "Tracked destinations",
+      "translation": "* TRACKED DESTINATIONS >>>!"
+    },
+    {
       "source": "Tracked local projects could not be refreshed: {0}",
       "translation": "* TRACKED LOCAL PROJECTS COULD NOT BE REFRESHED: {0} >>>!"
     },
     {
       "source": "Tracked locations",
       "translation": "* TRACKED LOCATIONS >>>!"
+    },
+    {
+      "source": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+      "translation": "* TRACKED MISSIONS ARE COMBINED BY STATION AND SYSTEM. TURN SHORT TAGS OFF TO SHOW FULL COMMODITY NAMES. >>>!"
     },
     {
       "source": "Tracker",
@@ -283933,6 +284833,10 @@
       "translation": "* USE CHECK CONNECTION AFTER CHANGING RUNTIMES OR REPAIRING A HEADSET CONNECTION. >>>!"
     },
     {
+      "source": "Use Commodity Short Tags",
+      "translation": "* USE COMMODITY SHORT TAGS >>>!"
+    },
+    {
       "source": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
       "translation": "* USE COPY NEXT, OR ENABLE AUTO-COPY NEXT SYSTEM IN GALAXY MAP, THEN PASTE THE NAME INTO THE GALAXY MAP. CARRIER AUTO-COPY IS MUTUALLY EXCLUSIVE WITH BOXEL AND ROUTE MANAGER AUTO-COPY, WHILE FC ROUTES AND SC ROUTES CAN BOTH ENABLE IT. STARTING AUTO-COPY IN BOXEL OR ROUTE MANAGER TURNS BOTH CARRIER OPTIONS OFF; ENABLING CARRIER AUTO-COPY TURNS BOXEL AND ROUTE MANAGER OFF. >>>!"
     },
@@ -284111,6 +285015,10 @@
     {
       "source": "Use downloaded bio data from Canonn and Spansh",
       "translation": "* USE DOWNLOADED BIO DATA FROM CANONN AND SPANSH >>>!"
+    },
+    {
+      "source": "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+      "translation": "* USE EACH CARD'S TRACK CHECKBOX TO SELECT MISSIONS. THE COMPACT SUMMARY ABOVE THE CARDS COMBINES SELECTED COMMODITY REQUIREMENTS FOR EACH DESTINATION STATION AND SYSTEM. >>>!"
     },
     {
       "source": "Use global opacity",
@@ -287041,6 +287949,10 @@
       "translation": "* FUELTANK >>>!"
     },
     {
+      "source": "full-names",
+      "translation": "* FULL-NAMES >>>!"
+    },
+    {
       "source": "function",
       "translation": "* FUNCTION >>>!"
     },
@@ -287719,6 +288631,10 @@
     {
       "source": "mission 2",
       "translation": "* MISSION 2 >>>!"
+    },
+    {
+      "source": "missions tracked",
+      "translation": "* MISSIONS TRACKED >>>!"
     },
     {
       "source": "molybdenum",
@@ -288479,6 +289395,10 @@
     {
       "source": "shipname",
       "translation": "* SHIPNAME >>>!"
+    },
+    {
+      "source": "short-tags",
+      "translation": "* SHORT-TAGS >>>!"
     },
     {
       "source": "shortcuts",
@@ -289903,6 +290823,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "* {0} MESSAGES • {1} UNREAD >>>!"
+    },
+    {
+      "source": "{0} missions tracked",
+      "translation": "* {0} MISSIONS TRACKED >>>!"
     },
     {
       "source": "{0} must be a number.",

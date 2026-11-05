@@ -648,6 +648,16 @@
                                  Value="{Binding MiningWorkspace.SessionYieldLimit, Mode=TwoWay}" />
                 </StackPanel>
               </WrapPanel>
+              <TextBlock Text="Mining missions" FontWeight="SemiBold" />
+              <StackPanel Spacing="6">
+                <TextBlock Text="Destination cards before scrolling" />
+                <NumericUpDown x:Name="MiningMissionDestinationLimitInput" Width="120" HorizontalAlignment="Left"
+                               Minimum="1" Maximum="20" Increment="1" FormatString="0"
+                               Value="{Binding MiningWorkspace.MissionDestinationLimit, Mode=TwoWay}" />
+              </StackPanel>
+              <CheckBox x:Name="MiningMissionShortTagsInput" Content="Use Commodity Short Tags"
+                        IsChecked="{Binding MiningWorkspace.UseCommodityShortTags, Mode=TwoWay}" />
+              <TextBlock Classes="muted" Text="Tracked missions are combined by station and system. Turn short tags off to show full commodity names." TextWrapping="Wrap" />
               <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveOverlaySettingsCommand}" HorizontalAlignment="Left" />
             </StackPanel>
           </StackPanel>

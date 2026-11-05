@@ -39,6 +39,8 @@ public sealed record MiningPreferences
     public bool HideProspectsBelowThreshold { get; set; }
     public MiningSessionYieldSort SessionYieldSort { get; set; }
     public int SessionYieldLimit { get; set; } = 5;
+    public int MissionDestinationLimit { get; set; } = 3;
+    public bool UseCommodityShortTags { get; set; } = true;
     public string HomeSystem { get; set; } = "";
     public Dictionary<string, double> Thresholds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<MiningFiregroup> Firegroups { get; set; } = [];

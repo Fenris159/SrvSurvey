@@ -1,34 +1,78 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:vm="using:SrvSurvey.Desktop.ViewModels" x:Class="SrvSurvey.Desktop.MiningMissionsOverlayPresentation"
+ xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:controls="using:SrvSurvey.Desktop.Controls"
+ x:Class="SrvSurvey.Desktop.MiningMissionsOverlayPresentation"
  x:DataType="vm:MiningMissionsOverlayViewModel" MaxWidth="1000">
  <Border x:Name="MissionPanel" Background="{DynamicResource RavenWindowBrush}" CornerRadius="5" Padding="8" MaxHeight="600">
-  <Grid RowDefinitions="Auto,*" RowSpacing="8">
-   <StackPanel Spacing="8">
-   <TextBlock Classes="overlay-header type-header" Text="MINING MISSIONS" TextWrapping="Wrap" />
-   <TextBlock Classes="type-detail muted" Text="No tracked mining missions." IsVisible="{Binding !HasMissions}" TextWrapping="Wrap" />
+  <Grid RowDefinitions="Auto,*" RowSpacing="6">
+   <StackPanel Spacing="6">
+    <TextBlock Classes="overlay-header type-header" Text="MINING MISSIONS" TextWrapping="Wrap" />
+    <TextBlock Classes="type-detail muted" Text="No tracked mining missions." IsVisible="{Binding !HasMissions}" TextWrapping="Wrap" />
    </StackPanel>
-   <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-   <ItemsControl ItemsSource="{Binding Missions}">
-    <ItemsControl.ItemTemplate>
-     <DataTemplate x:DataType="vm:MiningMissionCardViewModel">
-      <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,0,0,8">
-       <StackPanel Spacing="4">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-         <TextBlock Classes="type-title" Text="{Binding Commodity}" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap" />
-         <TextBlock Grid.Column="1" Classes="type-icon" Text="&#x2713;" IsVisible="{Binding IsComplete}" FontWeight="Bold" FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/NotoSansSymbols2#Noto Sans Symbols 2" Foreground="{DynamicResource RavenColoniseSurplusBrush}" />
-        </Grid>
-        <TextBlock Classes="type-body" Text="{Binding CargoProgress}" TextWrapping="Wrap" />
-        <ProgressBar Height="4" Value="{Binding CargoPercentage}" Maximum="100" Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
-        <TextBlock Classes="type-body" Text="{Binding DeliveryProgress}" Foreground="{DynamicResource RavenSuccessBrush}" TextWrapping="Wrap" />
-        <ProgressBar Height="4" Value="{Binding DeliveryPercentage}" Maximum="100" Foreground="{DynamicResource RavenSuccessBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
-        <TextBlock Classes="type-detail" Text="{Binding Needed}" TextWrapping="Wrap" />
-        <TextBlock Classes="type-detail" Text="{Binding Destination}" TextWrapping="Wrap" />
-        <TextBlock Classes="type-caption muted" Text="{Binding TimeRemaining}" TextWrapping="Wrap" />
-       </StackPanel>
-      </Border>
-     </DataTemplate>
-    </ItemsControl.ItemTemplate>
-   </ItemsControl>
+   <ScrollViewer x:Name="DestinationScroller" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ItemsControl x:Name="DestinationItems" ItemsSource="{Binding Destinations}">
+     <ItemsControl.ItemTemplate>
+      <DataTemplate x:DataType="vm:MiningMissionDestinationViewModel">
+       <Border Classes="mining-destination-card" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,6,0,8">
+        <controls:MiningMissionDestinationPanel>
+         <StackPanel Spacing="2">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+           <TextBlock Classes="type-title" Text="{Binding Heading}" Foreground="{DynamicResource RavenAccentBrush}" TextWrapping="Wrap" />
+           <TextBlock Grid.Column="1" Classes="type-icon" Text="&#x2713;" IsVisible="{Binding IsComplete}" FontWeight="Bold" FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/NotoSansSymbols2#Noto Sans Symbols 2" Foreground="{DynamicResource RavenSuccessBrush}" />
+          </Grid>
+          <TextBlock Classes="type-body" Text="{Binding System}" IsVisible="{Binding HasStation}" TextWrapping="Wrap" />
+          <WrapPanel>
+           <TextBlock Classes="type-value" Text="{Binding TrackedCount}" Foreground="{DynamicResource RavenWarningBrush}" Margin="0,0,4,0" />
+           <TextBlock Classes="type-detail muted" Text="missions tracked" VerticalAlignment="Center" />
+          </WrapPanel>
+         </StackPanel>
+         <StackPanel Spacing="6">
+          <ItemsControl ItemsSource="{Binding Commodities}">
+           <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:MiningMissionCommodityTotalsViewModel">
+             <StackPanel Spacing="3" Margin="0,0,0,6">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+               <StackPanel VerticalAlignment="Center">
+                <Border Classes="commodity-code material" MinWidth="40" MinHeight="20" Padding="4,1" IsVisible="{Binding UseShortTags}" ToolTip.Tip="{Binding Commodity}">
+                 <TextBlock Classes="type-icon" Text="{Binding Code}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Classes="type-body" Text="{Binding Commodity}" IsVisible="{Binding !UseShortTags}" TextWrapping="Wrap" MaxWidth="160" />
+               </StackPanel>
+               <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
+                <TextBlock Classes="type-detail" Text="On board:" Margin="0,0,4,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="CargoProgressValue" Classes="type-value" Text="{Binding OnBoard, StringFormat='{}{0:N0}'}" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" />
+                <TextBlock Classes="type-detail" Text="t" Margin="4,0,0,0" VerticalAlignment="Center" />
+               </WrapPanel>
+              </Grid>
+              <ProgressBar Height="4" Value="{Binding CargoPercentage}" Maximum="100" Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
+              <WrapPanel>
+               <WrapPanel Margin="0,0,10,0">
+                <TextBlock Classes="type-detail" Text="Delivered:" VerticalAlignment="Center" Margin="0,0,4,0" TextWrapping="Wrap" />
+                <TextBlock x:Name="DeliveryProgressValue" Classes="type-value" Text="{Binding DeliveryAmount}" Foreground="{DynamicResource RavenSuccessBrush}" TextWrapping="Wrap" />
+               </WrapPanel>
+               <WrapPanel>
+                <TextBlock Classes="type-detail" Text="Need:" VerticalAlignment="Center" Margin="0,0,4,0" TextWrapping="Wrap" />
+                <TextBlock Classes="type-value" Text="{Binding Remaining, StringFormat='{}{0:N0}'}" Foreground="{DynamicResource RavenDangerBrush}" TextWrapping="Wrap" />
+               </WrapPanel>
+              </WrapPanel>
+              <ProgressBar Height="4" Value="{Binding DeliveryPercentage}" Maximum="100" Foreground="{DynamicResource RavenSuccessBrush}" Background="{DynamicResource RavenRaisedSurfaceBrush}" />
+             </StackPanel>
+            </DataTemplate>
+           </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <WrapPanel>
+           <TextBlock Classes="type-caption muted" FontSize="11" Text="Earliest:" Margin="0,0,4,0" VerticalAlignment="Center" />
+           <TextBlock Classes="type-value" FontSize="11" Text="{Binding TimeRemaining}" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" />
+          </WrapPanel>
+          <WrapPanel>
+           <TextBlock Classes="type-caption muted" FontSize="11" Text="Estimated Trips:" Margin="0,0,4,0" VerticalAlignment="Center" />
+           <TextBlock Classes="type-value" FontSize="11" Text="{Binding EstimatedTripsValue}" Foreground="{DynamicResource RavenWarningBrush}" />
+          </WrapPanel>
+         </StackPanel>
+        </controls:MiningMissionDestinationPanel>
+       </Border>
+      </DataTemplate>
+     </ItemsControl.ItemTemplate>
+    </ItemsControl>
    </ScrollViewer>
   </Grid>
  </Border>

@@ -1,4 +1,11 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.6
+# SrvSurvey-XP 2.1.3.0-rc.77.7
+
+RC77.7 compacts mining mission planning with a responsive mission-card grid and
+a live summary of tracked destination requirements. The overlay combines selected
+missions by station and system, totals each commodity and shows the earliest
+tracked expiry. Choose how many destination cards appear before scrolling and
+switch between full commodity names and the colored short tags used by Powerplay
+mining search. Reference now pairs those tags with their full names.
 
 RC77.6 improves VR overlay calibration with readable controls, fine and coarse
 adjustments, sample panels independent of gameplay, and a calibration panel in
@@ -43,6 +50,21 @@ from RC77.
 
 ## What's changed
 
+- **Mining mission planning:** A denser workspace fits four mission cards across
+  at typical widths and adds compact destination summary rows above the cards.
+  Selecting missions updates both the summary and overlay. Each destination
+  shows selected versus active mission counts, per-commodity onboard, delivered
+  and needed totals, and the earliest selected expiry. Different stations in the
+  same system remain separate. Estimated Trips rounds the destination's remaining
+  needs up against the current ship's cargo capacity; unknown capacity shows a dash.
+- **Mining mission overlay settings:** Destination cards before scrolling defaults
+  to three, with a range of one to twenty; the game viewport also limits height.
+  Use Commodity Short Tags starts enabled. The tags reuse Powerplay mining search
+  codes and colors, and Reference displays each tag beside its full commodity name.
+  Both settings persist per commander and can be edited with the game closed.
+  The panel automatically sizes to its content and follows saved placement anchors
+  as it expands or contracts. Large readouts wrap inside the panel, and narrow
+  workspaces reflow their destination summaries.
 - **VR calibration:** A shared desktop and headset editor keeps all seven fields
   readable, offers normal/fine/coarse steps and mouse-wheel adjustment, and shows
   sample data even when gameplay would hide a panel. Place in front of me moves

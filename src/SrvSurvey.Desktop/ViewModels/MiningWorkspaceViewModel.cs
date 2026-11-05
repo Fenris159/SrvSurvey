@@ -648,6 +648,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             {
                 InvalidateMissionCards();
                 Changed(nameof(MissionCards));
+                Changed(nameof(TrackedMissionDestinations));
             }
             Changed(indicatorsProperty);
         });
@@ -777,6 +778,10 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     {
         JsonElement json = entry.Payload;
         ApplyMissionLocation(entry);
+        if (entry.EventName is "LoadGame" or "ShipyardSwap" or "ShipyardBuy")
+        {
+            capacity = 0;
+        }
         if (entry.EventName is "Location" or FsdJumpEvent or "CarrierJump")
         {
             system = Text(json, "StarSystem");
@@ -1484,6 +1489,8 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             Changed(nameof(HideProspectsBelowThreshold));
             Changed(nameof(SessionYieldSortIndex));
             Changed(nameof(SessionYieldLimit));
+            Changed(nameof(MissionDestinationLimit));
+            Changed(nameof(UseCommodityShortTags));
             Refresh();
             Status = overlaySaved
                 ? "Mining backup restored. Previous data retained in the backup folder."
@@ -1536,6 +1543,8 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         Changed(nameof(HideProspectsBelowThreshold));
         Changed(nameof(SessionYieldSortIndex));
         Changed(nameof(SessionYieldLimit));
+        Changed(nameof(MissionDestinationLimit));
+        Changed(nameof(UseCommodityShortTags));
     }
 
     private void RememberPledgedPower(string frontierId, string? commanderName)
@@ -1700,6 +1709,8 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                     nameof(ShouldShowSession),
                     nameof(ShouldShowMissions),
                     nameof(MissionCards),
+                    nameof(TrackedMissionDestinations),
+                    nameof(HasTrackedMissionDestinations),
                     nameof(HasMissionCards),
                     nameof(VisibleNotices),
                     nameof(CurrentProspectText),
@@ -1763,6 +1774,8 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 nameof(ShouldShowSession),
                 nameof(ShouldShowMissions),
                 nameof(MissionCards),
+                nameof(TrackedMissionDestinations),
+                nameof(HasTrackedMissionDestinations),
                 nameof(HasMissionCards),
                 nameof(VisibleNotices),
                 nameof(CurrentProspectText),
@@ -1820,6 +1833,9 @@ public sealed record MiningProspectMaterialViewModel(string Text, bool IsHighlig
 
 public sealed record MiningReferenceCommodityRowViewModel(string Name, int AverageSellPrice, int MaximumSellPrice = 0)
 {
+    public string Code => MiningCommodityCode.Abbreviate(Name);
+    public string ColorHex => SurfaceMaterialBadgePalette.ColorHexFor(Code);
+    public string ContrastForeground => SurfaceMaterialBadgePalette.ForegroundFor(ColorHex);
     public string AverageSellPriceLabel => $"{AverageSellPrice:N0} CR/t";
     public string MaximumSellPriceLabel => MaximumSellPrice > 0 ? $"{MaximumSellPrice:N0} CR/t" : "—";
 

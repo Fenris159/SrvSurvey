@@ -25,6 +25,10 @@ internal static class OverlayEditorPreviewCatalog
         OverlayEditorPreviewStateDefinition[]
     >(StringComparer.Ordinal)
     {
+        ["PlotMiningMissions"] = CreatePreviewStates(
+            ("short-tags", "Commodity tags"),
+            ("full-names", "Full commodity names")
+        ),
         ["PlotBioSystem"] = CreatePreviewStates(
             ("system-overview", "System overview"),
             ("body-predictions", "Body predictions"),
@@ -137,7 +141,7 @@ internal static class OverlayEditorPreviewCatalog
             "PlotExplorationPois" => OverlayEditorPreviewFactories.CreateExplorationPois(),
             "PlotMiningNotifications" => new MiningActivityOverlayViewModel(null, false),
             "PlotMiningSession" => new MiningSessionOverlayViewModel(null),
-            "PlotMiningMissions" => new MiningMissionsOverlayViewModel(null),
+            "PlotMiningMissions" => new MiningMissionsOverlayViewModel(null, previewState != "full-names"),
             "PlotMiningCargo" => new MiningCargoOverlayViewModel(null),
             "PlotMiningReference" => CreateMiningReferencePreview(),
             "PlotMiningFiregroups" => new MiningActivityOverlayViewModel(null, true),

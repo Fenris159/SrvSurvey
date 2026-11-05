@@ -1380,6 +1380,12 @@ public static class GuideCatalog
                         "Mining > Missions compares active mining contracts with cargo and delivery progress.",
                         [
                             "Accept a mining mission in Elite and check its commodity, required amount, delivered amount, onboard allocation, and remaining need.",
+                            "Use each card's Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+                            "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+                            "The panel automatically sizes to its content. Position and growth settings control its anchored expansion; the destination-card limit and game viewport cap its height.",
+                            "Estimated Trips divides the destination's remaining needs by your current ship's cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+                            "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
+                            "To recover missions accepted in older sessions, use Mining > Find > Local discoveries / import journals > Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
                             "Use Find hotspots for this commodity from a mission’s context menu to plan collection.",
                             "Complete, abandon, or fail the mission in Elite; journal events update the list.",
                         ],

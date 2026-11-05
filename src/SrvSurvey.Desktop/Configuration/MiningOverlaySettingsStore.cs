@@ -12,7 +12,9 @@ public sealed record MiningOverlayPreferences(
     int PersistentProspectSlots = 4,
     bool HideProspectsBelowThreshold = false,
     MiningSessionYieldSort SessionYieldSort = MiningSessionYieldSort.AveragePercentage,
-    int SessionYieldLimit = 5
+    int SessionYieldLimit = 5,
+    int MissionDestinationLimit = 3,
+    bool UseCommodityShortTags = true
 )
 {
     public static MiningOverlayPreferences From(MiningPreferences settings) =>
@@ -23,7 +25,9 @@ public sealed record MiningOverlayPreferences(
             settings.PersistentProspectSlots,
             settings.HideProspectsBelowThreshold,
             settings.SessionYieldSort,
-            settings.SessionYieldLimit
+            settings.SessionYieldLimit,
+            settings.MissionDestinationLimit,
+            settings.UseCommodityShortTags
         );
 
     public void ApplyTo(MiningPreferences settings)
@@ -37,6 +41,8 @@ public sealed record MiningOverlayPreferences(
             ? SessionYieldSort
             : MiningSessionYieldSort.AveragePercentage;
         settings.SessionYieldLimit = Math.Clamp(SessionYieldLimit, 1, 100);
+        settings.MissionDestinationLimit = Math.Clamp(MissionDestinationLimit, 1, 20);
+        settings.UseCommodityShortTags = UseCommodityShortTags;
     }
 
     /// <summary>Merges only edited fields so a commander's unrelated preferences remain intact.</summary>
@@ -54,7 +60,13 @@ public sealed record MiningOverlayPreferences(
                 ? after.HideProspectsBelowThreshold
                 : HideProspectsBelowThreshold,
             before.SessionYieldSort != after.SessionYieldSort ? after.SessionYieldSort : SessionYieldSort,
-            before.SessionYieldLimit != after.SessionYieldLimit ? after.SessionYieldLimit : SessionYieldLimit
+            before.SessionYieldLimit != after.SessionYieldLimit ? after.SessionYieldLimit : SessionYieldLimit,
+            before.MissionDestinationLimit != after.MissionDestinationLimit
+                ? after.MissionDestinationLimit
+                : MissionDestinationLimit,
+            before.UseCommodityShortTags != after.UseCommodityShortTags
+                ? after.UseCommodityShortTags
+                : UseCommodityShortTags
         );
 }
 
@@ -172,8 +184,17 @@ public sealed class MiningOverlaySettingsStore(string path)
             : null;
         JsonObject defaults = Serialize(new());
         JsonObject values =
-            profile is not null && defaults.All(property => profile.ContainsKey(property.Key))
-                ? profile.DeepClone().AsObject()
+            profile is not null
+            && defaults
+                .Where(property =>
+                    property.Key
+                        is not (
+                            nameof(MiningOverlayPreferences.MissionDestinationLimit)
+                            or nameof(MiningOverlayPreferences.UseCommodityShortTags)
+                        )
+                )
+                .All(property => profile.ContainsKey(property.Key))
+                ? defaults.DeepClone().AsObject()
                 : Serialize(fallback());
         ApplyFields(values, profile);
         if (includeDraft && section?[Pending] is JsonObject pending)
