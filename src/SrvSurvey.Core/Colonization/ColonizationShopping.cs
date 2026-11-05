@@ -90,11 +90,20 @@ public static class ColonizationShopping
     public static IReadOnlyList<ColonizationShoppingNeed> SubtractCarrierCargo(
         IEnumerable<ColonizationShoppingNeed> needs,
         IEnumerable<ColonizationFleetCarrier> carriers,
-        long selectedMarketId = 0
+        long selectedMarketId = 0,
+        IReadOnlyList<long>? selectedMarketIds = null
     )
     {
+        var selectedIds = selectedMarketIds?.ToHashSet();
         var stock = carriers
-            .Where(carrier => carrier.MarketId > 0 && (selectedMarketId == 0 || carrier.MarketId == selectedMarketId))
+            .Where(carrier =>
+                carrier.MarketId > 0
+                && (
+                    selectedIds is not null
+                        ? selectedIds.Contains(carrier.MarketId)
+                        : selectedMarketId == 0 || carrier.MarketId == selectedMarketId
+                )
+            )
             .DistinctBy(carrier => carrier.MarketId)
             .Where(carrier => carrier.Cargo is not null)
             .SelectMany(carrier =>
@@ -123,7 +132,8 @@ public static class ColonizationShopping
     public static double CarrierCoveragePercent(
         ColonizationProject project,
         IEnumerable<ColonizationFleetCarrier> carriers,
-        long selectedMarketId = 0
+        long selectedMarketId = 0,
+        IReadOnlyList<long>? selectedMarketIds = null
     )
     {
         IReadOnlyList<ColonizationShoppingNeed> needs = Aggregate([project]);
@@ -132,7 +142,8 @@ public static class ColonizationShopping
         {
             return project.IsComplete || project.Commodities.Count > 0 ? 100 : 0;
         }
-        long remaining = SubtractCarrierCargo(needs, carriers, selectedMarketId).Sum(need => need.Required);
+        long remaining = SubtractCarrierCargo(needs, carriers, selectedMarketId, selectedMarketIds)
+            .Sum(need => need.Required);
         return (total - remaining) * 100d / total;
     }
 

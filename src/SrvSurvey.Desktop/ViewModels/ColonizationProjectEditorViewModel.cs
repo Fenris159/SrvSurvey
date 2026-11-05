@@ -6,7 +6,7 @@ using SrvSurvey.Core.Colonization;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
+public sealed partial class ColonizationProjectEditorViewModel : INotifyPropertyChanged
 {
     private readonly IRavenColonialClient client;
     private readonly ColonizationBuildCatalog buildCatalog;
@@ -124,6 +124,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(PrepareButtonText));
                 OnPropertyChanged(nameof(ReviewButtonText));
+                NotifyCarrierSelection();
                 RaiseCommandStates();
             }
         }
@@ -373,7 +374,8 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             ? string.Empty
             : $"Publish {pendingProject.BuildName} in "
                 + $"{pendingProject.SystemName} with "
-                + $"{pendingProject.Commodities.Values.Sum():N0} cargo remaining?";
+                + $"{pendingProject.Commodities.Values.Sum():N0} cargo remaining?"
+                + CarrierConfirmationSummary;
 
     public bool HasCreatedProject => createdProject is not null;
 
@@ -402,6 +404,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         context = updatedContext;
         if (identityChanged)
         {
+            ResetCarrierLinkSelection();
             IsPrepared = false;
             isSystemArchitect = false;
             bodyNumberFollowsContext = true;
@@ -582,6 +585,12 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
+        if (CarrierSelectionError() is { } carrierError)
+        {
+            StatusMessage = carrierError;
+            return Task.CompletedTask;
+        }
+
         if (GetPlannedSiteRequirementError() is { } plannedSiteError)
         {
             StatusMessage = plannedSiteError;
@@ -620,6 +629,13 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
     {
         if (pendingProject is null || IsBusy)
         {
+            return;
+        }
+
+        if (CarrierSelectionError() is { } carrierError)
+        {
+            ClearConfirmation();
+            StatusMessage = carrierError;
             return;
         }
 
@@ -698,6 +714,7 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         }
 
         int version = contextVersion;
+        IReadOnlyList<ColonizationFleetCarrier> carriers = IncludeCarrierLinks ? SelectedCreationCarriers() : [];
         ColonizationProject? publishedProject = null;
         IsBusy = true;
         StatusMessage = "Publishing the project to Raven Colonial...";
@@ -705,6 +722,10 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         {
             ColonizationProjectPublishResult result = await projectPublisher.CreateAsync(project, context.RavenApiKey);
             ColonizationProject? created = result.Project;
+            if (version != contextVersion)
+            {
+                return;
+            }
             if (created is null)
             {
                 StatusMessage = "Raven Colonial did not create the project. It may already exist.";
@@ -712,10 +733,6 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             }
 
             publishedProject = created;
-            if (version != contextVersion)
-            {
-                return;
-            }
             createdProject = created;
             pendingProject = null;
             pendingContextIdentity = null;
@@ -728,18 +745,23 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(HasCreatedProject));
             OnPropertyChanged(nameof(CreatedProjectSummary));
             OnPropertyChanged(nameof(CreatedProjectId));
+            (ColonizationProject linkedProject, string? carrierMessage) = await LinkCreatedProjectCarriersAsync(
+                created,
+                carriers,
+                version
+            );
+            if (version != contextVersion)
+            {
+                return;
+            }
+            created = linkedProject;
+            createdProject = created;
             await onCreated(created);
             if (version != contextVersion)
             {
                 return;
             }
-            StatusMessage =
-                result.Warning
-                ?? (
-                    result.PrimarySiteOrderStatus == ColonizationPrimarySiteOrderStatus.Restored
-                        ? $"Created {created.BuildName} and restored the existing primary port to the first position."
-                        : $"Created {created.BuildName}. It was added to the active project list."
-                );
+            ReportCreatedProject(result, created, carrierMessage);
         }
         catch (Exception exception)
             when (exception
@@ -760,6 +782,25 @@ public sealed class ColonizationProjectEditorViewModel : INotifyPropertyChanged
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private void ReportCreatedProject(
+        ColonizationProjectPublishResult result,
+        ColonizationProject created,
+        string? carrierMessage
+    )
+    {
+        StatusMessage =
+            result.Warning
+            ?? (
+                result.PrimarySiteOrderStatus == ColonizationPrimarySiteOrderStatus.Restored
+                    ? $"Created {created.BuildName} and restored the existing primary port to the first position."
+                    : $"Created {created.BuildName}. It was added to the active project list."
+            );
+        if (carrierMessage is not null)
+        {
+            StatusMessage += " " + carrierMessage;
         }
     }
 

@@ -16,7 +16,24 @@ public sealed partial class ColonizationSettingsStore
             : 0;
     }
 
-    internal void SavePlanningCarrier(string commander, long marketId)
+    internal IReadOnlyList<long>? LoadPlanningCarrierIds(string commander)
+    {
+        JsonObject root = documentStore.Load();
+        var section = root[ColonizationSectionKey] as JsonObject;
+        var choices = section?["PlanningCarrierSelections"] as JsonObject;
+        return choices?[commander.ToUpperInvariant()] is JsonArray ids
+            ? ids.OfType<JsonValue>()
+                .Select(value => value.TryGetValue<long>(out long id) ? id : 0)
+                .Where(id => id > 0)
+                .Distinct()
+                .ToArray()
+            : null;
+    }
+
+    internal void SavePlanningCarrier(string commander, long marketId) =>
+        SavePlanningCarrier(commander, marketId, null);
+
+    internal void SavePlanningCarrier(string commander, long marketId, IReadOnlyList<long>? selectedIds)
     {
         documentStore.Update(root =>
         {
@@ -31,6 +48,14 @@ public sealed partial class ColonizationSettingsStore
                 section["PlanningCarriers"] = choices;
             }
             choices[commander.ToUpperInvariant()] = marketId;
+            if (section["PlanningCarrierSelections"] is not JsonObject selections)
+            {
+                selections = [];
+                section["PlanningCarrierSelections"] = selections;
+            }
+            selections[commander.ToUpperInvariant()] = selectedIds is null
+                ? null
+                : new JsonArray(selectedIds.Select(id => (JsonNode?)JsonValue.Create(id)).ToArray());
             root[VersionKey] = 1;
         });
     }

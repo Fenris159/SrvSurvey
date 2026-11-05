@@ -14,6 +14,9 @@ public sealed class ColonizationCommodityPlanRequest
     /// <summary>Carrier used to provision planned sites; zero includes all commander carriers.</summary>
     public long PlanningCarrierMarketId { get; init; }
 
+    /// <summary>Checked carriers for cargo calculations; an empty list includes no carrier cargo.</summary>
+    public IReadOnlyList<long>? PlanningCarrierMarketIds { get; init; }
+
     public string? CommanderName { get; init; }
 
     public IReadOnlyList<ColonizationFleetCarrier>? FleetCarriers { get; init; }
@@ -61,7 +64,8 @@ public static class ColonizationCommodityPlanner
             relevantProjects,
             carriers,
             atConstructionSite && localProject is null,
-            request.PlanningCarrierMarketId
+            request.PlanningCarrierMarketId,
+            request.PlanningCarrierMarketIds
         );
         Dictionary<string, Requirement> requirements = hasCurrentDepot
             ? CreateDepotRequirements(depot!)
@@ -151,12 +155,14 @@ public static class ColonizationCommodityPlanner
         IReadOnlyList<ColonizationProject> projects,
         IReadOnlyList<ColonizationFleetCarrier> carriers,
         bool includeAll,
-        long planningCarrierMarketId
+        long planningCarrierMarketId,
+        IReadOnlyList<long>? planningCarrierMarketIds
     )
     {
+        var checkedIds = planningCarrierMarketIds?.ToHashSet();
         if (includeAll)
         {
-            return carriers.ToArray();
+            return carriers.Where(carrier => checkedIds is null || checkedIds.Contains(carrier.MarketId)).ToArray();
         }
 
         var marketIds = projects
@@ -167,8 +173,18 @@ public static class ColonizationCommodityPlanner
         bool hasPlans = projects.Any(project => project.IsPlanned);
         return carriers
             .Where(carrier =>
-                marketIds.Contains(carrier.MarketId)
-                || (hasPlans && (planningCarrierMarketId <= 0 || carrier.MarketId == planningCarrierMarketId))
+                (checkedIds is null || checkedIds.Contains(carrier.MarketId))
+                && (
+                    marketIds.Contains(carrier.MarketId)
+                    || (
+                        hasPlans
+                        && (
+                            checkedIds is not null
+                            || planningCarrierMarketId <= 0
+                            || carrier.MarketId == planningCarrierMarketId
+                        )
+                    )
+                )
             )
             .DistinctBy(carrier => carrier.MarketId)
             .ToArray();

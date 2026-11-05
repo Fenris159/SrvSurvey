@@ -1663,6 +1663,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
                     HiddenBuildIds = EffectiveHiddenProjectIds.ToArray(),
                     PrimaryBuildId = FocusProjectId,
                     PlanningCarrierMarketId = SelectedPlanningCarrierMarketId,
+                    PlanningCarrierMarketIds = CarrierSelection.CaptureSelectedIds(),
                     CommanderName = CommanderName,
                     FleetCarriers = recovery.FleetCarriers,
                     ShipCargo = shipCargo,
@@ -1863,6 +1864,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     /// <summary>Refreshes workspace and recovery action availability after preferences or commander context change.</summary>
     private void RaiseCommandStates()
     {
+        RaiseProjectCarrierCommandStates();
         carrierManifestCommand.Refresh();
         OnPropertyChanged(nameof(CanAutoRefresh));
         refreshCommand.RaiseCanExecuteChanged();

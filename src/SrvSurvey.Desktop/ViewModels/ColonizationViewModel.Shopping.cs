@@ -138,7 +138,8 @@ public sealed partial class ColonizationViewModel
             needs = ColonizationShopping.SubtractCarrierCargo(
                 needs,
                 LinkedFleetCarriers,
-                carrierSearch.SelectedCarrierMarketId
+                carrierSearch.SelectedCarrierMarketId,
+                carrierSearch.SelectedCarrierMarketIds
             );
         }
         if (hasCurrentShoppingProjects && shoppingSession?.Search is { } search)
@@ -241,13 +242,9 @@ public sealed partial class ColonizationViewModel
                 if (string.Equals(commander, CommanderName, StringComparison.OrdinalIgnoreCase))
                 {
                     shoppingSession = session;
-                    if (planningCarrierMarketId != state.SelectedCarrierMarketId)
+                    if (!CarrierSelection.Matches(state.SelectedCarrierMarketIds, state.SelectedCarrierMarketId))
                     {
-                        planningCarrierMarketId = state.SelectedCarrierMarketId;
-                        OnPropertyChanged(nameof(SelectedPlanningCarrierMarketId));
-                        OnPropertyChanged(nameof(SelectedPlanningCarrier));
-                        SavePlanningCarrier();
-                        UpdateCommodityPlan();
+                        CarrierSelection.Restore(state.SelectedCarrierMarketIds, state.SelectedCarrierMarketId);
                     }
                     ReconcileWishList();
                     OnPropertyChanged(nameof(SearchMarketsButtonText));
@@ -260,7 +257,18 @@ public sealed partial class ColonizationViewModel
             OpenWishListCommand = wishListCommand,
         };
         shoppingWorkspace = model;
-        model.UpdateCarriers(LinkedFleetCarriers, preferredCarrierMarketId ?? planningCarrierMarketId);
+        if (preferredCarrierMarketId.HasValue)
+        {
+            model.UpdateCarriers(LinkedFleetCarriers, preferredCarrierMarketId.Value);
+        }
+        else
+        {
+            model.UpdatePlanningCarriers(
+                LinkedFleetCarriers,
+                CarrierSelection.CapturePreference(),
+                planningCarrierMarketId
+            );
+        }
         model.SaveWorkspace();
         OnPropertyChanged(nameof(MarketSearchWorkspace));
         return model;
@@ -314,7 +322,9 @@ public sealed partial class ColonizationViewModel
         ReconcileWishList();
         OnPropertyChanged(nameof(SearchMarketsButtonText));
         SaveShoppingSession("The shopping selection could not be saved to disk.");
-        EnsureMarketSearchWorkspace(state?.SelectedCarrierMarketId);
+        EnsureMarketSearchWorkspace(
+            state?.SelectedCarrierMarketIds is not null ? null : state?.SelectedCarrierMarketId
+        );
     }
 
     private void SaveShoppingSession(string failureMessage)

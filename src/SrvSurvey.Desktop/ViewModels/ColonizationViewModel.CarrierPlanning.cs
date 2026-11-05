@@ -7,6 +7,10 @@ public sealed partial class ColonizationViewModel
     private long planningCarrierMarketId;
     private IReadOnlyList<ColonizationFleetCarrier>? planningCarriers;
     private bool updatingPlanningCarriers;
+    private ColonizationCarrierSelectionViewModel? carrierSelection;
+
+    public ColonizationCarrierSelectionViewModel CarrierSelection =>
+        carrierSelection ??= new(OnPlanningCarrierSelectionChanged);
 
     public IReadOnlyList<ColonizationCarrierChoice> PlanningCarrierOptions { get; private set; } = [new(0, "ALL")];
 
@@ -30,40 +34,61 @@ public sealed partial class ColonizationViewModel
         get => planningCarrierMarketId;
         set
         {
-            if (updatingPlanningCarriers || !SetField(ref planningCarrierMarketId, value))
+            if (!updatingPlanningCarriers)
             {
-                return;
+                CarrierSelection.Restore(null, value);
             }
-            OnPropertyChanged(nameof(SelectedPlanningCarrier));
-            SavePlanningCarrier();
-            UpdateCommodityPlan();
-            ApplyPlanningCarrierToShopping();
         }
     }
 
     private void RestorePlanningCarrier()
     {
-        planningCarrierMarketId = CommanderName is null ? 0 : settingsStore.LoadPlanningCarrier(CommanderName);
-        planningCarriers = null;
+        updatingPlanningCarriers = true;
+        try
+        {
+            long legacy = CommanderName is null ? 0 : settingsStore.LoadPlanningCarrier(CommanderName);
+            CarrierSelection.Restore(
+                CommanderName is null ? null : settingsStore.LoadPlanningCarrierIds(CommanderName),
+                legacy
+            );
+            planningCarrierMarketId = CarrierSelection.LegacyMarketId;
+            planningCarriers = null;
+        }
+        finally
+        {
+            updatingPlanningCarriers = false;
+        }
         UpdatePlanningCarriers();
+    }
+
+    private void OnPlanningCarrierSelectionChanged()
+    {
+        if (updatingPlanningCarriers)
+        {
+            return;
+        }
+        planningCarrierMarketId = CarrierSelection.LegacyMarketId;
+        OnPropertyChanged(nameof(SelectedPlanningCarrierMarketId));
+        OnPropertyChanged(nameof(SelectedPlanningCarrier));
+        SavePlanningCarrier();
+        UpdateCommodityPlan();
+        ApplyPlanningCarrierToShopping();
     }
 
     private void UpdatePlanningCarriers()
     {
         if (!ReferenceEquals(planningCarriers, LinkedFleetCarriers))
         {
+            IReadOnlyList<long>? previous = CarrierSelection.CapturePreference();
+            long legacy = CarrierSelection.LegacyMarketId;
             planningCarriers = LinkedFleetCarriers;
+            ProjectEditor.UpdateCarrierOptions(LinkedFleetCarriers);
             PlanningCarrierOptions = ColonizationCarrierChoice.CreateOptions(LinkedFleetCarriers);
-            bool reset =
-                hasCurrentShoppingProjects
-                && !PlanningCarrierOptions.Any(choice => choice.MarketId == planningCarrierMarketId);
-            if (reset)
-            {
-                planningCarrierMarketId = 0;
-            }
             updatingPlanningCarriers = true;
             try
             {
+                CarrierSelection.UpdateCarriers(LinkedFleetCarriers, pruneMissing: hasCurrentShoppingProjects);
+                planningCarrierMarketId = CarrierSelection.LegacyMarketId;
                 OnPropertyChanged(nameof(PlanningCarrierOptions));
                 OnPropertyChanged(nameof(SelectedPlanningCarrierMarketId));
                 OnPropertyChanged(nameof(SelectedPlanningCarrier));
@@ -72,13 +97,14 @@ public sealed partial class ColonizationViewModel
             {
                 updatingPlanningCarriers = false;
             }
-            if (reset)
+            if (hasCurrentShoppingProjects && !CarrierSelection.Matches(previous, legacy))
             {
                 SavePlanningCarrier();
                 ApplyPlanningCarrierToShopping();
             }
         }
         UpdateProjectCarrierCoverage();
+        RaiseProjectCarrierCommandStates();
     }
 
     private void UpdateProjectCarrierCoverage()
@@ -87,7 +113,11 @@ public sealed partial class ColonizationViewModel
         foreach (ColonizationProjectRowViewModel row in Projects)
         {
             changed |= row.UpdateCarrierCoverage(
-                ColonizationShopping.CarrierCoveragePercent(row.Project, LinkedFleetCarriers, planningCarrierMarketId)
+                ColonizationShopping.CarrierCoveragePercent(
+                    row.Project,
+                    LinkedFleetCarriers,
+                    selectedMarketIds: CarrierSelection.CaptureSelectedIds()
+                )
             );
         }
         if (
@@ -101,7 +131,10 @@ public sealed partial class ColonizationViewModel
 
     private void ApplyPlanningCarrierToShopping()
     {
-        if (shoppingWorkspace?.SelectPlanningCarrier(planningCarrierMarketId) == true)
+        if (
+            shoppingWorkspace?.SelectPlanningCarriers(CarrierSelection.CapturePreference(), planningCarrierMarketId)
+            == true
+        )
         {
             return;
         }
@@ -109,7 +142,11 @@ public sealed partial class ColonizationViewModel
         {
             shoppingSession = shoppingSession with
             {
-                Search = search with { SelectedCarrierMarketId = planningCarrierMarketId },
+                Search = search with
+                {
+                    SelectedCarrierMarketId = planningCarrierMarketId,
+                    SelectedCarrierMarketIds = CarrierSelection.CapturePreference(),
+                },
             };
             ReconcileWishList();
             SaveShoppingSession("The updated carrier selection could not be saved to disk.");
@@ -124,7 +161,11 @@ public sealed partial class ColonizationViewModel
         }
         try
         {
-            settingsStore.SavePlanningCarrier(CommanderName, planningCarrierMarketId);
+            settingsStore.SavePlanningCarrier(
+                CommanderName,
+                planningCarrierMarketId,
+                CarrierSelection.CapturePreference()
+            );
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

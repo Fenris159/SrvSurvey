@@ -7,6 +7,11 @@ public sealed partial class ColonizationShoppingViewModel
     private IReadOnlyList<ColonizationFleetCarrier> linkedCarriers = [];
     private bool useCarrierDifference = true;
     private long selectedCarrierMarketId;
+    private bool updatingCarrierSelection;
+    private ColonizationCarrierSelectionViewModel? carrierSelection;
+
+    public ColonizationCarrierSelectionViewModel CarrierSelection =>
+        carrierSelection ??= new(OnCarrierSelectionChanged);
 
     public IReadOnlyList<ColonizationCarrierChoice> CarrierOptions { get; private set; } = [new(0, "ALL")];
 
@@ -27,10 +32,9 @@ public sealed partial class ColonizationShoppingViewModel
         get => CarrierOptions.FirstOrDefault(choice => choice.MarketId == selectedCarrierMarketId) ?? CarrierOptions[0];
         set
         {
-            if (value is not null && Set(ref selectedCarrierMarketId, value.MarketId))
+            if (value is not null)
             {
-                Changed(nameof(SelectedCarrier));
-                ReconcileCarrierNeeds();
+                CarrierSelection.Restore(null, value.MarketId);
             }
         }
     }
@@ -43,7 +47,7 @@ public sealed partial class ColonizationShoppingViewModel
         }
         if (preferredMarketId.HasValue)
         {
-            selectedCarrierMarketId = preferredMarketId.Value;
+            RestoreCarrierSelection(null, preferredMarketId.Value);
         }
         SetCarriers(carriers);
         ReconcileCarrierNeeds();
@@ -59,13 +63,68 @@ public sealed partial class ColonizationShoppingViewModel
         return true;
     }
 
+    internal void UpdatePlanningCarriers(
+        IReadOnlyList<ColonizationFleetCarrier> carriers,
+        IReadOnlyList<long>? ids,
+        long legacyMarketId = 0
+    )
+    {
+        if (disposed)
+        {
+            return;
+        }
+        RestoreCarrierSelection(ids, legacyMarketId);
+        SetCarriers(carriers);
+        ReconcileCarrierNeeds();
+    }
+
+    internal bool SelectPlanningCarriers(IReadOnlyList<long>? ids, long legacyMarketId = 0)
+    {
+        if (disposed)
+        {
+            return false;
+        }
+        CarrierSelection.Restore(ids, legacyMarketId);
+        return true;
+    }
+
+    private void RestoreCarrierSelection(IReadOnlyList<long>? ids, long legacy)
+    {
+        updatingCarrierSelection = true;
+        try
+        {
+            CarrierSelection.Restore(ids, legacy);
+            selectedCarrierMarketId = CarrierSelection.LegacyMarketId;
+        }
+        finally
+        {
+            updatingCarrierSelection = false;
+        }
+    }
+
+    private void OnCarrierSelectionChanged()
+    {
+        if (!updatingCarrierSelection && !disposed)
+        {
+            selectedCarrierMarketId = CarrierSelection.LegacyMarketId;
+            Changed(nameof(SelectedCarrier));
+            ReconcileCarrierNeeds();
+        }
+    }
+
     private void SetCarriers(IReadOnlyList<ColonizationFleetCarrier> carriers)
     {
         linkedCarriers = carriers;
         CarrierOptions = ColonizationCarrierChoice.CreateOptions(carriers);
-        if (!CarrierOptions.Any(choice => choice.MarketId == selectedCarrierMarketId))
+        updatingCarrierSelection = true;
+        try
         {
-            selectedCarrierMarketId = 0;
+            CarrierSelection.UpdateCarriers(carriers);
+            selectedCarrierMarketId = CarrierSelection.LegacyMarketId;
+        }
+        finally
+        {
+            updatingCarrierSelection = false;
         }
         Changed(nameof(CarrierOptions));
         Changed(nameof(SelectedCarrier));
@@ -73,7 +132,11 @@ public sealed partial class ColonizationShoppingViewModel
 
     private IReadOnlyList<ColonizationShoppingNeed> EffectiveNeeds(IEnumerable<ColonizationShoppingNeed> needs) =>
         UseCarrierDifference
-            ? ColonizationShopping.SubtractCarrierCargo(needs, linkedCarriers, selectedCarrierMarketId)
+            ? ColonizationShopping.SubtractCarrierCargo(
+                needs,
+                linkedCarriers,
+                selectedMarketIds: CarrierSelection.CaptureSelectedIds()
+            )
             : needs.ToArray();
 
     private void ReconcileCarrierNeeds()

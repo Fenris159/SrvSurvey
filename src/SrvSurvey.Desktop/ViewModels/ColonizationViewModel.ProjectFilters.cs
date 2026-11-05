@@ -135,6 +135,7 @@ public sealed partial class ColonizationViewModel
         );
         OnPropertyChanged(nameof(VisibleProjects));
         OnPropertyChanged(nameof(HasNoMatchingProjects));
+        RaiseProjectCarrierCommandStates();
         RaiseHiddenShoppingSelections();
     }
 }

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
         xmlns:views="using:SrvSurvey.Desktop.Views"
         xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
         xmlns:localization="using:SrvSurvey.Desktop.Localization"
@@ -157,9 +158,8 @@
       <ToggleButton x:Name="ShowShortSupply" Classes="short-supply" Content="Short supply" IsChecked="{Binding ShowShortSupply, Mode=TwoWay}" VerticalAlignment="Center"
                     ToolTip.Tip="Show or hide commodities whose stock is below your need" AutomationProperties.Name="Show short supply" />
         <ToggleSwitch x:Name="CarrierDifferenceToggle" OffContent="FC Diff" OnContent="FC Diff" IsChecked="{Binding UseCarrierDifference, Mode=TwoWay}" VerticalAlignment="Center" Margin="10,0,6,0" FontSize="12" MinHeight="24" ToolTip.Tip="Subtract cargo on linked carriers from project needs" />
-        <ComboBox x:Name="ShoppingCarrier" ItemsSource="{Binding CarrierOptions}" SelectedItem="{Binding SelectedCarrier, Mode=TwoWay}" IsVisible="{Binding UseCarrierDifference}" MinWidth="80" MaxWidth="260" VerticalAlignment="Center">
-          <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:ColonizationCarrierChoice"><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" /></DataTemplate></ComboBox.ItemTemplate>
-        </ComboBox>
+        <controls:CarrierMultiSelect x:Name="ShoppingCarrier" DataContext="{Binding CarrierSelection}"
+                                    IsVisible="{Binding $parent[UserControl].((vm:ColonizationShoppingViewModel)DataContext).UseCarrierDifference}" MinWidth="180" MaxWidth="320" VerticalAlignment="Top" />
       </WrapPanel>
       <StackPanel Spacing="6" Margin="0,4,0,2" IsVisible="{Binding ShowSearchCriteria}">
         <WrapPanel IsEnabled="{Binding !IsBusy}">

@@ -18,6 +18,7 @@ public sealed record ColonizationShoppingState
     public bool UseCarrierDifference { get; init; } = true;
     public bool HasCarrierDifferencePreference { get; init; }
     public long SelectedCarrierMarketId { get; init; }
+    public IReadOnlyList<long>? SelectedCarrierMarketIds { get; init; }
     public bool ShowShortSupply { get; init; } = true;
     public bool ExcludeLocalCommodities { get; init; }
     public bool IncludeOutdatedLocalMarkets { get; init; } = true;
@@ -47,6 +48,7 @@ public sealed record ColonizationShoppingState
 
     internal bool IsValid =>
         SelectedCarrierMarketId >= 0
+        && (SelectedCarrierMarketIds is null || SelectedCarrierMarketIds.All(id => id > 0))
         && ReferenceSystem is not null
         && RadiusText is not null
         && MaximumAgeText is not null
