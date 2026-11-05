@@ -23,8 +23,8 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class MiningMissionsPresentationTests
 {
     [AvaloniaTheory]
-    [InlineData(1050, "monochrome-dark", 2)]
-    [InlineData(1050, "orange-dark", 2)]
+    [InlineData(1050, "monochrome-dark", 4)]
+    [InlineData(1050, "orange-dark", 4)]
     [InlineData(500, "blue-light", 1)]
     public async Task CardsFollowTheThemeWrapAndSupportTrackingCopyAndFind(int width, string theme, int columns)
     {
@@ -98,17 +98,17 @@ public sealed class MiningMissionsPresentationTests
             Assert.Equal(3, cards.Length);
             Point first = cards[0].TranslatePoint(default, view)!.Value;
             Point second = cards[1].TranslatePoint(default, view)!.Value;
-            if (columns == 2)
+            if (columns == 4)
             {
                 Assert.Equal(first.Y, second.Y);
-                Assert.True(second.X > first.X + 300);
+                Assert.InRange(second.X - first.X, 240, 265);
             }
             else
             {
                 Assert.True(second.Y > first.Y + 100);
                 Assert.Equal(first.X, second.X);
             }
-            Assert.All(cards, card => Assert.InRange(card.Bounds.Width, 250, width - 20));
+            Assert.All(cards, card => Assert.InRange(card.Bounds.Width, 220, width - 20));
             TextBlock completion = cards[2].GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "✓");
             Assert.True(completion.IsVisible);
             Assert.Equal(Color.Parse(themes.Current.SuccessColor), ((ISolidColorBrush)completion.Foreground!).Color);
@@ -125,7 +125,8 @@ public sealed class MiningMissionsPresentationTests
             Assert.False(fixture.Workspace.MissionCards[0].IsTracked);
             Assert.Equal(2, fixture.Workspace.TrackedMissionCards.Count);
             using WriteableBitmap? toggled = window.CaptureRenderedFrame();
-            Button copy = view.GetVisualDescendants()
+            Button copy = view.FindControl<ItemsControl>("MissionCards")!
+                .GetVisualDescendants()
                 .OfType<Button>()
                 .First(button => Equals(ClipboardCopyBehavior.GetText(button), "Ngolona"));
             Assert.Equal("Huss Port @ Ngolona", Assert.IsType<TextBlock>(copy.Content).Text);
@@ -168,7 +169,9 @@ public sealed class MiningMissionsPresentationTests
                 PngBitmapEncoderOptions.Default
             );
             fixture.Accept(1);
-            fixture.Accept(2);
+            fixture.Feed(
+                """{"event":"MissionAccepted","Name":"Mission_Mining_Wing","MissionID":2,"Commodity":"platinum","Count":10,"DestinationSystem":"Sol","DestinationStation":"Galileo"}"""
+            );
             OverlayThemeResources.Apply(live, LegacyOverlayLayout.Empty, definition.Name, new OverlayWindowRegistry());
             live.Show();
             using WriteableBitmap? two = live.CaptureRenderedFrame();

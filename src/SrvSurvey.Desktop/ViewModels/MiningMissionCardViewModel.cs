@@ -32,11 +32,11 @@ public sealed class MiningMissionCardViewModel : WorkspaceObservable
         Remaining = mission.Remaining;
         string[] legacyDestination = mission.Destination.Split(" / ", 2, StringSplitOptions.TrimEntries);
         System = mission.DestinationSystem.Length > 0 ? mission.DestinationSystem : legacyDestination[0];
-        string station =
+        Station =
             mission.DestinationStation.Length > 0
                 ? mission.DestinationStation
                 : legacyDestination.ElementAtOrDefault(1) ?? "";
-        Destination = string.Join(" @ ", new[] { station, System }.Where(value => value.Length > 0));
+        Destination = string.Join(" @ ", new[] { Station, System }.Where(value => value.Length > 0));
         HasSystem = System.Length > 0;
         bool hasExpiry = DateTimeOffset.TryParse(
             mission.Expiry,
@@ -58,6 +58,8 @@ public sealed class MiningMissionCardViewModel : WorkspaceObservable
     public int Delivered { get; }
     public int Remaining { get; }
     public string System { get; }
+    public string Station { get; }
+    public DateTimeOffset? ExpiresAt => expiry;
     public string Destination { get; }
     public bool HasSystem { get; }
     public bool IsActive => mission.IsActiveAt(now);
@@ -67,6 +69,7 @@ public sealed class MiningMissionCardViewModel : WorkspaceObservable
     public string Reward { get; }
     public string RewardPerTon { get; }
     public string CargoProgress => $"On board: {OnBoard:N0}/{Required:N0} t";
+    public string CargoOnBoard => $"On board: {OnBoard:N0} t";
     public string DeliveryProgress => $"Delivered: {Delivered:N0}/{Required:N0} t";
     public string Needed => $"{Remaining:N0} t needed";
     public double CargoPercentage => Required > 0 ? Math.Clamp(OnBoard * 100d / Required, 0, 100) : 0;

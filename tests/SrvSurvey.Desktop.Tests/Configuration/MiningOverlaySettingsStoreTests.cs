@@ -7,6 +7,26 @@ namespace SrvSurvey.Desktop.Tests.Configuration;
 public sealed class MiningOverlaySettingsStoreTests : IDisposable
 {
     [Fact]
+    public void OlderCompleteOverlayProfilesReceiveMissionDefaultsWithoutReadingMiningHistory()
+    {
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "legacy.json");
+        File.WriteAllText(
+            path,
+            """{"MiningOverlays":{"Commanders":{"F1":{"HideInSupercruise":false,"OverlaysOnlyDuringSession":true,"NotificationSeconds":40,"PersistentProspectSlots":5,"HideProspectsBelowThreshold":true,"SessionYieldSort":1,"SessionYieldLimit":9}}}}"""
+        );
+        var store = new MiningOverlaySettingsStore(path);
+        MiningOverlayPreferences saved = store.ReadPreferences(
+            "F1",
+            () => throw new InvalidOperationException("Existing overlay preferences must not need mining history.")
+        );
+        Assert.Equal(3, saved.MissionDestinationLimit);
+        Assert.True(saved.UseCommodityShortTags);
+        Assert.Equal(9, saved.SessionYieldLimit);
+        Assert.Equal(40, saved.NotificationSeconds);
+    }
+
+    [Fact]
     public void ExplicitCommanderEditsSupersedeOnlyThoseFieldsFromAnOlderUnassignedDraft()
     {
         var store = new MiningOverlaySettingsStore(Path.Combine(directory, "ui.json"));

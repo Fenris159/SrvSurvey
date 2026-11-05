@@ -419,7 +419,20 @@ public sealed class MissionOverlaySizingTests
             }
             for (int index = 1; index <= count; index++)
             {
-                mining.Accept(index);
+                mining.Feed(
+                    JsonSerializer.Serialize(
+                        new
+                        {
+                            @event = "MissionAccepted",
+                            Name = "Mission_Mining_Wing",
+                            MissionID = index,
+                            Commodity = "platinum",
+                            Count = 10,
+                            DestinationSystem = "Ngolona",
+                            DestinationStation = "Port " + index,
+                        }
+                    )
+                );
             }
             foreach (MiningMissionCardViewModel card in mining.Workspace.MissionCards)
             {

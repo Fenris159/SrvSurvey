@@ -378,7 +378,10 @@
                             <DataTemplate x:DataType="vm:MiningReferenceCommodityRowViewModel">
                               <Grid Classes="table-row" ColumnSpacing="8">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingAverage"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingMaximum"/></Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                  <Border Classes="commodity-code material" Width="40" Height="20" Padding="0" VerticalAlignment="Center"><TextBlock Text="{Binding Code}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                  <TextBlock Grid.Column="1" Text="{Binding Name}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                </Grid>
                                 <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding AverageSellPriceLabel}"/>
                                 <TextBlock Grid.Column="2" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding MaximumSellPriceLabel}"/>
                               </Grid>
@@ -398,7 +401,10 @@
                             <DataTemplate x:DataType="vm:MiningReferenceCommodityRowViewModel">
                               <Grid Classes="table-row" ColumnSpacing="8">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingAverage"/><ColumnDefinition Width="Auto" SharedSizeGroup="RingMaximum"/></Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Name}" TextWrapping="Wrap"/>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                  <Border Classes="commodity-code material" Width="40" Height="20" Padding="0" VerticalAlignment="Center"><TextBlock Text="{Binding Code}" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                  <TextBlock Grid.Column="1" Text="{Binding Name}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                </Grid>
                                 <TextBlock Grid.Column="1" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding AverageSellPriceLabel}"/>
                                 <TextBlock Grid.Column="2" Classes="type-value" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding MaximumSellPriceLabel}"/>
                               </Grid>

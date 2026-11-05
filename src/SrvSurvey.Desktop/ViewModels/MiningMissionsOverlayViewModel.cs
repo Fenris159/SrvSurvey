@@ -7,8 +7,9 @@ public sealed class MiningMissionsOverlayViewModel : WorkspaceObservable, IDispo
 {
     private readonly MiningWorkspaceViewModel? workspace;
     private readonly IReadOnlyList<MiningMissionCardViewModel> preview;
+    private readonly IReadOnlyList<MiningMissionDestinationViewModel> previewDestinations;
 
-    public MiningMissionsOverlayViewModel(MiningWorkspaceViewModel? workspace)
+    public MiningMissionsOverlayViewModel(MiningWorkspaceViewModel? workspace, bool useShortTags = true)
     {
         this.workspace = workspace;
         DateTimeOffset now = DateTimeOffset.UtcNow;
@@ -38,10 +39,14 @@ public sealed class MiningMissionsOverlayViewModel : WorkspaceObservable, IDispo
                     Expiry = now.AddDays(6).AddHours(23).ToString("O"),
                 },
             }.Select(mission => new MiningMissionCardViewModel(mission, now, _ => { }, () => { })).ToArray() : [];
+        previewDestinations = MiningMissionDestinationViewModel.Create(preview, useShortTags, 512);
         workspace?.PropertyChanged += OnChanged;
     }
 
     public IReadOnlyList<MiningMissionCardViewModel> Missions => workspace?.TrackedMissionCards ?? preview;
+    public IReadOnlyList<MiningMissionDestinationViewModel> Destinations =>
+        workspace?.TrackedMissionDestinations ?? previewDestinations;
+    public int VisibleDestinationLimit => Math.Clamp(workspace?.MissionDestinationLimit ?? 3, 1, 20);
     public bool HasMissions => Missions.Count > 0;
 
     private void OnChanged(object? sender, PropertyChangedEventArgs e)
@@ -50,6 +55,8 @@ public sealed class MiningMissionsOverlayViewModel : WorkspaceObservable, IDispo
         {
             Changed(nameof(Missions));
             Changed(nameof(HasMissions));
+            Changed(nameof(Destinations));
+            Changed(nameof(VisibleDestinationLimit));
         }
     }
 

@@ -13,7 +13,8 @@ public sealed partial class MiningMissionCardsView : UserControl
     {
         if (sender is WrapPanel panel && e.NewSize.Width > 0)
         {
-            panel.ItemWidth = e.NewSize.Width >= 760 ? Math.Floor(e.NewSize.Width / 2) : e.NewSize.Width;
+            int columns = Math.Clamp((int)(e.NewSize.Width / 240), 1, 6);
+            panel.ItemWidth = Math.Floor(e.NewSize.Width / columns);
         }
     }
 }

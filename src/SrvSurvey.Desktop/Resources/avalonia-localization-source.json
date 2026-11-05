@@ -13512,6 +13512,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Commodity tags",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "Commodity:",
     "IsFormat": false,
     "SourceKinds": [
@@ -17268,6 +17276,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
+    "Text": "Delivered:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
+  },
+  {
+    "Text": "Delivered: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
+  },
+  {
     "Text": "Delivered: {0}/{1} t",
     "IsFormat": true,
     "SourceKinds": [
@@ -17662,6 +17686,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DistanceView.axaml"
   },
   {
+    "Text": "Destination cards before scrolling",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Destination coordinates are unavailable:",
     "IsFormat": false,
     "SourceKinds": [
@@ -17684,6 +17716,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
+  },
+  {
+    "Text": "Destination not reported",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
   },
   {
     "Text": "Destination system",
@@ -19577,6 +19617,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "Earliest:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
+  },
+  {
+    "Text": "Earliest: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
+  },
+  {
     "Text": "Earth-like",
     "IsFormat": false,
     "SourceKinds": [
@@ -21035,6 +21091,30 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
+  },
+  {
+    "Text": "Estimated Trips divides the destination\u0027s remaining needs by your current ship\u0027s cargo capacity and rounds up. Onboard cargo is already deducted from Need; a dash means cargo capacity has not been reported yet.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Estimated Trips:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
+  },
+  {
+    "Text": "Estimated Trips: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
   },
   {
     "Text": "Estimated net worth",
@@ -24596,6 +24676,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshShipBuild.cs"
+  },
+  {
+    "Text": "Full commodity names",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "Full-area completion audit",
@@ -28986,6 +29074,14 @@
   },
   {
     "Text": "In Leamae UK-D d13-890, Leamae is the sector, UK-D d13 identifies the boxel, and 890 is the system number within that sequence.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "In Mining overlay settings, choose Destination cards before scrolling and Use Commodity Short Tags. Short tags start enabled and use the same colors as Powerplay mining search; Reference pairs each tag with its full commodity name.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -36533,6 +36629,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "Need:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
+  },
+  {
+    "Text": "Need: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
+  },
+  {
     "Text": "Needed",
     "IsFormat": false,
     "SourceKinds": [
@@ -39411,12 +39523,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
+    "Text": "On board:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
+  },
+  {
     "Text": "On board: 73/236 t",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "On board: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
+  },
+  {
+    "Text": "On board: {0} t",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionCardViewModel.cs"
   },
   {
     "Text": "On board: {0}/{1} t",
@@ -54427,6 +54563,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Select missions below to preview their combined destination requirements.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
+  },
+  {
     "Text": "Select or type a system",
     "IsFormat": false,
     "SourceKinds": [
@@ -55726,6 +55870,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "ShipyardBuy",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "ShipyardSwap",
@@ -62398,6 +62550,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The Mining Missions overlay shows one card per destination station, with separate commodity totals, the selected mission count, and the earliest tracked expiry. Different stations in the same system stay separate.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "The Nexus was created, but some details could not be saved. Correct the entries and choose Finish Nexus setup to retry this same Nexus.",
     "IsFormat": false,
     "SourceKinds": [
@@ -67504,6 +67664,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "To recover missions accepted in older sessions, use Mining \u003E Find \u003E Local discoveries / import journals \u003E Import earlier journals. Select the journals containing the original acceptance and subsequent mission updates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Toggle FSS information",
     "IsFormat": false,
     "SourceKinds": [
@@ -68001,6 +68169,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/HumanSiteSettingsStore.cs"
   },
   {
+    "Text": "Tracked destinations",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
+  },
+  {
     "Text": "Tracked local projects could not be refreshed: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -68015,6 +68191,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
+  },
+  {
+    "Text": "Tracked missions are combined by station and system. Turn short tags off to show full commodity names.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Tracker",
@@ -69860,6 +70044,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Commodity Short Tags",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Use Copy next, or enable Auto-copy next system in Galaxy Map, then paste the name into the Galaxy Map. Carrier auto-copy is mutually exclusive with Boxel and Route Manager auto-copy, while FC Routes and SC Routes can both enable it. Starting auto-copy in Boxel or Route Manager turns both carrier options off; enabling carrier auto-copy turns Boxel and Route Manager off.",
     "IsFormat": false,
     "SourceKinds": [
@@ -70219,6 +70411,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Use each card\u0027s Track checkbox to select missions. The compact summary above the cards combines selected commodity requirements for each destination station and system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Use global opacity",
@@ -76082,6 +76282,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "full-names",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "function",
     "IsFormat": false,
     "SourceKinds": [
@@ -77440,6 +77648,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
+  },
+  {
+    "Text": "missions tracked",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningMissionsOverlayPresentation.axaml"
   },
   {
     "Text": "molybdenum",
@@ -78960,6 +79176,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "short-tags",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "shortcuts",
@@ -81809,6 +82033,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} missions tracked",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
   },
   {
     "Text": "{0} must be a number.",

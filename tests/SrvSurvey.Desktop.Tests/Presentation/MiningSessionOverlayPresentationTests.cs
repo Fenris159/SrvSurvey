@@ -54,6 +54,14 @@ public sealed class MiningSessionOverlayPresentationTests
             using WriteableBitmap? initialFrame = window.CaptureRenderedFrame();
             ComboBox sort = view.FindControl<ComboBox>("MiningSessionYieldSortInput")!;
             NumericUpDown limit = view.FindControl<NumericUpDown>("MiningSessionYieldLimitInput")!;
+            NumericUpDown destinationLimit = view.FindControl<NumericUpDown>("MiningMissionDestinationLimitInput")!;
+            CheckBox shortTags = view.FindControl<CheckBox>("MiningMissionShortTagsInput")!;
+            Assert.Equal(3, destinationLimit.Value);
+            Assert.True(shortTags.IsChecked);
+            destinationLimit.Value = 2;
+            shortTags.IsChecked = false;
+            Assert.Equal(2, main.MiningWorkspace.MissionDestinationLimit);
+            Assert.False(main.MiningWorkspace.UseCommodityShortTags);
             Assert.True(sort.IsEffectivelyEnabled);
             Assert.True(limit.IsEffectivelyEnabled);
             Assert.True(main.MiningWorkspace.SaveOverlaySettingsCommand.CanExecute(null));
@@ -91,6 +99,10 @@ public sealed class MiningSessionOverlayPresentationTests
             MiningPreferences recovered = new MiningStore(main.AppDataPaths.DataDirectory).Load("F1").Settings;
             Assert.Equal(MiningSessionYieldSort.Finds, recovered.SessionYieldSort);
             Assert.Equal(7, recovered.SessionYieldLimit);
+            Assert.Equal(2, recovered.MissionDestinationLimit);
+            Assert.False(recovered.UseCommodityShortTags);
+            main.MiningWorkspace.UseCommodityShortTags = true;
+            Assert.True(shortTags.IsChecked);
             string? output = Environment.GetEnvironmentVariable("SRVSURVEY_MINING_SETTINGS_RENDER_OUTPUT");
             if (output is not null)
             {
