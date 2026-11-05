@@ -7,6 +7,7 @@ public sealed partial class ColonizationViewModel
 {
     private AsyncCommand? linkCarrierToProjectsCommand;
     private AsyncCommand? unlinkCarrierFromProjectsCommand;
+    private int projectCarrierLifetime;
 
     public ICommand LinkCarrierToSelectedProjectsCommand =>
         linkCarrierToProjectsCommand ??= new AsyncCommand(
@@ -26,6 +27,7 @@ public sealed partial class ColonizationViewModel
 
     public Task UnlinkCarrierFromSelectedProjectsAsync() => ChangeSelectedProjectCarriersAsync(link: false);
 
+    /// <summary>Requires an enabled commander, Building filter, checked carriers and a shown eligible project.</summary>
     private bool CanChangeSelectedProjectCarriers() =>
         !disposed
         && IsEnabled
@@ -45,6 +47,8 @@ public sealed partial class ColonizationViewModel
         }
 
         int version = recovery.ProfileVersion;
+        int lifetime = projectCarrierLifetime;
+        bool IsCurrentOperation() => lifetime == projectCarrierLifetime && IsCurrentProjectProfile(version);
         IReadOnlyList<ColonizationFleetCarrier> carriers = CarrierSelection.ResolveCarriers();
         ColonizationProject[] selected = VisibleProjects
             .Where(row => row.IsShown)
@@ -54,6 +58,7 @@ public sealed partial class ColonizationViewModel
         int updated = 0;
         var failures = new List<string>();
         IsBusy = true;
+        PauseCurrentSystemPlanning();
         StatusMessage = link
             ? "Linking carrier to selected projects..."
             : "Unlinking carrier from selected projects...";
@@ -65,16 +70,25 @@ public sealed partial class ColonizationViewModel
                 )
             )
             {
-                if (!IsCurrentProjectProfile(version))
+                if (!IsCurrentOperation())
                 {
                     return;
                 }
-                if (await TryChangeProjectCarrierAsync(carrierClient, project, carrier, link, version, failures))
+                if (
+                    await TryChangeProjectCarrierAsync(
+                        carrierClient,
+                        project,
+                        carrier,
+                        link,
+                        IsCurrentOperation,
+                        failures
+                    )
+                )
                 {
                     updated++;
                 }
             }
-            if (IsCurrentProjectProfile(version))
+            if (IsCurrentOperation())
             {
                 StatusMessage = link
                     ? $"Carrier links added: {updated:N0}. Failed: {failures.Count:N0}."
@@ -92,12 +106,13 @@ public sealed partial class ColonizationViewModel
         }
     }
 
+    /// <summary>Changes one eligible association, applies acknowledgements only to its owning operation and retains failures.</summary>
     private async Task<bool> TryChangeProjectCarrierAsync(
         IRavenColonialProjectCarrierClient carrierClient,
         ColonizationProject project,
         ColonizationFleetCarrier carrier,
         bool link,
-        int version,
+        Func<bool> isCurrent,
         List<string> failures
     )
     {
@@ -120,7 +135,7 @@ public sealed partial class ColonizationViewModel
                     CancellationToken.None
                 );
             }
-            if (!IsCurrentProjectProfile(version))
+            if (!isCurrent())
             {
                 return false;
             }

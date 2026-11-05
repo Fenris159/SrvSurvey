@@ -118,6 +118,7 @@ public sealed partial class ColonizationViewModel
         OnPropertyChanged(nameof(MarketSearchWorkspace));
     }
 
+    /// <summary>Updates saved commodity needs from the current project tags and checked carrier inventory.</summary>
     private void ReconcileWishList()
     {
         IReadOnlyList<ColonizationShoppingNeed> needs = ColonizationShopping.Aggregate(
@@ -207,6 +208,7 @@ public sealed partial class ColonizationViewModel
     internal Func<IColonizationMarketSearch> MarketSearchFactory { get; set; } =
         static () => new ColonizationMarketSearchClient();
 
+    /// <summary>Restores a matching search and synchronizes checked carriers and selection revisions with its commander.</summary>
     internal ColonizationShoppingViewModel CreateShopping(
         IReadOnlyList<ColonizationProject> selected,
         IColonizationMarketSearch? marketSearch = null,
@@ -248,6 +250,14 @@ public sealed partial class ColonizationViewModel
                     }
                     ReconcileWishList();
                     OnPropertyChanged(nameof(SearchMarketsButtonText));
+                    session = (shoppingSession ?? session) with
+                    {
+                        Search = (shoppingSession?.Search ?? state) with
+                        {
+                            CarrierSelectionRevision = planningCarrierSelectionRevision,
+                        },
+                    };
+                    shoppingSession = session;
                 }
                 settingsStore.SaveShopping(commander, session);
             },
@@ -309,6 +319,7 @@ public sealed partial class ColonizationViewModel
         OnPropertyChanged(nameof(SearchMarketsButtonText));
     }
 
+    /// <summary>Preserves search state across project-tag changes and retires the obsolete workspace before reopening.</summary>
     private void SaveShoppingSelection()
     {
         ColonizationShoppingState? state = shoppingWorkspace?.CaptureState() ?? shoppingSession?.Search;
@@ -327,6 +338,7 @@ public sealed partial class ColonizationViewModel
         );
     }
 
+    /// <summary>Stamps the current carrier revision into the saved search and reports recoverable storage failures.</summary>
     private void SaveShoppingSession(string failureMessage)
     {
         if (CommanderName is null || shoppingSession is null)
@@ -335,6 +347,13 @@ public sealed partial class ColonizationViewModel
         }
         try
         {
+            if (shoppingSession.Search is { } search)
+            {
+                shoppingSession = shoppingSession with
+                {
+                    Search = search with { CarrierSelectionRevision = planningCarrierSelectionRevision },
+                };
+            }
             settingsStore.SaveShopping(CommanderName, shoppingSession);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)

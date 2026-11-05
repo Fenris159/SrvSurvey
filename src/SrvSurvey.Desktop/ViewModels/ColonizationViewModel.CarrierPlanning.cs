@@ -1,10 +1,12 @@
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class ColonizationViewModel
 {
     private long planningCarrierMarketId;
+    private long planningCarrierSelectionRevision;
     private IReadOnlyList<ColonizationFleetCarrier>? planningCarriers;
     private bool updatingPlanningCarriers;
     private ColonizationCarrierSelectionViewModel? carrierSelection;
@@ -41,16 +43,29 @@ public sealed partial class ColonizationViewModel
         }
     }
 
+    /// <summary>Restores the newest durable carrier-selection revision across planning and shopping settings.</summary>
     private void RestorePlanningCarrier()
     {
         updatingPlanningCarriers = true;
         try
         {
             long legacy = CommanderName is null ? 0 : settingsStore.LoadPlanningCarrier(CommanderName);
-            CarrierSelection.Restore(
-                CommanderName is null ? null : settingsStore.LoadPlanningCarrierIds(CommanderName),
-                legacy
-            );
+            planningCarrierSelectionRevision = CommanderName is null
+                ? 0
+                : settingsStore.LoadPlanningCarrierRevision(CommanderName);
+            ColonizationShoppingState? savedSearch = shoppingSession?.Search;
+            if (savedSearch is not null && savedSearch.CarrierSelectionRevision > planningCarrierSelectionRevision)
+            {
+                planningCarrierSelectionRevision = savedSearch.CarrierSelectionRevision;
+                CarrierSelection.Restore(savedSearch.SelectedCarrierMarketIds, savedSearch.SelectedCarrierMarketId);
+            }
+            else
+            {
+                CarrierSelection.Restore(
+                    CommanderName is null ? null : settingsStore.LoadPlanningCarrierIds(CommanderName),
+                    legacy
+                );
+            }
             planningCarrierMarketId = CarrierSelection.LegacyMarketId;
             planningCarriers = null;
         }
@@ -61,6 +76,7 @@ public sealed partial class ColonizationViewModel
         UpdatePlanningCarriers();
     }
 
+    /// <summary>Saves checked carriers and synchronizes Loaded percentages, overlay cargo and Market Search.</summary>
     private void OnPlanningCarrierSelectionChanged()
     {
         if (updatingPlanningCarriers)
@@ -75,6 +91,7 @@ public sealed partial class ColonizationViewModel
         ApplyPlanningCarrierToShopping();
     }
 
+    /// <summary>Retains checked identities through roster refreshes and updates creation choices, coverage and bulk actions.</summary>
     private void UpdatePlanningCarriers()
     {
         if (!ReferenceEquals(planningCarriers, LinkedFleetCarriers))
@@ -107,6 +124,7 @@ public sealed partial class ColonizationViewModel
         RaiseProjectCarrierCommandStates();
     }
 
+    /// <summary>Recomputes Loaded percentages using only the currently checked carrier inventory.</summary>
     private void UpdateProjectCarrierCoverage()
     {
         bool changed = false;
@@ -129,6 +147,7 @@ public sealed partial class ColonizationViewModel
         }
     }
 
+    /// <summary>Copies planning choices to the active search or saved session without changing project tags.</summary>
     private void ApplyPlanningCarrierToShopping()
     {
         if (
@@ -153,18 +172,21 @@ public sealed partial class ColonizationViewModel
         }
     }
 
+    /// <summary>Advances the shared revision even if planning storage fails, allowing the shopping copy to recover the choice.</summary>
     private void SavePlanningCarrier()
     {
         if (CommanderName is null)
         {
             return;
         }
+        planningCarrierSelectionRevision++;
         try
         {
             settingsStore.SavePlanningCarrier(
                 CommanderName,
                 planningCarrierMarketId,
-                CarrierSelection.CapturePreference()
+                CarrierSelection.CapturePreference(),
+                planningCarrierSelectionRevision
             );
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)

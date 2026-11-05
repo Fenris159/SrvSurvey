@@ -16,6 +16,7 @@ public sealed partial class ColonizationSettingsStore
             : 0;
     }
 
+    /// <summary>Restores checked identities; null keeps the legacy preference and an empty list selects no carriers.</summary>
     internal IReadOnlyList<long>? LoadPlanningCarrierIds(string commander)
     {
         JsonObject root = documentStore.Load();
@@ -33,7 +34,13 @@ public sealed partial class ColonizationSettingsStore
     internal void SavePlanningCarrier(string commander, long marketId) =>
         SavePlanningCarrier(commander, marketId, null);
 
-    internal void SavePlanningCarrier(string commander, long marketId, IReadOnlyList<long>? selectedIds)
+    /// <summary>Saves the legacy preference, checked identities and shared revision in one UI-settings transaction.</summary>
+    internal void SavePlanningCarrier(
+        string commander,
+        long marketId,
+        IReadOnlyList<long>? selectedIds,
+        long revision = 0
+    )
     {
         documentStore.Update(root =>
         {
@@ -56,8 +63,28 @@ public sealed partial class ColonizationSettingsStore
             selections[commander.ToUpperInvariant()] = selectedIds is null
                 ? null
                 : new JsonArray(selectedIds.Select(id => (JsonNode?)JsonValue.Create(id)).ToArray());
+            if (section["PlanningCarrierSelectionRevisions"] is not JsonObject revisions)
+            {
+                revisions = [];
+                section["PlanningCarrierSelectionRevisions"] = revisions;
+            }
+            revisions[commander.ToUpperInvariant()] = revision;
             root[VersionKey] = 1;
         });
+    }
+
+    /// <summary>Orders successful carrier-selection writes across the planning and shopping files.</summary>
+    internal long LoadPlanningCarrierRevision(string commander)
+    {
+        JsonObject root = documentStore.Load();
+        var section = root[ColonizationSectionKey] as JsonObject;
+        var revisions = section?["PlanningCarrierSelectionRevisions"] as JsonObject;
+        return
+            revisions?[commander.ToUpperInvariant()] is JsonValue value
+            && value.TryGetValue<long>(out long revision)
+            && revision >= 0
+            ? revision
+            : 0;
     }
 
     internal DateTimeOffset? LoadCarrierRefreshAttempt(long marketId)

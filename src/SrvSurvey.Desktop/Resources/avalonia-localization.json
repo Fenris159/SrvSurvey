@@ -21525,6 +21525,10 @@
       "translation": "Planung"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanningCarrierSelectionRevisions"
+    },
+    {
       "source": "PlanningCarrierSelections",
       "translation": "PlanningCarrierSelections"
     },
@@ -63293,6 +63297,10 @@
     {
       "source": "Planning",
       "translation": "Planificación"
+    },
+    {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanificaciónTransportistaSelecciónRevisiones"
     },
     {
       "source": "PlanningCarrierSelections",
@@ -105065,6 +105073,10 @@
       "translation": "Planification"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanningCarrierSelectionRévisions"
+    },
+    {
       "source": "PlanningCarrierSelections",
       "translation": "PlanificationCarrierSelections"
     },
@@ -146833,6 +146845,10 @@
     {
       "source": "Planning",
       "translation": "Planejamento"
+    },
+    {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "PlanningCarrierSelectionRevisões"
     },
     {
       "source": "PlanningCarrierSelections",
@@ -188605,6 +188621,10 @@
       "translation": "Планирование"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "ПланированиеВыборперевозчикаРевизии"
+    },
+    {
       "source": "PlanningCarrierSelections",
       "translation": "ПланированиеВыбор перевозчика"
     },
@@ -230375,6 +230395,10 @@
       "translation": "规划"
     },
     {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "规划运营商选择修订"
+    },
+    {
       "source": "PlanningCarrierSelections",
       "translation": "规划运营商选择"
     },
@@ -272143,6 +272167,10 @@
     {
       "source": "Planning",
       "translation": "* PLANNING >>>!"
+    },
+    {
+      "source": "PlanningCarrierSelectionRevisions",
+      "translation": "* PLANNINGCARRIERSELECTIONREVISIONS >>>!"
     },
     {
       "source": "PlanningCarrierSelections",

@@ -507,9 +507,9 @@ public sealed partial class ColonizationShoppingPresentationTests
             }
             string json = path switch
             {
+                _ when path.EndsWith("/map/architect", StringComparison.Ordinal) => SystemMapJson,
                 _ when path.EndsWith("/architect", StringComparison.Ordinal) && SystemArchitect is not null =>
                     JsonSerializer.Serialize(SystemArchitect),
-                _ when path.EndsWith("/map/architect", StringComparison.Ordinal) => SystemMapJson,
                 _ when AdditionalSystems.TryGetValue(path, out ColonizationSystemRecord? system) =>
                     JsonSerializer.Serialize(system),
                 _ when (

@@ -12,8 +12,9 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationProjectFactory projectFactory;
     private readonly ColonizationProjectPublisher projectPublisher;
-    private readonly Func<ColonizationProject, Task> onCreated;
+    private readonly Func<ColonizationProject, IReadOnlyList<ColonizationFleetCarrier>, Task> onCreated;
     private int contextVersion;
+    private int publicationVersion;
     private readonly AsyncCommand prepareCommand;
     private readonly AsyncCommand reviewCommand;
     private readonly AsyncCommand confirmCommand;
@@ -56,6 +57,17 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
         IRavenColonialClient client,
         ColonizationBuildCatalog buildCatalog,
         Func<ColonizationProject, Task> onCreated
+    )
+        : this(client, buildCatalog, (project, _) => onCreated(project))
+    {
+        ArgumentNullException.ThrowIfNull(onCreated);
+    }
+
+    /// <summary>Creates an editor whose completion callback receives the build and acknowledged carrier additions.</summary>
+    public ColonizationProjectEditorViewModel(
+        IRavenColonialClient client,
+        ColonizationBuildCatalog buildCatalog,
+        Func<ColonizationProject, IReadOnlyList<ColonizationFleetCarrier>, Task> onCreated
     )
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
@@ -397,6 +409,18 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
         int? previousBodyId = context.CurrentBodyId;
         string? previousBodyName = context.CurrentBodyName;
         bool identityChanged = oldIdentity != GetContextIdentity(updatedContext);
+        bool ownerChanged =
+            context.IsExternalDataEnabled != updatedContext.IsExternalDataEnabled
+            || !string.Equals(context.CommanderName, updatedContext.CommanderName, StringComparison.OrdinalIgnoreCase)
+            || context.RavenApiKey != updatedContext.RavenApiKey;
+        if (ownerChanged)
+        {
+            publicationVersion++;
+            createdProject = null;
+            OnPropertyChanged(nameof(HasCreatedProject));
+            OnPropertyChanged(nameof(CreatedProjectSummary));
+            OnPropertyChanged(nameof(CreatedProjectId));
+        }
         if (identityChanged || context.RavenApiKey != updatedContext.RavenApiKey)
         {
             contextVersion++;
@@ -413,12 +437,8 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
             OnPropertyChanged(nameof(IsBuildSelectionEnabled));
             pendingProject = null;
             pendingContextIdentity = null;
-            createdProject = null;
             OnPropertyChanged(nameof(IsConfirmationPending));
             OnPropertyChanged(nameof(ConfirmationSummary));
-            OnPropertyChanged(nameof(HasCreatedProject));
-            OnPropertyChanged(nameof(CreatedProjectSummary));
-            OnPropertyChanged(nameof(CreatedProjectId));
         }
         else if (
             IsPrepared
@@ -578,6 +598,7 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
             : "Only the system architect can start a build project without a planned Raven site.";
     }
 
+    /// <summary>Validates the draft and selected carriers locally before recording a publish confirmation.</summary>
     public Task ReviewAsync()
     {
         if (!IsPrepared || IsBusy)
@@ -617,6 +638,7 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
 
         ClearRequiredFieldFlags();
         pendingProject = result.Project;
+        carrierConfirmationStale = false;
         pendingContextIdentity = GetContextIdentity(context);
         StatusMessage = "Review the summary, then confirm to publish this project.";
         OnPropertyChanged(nameof(IsConfirmationPending));
@@ -625,6 +647,7 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
         return Task.CompletedTask;
     }
 
+    /// <summary>Revalidates the reviewed context and starts one publication after the triggering UI click finishes.</summary>
     public async Task ConfirmCreateAsync()
     {
         if (pendingProject is null || IsBusy)
@@ -713,16 +736,17 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
             return;
         }
 
-        int version = contextVersion;
+        int version = publicationVersion;
         IReadOnlyList<ColonizationFleetCarrier> carriers = IncludeCarrierLinks ? SelectedCreationCarriers() : [];
         ColonizationProject? publishedProject = null;
+        string? carrierMessage = null;
         IsBusy = true;
         StatusMessage = "Publishing the project to Raven Colonial...";
         try
         {
             ColonizationProjectPublishResult result = await projectPublisher.CreateAsync(project, context.RavenApiKey);
             ColonizationProject? created = result.Project;
-            if (version != contextVersion)
+            if (version != publicationVersion)
             {
                 return;
             }
@@ -745,19 +769,20 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
             OnPropertyChanged(nameof(HasCreatedProject));
             OnPropertyChanged(nameof(CreatedProjectSummary));
             OnPropertyChanged(nameof(CreatedProjectId));
-            (ColonizationProject linkedProject, string? carrierMessage) = await LinkCreatedProjectCarriersAsync(
-                created,
-                carriers,
-                version
-            );
-            if (version != contextVersion)
+            (
+                ColonizationProject linkedProject,
+                string? linkMessage,
+                IReadOnlyList<ColonizationFleetCarrier> linkedCarriers
+            ) = await LinkCreatedProjectCarriersAsync(created, carriers, version);
+            carrierMessage = linkMessage;
+            if (version != publicationVersion)
             {
                 return;
             }
             created = linkedProject;
             createdProject = created;
-            await onCreated(created);
-            if (version != contextVersion)
+            await onCreated(created, linkedCarriers);
+            if (version != publicationVersion)
             {
                 return;
             }
@@ -771,20 +796,34 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
                         or TaskCanceledException
             )
         {
-            if (version == contextVersion)
+            if (version == publicationVersion)
             {
-                StatusMessage = publishedProject is null
-                    ? "The project was not created: " + exception.Message
-                    : $"Created {publishedProject.BuildName}, but its local refresh or cleanup failed: "
-                        + exception.Message;
+                ReportPublicationFailure(publishedProject, exception, carrierMessage);
             }
         }
         finally
         {
+            if (carrierConfirmationStale)
+            {
+                ClearConfirmation();
+            }
             IsBusy = false;
         }
     }
 
+    /// <summary>Preserves carrier retry details when creation or a separate local cleanup step fails.</summary>
+    private void ReportPublicationFailure(ColonizationProject? published, Exception exception, string? carrierMessage)
+    {
+        StatusMessage = published is null
+            ? "The project was not created: " + exception.Message
+            : $"Created {published.BuildName}, but its local refresh or cleanup failed: " + exception.Message;
+        if (carrierMessage is not null)
+        {
+            StatusMessage += " " + carrierMessage;
+        }
+    }
+
+    /// <summary>Combines creation, primary-site correction and carrier-link outcomes without hiding independent warnings.</summary>
     private void ReportCreatedProject(
         ColonizationProjectPublishResult result,
         ColonizationProject created,
@@ -926,8 +965,10 @@ public sealed partial class ColonizationProjectEditorViewModel : INotifyProperty
         OnPropertyChanged(nameof(SelectedLayout));
     }
 
+    /// <summary>Drops the pending publish and stale-carrier marker so a later submit requires another review.</summary>
     private void ClearConfirmation()
     {
+        carrierConfirmationStale = false;
         if (pendingProject is null)
         {
             return;

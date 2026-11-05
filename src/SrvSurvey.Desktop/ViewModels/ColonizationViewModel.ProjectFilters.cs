@@ -107,6 +107,7 @@ public sealed partial class ColonizationViewModel
         OnPropertyChanged(nameof(ProjectBuildFilter));
     }
 
+    /// <summary>Reapplies system and build filters and refreshes summaries, shopping tags and carrier-action availability.</summary>
     private void ApplyProjectFilters()
     {
         VisibleProjects = projectSorter.Apply(

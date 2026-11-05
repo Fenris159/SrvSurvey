@@ -34,6 +34,7 @@ public static class ColonizationCommodityPlanner
 
     private static readonly IReadOnlyDictionary<string, string> DisplayNames = CreateDisplayNames();
 
+    /// <summary>Builds one commodity plan from selected projects, checked carrier inventory, ship cargo and the current depot.</summary>
     public static ColonizationCommodityPlan Create(ColonizationCommodityPlanRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -151,6 +152,7 @@ public static class ColonizationCommodityPlanner
         return primary is not null ? [primary] : projects.Where(project => !hidden.Contains(project.BuildId)).ToArray();
     }
 
+    /// <summary>Uses explicit checked carriers when supplied, retaining project-linked selection for legacy callers.</summary>
     private static ColonizationFleetCarrier[] SelectCarriers(
         IReadOnlyList<ColonizationProject> projects,
         IReadOnlyList<ColonizationFleetCarrier> carriers,
@@ -175,15 +177,9 @@ public static class ColonizationCommodityPlanner
             .Where(carrier =>
                 (checkedIds is null || checkedIds.Contains(carrier.MarketId))
                 && (
-                    marketIds.Contains(carrier.MarketId)
-                    || (
-                        hasPlans
-                        && (
-                            checkedIds is not null
-                            || planningCarrierMarketId <= 0
-                            || carrier.MarketId == planningCarrierMarketId
-                        )
-                    )
+                    checkedIds is not null
+                    || marketIds.Contains(carrier.MarketId)
+                    || (hasPlans && (planningCarrierMarketId <= 0 || carrier.MarketId == planningCarrierMarketId))
                 )
             )
             .DistinctBy(carrier => carrier.MarketId)

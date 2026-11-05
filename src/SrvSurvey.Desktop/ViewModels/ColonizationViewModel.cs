@@ -454,6 +454,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             {
                 settingsStore.SaveEnabled(value);
                 recovery.IsEnabled = value;
+                if (!value)
+                {
+                    projectCarrierLifetime++;
+                }
                 OnPropertyChanged();
                 RaiseCommandStates();
                 if (value)
@@ -972,9 +976,11 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         StatusMessage = "Raven Colonial could not be opened: " + message;
     }
 
+    /// <summary>Retires editor and workspace lifetimes before closing views so pending requests cannot install late results.</summary>
     public void Dispose()
     {
         disposed = true;
+        ProjectEditor.UpdateContext(ColonizationProjectEditorContext.Unavailable);
         FlushPlannedSystemsSave();
         CancelCurrentPlannedSystemRead();
         StopPlannedProjects();
@@ -1482,8 +1488,22 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     }
 
     /// <summary>Installs a successfully created project before optional cleanup and ignores obsolete callback results.</summary>
-    private Task OnProjectCreatedAsync(ColonizationProject project)
+    private Task OnProjectCreatedAsync(
+        ColonizationProject project,
+        IReadOnlyList<ColonizationFleetCarrier> linkedCarriers
+    )
     {
+        ColonizationProject? latest = recovery.Projects.FirstOrDefault(current =>
+            string.Equals(current.BuildId, project.BuildId, StringComparison.OrdinalIgnoreCase)
+        );
+        if (latest is not null)
+        {
+            project = latest;
+            foreach (ColonizationFleetCarrier carrier in linkedCarriers)
+            {
+                project = ColonizationProjectCarrierLinks.Apply(project, carrier, link: true);
+            }
+        }
         projectScope.AddAffiliatedProject(project);
         return recovery.InstallCreatedProjectAsync(project);
     }
@@ -1640,6 +1660,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
     }
 
+    /// <summary>Builds overlay requirements from visible projects, checked carriers and live ship/depot context.</summary>
     private void UpdateCommodityPlan()
     {
         WishList.UpdateShipCapacity(recovery.ShipCargoCapacity);

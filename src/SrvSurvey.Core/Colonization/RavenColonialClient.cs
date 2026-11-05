@@ -137,11 +137,14 @@ public sealed partial class RavenColonialClient : IRavenColonialClient, IRavenCo
 
     private readonly HttpClient httpClient;
     private readonly Uri serviceUri;
+    private readonly TimeProvider timeProvider;
 
-    public RavenColonialClient(HttpClient? httpClient = null, Uri? serviceUri = null)
+    /// <summary>Creates a Raven client with an optional clock for deterministic request-deadline handling.</summary>
+    public RavenColonialClient(HttpClient? httpClient = null, Uri? serviceUri = null, TimeProvider? timeProvider = null)
     {
         this.httpClient = httpClient ?? new HttpClient();
         this.serviceUri = EnsureTrailingSlash(serviceUri ?? DefaultServiceUri);
+        this.timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     /// <summary>Loads the commander workspace, accepting an absent primary selection while requiring project and carrier lists.</summary>
@@ -775,16 +778,18 @@ public sealed partial class RavenColonialClient : IRavenColonialClient, IRavenCo
     }
 
     /// <summary>Bounds and buffers response bodies within the HTTP deadline, and normalizes transport I/O failures.</summary>
+    /// <summary>Bounds headers and response-body reads by one deadline while preserving caller cancellation.</summary>
     private async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken,
         bool readSuccessBody = true
     )
     {
-        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        deadline.CancelAfter(
-            httpClient.Timeout == Timeout.InfiniteTimeSpan ? TimeSpan.FromSeconds(100) : httpClient.Timeout
+        using var timeout = new CancellationTokenSource(
+            httpClient.Timeout == Timeout.InfiniteTimeSpan ? TimeSpan.FromSeconds(100) : httpClient.Timeout,
+            timeProvider
         );
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         HttpResponseMessage? response = null;
         try
         {

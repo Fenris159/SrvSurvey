@@ -39,6 +39,7 @@ public sealed partial class ColonizationShoppingViewModel
         }
     }
 
+    /// <summary>Refreshes cargo and carrier choices while optionally applying a legacy single/all preference.</summary>
     internal void UpdateCarriers(IReadOnlyList<ColonizationFleetCarrier> carriers, long? preferredMarketId = null)
     {
         if (disposed)
@@ -63,6 +64,7 @@ public sealed partial class ColonizationShoppingViewModel
         return true;
     }
 
+    /// <summary>Installs planning choices before reconciling cargo needs, preserving explicit empty and partial selections.</summary>
     internal void UpdatePlanningCarriers(
         IReadOnlyList<ColonizationFleetCarrier> carriers,
         IReadOnlyList<long>? ids,
@@ -78,6 +80,7 @@ public sealed partial class ColonizationShoppingViewModel
         ReconcileCarrierNeeds();
     }
 
+    /// <summary>Synchronizes checked identities while this search still owns an active workspace.</summary>
     internal bool SelectPlanningCarriers(IReadOnlyList<long>? ids, long legacyMarketId = 0)
     {
         if (disposed)
@@ -102,6 +105,7 @@ public sealed partial class ColonizationShoppingViewModel
         }
     }
 
+    /// <summary>Recalculates carrier-adjusted needs and persists a selection outside guarded roster refreshes.</summary>
     private void OnCarrierSelectionChanged()
     {
         if (!updatingCarrierSelection && !disposed)
@@ -130,6 +134,7 @@ public sealed partial class ColonizationShoppingViewModel
         Changed(nameof(SelectedCarrier));
     }
 
+    /// <summary>Subtracts inventory from checked carriers only when carrier difference is enabled.</summary>
     private IReadOnlyList<ColonizationShoppingNeed> EffectiveNeeds(IEnumerable<ColonizationShoppingNeed> needs) =>
         UseCarrierDifference
             ? ColonizationShopping.SubtractCarrierCargo(

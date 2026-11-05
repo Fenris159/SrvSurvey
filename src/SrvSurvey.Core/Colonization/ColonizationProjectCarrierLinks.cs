@@ -3,6 +3,7 @@ namespace SrvSurvey.Core.Colonization;
 /// <summary>Keeps carrier associations on real builds without changing other carriers or their assignments.</summary>
 public static class ColonizationProjectCarrierLinks
 {
+    /// <summary>Rejects planned, completed and synthetic projects before a remote carrier operation.</summary>
     public static bool CanLink(ColonizationProject project)
     {
         ArgumentNullException.ThrowIfNull(project);
@@ -15,6 +16,7 @@ public static class ColonizationProjectCarrierLinks
             );
     }
 
+    /// <summary>Updates one carrier association while preserving project fields and existing commodity assignments.</summary>
     public static ColonizationProject Apply(ColonizationProject project, ColonizationFleetCarrier carrier, bool link)
     {
         ArgumentNullException.ThrowIfNull(project);

@@ -20,7 +20,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 /// while payload shape stays aligned with legacy FormNewProject.
 /// </summary>
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class ColonizationWorkflowSimulationTests : IDisposable
+public sealed partial class ColonizationWorkflowSimulationTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
@@ -469,7 +469,7 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
         return result!;
     }
 
-    private sealed class WorkflowClient : IRavenColonialClient
+    private sealed partial class WorkflowClient : IRavenColonialClient
     {
         public string? Architect { get; set; }
 
@@ -488,7 +488,7 @@ public sealed class ColonizationWorkflowSimulationTests : IDisposable
             CancellationToken cancellationToken = default
         )
         {
-            return Task.FromResult(new ColonizationCommanderProjects([], [], null, []));
+            return Task.FromResult(new ColonizationCommanderProjects(RefreshedProjects, [], null, []));
         }
 
         public Task<string?> GetCommanderByApiKeyAsync(string apiKey, CancellationToken cancellationToken = default)

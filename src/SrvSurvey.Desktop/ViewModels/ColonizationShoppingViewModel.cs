@@ -683,6 +683,7 @@ public sealed partial class ColonizationShoppingViewModel : WorkspaceObservable,
             CompletedRadius = completedRadius,
         };
 
+    /// <summary>Restores search criteria, carrier choices and wish-list state before reconciling current requirements.</summary>
     private void Restore(ColonizationShoppingState state)
     {
         appliedPurchaseIds = state.AppliedPurchaseIds;

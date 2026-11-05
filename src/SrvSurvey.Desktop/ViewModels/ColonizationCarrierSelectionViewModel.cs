@@ -14,6 +14,7 @@ public sealed class ColonizationCarrierSelectionViewModel : INotifyPropertyChang
     private bool useAll = true;
     private bool legacySingle;
 
+    /// <summary>Creates checkbox selection commands with an optional workflow edit guard and change callback.</summary>
     public ColonizationCarrierSelectionViewModel(Action? changed = null, Func<bool>? canEdit = null)
     {
         this.changed = changed;
@@ -33,6 +34,7 @@ public sealed class ColonizationCarrierSelectionViewModel : INotifyPropertyChang
     public IReadOnlyList<long> CaptureSelectedIds() =>
         Items.Where(item => item.IsSelected).Select(item => item.MarketId).ToArray();
 
+    /// <summary>Distinguishes dynamic all and legacy selection from an explicit checked set, including none.</summary>
     public IReadOnlyList<long>? CapturePreference() => useAll || legacySingle ? null : selectedIds.Order().ToArray();
 
     public long LegacyMarketId => !useAll && selectedIds.Count == 1 ? selectedIds.First() : 0;
@@ -57,6 +59,7 @@ public sealed class ColonizationCarrierSelectionViewModel : INotifyPropertyChang
 
     public string SelectionNote => SelectedCount == 1 ? "1 carrier selected" : $"{SelectedCount:N0} carriers selected";
 
+    /// <summary>Compares selection modes and identities independently of carrier labels and display order.</summary>
     public bool Matches(IReadOnlyList<long>? ids, long legacyMarketId = 0)
     {
         if (ids is null)
@@ -83,6 +86,7 @@ public sealed class ColonizationCarrierSelectionViewModel : INotifyPropertyChang
         NotifySelection();
     }
 
+    /// <summary>Refreshes available carriers while retaining checked identities and pruning missing IDs only when requested.</summary>
     public void UpdateCarriers(IReadOnlyList<ColonizationFleetCarrier> updated, bool pruneMissing = true)
     {
         ArgumentNullException.ThrowIfNull(updated);
@@ -115,8 +119,10 @@ public sealed class ColonizationCarrierSelectionViewModel : INotifyPropertyChang
     public IReadOnlyList<ColonizationFleetCarrier> ResolveCarriers() =>
         carriers.Where(carrier => IsSelected(carrier.MarketId)).ToArray();
 
+    /// <summary>Treats dynamic all as checked and preserves exact membership for explicit selections.</summary>
     internal bool IsSelected(long marketId) => useAll || selectedIds.Contains(marketId);
 
+    /// <summary>Converts dynamic all to checked identities on the first edit, subject to the owning workflow edit guard.</summary>
     internal void SetSelected(long marketId, bool value)
     {
         if (!canEdit() || IsSelected(marketId) == value)
@@ -140,6 +146,7 @@ public sealed class ColonizationCarrierSelectionViewModel : INotifyPropertyChang
         NotifySelection();
     }
 
+    /// <summary>Refreshes checkbox and summary bindings before notifying the owning workflow.</summary>
     private void NotifySelection(bool notifyOwner = true)
     {
         foreach (ColonizationCarrierSelectionItem item in Items)

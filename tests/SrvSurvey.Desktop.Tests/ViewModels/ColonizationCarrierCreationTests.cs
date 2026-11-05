@@ -58,13 +58,20 @@ public sealed partial class ColonizationProjectEditorViewModelTests
         Assert.Equal(1, client.CreateCount);
     }
 
-    [Fact]
-    public async Task CarrierCreationKeepsTheCreatedBuildAndSuccessfulLinksWhenAnotherCarrierFails()
+    /// <summary>A failure before or after another link succeeds retains that success and identifies the failed carrier.</summary>
+    [Theory]
+    [InlineData(42L, 43L, "AAA-111")]
+    [InlineData(43L, 42L, "BBB-222")]
+    public async Task CarrierCreationKeepsTheCreatedBuildAndSuccessfulLinksWhenAnotherCarrierFails(
+        long failingId,
+        long retainedId,
+        string failingName
+    )
     {
         var client = new StubRavenColonialClient
         {
             LinkCreatedCarrier = (_, marketId) =>
-                marketId == 42
+                marketId == failingId
                     ? Task.FromException(new HttpRequestException("Raven rejected this carrier"))
                     : Task.CompletedTask,
         };
@@ -85,14 +92,15 @@ public sealed partial class ColonizationProjectEditorViewModelTests
 
         Assert.True(editor.HasCreatedProject);
         Assert.Equal("created-1", editor.CreatedProjectId);
-        Assert.Equal(43, Assert.Single(installed!.LinkedFleetCarriers).MarketId);
+        Assert.Equal(retainedId, Assert.Single(installed!.LinkedFleetCarriers).MarketId);
         Assert.Contains("Carriers linked: 1 of 2.", editor.StatusMessage);
-        Assert.Contains("AAA-111: Raven rejected this carrier", editor.StatusMessage);
+        Assert.Contains($"{failingName}: Raven rejected this carrier", editor.StatusMessage);
         Assert.Contains("Retry failed links", editor.StatusMessage);
         Assert.False(editor.IsConfirmationPending);
         Assert.Equal(1, client.CreateCount);
     }
 
+    /// <summary>Unchecked carrier linking adds no confirmation suffix and issues no carrier requests.</summary>
     [Fact]
     public async Task CarrierCreationIsOptionalAndStartsUnchecked()
     {
@@ -101,7 +109,7 @@ public sealed partial class ColonizationProjectEditorViewModelTests
         Assert.False(editor.IncludeCarrierLinks);
         Assert.False(editor.CanChooseCreationCarrier);
         await editor.ReviewAsync();
-        Assert.DoesNotContain("carrier(s)", editor.ConfirmationSummary);
+        Assert.DoesNotContain("after creation.", editor.ConfirmationSummary);
         await editor.ConfirmCreateAsync();
         Assert.Equal("created-1", editor.CreatedProjectId);
         Assert.Empty(client.CreatedCarrierLinks);

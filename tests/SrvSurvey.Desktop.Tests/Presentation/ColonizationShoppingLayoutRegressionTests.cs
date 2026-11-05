@@ -71,6 +71,7 @@ public sealed partial class ColonizationShoppingPresentationTests
         }
     }
 
+    /// <summary>Clearing and selecting carriers through the view recalculates needs and preserves the difference toggle.</summary>
     [AvaloniaFact]
     public async Task CarrierDifferenceSelectorShowsAllLinkedChoicesAndRecalculatesTags()
     {
@@ -118,6 +119,11 @@ public sealed partial class ColonizationShoppingPresentationTests
                 Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).Summary
             );
             Assert.Single(Assert.IsType<ColonizationCarrierSelectionViewModel>(selector.DataContext).Items);
+            ColonizationCarrierSelectionViewModel selection = Assert.IsType<ColonizationCarrierSelectionViewModel>(
+                selector.DataContext
+            );
+            selection.ClearCommand.Execute(null);
+            Assert.Contains("Steel: 100", model.NeedsText);
             SetCarrierChecks(selector, 42);
             Assert.Contains("Steel: 75", model.NeedsText);
             using WriteableBitmap? frame = window.CaptureRenderedFrame();

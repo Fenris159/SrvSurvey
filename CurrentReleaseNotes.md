@@ -27,4 +27,9 @@ carrier cargo calculations and Market Search.
   and clearing every checkbox stays empty rather than reverting to all carriers.
 - **Recover from partial failures:** Individual carrier-link failures leave the
   created build and successful links intact. Bulk operations continue with the
-  remaining projects and carriers, and report failures for retry.
+  remaining projects and carriers, and report failures for retry. Leaving a
+  construction site during linking keeps the created build, while refreshes
+  retain newer requirements and project details. Disabling Raven permanently
+  stops an older bulk operation, and a changed carrier roster requires another
+  review after a failed creation attempt. The newest saved carrier selection
+  survives a failure writing either the planning or shopping preferences.

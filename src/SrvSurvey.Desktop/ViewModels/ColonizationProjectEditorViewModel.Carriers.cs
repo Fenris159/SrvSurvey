@@ -6,6 +6,7 @@ public sealed partial class ColonizationProjectEditorViewModel
 {
     private bool includeCarrierLinks;
     private bool updatingCarrierOptions;
+    private bool carrierConfirmationStale;
     private ColonizationCarrierSelectionViewModel? carrierSelection;
 
     public ColonizationCarrierSelectionViewModel CarrierSelection =>
@@ -93,13 +94,21 @@ public sealed partial class ColonizationProjectEditorViewModel
         {
             updatingCarrierOptions = false;
         }
-        if (IncludeCarrierLinks && !IsBusy && !previous.SequenceEqual(CarrierSelection.CaptureSelectedIds().Order()))
+        if (IncludeCarrierLinks && !previous.SequenceEqual(CarrierSelection.CaptureSelectedIds().Order()))
         {
-            ClearConfirmation();
+            if (IsBusy)
+            {
+                carrierConfirmationStale = true;
+            }
+            else
+            {
+                ClearConfirmation();
+            }
         }
         NotifyCarrierSelection();
     }
 
+    /// <summary>Requires another build review after the user changes carriers outside an option refresh.</summary>
     private void OnCreationCarrierSelectionChanged()
     {
         if (!updatingCarrierOptions)
@@ -112,6 +121,7 @@ public sealed partial class ColonizationProjectEditorViewModel
 
     private IReadOnlyList<ColonizationFleetCarrier> SelectedCreationCarriers() => CarrierSelection.ResolveCarriers();
 
+    /// <summary>Blocks review and publication when opt-in linking has no available selected carriers.</summary>
     private string? CarrierSelectionError() =>
         IncludeCarrierLinks && (!HasCreationCarriers || SelectedCreationCarriers().Count == 0)
             ? "Choose an available carrier, or turn off carrier linking before reviewing this build."
@@ -144,7 +154,11 @@ public sealed partial class ColonizationProjectEditorViewModel
     }
 
     /// <summary>Runs only after creation has returned a real build ID; each link failure leaves the build intact.</summary>
-    private async Task<(ColonizationProject Project, string? Message)> LinkCreatedProjectCarriersAsync(
+    private async Task<(
+        ColonizationProject Project,
+        string? Message,
+        IReadOnlyList<ColonizationFleetCarrier> LinkedCarriers
+    )> LinkCreatedProjectCarriersAsync(
         ColonizationProject created,
         IReadOnlyList<ColonizationFleetCarrier> carriers,
         int version
@@ -152,33 +166,33 @@ public sealed partial class ColonizationProjectEditorViewModel
     {
         if (carriers.Count == 0)
         {
-            return (created, null);
+            return (created, null, []);
         }
         if (
             !ColonizationProjectCarrierLinks.CanLink(created)
             || client is not IRavenColonialProjectCarrierClient carrierClient
         )
         {
-            return (created, "Carrier linking was skipped because no valid build ID was returned.");
+            return (created, "Carrier linking was skipped because no valid build ID was returned.", []);
         }
-        int linked = 0;
+        var linked = new List<ColonizationFleetCarrier>();
         var failures = new List<string>();
         StatusMessage = $"Created {created.BuildName}. Linking carriers...";
         foreach (ColonizationFleetCarrier carrier in carriers)
         {
-            if (version != contextVersion)
+            if (version != publicationVersion)
             {
-                return (created, null);
+                return (created, null, linked);
             }
             try
             {
                 await carrierClient.LinkProjectCarrierAsync(created.BuildId, carrier.MarketId, CancellationToken.None);
-                if (version != contextVersion)
+                if (version != publicationVersion)
                 {
-                    return (created, null);
+                    return (created, null, linked);
                 }
                 created = ColonizationProjectCarrierLinks.Apply(created, carrier, link: true);
-                linked++;
+                linked.Add(carrier);
             }
             catch (Exception exception)
                 when (exception is HttpRequestException or InvalidDataException or TaskCanceledException)
@@ -186,11 +200,11 @@ public sealed partial class ColonizationProjectEditorViewModel
                 failures.Add($"{carrier.Name}: {exception.Message}");
             }
         }
-        string message = $"Carriers linked: {linked:N0} of {carriers.Count:N0}.";
+        string message = $"Carriers linked: {linked.Count:N0} of {carriers.Count:N0}.";
         if (failures.Count > 0)
         {
             message += " " + string.Join("; ", failures) + " Retry failed links from My build projects.";
         }
-        return (created, message);
+        return (created, message, linked);
     }
 }
