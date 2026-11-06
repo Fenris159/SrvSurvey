@@ -5085,6 +5085,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Architect",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+  },
+  {
     "Text": "Architect systems are cached for a day. Refresh Systems updates the list now.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8679,6 +8687,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/BiologyRewardSettingsStore.cs"
   },
   {
+    "Text": "Build ID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+  },
+  {
     "Text": "Build a named reference configuration from your ship\u0027s equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A\u2013H group.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8709,6 +8725,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "Build type",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
   },
   {
     "Text": "BuildSiteRepairVisits",
@@ -8751,6 +8775,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Building list unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+  },
+  {
     "Text": "Building name",
     "IsFormat": false,
     "SourceKinds": [
@@ -8773,6 +8805,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Buildings:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
   },
   {
     "Text": "Bumper",
@@ -23755,7 +23795,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
   },
   {
     "Text": "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier\u0027s system.",
@@ -45174,6 +45214,7 @@
     "Text": "Project name",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
@@ -83243,6 +83284,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "{0}-layout {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+  },
+  {
     "Text": "{0}.desktop",
     "IsFormat": true,
     "SourceKinds": [
@@ -83465,6 +83514,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "{0}x {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
   },
   {
     "Text": "{0}x{1} at ({2},{3})",

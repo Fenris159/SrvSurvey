@@ -2541,6 +2541,10 @@
       "translation": "Aquamarin"
     },
     {
+      "source": "Architect",
+      "translation": "Architekt"
+    },
+    {
       "source": "Architect systems are cached for a day. Refresh Systems updates the list now.",
       "translation": "Architektensysteme werden einen Tag lang zwischengespeichert. Refresh Systems aktualisiert die Liste jetzt."
     },
@@ -4333,6 +4337,10 @@
       "translation": "BucketTwoMillions"
     },
     {
+      "source": "Build ID",
+      "translation": "Build-ID"
+    },
+    {
       "source": "Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group.",
       "translation": "Erstellen Sie eine benannte Referenzkonfiguration aus den ausgerüsteten Modulen Ihres Schiffs. Dadurch werden in Elite keine Steuerelemente festgelegt. Das Einstellungssymbol neben Firegroups in der Seitenleiste öffnet das entsprechende Overlay-Fenster mit Aktivierung/Deaktivierung, Hotkey und Overlay-Ausnahmen. Das Panel folgt Ihrem Schiff und Ihrer aktiven A–H-Gruppe."
     },
@@ -4347,6 +4355,10 @@
     {
       "source": "Build projects in this report",
       "translation": "Erstellen Sie Projekte in diesem Bericht"
+    },
+    {
+      "source": "Build type",
+      "translation": "Build-Typ"
     },
     {
       "source": "BuildSiteRepairVisits",
@@ -4369,6 +4381,10 @@
       "translation": "Gebäudegeometrie"
     },
     {
+      "source": "Building list unavailable.",
+      "translation": "Gebäudeliste nicht verfügbar."
+    },
+    {
       "source": "Building name",
       "translation": "Gebäudename"
     },
@@ -4379,6 +4395,10 @@
     {
       "source": "Buildings",
       "translation": "Gebäude"
+    },
+    {
+      "source": "Buildings:",
+      "translation": "Gebäude:"
     },
     {
       "source": "Bumper",
@@ -41513,6 +41533,10 @@
       "translation": "{0} % von {1}"
     },
     {
+      "source": "{0}-layout {1}",
+      "translation": "{0}-Layout {1}"
+    },
+    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -41623,6 +41647,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x {1}",
+      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -44315,6 +44343,10 @@
       "translation": "Aguamarina"
     },
     {
+      "source": "Architect",
+      "translation": "Arquitecto"
+    },
+    {
       "source": "Architect systems are cached for a day. Refresh Systems updates the list now.",
       "translation": "Los sistemas Architect se almacenan en caché durante un día. Refresh Systems actualiza la lista ahora."
     },
@@ -46107,6 +46139,10 @@
       "translation": "cubodosmillones"
     },
     {
+      "source": "Build ID",
+      "translation": "ID de compilación"
+    },
+    {
       "source": "Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group.",
       "translation": "Cree una configuración de referencia con nombre a partir de los módulos equipados de su nave. Esto no establece controles en Elite. El ícono de configuración al lado de Firegroups en la barra lateral abre su ventana superpuesta dedicada con habilitar/deshabilitar, teclas de acceso rápido y excepciones de superposición. El panel sigue a tu barco y al grupo A-H activo."
     },
@@ -46121,6 +46157,10 @@
     {
       "source": "Build projects in this report",
       "translation": "Construya proyectos en este informe"
+    },
+    {
+      "source": "Build type",
+      "translation": "Tipo de construcción"
     },
     {
       "source": "BuildSiteRepairVisits",
@@ -46143,6 +46183,10 @@
       "translation": "Geometría del edificio"
     },
     {
+      "source": "Building list unavailable.",
+      "translation": "Lista de edificios no disponible."
+    },
+    {
       "source": "Building name",
       "translation": "Nombre del edificio"
     },
@@ -46153,6 +46197,10 @@
     {
       "source": "Buildings",
       "translation": "Edificios"
+    },
+    {
+      "source": "Buildings:",
+      "translation": "Edificios:"
     },
     {
       "source": "Bumper",
@@ -83287,6 +83335,10 @@
       "translation": "{0}% de {1}"
     },
     {
+      "source": "{0}-layout {1}",
+      "translation": "Diseño {0} {1}"
+    },
+    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -83397,6 +83449,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x {1}",
+      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -86089,6 +86145,10 @@
       "translation": "Bleu vert"
     },
     {
+      "source": "Architect",
+      "translation": "Architecte"
+    },
+    {
       "source": "Architect systems are cached for a day. Refresh Systems updates the list now.",
       "translation": "Les systèmes d'architecte sont mis en cache pendant une journée. Refresh Systems met à jour la liste maintenant."
     },
@@ -87881,6 +87941,10 @@
       "translation": "SeauDeuxMillions"
     },
     {
+      "source": "Build ID",
+      "translation": "ID de build"
+    },
+    {
       "source": "Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group.",
       "translation": "Construisez une configuration de référence nommée à partir des modules équipés de votre vaisseau. Cela ne définit pas les contrôles dans Elite. L'icône des paramètres à côté de Firegroups dans la barre latérale ouvre sa fenêtre de superposition dédiée avec activer/désactiver, raccourci clavier et exceptions de superposition. Le panneau suit votre vaisseau et votre groupe A-H actif."
     },
@@ -87895,6 +87959,10 @@
     {
       "source": "Build projects in this report",
       "translation": "Créer des projets dans ce rapport"
+    },
+    {
+      "source": "Build type",
+      "translation": "Type de construction"
     },
     {
       "source": "BuildSiteRepairVisits",
@@ -87917,6 +87985,10 @@
       "translation": "Géométrie du bâtiment"
     },
     {
+      "source": "Building list unavailable.",
+      "translation": "Liste des bâtiments indisponible."
+    },
+    {
       "source": "Building name",
       "translation": "Nom du bâtiment"
     },
@@ -87927,6 +87999,10 @@
     {
       "source": "Buildings",
       "translation": "Bâtiments"
+    },
+    {
+      "source": "Buildings:",
+      "translation": "Bâtiments :"
     },
     {
       "source": "Bumper",
@@ -125061,6 +125137,10 @@
       "translation": "{0}% de {1}"
     },
     {
+      "source": "{0}-layout {1}",
+      "translation": "Mise en page {0} {1}"
+    },
+    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -125171,6 +125251,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x {1}",
+      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -127863,6 +127947,10 @@
       "translation": "Água-marinha"
     },
     {
+      "source": "Architect",
+      "translation": "Arquiteto"
+    },
+    {
       "source": "Architect systems are cached for a day. Refresh Systems updates the list now.",
       "translation": "Os sistemas arquitetos são armazenados em cache por um dia. Refresh Systems atualiza a lista agora."
     },
@@ -129655,6 +129743,10 @@
       "translation": "BaldeDois Milhões"
     },
     {
+      "source": "Build ID",
+      "translation": "ID da versão"
+    },
+    {
       "source": "Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group.",
       "translation": "Construa uma configuração de referência nomeada a partir dos módulos equipados da sua nave. Isso não define controles no Elite. O ícone de configurações ao lado de Firegroups na barra lateral abre sua janela de sobreposição dedicada com ativação/desativação, tecla de atalho e exceções de sobreposição. O painel segue sua nave e o grupo A – H ativo."
     },
@@ -129669,6 +129761,10 @@
     {
       "source": "Build projects in this report",
       "translation": "Crie projetos neste relatório"
+    },
+    {
+      "source": "Build type",
+      "translation": "Tipo de construção"
     },
     {
       "source": "BuildSiteRepairVisits",
@@ -129691,6 +129787,10 @@
       "translation": "Geometria de construção"
     },
     {
+      "source": "Building list unavailable.",
+      "translation": "Lista de edifícios indisponível."
+    },
+    {
       "source": "Building name",
       "translation": "Nome do edifício"
     },
@@ -129701,6 +129801,10 @@
     {
       "source": "Buildings",
       "translation": "Edifícios"
+    },
+    {
+      "source": "Buildings:",
+      "translation": "Edifícios:"
     },
     {
       "source": "Bumper",
@@ -166835,6 +166939,10 @@
       "translation": "{0}% de {1}"
     },
     {
+      "source": "{0}-layout {1}",
+      "translation": "Layout {0} {1}"
+    },
+    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -166945,6 +167053,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x {1}",
+      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -169637,6 +169749,10 @@
       "translation": "Аквамарин"
     },
     {
+      "source": "Architect",
+      "translation": "Архитектор"
+    },
+    {
       "source": "Architect systems are cached for a day. Refresh Systems updates the list now.",
       "translation": "Системы Architect кэшируются на сутки. Refresh Systems сейчас обновляет список."
     },
@@ -171429,6 +171545,10 @@
       "translation": "ВедроДваМиллиона"
     },
     {
+      "source": "Build ID",
+      "translation": "Идентификатор сборки"
+    },
+    {
       "source": "Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group.",
       "translation": "Создайте именованную эталонную конфигурацию из оснащенных модулей вашего корабля. Это не устанавливает элементы управления в Elite. Значок настроек рядом с «Пожарными группами» на боковой панели открывает специальное наложенное окно с включением/отключением, горячими клавишами и исключениями наложения. Панель следует за вашим кораблем и активной группой A–H."
     },
@@ -171443,6 +171563,10 @@
     {
       "source": "Build projects in this report",
       "translation": "Стройте проекты в этом отчете"
+    },
+    {
+      "source": "Build type",
+      "translation": "Тип сборки"
     },
     {
       "source": "BuildSiteRepairVisits",
@@ -171465,6 +171589,10 @@
       "translation": "Строительная геометрия"
     },
     {
+      "source": "Building list unavailable.",
+      "translation": "Список зданий недоступен."
+    },
+    {
       "source": "Building name",
       "translation": "Название здания"
     },
@@ -171475,6 +171603,10 @@
     {
       "source": "Buildings",
       "translation": "Здания"
+    },
+    {
+      "source": "Buildings:",
+      "translation": "Здания:"
     },
     {
       "source": "Bumper",
@@ -208609,6 +208741,10 @@
       "translation": "{0}% от {1}"
     },
     {
+      "source": "{0}-layout {1}",
+      "translation": "{0}-макет {1}"
+    },
+    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -208719,6 +208855,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x {1}",
+      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -211411,6 +211551,10 @@
       "translation": "蓝晶"
     },
     {
+      "source": "Architect",
+      "translation": "建筑师"
+    },
+    {
       "source": "Architect systems are cached for a day. Refresh Systems updates the list now.",
       "translation": "架构师系统缓存一天。刷新系统现在更新列表。"
     },
@@ -213203,6 +213347,10 @@
       "translation": "桶百万"
     },
     {
+      "source": "Build ID",
+      "translation": "构建ID"
+    },
+    {
       "source": "Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group.",
       "translation": "从船舶配备的模块构建命名参考配置。这不会在 Elite 中设置控件。侧栏中 Firegroups 旁边的设置图标可打开其专用覆盖窗口，其中包含启用/禁用、热键和覆盖例外。该小组跟随您的舰船和活跃的 A-H 小组。"
     },
@@ -213217,6 +213365,10 @@
     {
       "source": "Build projects in this report",
       "translation": "构建本报告中的项目"
+    },
+    {
+      "source": "Build type",
+      "translation": "建造类型"
     },
     {
       "source": "BuildSiteRepairVisits",
@@ -213239,6 +213391,10 @@
       "translation": "建筑几何形状"
     },
     {
+      "source": "Building list unavailable.",
+      "translation": "建筑清单不可用。"
+    },
+    {
       "source": "Building name",
       "translation": "建筑物名称"
     },
@@ -213249,6 +213405,10 @@
     {
       "source": "Buildings",
       "translation": "建筑物"
+    },
+    {
+      "source": "Buildings:",
+      "translation": "建筑物："
     },
     {
       "source": "Bumper",
@@ -250383,6 +250543,10 @@
       "translation": "{0}% 的 {1}"
     },
     {
+      "source": "{0}-layout {1}",
+      "translation": "{0}-布局{1}"
+    },
+    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -250493,6 +250657,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x {1}",
+      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -253185,6 +253353,10 @@
       "translation": "* AQUAMARINE >>>!"
     },
     {
+      "source": "Architect",
+      "translation": "* ARCHITECT >>>!"
+    },
+    {
       "source": "Architect systems are cached for a day. Refresh Systems updates the list now.",
       "translation": "* ARCHITECT SYSTEMS ARE CACHED FOR A DAY. REFRESH SYSTEMS UPDATES THE LIST NOW. >>>!"
     },
@@ -254977,6 +255149,10 @@
       "translation": "* BUCKETTWOMILLIONS >>>!"
     },
     {
+      "source": "Build ID",
+      "translation": "* BUILD ID >>>!"
+    },
+    {
       "source": "Build a named reference configuration from your ship's equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A–H group.",
       "translation": "* BUILD A NAMED REFERENCE CONFIGURATION FROM YOUR SHIP'S EQUIPPED MODULES. THIS DOES NOT SET CONTROLS IN ELITE. THE SETTINGS ICON BESIDE FIREGROUPS IN THE SIDEBAR OPENS ITS DEDICATED OVERLAY WINDOW WITH ENABLE/DISABLE, HOTKEY AND OVERLAY EXCEPTIONS. THE PANEL FOLLOWS YOUR SHIP AND ACTIVE A–H GROUP. >>>!"
     },
@@ -254991,6 +255167,10 @@
     {
       "source": "Build projects in this report",
       "translation": "* BUILD PROJECTS IN THIS REPORT >>>!"
+    },
+    {
+      "source": "Build type",
+      "translation": "* BUILD TYPE >>>!"
     },
     {
       "source": "BuildSiteRepairVisits",
@@ -255013,6 +255193,10 @@
       "translation": "* BUILDING GEOMETRY >>>!"
     },
     {
+      "source": "Building list unavailable.",
+      "translation": "* BUILDING LIST UNAVAILABLE. >>>!"
+    },
+    {
       "source": "Building name",
       "translation": "* BUILDING NAME >>>!"
     },
@@ -255023,6 +255207,10 @@
     {
       "source": "Buildings",
       "translation": "* BUILDINGS >>>!"
+    },
+    {
+      "source": "Buildings:",
+      "translation": "* BUILDINGS: >>>!"
     },
     {
       "source": "Bumper",
@@ -292157,6 +292345,10 @@
       "translation": "* {0}% OF {1} >>>!"
     },
     {
+      "source": "{0}-layout {1}",
+      "translation": "* {0}-LAYOUT {1} >>>!"
+    },
+    {
       "source": "{0}.desktop",
       "translation": "* {0}.DESKTOP >>>!"
     },
@@ -292267,6 +292459,10 @@
     {
       "source": "{0}x",
       "translation": "* {0}X >>>!"
+    },
+    {
+      "source": "{0}x {1}",
+      "translation": "* {0}X {1} >>>!"
     },
     {
       "source": "{0}x{1} at ({2},{3})",

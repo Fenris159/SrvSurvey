@@ -63,6 +63,10 @@ public sealed record ColonizationProject
     [JsonPropertyName("notes")]
     public string? Notes { get; init; }
 
+    [JsonPropertyName("prepBuilds")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public Dictionary<string, int>? PreparedBuilds { get; init; }
+
     [JsonPropertyName("commodities")]
     public Dictionary<string, int> Commodities { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 

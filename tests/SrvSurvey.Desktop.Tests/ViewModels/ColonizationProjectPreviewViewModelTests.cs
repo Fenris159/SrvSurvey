@@ -3,7 +3,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class ColonizationProjectPreviewViewModelTests
+public sealed partial class ColonizationProjectPreviewViewModelTests
 {
     private static readonly string[] CombinedBuildIds = ["first", "second"];
 

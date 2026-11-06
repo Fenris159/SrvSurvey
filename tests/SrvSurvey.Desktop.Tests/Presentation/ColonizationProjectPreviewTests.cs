@@ -15,7 +15,7 @@ using SrvSurvey.Desktop.ViewModels;
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class ColonizationProjectPreviewTests
+public sealed partial class ColonizationProjectPreviewTests
 {
     private static readonly string[] CombinedBuildNames = ["First build", "Second build"];
 

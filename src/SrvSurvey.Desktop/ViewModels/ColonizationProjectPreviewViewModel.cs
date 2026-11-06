@@ -112,6 +112,11 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
             {
                 return "Reported Nexus needs, including planned facilities";
             }
+            if (!isCombined && snapshot.Project.IsFleetCarrierLoading)
+            {
+                string buildings = PreparedBuildingsText(snapshot.Project);
+                return buildings.Length > 0 ? buildings : "Fleet Carrier loading";
+            }
             return isCombined
                 ? CombinedSubtitle(snapshot)
                 : $"{snapshot.Project.SystemName} · {snapshot.Effects?.Name ?? snapshot.Project.BuildType} ({snapshot.Project.BuildType})";
@@ -358,17 +363,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
         shipCapacity = Math.Max(0, currentShipCapacity());
         ApplyCarrierReadiness(snapshot);
         CarrierHeaders = snapshot.Carriers.Select(carrier => carrier.Name).ToArray();
-        Details = snapshot.IsCombined
-            ? ColonizationProjectCsvExporter
-                .BuildDetails(snapshot)
-                .Select(pair => new PreviewField(pair.Key, pair.Value))
-                .ToArray()
-            : ColonizationProjectCsvExporter
-                .Details(snapshot)
-                .Take(8)
-                .Concat([KeyValuePair.Create("Notes", snapshot.Project.Notes ?? string.Empty)])
-                .Select(pair => new PreviewField(pair.Key, pair.Value))
-                .ToArray();
+        Details = ProjectDetailFields(snapshot);
         if (snapshot.NexusSystems is { } nexusSystems)
         {
             Details = nexusSystems
@@ -469,7 +464,10 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
 }
 
 /// <summary>A label and public value rendered in read-only project cards.</summary>
-public sealed record PreviewField(string Label, string Value);
+public sealed record PreviewField(string Label, string Value)
+{
+    public bool IsFullWidth { get; init; }
+}
 
 /// <summary>A system heading with short effect rows so combined reports remain readable across long system names.</summary>
 public sealed record PreviewEffectGroup(string Name, IReadOnlyList<PreviewField> Fields);
