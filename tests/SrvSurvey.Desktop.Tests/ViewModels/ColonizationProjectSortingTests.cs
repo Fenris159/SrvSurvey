@@ -61,11 +61,18 @@ public sealed partial class ColonizationViewModelTests
         Assert.Equal(["d", "c", "b", "a"], model.VisibleProjects.Select(row => row.Project.BuildId));
     }
 
+    /// <summary>Plans and missing totals sort at zero, while a loading project with known fulfilled needs sorts by its percentage.</summary>
     [Theory]
-    [InlineData(true, "no_truss", 1_000)]
-    [InlineData(false, ColonizationProject.FleetCarrierLoadingBuildType, 1_000)]
-    [InlineData(false, "no_truss", 0)]
-    public async Task PlansAndUnavailableProgressSortBelowWorkedOnProjects(bool planned, string type, int total)
+    [InlineData(true, "no_truss", 1_000, "active,unknown", 0d)]
+    [InlineData(false, ColonizationProject.FleetCarrierLoadingBuildType, 1_000, "unknown,active", 1d)]
+    [InlineData(false, "no_truss", 0, "active,unknown", 0d)]
+    public async Task ProjectProgressSortingUsesKnownLoadingTotalsAndKeepsPlansAndMissingTotalsAtZero(
+        bool planned,
+        string type,
+        int total,
+        string order,
+        double progress
+    )
     {
         StubRavenColonialClient client = ProjectSortingClient();
         client.Workspace = client.Workspace with
@@ -85,8 +92,8 @@ public sealed partial class ColonizationViewModelTests
         model.IsEnabled = true;
         await model.SetCommanderAsync("Test Cmdr");
 
-        Assert.Equal(["active", "unknown"], model.VisibleProjects.Select(row => row.Project.BuildId));
-        Assert.Equal(0, model.VisibleProjects[1].ProgressSortValue);
+        Assert.Equal(order.Split(','), model.VisibleProjects.Select(row => row.Project.BuildId));
+        Assert.Equal(progress, model.Projects.Single(row => row.Project.BuildId == "unknown").ProgressSortValue);
     }
 
     [Fact]

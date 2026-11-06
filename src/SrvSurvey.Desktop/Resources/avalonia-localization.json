@@ -689,10 +689,6 @@
       "translation": "<--Auswahl deaktivieren"
     },
     {
-      "source": "? of {0}",
-      "translation": "? von {0}"
-    },
-    {
       "source": "A 3",
       "translation": "Eine 3"
     },
@@ -16315,6 +16311,10 @@
     {
       "source": "Loaded {0} systems from {1}.",
       "translation": "{0} Systeme von {1} geladen."
+    },
+    {
+      "source": "Loading",
+      "translation": "Laden"
     },
     {
       "source": "Loading Canonn signals for {0}…",
@@ -42463,10 +42463,6 @@
       "translation": "<--Desmarcar selección"
     },
     {
-      "source": "? of {0}",
-      "translation": "? de {0}"
-    },
-    {
       "source": "A 3",
       "translation": "un 3"
     },
@@ -58089,6 +58085,10 @@
     {
       "source": "Loaded {0} systems from {1}.",
       "translation": "Se cargaron sistemas {0} de {1}."
+    },
+    {
+      "source": "Loading",
+      "translation": "Cargando"
     },
     {
       "source": "Loading Canonn signals for {0}…",
@@ -84237,10 +84237,6 @@
       "translation": "<--Décochez la sélection"
     },
     {
-      "source": "? of {0}",
-      "translation": "? de {0}"
-    },
-    {
       "source": "A 3",
       "translation": "Un 3"
     },
@@ -99863,6 +99859,10 @@
     {
       "source": "Loaded {0} systems from {1}.",
       "translation": "Systèmes {0} chargés depuis {1}."
+    },
+    {
+      "source": "Loading",
+      "translation": "Chargement"
     },
     {
       "source": "Loading Canonn signals for {0}…",
@@ -126011,10 +126011,6 @@
       "translation": "<--Desmarcar seleção"
     },
     {
-      "source": "? of {0}",
-      "translation": "? de {0}"
-    },
-    {
       "source": "A 3",
       "translation": "Um 3"
     },
@@ -141637,6 +141633,10 @@
     {
       "source": "Loaded {0} systems from {1}.",
       "translation": "Sistemas {0} carregados de {1}."
+    },
+    {
+      "source": "Loading",
+      "translation": "Carregando"
     },
     {
       "source": "Loading Canonn signals for {0}…",
@@ -167785,10 +167785,6 @@
       "translation": "<--Снять выделение"
     },
     {
-      "source": "? of {0}",
-      "translation": "? из {0}"
-    },
-    {
       "source": "A 3",
       "translation": "А 3"
     },
@@ -183411,6 +183407,10 @@
     {
       "source": "Loaded {0} systems from {1}.",
       "translation": "Загружены системы {0} из {1}."
+    },
+    {
+      "source": "Loading",
+      "translation": "Загрузка"
     },
     {
       "source": "Loading Canonn signals for {0}…",
@@ -209559,10 +209559,6 @@
       "translation": "<--取消选中选择"
     },
     {
-      "source": "? of {0}",
-      "translation": "？ {0}"
-    },
-    {
       "source": "A 3",
       "translation": "A 3"
     },
@@ -225185,6 +225181,10 @@
     {
       "source": "Loaded {0} systems from {1}.",
       "translation": "已从 {1} 加载 {0} 系统。"
+    },
+    {
+      "source": "Loading",
+      "translation": "加载中"
     },
     {
       "source": "Loading Canonn signals for {0}…",
@@ -251333,10 +251333,6 @@
       "translation": "* <--UNCHECK SELECTION >>>!"
     },
     {
-      "source": "? of {0}",
-      "translation": "* ? OF {0} >>>!"
-    },
-    {
       "source": "A 3",
       "translation": "* A 3 >>>!"
     },
@@ -266959,6 +266955,10 @@
     {
       "source": "Loaded {0} systems from {1}.",
       "translation": "* LOADED {0} SYSTEMS FROM {1}. >>>!"
+    },
+    {
+      "source": "Loading",
+      "translation": "* LOADING >>>!"
     },
     {
       "source": "Loading Canonn signals for {0}…",

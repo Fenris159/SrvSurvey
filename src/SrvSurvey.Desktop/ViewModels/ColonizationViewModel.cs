@@ -2017,7 +2017,7 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
 
     public double CarrierCoveragePercent { get; private set; }
 
-    public double ProgressSortValue => Project.IsPlanned || Project.IsFleetCarrierLoading ? 0 : Project.Progress ?? 0;
+    public double ProgressSortValue => Project.IsPlanned ? 0 : Project.Progress ?? 0;
 
     internal bool UpdateCarrierCoverage(double percent)
     {
@@ -2039,10 +2039,6 @@ public sealed class ColonizationProjectRowViewModel : INotifyPropertyChanged
             if (Project.IsPlanned)
             {
                 return $"~{Project.MaximumRequired:N0} t";
-            }
-            if (Project.IsFleetCarrierLoading)
-            {
-                return $"? of {Project.MaximumRequired:N0}";
             }
             return Project.Progress switch
             {
