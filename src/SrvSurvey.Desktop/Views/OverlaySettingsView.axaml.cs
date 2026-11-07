@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -40,6 +41,7 @@ public sealed partial class OverlaySettingsView : UserControl
     private void ApplyCategory(OverlaySettingsCategory category)
     {
         bool isGlobal = category == OverlaySettingsCategory.Global;
+        Classes.Set("category-overlays", !isGlobal);
         FiregroupsVisibilityCard.IsVisible = category == OverlaySettingsCategory.Firegroups;
         MiningActivityCard.IsVisible = category == OverlaySettingsCategory.Mining;
         MineMapOverlayCard.IsVisible = category == OverlaySettingsCategory.MineMap;
@@ -83,6 +85,7 @@ public sealed partial class OverlaySettingsView : UserControl
 
         if (isGlobal)
         {
+            OverlaySettingsTitle.FontSize = 22;
             CategoryOverlayContent.Children.Remove(PanelVisibilityCard);
             GlobalVisibilityContent.Children.Add(PanelVisibilityCard);
             return;
@@ -91,7 +94,6 @@ public sealed partial class OverlaySettingsView : UserControl
         OverlaySettingsCategoryDefinition definition = OverlaySettingsCategoryCatalog.All.Single(candidate =>
             candidate.Category == category
         );
-        OverlaySettingsEyebrow.Text = $"{definition.Eyebrow} OVERLAYS";
         OverlaySettingsTitle.Text = $"{definition.DisplayName} overlay settings";
         OverlaySettingsDescription.Text = definition.Description;
 
@@ -107,6 +109,12 @@ public sealed partial class OverlaySettingsView : UserControl
             SystemSurveyCardDescription.Text =
                 "Configure biological surveys, prior scans, surface radar, and reward presentation.";
         }
+    }
+
+    private void ShowPanelShortcuts_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        Point target = PanelVisibilityCard.TranslatePoint(default, CategoryOverlayContent) ?? default;
+        CategoryOverlaySections.Offset = new Vector(0, target.Y);
     }
 
     private async void OverlayExceptions_Click(object? sender, RoutedEventArgs eventArgs)

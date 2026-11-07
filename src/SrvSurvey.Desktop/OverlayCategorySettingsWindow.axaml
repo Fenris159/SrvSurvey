@@ -1,14 +1,23 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="SrvSurvey.Desktop.OverlayCategorySettingsWindow"
+        Classes="app-window"
         Width="920"
         Height="720"
         MinWidth="720"
         MinHeight="520"
         WindowStartupLocation="CenterOwner"
         Icon="/Assets/logo.ico">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+  <Grid RowDefinitions="*,Auto">
     <ContentControl x:Name="CategorySettingsContent"
                     Margin="32,16,32,32" />
-  </ScrollViewer>
+    <Border Grid.Row="1" Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="32,12">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <TextBlock Classes="muted" TextWrapping="Wrap" VerticalAlignment="Center"
+                   Text="Changes save automatically unless a Save button is shown." />
+        <Button Grid.Column="1" Classes="secondary" Content="Close" Click="Close_Click" />
+      </Grid>
+    </Border>
+  </Grid>
 </Window>

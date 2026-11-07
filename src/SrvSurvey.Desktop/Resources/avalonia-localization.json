@@ -173,6 +173,10 @@
       "translation": "1 GEO"
     },
     {
+      "source": "1 band",
+      "translation": "1 Band"
+    },
+    {
       "source": "1 biological signal",
       "translation": "1 biologisches Signal"
     },
@@ -393,6 +397,10 @@
       "translation": "2 SrvSurvey Instanzen werden derzeit ausgeführt."
     },
     {
+      "source": "2 bands",
+      "translation": "2 Bands"
+    },
+    {
       "source": "2 black holes · 5 T Tauri stars",
       "translation": "2 Schwarze Löcher · 5 T-Tauri-Sterne"
     },
@@ -427,6 +435,10 @@
     {
       "source": "2,799 t",
       "translation": "2.799 t"
+    },
+    {
+      "source": "2-band threshold (M CR)",
+      "translation": "2-Band-Schwelle (M CR)"
     },
     {
       "source": "2.84 G | CHECK DESCENT RATE",
@@ -497,6 +509,10 @@
       "translation": "3 aktive Missionsstapel"
     },
     {
+      "source": "3 bands",
+      "translation": "3 Bands"
+    },
+    {
       "source": "3 biological signals",
       "translation": "3 biologische Signale"
     },
@@ -517,6 +533,10 @@
       "translation": "3.892 t erforderlich"
     },
     {
+      "source": "3-band threshold (M CR)",
+      "translation": "3-Band-Schwelle (M CR)"
+    },
+    {
       "source": "300 need | 80 FC | 12 ship",
       "translation": "300 brauchen | 80 FC | 12 Schiff"
     },
@@ -533,6 +553,10 @@
       "translation": "36 von 72"
     },
     {
+      "source": "4 bands",
+      "translation": "4 Bands"
+    },
+    {
       "source": "4 biological signals",
       "translation": "4 biologische Signale"
     },
@@ -543,6 +567,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4.820 t VERBLEIBEND | FC 1.240 T | SCHIFF 192 T"
+    },
+    {
+      "source": "4-band threshold (M CR)",
+      "translation": "4-Band-Schwelle (M CR)"
     },
     {
       "source": "400 Bad Request",
@@ -4813,6 +4841,10 @@
       "translation": "Die Kalibrierung ist nach dem Festschreiben des Layouts fehlgeschlagen"
     },
     {
+      "source": "Calibration guide",
+      "translation": "Kalibrierungsanleitung"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Kalibrierungsvorschau – gespeicherte Tracker bleiben unverändert."
     },
@@ -5377,8 +5409,16 @@
       "translation": "Ändern Sie Maßstab, Position, Neigung, Gierung und Drehung im Desktop-Editor oder im Headset-Kalibrierungsfeld. Normale Schritte sind 5 cm und 1 Grad; Wählen Sie „Fein“ oder „Grob“, verwenden Sie das Mausrad oder halten Sie die Umschalt-/Strg-Taste gedrückt, um vorübergehende Präzisionsänderungen vorzunehmen."
     },
     {
+      "source": "Changes apply immediately.",
+      "translation": "Änderungen gelten sofort."
+    },
+    {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Ändert nur die angezeigte FSS-vollständige Statistik. Es hat keinen Einfluss auf den Abschluss der Boxel-Suche, die nächsten Ziele, die Anzahl der Körper oder die Werte."
+    },
+    {
+      "source": "Changes save automatically unless a Save button is shown.",
+      "translation": "Änderungen werden automatisch gespeichert, sofern keine Schaltfläche „Speichern“ angezeigt wird."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -19789,10 +19829,6 @@
       "translation": "OVERLAY-GRÖSSE"
     },
     {
-      "source": "OVERLAYS",
-      "translation": "ÜBERLAGERUNGEN"
-    },
-    {
       "source": "Obelisk",
       "translation": "Obelisk"
     },
@@ -20539,10 +20575,6 @@
     {
       "source": "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
       "translation": "Die optionale Bildschirmerkennung verfolgt eingesetzte Bohrinseln über die sechs Rhino-HUD-Leisten."
-    },
-    {
-      "source": "Optional visibility shortcut",
-      "translation": "Optionale Sichtbarkeitsverknüpfung"
     },
     {
       "source": "Optional {0} · Class {1}",
@@ -21495,6 +21527,10 @@
     {
       "source": "Personal Inara API key",
       "translation": "Persönlicher Inara API-Schlüssel"
+    },
+    {
+      "source": "Personal carrier next jump",
+      "translation": "Persönlicher Träger nächster Sprung"
     },
     {
       "source": "Personal fleet carrier",
@@ -25505,6 +25541,10 @@
       "translation": "Rig-Tracker wurden über das Rhino-HUD aktualisiert."
     },
     {
+      "source": "Rig tracking",
+      "translation": "Rig-Tracking"
+    },
+    {
       "source": "Rig tracking with key chords",
       "translation": "Rig-Tracking mit Schlüsselakkorden"
     },
@@ -27331,6 +27371,10 @@
     {
       "source": "Select a saved name to edit it, or expand its row to inspect its groups.",
       "translation": "Wählen Sie einen gespeicherten Namen aus, um ihn zu bearbeiten, oder erweitern Sie seine Zeile, um seine Gruppen zu überprüfen."
+    },
+    {
+      "source": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+      "translation": "Wählen Sie ein Verknüpfungsfeld aus, halten Sie eine Kombination gedrückt und lassen Sie sie dann zum Speichern los. Escape bricht ab; Rücktaste oder Entf löschen."
     },
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -37465,6 +37509,10 @@
       "translation": "Schatulle"
     },
     {
+      "source": "category-overlays",
+      "translation": "Kategorie-Overlays"
+    },
+    {
       "source": "center",
       "translation": "Zentrum"
     },
@@ -40701,10 +40749,6 @@
       "translation": "{0} Es wurden keine Dateien geändert."
     },
     {
-      "source": "{0} OVERLAYS",
-      "translation": "{0} OVERLAYS"
-    },
-    {
       "source": "{0} Platinum Spots++ results · {1} · {2}.",
       "translation": "{0} Platinum Spots++ Ergebnisse · {1} · {2}."
     },
@@ -42059,6 +42103,10 @@
       "translation": "1 GEO"
     },
     {
+      "source": "1 band",
+      "translation": "1 banda"
+    },
+    {
       "source": "1 biological signal",
       "translation": "1 señal biológica"
     },
@@ -42279,6 +42327,10 @@
       "translation": "Actualmente se están ejecutando 2 instancias SrvSurvey."
     },
     {
+      "source": "2 bands",
+      "translation": "2 bandas"
+    },
+    {
       "source": "2 black holes · 5 T Tauri stars",
       "translation": "2 agujeros negros · 5 estrellas T Tauri"
     },
@@ -42313,6 +42365,10 @@
     {
       "source": "2,799 t",
       "translation": "2.799 toneladas"
+    },
+    {
+      "source": "2-band threshold (M CR)",
+      "translation": "Umbral de 2 bandas (M CR)"
     },
     {
       "source": "2.84 G | CHECK DESCENT RATE",
@@ -42383,6 +42439,10 @@
       "translation": "3 pilas de misiones activas"
     },
     {
+      "source": "3 bands",
+      "translation": "3 bandas"
+    },
+    {
       "source": "3 biological signals",
       "translation": "3 señales biológicas"
     },
@@ -42403,6 +42463,10 @@
       "translation": "3.892 t necesarias"
     },
     {
+      "source": "3-band threshold (M CR)",
+      "translation": "Umbral de 3 bandas (M CR)"
+    },
+    {
       "source": "300 need | 80 FC | 12 ship",
       "translation": "300 necesidad | 80FC | 12 barco"
     },
@@ -42419,6 +42483,10 @@
       "translation": "36 de 72"
     },
     {
+      "source": "4 bands",
+      "translation": "4 bandas"
+    },
+    {
       "source": "4 biological signals",
       "translation": "4 señales biológicas"
     },
@@ -42429,6 +42497,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4.820 T RESTANTE | 1.240 FC | BARCO 192 T"
+    },
+    {
+      "source": "4-band threshold (M CR)",
+      "translation": "Umbral de 4 bandas (M CR)"
     },
     {
       "source": "400 Bad Request",
@@ -46699,6 +46771,10 @@
       "translation": "La calibración falló después de confirmar el diseño"
     },
     {
+      "source": "Calibration guide",
+      "translation": "Guía de calibración"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Vista previa de calibración: los rastreadores guardados no se modifican."
     },
@@ -47263,8 +47339,16 @@
       "translation": "Cambie la escala, la posición, la inclinación, la orientación y el balanceo en el editor de escritorio o en el panel de calibración de los auriculares. Los pasos normales son de 5 cm y 1 grado; elija Fino o Grueso, use la rueda del mouse o mantenga presionada la tecla Mayús/Ctrl para realizar cambios temporales de precisión."
     },
     {
+      "source": "Changes apply immediately.",
+      "translation": "Los cambios se aplican inmediatamente."
+    },
+    {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Cambia solo la estadística de FSS completo mostrada. No afecta la finalización de la búsqueda en el cuadro, los próximos objetivos, el recuento de cadáveres ni los valores."
+    },
+    {
+      "source": "Changes save automatically unless a Save button is shown.",
+      "translation": "Los cambios se guardan automáticamente a menos que se muestre el botón Guardar."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -61675,10 +61759,6 @@
       "translation": "TAMAÑO DE SUPERPOSICIÓN"
     },
     {
-      "source": "OVERLAYS",
-      "translation": "SUPERPOSICIONES"
-    },
-    {
       "source": "Obelisk",
       "translation": "Obelisco"
     },
@@ -62425,10 +62505,6 @@
     {
       "source": "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
       "translation": "La detección de pantalla opcional rastrea los equipos desplegados desde las seis barras del HUD de Rhino."
-    },
-    {
-      "source": "Optional visibility shortcut",
-      "translation": "Acceso directo de visibilidad opcional"
     },
     {
       "source": "Optional {0} · Class {1}",
@@ -63381,6 +63457,10 @@
     {
       "source": "Personal Inara API key",
       "translation": "Clave API personal Inara"
+    },
+    {
+      "source": "Personal carrier next jump",
+      "translation": "Próximo salto del transportista personal"
     },
     {
       "source": "Personal fleet carrier",
@@ -67391,6 +67471,10 @@
       "translation": "Rastreadores de plataformas actualizados desde Rhino HUD."
     },
     {
+      "source": "Rig tracking",
+      "translation": "Seguimiento de plataformas"
+    },
+    {
       "source": "Rig tracking with key chords",
       "translation": "Seguimiento de aparejos con acordes clave"
     },
@@ -69217,6 +69301,10 @@
     {
       "source": "Select a saved name to edit it, or expand its row to inspect its groups.",
       "translation": "Seleccione un nombre guardado para editarlo o expanda su fila para inspeccionar sus grupos."
+    },
+    {
+      "source": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+      "translation": "Seleccione un campo de acceso directo, mantenga presionada una combinación y luego suéltela para guardar. La fuga se cancela; Se borra la tecla Retroceso o Eliminar."
     },
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -79351,6 +79439,10 @@
       "translation": "ataúd"
     },
     {
+      "source": "category-overlays",
+      "translation": "superposiciones de categorías"
+    },
+    {
       "source": "center",
       "translation": "centro"
     },
@@ -82587,10 +82679,6 @@
       "translation": "{0} No se cambiaron archivos."
     },
     {
-      "source": "{0} OVERLAYS",
-      "translation": "SUPERPOSICIONES {0}"
-    },
-    {
       "source": "{0} Platinum Spots++ results · {1} · {2}.",
       "translation": "Resultados de {0} Platinum Spots++ · {1} · {2}."
     },
@@ -83945,6 +84033,10 @@
       "translation": "1 GÉO"
     },
     {
+      "source": "1 band",
+      "translation": "1 bande"
+    },
+    {
       "source": "1 biological signal",
       "translation": "1 signal biologique"
     },
@@ -84165,6 +84257,10 @@
       "translation": "2 instances SrvSurvey sont actuellement en cours d'exécution."
     },
     {
+      "source": "2 bands",
+      "translation": "2 bandes"
+    },
+    {
       "source": "2 black holes · 5 T Tauri stars",
       "translation": "2 trous noirs · 5 étoiles T Tauri"
     },
@@ -84199,6 +84295,10 @@
     {
       "source": "2,799 t",
       "translation": "2 799 tonnes"
+    },
+    {
+      "source": "2-band threshold (M CR)",
+      "translation": "Seuil 2 bandes (M CR)"
     },
     {
       "source": "2.84 G | CHECK DESCENT RATE",
@@ -84269,6 +84369,10 @@
       "translation": "3 piles de missions actives"
     },
     {
+      "source": "3 bands",
+      "translation": "3 bandes"
+    },
+    {
       "source": "3 biological signals",
       "translation": "3 signaux biologiques"
     },
@@ -84289,6 +84393,10 @@
       "translation": "3 892 t nécessaires"
     },
     {
+      "source": "3-band threshold (M CR)",
+      "translation": "Seuil 3 bandes (M CR)"
+    },
+    {
       "source": "300 need | 80 FC | 12 ship",
       "translation": "300 besoins | 80 FC | 12 navires"
     },
@@ -84305,6 +84413,10 @@
       "translation": "36 sur 72"
     },
     {
+      "source": "4 bands",
+      "translation": "4 bandes"
+    },
+    {
       "source": "4 biological signals",
       "translation": "4 signaux biologiques"
     },
@@ -84315,6 +84427,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4 820 T RESTANTES | FC 1 240 T | NAVIRE 192 T"
+    },
+    {
+      "source": "4-band threshold (M CR)",
+      "translation": "Seuil 4 bandes (M CR)"
     },
     {
       "source": "400 Bad Request",
@@ -88585,6 +88701,10 @@
       "translation": "L'étalonnage a échoué après la validation de la mise en page"
     },
     {
+      "source": "Calibration guide",
+      "translation": "Guide d'étalonnage"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Aperçu de l'étalonnage : les trackers enregistrés restent inchangés."
     },
@@ -89149,8 +89269,16 @@
       "translation": "Modifiez l'échelle, la position, le tangage, le lacet et le roulis dans l'éditeur de bureau ou dans le panneau d'étalonnage du casque. Les pas normaux sont de 5 cm et 1 degré ; choisissez Fine ou Coarse, utilisez la molette de la souris ou maintenez Shift / Ctrl pour des changements de précision temporaires."
     },
     {
+      "source": "Changes apply immediately.",
+      "translation": "Les modifications s'appliquent immédiatement."
+    },
+    {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Modifie uniquement la statistique FSS-complete affichée. Cela n’affecte pas l’achèvement de la recherche boxel, les prochaines cibles, le nombre de corps ou les valeurs."
+    },
+    {
+      "source": "Changes save automatically unless a Save button is shown.",
+      "translation": "Les modifications sont enregistrées automatiquement, sauf si un bouton Enregistrer est affiché."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -103561,10 +103689,6 @@
       "translation": "TAILLE DE SUPERPOSITION"
     },
     {
-      "source": "OVERLAYS",
-      "translation": "SUPERPOSITIONS"
-    },
-    {
       "source": "Obelisk",
       "translation": "Obélisque"
     },
@@ -104311,10 +104435,6 @@
     {
       "source": "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
       "translation": "Les pistes de détection d'écran en option ont déployé des plates-formes à partir des six barres Rhino HUD."
-    },
-    {
-      "source": "Optional visibility shortcut",
-      "translation": "Raccourci de visibilité facultatif"
     },
     {
       "source": "Optional {0} · Class {1}",
@@ -105267,6 +105387,10 @@
     {
       "source": "Personal Inara API key",
       "translation": "Clé API personnelle Inara"
+    },
+    {
+      "source": "Personal carrier next jump",
+      "translation": "Prochain saut du transporteur personnel"
     },
     {
       "source": "Personal fleet carrier",
@@ -109277,6 +109401,10 @@
       "translation": "Trackers de plate-forme mis à jour à partir du Rhino HUD."
     },
     {
+      "source": "Rig tracking",
+      "translation": "Suivi des plates-formes"
+    },
+    {
       "source": "Rig tracking with key chords",
       "translation": "Suivi du rig avec des accords clés"
     },
@@ -111103,6 +111231,10 @@
     {
       "source": "Select a saved name to edit it, or expand its row to inspect its groups.",
       "translation": "Sélectionnez un nom enregistré pour le modifier ou développez sa ligne pour inspecter ses groupes."
+    },
+    {
+      "source": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+      "translation": "Sélectionnez un champ de raccourci, maintenez une combinaison enfoncée, puis relâchez pour enregistrer. L'évasion est annulée ; Retour arrière ou Supprimer s'efface."
     },
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -121237,6 +121369,10 @@
       "translation": "cercueil"
     },
     {
+      "source": "category-overlays",
+      "translation": "superpositions de catégories"
+    },
+    {
       "source": "center",
       "translation": "centre"
     },
@@ -124473,10 +124609,6 @@
       "translation": "{0} Aucun fichier n'a été modifié."
     },
     {
-      "source": "{0} OVERLAYS",
-      "translation": "SUPERPOSITIONS {0}"
-    },
-    {
       "source": "{0} Platinum Spots++ results · {1} · {2}.",
       "translation": "Résultats {0} Platinum Spots++ · {1} · {2}."
     },
@@ -125831,6 +125963,10 @@
       "translation": "1 GEO"
     },
     {
+      "source": "1 band",
+      "translation": "1 banda"
+    },
+    {
       "source": "1 biological signal",
       "translation": "1 sinal biológico"
     },
@@ -126051,6 +126187,10 @@
       "translation": "2 instâncias SrvSurvey estão em execução no momento."
     },
     {
+      "source": "2 bands",
+      "translation": "2 bandas"
+    },
+    {
       "source": "2 black holes · 5 T Tauri stars",
       "translation": "2 buracos negros · 5 estrelas T Tauri"
     },
@@ -126085,6 +126225,10 @@
     {
       "source": "2,799 t",
       "translation": "2.799 toneladas"
+    },
+    {
+      "source": "2-band threshold (M CR)",
+      "translation": "Limite de 2 bandas (M CR)"
     },
     {
       "source": "2.84 G | CHECK DESCENT RATE",
@@ -126155,6 +126299,10 @@
       "translation": "3 pilhas de missões ativas"
     },
     {
+      "source": "3 bands",
+      "translation": "3 bandas"
+    },
+    {
       "source": "3 biological signals",
       "translation": "3 sinais biológicos"
     },
@@ -126175,6 +126323,10 @@
       "translation": "3.892 t necessárias"
     },
     {
+      "source": "3-band threshold (M CR)",
+      "translation": "Limite de 3 bandas (M CR)"
+    },
+    {
       "source": "300 need | 80 FC | 12 ship",
       "translation": "300 necessidade | 80 FC | 12 navio"
     },
@@ -126191,6 +126343,10 @@
       "translation": "36 de 72"
     },
     {
+      "source": "4 bands",
+      "translation": "4 bandas"
+    },
+    {
       "source": "4 biological signals",
       "translation": "4 sinais biológicos"
     },
@@ -126201,6 +126357,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "4.820 T RESTANTES | FC 1.240 toneladas | NAVIO 192T"
+    },
+    {
+      "source": "4-band threshold (M CR)",
+      "translation": "Limiar de 4 bandas (M CR)"
     },
     {
       "source": "400 Bad Request",
@@ -130471,6 +130631,10 @@
       "translation": "A calibração falhou após a confirmação do layout"
     },
     {
+      "source": "Calibration guide",
+      "translation": "Guia de calibração"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Pré-visualização da calibração – os rastreadores salvos permanecem inalterados."
     },
@@ -131035,8 +131199,16 @@
       "translation": "Altere escala, posição, inclinação, guinada e rotação no editor de desktop ou no painel de calibração do headset. Os passos normais são de 5 cm e 1 grau; escolha Fino ou Grosso, use a roda do mouse ou segure Shift / Ctrl para alterações temporárias de precisão."
     },
     {
+      "source": "Changes apply immediately.",
+      "translation": "As alterações aplicam-se imediatamente."
+    },
+    {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Altera apenas a estatística completa do FSS exibida. Não afeta a conclusão da busca no boxel, próximos alvos, contagens de corpos ou valores."
+    },
+    {
+      "source": "Changes save automatically unless a Save button is shown.",
+      "translation": "As alterações são salvas automaticamente, a menos que um botão Salvar seja mostrado."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -145447,10 +145619,6 @@
       "translation": "TAMANHO DA SOBREPOSIÇÃO"
     },
     {
-      "source": "OVERLAYS",
-      "translation": "SOBREPOSIÇÕES"
-    },
-    {
       "source": "Obelisk",
       "translation": "Obelisco"
     },
@@ -146197,10 +146365,6 @@
     {
       "source": "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
       "translation": "A detecção de tela opcional rastreia os equipamentos implantados nas seis barras do Rhino HUD."
-    },
-    {
-      "source": "Optional visibility shortcut",
-      "translation": "Atalho de visibilidade opcional"
     },
     {
       "source": "Optional {0} · Class {1}",
@@ -147153,6 +147317,10 @@
     {
       "source": "Personal Inara API key",
       "translation": "Chave de API pessoal Inara"
+    },
+    {
+      "source": "Personal carrier next jump",
+      "translation": "Próximo salto da operadora pessoal"
     },
     {
       "source": "Personal fleet carrier",
@@ -151163,6 +151331,10 @@
       "translation": "Rastreadores de plataforma atualizados do Rhino HUD."
     },
     {
+      "source": "Rig tracking",
+      "translation": "Rastreamento de plataforma"
+    },
+    {
       "source": "Rig tracking with key chords",
       "translation": "Rastreamento de equipamento com acordes principais"
     },
@@ -152989,6 +153161,10 @@
     {
       "source": "Select a saved name to edit it, or expand its row to inspect its groups.",
       "translation": "Selecione um nome salvo para editá-lo ou expanda sua linha para inspecionar seus grupos."
+    },
+    {
+      "source": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+      "translation": "Selecione um campo de atalho, segure uma combinação e solte para salvar. A fuga é cancelada; Backspace ou Delete são limpos."
     },
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -163123,6 +163299,10 @@
       "translation": "caixão"
     },
     {
+      "source": "category-overlays",
+      "translation": "sobreposições de categoria"
+    },
+    {
       "source": "center",
       "translation": "centro"
     },
@@ -166359,10 +166539,6 @@
       "translation": "{0} Nenhum arquivo foi alterado."
     },
     {
-      "source": "{0} OVERLAYS",
-      "translation": "SOBREPOSIÇÕES {0}"
-    },
-    {
       "source": "{0} Platinum Spots++ results · {1} · {2}.",
       "translation": "Resultados {0} Platinum Spots++ · {1} · {2}."
     },
@@ -167717,6 +167893,10 @@
       "translation": "1 ГЕО"
     },
     {
+      "source": "1 band",
+      "translation": "1 группа"
+    },
+    {
       "source": "1 biological signal",
       "translation": "1 биологический сигнал"
     },
@@ -167937,6 +168117,10 @@
       "translation": "В настоящее время запущено 2 экземпляра SrvSurvey ."
     },
     {
+      "source": "2 bands",
+      "translation": "2 группы"
+    },
+    {
       "source": "2 black holes · 5 T Tauri stars",
       "translation": "2 черные дыры · 5 звезд Т Тельца"
     },
@@ -167971,6 +168155,10 @@
     {
       "source": "2,799 t",
       "translation": "2799 т"
+    },
+    {
+      "source": "2-band threshold (M CR)",
+      "translation": "2-полосный порог (M CR)"
     },
     {
       "source": "2.84 G | CHECK DESCENT RATE",
@@ -168041,6 +168229,10 @@
       "translation": "3 активных набора миссий"
     },
     {
+      "source": "3 bands",
+      "translation": "3 группы"
+    },
+    {
       "source": "3 biological signals",
       "translation": "3 биологических сигнала"
     },
@@ -168061,6 +168253,10 @@
       "translation": "требуется 3892 т"
     },
     {
+      "source": "3-band threshold (M CR)",
+      "translation": "3-полосный порог (M CR)"
+    },
+    {
       "source": "300 need | 80 FC | 12 ship",
       "translation": "300 нужно | 80 ФК | 12 корабль"
     },
@@ -168077,6 +168273,10 @@
       "translation": "36 из 72"
     },
     {
+      "source": "4 bands",
+      "translation": "4 группы"
+    },
+    {
       "source": "4 biological signals",
       "translation": "4 биологических сигнала"
     },
@@ -168087,6 +168287,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "ОСТАЛОСЬ 4820 Т | ФК 1240 Т | КОРАБЛЬ 192 Т"
+    },
+    {
+      "source": "4-band threshold (M CR)",
+      "translation": "4-полосный порог (M CR)"
     },
     {
       "source": "400 Bad Request",
@@ -172357,6 +172561,10 @@
       "translation": "Калибровка не удалась после фиксации макета"
     },
     {
+      "source": "Calibration guide",
+      "translation": "Руководство по калибровке"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Предварительный просмотр калибровки — сохраненные трекеры не изменяются."
     },
@@ -172921,8 +173129,16 @@
       "translation": "Изменяйте масштаб, положение, наклон, поворот и вращение в настольном редакторе или на панели калибровки гарнитуры. Нормальные шаги — 5 см и 1 градус; выберите «Точный» или «Грубый», используйте колесо мыши или удерживайте Shift/Ctrl для временного изменения точности."
     },
     {
+      "source": "Changes apply immediately.",
+      "translation": "Изменения вступают в силу немедленно."
+    },
+    {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "Изменяет только отображаемую полную статистику FSS. Это не влияет на завершение поиска по боксу, следующие цели, количество тел или значения."
+    },
+    {
+      "source": "Changes save automatically unless a Save button is shown.",
+      "translation": "Изменения сохраняются автоматически, если не отображается кнопка «Сохранить»."
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -187333,10 +187549,6 @@
       "translation": "РАЗМЕР НАВЕРХИЯ"
     },
     {
-      "source": "OVERLAYS",
-      "translation": "НАКЛАДКИ"
-    },
-    {
       "source": "Obelisk",
       "translation": "Обелиск"
     },
@@ -188083,10 +188295,6 @@
     {
       "source": "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
       "translation": "Дополнительный экран обнаружения отслеживает развернутые установки с помощью шести панелей Rhino HUD."
-    },
-    {
-      "source": "Optional visibility shortcut",
-      "translation": "Дополнительный ярлык видимости"
     },
     {
       "source": "Optional {0} · Class {1}",
@@ -189039,6 +189247,10 @@
     {
       "source": "Personal Inara API key",
       "translation": "Персональный ключ API Inara API"
+    },
+    {
+      "source": "Personal carrier next jump",
+      "translation": "Личный перевозчик следующего прыжка"
     },
     {
       "source": "Personal fleet carrier",
@@ -193049,6 +193261,10 @@
       "translation": "Трекеры буровых установок обновлены из Rhino HUD."
     },
     {
+      "source": "Rig tracking",
+      "translation": "Отслеживание буровой установки"
+    },
+    {
       "source": "Rig tracking with key chords",
       "translation": "Отслеживание оснастки с помощью ключевых аккордов"
     },
@@ -194875,6 +195091,10 @@
     {
       "source": "Select a saved name to edit it, or expand its row to inspect its groups.",
       "translation": "Выберите сохраненное имя, чтобы отредактировать его, или разверните его строку, чтобы просмотреть его группы."
+    },
+    {
+      "source": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+      "translation": "Выберите поле ярлыка, удерживайте комбинацию и отпустите, чтобы сохранить. Побег отменяется; Backspace или Удалить очищаются."
     },
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -205009,6 +205229,10 @@
       "translation": "шкатулка"
     },
     {
+      "source": "category-overlays",
+      "translation": "наложения категорий"
+    },
+    {
       "source": "center",
       "translation": "центр"
     },
@@ -208245,10 +208469,6 @@
       "translation": "{0} Ни один файл не был изменен."
     },
     {
-      "source": "{0} OVERLAYS",
-      "translation": "{0} НАКЛАДКИ"
-    },
-    {
       "source": "{0} Platinum Spots++ results · {1} · {2}.",
       "translation": "{0} Платиновые споты++ результаты · {1} · {2}."
     },
@@ -209603,6 +209823,10 @@
       "translation": "1 个地球站"
     },
     {
+      "source": "1 band",
+      "translation": "1 频段"
+    },
+    {
       "source": "1 biological signal",
       "translation": "1 生物信号"
     },
@@ -209823,6 +210047,10 @@
       "translation": "当前有 2 个 SrvSurvey 实例正在运行。"
     },
     {
+      "source": "2 bands",
+      "translation": "2 条带"
+    },
+    {
       "source": "2 black holes · 5 T Tauri stars",
       "translation": "2 个黑洞 · 5 个 T 金牛星"
     },
@@ -209857,6 +210085,10 @@
     {
       "source": "2,799 t",
       "translation": "2,799 吨"
+    },
+    {
+      "source": "2-band threshold (M CR)",
+      "translation": "2 波段阈值 (M CR)"
     },
     {
       "source": "2.84 G | CHECK DESCENT RATE",
@@ -209927,6 +210159,10 @@
       "translation": "3 个活跃任务堆栈"
     },
     {
+      "source": "3 bands",
+      "translation": "3 个频段"
+    },
+    {
       "source": "3 biological signals",
       "translation": "3 生物信号"
     },
@@ -209947,6 +210183,10 @@
       "translation": "需要 3,892 吨"
     },
     {
+      "source": "3-band threshold (M CR)",
+      "translation": "3 波段阈值 (M CR)"
+    },
+    {
       "source": "300 need | 80 FC | 12 ship",
       "translation": "300 需要 | 80 足球俱乐部 | 12艘"
     },
@@ -209963,6 +210203,10 @@
       "translation": "36 共 72"
     },
     {
+      "source": "4 bands",
+      "translation": "4 个频段"
+    },
+    {
       "source": "4 biological signals",
       "translation": "4个生物信号"
     },
@@ -209973,6 +210217,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "剩余 4,820 吨 | FC 1,240 T |船 192 T"
+    },
+    {
+      "source": "4-band threshold (M CR)",
+      "translation": "4 波段阈值 (M CR)"
     },
     {
       "source": "400 Bad Request",
@@ -214243,6 +214491,10 @@
       "translation": "布局提交后校准失败"
     },
     {
+      "source": "Calibration guide",
+      "translation": "校准指南"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "校准预览 - 保存的跟踪器未更改。"
     },
@@ -214807,8 +215059,16 @@
       "translation": "在桌面编辑器或耳机校准面板中更改比例、位置、俯仰、偏航和滚动。正常步长为 5 厘米和 1 度；选择“精细”或“粗略”，使用鼠标滚轮或按住 Shift / Ctrl 进行临时精度更改。"
     },
     {
+      "source": "Changes apply immediately.",
+      "translation": "更改立即生效。"
+    },
+    {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "仅更改显示的 FSS 完整统计数据。它不会影响框搜索完成、下一个目标、主体计数或值。"
+    },
+    {
+      "source": "Changes save automatically unless a Save button is shown.",
+      "translation": "除非显示“保存”按钮，否则更改会自动保存。"
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -229219,10 +229479,6 @@
       "translation": "覆盖尺寸"
     },
     {
-      "source": "OVERLAYS",
-      "translation": "覆盖层"
-    },
-    {
       "source": "Obelisk",
       "translation": "方尖碑"
     },
@@ -229969,10 +230225,6 @@
     {
       "source": "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
       "translation": "可选的屏幕检测跟踪来自六个 Rhino HUD 条的部署装备。"
-    },
-    {
-      "source": "Optional visibility shortcut",
-      "translation": "可选的可见性快捷方式"
     },
     {
       "source": "Optional {0} · Class {1}",
@@ -230925,6 +231177,10 @@
     {
       "source": "Personal Inara API key",
       "translation": "个人 Inara API 密钥"
+    },
+    {
+      "source": "Personal carrier next jump",
+      "translation": "个人航母的下一跳"
     },
     {
       "source": "Personal fleet carrier",
@@ -234935,6 +235191,10 @@
       "translation": "从 Rhino HUD 更新了装备跟踪器。"
     },
     {
+      "source": "Rig tracking",
+      "translation": "钻机跟踪"
+    },
+    {
       "source": "Rig tracking with key chords",
       "translation": "使用关键和弦进行装备跟踪"
     },
@@ -236761,6 +237021,10 @@
     {
       "source": "Select a saved name to edit it, or expand its row to inspect its groups.",
       "translation": "选择已保存的名称进行编辑，或展开其行以检查其组。"
+    },
+    {
+      "source": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+      "translation": "选择一个快捷方式字段，按住组合键，然后释放以保存。逃脱取消；退格键或删除会清除。"
     },
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -246895,6 +247159,10 @@
       "translation": "棺材"
     },
     {
+      "source": "category-overlays",
+      "translation": "类别叠加"
+    },
+    {
       "source": "center",
       "translation": "中心"
     },
@@ -250131,10 +250399,6 @@
       "translation": "{0} 没有更改任何文件。"
     },
     {
-      "source": "{0} OVERLAYS",
-      "translation": "{0} 覆盖"
-    },
-    {
       "source": "{0} Platinum Spots++ results · {1} · {2}.",
       "translation": "{0} 白金点++ 结果 · {1} · {2}。"
     },
@@ -251489,6 +251753,10 @@
       "translation": "* 1 GEO >>>!"
     },
     {
+      "source": "1 band",
+      "translation": "* 1 BAND >>>!"
+    },
+    {
       "source": "1 biological signal",
       "translation": "* 1 BIOLOGICAL SIGNAL >>>!"
     },
@@ -251709,6 +251977,10 @@
       "translation": "* 2 SRVSURVEY INSTANCES ARE CURRENTLY RUNNING. >>>!"
     },
     {
+      "source": "2 bands",
+      "translation": "* 2 BANDS >>>!"
+    },
+    {
       "source": "2 black holes · 5 T Tauri stars",
       "translation": "* 2 BLACK HOLES · 5 T TAURI STARS >>>!"
     },
@@ -251743,6 +252015,10 @@
     {
       "source": "2,799 t",
       "translation": "* 2,799 T >>>!"
+    },
+    {
+      "source": "2-band threshold (M CR)",
+      "translation": "* 2-BAND THRESHOLD (M CR) >>>!"
     },
     {
       "source": "2.84 G | CHECK DESCENT RATE",
@@ -251813,6 +252089,10 @@
       "translation": "* 3 ACTIVE MISSION STACKS >>>!"
     },
     {
+      "source": "3 bands",
+      "translation": "* 3 BANDS >>>!"
+    },
+    {
       "source": "3 biological signals",
       "translation": "* 3 BIOLOGICAL SIGNALS >>>!"
     },
@@ -251833,6 +252113,10 @@
       "translation": "* 3,892 T REQUIRED >>>!"
     },
     {
+      "source": "3-band threshold (M CR)",
+      "translation": "* 3-BAND THRESHOLD (M CR) >>>!"
+    },
+    {
       "source": "300 need | 80 FC | 12 ship",
       "translation": "* 300 NEED | 80 FC | 12 SHIP >>>!"
     },
@@ -251849,6 +252133,10 @@
       "translation": "* 36 OF 72 >>>!"
     },
     {
+      "source": "4 bands",
+      "translation": "* 4 BANDS >>>!"
+    },
+    {
       "source": "4 biological signals",
       "translation": "* 4 BIOLOGICAL SIGNALS >>>!"
     },
@@ -251859,6 +252147,10 @@
     {
       "source": "4,820 T REMAINING | FC 1,240 T | SHIP 192 T",
       "translation": "* 4,820 T REMAINING | FC 1,240 T | SHIP 192 T >>>!"
+    },
+    {
+      "source": "4-band threshold (M CR)",
+      "translation": "* 4-BAND THRESHOLD (M CR) >>>!"
     },
     {
       "source": "400 Bad Request",
@@ -256129,6 +256421,10 @@
       "translation": "* CALIBRATION FAILED AFTER LAYOUT COMMIT >>>!"
     },
     {
+      "source": "Calibration guide",
+      "translation": "* CALIBRATION GUIDE >>>!"
+    },
+    {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "* CALIBRATION PREVIEW — SAVED TRACKERS ARE UNCHANGED. >>>!"
     },
@@ -256693,8 +256989,16 @@
       "translation": "* CHANGE SCALE, POSITION, PITCH, YAW, AND ROLL IN THE DESKTOP EDITOR OR THE HEADSET CALIBRATION PANEL. NORMAL STEPS ARE 5 CM AND 1 DEGREE; CHOOSE FINE OR COARSE, USE THE MOUSE WHEEL, OR HOLD SHIFT / CTRL FOR TEMPORARY PRECISION CHANGES. >>>!"
     },
     {
+      "source": "Changes apply immediately.",
+      "translation": "* CHANGES APPLY IMMEDIATELY. >>>!"
+    },
+    {
       "source": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
       "translation": "* CHANGES ONLY THE DISPLAYED FSS-COMPLETE STATISTIC. IT DOES NOT AFFECT BOXEL-SEARCH COMPLETION, NEXT TARGETS, BODY COUNTS, OR VALUES. >>>!"
+    },
+    {
+      "source": "Changes save automatically unless a Save button is shown.",
+      "translation": "* CHANGES SAVE AUTOMATICALLY UNLESS A SAVE BUTTON IS SHOWN. >>>!"
     },
     {
       "source": "Changes saved. Next system: {0}.",
@@ -271105,10 +271409,6 @@
       "translation": "* OVERLAY SIZE >>>!"
     },
     {
-      "source": "OVERLAYS",
-      "translation": "* OVERLAYS >>>!"
-    },
-    {
       "source": "Obelisk",
       "translation": "* OBELISK >>>!"
     },
@@ -271855,10 +272155,6 @@
     {
       "source": "Optional screen detection tracks deployed rigs from the six Rhino HUD bars.",
       "translation": "* OPTIONAL SCREEN DETECTION TRACKS DEPLOYED RIGS FROM THE SIX RHINO HUD BARS. >>>!"
-    },
-    {
-      "source": "Optional visibility shortcut",
-      "translation": "* OPTIONAL VISIBILITY SHORTCUT >>>!"
     },
     {
       "source": "Optional {0} · Class {1}",
@@ -272811,6 +273107,10 @@
     {
       "source": "Personal Inara API key",
       "translation": "* PERSONAL INARA API KEY >>>!"
+    },
+    {
+      "source": "Personal carrier next jump",
+      "translation": "* PERSONAL CARRIER NEXT JUMP >>>!"
     },
     {
       "source": "Personal fleet carrier",
@@ -276821,6 +277121,10 @@
       "translation": "* RIG TRACKERS UPDATED FROM THE RHINO HUD. >>>!"
     },
     {
+      "source": "Rig tracking",
+      "translation": "* RIG TRACKING >>>!"
+    },
+    {
       "source": "Rig tracking with key chords",
       "translation": "* RIG TRACKING WITH KEY CHORDS >>>!"
     },
@@ -278647,6 +278951,10 @@
     {
       "source": "Select a saved name to edit it, or expand its row to inspect its groups.",
       "translation": "* SELECT A SAVED NAME TO EDIT IT, OR EXPAND ITS ROW TO INSPECT ITS GROUPS. >>>!"
+    },
+    {
+      "source": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+      "translation": "* SELECT A SHORTCUT FIELD, HOLD A COMBINATION, THEN RELEASE TO SAVE. ESCAPE CANCELS; BACKSPACE OR DELETE CLEARS. >>>!"
     },
     {
       "source": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -288781,6 +289089,10 @@
       "translation": "* CASKET >>>!"
     },
     {
+      "source": "category-overlays",
+      "translation": "* CATEGORY-OVERLAYS >>>!"
+    },
+    {
       "source": "center",
       "translation": "* CENTER >>>!"
     },
@@ -292015,10 +292327,6 @@
     {
       "source": "{0} No files were changed.",
       "translation": "* {0} NO FILES WERE CHANGED. >>>!"
-    },
-    {
-      "source": "{0} OVERLAYS",
-      "translation": "* {0} OVERLAYS >>>!"
     },
     {
       "source": "{0} Platinum Spots++ results · {1} · {2}.",

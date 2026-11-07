@@ -345,6 +345,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "1 band",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "1 biological signal",
     "IsFormat": false,
     "SourceKinds": [
@@ -785,6 +793,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
+    "Text": "2 bands",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "2 black holes \u00B7 5 T Tauri stars",
     "IsFormat": false,
     "SourceKinds": [
@@ -855,6 +871,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "2-band threshold (M CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "2.84 G | CHECK DESCENT RATE",
@@ -993,6 +1017,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "3 bands",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "3 biological signals",
     "IsFormat": false,
     "SourceKinds": [
@@ -1033,6 +1065,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "3-band threshold (M CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "300 need | 80 FC | 12 ship",
     "IsFormat": false,
     "SourceKinds": [
@@ -1065,6 +1105,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "4 bands",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "4 biological signals",
     "IsFormat": false,
     "SourceKinds": [
@@ -1087,6 +1135,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "4-band threshold (M CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "400 Bad Request",
@@ -9646,6 +9702,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Calibration guide",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Calibration preview \u2014 saved trackers are unchanged.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10781,12 +10845,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Changes apply immediately.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
+  },
+  {
     "Text": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Changes save automatically unless a Save button is shown.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayCategorySettingsWindow.axaml"
   },
   {
     "Text": "Changes saved. Next system: {0}.",
@@ -37475,9 +37555,10 @@
     "Text": "Next-jump information",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Next-jump information and route overlays",
@@ -39717,14 +39798,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "OVERLAYS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Obelisk",
     "IsFormat": false,
     "SourceKinds": [
@@ -41223,14 +41296,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Optional visibility shortcut",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Optional {0} \u00B7 Class {1}",
@@ -43138,6 +43203,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Personal carrier next jump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Personal fleet carrier",
@@ -51173,6 +51246,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningViewModel.cs"
   },
   {
+    "Text": "Rig tracking",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Rig tracking with key chords",
     "IsFormat": false,
     "SourceKinds": [
@@ -54844,6 +54925,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Select a station or commodities in Search Markets to build your ShoppingList.",
@@ -75149,6 +75238,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianArtifactGlyphControl.cs"
   },
   {
+    "Text": "category-overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml.cs"
+  },
+  {
     "Text": "center",
     "IsFormat": false,
     "SourceKinds": [
@@ -81620,14 +81717,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
-  },
-  {
-    "Text": "{0} OVERLAYS",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml.cs"
   },
   {
     "Text": "{0} Platinum Spots\u002B\u002B results \u00B7 {1} \u00B7 {2}.",
