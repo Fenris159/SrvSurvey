@@ -764,6 +764,7 @@ public sealed partial class ExplorationHistoryCatalogTests
             if (
                 unavailableSource is "capture" or "capture_changed"
                 && progress.IsPreparing
+                && !progress.IsDiscovering
                 && progress.CurrentFile == Path.GetFileName(mapping)
             )
             {
