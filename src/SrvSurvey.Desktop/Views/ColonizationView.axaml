@@ -91,42 +91,73 @@
       <Setter Property="Width" Value="22" />
       <Setter Property="Padding" Value="0" />
     </Style>
+    <Style Selector="TextBlock.colonization-field-label">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    </Style>
+    <Style Selector="Border.colonization-section">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
+      <Setter Property="Padding" Value="0,16,0,0" />
+    </Style>
+    <Style Selector="Border.colonization-status">
+      <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="14,12" />
+    </Style>
+    <Style Selector="Border.colonization-review-footer">
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
+      <Setter Property="Padding" Value="20,14" />
+    </Style>
+    <Style Selector="StackPanel.colonization-form TextBox, StackPanel.colonization-form ComboBox">
+      <Setter Property="MinHeight" Value="40" />
+    </Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="Auto,Auto,*" Margin="32">
-    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20" Margin="0,0,0,20">
-      <StackPanel Spacing="5">
+  <Grid RowDefinitions="Auto,Auto,*" Margin="24">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24" x:Name="ColonizationWorkspaceHeader" Margin="0,0,0,20">
+      <StackPanel Spacing="5" Grid.Column="0">
         <TextBlock Classes="eyebrow" Text="RAVEN COLONIAL" />
         <TextBlock Classes="page-title" Text="Colonization" />
         <TextBlock Classes="muted"
                    TextWrapping="Wrap"
                    Text="Track planned sites and active builds, choose which projects feed the cargo list, and inspect live construction requirements." />
       </StackPanel>
-      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+      <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="1">
         <Button x:Name="RefreshProjects"
                 Classes="secondary"
                 Command="{Binding Colonization.RefreshCommand}"
-                Content="{Binding Colonization.RefreshButtonText}" />
+                Content="{Binding Colonization.RefreshButtonText}"
+                Margin="0,0,8,6" />
         <ToggleButton x:Name="AutoRefreshProjects"
                       Classes="auto-refresh"
                       IsChecked="{Binding Colonization.IsAutoRefreshEnabled, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.CanAutoRefresh}"
-                      ToolTip.Tip="Fetches project data every 60 seconds to follow team progress. Session only: turns off when SrvSurvey closes or you change commander, and automatically stops after one hour.">
+                      ToolTip.Tip="Fetches project data every 60 seconds to follow team progress. Session only: turns off when SrvSurvey closes or you change commander, and automatically stops after one hour."
+                      Margin="0,0,8,6">
           <StackPanel Orientation="Horizontal" Spacing="6">
             <TextBlock x:Name="AutoRefreshSpinner"
-                       Text="⟳" FontSize="16" RenderTransformOrigin="50%,50%"
+                       Text="⟳"
+                       FontSize="16"
+                       RenderTransformOrigin="50%,50%"
                        IsVisible="{Binding Colonization.IsAutoRefreshEnabled}">
-              <TextBlock.RenderTransform><RotateTransform /></TextBlock.RenderTransform>
+              <TextBlock.RenderTransform>
+                <RotateTransform />
+              </TextBlock.RenderTransform>
             </TextBlock>
             <TextBlock Text="Auto Refresh" VerticalAlignment="Center" />
           </StackPanel>
         </ToggleButton>
-      </StackPanel>
+      </WrapPanel>
     </Grid>
     <Border Grid.Row="1" Margin="0,0,0,20" Classes="card" IsVisible="{Binding Colonization.HasUncertainContributions}" MaxHeight="260">
       <ScrollViewer x:Name="UnconfirmedDeliveryRecoveryScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="12">
           <TextBlock Classes="card-title" Text="Unconfirmed construction deliveries" />
-          <TextBlock TextWrapping="Wrap" Text="Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey." />
+          <TextBlock TextWrapping="Wrap"
+                     Text="Raven may have recorded these deliveries before the connection failed. Check their credit on Raven, then select only the deliveries you want to resolve. Retry those not recorded, or dismiss those already credited to clear their local recovery records. Unselected deliveries remain pending and survive restarting SrvSurvey." />
           <ItemsControl ItemsSource="{Binding Colonization.UnconfirmedContributions}"
                         IsEnabled="{Binding Colonization.CanSelectUnconfirmedContributions}">
             <ItemsControl.ItemTemplate>
@@ -138,304 +169,360 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
           <WrapPanel>
-            <Button Classes="secondary" Margin="0,0,12,0" Content="Retry selected deliveries" Command="{Binding Colonization.RetryUnconfirmedContributionsCommand}" />
+            <Button Classes="secondary"
+                    Margin="0,0,12,0"
+                    Content="Retry selected deliveries"
+                    Command="{Binding Colonization.RetryUnconfirmedContributionsCommand}" />
             <Button Classes="secondary" Content="Dismiss selected deliveries" Command="{Binding Colonization.DismissConfirmedContributionsCommand}" />
           </WrapPanel>
         </StackPanel>
       </ScrollViewer>
     </Border>
     <TabControl x:Name="ColonizationTabs" Grid.Row="2" SelectedIndex="{Binding Colonization.SelectedWorkspaceTabIndex, Mode=TwoWay}">
-      <TabControl.ItemsPanel><ItemsPanelTemplate><controls:AdaptiveTabHeaderPanel /></ItemsPanelTemplate></TabControl.ItemsPanel>
+      <TabControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <controls:AdaptiveTabHeaderPanel />
+        </ItemsPanelTemplate>
+      </TabControl.ItemsPanel>
       <TabItem Header="Projects">
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-          <StackPanel x:Name="ProjectsPage" Spacing="24" Margin="0,20,0,16" MaxWidth="1100" HorizontalAlignment="Stretch">
-            <Border Classes="card">
+          <StackPanel x:Name="ProjectsPage" Spacing="20" Margin="0,20,0,16" HorizontalAlignment="Stretch">
+            <Border Classes="card" x:Name="ProjectPreparationCard">
               <StackPanel Spacing="16">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-                  <StackPanel Spacing="4">
-                    <TextBlock Classes="eyebrow" Text="NEW BUILD" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24" x:Name="ProjectPreparationHeader">
+                  <StackPanel Spacing="4" Grid.Column="0">
                     <TextBlock Classes="card-title" Text="Create a project" />
                     <TextBlock Classes="muted"
                                TextWrapping="Wrap"
-                               Text="Prepare uses the current construction depot and reads matching Raven site data. Nothing is published until you review and confirm." />
+                               Text="Prepare uses the current construction depot and reads matching Raven site data. Nothing is published until you review and confirm."
+                               MaxWidth="760"
+                               HorizontalAlignment="Left" />
                   </StackPanel>
-                  <Button Grid.Column="1"
-                          Classes="secondary"
+                  <Button Classes="secondary"
                           VerticalAlignment="Center"
                           Command="{Binding Colonization.ProjectEditor.PrepareCommand}"
-                          Content="{Binding Colonization.ProjectEditor.PrepareButtonText}" />
+                          Content="{Binding Colonization.ProjectEditor.PrepareButtonText}"
+                          HorizontalAlignment="Right"
+                          Grid.Column="1" />
                 </Grid>
-
-                <Border Background="{DynamicResource RavenSurfaceBrush}"
-                        CornerRadius="8"
-                        Padding="12">
-                  <TextBlock TextWrapping="Wrap"
-                             Text="{Binding Colonization.ProjectEditor.StatusMessage}" />
+                <Border CornerRadius="8" Padding="12" Classes="colonization-status">
+                  <TextBlock TextWrapping="Wrap" Text="{Binding Colonization.ProjectEditor.StatusMessage}" />
                 </Border>
-
                 <StackPanel IsVisible="{Binding Colonization.ProjectEditor.IsEditorVisible}"
-                            Spacing="16">
-                  <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+                            Spacing="20"
+                            x:Name="ProjectPreparationForm"
+                            Classes="colonization-form">
+                  <controls:ResponsiveColumnsPanel x:Name="ProjectIdentityFields" MinimumColumnWidth="280" MaximumColumns="2" Spacing="16">
                     <StackPanel Spacing="6">
-                      <TextBlock Classes="muted" Text="PLANNED RAVEN SITE" />
+                      <TextBlock Classes="colonization-field-label" Text="Planned Raven site" />
                       <ComboBox ItemsSource="{Binding Colonization.ProjectEditor.SystemSites}"
-                                SelectedItem="{Binding Colonization.ProjectEditor.SelectedSystemSite, Mode=TwoWay}">
+                                SelectedItem="{Binding Colonization.ProjectEditor.SelectedSystemSite, Mode=TwoWay}"
+                                x:Name="ProjectPlannedSiteInput">
                         <ComboBox.ItemTemplate>
                           <DataTemplate x:DataType="vm:ColonizationSystemSiteOptionViewModel">
-                            <TextBlock Text="{Binding DisplayName}"
-                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" />
                           </DataTemplate>
                         </ComboBox.ItemTemplate>
                       </ComboBox>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="6">
-                      <TextBlock Classes="muted" Text="PROJECT NAME" />
+                    <StackPanel Spacing="6">
+                      <TextBlock Classes="colonization-field-label" Text="Project name" />
                       <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsProjectNameMissing}"
                                Text="{Binding Colonization.ProjectEditor.ProjectName, Mode=TwoWay}"
-                               PlaceholderText="Project name" />
+                               PlaceholderText="Project name"
+                               x:Name="ProjectNameInput" />
                       <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
                                  IsVisible="{Binding Colonization.ProjectEditor.IsProjectNameMissing}"
                                  Text="This field is required." />
                     </StackPanel>
-                  </Grid>
-
-                  <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
-                    <StackPanel Spacing="6">
-                      <TextBlock Classes="muted" Text="LOCATION" />
-                      <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
-                                ItemsSource="{Binding Colonization.ProjectEditor.Locations}"
-                                SelectedItem="{Binding Colonization.ProjectEditor.SelectedLocation, Mode=TwoWay}"
-                                HorizontalAlignment="Left" />
+                  </controls:ResponsiveColumnsPanel>
+                  <Border x:Name="ProjectBuildSection" Classes="colonization-section">
+                    <StackPanel Spacing="12">
+                      <TextBlock Text="Build details" Classes="card-title" TextWrapping="Wrap" />
+                      <controls:ResponsiveColumnsPanel x:Name="ProjectBuildFields" MinimumColumnWidth="280" MaximumColumns="3" Spacing="16">
+                        <StackPanel Spacing="6">
+                          <TextBlock Classes="colonization-field-label" Text="Location" />
+                          <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
+                                    ItemsSource="{Binding Colonization.ProjectEditor.Locations}"
+                                    SelectedItem="{Binding Colonization.ProjectEditor.SelectedLocation, Mode=TwoWay}"
+                                    x:Name="ProjectLocationInput" />
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                          <TextBlock Classes="colonization-field-label" Text="Build type" />
+                          <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
+                                    ItemsSource="{Binding Colonization.ProjectEditor.BuildOptions}"
+                                    SelectedItem="{Binding Colonization.ProjectEditor.SelectedBuild, Mode=TwoWay}"
+                                    x:Name="ProjectBuildTypeInput">
+                            <ComboBox.ItemTemplate>
+                              <DataTemplate x:DataType="vm:ColonizationBuildOptionViewModel">
+                                <TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" />
+                              </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                          </ComboBox>
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                          <TextBlock Classes="colonization-field-label" Text="Layout" />
+                          <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
+                                    ItemsSource="{Binding Colonization.ProjectEditor.Layouts}"
+                                    SelectedItem="{Binding Colonization.ProjectEditor.SelectedLayout, Mode=TwoWay}"
+                                    x:Name="ProjectLayoutInput" />
+                        </StackPanel>
+                      </controls:ResponsiveColumnsPanel>
+                      <controls:ResponsiveColumnsPanel x:Name="ProjectLocationFields" MinimumColumnWidth="280" MaximumColumns="3" Spacing="16">
+                        <StackPanel Spacing="6">
+                          <TextBlock Classes="colonization-field-label" Text="Architect" />
+                          <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsArchitectMissing}"
+                                   IsReadOnly="{Binding Colonization.ProjectEditor.IsArchitectReadOnly}"
+                                   Text="{Binding Colonization.ProjectEditor.ArchitectName, Mode=TwoWay}"
+                                   PlaceholderText="Commander or architect"
+                                   x:Name="ProjectArchitectInput" />
+                          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                                     IsVisible="{Binding Colonization.ProjectEditor.IsArchitectMissing}"
+                                     Text="This field is required." />
+                          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                     IsVisible="{Binding Colonization.ProjectEditor.ShowArchitectWarning}"
+                                     Text="*Warning: The architect named here can lock the system to that commander, please verify it is correct."
+                                     TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                          <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Classes="colonization-field-label" VerticalAlignment="Center" Text="Body ID" />
+                            <Button Classes="link"
+                                    Width="18"
+                                    Height="18"
+                                    Padding="2"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="Body ID help"
+                                    ToolTip.Tip="Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.">
+                              <PathIcon Width="14" Height="14" Data="{StaticResource question_circle_regular}" />
+                            </Button>
+                          </StackPanel>
+                          <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsBodyIdInvalid}"
+                                   Text="{Binding Colonization.ProjectEditor.BodyNumberText, Mode=TwoWay}"
+                                   PlaceholderText="-1"
+                                   x:Name="ProjectBodyIdInput" />
+                          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                                     IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdMissing}"
+                                     Text="This field is required." />
+                          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                                     IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdFormatInvalid}"
+                                     Text="Body ID must be -1 for unknown or a non-negative integer."
+                                     TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Spacing="6">
+                          <TextBlock Classes="colonization-field-label" Text="Body name" TextWrapping="Wrap" />
+                          <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsBodyNameMissing}"
+                                   Text="{Binding Colonization.ProjectEditor.BodyName, Mode=TwoWay}"
+                                   x:Name="ProjectBodyNameInput"
+                                   PlaceholderText="e.g. Peralta 4 a" />
+                          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                                     IsVisible="{Binding Colonization.ProjectEditor.IsBodyNameMissing}"
+                                     Text="This field is required." />
+                        </StackPanel>
+                      </controls:ResponsiveColumnsPanel>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="6">
-                      <TextBlock Classes="muted" Text="BUILD TYPE" />
-                      <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
-                                ItemsSource="{Binding Colonization.ProjectEditor.BuildOptions}"
-                                SelectedItem="{Binding Colonization.ProjectEditor.SelectedBuild, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                          <DataTemplate x:DataType="vm:ColonizationBuildOptionViewModel">
-                            <TextBlock Text="{Binding DisplayName}"
-                                       TextWrapping="Wrap" />
-                          </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                      </ComboBox>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="6">
-                      <TextBlock Classes="muted" Text="LAYOUT" />
-                      <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
-                                ItemsSource="{Binding Colonization.ProjectEditor.Layouts}"
-                                SelectedItem="{Binding Colonization.ProjectEditor.SelectedLayout, Mode=TwoWay}"
-                                HorizontalAlignment="Left" />
-                    </StackPanel>
-                  </Grid>
-
-                  <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="18">
-                    <StackPanel Spacing="6">
-                      <TextBlock Classes="muted" Text="ARCHITECT" />
-                      <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsArchitectMissing}"
-                               IsReadOnly="{Binding Colonization.ProjectEditor.IsArchitectReadOnly}"
-                               Text="{Binding Colonization.ProjectEditor.ArchitectName, Mode=TwoWay}"
-                               PlaceholderText="Commander or architect" />
-                      <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
-                                 IsVisible="{Binding Colonization.ProjectEditor.IsArchitectMissing}"
-                                 Text="This field is required." />
-                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                                 IsVisible="{Binding Colonization.ProjectEditor.ShowArchitectWarning}"
-                                 Text="*Warning: The architect named here can lock the system to that commander, please verify it is correct."
-                                 TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="6">
-                      <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Classes="muted" VerticalAlignment="Center" Text="BODY ID" />
-                        <Button Classes="link"
-                                Width="18"
-                                Height="18"
-                                Padding="2"
-                                VerticalAlignment="Center"
-                                AutomationProperties.Name="Body ID help"
-                                ToolTip.Tip="Body ID is the journal BodyID, not the system map body number such as 4 or 4 a. If you must enter it manually, open your latest journal and read BodyID from the Docked, Location, or ApproachBody event for the body you are building on.">
-                          <PathIcon Width="14"
-                                    Height="14"
-                                    Data="{StaticResource question_circle_regular}" />
-                        </Button>
-                      </StackPanel>
-                      <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsBodyIdInvalid}"
-                               Text="{Binding Colonization.ProjectEditor.BodyNumberText, Mode=TwoWay}"
-                               PlaceholderText="-1"
-                               MinWidth="88"
-                               HorizontalAlignment="Left" />
-                      <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
-                                 IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdMissing}"
-                                 Text="This field is required." />
-                      <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
-                                 IsVisible="{Binding Colonization.ProjectEditor.IsBodyIdFormatInvalid}"
-                                 Text="Body ID must be -1 for unknown or a non-negative integer."
-                                 TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Spacing="6">
-                      <TextBlock Classes="muted" Text="BODY NAME: i.e. Peralta 4 a" TextWrapping="Wrap" />
-                      <TextBox Classes.invalid="{Binding Colonization.ProjectEditor.IsBodyNameMissing}"
-                               Text="{Binding Colonization.ProjectEditor.BodyName, Mode=TwoWay}" />
-                      <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
-                                 IsVisible="{Binding Colonization.ProjectEditor.IsBodyNameMissing}"
-                                 Text="This field is required." />
-                    </StackPanel>
-                  </Grid>
-
-                  <StackPanel Spacing="6">
-                    <TextBlock Classes="muted" Text="NOTES" />
+                  </Border>
+                  <StackPanel Spacing="6" x:Name="ProjectNotesField">
+                    <TextBlock Classes="colonization-field-label" Text="Notes" />
                     <TextBox AcceptsReturn="True"
                              MinHeight="72"
                              Text="{Binding Colonization.ProjectEditor.Notes, Mode=TwoWay}"
                              TextWrapping="Wrap"
                              PlaceholderText="Optional project notes" />
                   </StackPanel>
-
-                  <StackPanel x:Name="BuildCarrierLinkOptions" Spacing="6">
-                    <WrapPanel>
-                      <CheckBox x:Name="LinkBuildCarriersCheckBox"
-                                Margin="0,6,18,6" VerticalAlignment="Top"
-                                IsChecked="{Binding Colonization.ProjectEditor.IncludeCarrierLinks, Mode=TwoWay}"
-                                IsEnabled="{Binding Colonization.ProjectEditor.CanSetCarrierLinking}"
-                                Content="Link carriers to this build" />
-                      <controls:CarrierMultiSelect x:Name="BuildCarrierSelector"
-                                DataContext="{Binding Colonization.ProjectEditor.CarrierSelection}"
-                                IsEnabled="{Binding $parent[UserControl].((vm:MainWindowViewModel)DataContext).Colonization.ProjectEditor.CanChooseCreationCarrier}"
-                                MinWidth="180" MaxWidth="320" Margin="0,0,0,6" VerticalAlignment="Top" />
-                    </WrapPanel>
-                    <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left"
-                               Text="{Binding Colonization.ProjectEditor.CarrierLinkHint}" />
-                  </StackPanel>
-
+                  <Border x:Name="ProjectCarrierSection" Classes="colonization-section">
+                    <StackPanel Spacing="12">
+                      <StackPanel x:Name="BuildCarrierLinkOptions" Spacing="6">
+                        <TextBlock Text="Carrier linking" Classes="card-title" TextWrapping="Wrap" />
+                        <WrapPanel>
+                          <CheckBox x:Name="LinkBuildCarriersCheckBox"
+                                    Margin="0,6,18,6"
+                                    VerticalAlignment="Top"
+                                    IsChecked="{Binding Colonization.ProjectEditor.IncludeCarrierLinks, Mode=TwoWay}"
+                                    IsEnabled="{Binding Colonization.ProjectEditor.CanSetCarrierLinking}"
+                                    Content="Link carriers to this build" />
+                          <controls:CarrierMultiSelect x:Name="BuildCarrierSelector"
+                                                       DataContext="{Binding Colonization.ProjectEditor.CarrierSelection}"
+                                                       IsEnabled="{Binding $parent[UserControl].((vm:MainWindowViewModel)DataContext).Colonization.ProjectEditor.CanChooseCreationCarrier}"
+                                                       MinWidth="180"
+                                                       MaxWidth="320"
+                                                       Margin="0,0,0,6"
+                                                       VerticalAlignment="Top" />
+                        </WrapPanel>
+                        <TextBlock Classes="muted"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="600"
+                                   HorizontalAlignment="Left"
+                                   Text="{Binding Colonization.ProjectEditor.CarrierLinkHint}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
                   <Button Classes="primary"
                           HorizontalAlignment="Left"
                           Command="{Binding Colonization.ProjectEditor.ReviewCommand}"
-                          Content="{Binding Colonization.ProjectEditor.ReviewButtonText}" />
-
+                          Content="{Binding Colonization.ProjectEditor.ReviewButtonText}"
+                          x:Name="ReviewPreparedProject"
+                          Margin="0" />
                   <Border Background="{DynamicResource RavenSurfaceBrush}"
                           BorderBrush="{DynamicResource RavenWarningBrush}"
                           BorderThickness="1"
                           CornerRadius="8"
                           IsVisible="{Binding Colonization.ProjectEditor.IsConfirmationPending}"
-                          Padding="16">
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                          Padding="16"
+                          x:Name="ProjectPublishConfirmation">
+                    <StackPanel Spacing="12">
                       <StackPanel Spacing="3">
                         <TextBlock FontWeight="Bold" Text="Confirm external publish" />
-                        <TextBlock TextWrapping="Wrap"
-                                   Text="{Binding Colonization.ProjectEditor.ConfirmationSummary}" />
+                        <TextBlock TextWrapping="Wrap" Text="{Binding Colonization.ProjectEditor.ConfirmationSummary}" />
                       </StackPanel>
-                      <Button Grid.Column="1"
-                              Classes="secondary"
-                              Command="{Binding Colonization.ProjectEditor.CancelReviewCommand}"
-                              Content="Cancel" />
-                      <Button Grid.Column="2"
-                              Classes="primary"
-                              Command="{Binding Colonization.ProjectEditor.ConfirmCommand}"
-                              Content="Confirm publish" />
-                    </Grid>
+                      <WrapPanel>
+                        <Button Classes="secondary"
+                                Command="{Binding Colonization.ProjectEditor.CancelReviewCommand}"
+                                Content="Cancel"
+                                Margin="0,0,8,4" />
+                        <Button Classes="primary"
+                                Command="{Binding Colonization.ProjectEditor.ConfirmCommand}"
+                                Content="Confirm publish"
+                                Margin="0,0,8,4" />
+                      </WrapPanel>
+                    </StackPanel>
                   </Border>
                 </StackPanel>
-
-                <Grid ColumnDefinitions="*,Auto"
-                      ColumnSpacing="12"
-                      IsVisible="{Binding Colonization.ProjectEditor.HasCreatedProject}">
+                <StackPanel Spacing="10" IsVisible="{Binding Colonization.ProjectEditor.HasCreatedProject}">
                   <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
                              FontWeight="SemiBold"
                              VerticalAlignment="Center"
-                             Text="{Binding Colonization.ProjectEditor.CreatedProjectSummary}" />
-                  <Button Grid.Column="1"
-                          Classes="secondary"
-                          Click="OpenCreatedProject_Click"
-                          Content="Open created project" />
-                </Grid>
+                             Text="{Binding Colonization.ProjectEditor.CreatedProjectSummary}"
+                             TextWrapping="Wrap" />
+                  <Button Classes="secondary" Click="OpenCreatedProject_Click" Content="Open created project" HorizontalAlignment="Left" />
+                </StackPanel>
               </StackPanel>
             </Border>
-
-            <Border Classes="card">
+            <Border Classes="card" x:Name="ProjectManagementCard">
               <StackPanel Spacing="14">
-                <Grid RowDefinitions="Auto,Auto" RowSpacing="12">
-                  <StackPanel Spacing="3">
-                    <TextBlock Classes="card-title" Text="My build projects" />
-                    <TextBlock Classes="muted"
-                               TextWrapping="Wrap"
-                               Text="Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags." />
-                  </StackPanel>
-                  <WrapPanel Grid.Row="1" HorizontalAlignment="Left">
-                  <ComboBox x:Name="ProjectSystemFilter" Width="200" Margin="0,0,8,4"
-                            ItemsSource="{Binding Colonization.ProjectSystemOptions}"
-                            SelectedItem="{Binding Colonization.ProjectSystemFilter, Mode=TwoWay}"
-                            ToolTip.Tip="Filter projects by system. A saved Raven API key discovers planned sites across your Raven systems.">
-                    <ComboBox.ItemTemplate>
-                      <DataTemplate x:DataType="vm:ColonizationProjectSystemOption">
-                        <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
-                      </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                  </ComboBox>
-                  <ComboBox x:Name="ProjectBuildFilter" Width="150" Margin="0,0,12,4"
-                            ItemsSource="{Binding Colonization.ProjectBuildOptions}"
-                            SelectedItem="{Binding Colonization.ProjectBuildFilter, Mode=TwoWay}"
-                            ToolTip.Tip="Filter projects by build status">
-                    <ComboBox.ItemTemplate>
-                      <DataTemplate x:DataType="vm:ColonizationProjectBuildOption">
-                        <TextBlock Text="{Binding Label}" />
-                      </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                  </ComboBox>
-                  <Button x:Name="UncheckProjectSelectionButton" Margin="0,0,8,4" Classes="secondary"
+                <StackPanel Spacing="3">
+                  <TextBlock Classes="card-title" Text="My build projects" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags."
+                             MaxWidth="850"
+                             HorizontalAlignment="Left" />
+                </StackPanel>
+                <WrapPanel x:Name="ProjectViewActions">
+                  <Grid ColumnDefinitions="200,150" ColumnSpacing="16" x:Name="ProjectFilterFields" Margin="0,0,12,8">
+                    <StackPanel Spacing="6" Grid.Column="0">
+                      <TextBlock Text="System" Classes="colonization-field-label" />
+                      <ComboBox x:Name="ProjectSystemFilter"
+                                Margin="0"
+                                ItemsSource="{Binding Colonization.ProjectSystemOptions}"
+                                SelectedItem="{Binding Colonization.ProjectSystemFilter, Mode=TwoWay}"
+                                ToolTip.Tip="Filter projects by system. A saved Raven API key discovers planned sites across your Raven systems."
+                                MinHeight="40">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate x:DataType="vm:ColonizationProjectSystemOption">
+                            <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                          </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                      </ComboBox>
+                    </StackPanel>
+                    <StackPanel Spacing="6" Grid.Column="1">
+                      <TextBlock Text="Project status" Classes="colonization-field-label" />
+                      <ComboBox x:Name="ProjectBuildFilter"
+                                Margin="0"
+                                ItemsSource="{Binding Colonization.ProjectBuildOptions}"
+                                SelectedItem="{Binding Colonization.ProjectBuildFilter, Mode=TwoWay}"
+                                ToolTip.Tip="Filter projects by build status"
+                                MinHeight="40">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate x:DataType="vm:ColonizationProjectBuildOption">
+                            <TextBlock Text="{Binding Label}" />
+                          </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                      </ComboBox>
+                    </StackPanel>
+                  </Grid>
+                  <Button x:Name="UncheckProjectSelectionButton"
+                          Margin="0,0,8,8"
+                          Classes="secondary"
                           AutomationProperties.Name="Uncheck Selection for filtered projects"
                           IsEnabled="{Binding Colonization.HasProjects}"
-                          Click="UncheckProjectSelection_Click" Content="&lt;--Uncheck Selection"
-                          ToolTip.Tip="Uncheck Show for every project matching the selected system and build status." />
-                  <Button x:Name="EditCarrierManifestButton" Margin="0,0,8,0" Classes="secondary"
-                          Command="{Binding Colonization.EditCarrierManifestCommand}" Content="Edit Carrier Manifest"
-                          ToolTip.Tip="Edit cargo and location for any carrier linked to this commander. Requires a saved Raven API key." />
-                  <Button x:Name="CombinedBuildReportButton" Margin="0,0,8,0"
+                          Click="UncheckProjectSelection_Click"
+                          Content="&lt;--Uncheck Selection"
+                          ToolTip.Tip="Uncheck Show for every project matching the selected system and build status."
+                          VerticalAlignment="Bottom" />
+                  <Button x:Name="EditCarrierManifestButton"
+                          Margin="0,0,8,8"
+                          Classes="secondary"
+                          Command="{Binding Colonization.EditCarrierManifestCommand}"
+                          Content="Edit Carrier Manifest"
+                          ToolTip.Tip="Edit cargo and location for any carrier linked to this commander. Requires a saved Raven API key."
+                          VerticalAlignment="Bottom" />
+                  <Button x:Name="CombinedBuildReportButton"
+                          Margin="0,0,8,8"
                           Classes="secondary"
                           IsEnabled="{Binding Colonization.HasProjects}"
                           Click="CombinedBuildReport_Click"
-                          Content="Combined Build Report" />
-                  <Button Margin="0,0,8,0"
-                          Classes="secondary"
-                          Click="OpenRavenBuilds_Click"
-                          Content="Open Raven builds" />
-                  <CheckBox x:Name="ShowUnaffiliatedProjectsCheckBox" Margin="0,0,8,0"
+                          Content="Combined Build Report"
+                          VerticalAlignment="Bottom" />
+                  <Button Margin="0,0,8,8" Classes="secondary" Click="OpenRavenBuilds_Click" Content="Open Raven builds" VerticalAlignment="Bottom" />
+                  <CheckBox x:Name="ShowUnaffiliatedProjectsCheckBox"
+                            Margin="0,0,8,8"
                             IsChecked="{Binding Colonization.ShowUnaffiliatedProjectsInCurrentSystem, Mode=TwoWay}"
                             IsEnabled="{Binding Colonization.IsEnabled}"
                             Content="Show Unaffiliated Projects in Current System"
-                            ToolTip.Tip="Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system." />
-
-                  </WrapPanel>
-                </Grid>
-
-                <Border Background="{DynamicResource RavenSurfaceBrush}"
-                        CornerRadius="8"
-                        Padding="12">
-                  <WrapPanel>
-                    <Button Classes="primary" Command="{Binding Colonization.SaveProjectsCommand}" Content="{Binding Colonization.SaveButtonText}" Margin="0,0,12,4" VerticalAlignment="Top" />
-                    <TextBlock FontWeight="SemiBold" VerticalAlignment="Top" TextWrapping="Wrap" Margin="0,10,12,4"
-                               Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Colonization.ProjectSummary}" />
-                    <TextBlock Text="Use Carrier:" FontWeight="SemiBold" VerticalAlignment="Top" Margin="0,9,6,4" />
-                    <controls:CarrierMultiSelect x:Name="PlanningCarrierSelector"
-                              DataContext="{Binding Colonization.CarrierSelection}"
-                              MinWidth="180" MaxWidth="320" Margin="0,0,0,4" VerticalAlignment="Top" />
-                    <Button x:Name="LinkCarrierToSelectedProjectsButton"
-                            Classes="secondary" Margin="8,0,0,4" VerticalAlignment="Top"
-                            IsVisible="{Binding Colonization.ShowProjectCarrierActions}"
-                            Command="{Binding Colonization.LinkCarrierToSelectedProjectsCommand}"
-                            Content="Link Carrier To Selected Projects"
-                            ToolTip.Tip="Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped." />
-                    <Button x:Name="UnlinkCarrierFromSelectedProjectsButton"
-                            Classes="secondary" Margin="8,0,0,4" VerticalAlignment="Top"
-                            IsVisible="{Binding Colonization.ShowProjectCarrierActions}"
-                            Command="{Binding Colonization.UnlinkCarrierFromSelectedProjectsCommand}"
-                            Content="Unlink Carrier From Selected Projects"
-                            ToolTip.Tip="Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped." />
-                  </WrapPanel>
+                            ToolTip.Tip="Browse nearby projects without joining them. Select Show or Make Focus to retain a project when leaving the system."
+                            VerticalAlignment="Bottom" />
+                </WrapPanel>
+                <Border Classes="colonization-status" Padding="16">
+                  <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" x:Name="ProjectSelectionSummary">
+                      <TextBlock FontWeight="SemiBold"
+                                 VerticalAlignment="Center"
+                                 TextWrapping="Wrap"
+                                 Margin="0"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 Text="{Binding Colonization.ProjectSummary}" />
+                      <Button Classes="primary"
+                              Command="{Binding Colonization.SaveProjectsCommand}"
+                              Content="{Binding Colonization.SaveButtonText}"
+                              Margin="0"
+                              VerticalAlignment="Top"
+                              HorizontalAlignment="Right"
+                              Grid.Column="1" />
+                    </Grid>
+                    <WrapPanel x:Name="ProjectCarrierActions">
+                      <TextBlock Text="Use Carrier:"
+                                 FontWeight="SemiBold"
+                                 VerticalAlignment="Top"
+                                 Margin="0,10,8,6"
+                                 Classes="colonization-field-label" />
+                      <controls:CarrierMultiSelect x:Name="PlanningCarrierSelector"
+                                                   DataContext="{Binding Colonization.CarrierSelection}"
+                                                   MinWidth="180"
+                                                   MaxWidth="320"
+                                                   Margin="0,0,8,6"
+                                                   VerticalAlignment="Top" />
+                      <Button x:Name="LinkCarrierToSelectedProjectsButton"
+                              Classes="secondary"
+                              Margin="0,0,8,6"
+                              VerticalAlignment="Top"
+                              IsVisible="{Binding Colonization.ShowProjectCarrierActions}"
+                              Command="{Binding Colonization.LinkCarrierToSelectedProjectsCommand}"
+                              Content="Link Carrier To Selected Projects"
+                              ToolTip.Tip="Link checked carriers to checked Show projects matching the current filters. Planning projects are always skipped." />
+                      <Button x:Name="UnlinkCarrierFromSelectedProjectsButton"
+                              Classes="secondary"
+                              Margin="0,0,8,6"
+                              VerticalAlignment="Top"
+                              IsVisible="{Binding Colonization.ShowProjectCarrierActions}"
+                              Command="{Binding Colonization.UnlinkCarrierFromSelectedProjectsCommand}"
+                              Content="Unlink Carrier From Selected Projects"
+                              ToolTip.Tip="Unlink checked carriers from checked Show projects matching the current filters. Planning projects are always skipped." />
+                    </WrapPanel>
+                  </StackPanel>
                 </Border>
-
                 <ScrollViewer x:Name="ProjectTableScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                  <StackPanel x:Name="ProjectTable" Spacing="0" MinWidth="820"
-                              Width="{Binding Bounds.Width, ElementName=ProjectTableScroller}">
+                  <StackPanel x:Name="ProjectTable" Spacing="0" MinWidth="820" Width="{Binding Bounds.Width, ElementName=ProjectTableScroller}">
                     <Grid x:Name="ProjectTableHeaders" Classes="colonization-project-headers" ColumnSpacing="16" Margin="4,8">
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="44" />
@@ -447,36 +534,51 @@
                         <ColumnDefinition Width="116" />
                       </Grid.ColumnDefinitions>
                       <TextBlock Text="SHOW" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                      <Button x:Name="ProjectSortProject" Grid.Column="1" Classes="link project-sort"
-                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="BuildName">
+                      <Button x:Name="ProjectSortProject"
+                              Grid.Column="1"
+                              Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}"
+                              CommandParameter="BuildName">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                           <TextBlock Text="PROJECT" />
                           <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=BuildName}" />
                         </StackPanel>
                       </Button>
-                      <Button x:Name="ProjectSortLoaded" Grid.Column="2" Classes="link project-sort"
-                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="CarrierCoveragePercent">
+                      <Button x:Name="ProjectSortLoaded"
+                              Grid.Column="2"
+                              Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}"
+                              CommandParameter="CarrierCoveragePercent">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                           <TextBlock Text="LOADED" />
                           <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=CarrierCoveragePercent}" />
                         </StackPanel>
                       </Button>
-                      <Button x:Name="ProjectSortProgress" Grid.Column="3" Classes="link project-sort"
-                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="ProgressSortValue">
+                      <Button x:Name="ProjectSortProgress"
+                              Grid.Column="3"
+                              Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}"
+                              CommandParameter="ProgressSortValue">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                           <TextBlock Text="PROGRESS" />
                           <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ProgressSortValue}" />
                         </StackPanel>
                       </Button>
-                      <Button x:Name="ProjectSortType" Grid.Column="4" Classes="link project-sort"
-                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="TypeDescription">
+                      <Button x:Name="ProjectSortType"
+                              Grid.Column="4"
+                              Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}"
+                              CommandParameter="TypeDescription">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                           <TextBlock Text="TYPE" />
                           <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=TypeDescription}" />
                         </StackPanel>
                       </Button>
-                      <Button x:Name="ProjectSortSystem" Grid.Column="5" Classes="link project-sort"
-                              Command="{Binding Colonization.SortProjectsCommand}" CommandParameter="SystemName">
+                      <Button x:Name="ProjectSortSystem"
+                              Grid.Column="5"
+                              Classes="link project-sort"
+                              Command="{Binding Colonization.SortProjectsCommand}"
+                              CommandParameter="SystemName">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                           <TextBlock Text="SYSTEM" />
                           <TextBlock Text="{Binding Colonization.ProjectSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SystemName}" />
@@ -484,7 +586,6 @@
                       </Button>
                       <TextBlock Grid.Column="6" Text="FOCUS" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Grid>
-
                     <ItemsControl ItemsSource="{Binding Colonization.VisibleProjects}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ColonizationProjectRowViewModel">
@@ -502,14 +603,17 @@
                                 <ColumnDefinition Width="1.4*" />
                                 <ColumnDefinition Width="116" />
                               </Grid.ColumnDefinitions>
-                              <CheckBox IsChecked="{Binding IsShown, Mode=TwoWay}" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" AutomationProperties.Name="Show project in cargo requirements" />
+                              <CheckBox IsChecked="{Binding IsShown, Mode=TwoWay}"
+                                        Padding="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Show project in cargo requirements" />
                               <StackPanel Grid.Column="1" Spacing="2">
-                                <Button Classes="link" HorizontalAlignment="Left"
+                                <Button Classes="link"
+                                        HorizontalAlignment="Left"
                                         Click="OpenProjectPreview_Click"
                                         ToolTip.Tip="{Binding ProjectPreviewHint}">
-                                  <TextBlock FontWeight="SemiBold"
-                                             Text="{Binding BuildName}"
-                                             TextWrapping="Wrap" />
+                                  <TextBlock FontWeight="SemiBold" Text="{Binding BuildName}" TextWrapping="Wrap" />
                                 </Button>
                                 <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                            FontSize="10"
@@ -518,30 +622,20 @@
                                            TextWrapping="Wrap" />
                                 <TextBlock Classes="muted" FontSize="10" IsVisible="{Binding IsUnaffiliated}" Text="Unaffiliated" />
                               </StackPanel>
-                              <TextBlock Grid.Column="2" VerticalAlignment="Center"
+                              <TextBlock Grid.Column="2"
+                                         VerticalAlignment="Center"
                                          Text="{Binding CarrierCoverageText}"
                                          ToolTip.Tip="Estimated share of remaining project needs covered by the selected carriers, capped per commodity." />
-                              <TextBlock Grid.Column="3"
-                                         VerticalAlignment="Center"
-                                         Text="{Binding ProgressText}"
-                                         TextWrapping="Wrap" />
-                              <TextBlock Grid.Column="4"
-                                         VerticalAlignment="Center"
-                                         Text="{Binding TypeDescription}"
-                                         TextWrapping="Wrap" />
-                              <StackPanel Grid.Column="5"
-                                          VerticalAlignment="Center"
-                                          Spacing="2">
-                                <Button Classes="link" HorizontalAlignment="Left"
-                                        behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
-                                  <TextBlock Text="{Binding SystemName}"
-                                             TextWrapping="Wrap" />
+                              <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{Binding ProgressText}" TextWrapping="Wrap" />
+                              <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{Binding TypeDescription}" TextWrapping="Wrap" />
+                              <StackPanel Grid.Column="5" VerticalAlignment="Center" Spacing="2">
+                                <Button Classes="link" HorizontalAlignment="Left" behaviors:ClipboardCopyBehavior.Text="{Binding SystemName}">
+                                  <TextBlock Text="{Binding SystemName}" TextWrapping="Wrap" />
                                 </Button>
-                                <Button Classes="link" HorizontalAlignment="Left"
+                                <Button Classes="link"
+                                        HorizontalAlignment="Left"
                                         behaviors:ClipboardCopyBehavior.Text="{Binding Project.SystemAddress}">
-                                  <TextBlock Classes="muted monospace" FontSize="9"
-                                             Text="{Binding SystemAddressText}"
-                                             TextWrapping="Wrap" />
+                                  <TextBlock Classes="muted monospace" FontSize="9" Text="{Binding SystemAddressText}" TextWrapping="Wrap" />
                                 </Button>
                               </StackPanel>
                               <Button Grid.Column="6"
@@ -551,48 +645,38 @@
                                       HorizontalAlignment="Stretch"
                                       Command="{Binding ToggleFocusCommand}"
                                       ToolTip.Tip="{Binding FocusActionLabel}">
-                                <TextBlock Text="{Binding FocusActionLabel}"
-                                           TextAlignment="Center"
-                                           TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding FocusActionLabel}" TextAlignment="Center" TextWrapping="Wrap" />
                               </Button>
                             </Grid>
                           </Border>
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Classes="muted" Margin="4,12" Text="No projects match these filters."
+                    <TextBlock Classes="muted"
+                               Margin="4,12"
+                               Text="No projects match these filters."
                                IsVisible="{Binding Colonization.HasNoMatchingProjects}" />
                   </StackPanel>
                 </ScrollViewer>
-
                 <TextBlock Classes="muted"
                            IsVisible="{Binding Colonization.HasNoProjects}"
                            TextWrapping="Wrap"
                            Text="No active project rows are loaded." />
-                <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                           TextWrapping="Wrap"
-                           Text="{Binding Colonization.StatusMessage}" />
+                <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" Text="{Binding Colonization.StatusMessage}" />
               </StackPanel>
             </Border>
-
             <Border Classes="card raised">
               <StackPanel Spacing="14">
                 <StackPanel Spacing="4">
                   <TextBlock Classes="eyebrow" Text="LIVE DEPOT" />
-                  <TextBlock Classes="card-title"
-                             Text="{Binding Colonization.ConstructionTitle}" />
-                  <TextBlock Classes="muted"
-                             TextWrapping="Wrap"
-                             Text="{Binding Colonization.ConstructionStatus}" />
+                  <TextBlock Classes="card-title" Text="{Binding Colonization.ConstructionTitle}" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Colonization.ConstructionStatus}" />
                 </StackPanel>
-
                 <StackPanel Spacing="0">
                   <ItemsControl ItemsSource="{Binding Colonization.ConstructionResources}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:ColonizationResourceRowViewModel">
-                        <Border BorderBrush="{DynamicResource RavenBorderBrush}"
-                                BorderThickness="0,1,0,0"
-                                Padding="4,10">
+                        <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="4,10">
                           <Grid ColumnSpacing="14">
                             <Grid.ColumnDefinitions>
                               <ColumnDefinition Width="1.6*" MinWidth="0" />
@@ -600,20 +684,13 @@
                               <ColumnDefinition Width="1.1*" />
                               <ColumnDefinition Width="1.1*" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock FontWeight="SemiBold"
-                                       Text="{Binding Name}"
-                                       TextWrapping="Wrap" />
+                            <TextBlock FontWeight="SemiBold" Text="{Binding Name}" TextWrapping="Wrap" />
                             <TextBlock Grid.Column="1"
                                        Foreground="{DynamicResource RavenAccentBrush}"
                                        Text="{Binding RemainingText}"
                                        TextWrapping="Wrap" />
-                            <TextBlock Grid.Column="2"
-                                       Text="{Binding ProgressText}"
-                                       TextWrapping="Wrap" />
-                            <TextBlock Grid.Column="3"
-                                       Classes="muted"
-                                       Text="{Binding PaymentText}"
-                                       TextWrapping="Wrap" />
+                            <TextBlock Grid.Column="2" Text="{Binding ProgressText}" TextWrapping="Wrap" />
+                            <TextBlock Grid.Column="3" Classes="muted" Text="{Binding PaymentText}" TextWrapping="Wrap" />
                           </Grid>
                         </Border>
                       </DataTemplate>
@@ -622,8 +699,6 @@
                 </StackPanel>
               </StackPanel>
             </Border>
-
-
           </StackPanel>
         </ScrollViewer>
       </TabItem>
@@ -676,173 +751,187 @@
         </ScrollViewer>
       </TabItem>
       <TabItem Header="System Editor">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-          <StackPanel x:Name="SystemEditorPage" Spacing="24" Margin="0,20,0,16" MaxWidth="1100" HorizontalAlignment="Stretch">
-            <Border Classes="card">
-                      <StackPanel Spacing="16">
-            <StackPanel Spacing="3">
-                        <TextBlock Classes="card-title" Text="Raven system sites" />
-                        <TextBlock Classes="muted"
-                                   Text="Reconcile planned and completed sites with live journal discoveries." />
+        <Grid RowDefinitions="*,Auto">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <StackPanel x:Name="SystemEditorPage" Spacing="20" Margin="0,20,0,16" HorizontalAlignment="Stretch">
+              <Border Classes="card" x:Name="SystemEditorCard">
+                <StackPanel Spacing="16">
+                  <StackPanel Spacing="3">
+                    <TextBlock Classes="card-title" Text="Raven system sites" />
+                    <TextBlock Classes="muted"
+                               Text="Reconcile planned and completed sites with live journal discoveries."
+                               TextWrapping="Wrap"
+                               MaxWidth="850"
+                               HorizontalAlignment="Left" />
+                  </StackPanel>
+                  <StackPanel Spacing="12">
+                    <StackPanel Spacing="3">
+                      <TextBlock Classes="colonization-field-label" Text="System" />
+                      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" x:Name="EditorSystemSelection">
+                        <AutoCompleteBox x:Name="EditorSystemName"
+                                         Classes="system-catalog"
+                                         Text="{Binding Colonization.SystemEditor.SystemNameInput, Mode=TwoWay}"
+                                         ItemsSource="{Binding Colonization.SystemEditor.SystemNames}"
+                                         IsEnabled="{Binding !Colonization.SystemEditor.IsBusy}"
+                                         MinimumPrefixLength="0"
+                                         MinHeight="40"
+                                         FilterMode="StartsWith"
+                                         IsTextCompletionEnabled="False"
+                                         MaxDropDownHeight="194"
+                                         PlaceholderText="Select or type a system"
+                                         AutomationProperties.Name="System name"
+                                         TextChanged="EditorSystemName_TextChanged">
+                          <AutoCompleteBox.Styles>
+                            <Style Selector="AutoCompleteBox.system-catalog /template/ TextBox">
+                              <Setter Property="MinHeight" Value="40" />
+                            </Style>
+                            <Style Selector="AutoCompleteBox.system-catalog /template/ Border#PART_SuggestionsContainer">
+                              <Setter Property="Padding" Value="0" />
+                              <Setter Property="BorderThickness" Value="1" />
+                            </Style>
+                            <Style Selector="AutoCompleteBox.system-catalog /template/ ListBox">
+                              <Setter Property="Padding" Value="0" />
+                              <Setter Property="Margin" Value="0" />
+                            </Style>
+                            <Style Selector="AutoCompleteBox.system-catalog /template/ ListBox ListBoxItem">
+                              <Setter Property="Height" Value="32" />
+                              <Setter Property="MinHeight" Value="32" />
+                              <Setter Property="MaxHeight" Value="32" />
+                              <Setter Property="Padding" Value="8,0" />
+                              <Setter Property="Margin" Value="0" />
+                            </Style>
+                          </AutoCompleteBox.Styles>
+                          <AutoCompleteBox.InnerRightContent>
+                            <Button x:Name="EditorSystemDropdown"
+                                    Content="▾"
+                                    Padding="8,0"
+                                    MinWidth="32"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="EditorSystemDropdown_Click"
+                                    ToolTip.Tip="Show systems"
+                                    AutomationProperties.Name="Show systems" />
+                          </AutoCompleteBox.InnerRightContent>
+                        </AutoCompleteBox>
+                        <Button x:Name="UseCurrentEditorSystem"
+                                Grid.Column="1"
+                                Classes="secondary"
+                                Command="{Binding Colonization.SystemEditor.UseCurrentSystemCommand}"
+                                Content="Use Current" />
+                        <Button Classes="primary"
+                                VerticalAlignment="Center"
+                                Command="{Binding Colonization.SystemEditor.LoadCommand}"
+                                Content="Load system"
+                                Grid.Column="2" />
+                      </Grid>
+                      <TextBlock Classes="muted"
+                                 IsVisible="{Binding Colonization.SystemEditor.IsLoaded}"
+                                 Text="{Binding Colonization.SystemEditor.SystemTitle}" />
+                      <TextBlock x:Name="EditorSystemCatalogStatus"
+                                 Classes="muted"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Colonization.SystemEditor.SystemsStatusMessage}" />
+                      <TextBlock Classes="muted"
+                                 TextWrapping="Wrap"
+                                 Text="Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish." />
+                    </StackPanel>
+                    <WrapPanel HorizontalAlignment="Left" x:Name="EditorSystemTools">
+                      <Button x:Name="RefreshEditorSystems"
+                              Margin="0,0,8,4"
+                              Classes="secondary"
+                              VerticalAlignment="Center"
+                              Command="{Binding Colonization.SystemEditor.RefreshSystemsCommand}"
+                              Content="Refresh Systems" />
+                      <Button Margin="0,0,8,4"
+                              Classes="secondary"
+                              VerticalAlignment="Center"
+                              Click="OpenRavenSystem_Click"
+                              IsEnabled="{Binding Colonization.SystemEditor.IsLoaded}"
+                              Content="Open on Raven" />
+                      <Button Margin="0,0,8,4"
+                              Classes="secondary"
+                              VerticalAlignment="Center"
+                              Click="OpenRavenVisualizer_Click"
+                              Content="Visualizer" />
+                      <Button Margin="0,0,8,4" Classes="secondary" VerticalAlignment="Center" Click="OpenRavenUpdaterGuide_Click" Content="Guide" />
+                    </WrapPanel>
+                  </StackPanel>
+                  <Border CornerRadius="8" Padding="12" Classes="colonization-status">
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Colonization.SystemEditor.StatusMessage}" />
+                  </Border>
+                  <Border BorderBrush="{DynamicResource RavenWarningBrush}"
+                          BorderThickness="1"
+                          CornerRadius="8"
+                          IsVisible="{Binding Colonization.SystemEditor.NeedsBodyImport}"
+                          Padding="14">
+                    <StackPanel Spacing="10">
+                      <StackPanel Spacing="12">
+                        <StackPanel Spacing="3">
+                          <TextBlock FontWeight="Bold" Text="Raven has no body catalog for this system" />
+                          <TextBlock Classes="muted"
+                                     TextWrapping="Wrap"
+                                     Text="Importing bodies is a separate Raven operation and never publishes the local site table." />
+                        </StackPanel>
+                        <WrapPanel>
+                          <Button Classes="secondary"
+                                  Command="{Binding Colonization.SystemEditor.RequestBodyImportCommand}"
+                                  Content="Review body import"
+                                  Margin="0,0,8,4" />
+                        </WrapPanel>
                       </StackPanel>
-                        <Grid RowDefinitions="Auto,Auto" RowSpacing="12">
-                          <StackPanel Spacing="3">
-                            <TextBlock Classes="eyebrow" Text="SYSTEM EDITOR" />
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                              <AutoCompleteBox x:Name="EditorSystemName" Classes="system-catalog"
-                                               Text="{Binding Colonization.SystemEditor.SystemNameInput, Mode=TwoWay}"
-                                               ItemsSource="{Binding Colonization.SystemEditor.SystemNames}"
-                                               IsEnabled="{Binding !Colonization.SystemEditor.IsBusy}"
-                                               MinimumPrefixLength="0" FilterMode="StartsWith"
-                                               IsTextCompletionEnabled="False" MaxDropDownHeight="194"
-                                               PlaceholderText="Select or type a system"
-                                               AutomationProperties.Name="System name"
-                                               TextChanged="EditorSystemName_TextChanged">
-                                <AutoCompleteBox.Styles>
-                                  <Style Selector="AutoCompleteBox.system-catalog /template/ Border#PART_SuggestionsContainer">
-                                    <Setter Property="Padding" Value="0" />
-                                    <Setter Property="BorderThickness" Value="1" />
-                                  </Style>
-                                  <Style Selector="AutoCompleteBox.system-catalog /template/ ListBox">
-                                    <Setter Property="Padding" Value="0" />
-                                    <Setter Property="Margin" Value="0" />
-                                  </Style>
-                                  <Style Selector="AutoCompleteBox.system-catalog /template/ ListBox ListBoxItem">
-                                    <Setter Property="Height" Value="32" />
-                                    <Setter Property="MinHeight" Value="32" />
-                                    <Setter Property="MaxHeight" Value="32" />
-                                    <Setter Property="Padding" Value="8,0" />
-                                    <Setter Property="Margin" Value="0" />
-                                  </Style>
-                                </AutoCompleteBox.Styles>
-                                <AutoCompleteBox.InnerRightContent>
-                                  <Button x:Name="EditorSystemDropdown" Content="▾" Padding="8,0" MinWidth="32"
-                                          Background="Transparent" BorderThickness="0"
-                                          Click="EditorSystemDropdown_Click"
-                                          ToolTip.Tip="Show systems" AutomationProperties.Name="Show systems" />
-                                </AutoCompleteBox.InnerRightContent>
-                              </AutoCompleteBox>
-                              <Button x:Name="UseCurrentEditorSystem" Grid.Column="1" Classes="secondary"
-                                      Command="{Binding Colonization.SystemEditor.UseCurrentSystemCommand}"
-                                      Content="Use Current" />
-                            </Grid>
-                            <TextBlock Classes="muted" IsVisible="{Binding Colonization.SystemEditor.IsLoaded}"
-                                       Text="{Binding Colonization.SystemEditor.SystemTitle}" />
-                            <TextBlock x:Name="EditorSystemCatalogStatus" Classes="muted" TextWrapping="Wrap"
-                                       Text="{Binding Colonization.SystemEditor.SystemsStatusMessage}" />
-                            <TextBlock Classes="muted"
-                                       TextWrapping="Wrap"
-                                       Text="Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish." />
-                          </StackPanel>
-                          <WrapPanel Grid.Row="1" HorizontalAlignment="Right">
-                          <Button x:Name="RefreshEditorSystems" Margin="0,0,8,0" Classes="secondary"
-                                  VerticalAlignment="Center"
-                                  Command="{Binding Colonization.SystemEditor.RefreshSystemsCommand}"
-                                  Content="Refresh Systems" />
-                          <Button Margin="0,0,8,0"
-                                  Classes="secondary"
-                                  VerticalAlignment="Center"
-                                  Click="OpenRavenSystem_Click"
-                                  IsEnabled="{Binding Colonization.SystemEditor.IsLoaded}"
-                                  Content="Open on Raven" />
-                          <Button Margin="0,0,8,0"
-                                  Classes="secondary"
-                                  VerticalAlignment="Center"
-                                  Click="OpenRavenVisualizer_Click"
-                                  Content="Visualizer" />
-                          <Button Margin="0,0,8,0"
-                                  Classes="secondary"
-                                  VerticalAlignment="Center"
-                                  Click="OpenRavenUpdaterGuide_Click"
-                                  Content="Guide" />
-                          <Button
-                                  Classes="primary"
-                                  VerticalAlignment="Center"
-                                  Command="{Binding Colonization.SystemEditor.LoadCommand}"
-                                  Content="Load system" />
-                          </WrapPanel>
-                        </Grid>
-
-                        <Border Background="{DynamicResource RavenSurfaceBrush}"
-                                CornerRadius="8"
-                                Padding="12">
-                          <TextBlock TextWrapping="Wrap"
-                                     Text="{Binding Colonization.SystemEditor.StatusMessage}" />
-                        </Border>
-
-                        <Border BorderBrush="{DynamicResource RavenWarningBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                IsVisible="{Binding Colonization.SystemEditor.NeedsBodyImport}"
-                                Padding="14">
-                          <StackPanel Spacing="10">
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                              <StackPanel Spacing="3">
-                                <TextBlock FontWeight="Bold"
-                                           Text="Raven has no body catalog for this system" />
-                                <TextBlock Classes="muted"
-                                           TextWrapping="Wrap"
-                                           Text="Importing bodies is a separate Raven operation and never publishes the local site table." />
-                              </StackPanel>
-                              <Button Grid.Column="1"
-                                      Classes="secondary"
-                                      Command="{Binding Colonization.SystemEditor.RequestBodyImportCommand}"
-                                      Content="Review body import" />
-                            </Grid>
-                            <Grid ColumnDefinitions="*,Auto,Auto"
-                                  ColumnSpacing="10"
-                                  IsVisible="{Binding Colonization.SystemEditor.IsBodyImportConfirmationPending}">
-                              <TextBlock VerticalAlignment="Center"
-                                         TextWrapping="Wrap"
-                                         Text="Confirm the external body import request?" />
-                              <Button Grid.Column="1"
-                                      Classes="secondary"
-                                      Command="{Binding Colonization.SystemEditor.CancelBodyImportCommand}"
-                                      Content="Cancel" />
-                              <Button Grid.Column="2"
-                                      Classes="primary"
-                                      Command="{Binding Colonization.SystemEditor.ConfirmBodyImportCommand}"
-                                      Content="Confirm import" />
-                            </Grid>
-                          </StackPanel>
-                        </Border>
-
-                        <StackPanel Spacing="14"
-                                    IsVisible="{Binding Colonization.SystemEditor.IsLoaded}">
-                          <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="18">
-                            <StackPanel Spacing="3">
-                              <TextBlock Classes="muted" Text="ARCHITECT" />
-                              <TextBlock FontWeight="SemiBold"
-                                         Text="{Binding Colonization.SystemEditor.Architect}" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="3">
-                              <TextBlock Classes="muted" Text="JOURNAL COVERAGE" />
-                              <TextBlock Text="{Binding Colonization.SystemEditor.ScanSummary}" />
-                            </StackPanel>
-                            <CheckBox Grid.Column="2"
-                                      VerticalAlignment="Center"
-                                      IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
-                                      IsChecked="{Binding Colonization.SystemEditor.CaptureUnknownSurfaceSites, Mode=TwoWay}"
-                                      Content="Capture selected surface sites" />
-                          </Grid>
-
-                          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                            <TextBox Text="{Binding Colonization.SystemEditor.NewSiteName, Mode=TwoWay}"
-                                     IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
-                                     PlaceholderText="New site name" />
-                            <Button Grid.Column="1"
-                                    Classes="secondary"
+                      <StackPanel Spacing="12" IsVisible="{Binding Colonization.SystemEditor.IsBodyImportConfirmationPending}">
+                        <TextBlock VerticalAlignment="Center" TextWrapping="Wrap" Text="Confirm the external body import request?" />
+                        <WrapPanel>
+                          <Button Classes="secondary"
+                                  Command="{Binding Colonization.SystemEditor.CancelBodyImportCommand}"
+                                  Content="Cancel"
+                                  Margin="0,0,8,4" />
+                          <Button Classes="primary"
+                                  Command="{Binding Colonization.SystemEditor.ConfirmBodyImportCommand}"
+                                  Content="Confirm import"
+                                  Margin="0,0,8,4" />
+                        </WrapPanel>
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+                  <StackPanel Spacing="14" IsVisible="{Binding Colonization.SystemEditor.IsLoaded}" x:Name="SystemEditingArea">
+                    <controls:ResponsiveColumnsPanel x:Name="EditorSystemContext" MinimumColumnWidth="240" MaximumColumns="3" Spacing="16">
+                      <StackPanel Spacing="3">
+                        <TextBlock Classes="colonization-field-label" Text="Architect" />
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Colonization.SystemEditor.Architect}" />
+                      </StackPanel>
+                      <StackPanel Spacing="3">
+                        <TextBlock Classes="colonization-field-label" Text="Journal coverage" />
+                        <TextBlock Text="{Binding Colonization.SystemEditor.ScanSummary}" />
+                      </StackPanel>
+                      <CheckBox VerticalAlignment="Center"
+                                IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
+                                IsChecked="{Binding Colonization.SystemEditor.CaptureUnknownSurfaceSites, Mode=TwoWay}"
+                                Content="Capture selected surface sites" />
+                    </controls:ResponsiveColumnsPanel>
+                    <Border x:Name="EditorSitesSection" Classes="colonization-section">
+                      <StackPanel Spacing="12">
+                        <TextBlock Text="System sites" Classes="card-title" TextWrapping="Wrap" />
+                        <controls:ResponsiveColumnsPanel x:Name="EditorSiteEntry" MinimumColumnWidth="280" MaximumColumns="2" Spacing="16">
+                          <TextBox Text="{Binding Colonization.SystemEditor.NewSiteName, Mode=TwoWay}"
+                                   IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
+                                   PlaceholderText="New site name"
+                                   x:Name="EditorNewSiteName"
+                                   MinWidth="200" />
+                          <WrapPanel x:Name="EditorSiteButtons">
+                            <Button Classes="secondary"
                                     Command="{Binding Colonization.SystemEditor.AddSiteCommand}"
-                                    Content="Add local site" />
-                            <Button Grid.Column="2"
-                                    Classes="secondary"
+                                    Content="Add local site"
+                                    Margin="0,0,8,4" />
+                            <Button Classes="secondary"
                                     Command="{Binding Colonization.SystemEditor.RemoveSiteCommand}"
-                                    Content="Remove selected" />
-                          </Grid>
-
-                          <ScrollViewer x:Name="SystemSitesTableScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                          <StackPanel Spacing="0" MinWidth="1040" Width="{Binding #SystemSitesTableScroller.Bounds.Width}">
-                            <Grid ColumnSpacing="10" Margin="4,0">
+                                    Content="Remove selected"
+                                    Margin="0,0,8,4" />
+                          </WrapPanel>
+                        </controls:ResponsiveColumnsPanel>
+                        <ScrollViewer x:Name="SystemSitesTableScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                          <StackPanel Spacing="0" MinWidth="960" Width="{Binding #SystemSitesTableScroller.Viewport.Width}">
+                            <Grid ColumnSpacing="10" Margin="4,8" x:Name="SystemSitesHeaders">
                               <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*" MinWidth="0" />
                                 <ColumnDefinition Width="104" />
@@ -856,11 +945,15 @@
                               <TextBlock Grid.Column="3" Classes="muted" Text="MARKET ID" />
                               <TextBlock Grid.Column="4" Classes="muted" Text="STATUS" />
                             </Grid>
-
-                            <ListBox x:Name="SystemSites" Padding="0" BorderThickness="0" ItemsSource="{Binding Colonization.SystemEditor.Sites}"
+                            <ListBox x:Name="SystemSites"
+                                     Padding="0"
+                                     BorderThickness="0"
+                                     ItemsSource="{Binding Colonization.SystemEditor.Sites}"
                                      SelectedItem="{Binding Colonization.SystemEditor.SelectedSite, Mode=TwoWay}"
                                      IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
-                                     MaxHeight="600">
+                                     MaxHeight="420"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
                               <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ColonizationSystemSiteRowViewModel">
                                   <Grid ColumnSpacing="10" Margin="4,3">
@@ -877,7 +970,8 @@
                                                    Maximum="10000"
                                                    Increment="1"
                                                    FormatString="0"
-                                                   Width="104" Value="{Binding BodyNumber, Mode=TwoWay}" />
+                                                   Width="104"
+                                                   Value="{Binding BodyNumber, Mode=TwoWay}" />
                                     <ComboBox Grid.Column="2"
                                               Classes="build-type"
                                               HorizontalAlignment="Stretch"
@@ -901,89 +995,107 @@
                                       </ComboBox.ItemTemplate>
                                       <ComboBox.SelectionBoxItemTemplate>
                                         <DataTemplate x:DataType="vm:ColonizationSiteBuildTypeChoice">
-                                          <TextBlock Text="{Binding SelectionLabel}" ToolTip.Tip="{Binding SelectionLabel}"
-                                                     TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                          <TextBlock Text="{Binding SelectionLabel}"
+                                                     ToolTip.Tip="{Binding SelectionLabel}"
+                                                     TextWrapping="NoWrap"
+                                                     TextTrimming="CharacterEllipsis" />
                                         </DataTemplate>
                                       </ComboBox.SelectionBoxItemTemplate>
                                     </ComboBox>
                                     <TextBox Grid.Column="3"
-                                             Classes="market-id" Classes.invalid="{Binding HasMarketIdWarning}" ToolTip.Tip="{Binding MarketIdWarning}"
+                                             Classes="market-id"
+                                             Classes.invalid="{Binding HasMarketIdWarning}"
+                                             ToolTip.Tip="{Binding MarketIdWarning}"
                                              MinWidth="72"
                                              MaxWidth="160"
                                              HorizontalAlignment="Stretch"
                                              MaxLength="19"
                                              PlaceholderText="Unknown"
                                              Text="{Binding MarketIdText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    <ComboBox Grid.Column="4"
-                                              ItemsSource="{Binding AllowedStatuses}"
-                                              SelectedItem="{Binding Status, Mode=TwoWay}" />
+                                    <ComboBox Grid.Column="4" ItemsSource="{Binding AllowedStatuses}" SelectedItem="{Binding Status, Mode=TwoWay}" />
                                   </Grid>
                                 </DataTemplate>
                               </ListBox.ItemTemplate>
                             </ListBox>
                           </StackPanel>
-                          </ScrollViewer>
-
-                          <TextBlock Classes="muted"
-                                     TextWrapping="Wrap"
-                                     IsVisible="{Binding Colonization.SystemEditor.CanEdit}"
-                                     Text="Journal signals, settlement approaches, docking details, and the opt-in destination capture update only this local workspace until review." />
-
-                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                            <TextBlock VerticalAlignment="Center"
-                                       Foreground="{DynamicResource RavenAccentBrush}"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding Colonization.SystemEditor.ReviewSummary}" />
-                            <Button Grid.Column="1"
-                                    Classes="primary"
-                                    Command="{Binding Colonization.SystemEditor.ReviewCommand}"
-                                    Content="Review Raven changes" />
-                          </Grid>
-
-                          <ItemsControl ItemsSource="{Binding Colonization.SystemEditor.Conflicts}"
-                                        IsVisible="{Binding Colonization.SystemEditor.HasConflicts}">
-                            <ItemsControl.ItemTemplate>
-                              <DataTemplate x:DataType="colonization:ColonizationSystemSiteConflict">
-                                <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                                           TextWrapping="Wrap">
-                                  <Run Text="{Binding Site}" />
-                                  <Run Text=" · " />
-                                  <Run Text="{Binding Field}" />
-                                  <Run Text=": " />
-                                  <Run Text="{Binding Message}" />
-                                </TextBlock>
-                              </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                          </ItemsControl>
-
-                          <Border Background="{DynamicResource RavenSurfaceBrush}"
-                                  BorderBrush="{DynamicResource RavenWarningBrush}"
-                                  BorderThickness="1"
-                                  CornerRadius="8"
-                                  IsVisible="{Binding Colonization.SystemEditor.IsPublishConfirmationPending}"
-                                  Padding="14">
-                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                              <StackPanel Spacing="3">
-                                <TextBlock FontWeight="Bold" Text="Confirm external publish" />
-                                <TextBlock Classes="muted"
-                                           TextWrapping="Wrap"
-                                           Text="Only the reviewed updates and stable deletions will be sent. Concurrent and remote-only data is retained." />
-                              </StackPanel>
-                              <Button Grid.Column="1"
-                                      Classes="secondary"
-                                      Command="{Binding Colonization.SystemEditor.CancelPublishCommand}"
-                                      Content="Cancel" />
-                              <Button Grid.Column="2"
-                                      Classes="primary"
-                                      Command="{Binding Colonization.SystemEditor.ConfirmPublishCommand}"
-                                      Content="Confirm publish" />
-                            </Grid>
-                          </Border>
-                        </StackPanel>
+                        </ScrollViewer>
+                        <TextBlock Classes="muted"
+                                   TextWrapping="Wrap"
+                                   IsVisible="{Binding Colonization.SystemEditor.CanEdit}"
+                                   Text="Journal signals, settlement approaches, docking details, and the opt-in destination capture update only this local workspace until review." />
                       </StackPanel>
                     </Border>
-          </StackPanel>
-        </ScrollViewer>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+          <Border x:Name="SystemReviewFooter"
+                  Grid.Row="1"
+                  Classes="colonization-review-footer"
+                  IsVisible="{Binding Colonization.SystemEditor.IsLoaded}">
+            <StackPanel Spacing="12">
+              <Grid x:Name="SystemReviewActions">
+                <controls:ResponsiveColumnsPanel x:Name="SystemReviewContent" MinimumColumnWidth="280" MaximumColumns="2" Spacing="16">
+                  <TextBlock VerticalAlignment="Center"
+                             Foreground="{DynamicResource RavenAccentBrush}"
+                             TextWrapping="Wrap"
+                             Text="{Binding Colonization.SystemEditor.ReviewSummary}" />
+                  <Button Classes="primary"
+                          Command="{Binding Colonization.SystemEditor.ReviewCommand}"
+                          Content="Review Raven changes"
+                          HorizontalAlignment="Right" />
+                </controls:ResponsiveColumnsPanel>
+              </Grid>
+              <ScrollViewer MaxHeight="140"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto"
+                            x:Name="SystemConflictsScroll"
+                            IsVisible="{Binding Colonization.SystemEditor.HasConflicts}">
+                <ItemsControl ItemsSource="{Binding Colonization.SystemEditor.Conflicts}"
+                              IsVisible="{Binding Colonization.SystemEditor.HasConflicts}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="colonization:ColonizationSystemSiteConflict">
+                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap">
+                        <Run Text="{Binding Site}" />
+                        <Run Text=" · " />
+                        <Run Text="{Binding Field}" />
+                        <Run Text=": " />
+                        <Run Text="{Binding Message}" />
+                      </TextBlock>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+              <Border Background="{DynamicResource RavenSurfaceBrush}"
+                      BorderBrush="{DynamicResource RavenWarningBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      IsVisible="{Binding Colonization.SystemEditor.IsPublishConfirmationPending}"
+                      Padding="14"
+                      x:Name="SystemPublishConfirmation">
+                <StackPanel Spacing="12">
+                  <StackPanel Spacing="3">
+                    <TextBlock FontWeight="Bold" Text="Confirm external publish" />
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="Only the reviewed updates and stable deletions will be sent. Concurrent and remote-only data is retained." />
+                  </StackPanel>
+                  <WrapPanel>
+                    <Button Classes="secondary"
+                            Command="{Binding Colonization.SystemEditor.CancelPublishCommand}"
+                            Content="Cancel"
+                            Margin="0,0,8,4" />
+                    <Button Classes="primary"
+                            Command="{Binding Colonization.SystemEditor.ConfirmPublishCommand}"
+                            Content="Confirm publish"
+                            Margin="0,0,8,4" />
+                  </WrapPanel>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+        </Grid>
       </TabItem>
       <TabItem Header="Nexus">
         <views:ColonizationNexusView DataContext="{Binding Colonization.Nexus}" />

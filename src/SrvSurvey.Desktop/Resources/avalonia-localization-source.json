@@ -2706,14 +2706,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "ARCHITECT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "ARRIVAL",
     "IsFormat": false,
     "SourceKinds": [
@@ -5096,9 +5088,10 @@
     "Text": "Architect",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Architect systems are cached for a day. Refresh Systems updates the list now.",
@@ -6758,28 +6751,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
-    "Text": "BODY ID",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "BODY INFORMATION",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BodyInformationOverlayPresentation.axaml"
-  },
-  {
-    "Text": "BODY NAME: i.e. Peralta 4 a",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "BODY PREDICTIONS",
@@ -8077,6 +8054,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml"
   },
   {
+    "Text": "Body ID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Body ID help",
     "IsFormat": false,
     "SourceKinds": [
@@ -8188,6 +8173,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
+  },
+  {
+    "Text": "Body name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Body predictions",
@@ -8735,6 +8728,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Build details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Build preview",
     "IsFormat": false,
     "SourceKinds": [
@@ -8754,9 +8755,10 @@
     "Text": "Build type",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "BuildSiteRepairVisits",
@@ -10419,6 +10421,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Carrier linking",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Carrier linking was skipped because no valid build ID was returned.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10866,6 +10876,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
+  },
+  {
+    "Text": "Check Show to include a project\u0027s needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Check application and reference-data releases without changing profile data.",
@@ -30003,14 +30021,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "JOURNAL COVERAGE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "JSON catalog",
     "IsFormat": false,
     "SourceKinds": [
@@ -30154,6 +30164,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Journal coverage",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -31193,14 +31211,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
-    "Text": "LAYOUT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "LEP",
     "IsFormat": false,
     "SourceKinds": [
@@ -31302,7 +31312,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
     "Text": "LOCATION IN SEARCH",
@@ -31808,9 +31818,10 @@
     "Text": "Layout",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Layout recovery failed",
@@ -36567,14 +36578,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
-  },
-  {
-    "Text": "NEW BUILD",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "NEW MAP DRAFT",
@@ -42602,14 +42605,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
   },
   {
-    "Text": "PLANNED RAVEN SITE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "PNG image",
     "IsFormat": false,
     "SourceKinds": [
@@ -42763,14 +42758,6 @@
   },
   {
     "Text": "PROJECT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "PROJECT NAME",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -43345,6 +43332,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Planned Raven site",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan\u2019s catalog estimates.",
@@ -45395,6 +45390,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "Project status",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Project visibility saved to Raven Colonial.",
@@ -52692,14 +52695,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
-    "Text": "SYSTEM EDITOR",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "SYSTEM ESTIMATE",
     "IsFormat": false,
     "SourceKinds": [
@@ -56594,14 +56589,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Show current boxel completion percentage",
@@ -61577,6 +61564,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "System sites",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "System state",
@@ -76034,6 +76029,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
+    "Text": "e.g. Peralta 4 a",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "e.g. Platinum \u00D72",

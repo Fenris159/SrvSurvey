@@ -1353,10 +1353,6 @@
       "translation": "NÄHERUNG DER WÄCHTERSTRUKTUR"
     },
     {
-      "source": "ARCHITECT",
-      "translation": "ARCHITEKT"
-    },
-    {
       "source": "ARRIVAL",
       "translation": "ANKUNFT"
     },
@@ -3377,16 +3373,8 @@
       "translation": "KÖRPER / SYSTEM"
     },
     {
-      "source": "BODY ID",
-      "translation": "KÖRPER-ID"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Körperinformationen"
-    },
-    {
-      "source": "BODY NAME: i.e. Peralta 4 a",
-      "translation": "KÖRPERNAME: z. B. Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -4033,6 +4021,10 @@
       "translation": "Körperdetails"
     },
     {
+      "source": "Body ID",
+      "translation": "Körper-ID"
+    },
+    {
       "source": "Body ID help",
       "translation": "Hilfe zur Body-ID"
     },
@@ -4087,6 +4079,10 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Der Textkörper ist für die Katalogdetails der ausgewählten Site erforderlich."
+    },
+    {
+      "source": "Body name",
+      "translation": "Körpername"
     },
     {
       "source": "Body predictions",
@@ -4359,6 +4355,10 @@
     {
       "source": "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
       "translation": "Erstellen Sie eine völlig neue freigegebene Ersatzkarte für diesen Site-Typ. Wählen Sie einen Hintergrund, richten Sie ihn aus und fügen Sie dann gemessene Masterpunkte und Gruppenbeschriftungen hinzu."
+    },
+    {
+      "source": "Build details",
+      "translation": "Baudetails"
     },
     {
       "source": "Build preview",
@@ -5197,6 +5197,10 @@
       "translation": "Der Treibstoff des Trägers wurde vom aktuellen Wegpunkt aus neu berechnet."
     },
     {
+      "source": "Carrier linking",
+      "translation": "Carrier-Verknüpfung"
+    },
+    {
       "source": "Carrier linking was skipped because no valid build ID was returned.",
       "translation": "Die Carrier-Verknüpfung wurde übersprungen, da keine gültige Build-ID zurückgegeben wurde."
     },
@@ -5419,6 +5423,10 @@
     {
       "source": "Check All",
       "translation": "Alle markieren"
+    },
+    {
+      "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+      "translation": "Aktivieren Sie „Anzeigen“, um die Anforderungen eines Projekts in die Frachtliste aufzunehmen, und speichern Sie dann Ihre Auswahl. Market Search verwendet seine eigenen Select Projects-Tags."
     },
     {
       "source": "Check application and reference-data releases without changing profile data.",
@@ -14953,10 +14961,6 @@
       "translation": "Gelieferte Artikel"
     },
     {
-      "source": "JOURNAL COVERAGE",
-      "translation": "ZEITSCHRIFTENBERICHTERSTATTUNG"
-    },
-    {
       "source": "JSON catalog",
       "translation": "JSON-Katalog"
     },
@@ -15027,6 +15031,10 @@
     {
       "source": "Journal activity and SCO status",
       "translation": "Journalaktivität und SCO-Status"
+    },
+    {
+      "source": "Journal coverage",
+      "translation": "Zeitschriftenberichterstattung"
     },
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -15543,10 +15551,6 @@
     {
       "source": "LATITUDE",
       "translation": "Breitengrad"
-    },
-    {
-      "source": "LAYOUT",
-      "translation": "LAYOUT"
     },
     {
       "source": "LEP",
@@ -18219,10 +18223,6 @@
     {
       "source": "NEW",
       "translation": "NEU"
-    },
-    {
-      "source": "NEW BUILD",
-      "translation": "NEUES GEBÄUDE"
     },
     {
       "source": "NEW MAP DRAFT",
@@ -21229,10 +21229,6 @@
       "translation": "PIN"
     },
     {
-      "source": "PLANNED RAVEN SITE",
-      "translation": "GEPLANTER RAVEN-STANDORT"
-    },
-    {
       "source": "PNG image",
       "translation": "PNG-Bild"
     },
@@ -21311,10 +21307,6 @@
     {
       "source": "PROJECT",
       "translation": "PROJEKT"
-    },
-    {
-      "source": "PROJECT NAME",
-      "translation": "Projektname"
     },
     {
       "source": "PSV",
@@ -21599,6 +21591,10 @@
     {
       "source": "PlanetaryConstructionDepot",
       "translation": "PlanetaryConstructionDepot"
+    },
+    {
+      "source": "Planned Raven site",
+      "translation": "Geplanter Raven-Standort"
     },
     {
       "source": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
@@ -22619,6 +22615,10 @@
     {
       "source": "Project review cancelled; nothing was published.",
       "translation": "Projektprüfung abgesagt; es wurde nichts veröffentlicht."
+    },
+    {
+      "source": "Project status",
+      "translation": "Projektstatus"
     },
     {
       "source": "Project visibility saved to Raven Colonial.",
@@ -26261,10 +26261,6 @@
       "translation": "SYSTEMBIOLOGIE"
     },
     {
-      "source": "SYSTEM EDITOR",
-      "translation": "SYSTEM-EDITOR"
-    },
-    {
       "source": "SYSTEM ESTIMATE",
       "translation": "SYSTEMSCHÄTZUNG"
     },
@@ -28203,10 +28199,6 @@
     {
       "source": "Show commander notes beside survey maps",
       "translation": "Kommandantennotizen neben Vermessungskarten anzeigen"
-    },
-    {
-      "source": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-      "translation": "„Anzeigen“ steuert den aggregierten Frachtbedarf und wird mit „Auswahl speichern“ gespeichert. Wählen Sie Projekte für Market Search mit den Tags „Projekte auswählen“ aus."
     },
     {
       "source": "Show current boxel completion percentage",
@@ -30687,6 +30679,10 @@
     {
       "source": "System signals",
       "translation": "Systemsignale"
+    },
+    {
+      "source": "System sites",
+      "translation": "Systemstandorte"
     },
     {
       "source": "System state",
@@ -37909,6 +37905,10 @@
       "translation": "z.B. Weichtier"
     },
     {
+      "source": "e.g. Peralta 4 a",
+      "translation": "z.B. Peralta 4 a"
+    },
+    {
       "source": "e.g. Platinum ×2",
       "translation": "z.B. Platin ×2"
     },
@@ -43251,10 +43251,6 @@
       "translation": "ACERCANDOSE A LA ESTRUCTURA GUARDIANA"
     },
     {
-      "source": "ARCHITECT",
-      "translation": "ARQUITECTO"
-    },
-    {
       "source": "ARRIVAL",
       "translation": "LLEGADA"
     },
@@ -45275,16 +45271,8 @@
       "translation": "CUERPO / SISTEMA"
     },
     {
-      "source": "BODY ID",
-      "translation": "IDENTIFICACIÓN DEL CUERPO"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Información del cuerpo"
-    },
-    {
-      "source": "BODY NAME: i.e. Peralta 4 a",
-      "translation": "NOMBRE DEL CUERPO: es decir Peralta 4a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -45931,6 +45919,10 @@
       "translation": "Detalles del cuerpo"
     },
     {
+      "source": "Body ID",
+      "translation": "Identificación del cuerpo"
+    },
+    {
       "source": "Body ID help",
       "translation": "Ayuda con identificación corporal"
     },
@@ -45985,6 +45977,10 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Se requiere cuerpo para los detalles del catálogo del sitio seleccionado."
+    },
+    {
+      "source": "Body name",
+      "translation": "nombre del cuerpo"
     },
     {
       "source": "Body predictions",
@@ -46257,6 +46253,10 @@
     {
       "source": "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
       "translation": "Cree un mapa compartido de reemplazo desde cero para este tipo de sitio. Elija un fondo, alinéelo y luego agregue puntos maestros medidos y etiquetas de grupo."
+    },
+    {
+      "source": "Build details",
+      "translation": "Detalles de construcción"
     },
     {
       "source": "Build preview",
@@ -47095,6 +47095,10 @@
       "translation": "Combustible del portaaviones recalculado a partir del punto de ruta actual."
     },
     {
+      "source": "Carrier linking",
+      "translation": "Vinculación de transportistas"
+    },
+    {
       "source": "Carrier linking was skipped because no valid build ID was returned.",
       "translation": "Se omitió la vinculación del operador porque no se devolvió ningún ID de compilación válido."
     },
@@ -47317,6 +47321,10 @@
     {
       "source": "Check All",
       "translation": "Verificar todo"
+    },
+    {
+      "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+      "translation": "Marque Mostrar para incluir las necesidades de un proyecto en la lista de carga y luego guarde su selección. Market Search utiliza sus propias etiquetas Seleccionar proyectos."
     },
     {
       "source": "Check application and reference-data releases without changing profile data.",
@@ -56851,10 +56859,6 @@
       "translation": "Artículos entregados"
     },
     {
-      "source": "JOURNAL COVERAGE",
-      "translation": "COBERTURA DE LA REVISTA"
-    },
-    {
       "source": "JSON catalog",
       "translation": "catálogo JSON"
     },
@@ -56925,6 +56929,10 @@
     {
       "source": "Journal activity and SCO status",
       "translation": "Actividad del diario y estado de SCO"
+    },
+    {
+      "source": "Journal coverage",
+      "translation": "Cobertura de revista"
     },
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -57441,10 +57449,6 @@
     {
       "source": "LATITUDE",
       "translation": "Latitud"
-    },
-    {
-      "source": "LAYOUT",
-      "translation": "DISEÑO"
     },
     {
       "source": "LEP",
@@ -60117,10 +60121,6 @@
     {
       "source": "NEW",
       "translation": "NUEVO"
-    },
-    {
-      "source": "NEW BUILD",
-      "translation": "NUEVA CONSTRUCCIÓN"
     },
     {
       "source": "NEW MAP DRAFT",
@@ -63127,10 +63127,6 @@
       "translation": "PIN"
     },
     {
-      "source": "PLANNED RAVEN SITE",
-      "translation": "SITIO PLANIFICADO PARA EL CUERVO"
-    },
-    {
       "source": "PNG image",
       "translation": "imagen PNG"
     },
@@ -63209,10 +63205,6 @@
     {
       "source": "PROJECT",
       "translation": "PROYECTO"
-    },
-    {
-      "source": "PROJECT NAME",
-      "translation": "Nombre del proyecto"
     },
     {
       "source": "PSV",
@@ -63497,6 +63489,10 @@
     {
       "source": "PlanetaryConstructionDepot",
       "translation": "PlanetarioConstrucciónDepósito"
+    },
+    {
+      "source": "Planned Raven site",
+      "translation": "Sitio planeado para Raven"
     },
     {
       "source": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
@@ -64517,6 +64513,10 @@
     {
       "source": "Project review cancelled; nothing was published.",
       "translation": "Revisión del proyecto cancelada; no se publicó nada."
+    },
+    {
+      "source": "Project status",
+      "translation": "Estado del proyecto"
     },
     {
       "source": "Project visibility saved to Raven Colonial.",
@@ -68159,10 +68159,6 @@
       "translation": "BIOLOGÍA DEL SISTEMA"
     },
     {
-      "source": "SYSTEM EDITOR",
-      "translation": "EDITOR DEL SISTEMA"
-    },
-    {
       "source": "SYSTEM ESTIMATE",
       "translation": "ESTIMACIÓN DEL SISTEMA"
     },
@@ -70101,10 +70097,6 @@
     {
       "source": "Show commander notes beside survey maps",
       "translation": "Mostrar notas del comandante junto a los mapas topográficos"
-    },
-    {
-      "source": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-      "translation": "Mostrar controla los requisitos de carga agregados y se guarda con la selección Guardar. Elija proyectos para Market Search con sus etiquetas Seleccionar proyectos."
     },
     {
       "source": "Show current boxel completion percentage",
@@ -72585,6 +72577,10 @@
     {
       "source": "System signals",
       "translation": "Señales del sistema"
+    },
+    {
+      "source": "System sites",
+      "translation": "Sitios del sistema"
     },
     {
       "source": "System state",
@@ -79807,6 +79803,10 @@
       "translation": "p.ej. Molusco"
     },
     {
+      "source": "e.g. Peralta 4 a",
+      "translation": "p.ej. Peralta 4a"
+    },
+    {
       "source": "e.g. Platinum ×2",
       "translation": "p.ej. Platino ×2"
     },
@@ -85149,10 +85149,6 @@
       "translation": "APPROCHE DE LA STRUCTURE DE GARDIEN"
     },
     {
-      "source": "ARCHITECT",
-      "translation": "ARCHITECTE"
-    },
-    {
       "source": "ARRIVAL",
       "translation": "ARRIVÉE"
     },
@@ -87173,16 +87169,8 @@
       "translation": "CORPS / SYSTÈME"
     },
     {
-      "source": "BODY ID",
-      "translation": "ID DU CORPS"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Informations sur le corps"
-    },
-    {
-      "source": "BODY NAME: i.e. Peralta 4 a",
-      "translation": "NOM DU CORPS : c'est-à-dire Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -87829,6 +87817,10 @@
       "translation": "Détails du corps"
     },
     {
+      "source": "Body ID",
+      "translation": "ID du corps"
+    },
+    {
       "source": "Body ID help",
       "translation": "Aide à l'identification du corps"
     },
@@ -87883,6 +87875,10 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Le corps est requis pour les détails du catalogue du site sélectionné."
+    },
+    {
+      "source": "Body name",
+      "translation": "Nom du corps"
     },
     {
       "source": "Body predictions",
@@ -88155,6 +88151,10 @@
     {
       "source": "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
       "translation": "Créez une carte partagée de remplacement à partir de zéro pour ce type de site. Choisissez un arrière-plan, alignez-le, puis ajoutez des points principaux mesurés et des étiquettes de groupe."
+    },
+    {
+      "source": "Build details",
+      "translation": "Détails de construction"
     },
     {
       "source": "Build preview",
@@ -88993,6 +88993,10 @@
       "translation": "Carburant du transporteur recalculé à partir du waypoint actuel."
     },
     {
+      "source": "Carrier linking",
+      "translation": "Liaison de transporteur"
+    },
+    {
       "source": "Carrier linking was skipped because no valid build ID was returned.",
       "translation": "La liaison avec l'opérateur a été ignorée car aucun ID de build valide n'a été renvoyé."
     },
@@ -89215,6 +89219,10 @@
     {
       "source": "Check All",
       "translation": "Tout vérifier"
+    },
+    {
+      "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+      "translation": "Cochez Afficher pour inclure les besoins d'un projet dans la liste des marchandises, puis enregistrez votre sélection. Market Search utilise ses propres balises Select Projects."
     },
     {
       "source": "Check application and reference-data releases without changing profile data.",
@@ -98749,10 +98757,6 @@
       "translation": "Articles livrés"
     },
     {
-      "source": "JOURNAL COVERAGE",
-      "translation": "COUVERTURE DU JOURNAL"
-    },
-    {
       "source": "JSON catalog",
       "translation": "Catalogue JSON"
     },
@@ -98823,6 +98827,10 @@
     {
       "source": "Journal activity and SCO status",
       "translation": "Activité du journal et statut SCO"
+    },
+    {
+      "source": "Journal coverage",
+      "translation": "Couverture du journal"
     },
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -99339,10 +99347,6 @@
     {
       "source": "LATITUDE",
       "translation": "Latitude"
-    },
-    {
-      "source": "LAYOUT",
-      "translation": "DISPOSITION"
     },
     {
       "source": "LEP",
@@ -102015,10 +102019,6 @@
     {
       "source": "NEW",
       "translation": "NOUVEAU"
-    },
-    {
-      "source": "NEW BUILD",
-      "translation": "NOUVELLE CONSTRUCTION"
     },
     {
       "source": "NEW MAP DRAFT",
@@ -105025,10 +105025,6 @@
       "translation": "NIP"
     },
     {
-      "source": "PLANNED RAVEN SITE",
-      "translation": "SITE PRÉVU DU CORBEAU"
-    },
-    {
       "source": "PNG image",
       "translation": "Image PNG"
     },
@@ -105107,10 +105103,6 @@
     {
       "source": "PROJECT",
       "translation": "PROJET"
-    },
-    {
-      "source": "PROJECT NAME",
-      "translation": "Nom du projet"
     },
     {
       "source": "PSV",
@@ -105395,6 +105387,10 @@
     {
       "source": "PlanetaryConstructionDepot",
       "translation": "PlanétaireConstructionDépôt"
+    },
+    {
+      "source": "Planned Raven site",
+      "translation": "Site Raven prévu"
     },
     {
       "source": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
@@ -106415,6 +106411,10 @@
     {
       "source": "Project review cancelled; nothing was published.",
       "translation": "Examen du projet annulé ; rien n'a été publié."
+    },
+    {
+      "source": "Project status",
+      "translation": "Statut du projet"
     },
     {
       "source": "Project visibility saved to Raven Colonial.",
@@ -110057,10 +110057,6 @@
       "translation": "BIOLOGIE DU SYSTÈME"
     },
     {
-      "source": "SYSTEM EDITOR",
-      "translation": "ÉDITEUR DE SYSTÈME"
-    },
-    {
       "source": "SYSTEM ESTIMATE",
       "translation": "ESTIMATION DU SYSTÈME"
     },
@@ -111999,10 +111995,6 @@
     {
       "source": "Show commander notes beside survey maps",
       "translation": "Afficher les notes du commandant à côté des cartes d'enquête"
-    },
-    {
-      "source": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-      "translation": "Afficher les contrôles regroupent les exigences de fret et sont enregistrés avec la sélection Enregistrer. Choisissez des projets pour Market Search avec ses balises Select Projects."
     },
     {
       "source": "Show current boxel completion percentage",
@@ -114483,6 +114475,10 @@
     {
       "source": "System signals",
       "translation": "Signaux système"
+    },
+    {
+      "source": "System sites",
+      "translation": "Sites système"
     },
     {
       "source": "System state",
@@ -121705,6 +121701,10 @@
       "translation": "par ex. Mollusque"
     },
     {
+      "source": "e.g. Peralta 4 a",
+      "translation": "par ex. Peralta 4a"
+    },
+    {
       "source": "e.g. Platinum ×2",
       "translation": "par ex. Platine ×2"
     },
@@ -127047,10 +127047,6 @@
       "translation": "ABORDANDO A ESTRUTURA GUARDIANA"
     },
     {
-      "source": "ARCHITECT",
-      "translation": "ARQUITETO"
-    },
-    {
       "source": "ARRIVAL",
       "translation": "CHEGADA"
     },
@@ -129071,16 +129067,8 @@
       "translation": "CORPO / SISTEMA"
     },
     {
-      "source": "BODY ID",
-      "translation": "ID DO CORPO"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Informações corporais"
-    },
-    {
-      "source": "BODY NAME: i.e. Peralta 4 a",
-      "translation": "NOME DO CORPO: ou seja, Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -129727,6 +129715,10 @@
       "translation": "Detalhes do corpo"
     },
     {
+      "source": "Body ID",
+      "translation": "ID do corpo"
+    },
+    {
       "source": "Body ID help",
       "translation": "Ajuda para ID do corpo"
     },
@@ -129781,6 +129773,10 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "O corpo é obrigatório para os detalhes do catálogo do site selecionado."
+    },
+    {
+      "source": "Body name",
+      "translation": "Nome do corpo"
     },
     {
       "source": "Body predictions",
@@ -130053,6 +130049,10 @@
     {
       "source": "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
       "translation": "Crie um mapa compartilhado substituto do zero para esse tipo de site. Escolha um plano de fundo, alinhe-o e adicione pontos mestres medidos e rótulos de grupo."
+    },
+    {
+      "source": "Build details",
+      "translation": "Detalhes da construção"
     },
     {
       "source": "Build preview",
@@ -130891,6 +130891,10 @@
       "translation": "Combustível do transportador recalculado a partir do waypoint atual."
     },
     {
+      "source": "Carrier linking",
+      "translation": "Vinculação de operadora"
+    },
+    {
       "source": "Carrier linking was skipped because no valid build ID was returned.",
       "translation": "A vinculação da operadora foi ignorada porque nenhum ID de build válido foi retornado."
     },
@@ -131113,6 +131117,10 @@
     {
       "source": "Check All",
       "translation": "Verifique tudo"
+    },
+    {
+      "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+      "translation": "Marque Mostrar para incluir as necessidades de um projeto na lista de carga e salve sua seleção. Market Search usa suas próprias tags Select Projects."
     },
     {
       "source": "Check application and reference-data releases without changing profile data.",
@@ -140647,10 +140655,6 @@
       "translation": "Itens entregues"
     },
     {
-      "source": "JOURNAL COVERAGE",
-      "translation": "COBERTURA DO DIÁRIO"
-    },
-    {
       "source": "JSON catalog",
       "translation": "Catálogo JSON"
     },
@@ -140721,6 +140725,10 @@
     {
       "source": "Journal activity and SCO status",
       "translation": "Atividade do diário e status SCO"
+    },
+    {
+      "source": "Journal coverage",
+      "translation": "Cobertura do jornal"
     },
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -141237,10 +141245,6 @@
     {
       "source": "LATITUDE",
       "translation": "Latitude"
-    },
-    {
-      "source": "LAYOUT",
-      "translation": "LAYOUT"
     },
     {
       "source": "LEP",
@@ -143913,10 +143917,6 @@
     {
       "source": "NEW",
       "translation": "NOVO"
-    },
-    {
-      "source": "NEW BUILD",
-      "translation": "NOVA CONSTRUÇÃO"
     },
     {
       "source": "NEW MAP DRAFT",
@@ -146923,10 +146923,6 @@
       "translation": "PIN"
     },
     {
-      "source": "PLANNED RAVEN SITE",
-      "translation": "LOCAL PLANEJADO DO RAVEN"
-    },
-    {
       "source": "PNG image",
       "translation": "Imagem PNG"
     },
@@ -147005,10 +147001,6 @@
     {
       "source": "PROJECT",
       "translation": "PROJETO"
-    },
-    {
-      "source": "PROJECT NAME",
-      "translation": "Nome do projeto"
     },
     {
       "source": "PSV",
@@ -147293,6 +147285,10 @@
     {
       "source": "PlanetaryConstructionDepot",
       "translation": "Depósito de Construção Planetária"
+    },
+    {
+      "source": "Planned Raven site",
+      "translation": "Local planejado da Raven"
     },
     {
       "source": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
@@ -148313,6 +148309,10 @@
     {
       "source": "Project review cancelled; nothing was published.",
       "translation": "Revisão do projeto cancelada; nada foi publicado."
+    },
+    {
+      "source": "Project status",
+      "translation": "Status do projeto"
     },
     {
       "source": "Project visibility saved to Raven Colonial.",
@@ -151955,10 +151955,6 @@
       "translation": "BIOLOGIA DE SISTEMA"
     },
     {
-      "source": "SYSTEM EDITOR",
-      "translation": "EDITOR DE SISTEMA"
-    },
-    {
       "source": "SYSTEM ESTIMATE",
       "translation": "ESTIMATIVA DO SISTEMA"
     },
@@ -153897,10 +153893,6 @@
     {
       "source": "Show commander notes beside survey maps",
       "translation": "Mostrar notas do comandante ao lado dos mapas de levantamento"
-    },
-    {
-      "source": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-      "translation": "Mostrar controles agrega requisitos de carga e é salvo com a seleção Salvar. Escolha projetos para Market Search com suas tags Selecionar Projetos."
     },
     {
       "source": "Show current boxel completion percentage",
@@ -156381,6 +156373,10 @@
     {
       "source": "System signals",
       "translation": "Sinais do sistema"
+    },
+    {
+      "source": "System sites",
+      "translation": "Sites do sistema"
     },
     {
       "source": "System state",
@@ -163603,6 +163599,10 @@
       "translation": "por exemplo Molusco"
     },
     {
+      "source": "e.g. Peralta 4 a",
+      "translation": "por exemplo Peralta 4a"
+    },
+    {
       "source": "e.g. Platinum ×2",
       "translation": "por exemplo Platina ×2"
     },
@@ -168945,10 +168945,6 @@
       "translation": "ПРИБЛИЖАЮЩАЯ СТРУКТУРА ОХРАННИКА"
     },
     {
-      "source": "ARCHITECT",
-      "translation": "АРХИТЕКТОР"
-    },
-    {
       "source": "ARRIVAL",
       "translation": "ПРИБЫТИЕ"
     },
@@ -170969,16 +170965,8 @@
       "translation": "КОРПУС / СИСТЕМА"
     },
     {
-      "source": "BODY ID",
-      "translation": "ИДЕНТИФИКАТОР ТЕЛА"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Информация о теле"
-    },
-    {
-      "source": "BODY NAME: i.e. Peralta 4 a",
-      "translation": "ИМЯ ТЕЛА: т.е. Перальта 4 а"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -171625,6 +171613,10 @@
       "translation": "Детали тела"
     },
     {
+      "source": "Body ID",
+      "translation": "Идентификатор тела"
+    },
+    {
       "source": "Body ID help",
       "translation": "Справка по идентификатору тела"
     },
@@ -171679,6 +171671,10 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "Для информации о каталоге выбранного сайта необходимо указать тело."
+    },
+    {
+      "source": "Body name",
+      "translation": "Имя тела"
     },
     {
       "source": "Body predictions",
@@ -171951,6 +171947,10 @@
     {
       "source": "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
       "translation": "Создайте замену общей карты с нуля для этого типа сайта. Выберите фон, выровняйте его, затем добавьте измеренные основные точки и сгруппируйте метки."
+    },
+    {
+      "source": "Build details",
+      "translation": "Детали сборки"
     },
     {
       "source": "Build preview",
@@ -172789,6 +172789,10 @@
       "translation": "Топливо носителя пересчитано с текущей точки маршрута."
     },
     {
+      "source": "Carrier linking",
+      "translation": "Привязка оператора связи"
+    },
+    {
       "source": "Carrier linking was skipped because no valid build ID was returned.",
       "translation": "Привязка оператора связи была пропущена, поскольку не был возвращен действительный идентификатор сборки."
     },
@@ -173011,6 +173015,10 @@
     {
       "source": "Check All",
       "translation": "Проверить все"
+    },
+    {
+      "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+      "translation": "Установите флажок «Показать», чтобы включить потребности проекта в список грузов, затем сохраните выбор. Market Search использует собственные теги Select Projects."
     },
     {
       "source": "Check application and reference-data releases without changing profile data.",
@@ -182545,10 +182553,6 @@
       "translation": "Товары доставлены"
     },
     {
-      "source": "JOURNAL COVERAGE",
-      "translation": "ЖУРНАЛЬНЫЕ ОСВЕЩЕНИЯ"
-    },
-    {
       "source": "JSON catalog",
       "translation": "Каталог JSON"
     },
@@ -182619,6 +182623,10 @@
     {
       "source": "Journal activity and SCO status",
       "translation": "Деятельность журнала и статус ШОС"
+    },
+    {
+      "source": "Journal coverage",
+      "translation": "Освещение в журнале"
     },
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -183135,10 +183143,6 @@
     {
       "source": "LATITUDE",
       "translation": "Широта"
-    },
-    {
-      "source": "LAYOUT",
-      "translation": "ПЛАНИРОВКА"
     },
     {
       "source": "LEP",
@@ -185811,10 +185815,6 @@
     {
       "source": "NEW",
       "translation": "НОВЫЙ"
-    },
-    {
-      "source": "NEW BUILD",
-      "translation": "НОВОЕ СТРОИТЕЛЬСТВО"
     },
     {
       "source": "NEW MAP DRAFT",
@@ -188821,10 +188821,6 @@
       "translation": "ПИН-код"
     },
     {
-      "source": "PLANNED RAVEN SITE",
-      "translation": "ПЛАНИРУЕМАЯ ПЛОЩАДКА ВОРОНА"
-    },
-    {
       "source": "PNG image",
       "translation": "PNG изображение"
     },
@@ -188903,10 +188899,6 @@
     {
       "source": "PROJECT",
       "translation": "ПРОЕКТ"
-    },
-    {
-      "source": "PROJECT NAME",
-      "translation": "Название проекта"
     },
     {
       "source": "PSV",
@@ -189191,6 +189183,10 @@
     {
       "source": "PlanetaryConstructionDepot",
       "translation": "ПланетарныйСтроительствоДепо"
+    },
+    {
+      "source": "Planned Raven site",
+      "translation": "Планируемый сайт Raven"
     },
     {
       "source": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
@@ -190211,6 +190207,10 @@
     {
       "source": "Project review cancelled; nothing was published.",
       "translation": "Рассмотрение проекта отменено; ничего не было опубликовано."
+    },
+    {
+      "source": "Project status",
+      "translation": "Статус проекта"
     },
     {
       "source": "Project visibility saved to Raven Colonial.",
@@ -193853,10 +193853,6 @@
       "translation": "СИСТЕМНАЯ БИОЛОГИЯ"
     },
     {
-      "source": "SYSTEM EDITOR",
-      "translation": "СИСТЕМНЫЙ РЕДАКТОР"
-    },
-    {
       "source": "SYSTEM ESTIMATE",
       "translation": "СИСТЕМНАЯ ОЦЕНКА"
     },
@@ -195795,10 +195791,6 @@
     {
       "source": "Show commander notes beside survey maps",
       "translation": "Показывать заметки командира рядом с обзорными картами"
-    },
-    {
-      "source": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-      "translation": "«Показать» управляет совокупными требованиями к грузу и сохраняется при выборе «Сохранить». Выбирайте проекты для поиска рынка с помощью тегов «Выбрать проекты»."
     },
     {
       "source": "Show current boxel completion percentage",
@@ -198279,6 +198271,10 @@
     {
       "source": "System signals",
       "translation": "Системные сигналы"
+    },
+    {
+      "source": "System sites",
+      "translation": "Системные сайты"
     },
     {
       "source": "System state",
@@ -205501,6 +205497,10 @@
       "translation": "например Моллюск"
     },
     {
+      "source": "e.g. Peralta 4 a",
+      "translation": "например Перальта 4 а"
+    },
+    {
       "source": "e.g. Platinum ×2",
       "translation": "например Платина ×2"
     },
@@ -210843,10 +210843,6 @@
       "translation": "接近监护人结构"
     },
     {
-      "source": "ARCHITECT",
-      "translation": "建筑师"
-    },
-    {
       "source": "ARRIVAL",
       "translation": "到达"
     },
@@ -212867,16 +212863,8 @@
       "translation": "本体/系统"
     },
     {
-      "source": "BODY ID",
-      "translation": "车身编号"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "身体信息"
-    },
-    {
-      "source": "BODY NAME: i.e. Peralta 4 a",
-      "translation": "车身名称：即 Peralta 4 a"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -213523,6 +213511,10 @@
       "translation": "车身细节"
     },
     {
+      "source": "Body ID",
+      "translation": "身体ID"
+    },
+    {
       "source": "Body ID help",
       "translation": "身体ID帮助"
     },
@@ -213577,6 +213569,10 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "所选站点的目录详细信息需要正文。"
+    },
+    {
+      "source": "Body name",
+      "translation": "本体名称"
     },
     {
       "source": "Body predictions",
@@ -213849,6 +213845,10 @@
     {
       "source": "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
       "translation": "为此站点类型从头开始构建替换共享地图。选择背景，对齐它，然后添加测量的主点和组标签。"
+    },
+    {
+      "source": "Build details",
+      "translation": "构建细节"
     },
     {
       "source": "Build preview",
@@ -214687,6 +214687,10 @@
       "translation": "从当前航路点重新计算航母燃油。"
     },
     {
+      "source": "Carrier linking",
+      "translation": "运营商链接"
+    },
+    {
       "source": "Carrier linking was skipped because no valid build ID was returned.",
       "translation": "由于未返回有效的版本 ID，因此跳过了运营商链接。"
     },
@@ -214909,6 +214913,10 @@
     {
       "source": "Check All",
       "translation": "检查全部"
+    },
+    {
+      "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+      "translation": "选中显示以将项目的需求包含在货物列表中，然后保存您的选择。 Market Search 使用自己的 Select Projects 标签。"
     },
     {
       "source": "Check application and reference-data releases without changing profile data.",
@@ -224443,10 +224451,6 @@
       "translation": "已交付物品"
     },
     {
-      "source": "JOURNAL COVERAGE",
-      "translation": "期刊报道"
-    },
-    {
       "source": "JSON catalog",
       "translation": "JSON目录"
     },
@@ -224517,6 +224521,10 @@
     {
       "source": "Journal activity and SCO status",
       "translation": "期刊活动和 SCO 状态"
+    },
+    {
+      "source": "Journal coverage",
+      "translation": "期刊报道"
     },
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -225033,10 +225041,6 @@
     {
       "source": "LATITUDE",
       "translation": "纬度"
-    },
-    {
-      "source": "LAYOUT",
-      "translation": "布局"
     },
     {
       "source": "LEP",
@@ -227709,10 +227713,6 @@
     {
       "source": "NEW",
       "translation": "新的"
-    },
-    {
-      "source": "NEW BUILD",
-      "translation": "新建筑"
     },
     {
       "source": "NEW MAP DRAFT",
@@ -230719,10 +230719,6 @@
       "translation": "密码"
     },
     {
-      "source": "PLANNED RAVEN SITE",
-      "translation": "计划中的乌鸦地点"
-    },
-    {
       "source": "PNG image",
       "translation": "PNG图像"
     },
@@ -230801,10 +230797,6 @@
     {
       "source": "PROJECT",
       "translation": "项目"
-    },
-    {
-      "source": "PROJECT NAME",
-      "translation": "项目名称"
     },
     {
       "source": "PSV",
@@ -231089,6 +231081,10 @@
     {
       "source": "PlanetaryConstructionDepot",
       "translation": "行星建设基地"
+    },
+    {
+      "source": "Planned Raven site",
+      "translation": "计划中的 Raven 站点"
     },
     {
       "source": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
@@ -232109,6 +232105,10 @@
     {
       "source": "Project review cancelled; nothing was published.",
       "translation": "项目评审取消；没有发表任何内容。"
+    },
+    {
+      "source": "Project status",
+      "translation": "项目状况"
     },
     {
       "source": "Project visibility saved to Raven Colonial.",
@@ -235751,10 +235751,6 @@
       "translation": "系统生物学"
     },
     {
-      "source": "SYSTEM EDITOR",
-      "translation": "系统编辑器"
-    },
-    {
       "source": "SYSTEM ESTIMATE",
       "translation": "系统估算"
     },
@@ -237693,10 +237689,6 @@
     {
       "source": "Show commander notes beside survey maps",
       "translation": "在测量地图旁边显示指挥官注释"
-    },
-    {
-      "source": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-      "translation": "显示控制汇总货物需求并通过“保存”选择进行保存。使用“选择项目”标签选择用于市场搜索的项目。"
     },
     {
       "source": "Show current boxel completion percentage",
@@ -240177,6 +240169,10 @@
     {
       "source": "System signals",
       "translation": "系统信号"
+    },
+    {
+      "source": "System sites",
+      "translation": "系统站点"
     },
     {
       "source": "System state",
@@ -247399,6 +247395,10 @@
       "translation": "例如软体动物"
     },
     {
+      "source": "e.g. Peralta 4 a",
+      "translation": "例如佩拉尔塔 4a"
+    },
+    {
       "source": "e.g. Platinum ×2",
       "translation": "例如白金×2"
     },
@@ -252741,10 +252741,6 @@
       "translation": "* APPROACHING GUARDIAN STRUCTURE >>>!"
     },
     {
-      "source": "ARCHITECT",
-      "translation": "* ARCHITECT >>>!"
-    },
-    {
       "source": "ARRIVAL",
       "translation": "* ARRIVAL >>>!"
     },
@@ -254765,16 +254761,8 @@
       "translation": "* BODY / SYSTEM >>>!"
     },
     {
-      "source": "BODY ID",
-      "translation": "* BODY ID >>>!"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "* BODY INFORMATION >>>!"
-    },
-    {
-      "source": "BODY NAME: i.e. Peralta 4 a",
-      "translation": "* BODY NAME: I.E. PERALTA 4 A >>>!"
     },
     {
       "source": "BODY PREDICTIONS",
@@ -255421,6 +255409,10 @@
       "translation": "* BODY DETAILS >>>!"
     },
     {
+      "source": "Body ID",
+      "translation": "* BODY ID >>>!"
+    },
+    {
       "source": "Body ID help",
       "translation": "* BODY ID HELP >>>!"
     },
@@ -255475,6 +255467,10 @@
     {
       "source": "Body is required for the selected site's catalog details.",
       "translation": "* BODY IS REQUIRED FOR THE SELECTED SITE'S CATALOG DETAILS. >>>!"
+    },
+    {
+      "source": "Body name",
+      "translation": "* BODY NAME >>>!"
     },
     {
       "source": "Body predictions",
@@ -255747,6 +255743,10 @@
     {
       "source": "Build a replacement shared map from scratch for this site type. Choose a background, align it, then add measured master points and group labels.",
       "translation": "* BUILD A REPLACEMENT SHARED MAP FROM SCRATCH FOR THIS SITE TYPE. CHOOSE A BACKGROUND, ALIGN IT, THEN ADD MEASURED MASTER POINTS AND GROUP LABELS. >>>!"
+    },
+    {
+      "source": "Build details",
+      "translation": "* BUILD DETAILS >>>!"
     },
     {
       "source": "Build preview",
@@ -256585,6 +256585,10 @@
       "translation": "* CARRIER FUEL RECALCULATED FROM THE CURRENT WAYPOINT. >>>!"
     },
     {
+      "source": "Carrier linking",
+      "translation": "* CARRIER LINKING >>>!"
+    },
+    {
       "source": "Carrier linking was skipped because no valid build ID was returned.",
       "translation": "* CARRIER LINKING WAS SKIPPED BECAUSE NO VALID BUILD ID WAS RETURNED. >>>!"
     },
@@ -256807,6 +256811,10 @@
     {
       "source": "Check All",
       "translation": "* CHECK ALL >>>!"
+    },
+    {
+      "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+      "translation": "* CHECK SHOW TO INCLUDE A PROJECT'S NEEDS IN THE CARGO LIST, THEN SAVE YOUR SELECTION. MARKET SEARCH USES ITS OWN SELECT PROJECTS TAGS. >>>!"
     },
     {
       "source": "Check application and reference-data releases without changing profile data.",
@@ -266341,10 +266349,6 @@
       "translation": "* ITEMSDELIVERED >>>!"
     },
     {
-      "source": "JOURNAL COVERAGE",
-      "translation": "* JOURNAL COVERAGE >>>!"
-    },
-    {
       "source": "JSON catalog",
       "translation": "* JSON CATALOG >>>!"
     },
@@ -266415,6 +266419,10 @@
     {
       "source": "Journal activity and SCO status",
       "translation": "* JOURNAL ACTIVITY AND SCO STATUS >>>!"
+    },
+    {
+      "source": "Journal coverage",
+      "translation": "* JOURNAL COVERAGE >>>!"
     },
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
@@ -266931,10 +266939,6 @@
     {
       "source": "LATITUDE",
       "translation": "* LATITUDE >>>!"
-    },
-    {
-      "source": "LAYOUT",
-      "translation": "* LAYOUT >>>!"
     },
     {
       "source": "LEP",
@@ -269607,10 +269611,6 @@
     {
       "source": "NEW",
       "translation": "* NEW >>>!"
-    },
-    {
-      "source": "NEW BUILD",
-      "translation": "* NEW BUILD >>>!"
     },
     {
       "source": "NEW MAP DRAFT",
@@ -272617,10 +272617,6 @@
       "translation": "* PIN >>>!"
     },
     {
-      "source": "PLANNED RAVEN SITE",
-      "translation": "* PLANNED RAVEN SITE >>>!"
-    },
-    {
       "source": "PNG image",
       "translation": "* PNG IMAGE >>>!"
     },
@@ -272699,10 +272695,6 @@
     {
       "source": "PROJECT",
       "translation": "* PROJECT >>>!"
-    },
-    {
-      "source": "PROJECT NAME",
-      "translation": "* PROJECT NAME >>>!"
     },
     {
       "source": "PSV",
@@ -272987,6 +272979,10 @@
     {
       "source": "PlanetaryConstructionDepot",
       "translation": "* PLANETARYCONSTRUCTIONDEPOT >>>!"
+    },
+    {
+      "source": "Planned Raven site",
+      "translation": "* PLANNED RAVEN SITE >>>!"
     },
     {
       "source": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan’s catalog estimates.",
@@ -274007,6 +274003,10 @@
     {
       "source": "Project review cancelled; nothing was published.",
       "translation": "* PROJECT REVIEW CANCELLED; NOTHING WAS PUBLISHED. >>>!"
+    },
+    {
+      "source": "Project status",
+      "translation": "* PROJECT STATUS >>>!"
     },
     {
       "source": "Project visibility saved to Raven Colonial.",
@@ -277649,10 +277649,6 @@
       "translation": "* SYSTEM BIOLOGY >>>!"
     },
     {
-      "source": "SYSTEM EDITOR",
-      "translation": "* SYSTEM EDITOR >>>!"
-    },
-    {
       "source": "SYSTEM ESTIMATE",
       "translation": "* SYSTEM ESTIMATE >>>!"
     },
@@ -279591,10 +279587,6 @@
     {
       "source": "Show commander notes beside survey maps",
       "translation": "* SHOW COMMANDER NOTES BESIDE SURVEY MAPS >>>!"
-    },
-    {
-      "source": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-      "translation": "* SHOW CONTROLS AGGREGATE CARGO REQUIREMENTS AND IS SAVED WITH SAVE SELECTION. CHOOSE PROJECTS FOR MARKET SEARCH WITH ITS SELECT PROJECTS TAGS. >>>!"
     },
     {
       "source": "Show current boxel completion percentage",
@@ -282075,6 +282067,10 @@
     {
       "source": "System signals",
       "translation": "* SYSTEM SIGNALS >>>!"
+    },
+    {
+      "source": "System sites",
+      "translation": "* SYSTEM SITES >>>!"
     },
     {
       "source": "System state",
@@ -289295,6 +289291,10 @@
     {
       "source": "e.g. Mollusc",
       "translation": "* E.G. MOLLUSC >>>!"
+    },
+    {
+      "source": "e.g. Peralta 4 a",
+      "translation": "* E.G. PERALTA 4 A >>>!"
     },
     {
       "source": "e.g. Platinum ×2",
