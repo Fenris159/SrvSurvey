@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -44,8 +46,10 @@ public sealed partial class ColonizationProjectPreviewTests
             Assert.Equal(expected, model.Subtitle);
             TextBlock subtitle = window.FindControl<TextBlock>("PreviewSubtitle")!;
             Assert.Equal(expected, subtitle.Text);
-            Grid header = Assert.IsType<Grid>(subtitle.Parent);
-            Assert.Equal(header.Bounds.Width, subtitle.Bounds.Width, 1);
+            ScrollViewer subtitleScroll = window.FindControl<ScrollViewer>("PreviewSubtitleScroller")!;
+            Grid header = Assert.IsType<Grid>(Assert.IsType<Border>(subtitleScroll.Parent).Parent);
+            Assert.Equal(header.Bounds.Width, subtitleScroll.Bounds.Width, 1);
+            Assert.Equal(subtitleScroll.Viewport.Width, subtitle.Bounds.Width + subtitle.Margin.Right, 1);
             Assert.Equal(TextWrapping.Wrap, subtitle.TextWrapping);
             Assert.True(subtitle.TextLayout.TextLines.Count >= 2);
             Assert.True(window.FindControl<Button>("RefreshButton")!.IsEffectivelyVisible);
@@ -90,6 +94,69 @@ public sealed partial class ColonizationProjectPreviewTests
             );
             singleBuilding.Save(
                 Path.Combine(Path.GetTempPath(), $"srvsurvey-loading-preview-single-{width}.png"),
+                PngBitmapEncoderOptions.Default
+            );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ALongLoadingManifestKeepsThePreviewUsableAtMinimumWindowSize()
+    {
+        string preparation = JsonSerializer.Serialize(
+            ColonizationBuildCatalog
+                .LoadEmbedded()
+                .Builds.SelectMany(build => build.Layouts)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(layout => layout, _ => 1)
+        );
+        using var model = new ColonizationProjectPreviewViewModel(
+            new ColonizationProjectPreviewViewModelTests.Reader(
+                (_, _) =>
+                    Task.FromResult<ColonizationProjectPreviewData?>(
+                        ColonizationProjectPreviewViewModelTests.LoadingPreviewData(preparation)
+                    )
+            ),
+            "loading"
+        );
+        var window = new ColonizationProjectPreviewWindow(model) { Width = 700, Height = 500 };
+        ApplyLoadingPreviewTheme(window);
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            ScrollViewer body = window
+                .GetVisualDescendants()
+                .OfType<ScrollViewer>()
+                .First(scroll =>
+                    scroll.GetVisualDescendants().Contains(window.FindControl<ItemsControl>("CommodityRows")!)
+                );
+            Assert.True(body.Viewport.Height >= 100, $"Manifest left {body.Viewport.Height} pixels for the report.");
+            TextBlock subtitle = window.FindControl<TextBlock>("PreviewSubtitle")!;
+            Assert.Contains("1x Alastor-layout Military Installation", subtitle.Text);
+            Assert.Contains("1x Vacuna-layout Military Installation", subtitle.Text);
+            ScrollViewer manifest = Assert.Single(subtitle.GetVisualAncestors().OfType<ScrollViewer>());
+            Assert.True(manifest.Extent.Height > manifest.Viewport.Height);
+            manifest.ScrollToEnd();
+            using WriteableBitmap? scrolled = window.CaptureRenderedFrame();
+            Assert.NotNull(scrolled);
+            Assert.True(manifest.Offset.Y > 0);
+            Assert.Equal(manifest.Extent.Height, manifest.Offset.Y + manifest.Viewport.Height, 1);
+            foreach (string buttonName in new[] { "RefreshButton", "ExportCsvButton" })
+            {
+                Button button = window.FindControl<Button>(buttonName)!;
+                Assert.InRange(
+                    button.TranslatePoint(default, window)!.Value.Y,
+                    0,
+                    window.ClientSize.Height - button.Bounds.Height
+                );
+            }
+            scrolled.Save(
+                Path.Combine(Path.GetTempPath(), "srvsurvey-kilo-loading-minimum.png"),
                 PngBitmapEncoderOptions.Default
             );
         }

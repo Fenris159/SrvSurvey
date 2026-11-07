@@ -171,6 +171,61 @@ public sealed class MiningLayoutPresentationTests
     }
 
     [AvaloniaFact]
+    public void CargoSortUsesVisibleNamesAndRetainsNumericQuantitySorting()
+    {
+        using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        LoadCommander(
+            model,
+            [
+                new CargoItem("platinum", "Platinum", 30, 0),
+                new CargoItem("drones", "Limpets", 12, 0),
+                new CargoItem("gold", "Gold", 20, 0),
+            ]
+        );
+        var view = new MiningView { DataContext = model };
+        Window window = CreateWindow(view, 1180);
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            Assert.NotNull(initial);
+            Grid header = view.FindControl<Grid>("CargoHeader")!;
+            Button name = header.Children.OfType<Button>().Single(button => Equals(button.CommandParameter, "Name"));
+            Button count = header.Children.OfType<Button>().Single(button => Equals(button.CommandParameter, "Count"));
+            foreach (
+                (Button button, string[] expected) in new[]
+                {
+                    (name, new[] { "Gold", "Limpets", "Platinum" }),
+                    (name, new[] { "Platinum", "Limpets", "Gold" }),
+                    (count, new[] { "Limpets", "Gold", "Platinum" }),
+                    (count, new[] { "Platinum", "Gold", "Limpets" }),
+                }
+            )
+            {
+                button.Command!.Execute(button.CommandParameter);
+                using WriteableBitmap? sorted = window.CaptureRenderedFrame();
+                Assert.NotNull(sorted);
+                Assert.Equal(
+                    expected,
+                    view.FindControl<ListBox>("CargoRows")!
+                        .GetVisualDescendants()
+                        .OfType<Grid>()
+                        .Where(grid => grid.Classes.Contains("table-row"))
+                        .Select(grid => Assert.IsType<TextBlock>(grid.Children[0]).Text)
+                );
+            }
+            Assert.Equal(
+                (string[])["drones", "gold", "platinum"],
+                model.MiningWorkspace.Cargo.Select(item => item.Name).Order()
+            );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void ReportsKeepTheSelectedSessionsNotesAndScreenshotsTogether()
     {
         using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
@@ -387,7 +442,7 @@ public sealed class MiningLayoutPresentationTests
         }
     }
 
-    private static void LoadCommander(MainWindowViewModel model)
+    private static void LoadCommander(MainWindowViewModel model, IReadOnlyList<CargoItem>? inventory = null)
     {
         var journal = new JournalSessionState();
         Assert.True(
@@ -407,7 +462,7 @@ public sealed class MiningLayoutPresentationTests
                 "Cargo",
                 "Ship",
                 42,
-                [new CargoItem("platinum", "Platinum", 30, 0), new CargoItem("drones", "Limpets", 12, 0)]
+                inventory ?? [new CargoItem("platinum", "Platinum", 30, 0), new CargoItem("drones", "Limpets", 12, 0)]
             ),
             ship
         );

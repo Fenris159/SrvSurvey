@@ -307,7 +307,7 @@ public sealed class ExplorationHistoryCatalogTests
         ]);
         Assert.Equal(23106, (await fixture.Catalog.ObserveAsync(onlyLatest, [fixture.Journals])).SoldValue);
         await File.WriteAllLinesAsync(
-            Path.Combine(fixture.Journals, "Journal.2026-10-01T140000.02.log"),
+            Path.Combine(fixture.Journals, "Journal.2026-10-01T120000.02.log"),
             [
                 """{"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true,"part":2}""",
                 """{"timestamp":"2026-10-01T14:01:00Z","event":"Scan","SystemAddress":100,"BodyID":1,"StarType":"NS","StellarMass":1.4}""",
@@ -421,6 +421,208 @@ public sealed class ExplorationHistoryCatalogTests
         Assert.Equal(46212, result.UnsoldValue);
         Assert.Equal(2, result.UnsoldSystems);
         Assert.Equal(2, (await fixture.Catalog.QueryAsync(new())).TotalRows);
+    }
+
+    [Fact]
+    public async Task TheLastPageMovesBackToAvailableRowsAfterSalesShrinkTheResultSet()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Alpha", 100, 0),
+            Star(100),
+            Location("Beta", 200, 0),
+            Star(200),
+            Location("Gamma", 300, 0),
+            Star(300),
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        var query = new ExplorationHistoryQuery(ExplorationDataStatus.Unsold, Offset: 2, PageSize: 1);
+        Assert.Equal("Alpha", Assert.Single((await fixture.Catalog.QueryAsync(query)).Rows).SystemName);
+        JournalEventEnvelope[] sale = fixture.Append([
+            """{"event":"SellExplorationData","Systems":["Beta","Gamma"],"TotalEarnings":40000}""",
+        ]);
+        await fixture.Catalog.ObserveAsync(sale, [fixture.Journals]);
+        ExplorationHistoryPage remaining = await fixture.Catalog.QueryAsync(query);
+        Assert.Equal(1, remaining.TotalRows);
+        Assert.Equal(0, remaining.Offset);
+        Assert.Equal("Alpha", Assert.Single(remaining.Rows).SystemName);
+        await fixture.Catalog.ObserveAsync(
+            fixture.Append(["""{"event":"SellExplorationData","Systems":["Alpha"],"TotalEarnings":20000}"""]),
+            [fixture.Journals]
+        );
+        ExplorationHistoryPage empty = await fixture.Catalog.QueryAsync(query);
+        Assert.Equal(0, empty.TotalRows);
+        Assert.Equal(0, empty.Offset);
+        Assert.Empty(empty.Rows);
+    }
+
+    [Theory]
+    [InlineData("Journal.2026-10-01T140000.02.log", 2)]
+    [InlineData("Journal.2026-10-01T120000.02.log", 3)]
+    [InlineData("Journal.2026-10-01T120000.03.log", 3)]
+    public async Task AnUnverifiedContinuationCannotCreditOrLoseAnotherCommandersData(string name, int part)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Owned survey", 100, 0), Star(100)]);
+        await File.WriteAllLinesAsync(
+            Path.Combine(fixture.Journals, name),
+            [
+                $$"""{"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true,"part":{{part}}}""",
+                """{"timestamp":"2026-10-01T14:01:00Z","event":"Scan","SystemAddress":200,"BodyID":0,"StarType":"NS","StellarMass":1.4}""",
+                """{"timestamp":"2026-10-01T14:02:00Z","event":"Resurrect","Option":"rebuy","Cost":0}""",
+            ]
+        );
+        ExplorationHistorySummary summary = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(23106, summary.UnsoldValue);
+        Assert.Equal(0, summary.LostValue);
+        Assert.Equal("Owned survey", Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).SystemName);
+    }
+
+    [Fact]
+    public async Task InterleavedCommandersUseTheirOwnMatchingPredecessorPart()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("First commander", 100, 0), Star(100)]);
+        await File.WriteAllLinesAsync(
+            Path.Combine(fixture.Journals, "Journal.2026-10-01T130000.01.log"),
+            [
+                """{"timestamp":"2026-10-01T13:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true,"part":1}""",
+                """{"timestamp":"2026-10-01T13:00:01Z","event":"Commander","FID":"F200"}""",
+                """{"timestamp":"2026-10-01T13:01:00Z","event":"Location","StarSystem":"Second commander","SystemAddress":200}""",
+                """{"timestamp":"2026-10-01T13:02:00Z","event":"Scan","SystemAddress":200,"BodyID":0,"StarType":"NS","StellarMass":1.4}""",
+            ]
+        );
+        await File.WriteAllLinesAsync(
+            Path.Combine(fixture.Journals, "Journal.2026-10-01T120000.02.log"),
+            [
+                """{"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true,"part":2}""",
+                """{"timestamp":"2026-10-01T14:01:00Z","event":"Scan","SystemAddress":100,"BodyID":1,"StarType":"NS","StellarMass":1.4}""",
+            ]
+        );
+        Assert.Equal(46212, (await fixture.Catalog.SynchronizeAsync([fixture.Journals])).UnsoldValue);
+        var second = new ExplorationHistoryCatalog(fixture.Data, "F200", true);
+        Assert.Equal(23106, (await second.SynchronizeAsync([fixture.Journals])).UnsoldValue);
+        Assert.Equal("Second commander", Assert.Single((await second.QueryAsync(new())).Rows).SystemName);
+    }
+
+    [Theory]
+    [InlineData(false, "sale")]
+    [InlineData(true, "sale")]
+    [InlineData(false, "rebuy")]
+    public async Task ACompleteLiveCopyWinsOverItsArchivedPrefixInEitherDirectoryOrder(bool liveFirst, string outcome)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Survey", 100, 0), Star(100)]);
+        string archive = Path.Combine(fixture.Data, "archive");
+        Directory.CreateDirectory(archive);
+        File.Copy(fixture.JournalPath, Path.Combine(archive, Path.GetFileName(fixture.JournalPath)));
+        JournalEventEnvelope[] live = fixture.Append([
+            outcome == "sale"
+                ? """{"event":"SellExplorationData","Systems":["Survey"],"TotalEarnings":20000}"""
+                : """{"event":"Resurrect","Option":"rebuy","Cost":0}""",
+        ]);
+        string[] directories = liveFirst ? [fixture.Journals, archive] : [archive, fixture.Journals];
+        await fixture.Catalog.SynchronizeAsync(directories);
+        ExplorationHistoryRow row = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows);
+        Assert.Equal(outcome == "sale" ? ExplorationDataStatus.Sold : ExplorationDataStatus.Lost, row.Status);
+        Assert.Equal(0, (await fixture.Catalog.ObserveAsync(live, directories)).UnsoldValue);
+        Assert.Equal(outcome == "sale" ? 20000 : 0, (await fixture.Catalog.SynchronizeAsync(directories)).SaleEarnings);
+    }
+
+    [Fact]
+    public async Task LiveObservationCanAdvanceAnArchiveCheckpointAndRejectsDivergentCopiesSafely()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Survey", 100, 0), Star(100)]);
+        string archive = Path.Combine(fixture.Data, "archive");
+        Directory.CreateDirectory(archive);
+        string copy = Path.Combine(archive, Path.GetFileName(fixture.JournalPath));
+        File.Copy(fixture.JournalPath, copy);
+        await fixture.Catalog.SynchronizeAsync([archive]);
+        JournalEventEnvelope[] live = fixture.Append([
+            """{"event":"SellExplorationData","Systems":["Survey"],"TotalEarnings":20000}""",
+        ]);
+        ExplorationHistorySummary summary = await fixture.Catalog.ObserveAsync(live, [archive, fixture.Journals]);
+        Assert.Equal(0, summary.UnsoldValue);
+        Assert.Equal(23106, summary.SoldValue);
+        string changed = (await File.ReadAllTextAsync(copy)).Replace("Survey", "Other!", StringComparison.Ordinal);
+        await File.WriteAllTextAsync(copy, changed);
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            fixture.Catalog.SynchronizeAsync([archive, fixture.Journals])
+        );
+        Assert.Equal(23106, (await fixture.Catalog.QueryAsync(new())).Summary.SoldValue);
+    }
+
+    [Theory]
+    [InlineData("sale", false)]
+    [InlineData("sale", true)]
+    [InlineData("rebuy", false)]
+    [InlineData("rebuy", true)]
+    public async Task AnIncompleteArchiveCannotUndoSettlementWhenTheCompleteLiveCopyIsUnavailable(
+        string outcome,
+        bool importEarlierJournal
+    )
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Survey", 100, 0), Star(100)]);
+        string archive = Path.Combine(fixture.Data, "archive");
+        Directory.CreateDirectory(archive);
+        File.Copy(fixture.JournalPath, Path.Combine(archive, Path.GetFileName(fixture.JournalPath)));
+        fixture.Append([
+            outcome == "sale"
+                ? """{"event":"SellExplorationData","Systems":["Survey"],"TotalEarnings":20000}"""
+                : """{"event":"Resurrect","Option":"rebuy","Cost":0}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([archive, fixture.Journals]);
+        string complete = await File.ReadAllTextAsync(fixture.JournalPath);
+        File.Delete(fixture.JournalPath);
+        if (importEarlierJournal)
+        {
+            await File.WriteAllLinesAsync(
+                Path.Combine(fixture.Journals, "Journal.2026-09-01T120000.01.log"),
+                [
+                    """{"timestamp":"2026-09-01T12:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true,"part":1}""",
+                    """{"timestamp":"2026-09-01T12:00:01Z","event":"Commander","FID":"F100"}""",
+                ]
+            );
+        }
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            fixture.Catalog.SynchronizeAsync([archive, fixture.Journals])
+        );
+        ExplorationHistoryPage retained = await fixture.Catalog.QueryAsync(new());
+        Assert.Equal(0, retained.Summary.UnsoldValue);
+        Assert.Equal(
+            outcome == "sale" ? ExplorationDataStatus.Sold : ExplorationDataStatus.Lost,
+            Assert.Single(retained.Rows).Status
+        );
+        await File.WriteAllTextAsync(fixture.JournalPath, complete);
+        Assert.Equal(0, (await fixture.Catalog.SynchronizeAsync([archive, fixture.Journals])).UnsoldValue);
+    }
+
+    [Fact]
+    public async Task ObservingASubsetAfterACanceledFullBackfillCannotEstablishCompleteness()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Alpha", 100, 0), Star(100)]);
+        using var cancel = new CancellationTokenSource();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            fixture.Catalog.SynchronizeAsync(
+                [fixture.Journals],
+                new SynchronousProgress(_ => cancel.Cancel()),
+                cancel.Token
+            )
+        );
+        JournalEventEnvelope[] live = fixture.Append([Location("Beta", 200, 0), Star(200)]);
+        ExplorationHistorySummary partial = await fixture.Catalog.ObserveAsync(live, [fixture.Journals]);
+        Assert.Equal(46212, partial.UnsoldValue);
+        Assert.False(partial.IsComplete);
+        Assert.True((await fixture.Catalog.SynchronizeAsync([fixture.Journals])).IsComplete);
+        ExplorationHistorySummary sold = await fixture.Catalog.ObserveAsync(
+            fixture.Append(["""{"event":"SellExplorationData","Systems":["Beta"],"TotalEarnings":20000}"""]),
+            [fixture.Journals]
+        );
+        Assert.True(sold.IsComplete);
+        Assert.Equal(23106, sold.UnsoldValue);
     }
 
     private sealed class SynchronousProgress(Action<ExplorationHistoryProgress> report)

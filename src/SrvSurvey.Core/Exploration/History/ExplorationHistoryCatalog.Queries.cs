@@ -21,8 +21,6 @@ public sealed partial class ExplorationHistoryCatalog
         [
             ("@status", query.Status is { } status ? (int)status : null),
             ("@search", query.SearchText.Trim()),
-            ("@size", size),
-            ("@offset", offset),
             ("@from", Timestamp(query.FromUtc)),
             ("@through", Timestamp(query.ThroughUtc)),
         ];
@@ -36,6 +34,10 @@ public sealed partial class ExplorationHistoryCatalog
             parameters
         );
         int total = Convert.ToInt32(count.ExecuteScalar(), CultureInfo.InvariantCulture);
+        if (offset >= total)
+        {
+            offset = total == 0 ? 0 : (total - 1) / size * size;
+        }
         using SqliteCommand command = Command(
             connection,
             """
@@ -45,7 +47,7 @@ public sealed partial class ExplorationHistoryCatalog
                 AND (@from IS NULL OR b.last_time>=@from) AND (@through IS NULL OR b.last_time<=@through)
             ORDER BY b.last_time DESC,b.id DESC LIMIT @size OFFSET @offset;
             """,
-            parameters
+            [.. parameters, ("@size", size), ("@offset", offset)]
         );
         using SqliteDataReader reader = command.ExecuteReader();
         var rows = new List<ExplorationHistoryRow>();

@@ -7,6 +7,7 @@
              xmlns:colonization="using:SrvSurvey.Core.Colonization"
              xmlns:views="using:SrvSurvey.Desktop.Views"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:presentation="using:SrvSurvey.Desktop.Presentation"
              x:Class="SrvSurvey.Desktop.Views.ColonizationView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
@@ -116,7 +117,7 @@
       <Setter Property="MinHeight" Value="40" />
     </Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="Auto,Auto,*" Margin="24">
+  <Grid x:Name="ColonizationLayout" RowDefinitions="Auto,Auto,*" Margin="24">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24" x:Name="ColonizationWorkspaceHeader" Margin="0,0,0,20">
       <StackPanel Spacing="5" Grid.Column="0">
         <TextBlock Classes="eyebrow" Text="RAVEN COLONIAL" />
@@ -152,7 +153,8 @@
         </ToggleButton>
       </WrapPanel>
     </Grid>
-    <Border Grid.Row="1" Margin="0,0,0,20" Classes="card" IsVisible="{Binding Colonization.HasUncertainContributions}" MaxHeight="260">
+    <Border Grid.Row="1" Margin="0,0,0,20" Classes="card" IsVisible="{Binding Colonization.HasUncertainContributions}"
+            MaxHeight="{Binding #ColonizationLayout.Bounds.Height, Converter={x:Static presentation:WorkspaceLayoutExtentConverter.RecoveryHeight}}">
       <ScrollViewer x:Name="UnconfirmedDeliveryRecoveryScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="12">
           <TextBlock Classes="card-title" Text="Unconfirmed construction deliveries" />
@@ -751,7 +753,7 @@
         </ScrollViewer>
       </TabItem>
       <TabItem Header="System Editor">
-        <Grid RowDefinitions="*,Auto">
+        <Grid x:Name="SystemEditorLayout" RowDefinitions="*,Auto">
           <ScrollViewer HorizontalScrollBarVisibility="Disabled">
             <StackPanel x:Name="SystemEditorPage" Spacing="20" Margin="0,20,0,16" HorizontalAlignment="Stretch">
               <Border Classes="card" x:Name="SystemEditorCard">
@@ -774,7 +776,7 @@
                                          ItemsSource="{Binding Colonization.SystemEditor.SystemNames}"
                                          IsEnabled="{Binding !Colonization.SystemEditor.IsBusy}"
                                          MinimumPrefixLength="0"
-                                         MinHeight="40"
+                                         Height="40" MinHeight="40"
                                          FilterMode="StartsWith"
                                          IsTextCompletionEnabled="False"
                                          MaxDropDownHeight="194"
@@ -783,6 +785,7 @@
                                          TextChanged="EditorSystemName_TextChanged">
                           <AutoCompleteBox.Styles>
                             <Style Selector="AutoCompleteBox.system-catalog /template/ TextBox">
+                              <Setter Property="Height" Value="40" />
                               <Setter Property="MinHeight" Value="40" />
                             </Style>
                             <Style Selector="AutoCompleteBox.system-catalog /template/ Border#PART_SuggestionsContainer">
@@ -817,9 +820,9 @@
                                 Grid.Column="1"
                                 Classes="secondary"
                                 Command="{Binding Colonization.SystemEditor.UseCurrentSystemCommand}"
-                                Content="Use Current" />
+                                Height="40" VerticalAlignment="Top" Content="Use Current" />
                         <Button Classes="primary"
-                                VerticalAlignment="Center"
+                                Height="40" VerticalAlignment="Top"
                                 Command="{Binding Colonization.SystemEditor.LoadCommand}"
                                 Content="Load system"
                                 Grid.Column="2" />
@@ -1030,8 +1033,11 @@
               </Border>
             </StackPanel>
           </ScrollViewer>
-          <Border x:Name="SystemReviewFooter"
-                  Grid.Row="1"
+          <ScrollViewer x:Name="SystemReviewFooterScroll" Grid.Row="1"
+                        MaxHeight="{Binding #SystemEditorLayout.Bounds.Height, Converter={x:Static presentation:WorkspaceLayoutExtentConverter.HalfHeight}}"
+                        HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" AllowAutoHide="False"
+                        IsVisible="{Binding Colonization.SystemEditor.IsLoaded}">
+          <Border x:Name="SystemReviewFooter" Margin="0,0,16,0"
                   Classes="colonization-review-footer"
                   IsVisible="{Binding Colonization.SystemEditor.IsLoaded}">
             <StackPanel Spacing="12">
@@ -1095,6 +1101,7 @@
               </Border>
             </StackPanel>
           </Border>
+          </ScrollViewer>
         </Grid>
       </TabItem>
       <TabItem Header="Nexus">

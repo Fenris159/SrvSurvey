@@ -39,8 +39,14 @@
           <TextBlock Classes="eyebrow" Text="RAVEN BUILD PREVIEW" />
           <TextBlock Classes="page-title" FontSize="26" Text="{Binding Title}" TextWrapping="Wrap" />
         </StackPanel>
-        <TextBlock x:Name="PreviewSubtitle" Grid.Row="1" Grid.ColumnSpan="2" Classes="muted" Text="{Binding Subtitle}"
-                   TextWrapping="Wrap" Margin="0,6,0,0" />
+        <Border Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0">
+        <ScrollViewer x:Name="PreviewSubtitleScroller"
+                      MaxHeight="96" AllowAutoHide="False"
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <TextBlock x:Name="PreviewSubtitle" Classes="muted" Text="{Binding Subtitle}"
+                     TextWrapping="Wrap" Margin="0,0,16,0" />
+        </ScrollViewer>
+        </Border>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
           <ComboBox x:Name="SystemFilter" Width="200" IsVisible="{Binding IsCombinedReport}"
                     ItemsSource="{Binding SystemOptions}" SelectedItem="{Binding SelectedSystem, Mode=TwoWay}"

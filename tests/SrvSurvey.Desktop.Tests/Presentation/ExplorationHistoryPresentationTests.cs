@@ -212,6 +212,7 @@ public sealed class ExplorationHistoryPresentationTests
             Assert.Null(model.FromDate);
             Assert.Null(model.ThroughDate);
             Assert.Equal(50, model.Rows.Count);
+            Assert.Equal("History cataloged from 1 journal files for Survey commander.", model.StatusMessage);
         }
         finally
         {

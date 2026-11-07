@@ -13,10 +13,7 @@ public sealed class MiningItemNameConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value switch
         {
-            CargoItem cargo => DisplayName(
-                string.IsNullOrWhiteSpace(cargo.LocalizedName) ? cargo.Name : cargo.LocalizedName,
-                culture
-            ),
+            CargoItem cargo => FormatCargoName(cargo, culture),
             MiningProspect prospect => string.Join(
                 " · ",
                 prospect.Materials.Select(material =>
@@ -29,6 +26,10 @@ public sealed class MiningItemNameConverter : IValueConverter
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
+
+    /// <summary>Shares the exact visible label with cargo sorting while retaining raw journal identifiers.</summary>
+    public static string FormatCargoName(CargoItem cargo, CultureInfo culture) =>
+        DisplayName(string.IsNullOrWhiteSpace(cargo.LocalizedName) ? cargo.Name : cargo.LocalizedName, culture);
 
     private static string DisplayName(string name, CultureInfo culture)
     {

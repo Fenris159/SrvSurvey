@@ -57,7 +57,7 @@ public sealed partial class ExplorationHistoryCatalog
         switch (entry.EventName)
         {
             case "Fileheader":
-                if (Integer(root, "part") is not > 1)
+                if (context.JournalPartNumber is not > 1)
                 {
                     context.FrontierId = null;
                     context.SystemName = null;

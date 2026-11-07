@@ -6,6 +6,8 @@ using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
@@ -260,6 +262,96 @@ public sealed partial class ColonizationShoppingPresentationTests
         finally
         {
             window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("monochrome-dark")]
+    [InlineData("blue-light")]
+    public async Task AShortSystemEditorKeepsPublishConfirmationReachableWithDeliveryRecovery(string theme)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "srvsurvey-short-review-" + Guid.NewGuid().ToString("N"));
+        var paths = new AppDataPaths(
+            Path.Combine(directory, "config"),
+            Path.Combine(directory, "data"),
+            Path.Combine(directory, "cache"),
+            []
+        );
+        new ColonizationSettingsStore(paths.UiSettingsPath).SavePendingContributions(
+            Enumerable
+                .Range(0, 40)
+                .Select(index => new ColonizationPendingContribution(
+                    "Example Cmdr|F123|True",
+                    "build-" + index,
+                    "Example Cmdr",
+                    new() { ["steel"] = 10 },
+                    "delivery-" + index,
+                    true
+                ))
+                .ToArray()
+        );
+        using var http = new HttpClient(DesignHandler());
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder => builder.WithAppDataPaths(paths).WithExternalNetworkClient(http)
+        );
+        main.Colonization.IsEnabled = true;
+        main.Colonization.SetCommanderProfile("F123", true, "test-key");
+        await main.Colonization.SetCommanderAsync("Example Cmdr");
+        Assert.Equal(40, main.Colonization.UnconfirmedContributions.Count);
+        main.Colonization.UpdateSystemContext("Sol", null, 42);
+        await main.Colonization.SystemEditor.LoadAsync();
+        main.Colonization.SystemEditor.Sites[0].Name = "Reviewed orbital port";
+        await main.Colonization.SystemEditor.ReviewAsync();
+        Assert.True(
+            main.Colonization.SystemEditor.IsPublishConfirmationPending,
+            main.Colonization.SystemEditor.StatusMessage
+        );
+        main.Colonization.SelectedWorkspaceTabIndex = 2;
+        using var preview = new DesignTheme(theme);
+        var view = new ColonizationView { DataContext = main };
+        var window = new Window
+        {
+            Content = view,
+            Width = 860,
+            Height = 600,
+        };
+        window.Classes.Add("app-window");
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            ScrollViewer page = Assert.Single(
+                view.FindControl<StackPanel>("SystemEditorPage")!.GetVisualAncestors().OfType<ScrollViewer>()
+            );
+            Assert.True(page.Viewport.Height > 0, "Publish confirmation consumed the editor viewport.");
+            Border confirmation = view.FindControl<Border>("SystemPublishConfirmation")!;
+            ScrollViewer footer = Assert.Single(confirmation.GetVisualAncestors().OfType<ScrollViewer>());
+            Assert.True(footer.Extent.Height > footer.Viewport.Height);
+            footer.ScrollToEnd();
+            using WriteableBitmap? scrolled = window.CaptureRenderedFrame();
+            Assert.NotNull(scrolled);
+            foreach (Button button in confirmation.GetVisualDescendants().OfType<Button>())
+            {
+                Assert.InRange(
+                    button.TranslatePoint(default, footer)!.Value.Y,
+                    0,
+                    footer.Viewport.Height - button.Bounds.Height
+                );
+                Assert.InRange(
+                    button.TranslatePoint(default, window)!.Value.Y,
+                    0,
+                    window.ClientSize.Height - button.Bounds.Height
+                );
+            }
+            SaveColonizationDesign(scrolled, $"short-confirmation-{theme}");
+        }
+        finally
+        {
+            window.Close();
+            await main.DisposeAsync();
+            Directory.Delete(directory, true);
         }
     }
 

@@ -150,6 +150,55 @@ public sealed class ExplorationHistoryViewModelTests
         Assert.Equal("Alpha Survey", Assert.Single(model.Rows).SystemName);
     }
 
+    [Fact]
+    public async Task AnInvalidCatalogUpdateCanRecoverAndSwitchCommandersAfterSourcesAreRestored()
+    {
+        using var fixture = new Fixture();
+        fixture.AddCommander("F200", "Second Survey", 200);
+        string original = await File.ReadAllTextAsync(fixture.JournalPath("F100"));
+        string second = await File.ReadAllTextAsync(fixture.JournalPath("F200"));
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        File.Delete(fixture.JournalPath("F200"));
+        await File.WriteAllTextAsync(
+            fixture.JournalPath("F100"),
+            """{"timestamp":"2026-10-01T12:00:00Z","event":"Fileheader","Odyssey":true}""" + "\n"
+        );
+        await model.RefreshAsync();
+        Assert.Contains("Restore those files", model.StatusMessage);
+        Assert.Equal(23106, model.AutomaticEstimatedValue);
+        await File.WriteAllTextAsync(fixture.JournalPath("F100"), original);
+        await File.WriteAllTextAsync(fixture.JournalPath("F200"), second);
+        await model.RefreshAsync();
+        Assert.Equal("Alpha Survey", Assert.Single(model.Rows).SystemName);
+        model.SetCommander("F200", "Second", true, true);
+        await model.PendingSynchronization;
+        Assert.Equal("Second Survey", Assert.Single(model.Rows).SystemName);
+        Assert.Equal(23106, model.AutomaticEstimatedValue);
+    }
+
+    [Fact]
+    public async Task AnOlderImportKeepsTheSelectedSystemInsteadOfFollowingItsReusedDatabaseId()
+    {
+        using var fixture = new Fixture();
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        model.SelectedRow = Assert.Single(model.Rows);
+        await model.PendingDetails;
+        string older = (await File.ReadAllTextAsync(fixture.JournalPath("F100")))
+            .Replace("2026-10-01", "2026-09-30", StringComparison.Ordinal)
+            .Replace("Alpha Survey", "Beta Survey", StringComparison.Ordinal)
+            .Replace("\"SystemAddress\":100", "\"SystemAddress\":200", StringComparison.Ordinal);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Journals, "Journal.2026-09-30T120000.01.log"), older);
+        await model.RefreshAsync();
+        await model.PendingDetails;
+        Assert.Equal("Alpha Survey", model.SelectedRow?.SystemName);
+        Assert.Equal("Alpha Survey", model.DetailTitle);
+        Assert.Equal("Alpha Survey A", Assert.Single(model.Bodies).Name);
+    }
+
     private sealed class Fixture : IDisposable
     {
         public Fixture(bool withScan = true)
@@ -170,6 +219,8 @@ public sealed class ExplorationHistoryViewModelTests
         public string ProfilePath => Path.Combine(Data, "F100-live.json");
         public CommanderProfileStore Profiles { get; }
 
+        public string JournalPath(string id) => Path.Combine(Journals, $"Journal.2026-10-01T1200{id[1..]}.01.log");
+
         public ExplorationHistoryViewModel Create() => new(Data, Profiles, () => [Journals]);
 
         public void AddCommander(string id, string system, long address, bool withScan = true)
@@ -186,7 +237,7 @@ public sealed class ExplorationHistoryViewModelTests
                     }
                     : [],
             ];
-            File.WriteAllLines(Path.Combine(Journals, $"Journal.2026-10-01T1200{id[1..]}.01.log"), lines);
+            File.WriteAllLines(JournalPath(id), lines);
         }
 
         public void Dispose() => Directory.Delete(Root, true);

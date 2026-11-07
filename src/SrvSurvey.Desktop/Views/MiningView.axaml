@@ -700,7 +700,7 @@
             </ItemsControl>
             <Expander Header="Resource Extraction Sites (RES)" x:Name="ResourceExtractionSites" HorizontalAlignment="Stretch">
               <StackPanel Spacing="8">
-                <TextBlock Text="Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap." TextWrapping="Wrap" x:Name="ResourceExtractionDescription" MaxWidth="1040" HorizontalAlignment="Left"/>
+                <TextBlock Text="Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap." TextWrapping="Wrap" x:Name="ResourceExtractionDescription" FontFamily="avares://Avalonia.Fonts.Inter/Assets#Inter" MaxWidth="1040" HorizontalAlignment="Left"/>
               </StackPanel>
             </Expander>
           </StackPanel>

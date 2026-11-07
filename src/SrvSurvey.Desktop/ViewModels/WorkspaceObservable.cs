@@ -89,7 +89,11 @@ internal sealed class WorkspaceTableSorter
         descending = false;
     }
 
-    public IReadOnlyList<T> Apply<T>(IEnumerable<T> source)
+    public IReadOnlyList<T> Apply<T>(
+        IEnumerable<T> source,
+        string? formattedColumn = null,
+        Func<T, object?>? formattedValue = null
+    )
     {
         T[] rows = source.ToArray();
         if (propertyName.Length == 0)
@@ -98,14 +102,19 @@ internal sealed class WorkspaceTableSorter
         }
 
         PropertyInfo? property = typeof(T).GetProperty(propertyName);
-        if (property is null)
+        Func<T, object?>? key = property is null ? null : row => property.GetValue(row);
+        if (propertyName == formattedColumn && formattedValue is not null)
+        {
+            key = formattedValue;
+        }
+        if (key is null)
         {
             return rows;
         }
 
         IOrderedEnumerable<T> ordered = descending
-            ? rows.OrderByDescending(row => property.GetValue(row), SortValueComparer.Instance)
-            : rows.OrderBy(row => property.GetValue(row), SortValueComparer.Instance);
+            ? rows.OrderByDescending(key, SortValueComparer.Instance)
+            : rows.OrderBy(key, SortValueComparer.Instance);
         return ordered.ToArray();
     }
 

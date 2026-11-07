@@ -6,6 +6,7 @@ using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -411,7 +412,12 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         cargo is null
             ? "Cargo unavailable"
             : $"Cargo: {cargo.Count:N0} / {CapacityLabel} t · Limpets: {cargo.GetCount("drones")}";
-    public IReadOnlyList<CargoItem> Cargo => cargoSorter.Apply(cargo?.Inventory ?? []);
+    public IReadOnlyList<CargoItem> Cargo =>
+        cargoSorter.Apply(
+            cargo?.Inventory ?? [],
+            nameof(CargoItem.Name),
+            item => MiningItemNameConverter.FormatCargoName(item, CultureInfo.CurrentCulture)
+        );
     public int CargoUsed => cargo?.Count ?? 0;
     public int CargoCapacity => capacity;
     public int CargoRemaining => Math.Max(0, capacity - CargoUsed);

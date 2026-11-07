@@ -23,12 +23,15 @@ public sealed partial class ExplorationHistoryCatalog
         DateTimeOffset? FirstTime,
         string PrefixHash,
         long ModifiedTicks,
-        long Length
+        long Length,
+        JournalFilePart? FilePart,
+        bool? IsLive
     );
 
     private sealed class SourceContext
     {
         public string? FrontierId { get; set; }
+        public int? JournalPartNumber { get; set; }
         public bool? IsLive { get; set; }
         public string? SystemName { get; set; }
         public long? SystemAddress { get; set; }
@@ -174,10 +177,7 @@ public sealed partial class ExplorationHistoryCatalog
         }
     }
 
-    private static JournalSource[] DiscoverSources(
-        IReadOnlyList<string> directories,
-        CancellationToken cancellationToken
-    )
+    private JournalSource[] DiscoverSources(IReadOnlyList<string> directories, CancellationToken cancellationToken)
     {
         var found = new Dictionary<string, JournalSource>(StringComparer.OrdinalIgnoreCase);
         foreach (string directory in directories.Where(Directory.Exists))
@@ -186,11 +186,10 @@ public sealed partial class ExplorationHistoryCatalog
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string name = Path.GetFileName(path);
-                if (found.ContainsKey(name))
-                {
-                    continue;
-                }
-                found[name] = ReadJournalSource(path, cancellationToken);
+                JournalSource candidate = ReadJournalSource(path, cancellationToken);
+                found[name] = found.TryGetValue(name, out JournalSource? existing)
+                    ? ChooseCompleteSource(existing, candidate, cancellationToken)
+                    : candidate;
             }
         }
         return found
@@ -202,10 +201,12 @@ public sealed partial class ExplorationHistoryCatalog
     private static JournalSource ReadJournalSource(string path, CancellationToken token)
     {
         JournalLine? first = ReadLines(path, 0, token).FirstOrDefault();
-        DateTimeOffset? firstTime =
-            first?.Content is { } text && JournalEventEnvelope.TryParse(text, out JournalEventEnvelope? entry, out _)
-                ? entry?.Timestamp
-                : null;
+        JournalEventEnvelope? header = null;
+        if (first?.Content is { } text && JournalEventEnvelope.TryParse(text, out JournalEventEnvelope? parsed, out _))
+        {
+            header = parsed;
+        }
+        DateTimeOffset? firstTime = header?.Timestamp;
         var snapshot = new FileInfo(path);
         snapshot.Refresh();
         return new JournalSource(
@@ -214,8 +215,99 @@ public sealed partial class ExplorationHistoryCatalog
             firstTime,
             ContentHash(first?.Content ?? string.Empty),
             snapshot.LastWriteTimeUtc.Ticks,
-            snapshot.Length
+            snapshot.Length,
+            JournalFilePart.Read(path, header),
+            header is null ? null : IsLiveHeader(header.Payload)
         );
+    }
+
+    private JournalSource? ResolveSourceCopies(IEnumerable<string> paths, CancellationToken token)
+    {
+        JournalSource? selected = null;
+        foreach (string path in paths.Where(File.Exists))
+        {
+            JournalSource candidate = ReadJournalSource(path, token);
+            selected = selected is null ? candidate : ChooseCompleteSource(selected, candidate, token);
+        }
+        return selected;
+    }
+
+    private JournalSource ChooseCompleteSource(JournalSource first, JournalSource second, CancellationToken token)
+    {
+        if (!MatchingPrefix(first, second, token))
+        {
+            throw new InvalidDataException(
+                "Conflicting copies of journal "
+                    + first.Name
+                    + " were found. Choose compatible journal folders and refresh history; the existing catalog has been retained."
+            );
+        }
+        if (first.Length != second.Length)
+        {
+            return first.Length > second.Length ? first : second;
+        }
+        // Keep a verified equal-length canonical copy stable when an archive catches up.
+        // Switching solely because of copy timestamps can needlessly replay retained history.
+        string? known = PreferredSourcePath(first.Name);
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        if (string.Equals(first.Path, known, comparison))
+        {
+            return first;
+        }
+        if (string.Equals(second.Path, known, comparison))
+        {
+            return second;
+        }
+        return first.ModifiedTicks >= second.ModifiedTicks ? first : second;
+    }
+
+    private string? PreferredSourcePath(string name)
+    {
+        if (!File.Exists(FilePath))
+        {
+            return null;
+        }
+        using SqliteConnection connection = Open(initialize: false);
+        using SqliteCommand command = Command(
+            connection,
+            "SELECT path FROM sources WHERE name=@name;",
+            ("@name", name)
+        );
+        return command.ExecuteScalar() as string;
+    }
+
+    private static bool MatchingPrefix(JournalSource first, JournalSource second, CancellationToken token)
+    {
+        using var left = new FileStream(
+            first.Path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        using var right = new FileStream(
+            second.Path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        byte[] leftBytes = new byte[64 * 1024];
+        byte[] rightBytes = new byte[64 * 1024];
+        long remaining = Math.Min(first.Length, second.Length);
+        while (remaining > 0)
+        {
+            token.ThrowIfCancellationRequested();
+            int count = (int)Math.Min(leftBytes.Length, remaining);
+            left.ReadExactly(leftBytes.AsSpan(0, count));
+            right.ReadExactly(rightBytes.AsSpan(0, count));
+            if (!leftBytes.AsSpan(0, count).SequenceEqual(rightBytes.AsSpan(0, count)))
+            {
+                return false;
+            }
+            remaining -= count;
+        }
+        return true;
     }
 
     private static SourceCheckpoint ReadSource(SqliteConnection connection, JournalSource source)

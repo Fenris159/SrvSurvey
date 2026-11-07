@@ -12,6 +12,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 /// <summary>Owns one commander's paged history, background indexing, and optional unsold-value presentation.</summary>
 public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
+    private const string InvalidDateRangeMessage = "The start date must be on or before the end date.";
     private readonly string dataDirectory;
     private readonly CommanderProfileStore profiles;
     private readonly Func<IReadOnlyList<string>> journalDirectories;
@@ -341,9 +342,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             }
             summary = candidate;
             NotifyBalance();
-            StatusMessage =
-                summary.Notice
-                ?? $"History cataloged from {summary.SourceFiles:N0} journal files for {CommanderLabel}.";
+            StatusMessage = CatalogStatusMessage();
             await QueryAsync();
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -379,7 +378,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         if (FromDate is { } from && ThroughDate is { } through && from.Date > through.Date)
         {
             IsQueryBusy = false;
-            StatusMessage = "The start date must be on or before the end date.";
+            StatusMessage = InvalidDateRangeMessage;
             return;
         }
         long version = generation;
@@ -410,23 +409,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             {
                 return;
             }
-            long? selection = SelectedRow?.Data.Id;
-            summary = page.Summary;
-            totalRows = page.TotalRows;
-            pageOffset = page.Offset;
-            Rows = page
-                .Rows.Select(row => new ExplorationHistoryRowViewModel(
-                    row,
-                    new HistoryCommand(
-                        () => CopyNameAsync(row.SystemName),
-                        () => clipboardWriter is not null && !disposed
-                    )
-                ))
-                .ToArray();
-            SelectedRow = Rows.FirstOrDefault(row => row.Data.Id == selection);
-            Changed(nameof(PageDescription));
-            NotifyBalance();
-            RaiseCommands();
+            ApplyPage(page);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -446,6 +429,44 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                 IsQueryBusy = false;
             }
         }
+    }
+
+    private string CatalogStatusMessage() =>
+        summary.Notice ?? $"History cataloged from {summary.SourceFiles:N0} journal files for {CommanderLabel}.";
+
+    private void ApplyPage(ExplorationHistoryPage page)
+    {
+        ExplorationHistoryRow? selection = SelectedRow?.Data;
+        summary = page.Summary;
+        totalRows = page.TotalRows;
+        pageOffset = page.Offset;
+        Rows = page
+            .Rows.Select(row => new ExplorationHistoryRowViewModel(
+                row,
+                new HistoryCommand(() => CopyNameAsync(row.SystemName), () => clipboardWriter is not null && !disposed)
+            ))
+            .ToArray();
+        SelectedRow = Rows.FirstOrDefault(row => SameCollection(row.Data, selection));
+        if (StatusMessage == InvalidDateRangeMessage)
+        {
+            StatusMessage = CatalogStatusMessage();
+        }
+        Changed(nameof(PageDescription));
+        NotifyBalance();
+        RaiseCommands();
+    }
+
+    private static bool SameCollection(ExplorationHistoryRow row, ExplorationHistoryRow? selected)
+    {
+        if (selected is null || row.FirstCollected != selected.FirstCollected)
+        {
+            return false;
+        }
+        if (row.SystemAddress is { } address && selected.SystemAddress is { } selectedAddress)
+        {
+            return address == selectedAddress;
+        }
+        return string.Equals(row.SystemName, selected.SystemName, StringComparison.OrdinalIgnoreCase);
     }
 
     private Task MovePageAsync(int direction)
@@ -528,7 +549,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         !disposed && generation == version && !token.IsCancellationRequested;
 
     private static bool IsStorageFailure(Exception exception) =>
-        exception is IOException or UnauthorizedAccessException or SqliteException;
+        exception is IOException or InvalidDataException or UnauthorizedAccessException or SqliteException;
 
     private void NotifyBalance()
     {

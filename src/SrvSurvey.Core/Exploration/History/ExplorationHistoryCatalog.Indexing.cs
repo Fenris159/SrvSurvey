@@ -13,13 +13,20 @@ public sealed partial class ExplorationHistoryCatalog
     )
     {
         ArgumentNullException.ThrowIfNull(directories);
-        return IndexSources(DiscoverSources(directories, token), directories, progress, token);
+        return IndexSources(
+            DiscoverSources(directories, token),
+            directories,
+            progress,
+            fullBackfill: true,
+            token: token
+        );
     }
 
     private ExplorationHistorySummary IndexSources(
         JournalSource[] sources,
         IReadOnlyList<string> directories,
         IProgress<ExplorationHistoryProgress>? progress,
+        bool fullBackfill,
         CancellationToken token
     )
     {
@@ -31,6 +38,7 @@ public sealed partial class ExplorationHistoryCatalog
             {
                 sources = DiscoverSources(directories, token);
                 Rebuild(connection, sources);
+                fullBackfill = true;
             }
             int processed = 0;
             foreach (JournalSource source in sources)
@@ -40,7 +48,10 @@ public sealed partial class ExplorationHistoryCatalog
                 progress?.Report(new ExplorationHistoryProgress(++processed, sources.Length, source.Name));
             }
             token.ThrowIfCancellationRequested();
-            SetMetadata(connection, "complete", "1");
+            if (fullBackfill)
+            {
+                SetMetadata(connection, "complete", "1");
+            }
             Execute(connection, "COMMIT;");
             return ReadSummary(connection);
         }
@@ -59,7 +70,7 @@ public sealed partial class ExplorationHistoryCatalog
             token.ThrowIfCancellationRequested();
             using SqliteCommand known = Command(
                 connection,
-                "SELECT prefix_hash,next_offset,last_offset,last_hash,length,modified_ticks FROM sources WHERE name=@name;",
+                "SELECT prefix_hash,next_offset,last_offset,last_hash,length,modified_ticks,path FROM sources WHERE name=@name;",
                 ("@name", source.Name)
             );
             using SqliteDataReader reader = known.ExecuteReader();
@@ -133,16 +144,34 @@ public sealed partial class ExplorationHistoryCatalog
 
     private static void Rebuild(SqliteConnection connection, JournalSource[] available)
     {
-        var names = available.Select(source => source.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        using (SqliteCommand existing = Command(connection, "SELECT name FROM sources;"))
+        Dictionary<string, JournalSource> sources = available.ToDictionary(
+            source => source.Name,
+            StringComparer.OrdinalIgnoreCase
+        );
+        using (SqliteCommand existing = Command(connection, "SELECT name,path,next_offset FROM sources;"))
         using (SqliteDataReader reader = existing.ExecuteReader())
         {
             while (reader.Read())
             {
-                if (!names.Contains(reader.GetString(0)))
+                if (!sources.TryGetValue(reader.GetString(0), out JournalSource? source))
                 {
                     throw new InvalidDataException(
                         "Journal history changed, but some indexed journals are missing. Restore those files and refresh history; the existing catalog has been retained."
+                    );
+                }
+                if (
+                    source.Length < reader.GetInt64(2)
+                    && !string.Equals(
+                        source.Path,
+                        reader.GetString(1),
+                        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+                    )
+                )
+                {
+                    throw new InvalidDataException(
+                        "Only an incomplete copy of journal "
+                            + source.Name
+                            + " is available. Restore the complete journal and refresh history; the existing catalog has been retained."
                     );
                 }
             }
@@ -170,20 +199,9 @@ public sealed partial class ExplorationHistoryCatalog
     {
         if (checkpoint.NextOffset == 0)
         {
-            using SqliteCommand prior = Command(
-                connection,
-                "SELECT context FROM sources WHERE id<>@id AND first_time<=@time ORDER BY first_time DESC,name DESC LIMIT 1;",
-                ("@id", checkpoint.Id),
-                (TimeParameter, Timestamp(source.FirstTime))
-            );
-            if (prior.ExecuteScalar() is string context)
-            {
-                checkpoint = checkpoint with
-                {
-                    Context = System.Text.Json.JsonSerializer.Deserialize<SourceContext>(context, ContextJson) ?? new(),
-                };
-            }
+            checkpoint = checkpoint with { Context = ReadContinuationContext(connection, source) };
         }
+        checkpoint.Context.JournalPartNumber = source.FilePart?.Number;
         foreach (JournalLine line in ReadLines(source.Path, checkpoint.NextOffset, token, source.Length))
         {
             if (
@@ -209,6 +227,31 @@ public sealed partial class ExplorationHistoryCatalog
         SaveSource(connection, source, checkpoint);
     }
 
+    private static SourceContext ReadContinuationContext(SqliteConnection connection, JournalSource source)
+    {
+        if (source.FilePart?.PreviousPath is not { } previous || source.IsLive is null)
+        {
+            return new();
+        }
+        using SqliteCommand command = Command(
+            connection,
+            "SELECT context FROM sources WHERE name=@previous COLLATE NOCASE AND first_time<=@time;",
+            ("@previous", Path.GetFileName(previous)),
+            (TimeParameter, Timestamp(source.FirstTime))
+        );
+        if (command.ExecuteScalar() is not string json)
+        {
+            return new();
+        }
+        SourceContext context = System.Text.Json.JsonSerializer.Deserialize<SourceContext>(json, ContextJson) ?? new();
+        return
+            context.JournalPartNumber == source.FilePart.Number - 1
+            && context.IsLive == source.IsLive
+            && !string.IsNullOrWhiteSpace(context.FrontierId)
+            ? context
+            : new();
+    }
+
     private ExplorationHistorySummary Observe(
         IReadOnlyList<JournalEventEnvelope> events,
         IReadOnlyList<string> directories,
@@ -225,13 +268,12 @@ public sealed partial class ExplorationHistoryCatalog
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         JournalSource[] sources = names
-            .Select(name => directories.Select(directory => Path.Combine(directory, name)).FirstOrDefault(File.Exists))
-            .OfType<string>()
-            .Select(path => ReadJournalSource(path, token))
+            .Select(name => ResolveSourceCopies(directories.Select(directory => Path.Combine(directory, name)), token))
+            .OfType<JournalSource>()
             .OrderBy(source => source.FirstTime)
             .ThenBy(source => source.Name, StringComparer.Ordinal)
             .ToArray();
-        return IndexSources(sources, directories, null, token);
+        return IndexSources(sources, directories, null, fullBackfill: false, token: token);
     }
 
     private static bool TrySourceIdentity(string? identity, out string name, out long offset)
