@@ -62,7 +62,7 @@ public sealed partial class ExplorationHistoryViewModel
         }
         try
         {
-            ExplorationHistoryDetails details = await TrackIo(current.ReadDetailsAsync(row.Data.Id, token));
+            ExplorationHistoryDetails details = await TrackIo(current.ReadDetailsAsync(row.Data, token));
             if (!Current(version, token) || request != detailGeneration)
             {
                 return;

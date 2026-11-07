@@ -18,7 +18,8 @@ theme, clearer control groups, and space reserved for scrollbars.
   Unsold, and Lost entries with status colors, system coordinates, scan and
   mapping counts, estimated value, and collection and settlement dates. Filter
   by system name, status, or dates; click a system name to copy it and select a
-  row to inspect its body details and original journal records.
+  row to inspect its body details and original journal records. Selected details
+  stay tied to the original collected data during refreshes and imports.
 - **Backfill automatically:** History is catalogued from each commander's
   available journals, with Live and Legacy kept separate. A compact local
   metadata index stores ownership and source references rather than another

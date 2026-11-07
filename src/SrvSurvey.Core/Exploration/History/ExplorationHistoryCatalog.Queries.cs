@@ -6,6 +6,8 @@ namespace SrvSurvey.Core.Exploration.History;
 
 public sealed partial class ExplorationHistoryCatalog
 {
+    private const string UnavailableHistoryMessage = "History is not available.";
+
     private ExplorationHistoryPage Query(ExplorationHistoryQuery query, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(query);
@@ -15,6 +17,7 @@ public sealed partial class ExplorationHistoryCatalog
             return new ExplorationHistoryPage([], 0, 0, Math.Clamp(query.PageSize, 1, 200), new());
         }
         using SqliteConnection connection = Open(initialize: false);
+        using SqliteTransaction snapshot = connection.BeginTransaction(deferred: true);
         int offset = Math.Max(0, query.Offset);
         int size = Math.Clamp(query.PageSize, 1, 200);
         (string Name, object? Value)[] parameters =
@@ -41,8 +44,12 @@ public sealed partial class ExplorationHistoryCatalog
         using SqliteCommand command = Command(
             connection,
             """
-            SELECT b.id,s.name,s.address,s.x,s.y,s.z,b.first_time,b.last_time,b.settled_time,b.status,b.estimate,b.scans,b.maps
+            SELECT b.id,s.name,s.address,s.x,s.y,s.z,b.first_time,b.last_time,b.settled_time,b.status,b.estimate,b.scans,b.maps,
+                original.name,anchor.offset,anchor.hash
             FROM batches b JOIN systems s ON s.key=b.system_key
+            LEFT JOIN observations anchor ON anchor.id=(
+                SELECT id FROM observations WHERE batch_id=b.id AND kind IN ('Scan','SAAScanComplete') ORDER BY id LIMIT 1)
+            LEFT JOIN sources original ON original.id=anchor.source_id
             WHERE (@status IS NULL OR b.status=@status) AND instr(lower(s.name),lower(@search))>0
                 AND (@from IS NULL OR b.last_time>=@from) AND (@through IS NULL OR b.last_time<=@through)
             ORDER BY b.last_time DESC,b.id DESC LIMIT @size OFFSET @offset;
@@ -56,13 +63,49 @@ public sealed partial class ExplorationHistoryCatalog
             token.ThrowIfCancellationRequested();
             rows.Add(ReadRow(reader));
         }
-        return new ExplorationHistoryPage(rows, total, offset, size, ReadSummary(connection));
+        var page = new ExplorationHistoryPage(
+            rows,
+            total,
+            offset,
+            size,
+            ReadSummary(connection),
+            FindSelectedRow(connection, query.SelectionAnchor)
+        );
+        snapshot.Commit();
+        return page;
+    }
+
+    private static long? FindSelectedRow(SqliteConnection connection, ExplorationHistoryAnchor? anchor)
+    {
+        if (anchor is null)
+        {
+            return null;
+        }
+        using SqliteCommand command = Command(
+            connection,
+            """
+            SELECT DISTINCT o.batch_id FROM observations o JOIN sources s ON s.id=o.source_id
+            WHERE s.name=@name COLLATE NOCASE AND o.offset=@offset AND o.hash=@hash
+                AND o.kind IN ('Scan','SAAScanComplete') LIMIT 2;
+            """,
+            ("@name", anchor.SourceName),
+            ("@offset", anchor.Offset),
+            ("@hash", anchor.Hash)
+        );
+        using SqliteDataReader reader = command.ExecuteReader();
+        if (!reader.Read())
+        {
+            return null;
+        }
+        long id = reader.GetInt64(0);
+        return reader.Read() ? null : id;
     }
 
     private static ExplorationHistoryRow ReadRow(SqliteDataReader reader) =>
         new ExplorationHistoryRow
         {
             Id = reader.GetInt64(0),
+            Anchor = reader.IsDBNull(13) ? null : new(reader.GetString(13), reader.GetInt64(14), reader.GetString(15)),
             SystemName = reader.GetString(1),
             SystemAddress = reader.IsDBNull(2) ? null : reader.GetInt64(2),
             X = reader.IsDBNull(3) ? null : reader.GetDouble(3),
@@ -77,14 +120,24 @@ public sealed partial class ExplorationHistoryCatalog
             MappedBodies = reader.GetInt32(12),
         };
 
-    private ExplorationHistoryDetails ReadDetails(long rowId, CancellationToken token)
+    private ExplorationHistoryDetails ReadDetails(long rowId, ExplorationHistoryAnchor? anchor, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         if (!File.Exists(FilePath))
         {
-            return new ExplorationHistoryDetails(rowId, [], "History is not available.");
+            return new ExplorationHistoryDetails(rowId, [], UnavailableHistoryMessage);
         }
         using SqliteConnection connection = Open(initialize: false);
+        using SqliteTransaction snapshot = connection.BeginTransaction(deferred: true);
+        if (anchor is not null)
+        {
+            long? currentRow = FindSelectedRow(connection, anchor);
+            if (currentRow is null)
+            {
+                return new ExplorationHistoryDetails(rowId, [], UnavailableHistoryMessage);
+            }
+            rowId = currentRow.Value;
+        }
         var references = new List<OriginalReference>();
         using (
             SqliteCommand command = Command(
@@ -118,6 +171,7 @@ public sealed partial class ExplorationHistoryCatalog
                 missing = true;
             }
         }
+        snapshot.Commit();
         return new ExplorationHistoryDetails(
             rowId,
             events.OrderBy(entry => entry.Timestamp).ToArray(),

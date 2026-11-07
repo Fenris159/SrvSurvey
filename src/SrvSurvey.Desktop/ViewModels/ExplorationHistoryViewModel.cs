@@ -384,6 +384,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         long version = generation;
         CancellationToken token = contextCancellation.Token;
         IsQueryBusy = true;
+        ExplorationHistoryAnchor? selection = SelectedRow?.Data.Anchor;
         try
         {
             ExplorationHistoryPage page = await TrackIo(
@@ -400,7 +401,8 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                             ? new DateTimeOffset(
                                 DateTime.SpecifyKind(end.Date.AddTicks(TimeSpan.TicksPerDay - 1), DateTimeKind.Utc)
                             )
-                            : null
+                            : null,
+                        selection
                     ),
                     token
                 )
@@ -409,7 +411,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             {
                 return;
             }
-            ApplyPage(page);
+            ApplyPage(page, selection);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -434,9 +436,9 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     private string CatalogStatusMessage() =>
         summary.Notice ?? $"History cataloged from {summary.SourceFiles:N0} journal files for {CommanderLabel}.";
 
-    private void ApplyPage(ExplorationHistoryPage page)
+    private void ApplyPage(ExplorationHistoryPage page, ExplorationHistoryAnchor? requestedSelection)
     {
-        ExplorationHistoryRow? selection = SelectedRow?.Data;
+        bool restoreSelection = requestedSelection is not null && requestedSelection == SelectedRow?.Data.Anchor;
         summary = page.Summary;
         totalRows = page.TotalRows;
         pageOffset = page.Offset;
@@ -446,7 +448,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                 new HistoryCommand(() => CopyNameAsync(row.SystemName), () => clipboardWriter is not null && !disposed)
             ))
             .ToArray();
-        SelectedRow = Rows.FirstOrDefault(row => SameCollection(row.Data, selection));
+        SelectedRow = restoreSelection ? Rows.SingleOrDefault(row => row.Data.Id == page.SelectedRowId) : null;
         if (StatusMessage == InvalidDateRangeMessage)
         {
             StatusMessage = CatalogStatusMessage();
@@ -454,19 +456,6 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         Changed(nameof(PageDescription));
         NotifyBalance();
         RaiseCommands();
-    }
-
-    private static bool SameCollection(ExplorationHistoryRow row, ExplorationHistoryRow? selected)
-    {
-        if (selected is null || row.FirstCollected != selected.FirstCollected)
-        {
-            return false;
-        }
-        if (row.SystemAddress is { } address && selected.SystemAddress is { } selectedAddress)
-        {
-            return address == selectedAddress;
-        }
-        return string.Equals(row.SystemName, selected.SystemName, StringComparison.OrdinalIgnoreCase);
     }
 
     private Task MovePageAsync(int direction)
@@ -499,6 +488,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             return;
         }
         long version = generation;
+        CancellationToken token = contextCancellation.Token;
         try
         {
             await TrackIo(
@@ -507,7 +497,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsStorageFailure(exception))
         {
-            if (version == generation && !disposed)
+            if (Current(version, token))
             {
                 StatusMessage =
                     "The tracking choice applies to this session but could not be saved: " + exception.Message;

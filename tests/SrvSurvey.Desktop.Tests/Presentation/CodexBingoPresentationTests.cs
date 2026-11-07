@@ -54,7 +54,7 @@ public sealed class CodexBingoPresentationTests
             {
                 TextBlock text = window.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Text == value);
                 Border badge = Assert.IsType<Border>(text.Parent);
-                AssertReadable(text, Assert.IsAssignableFrom<ISolidColorBrush>(badge.Background).Color);
+                AssertReadable(text, Assert.IsType<ISolidColorBrush>(badge.Background, exactMatch: false).Color);
             }
         }
         finally
@@ -168,7 +168,7 @@ public sealed class CodexBingoPresentationTests
         Border background = item.GetVisualDescendants()
             .OfType<Border>()
             .Single(border => border.Name == "PART_LayoutRoot");
-        Color fill = Assert.IsAssignableFrom<ISolidColorBrush>(background.Background).Color;
+        Color fill = Assert.IsType<ISolidColorBrush>(background.Background, exactMatch: false).Color;
         foreach (TextBlock text in item.GetVisualDescendants().OfType<TextBlock>())
         {
             AssertReadable(text, fill);
@@ -177,7 +177,7 @@ public sealed class CodexBingoPresentationTests
 
     private static void AssertReadable(TextBlock text, Color fill)
     {
-        Color ink = Assert.IsAssignableFrom<ISolidColorBrush>(text.Foreground).Color;
+        Color ink = Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color;
         double lighter = Math.Max(Luminance(ink), Luminance(fill));
         double darker = Math.Min(Luminance(ink), Luminance(fill));
         Assert.True((lighter + 0.05) / (darker + 0.05) >= 4.5, $"'{text.Text}' has insufficient contrast.");
@@ -240,13 +240,13 @@ public sealed class CodexBingoPresentationTests
 
         public BingoFixture(string theme)
         {
-            Application application = Assert.IsAssignableFrom<Application>(Application.Current);
+            Application application = Assert.IsType<Application>(Application.Current, exactMatch: false);
             themes = new RavenThemeService(
                 application,
                 new ThemePreferenceStore(Path.Combine(directory, "theme.json"))
             );
             Color originalFill = Assert
-                .IsAssignableFrom<ISolidColorBrush>(application.Resources["RavenWindowBrush"])
+                .IsType<ISolidColorBrush>(application.Resources["RavenWindowBrush"], exactMatch: false)
                 .Color;
             originalTheme = RavenThemeCatalog
                 .All.Single(palette => Color.Parse(palette.WindowColor) == originalFill)

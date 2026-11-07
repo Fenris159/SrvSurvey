@@ -15,7 +15,8 @@ public sealed record ExplorationHistoryQuery(
     int Offset = 0,
     int PageSize = 50,
     DateTimeOffset? FromUtc = null,
-    DateTimeOffset? ThroughUtc = null
+    DateTimeOffset? ThroughUtc = null,
+    ExplorationHistoryAnchor? SelectionAnchor = null
 );
 
 public sealed record ExplorationHistorySummary
@@ -33,9 +34,13 @@ public sealed record ExplorationHistorySummary
     public string? Notice { get; init; }
 }
 
+/// <summary>A retained original observation identifies its collection independently of replayed database IDs and dates.</summary>
+public sealed record ExplorationHistoryAnchor(string SourceName, long Offset, string Hash);
+
 public sealed record ExplorationHistoryRow
 {
     public long Id { get; init; }
+    public ExplorationHistoryAnchor? Anchor { get; init; }
     public string SystemName { get; init; } = string.Empty;
     public long? SystemAddress { get; init; }
     public double? X { get; init; }
@@ -55,7 +60,8 @@ public sealed record ExplorationHistoryPage(
     int TotalRows,
     int Offset,
     int PageSize,
-    ExplorationHistorySummary Summary
+    ExplorationHistorySummary Summary,
+    long? SelectedRowId = null
 );
 
 public sealed record ExplorationHistoryDetails(

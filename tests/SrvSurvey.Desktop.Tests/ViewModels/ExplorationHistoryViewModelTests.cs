@@ -1,4 +1,5 @@
 using System.Text.Json;
+using SrvSurvey.Core.Exploration.History;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -197,6 +198,75 @@ public sealed class ExplorationHistoryViewModelTests
         Assert.Equal("Alpha Survey", model.SelectedRow?.SystemName);
         Assert.Equal("Alpha Survey", model.DetailTitle);
         Assert.Equal("Alpha Survey A", Assert.Single(model.Bodies).Name);
+    }
+
+    [Fact]
+    public async Task RefreshKeepsTheSelectedLostCollectionWhenBothCollectionDatesAreUnknown()
+    {
+        using var fixture = new Fixture(false);
+        await File.AppendAllLinesAsync(
+            fixture.JournalPath("F100"),
+            [
+                """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Original survey","StarType":"NS","StellarMass":1.4}""",
+                """{"event":"Resurrect","Option":"rebuy","Cost":0}""",
+                """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"New survey","StarType":"NS","StellarMass":1.4}""",
+            ]
+        );
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        Assert.Equal(2, model.Rows.Count);
+        Assert.All(model.Rows, row => Assert.Null(row.Data.FirstCollected));
+        model.SelectedRow = Assert.Single(model.Rows, row => row.Data.Status == ExplorationDataStatus.Lost);
+        await model.PendingDetails;
+        await model.RefreshAsync();
+        await model.PendingDetails;
+        Assert.Equal(ExplorationDataStatus.Lost, model.SelectedRow?.Data.Status);
+        Assert.Equal("Original survey", Assert.Single(model.Bodies).Name);
+    }
+
+    [Fact]
+    public async Task AnOlderScanExtendingTheSelectedCollectionKeepsItsDetailsOpen()
+    {
+        using var fixture = new Fixture();
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        model.SelectedRow = Assert.Single(model.Rows);
+        await model.PendingDetails;
+        string older = (await File.ReadAllTextAsync(fixture.JournalPath("F100")))
+            .Replace("2026-10-01", "2026-09-30", StringComparison.Ordinal)
+            .Replace("\"BodyID\":0", "\"BodyID\":1", StringComparison.Ordinal)
+            .Replace("Alpha Survey A", "Alpha Survey B", StringComparison.Ordinal);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Journals, "Journal.2026-09-30T120000.01.log"), older);
+        await model.RefreshAsync();
+        await model.PendingDetails;
+        Assert.Equal("Alpha Survey", model.SelectedRow?.SystemName);
+        Assert.Equal(new DateTimeOffset(2026, 9, 30, 12, 2, 0, TimeSpan.Zero), model.SelectedRow?.Data.FirstCollected);
+        Assert.Equal((string[])["Alpha Survey A", "Alpha Survey B"], model.Bodies.Select(body => body.Name));
+    }
+
+    [Fact]
+    public async Task ReplacingTheSelectedOriginalRecordClearsDetailsInsteadOfFollowingAReusedId()
+    {
+        using var fixture = new Fixture();
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        model.SelectedRow = Assert.Single(model.Rows);
+        await model.PendingDetails;
+        string replacement = (await File.ReadAllTextAsync(fixture.JournalPath("F100"))).Replace(
+            "Alpha Survey A",
+            "Alter Survey A",
+            StringComparison.Ordinal
+        );
+        await File.WriteAllTextAsync(fixture.JournalPath("F100"), replacement);
+        await model.RefreshAsync();
+        await model.PendingDetails;
+        Assert.Equal("Alpha Survey", Assert.Single(model.Rows).SystemName);
+        Assert.Null(model.SelectedRow);
+        Assert.Empty(model.Bodies);
+        Assert.False(model.HasSelection);
     }
 
     private sealed class Fixture : IDisposable

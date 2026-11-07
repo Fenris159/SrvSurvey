@@ -441,12 +441,14 @@ public sealed class OverlaySettingsDesignPresentationTests
                         )
                     )
             );
-            Application application = Assert.IsAssignableFrom<Application>(Application.Current);
+            Application application = Assert.IsType<Application>(Application.Current, exactMatch: false);
             themes = new RavenThemeService(
                 application,
                 new ThemePreferenceStore(Path.Combine(directory, "theme.json"))
             );
-            Color fill = Assert.IsAssignableFrom<ISolidColorBrush>(application.Resources["RavenWindowBrush"]).Color;
+            Color fill = Assert
+                .IsType<ISolidColorBrush>(application.Resources["RavenWindowBrush"], exactMatch: false)
+                .Color;
             originalTheme = RavenThemeCatalog.All.Single(palette => Color.Parse(palette.WindowColor) == fill).Key;
             themes.Select(theme == "blue-dark" ? "monochrome-dark" : "blue-dark");
             themes.Select(theme);

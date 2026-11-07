@@ -57,5 +57,21 @@ public sealed partial class ExplorationHistoryCatalog
     public Task<ExplorationHistoryDetails> ReadDetailsAsync(
         long rowId,
         CancellationToken cancellationToken = default
-    ) => Task.Run(() => ReadDetails(rowId, cancellationToken), cancellationToken);
+    ) => Task.Run(() => ReadDetails(rowId, null, cancellationToken), cancellationToken);
+
+    /// <summary>Follows the retained observation so replayed database IDs cannot redirect a selected row's records.</summary>
+    public Task<ExplorationHistoryDetails> ReadDetailsAsync(
+        ExplorationHistoryRow row,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(row);
+        return Task.Run(
+            () =>
+                row.Anchor is { } anchor
+                    ? ReadDetails(row.Id, anchor, cancellationToken)
+                    : new ExplorationHistoryDetails(row.Id, [], UnavailableHistoryMessage),
+            cancellationToken
+        );
+    }
 }

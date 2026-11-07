@@ -349,9 +349,9 @@ public sealed class ExplorationHistoryPresentationTests
                         )
                     )
             );
-            Application app = Assert.IsAssignableFrom<Application>(Application.Current);
+            Application app = Assert.IsType<Application>(Application.Current, exactMatch: false);
             themes = new RavenThemeService(app, new ThemePreferenceStore(Path.Combine(directory, "theme.json")));
-            Color color = Assert.IsAssignableFrom<ISolidColorBrush>(app.Resources["RavenWindowBrush"]).Color;
+            Color color = Assert.IsType<ISolidColorBrush>(app.Resources["RavenWindowBrush"], exactMatch: false).Color;
             originalTheme = RavenThemeCatalog.All.Single(palette => Color.Parse(palette.WindowColor) == color).Key;
             themes.Select(theme == "blue-dark" ? "monochrome-dark" : "blue-dark");
             themes.Select(theme);

@@ -8,6 +8,7 @@ using Avalonia.Styling;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
+using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
@@ -222,6 +223,45 @@ public sealed class MiningLayoutPresentationTests
         finally
         {
             window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CargoSortingMatchesJournalLabelsWhenTheApplicationLanguageDiffers()
+    {
+        string previousLanguage = LocalizationCatalog.CurrentLanguage;
+        using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        LoadCommander(model, [new CargoItem("gold", "Gold", 20, 0), new CargoItem("silver", "Silver", 10, 0)]);
+        var view = new MiningView { DataContext = model };
+        Window window = CreateWindow(view, 1180);
+        try
+        {
+            LocalizationCatalog.Initialize("fr");
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            Assert.NotNull(initial);
+            Button name = view.FindControl<Grid>("CargoHeader")!
+                .Children.OfType<Button>()
+                .Single(button => Equals(button.CommandParameter, "Name"));
+            name.Command!.Execute(name.CommandParameter);
+            using WriteableBitmap? sorted = window.CaptureRenderedFrame();
+            Assert.NotNull(sorted);
+            Assert.Equal("fr", LocalizationCatalog.CurrentLanguage);
+            Assert.Equal("Or", LocalizationCatalog.Translate("Gold"));
+            Assert.Equal(
+                (string[])["Gold", "Silver"],
+                view.FindControl<ListBox>("CargoRows")!
+                    .GetVisualDescendants()
+                    .OfType<Grid>()
+                    .Where(grid => grid.Classes.Contains("table-row"))
+                    .Select(grid => Assert.IsType<TextBlock>(grid.Children[0]).Text)
+            );
+            Assert.Equal((string[])["gold", "silver"], model.MiningWorkspace.Cargo.Select(item => item.Name));
+        }
+        finally
+        {
+            window.Close();
+            LocalizationCatalog.Initialize(previousLanguage);
         }
     }
 

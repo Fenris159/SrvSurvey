@@ -70,6 +70,7 @@ public sealed partial class ExplorationHistoryCatalog
                     source_id INTEGER NOT NULL REFERENCES sources(id), offset INTEGER NOT NULL, hash TEXT NOT NULL,
                     UNIQUE(batch_id, body_key, kind));
                 CREATE INDEX IF NOT EXISTS observation_batch ON observations(batch_id);
+                CREATE INDEX IF NOT EXISTS observation_source ON observations(source_id,offset);
                 PRAGMA user_version=1;
                 """
             );
