@@ -3369,10 +3369,6 @@
       "translation": "Körper"
     },
     {
-      "source": "BODY / SYSTEM",
-      "translation": "KÖRPER / SYSTEM"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Körperinformationen"
     },
@@ -4017,6 +4013,10 @@
       "translation": "Körper (optional)"
     },
     {
+      "source": "Body / system",
+      "translation": "Körper / System"
+    },
+    {
       "source": "Body Details",
       "translation": "Körperdetails"
     },
@@ -4581,10 +4581,6 @@
       "translation": "COB"
     },
     {
-      "source": "CODEX BINGO",
-      "translation": "Codex-Bingo"
-    },
-    {
       "source": "CODEX ENTRY OR GROUP",
       "translation": "Kodexeintrag oder -gruppe"
     },
@@ -4643,10 +4639,6 @@
     {
       "source": "COMPLETED",
       "translation": "ABGESCHLOSSEN"
-    },
-    {
-      "source": "COMPLETION",
-      "translation": "ABSCHLUSS"
     },
     {
       "source": "COMPONENT MATERIALS",
@@ -9789,10 +9781,6 @@
       "translation": "BEENDET"
     },
     {
-      "source": "ENTRY ID",
-      "translation": "Eintrags-ID"
-    },
-    {
       "source": "ERROR REPORT",
       "translation": "FEHLERBERICHT"
     },
@@ -10561,16 +10549,20 @@
       "translation": "Einträge bleiben in dieser Sitzung sichtbar, aber die Protokolldatei konnte nicht aktualisiert werden: {0}"
     },
     {
+      "source": "Entry ID",
+      "translation": "Eintrags-ID"
+    },
+    {
       "source": "Entry ID {0}",
       "translation": "Eintrags-ID {0}"
     },
     {
-      "source": "Entry actions",
-      "translation": "Eintrittsaktionen"
-    },
-    {
       "source": "Entry or group",
       "translation": "Eintrag oder Gruppe"
+    },
+    {
+      "source": "Entry tools",
+      "translation": "Eingabewerkzeuge"
     },
     {
       "source": "Entry {0} of {1}",
@@ -11213,10 +11205,6 @@
       "translation": "ZUERST KARTIERT"
     },
     {
-      "source": "FIRST RECORDED",
-      "translation": "ERST AUFGENOMMEN"
-    },
-    {
       "source": "FLEET CARRIER",
       "translation": "Flottenträger"
     },
@@ -11625,6 +11613,10 @@
       "translation": "Finden Sie aktuelle Stationspreise für abgebaute Fracht oder Vorräte. Heiße Preise werden bevorzugt; Spansh wird verwendet, wenn ein Preis nicht verfügbar ist."
     },
     {
+      "source": "Find discoveries",
+      "translation": "Finden Sie Entdeckungen"
+    },
+    {
       "source": "Find help quickly",
       "translation": "Finden Sie schnell Hilfe"
     },
@@ -11795,6 +11787,10 @@
     {
       "source": "First launch",
       "translation": "Erster Start"
+    },
+    {
+      "source": "First recorded",
+      "translation": "Erstmals aufgenommen"
     },
     {
       "source": "First-footfall detection",
@@ -12441,10 +12437,6 @@
       "translation": "galaktische Position"
     },
     {
-      "source": "GALACTIC REGION",
-      "translation": "GALAKTISCHE REGION"
-    },
-    {
       "source": "GALACTIC-REGION CANDIDATE",
       "translation": "Kandidat für die Galaktische Region"
     },
@@ -12579,6 +12571,10 @@
     {
       "source": "Galactic initiatives",
       "translation": "Galaktische Initiativen"
+    },
+    {
+      "source": "Galactic region",
+      "translation": "Galaktische Region"
     },
     {
       "source": "Galactic search tools",
@@ -23089,10 +23085,6 @@
       "translation": "TANKEN"
     },
     {
-      "source": "REGION",
-      "translation": "REGION"
-    },
-    {
       "source": "REGIONAL FIRST",
       "translation": "REGIONAL ZUERST"
     },
@@ -23163,10 +23155,6 @@
     {
       "source": "RESTOCK?",
       "translation": "Auffüllen?"
-    },
-    {
-      "source": "REWARD",
-      "translation": "BELOHNUNG"
     },
     {
       "source": "RIB",
@@ -24451,6 +24439,10 @@
     {
       "source": "Refuel the carrier at this destination",
       "translation": "Tanken Sie den Transporter an diesem Zielort auf"
+    },
+    {
+      "source": "Region",
+      "translation": "Region"
     },
     {
       "source": "Regional firsts in {0}",
@@ -26007,10 +25999,6 @@
     {
       "source": "SELECTED MARKER",
       "translation": "AUSGEWÄHLTE MARKIERUNG"
-    },
-    {
-      "source": "SELECTED NODE",
-      "translation": "AUSGEWÄHLTER KNOTEN"
     },
     {
       "source": "SELECTED SURVEY POINT",
@@ -45267,10 +45255,6 @@
       "translation": "cuerpo"
     },
     {
-      "source": "BODY / SYSTEM",
-      "translation": "CUERPO / SISTEMA"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Información del cuerpo"
     },
@@ -45915,6 +45899,10 @@
       "translation": "Cuerpo (opcional)"
     },
     {
+      "source": "Body / system",
+      "translation": "Cuerpo / sistema"
+    },
+    {
       "source": "Body Details",
       "translation": "Detalles del cuerpo"
     },
@@ -46479,10 +46467,6 @@
       "translation": "MAZORCA"
     },
     {
-      "source": "CODEX BINGO",
-      "translation": "Bingo del códice"
-    },
-    {
       "source": "CODEX ENTRY OR GROUP",
       "translation": "Entrada o grupo del códice"
     },
@@ -46541,10 +46525,6 @@
     {
       "source": "COMPLETED",
       "translation": "COMPLETADO"
-    },
-    {
-      "source": "COMPLETION",
-      "translation": "FINALIZACIÓN"
     },
     {
       "source": "COMPONENT MATERIALS",
@@ -51687,10 +51667,6 @@
       "translation": "TERMINADO"
     },
     {
-      "source": "ENTRY ID",
-      "translation": "ID de entrada"
-    },
-    {
       "source": "ERROR REPORT",
       "translation": "INFORME DE ERRORES"
     },
@@ -52459,16 +52435,20 @@
       "translation": "Las entradas permanecen visibles en esta sesión, pero el archivo de registro no se pudo actualizar: {0}"
     },
     {
+      "source": "Entry ID",
+      "translation": "ID de entrada"
+    },
+    {
       "source": "Entry ID {0}",
       "translation": "ID de entrada {0}"
     },
     {
-      "source": "Entry actions",
-      "translation": "Acciones de entrada"
-    },
-    {
       "source": "Entry or group",
       "translation": "Entrada o grupo"
+    },
+    {
+      "source": "Entry tools",
+      "translation": "Herramientas de entrada"
     },
     {
       "source": "Entry {0} of {1}",
@@ -53111,10 +53091,6 @@
       "translation": "PRIMER MAPEO"
     },
     {
-      "source": "FIRST RECORDED",
-      "translation": "PRIMERA GRABACIÓN"
-    },
-    {
       "source": "FLEET CARRIER",
       "translation": "Transportista de flota"
     },
@@ -53523,6 +53499,10 @@
       "translation": "Encuentre los precios actuales de las estaciones para carga o suministros extraídos. Se prefieren los precios ardientes; Spansh se utiliza cuando un precio no está disponible."
     },
     {
+      "source": "Find discoveries",
+      "translation": "encontrar descubrimientos"
+    },
+    {
       "source": "Find help quickly",
       "translation": "Encuentre ayuda rápidamente"
     },
@@ -53693,6 +53673,10 @@
     {
       "source": "First launch",
       "translation": "Primer lanzamiento"
+    },
+    {
+      "source": "First recorded",
+      "translation": "grabado por primera vez"
     },
     {
       "source": "First-footfall detection",
@@ -54339,10 +54323,6 @@
       "translation": "posición galáctica"
     },
     {
-      "source": "GALACTIC REGION",
-      "translation": "REGIÓN GALÁCTICA"
-    },
-    {
       "source": "GALACTIC-REGION CANDIDATE",
       "translation": "CANDIDATO DE LA REGIÓN GALÁCTICA"
     },
@@ -54477,6 +54457,10 @@
     {
       "source": "Galactic initiatives",
       "translation": "Iniciativas galácticas"
+    },
+    {
+      "source": "Galactic region",
+      "translation": "región galáctica"
     },
     {
       "source": "Galactic search tools",
@@ -64987,10 +64971,6 @@
       "translation": "REPOSTABLE"
     },
     {
-      "source": "REGION",
-      "translation": "REGIÓN"
-    },
-    {
       "source": "REGIONAL FIRST",
       "translation": "PRIMERO REGIONAL"
     },
@@ -65061,10 +65041,6 @@
     {
       "source": "RESTOCK?",
       "translation": "¿REPOBLAR?"
-    },
-    {
-      "source": "REWARD",
-      "translation": "RECOMPENSA"
     },
     {
       "source": "RIB",
@@ -66349,6 +66325,10 @@
     {
       "source": "Refuel the carrier at this destination",
       "translation": "Repostar combustible al transportista en este destino."
+    },
+    {
+      "source": "Region",
+      "translation": "Región"
     },
     {
       "source": "Regional firsts in {0}",
@@ -67905,10 +67885,6 @@
     {
       "source": "SELECTED MARKER",
       "translation": "MARCADOR SELECCIONADO"
-    },
-    {
-      "source": "SELECTED NODE",
-      "translation": "NODO SELECCIONADO"
     },
     {
       "source": "SELECTED SURVEY POINT",
@@ -87165,10 +87141,6 @@
       "translation": "Corps"
     },
     {
-      "source": "BODY / SYSTEM",
-      "translation": "CORPS / SYSTÈME"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Informations sur le corps"
     },
@@ -87813,6 +87785,10 @@
       "translation": "Corps (facultatif)"
     },
     {
+      "source": "Body / system",
+      "translation": "Corps / système"
+    },
+    {
       "source": "Body Details",
       "translation": "Détails du corps"
     },
@@ -88377,10 +88353,6 @@
       "translation": "ÉPI"
     },
     {
-      "source": "CODEX BINGO",
-      "translation": "Bingo du Codex"
-    },
-    {
       "source": "CODEX ENTRY OR GROUP",
       "translation": "Entrée ou groupe du Codex"
     },
@@ -88439,10 +88411,6 @@
     {
       "source": "COMPLETED",
       "translation": "TERMINÉ"
-    },
-    {
-      "source": "COMPLETION",
-      "translation": "ACHEVEMENT"
     },
     {
       "source": "COMPONENT MATERIALS",
@@ -93585,10 +93553,6 @@
       "translation": "TERMINÉ"
     },
     {
-      "source": "ENTRY ID",
-      "translation": "identifiant d'entrée"
-    },
-    {
       "source": "ERROR REPORT",
       "translation": "RAPPORT D'ERREUR"
     },
@@ -94357,16 +94321,20 @@
       "translation": "Les entrées restent visibles dans cette session, mais le fichier journal n'a pas pu être mis à jour : {0}"
     },
     {
+      "source": "Entry ID",
+      "translation": "ID d'entrée"
+    },
+    {
       "source": "Entry ID {0}",
       "translation": "ID d'entrée {0}"
     },
     {
-      "source": "Entry actions",
-      "translation": "Actions d'entrée"
-    },
-    {
       "source": "Entry or group",
       "translation": "Entrée ou groupe"
+    },
+    {
+      "source": "Entry tools",
+      "translation": "Outils de saisie"
     },
     {
       "source": "Entry {0} of {1}",
@@ -95009,10 +94977,6 @@
       "translation": "PREMIER CARTOGRAPHIE"
     },
     {
-      "source": "FIRST RECORDED",
-      "translation": "PREMIER ENREGISTREMENT"
-    },
-    {
       "source": "FLEET CARRIER",
       "translation": "Transporteur de flotte"
     },
@@ -95421,6 +95385,10 @@
       "translation": "Trouvez les prix actuels des stations pour les marchandises ou les fournitures minières. Les prix ardents sont préférés ; Spansh est utilisé lorsqu'un prix n'est pas disponible."
     },
     {
+      "source": "Find discoveries",
+      "translation": "Trouver des découvertes"
+    },
+    {
       "source": "Find help quickly",
       "translation": "Trouvez de l'aide rapidement"
     },
@@ -95591,6 +95559,10 @@
     {
       "source": "First launch",
       "translation": "Premier lancement"
+    },
+    {
+      "source": "First recorded",
+      "translation": "Enregistré pour la première fois"
     },
     {
       "source": "First-footfall detection",
@@ -96237,10 +96209,6 @@
       "translation": "position galactique"
     },
     {
-      "source": "GALACTIC REGION",
-      "translation": "RÉGION GALACTIQUE"
-    },
-    {
       "source": "GALACTIC-REGION CANDIDATE",
       "translation": "CANDIDAT POUR LA RÉGION GALACTIQUE"
     },
@@ -96375,6 +96343,10 @@
     {
       "source": "Galactic initiatives",
       "translation": "Initiatives galactiques"
+    },
+    {
+      "source": "Galactic region",
+      "translation": "Région galactique"
     },
     {
       "source": "Galactic search tools",
@@ -106885,10 +106857,6 @@
       "translation": "RAVITAILLER"
     },
     {
-      "source": "REGION",
-      "translation": "RÉGION"
-    },
-    {
       "source": "REGIONAL FIRST",
       "translation": "UNE PREMIÈRE RÉGIONALE"
     },
@@ -106959,10 +106927,6 @@
     {
       "source": "RESTOCK?",
       "translation": "RÉAPPROVISIONNER?"
-    },
-    {
-      "source": "REWARD",
-      "translation": "RÉCOMPENSE"
     },
     {
       "source": "RIB",
@@ -108247,6 +108211,10 @@
     {
       "source": "Refuel the carrier at this destination",
       "translation": "Faites le plein du transporteur à cette destination"
+    },
+    {
+      "source": "Region",
+      "translation": "Région"
     },
     {
       "source": "Regional firsts in {0}",
@@ -109803,10 +109771,6 @@
     {
       "source": "SELECTED MARKER",
       "translation": "MARQUEUR SÉLECTIONNÉ"
-    },
-    {
-      "source": "SELECTED NODE",
-      "translation": "NŒUD SÉLECTIONNÉ"
     },
     {
       "source": "SELECTED SURVEY POINT",
@@ -129063,10 +129027,6 @@
       "translation": "Corpo"
     },
     {
-      "source": "BODY / SYSTEM",
-      "translation": "CORPO / SISTEMA"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Informações corporais"
     },
@@ -129711,6 +129671,10 @@
       "translation": "Corpo (opcional)"
     },
     {
+      "source": "Body / system",
+      "translation": "Corpo / sistema"
+    },
+    {
       "source": "Body Details",
       "translation": "Detalhes do corpo"
     },
@@ -130275,10 +130239,6 @@
       "translation": "ESPIGA"
     },
     {
-      "source": "CODEX BINGO",
-      "translation": "Códice Bingo"
-    },
-    {
       "source": "CODEX ENTRY OR GROUP",
       "translation": "Entrada ou grupo do Codex"
     },
@@ -130337,10 +130297,6 @@
     {
       "source": "COMPLETED",
       "translation": "CONCLUÍDO"
-    },
-    {
-      "source": "COMPLETION",
-      "translation": "CONCLUSÃO"
     },
     {
       "source": "COMPONENT MATERIALS",
@@ -135483,10 +135439,6 @@
       "translation": "TERMINADO"
     },
     {
-      "source": "ENTRY ID",
-      "translation": "ID de entrada"
-    },
-    {
       "source": "ERROR REPORT",
       "translation": "RELATÓRIO DE ERROS"
     },
@@ -136255,16 +136207,20 @@
       "translation": "As entradas permanecem visíveis nesta sessão, mas o arquivo de log não pôde ser atualizado: {0}"
     },
     {
+      "source": "Entry ID",
+      "translation": "ID de entrada"
+    },
+    {
       "source": "Entry ID {0}",
       "translation": "ID de entrada {0}"
     },
     {
-      "source": "Entry actions",
-      "translation": "Ações de entrada"
-    },
-    {
       "source": "Entry or group",
       "translation": "Entrada ou grupo"
+    },
+    {
+      "source": "Entry tools",
+      "translation": "Ferramentas de entrada"
     },
     {
       "source": "Entry {0} of {1}",
@@ -136907,10 +136863,6 @@
       "translation": "PRIMEIRO MAPEADO"
     },
     {
-      "source": "FIRST RECORDED",
-      "translation": "PRIMEIRO GRAVADO"
-    },
-    {
       "source": "FLEET CARRIER",
       "translation": "Transportadora de Frota"
     },
@@ -137319,6 +137271,10 @@
       "translation": "Encontre os preços atuais das estações para cargas ou suprimentos extraídos. Preços ardentes são preferidos; Spansh é usado quando um preço não está disponível."
     },
     {
+      "source": "Find discoveries",
+      "translation": "Encontre descobertas"
+    },
+    {
       "source": "Find help quickly",
       "translation": "Encontre ajuda rapidamente"
     },
@@ -137489,6 +137445,10 @@
     {
       "source": "First launch",
       "translation": "Primeiro lançamento"
+    },
+    {
+      "source": "First recorded",
+      "translation": "Gravado pela primeira vez"
     },
     {
       "source": "First-footfall detection",
@@ -138135,10 +138095,6 @@
       "translation": "posição galáctica"
     },
     {
-      "source": "GALACTIC REGION",
-      "translation": "REGIÃO GALÁCTICA"
-    },
-    {
       "source": "GALACTIC-REGION CANDIDATE",
       "translation": "CANDIDATO DA REGIÃO GALÁCTICA"
     },
@@ -138273,6 +138229,10 @@
     {
       "source": "Galactic initiatives",
       "translation": "Iniciativas galácticas"
+    },
+    {
+      "source": "Galactic region",
+      "translation": "Região galáctica"
     },
     {
       "source": "Galactic search tools",
@@ -148783,10 +148743,6 @@
       "translation": "REABASTECIMENTO"
     },
     {
-      "source": "REGION",
-      "translation": "REGIÃO"
-    },
-    {
       "source": "REGIONAL FIRST",
       "translation": "PRIMEIRO REGIONAL"
     },
@@ -148857,10 +148813,6 @@
     {
       "source": "RESTOCK?",
       "translation": "REABASTECER?"
-    },
-    {
-      "source": "REWARD",
-      "translation": "RECOMPENSA"
     },
     {
       "source": "RIB",
@@ -150145,6 +150097,10 @@
     {
       "source": "Refuel the carrier at this destination",
       "translation": "Abasteça a transportadora neste destino"
+    },
+    {
+      "source": "Region",
+      "translation": "Região"
     },
     {
       "source": "Regional firsts in {0}",
@@ -151701,10 +151657,6 @@
     {
       "source": "SELECTED MARKER",
       "translation": "MARCADOR SELECIONADO"
-    },
-    {
-      "source": "SELECTED NODE",
-      "translation": "NÓ SELECIONADO"
     },
     {
       "source": "SELECTED SURVEY POINT",
@@ -170961,10 +170913,6 @@
       "translation": "Тело"
     },
     {
-      "source": "BODY / SYSTEM",
-      "translation": "КОРПУС / СИСТЕМА"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "Информация о теле"
     },
@@ -171609,6 +171557,10 @@
       "translation": "Тело (необязательно)"
     },
     {
+      "source": "Body / system",
+      "translation": "Тело/система"
+    },
+    {
       "source": "Body Details",
       "translation": "Детали тела"
     },
@@ -172173,10 +172125,6 @@
       "translation": "COB"
     },
     {
-      "source": "CODEX BINGO",
-      "translation": "Кодекс Бинго"
-    },
-    {
       "source": "CODEX ENTRY OR GROUP",
       "translation": "Запись или группа Кодекса"
     },
@@ -172235,10 +172183,6 @@
     {
       "source": "COMPLETED",
       "translation": "ЗАВЕРШЕНО"
-    },
-    {
-      "source": "COMPLETION",
-      "translation": "ЗАВЕРШЕНИЕ"
     },
     {
       "source": "COMPONENT MATERIALS",
@@ -177381,10 +177325,6 @@
       "translation": "ЗАВЕРШЕНО"
     },
     {
-      "source": "ENTRY ID",
-      "translation": "идентификатор записи"
-    },
-    {
       "source": "ERROR REPORT",
       "translation": "ОТЧЕТ ОБ ОШИБКЕ"
     },
@@ -178153,16 +178093,20 @@
       "translation": "Записи остаются видимыми в этом сеансе, но файл журнала не может быть обновлен: {0}"
     },
     {
+      "source": "Entry ID",
+      "translation": "Идентификатор записи"
+    },
+    {
       "source": "Entry ID {0}",
       "translation": "Идентификатор записи {0}"
     },
     {
-      "source": "Entry actions",
-      "translation": "Входные действия"
-    },
-    {
       "source": "Entry or group",
       "translation": "Запись или группа"
+    },
+    {
+      "source": "Entry tools",
+      "translation": "Инструменты входа"
     },
     {
       "source": "Entry {0} of {1}",
@@ -178805,10 +178749,6 @@
       "translation": "ПЕРВОЕ НАНЕСЕНО"
     },
     {
-      "source": "FIRST RECORDED",
-      "translation": "ПЕРВАЯ ЗАПИСАННАЯ"
-    },
-    {
       "source": "FLEET CARRIER",
       "translation": "Авианосец флота"
     },
@@ -179217,6 +179157,10 @@
       "translation": "Узнайте текущие цены станций на минированный груз или припасы. Яркие цены являются предпочтительными; Spansh используется, когда цена недоступна."
     },
     {
+      "source": "Find discoveries",
+      "translation": "Находите открытия"
+    },
+    {
       "source": "Find help quickly",
       "translation": "Найдите помощь быстро"
     },
@@ -179387,6 +179331,10 @@
     {
       "source": "First launch",
       "translation": "Первый запуск"
+    },
+    {
+      "source": "First recorded",
+      "translation": "Впервые записано"
     },
     {
       "source": "First-footfall detection",
@@ -180033,10 +179981,6 @@
       "translation": "положение в галактике"
     },
     {
-      "source": "GALACTIC REGION",
-      "translation": "ГАЛАКТИЧЕСКИЙ РЕГИОН"
-    },
-    {
       "source": "GALACTIC-REGION CANDIDATE",
       "translation": "КАНДИДАТ В ГАЛАКТИЧЕСКИЙ РЕГИОН"
     },
@@ -180171,6 +180115,10 @@
     {
       "source": "Galactic initiatives",
       "translation": "Галактические инициативы"
+    },
+    {
+      "source": "Galactic region",
+      "translation": "Галактический регион"
     },
     {
       "source": "Galactic search tools",
@@ -190681,10 +190629,6 @@
       "translation": "ЗАПРАВКА"
     },
     {
-      "source": "REGION",
-      "translation": "РЕГИОН"
-    },
-    {
       "source": "REGIONAL FIRST",
       "translation": "РЕГИОНАЛЬНЫЙ ПЕРВЫЙ"
     },
@@ -190755,10 +190699,6 @@
     {
       "source": "RESTOCK?",
       "translation": "ПОСТАВКА?"
-    },
-    {
-      "source": "REWARD",
-      "translation": "НАГРАЖДЕНИЕ"
     },
     {
       "source": "RIB",
@@ -192043,6 +191983,10 @@
     {
       "source": "Refuel the carrier at this destination",
       "translation": "Заправьте перевозчик в этом пункте назначения"
+    },
+    {
+      "source": "Region",
+      "translation": "Область"
     },
     {
       "source": "Regional firsts in {0}",
@@ -193599,10 +193543,6 @@
     {
       "source": "SELECTED MARKER",
       "translation": "ВЫБРАННЫЙ МАРКЕР"
-    },
-    {
-      "source": "SELECTED NODE",
-      "translation": "ВЫБРАННЫЙ УЗЕЛ"
     },
     {
       "source": "SELECTED SURVEY POINT",
@@ -212859,10 +212799,6 @@
       "translation": "身体"
     },
     {
-      "source": "BODY / SYSTEM",
-      "translation": "本体/系统"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "身体信息"
     },
@@ -213507,6 +213443,10 @@
       "translation": "本体（可选）"
     },
     {
+      "source": "Body / system",
+      "translation": "本体/系统"
+    },
+    {
       "source": "Body Details",
       "translation": "车身细节"
     },
@@ -214071,10 +214011,6 @@
       "translation": "COB"
     },
     {
-      "source": "CODEX BINGO",
-      "translation": "宾果法典"
-    },
-    {
       "source": "CODEX ENTRY OR GROUP",
       "translation": "法典条目或组"
     },
@@ -214133,10 +214069,6 @@
     {
       "source": "COMPLETED",
       "translation": "已完成"
-    },
-    {
-      "source": "COMPLETION",
-      "translation": "完成"
     },
     {
       "source": "COMPONENT MATERIALS",
@@ -219279,10 +219211,6 @@
       "translation": "已结束"
     },
     {
-      "source": "ENTRY ID",
-      "translation": "条目ID"
-    },
-    {
       "source": "ERROR REPORT",
       "translation": "错误报告"
     },
@@ -220051,16 +219979,20 @@
       "translation": "条目在此会话中仍然可见，但无法更新日志文件：{0}"
     },
     {
+      "source": "Entry ID",
+      "translation": "条目 ID"
+    },
+    {
       "source": "Entry ID {0}",
       "translation": "条目 ID {0}"
     },
     {
-      "source": "Entry actions",
-      "translation": "入场动作"
-    },
-    {
       "source": "Entry or group",
       "translation": "参赛作品或团体"
+    },
+    {
+      "source": "Entry tools",
+      "translation": "录入工具"
     },
     {
       "source": "Entry {0} of {1}",
@@ -220703,10 +220635,6 @@
       "translation": "首次映射"
     },
     {
-      "source": "FIRST RECORDED",
-      "translation": "首次录制"
-    },
-    {
       "source": "FLEET CARRIER",
       "translation": "舰队航母"
     },
@@ -221115,6 +221043,10 @@
       "translation": "查找采矿货物或补给品的当前车站价格。价格优惠者优先； Spansh 在价格不可用时使用。"
     },
     {
+      "source": "Find discoveries",
+      "translation": "寻找发现"
+    },
+    {
       "source": "Find help quickly",
       "translation": "快速寻求帮助"
     },
@@ -221285,6 +221217,10 @@
     {
       "source": "First launch",
       "translation": "首次推出"
+    },
+    {
+      "source": "First recorded",
+      "translation": "首次记录"
     },
     {
       "source": "First-footfall detection",
@@ -221931,10 +221867,6 @@
       "translation": "银河位置"
     },
     {
-      "source": "GALACTIC REGION",
-      "translation": "银河区"
-    },
-    {
       "source": "GALACTIC-REGION CANDIDATE",
       "translation": "银河区候选者"
     },
@@ -222069,6 +222001,10 @@
     {
       "source": "Galactic initiatives",
       "translation": "银河倡议"
+    },
+    {
+      "source": "Galactic region",
+      "translation": "银河区"
     },
     {
       "source": "Galactic search tools",
@@ -232579,10 +232515,6 @@
       "translation": "加油"
     },
     {
-      "source": "REGION",
-      "translation": "地区"
-    },
-    {
       "source": "REGIONAL FIRST",
       "translation": "区域第一"
     },
@@ -232653,10 +232585,6 @@
     {
       "source": "RESTOCK?",
       "translation": "补货？"
-    },
-    {
-      "source": "REWARD",
-      "translation": "奖励"
     },
     {
       "source": "RIB",
@@ -233941,6 +233869,10 @@
     {
       "source": "Refuel the carrier at this destination",
       "translation": "在此目的地为承运人加油"
+    },
+    {
+      "source": "Region",
+      "translation": "地区"
     },
     {
       "source": "Regional firsts in {0}",
@@ -235497,10 +235429,6 @@
     {
       "source": "SELECTED MARKER",
       "translation": "选定的标记"
-    },
-    {
-      "source": "SELECTED NODE",
-      "translation": "选定的节点"
     },
     {
       "source": "SELECTED SURVEY POINT",
@@ -254757,10 +254685,6 @@
       "translation": "* BODY >>>!"
     },
     {
-      "source": "BODY / SYSTEM",
-      "translation": "* BODY / SYSTEM >>>!"
-    },
-    {
       "source": "BODY INFORMATION",
       "translation": "* BODY INFORMATION >>>!"
     },
@@ -255405,6 +255329,10 @@
       "translation": "* BODY (OPTIONAL) >>>!"
     },
     {
+      "source": "Body / system",
+      "translation": "* BODY / SYSTEM >>>!"
+    },
+    {
       "source": "Body Details",
       "translation": "* BODY DETAILS >>>!"
     },
@@ -255969,10 +255897,6 @@
       "translation": "* COB >>>!"
     },
     {
-      "source": "CODEX BINGO",
-      "translation": "* CODEX BINGO >>>!"
-    },
-    {
       "source": "CODEX ENTRY OR GROUP",
       "translation": "* CODEX ENTRY OR GROUP >>>!"
     },
@@ -256031,10 +255955,6 @@
     {
       "source": "COMPLETED",
       "translation": "* COMPLETED >>>!"
-    },
-    {
-      "source": "COMPLETION",
-      "translation": "* COMPLETION >>>!"
     },
     {
       "source": "COMPONENT MATERIALS",
@@ -261177,10 +261097,6 @@
       "translation": "* ENDED >>>!"
     },
     {
-      "source": "ENTRY ID",
-      "translation": "* ENTRY ID >>>!"
-    },
-    {
       "source": "ERROR REPORT",
       "translation": "* ERROR REPORT >>>!"
     },
@@ -261949,16 +261865,20 @@
       "translation": "* ENTRIES REMAIN VISIBLE IN THIS SESSION, BUT THE LOG FILE COULD NOT BE UPDATED: {0} >>>!"
     },
     {
+      "source": "Entry ID",
+      "translation": "* ENTRY ID >>>!"
+    },
+    {
       "source": "Entry ID {0}",
       "translation": "* ENTRY ID {0} >>>!"
     },
     {
-      "source": "Entry actions",
-      "translation": "* ENTRY ACTIONS >>>!"
-    },
-    {
       "source": "Entry or group",
       "translation": "* ENTRY OR GROUP >>>!"
+    },
+    {
+      "source": "Entry tools",
+      "translation": "* ENTRY TOOLS >>>!"
     },
     {
       "source": "Entry {0} of {1}",
@@ -262601,10 +262521,6 @@
       "translation": "* FIRST MAPPED >>>!"
     },
     {
-      "source": "FIRST RECORDED",
-      "translation": "* FIRST RECORDED >>>!"
-    },
-    {
       "source": "FLEET CARRIER",
       "translation": "* FLEET CARRIER >>>!"
     },
@@ -263013,6 +262929,10 @@
       "translation": "* FIND CURRENT STATION PRICES FOR MINED CARGO OR SUPPLIES. ARDENT PRICES ARE PREFERRED; SPANSH IS USED WHEN A PRICE IS UNAVAILABLE. >>>!"
     },
     {
+      "source": "Find discoveries",
+      "translation": "* FIND DISCOVERIES >>>!"
+    },
+    {
       "source": "Find help quickly",
       "translation": "* FIND HELP QUICKLY >>>!"
     },
@@ -263183,6 +263103,10 @@
     {
       "source": "First launch",
       "translation": "* FIRST LAUNCH >>>!"
+    },
+    {
+      "source": "First recorded",
+      "translation": "* FIRST RECORDED >>>!"
     },
     {
       "source": "First-footfall detection",
@@ -263829,10 +263753,6 @@
       "translation": "* GALACTIC POSITION >>>!"
     },
     {
-      "source": "GALACTIC REGION",
-      "translation": "* GALACTIC REGION >>>!"
-    },
-    {
       "source": "GALACTIC-REGION CANDIDATE",
       "translation": "* GALACTIC-REGION CANDIDATE >>>!"
     },
@@ -263967,6 +263887,10 @@
     {
       "source": "Galactic initiatives",
       "translation": "* GALACTIC INITIATIVES >>>!"
+    },
+    {
+      "source": "Galactic region",
+      "translation": "* GALACTIC REGION >>>!"
     },
     {
       "source": "Galactic search tools",
@@ -274477,10 +274401,6 @@
       "translation": "* REFUEL >>>!"
     },
     {
-      "source": "REGION",
-      "translation": "* REGION >>>!"
-    },
-    {
       "source": "REGIONAL FIRST",
       "translation": "* REGIONAL FIRST >>>!"
     },
@@ -274551,10 +274471,6 @@
     {
       "source": "RESTOCK?",
       "translation": "* RESTOCK? >>>!"
-    },
-    {
-      "source": "REWARD",
-      "translation": "* REWARD >>>!"
     },
     {
       "source": "RIB",
@@ -275839,6 +275755,10 @@
     {
       "source": "Refuel the carrier at this destination",
       "translation": "* REFUEL THE CARRIER AT THIS DESTINATION >>>!"
+    },
+    {
+      "source": "Region",
+      "translation": "* REGION >>>!"
     },
     {
       "source": "Regional firsts in {0}",
@@ -277395,10 +277315,6 @@
     {
       "source": "SELECTED MARKER",
       "translation": "* SELECTED MARKER >>>!"
-    },
-    {
-      "source": "SELECTED NODE",
-      "translation": "* SELECTED NODE >>>!"
     },
     {
       "source": "SELECTED SURVEY POINT",

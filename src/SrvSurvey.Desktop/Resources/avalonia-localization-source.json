@@ -6743,14 +6743,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
-    "Text": "BODY / SYSTEM",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "BODY INFORMATION",
     "IsFormat": false,
     "SourceKinds": [
@@ -8046,6 +8038,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Body / system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "Body Details",
     "IsFormat": false,
     "SourceKinds": [
@@ -9178,14 +9178,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
-    "Text": "CODEX BINGO",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "CODEX ENTRY OR GROUP",
     "IsFormat": false,
     "SourceKinds": [
@@ -9239,7 +9231,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
     "Text": "COMMANDER CONTEXT",
@@ -9293,10 +9285,9 @@
     "Text": "COMPLETE",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "COMPLETED",
@@ -9305,14 +9296,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "COMPLETION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "COMPONENT MATERIALS",
@@ -12581,7 +12564,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Codex Bingo groups discoveries by region and lets you inspect where and when an entry was found.",
@@ -13236,7 +13219,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Commander Codex could not be loaded: {0}",
@@ -19641,14 +19624,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "ENTRY ID",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "ERROR REPORT",
     "IsFormat": false,
     "SourceKinds": [
@@ -21191,6 +21166,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiagnosticsLogViewModel.cs"
   },
   {
+    "Text": "Entry ID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "Entry ID {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -21199,20 +21182,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
-    "Text": "Entry actions",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "Entry or group",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
+    "Text": "Entry tools",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Entry {0} of {1}",
@@ -22498,14 +22481,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "FIRST RECORDED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "FLEET CARRIER",
     "IsFormat": false,
     "SourceKinds": [
@@ -23325,6 +23300,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Find discoveries",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "Find help quickly",
     "IsFormat": false,
     "SourceKinds": [
@@ -23669,6 +23652,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "First recorded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "First-footfall detection",
@@ -24960,14 +24951,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
-    "Text": "GALACTIC REGION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "GALACTIC-REGION CANDIDATE",
     "IsFormat": false,
     "SourceKinds": [
@@ -25239,6 +25222,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
+    "Text": "Galactic region",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Galactic search tools",
@@ -46339,14 +46330,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"
   },
   {
-    "Text": "REGION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "REGIONAL FIRST",
     "IsFormat": false,
     "SourceKinds": [
@@ -46489,14 +46472,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
-  },
-  {
-    "Text": "REWARD",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "RIB",
@@ -49069,6 +49044,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
   },
   {
+    "Text": "Region",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "Regional firsts in {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -50938,7 +50921,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Reward bands changed for this session but could not be saved: {0}",
@@ -52188,14 +52171,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "SELECTED NODE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "SELECTED SURVEY POINT",
     "IsFormat": false,
     "SourceKinds": [
@@ -52459,7 +52434,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "STATION",
@@ -62621,10 +62596,9 @@
     "Text": "The Codex",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
     "Text": "The Codex image URL is invalid.",
