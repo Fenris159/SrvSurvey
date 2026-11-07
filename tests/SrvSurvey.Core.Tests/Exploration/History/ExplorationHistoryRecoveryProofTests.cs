@@ -121,17 +121,33 @@ public sealed partial class ExplorationHistoryCatalogTests
         Assert.Equal(2000000, recovered.SaleEarnings);
     }
 
-    [Fact]
-    public async Task DiscoveryInstabilityKeepsADeliveredSalePendingUntilItsSourceReturns()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DiscoveryInstabilityKeepsADeliveredSalePendingUntilItsSourceReturns(bool truncateOnce)
     {
         using var fixture = new HistoryFixture();
         await SeedProofScanAsync(fixture);
+        string committed = await File.ReadAllTextAsync(fixture.JournalPath);
         fixture.Append([ProofSale]);
+        string completeSale = await File.ReadAllTextAsync(fixture.JournalPath);
+        bool truncated = false;
         var append = new SynchronousProgress(progress =>
         {
             if (progress.IsDiscovering && progress.CurrentFile == Path.GetFileName(fixture.JournalPath))
             {
-                File.AppendAllText(fixture.JournalPath, " ");
+                if (truncateOnce)
+                {
+                    if (!truncated)
+                    {
+                        File.WriteAllText(fixture.JournalPath, committed);
+                        truncated = true;
+                    }
+                }
+                else
+                {
+                    File.AppendAllText(fixture.JournalPath, " ");
+                }
             }
         });
         await Assert.ThrowsAnyAsync<IOException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals], append));
@@ -143,6 +159,10 @@ public sealed partial class ExplorationHistoryCatalogTests
         await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
         Assert.False((await fixture.Catalog.ReadSummaryAsync()).IsComplete);
         File.Move(fixture.JournalPath + ".saved", fixture.JournalPath);
+        if (truncateOnce)
+        {
+            await File.WriteAllTextAsync(fixture.JournalPath, completeSale);
+        }
         ExplorationHistorySummary recovered = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
         Assert.True(recovered.IsComplete);
         Assert.Equal(0, recovered.UnsoldValue);

@@ -110,7 +110,10 @@ public sealed partial class ExplorationHistoryCatalog
                 )
             );
             DeferredJournal[] unknown = group.Where(item => item.PrefixHash is null).ToArray();
-            RetainUnknownEnvelope(retained, unknown, known);
+            foreach (IGrouping<bool, DeferredJournal> format in unknown.GroupBy(item => item.FormatVersion == 0))
+            {
+                RetainUnknownEnvelope(retained, format.ToArray(), known);
+            }
         }
         return retained.ToArray();
     }
@@ -419,6 +422,11 @@ public sealed partial class ExplorationHistoryCatalog
                 ApplyContext(actual, entry);
                 CaptureCommanderProof(actual, entry, source.Name, line.Offset, ContentHash(text));
             }
+        }
+        if (expected.CommanderRecord is null)
+        {
+            // Older checkpoints did not persist this proof; only their existing semantic fields are evidence.
+            actual.CommanderRecord = null;
         }
         if (JsonSerializer.Serialize(actual) != JsonSerializer.Serialize(expected))
         {

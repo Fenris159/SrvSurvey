@@ -238,15 +238,25 @@ public sealed partial class ExplorationHistoryCatalog
         IProgress<ExplorationHistoryProgress>? progress = null
     )
     {
+        long minimumCompleteLength = 0;
         for (int attempt = 0; attempt < 3; attempt++)
         {
             try
             {
-                return ReadJournalSnapshot(path, token, progress);
+                JournalSource candidate = ReadJournalSnapshot(path, token, progress);
+                if (candidate.CompleteLength < minimumCompleteLength)
+                {
+                    throw new JournalSnapshotUnstableException(candidate.Name, minimumCompleteLength);
+                }
+                return candidate;
             }
-            catch (JournalSnapshotUnstableException) when (attempt < 2)
+            catch (JournalSnapshotUnstableException failure)
             {
-                // A terminal append often settles before a second bounded snapshot.
+                minimumCompleteLength = Math.Max(minimumCompleteLength, failure.CompleteLength);
+                if (attempt == 2)
+                {
+                    throw new JournalSnapshotUnstableException(failure.SourceName, minimumCompleteLength);
+                }
                 token.ThrowIfCancellationRequested();
             }
         }

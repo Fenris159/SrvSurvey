@@ -77,9 +77,13 @@ public sealed partial class ExplorationHistoryCatalog
                 || NeedsRebuild(connection, sources, token);
             if (rebuild)
             {
+                captured = captured.Select(item => item with { CheckpointContext = null }).ToArray();
                 sources = DiscoverSources(directories, token, progress);
                 captured = captured
-                    .Concat(CreateDeferredJournals(connection, sources, rebuild: false))
+                    .Concat(
+                        CreateDeferredJournals(connection, sources, rebuild: false)
+                            .Select(item => item with { CheckpointContext = null })
+                    )
                     .Distinct()
                     .ToArray();
                 PrepareDeferredJournals(
@@ -138,7 +142,7 @@ public sealed partial class ExplorationHistoryCatalog
         {
             SetMetadata(connection, RecoveryConfirmationKey, "1");
         }
-        RetainDeferredJournals(connection, original, captured);
+        RetainDeferredJournals(connection, original, attempted, captured);
         Execute(connection, "COMMIT;");
     }
 
