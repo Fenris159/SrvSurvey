@@ -22,6 +22,11 @@ public sealed partial class DiagnosticsView : UserControl
         DataContextChanged += (_, _) => ConnectPlatformServices();
     }
 
+    private void DiagnosticsTabs_SelectionChanged(object? sender, SelectionChangedEventArgs eventArgs)
+    {
+        DiagnosticsPageScroller?.ScrollToHome();
+    }
+
     /// <summary>
     /// Attaches clipboard and launcher delegates to the active diagnostics models when desktop effects are allowed.
     /// </summary>

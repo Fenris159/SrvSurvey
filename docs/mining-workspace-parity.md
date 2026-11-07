@@ -38,7 +38,7 @@ This checklist maps the implemented workspace to the pinned reference. Validatio
 | Commodity buy/sell, nearby/galaxy-wide | Ardent, Spansh fallback on HTTP failure | Live Ardent price response verified |
 | Commodity categories / selection | Mining and trade categories plus free-form entry | Reference commodity names retained |
 | Pad, carrier, station type, freshness filters | Search controls and result checks | Client checks price age, supply/demand and requested station constraints |
-| EDDN incoming market/power cache | Opt-in receive-only NetMQ worker, bounded persistent cache | Live receiver observed 797 commodity records; direction/unknown-coordinate/expiry tests pass |
+| EDDN contributions | Existing outbound journal-sharing integration | Mining reception and its local search cache have been removed; Ardent and Spansh provide search data |
 | System filters / material traders | Shared network Spansh search extension | Live queries returned systems and raw material trader stations |
 | Inara / EDSM / Spansh context links | Inara and EDSM system links, Spansh search, copy | Right-click actions use external-effect gate |
 | Fleet Carrier status/cargo/finances/services/history | Fleet Carrier workspace below Overview; existing profile VM and carrier view | Same live profile; no duplicate monitor |

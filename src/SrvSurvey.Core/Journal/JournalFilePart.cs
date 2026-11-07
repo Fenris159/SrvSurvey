@@ -33,7 +33,7 @@ public sealed record JournalFilePart(string Series, int Number, string? Previous
                 ? null
                 : Path.Combine(
                     Path.GetDirectoryName(Path.GetFullPath(path))!,
-                    $"{pieces[0]}.{pieces[1]}.{(number - 1).ToString(new string('0', pieces[2].Length), CultureInfo.InvariantCulture)}.{pieces[3]}"
+                    $"{pieces[0]}.{pieces[1]}.{(number - 1).ToString("D2", CultureInfo.InvariantCulture)}.{pieces[3]}"
                 );
         return new(pieces[1], number, previous);
     }

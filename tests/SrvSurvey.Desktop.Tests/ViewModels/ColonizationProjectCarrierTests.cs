@@ -99,16 +99,22 @@ public sealed partial class ColonizationViewModelTests
         );
     }
 
-    /// <summary>Only the Building filter with checked projects and available carrier identities permits bulk writes.</summary>
-    [Fact]
-    public async Task BulkCarrierCommandsRequireBuildingFilterAvailableCarriersAndCheckedProject()
+    /// <summary>Building and Loading require checked projects and available carriers; All Projects and Planning reject bulk writes.</summary>
+    [Theory]
+    [InlineData("Building")]
+    [InlineData("Loading")]
+    public async Task BulkCarrierCommandsRequireWriteFilterAvailableCarriersAndCheckedProject(string status)
     {
         StubRavenColonialClient client = ProjectCarrierClient();
+        client.Workspace = client.Workspace with
+        {
+            Projects = [.. client.Workspace.Projects, LoadingProject("loading-command", "Sol")],
+        };
         using ColonizationViewModel model = await CreateProjectCarrierModelAsync(client);
         Assert.True(model.LinkCarrierToSelectedProjectsCommand.CanExecute(null));
         foreach (
             ColonizationProjectBuildOption filter in model.ProjectBuildOptions.Where(option =>
-                option.Value != ColonizationProjectBuildFilter.Building
+                option.Label is not ("Building" or "Loading")
             )
         )
         {
@@ -118,9 +124,7 @@ public sealed partial class ColonizationViewModelTests
             await model.LinkCarrierToSelectedProjectsAsync();
             await model.UnlinkCarrierFromSelectedProjectsAsync();
         }
-        model.ProjectBuildFilter = model.ProjectBuildOptions.Single(option =>
-            option.Value == ColonizationProjectBuildFilter.Building
-        );
+        model.ProjectBuildFilter = model.ProjectBuildOptions.Single(option => option.Label == status);
         model.SelectedPlanningCarrierMarketId = 0;
         Assert.True(model.ShowProjectCarrierActions);
         Assert.True(model.LinkCarrierToSelectedProjectsCommand.CanExecute(null));
@@ -131,7 +135,9 @@ public sealed partial class ColonizationViewModelTests
         Assert.False(model.UnlinkCarrierFromSelectedProjectsCommand.CanExecute(null));
         await model.UnlinkCarrierFromSelectedProjectsAsync();
         Assert.Empty(client.ProjectCarrierRequests);
-        model.Projects.Single(row => row.Project.BuildId == "first").IsShown = true;
+        model
+            .Projects.Single(row => row.Project.BuildId == (status == "Loading" ? "loading-command" : "first"))
+            .IsShown = true;
         Assert.True(model.LinkCarrierToSelectedProjectsCommand.CanExecute(null));
     }
 

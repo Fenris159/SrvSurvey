@@ -5,21 +5,70 @@
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:overlay="using:SrvSurvey.Desktop.Platform.Overlay"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
-             xmlns:views="using:SrvSurvey.Desktop.Views"
+             xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              x:Class="SrvSurvey.Desktop.Views.OverlaySettingsView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="TextBlock#OverlaySettingsTitle">
+      <Setter Property="FontSize" Value="22" />
+    </Style>
+    <Style Selector=".category-overlays TextBlock#OverlaySettingsTitle">
+      <Setter Property="FontSize" Value="32" />
+    </Style>
+    <Style Selector=".category-overlays Border.overlay-settings-card">
+      <Setter Property="Padding" Value="20" />
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    </Style>
+    <Style Selector=".category-overlays TextBlock.eyebrow">
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector=".category-overlays TextBlock.overlay-field-label">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    </Style>
+    <Style Selector=".category-overlays TextBox, .category-overlays NumericUpDown, .category-overlays ComboBox">
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <Style Selector=".category-overlays ComboBox">
+      <Setter Property="behaviors:ComboBoxFitContentBehavior.Enabled" Value="False" />
+    </Style>
+    <Style Selector=".category-overlays CheckBox.overlay-wrap, .category-overlays RadioButton.overlay-wrap">
+      <Setter Property="ContentTemplate">
+        <DataTemplate x:DataType="x:String">
+          <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+        </DataTemplate>
+      </Setter>
+    </Style>
+    <Style Selector=".category-overlays Border.overlay-section">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
+      <Setter Property="Padding" Value="0,16,0,0" />
+    </Style>
+  </UserControl.Styles>
   <Grid RowDefinitions="Auto,*" RowSpacing="16" Margin="0,16,0,0">
-    <StackPanel Spacing="5">
-      <TextBlock x:Name="OverlaySettingsEyebrow" Classes="eyebrow" Text="OVERLAYS"
-                 IsVisible="{Binding !#GlobalOverlayBehaviorCard.IsVisible}" />
+    <StackPanel Spacing="8" x:Name="OverlaySettingsHeader">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <TextBlock x:Name="OverlaySettingsTitle" Classes="card-title" FontSize="22" Text="Overlay setup" TextWrapping="Wrap"/>
-        <Button Grid.Column="1" Classes="secondary" Content="Visibility exceptions" Click="OverlayExceptions_Click" VerticalAlignment="Top"/>
+        <TextBlock x:Name="OverlaySettingsTitle" Classes="card-title page-title" Text="Overlay setup" TextWrapping="Wrap" />
+        <Button Grid.Column="1" Classes="secondary" Content="Visibility exceptions" Click="OverlayExceptions_Click"
+                VerticalAlignment="Top" IsVisible="{Binding #GlobalOverlayBehaviorCard.IsVisible}" />
       </Grid>
-      <TextBlock x:Name="OverlaySettingsDescription" Classes="muted"
+      <TextBlock x:Name="OverlaySettingsDescription"
+                 Classes="muted"
                  TextWrapping="Wrap"
                  Text="Choose a section below. Changes save automatically unless a Save button is shown." />
+      <WrapPanel x:Name="OverlaySettingsActions" IsVisible="{Binding #CategoryOverlaySections.IsVisible}">
+        <Button Classes="secondary"
+                Content="Panel availability and shortcuts"
+                Click="ShowPanelShortcuts_Click"
+                IsVisible="{Binding #CategoryOverlaySections.IsVisible}"
+                IsEnabled="{Binding #PanelVisibilityCard.IsVisible}"
+                Margin="0,0,8,4"
+                x:Name="ShowPanelShortcuts" />
+        <Button Classes="secondary" Content="Visibility exceptions" Click="OverlayExceptions_Click" VerticalAlignment="Top" Margin="0,0,8,4" />
+      </WrapPanel>
     </StackPanel>
     <TabControl x:Name="GlobalOverlaySections" Grid.Row="1" Classes="theme-selector" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                 IsVisible="{Binding #GlobalOverlayBehaviorCard.IsVisible}">
@@ -594,179 +643,263 @@
         </ScrollViewer>
       </TabItem>
     </TabControl>
-    <ScrollViewer x:Name="CategoryOverlaySections" Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+    <ScrollViewer x:Name="CategoryOverlaySections"
+                  Grid.Row="1"
+                  HorizontalScrollBarVisibility="Disabled"
                   IsVisible="{Binding !#GlobalOverlayBehaviorCard.IsVisible}">
-      <StackPanel x:Name="CategoryOverlayContent" Spacing="24">
-        <Border x:Name="FiregroupsVisibilityCard" Classes="card raised">
+      <StackPanel x:Name="CategoryOverlayContent" Spacing="16" Margin="0,0,16,16">
+        <Border x:Name="FiregroupsVisibilityCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="12">
-            <TextBlock Classes="card-title" Text="Cockpit view visibility" />
-            <TextBlock Classes="muted" TextWrapping="Wrap"
+            <TextBlock Classes="card-title" Text="Cockpit view visibility" TextWrapping="Wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
                        Text="Choose where the Firegroups overlay appears: the left-hand panel, main cockpit, or right-hand panel. Changes apply immediately." />
             <WrapPanel>
-              <CheckBox x:Name="FiregroupsLeftViewCheckBox" Margin="0,0,24,0" Content="Left"
-                        IsChecked="{Binding Firegroups.ShowOverlayInLeftView, Mode=TwoWay}" />
-              <CheckBox x:Name="FiregroupsMainViewCheckBox" Margin="0,0,24,0" Content="Main"
-                        IsChecked="{Binding Firegroups.ShowOverlayInMainView, Mode=TwoWay}" />
-              <CheckBox x:Name="FiregroupsRightViewCheckBox" Content="Right"
-                        IsChecked="{Binding Firegroups.ShowOverlayInRightView, Mode=TwoWay}" />
+              <CheckBox x:Name="FiregroupsLeftViewCheckBox"
+                        Margin="0,0,24,0"
+                        Content="Left"
+                        IsChecked="{Binding Firegroups.ShowOverlayInLeftView, Mode=TwoWay}"
+                        Classes="overlay-wrap" />
+              <CheckBox x:Name="FiregroupsMainViewCheckBox"
+                        Margin="0,0,24,0"
+                        Content="Main"
+                        IsChecked="{Binding Firegroups.ShowOverlayInMainView, Mode=TwoWay}"
+                        Classes="overlay-wrap" />
+              <CheckBox x:Name="FiregroupsRightViewCheckBox"
+                        Content="Right"
+                        IsChecked="{Binding Firegroups.ShowOverlayInRightView, Mode=TwoWay}"
+                        Classes="overlay-wrap" />
             </WrapPanel>
-            <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap"
-                       Text="{Binding Firegroups.OverlaySettingsStatus}" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" Text="{Binding Firegroups.OverlaySettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="MiningActivityCard" Classes="card raised">
+        <Border x:Name="MiningActivityCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="12">
-            <TextBlock Classes="card-title" Text="Ship mining overlays" />
-            <TextBlock Classes="muted" Text="Mining notifications, session progress, cargo, and missions appear aboard your main ship. Tracked missions remain visible during collection and return trips, including outside a mining session. Use the panel controls below to show or hide each overlay." TextWrapping="Wrap" />
-            <TextBlock Classes="muted" TextWrapping="Wrap"
+            <TextBlock Classes="card-title" Text="Ship mining overlays" TextWrapping="Wrap" />
+            <TextBlock Classes="muted"
+                       Text="Mining notifications, session progress, cargo, and missions appear aboard your main ship. Tracked missions remain visible during collection and return trips, including outside a mining session. Use the panel controls below to show or hide each overlay."
+                       TextWrapping="Wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
                        Text="{Binding MiningWorkspace.OverlaySettingsStatus}"
                        IsVisible="{Binding MiningWorkspace.HasOverlaySettingsStatus}" />
             <StackPanel Spacing="12">
-              <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
-              <CheckBox Content="Show notifications and cargo only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
-              <TextBlock Text="Notification duration (seconds)" />
-              <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
-              <TextBlock Text="Persistent prospector results" />
-              <NumericUpDown Value="{Binding MiningWorkspace.Settings.PersistentProspectSlots}" Minimum="1" Maximum="8" />
-              <CheckBox Content="Hide results that don't meet Mineral Thresholds" IsChecked="{Binding MiningWorkspace.HideProspectsBelowThreshold, Mode=TwoWay}" />
+              <CheckBox Content="Hide mining notifications in supercruise"
+                        IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}"
+                        Classes="overlay-wrap" />
+              <CheckBox Content="Show notifications and cargo only during a mining session"
+                        IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}"
+                        Classes="overlay-wrap" />
+              <controls:ResponsiveColumnsPanel MinimumColumnWidth="220" MaximumColumns="2" Spacing="16" x:Name="MiningNotificationFields">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="Notification duration (seconds)" TextWrapping="Wrap" />
+                  <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}"
+                                 Minimum="3"
+                                 Maximum="120"
+                                 Width="132"
+                                 HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel Spacing="6">
+                  <TextBlock Text="Persistent prospector results" TextWrapping="Wrap" />
+                  <NumericUpDown Value="{Binding MiningWorkspace.Settings.PersistentProspectSlots}"
+                                 Minimum="1"
+                                 Maximum="8"
+                                 Width="132"
+                                 HorizontalAlignment="Left" />
+                </StackPanel>
+              </controls:ResponsiveColumnsPanel>
+              <CheckBox Content="Hide results that don't meet Mineral Thresholds"
+                        IsChecked="{Binding MiningWorkspace.HideProspectsBelowThreshold, Mode=TwoWay}"
+                        Classes="overlay-wrap" />
               <Separator />
-              <TextBlock FontWeight="SemiBold" Text="Session overlay" />
-              <WrapPanel>
-                <StackPanel Spacing="6" Margin="0,0,20,8">
-                  <TextBlock Text="Sort prospecting yields by" />
-                  <ComboBox x:Name="MiningSessionYieldSortInput" MinWidth="240"
-                            SelectedIndex="{Binding MiningWorkspace.SessionYieldSortIndex, Mode=TwoWay}">
+              <TextBlock FontWeight="SemiBold" Text="Session overlay" TextWrapping="Wrap" />
+              <controls:ResponsiveColumnsPanel MinimumColumnWidth="220" MaximumColumns="2" Spacing="16">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="Sort prospecting yields by" TextWrapping="Wrap" />
+                  <ComboBox x:Name="MiningSessionYieldSortInput" SelectedIndex="{Binding MiningWorkspace.SessionYieldSortIndex, Mode=TwoWay}">
                     <ComboBoxItem Content="Average mineral percentage" />
                     <ComboBoxItem Content="Finds" />
                   </ComboBox>
                 </StackPanel>
-                <StackPanel Spacing="6" Margin="0,0,0,8">
-                  <TextBlock Text="Maximum minerals shown" />
-                  <NumericUpDown x:Name="MiningSessionYieldLimitInput" Width="120" HorizontalAlignment="Left"
-                                 Minimum="1" Maximum="100" Increment="1" FormatString="0"
-                                 ShowButtonSpinner="True" ButtonSpinnerLocation="Right"
+                <StackPanel Spacing="6">
+                  <TextBlock Text="Maximum minerals shown" TextWrapping="Wrap" />
+                  <NumericUpDown x:Name="MiningSessionYieldLimitInput"
+                                 Width="120"
+                                 HorizontalAlignment="Left"
+                                 Minimum="1"
+                                 Maximum="100"
+                                 Increment="1"
+                                 FormatString="0"
+                                 ShowButtonSpinner="True"
+                                 ButtonSpinnerLocation="Right"
                                  Value="{Binding MiningWorkspace.SessionYieldLimit, Mode=TwoWay}" />
                 </StackPanel>
-              </WrapPanel>
-              <TextBlock Text="Mining missions" FontWeight="SemiBold" />
+              </controls:ResponsiveColumnsPanel>
+              <TextBlock Text="Mining missions" FontWeight="SemiBold" TextWrapping="Wrap" />
               <StackPanel Spacing="6">
-                <TextBlock Text="Destination cards before scrolling" />
-                <NumericUpDown x:Name="MiningMissionDestinationLimitInput" Width="120" HorizontalAlignment="Left"
-                               Minimum="1" Maximum="20" Increment="1" FormatString="0"
+                <TextBlock Text="Destination cards before scrolling" TextWrapping="Wrap" />
+                <NumericUpDown x:Name="MiningMissionDestinationLimitInput"
+                               Width="120"
+                               HorizontalAlignment="Left"
+                               Minimum="1"
+                               Maximum="20"
+                               Increment="1"
+                               FormatString="0"
                                Value="{Binding MiningWorkspace.MissionDestinationLimit, Mode=TwoWay}" />
               </StackPanel>
-              <CheckBox x:Name="MiningMissionShortTagsInput" Content="Use Commodity Short Tags"
-                        IsChecked="{Binding MiningWorkspace.UseCommodityShortTags, Mode=TwoWay}" />
-              <TextBlock Classes="muted" Text="Tracked missions are combined by station and system. Turn short tags off to show full commodity names." TextWrapping="Wrap" />
-              <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveOverlaySettingsCommand}" HorizontalAlignment="Left" />
+              <CheckBox x:Name="MiningMissionShortTagsInput"
+                        Content="Use Commodity Short Tags"
+                        IsChecked="{Binding MiningWorkspace.UseCommodityShortTags, Mode=TwoWay}"
+                        Classes="overlay-wrap" />
+              <TextBlock Classes="muted"
+                         Text="Tracked missions are combined by station and system. Turn short tags off to show full commodity names."
+                         TextWrapping="Wrap" />
+              <Button Content="Save mining overlay settings"
+                      Command="{Binding MiningWorkspace.SaveOverlaySettingsCommand}"
+                      HorizontalAlignment="Right"
+                      Classes="primary" />
             </StackPanel>
           </StackPanel>
         </Border>
-        <Border x:Name="MineMapOverlayCard" Classes="card raised">
+        <Border x:Name="MineMapOverlayCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="12">
-            <TextBlock Classes="card-title" Text="Surface mining overview map" />
-            <TextBlock Classes="muted" TextWrapping="Wrap"
+            <TextBlock Classes="card-title" Text="Surface mining overview map" TextWrapping="Wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
                        Text="The map follows the active saved mining location and shows its measured border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey." />
             <CheckBox IsChecked="{Binding MineMap.OnlyShowWhileOnGround, Mode=TwoWay}"
-                      Content="Only show while on the ground" />
+                      Content="Only show while on the ground"
+                      Classes="overlay-wrap" />
             <CheckBox IsChecked="{Binding MineMap.ShowMarkerLabelsInOverviewMap, Mode=TwoWay}"
-                      Content="Show Marker Labels in Overview Map" />
-            <TextBlock Classes="muted" TextWrapping="Wrap"
+                      Content="Show Marker Labels in Overview Map"
+                      Classes="overlay-wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
                        Text="Overlay Exceptions for Surface Mining are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay." />
-            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                       Text="{Binding MineMap.StatusText}" TextWrapping="Wrap" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}" Text="{Binding MineMap.StatusText}" TextWrapping="Wrap" />
           </StackPanel>
         </Border>
-        <Border x:Name="MiningShortcutsCard" Classes="card raised">
-          <StackPanel Spacing="12">
-            <TextBlock Classes="muted" TextWrapping="Wrap"
+        <Border x:Name="MiningShortcutsCard" Classes="card raised overlay-settings-card">
+          <StackPanel Spacing="16">
+            <TextBlock Text="Rig tracking" Classes="card-title" TextWrapping="Wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
                        Text="Automatically clear saved rigs when you board your own ship or dock the Rhino. Send --- in game chat to clear all bookmarks and rigs on the current body at any time." />
             <CheckBox IsChecked="{Binding Mining.AutoClearRigsOnShipBoarding, Mode=TwoWay}"
-                      Content="Clear rigs automatically when boarding your ship" />
-            <TextBlock Classes="card-title" Text="Rig bar detection (experimental)" />
-            <TextBlock Classes="muted" TextWrapping="Wrap"
-                       Text="Automatic tracker changes pause while your surface position or heading changes and resume after one second of stillness. HUD movement or reacquisition also waits for one steady second. Stop before deploying. Once steady, a detected bar saves its rig tracker immediately; three continuous seconds empty removes that specific tracker. Unknown readings leave trackers unchanged and restart the removal delay. Calibration Test previews detection without changing trackers. Open Edit Overlay Positions and choose Mining. Move and resize the capture frame over all six HUD circles, then align the red dots with their centres. Size, Height and R adjust the circle outlines and curved bar guides; Gap adjusts bar spacing independently; Search adjusts movement allowance with a pixel readout and optional bounds. Select Test while looking forward, starting with rig 1 deployed first. No label learning is required. Use the editor's save or cancel button when finished. Choose the deployment bar color below (bright green by default). Matching colored groups are tracked relative to the calibrated rig positions; gray, white and black do not count as bars." />
-            <CheckBox IsChecked="{Binding Mining.Detection.Enabled, Mode=TwoWay}"
-                      Content="Automatically track rigs from the Rhino HUD" />
-            <TextBlock Text="Deployment bar color" />
-            <ColorPicker Color="{Binding Mining.Detection.BarColor, Mode=TwoWay}"
-                         Width="100" HorizontalAlignment="Left" IsAlphaEnabled="False" IsAlphaVisible="False"
-                         ToolTip.Tip="Choose the bright color of the deployment bars on your game HUD." />
-            <TextBlock Text="{Binding Mining.Detection.SlotsText}" TextWrapping="Wrap" />
-            <TextBlock Classes="muted" Text="{Binding Mining.Detection.StatusText}" TextWrapping="Wrap" />
-            <TextBlock Classes="card-title" Text="Rig location shortcuts" />
-            <TextBlock Classes="muted" TextWrapping="Wrap"
-                       Text="In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears." />
-            <ItemsControl ItemsSource="{Binding InputSettings.MiningBindings}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:InputBindingViewModel">
-                  <Grid ColumnDefinitions="*,260" ColumnSpacing="24" Margin="0,4">
-                    <TextBlock Text="{Binding MiningDisplayName}" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1">
-                      <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}"
-                                                   PlaceholderText="Click, then hold shortcut keys" />
-                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}" IsVisible="{Binding HasValidationError}"
-                                 Text="{Binding ValidationMessage}" FontSize="10" />
-                    </StackPanel>
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                      Content="Clear rigs automatically when boarding your ship"
+                      Classes="overlay-wrap" />
+            <Border Classes="overlay-section">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Rig bar detection (experimental)" TextWrapping="Wrap" />
+                <CheckBox IsChecked="{Binding Mining.Detection.Enabled, Mode=TwoWay}"
+                          Content="Automatically track rigs from the Rhino HUD"
+                          Classes="overlay-wrap" />
+                <StackPanel Spacing="6">
+                  <TextBlock Text="Deployment bar color" TextWrapping="Wrap" />
+                  <ColorPicker Color="{Binding Mining.Detection.BarColor, Mode=TwoWay}"
+                               Width="100"
+                               HorizontalAlignment="Left"
+                               IsAlphaEnabled="False"
+                               IsAlphaVisible="False"
+                               ToolTip.Tip="Choose the bright color of the deployment bars on your game HUD." />
+                </StackPanel>
+                <TextBlock Text="{Binding Mining.Detection.SlotsText}" TextWrapping="Wrap" />
+                <TextBlock Classes="muted" Text="{Binding Mining.Detection.StatusText}" TextWrapping="Wrap" />
+                <Expander Classes="section-pill" Header="Calibration guide" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="Automatic tracker changes pause while your surface position or heading changes and resume after one second of stillness. HUD movement or reacquisition also waits for one steady second. Stop before deploying. Once steady, a detected bar saves its rig tracker immediately; three continuous seconds empty removes that specific tracker. Unknown readings leave trackers unchanged and restart the removal delay. Calibration Test previews detection without changing trackers. Open Edit Overlay Positions and choose Mining. Move and resize the capture frame over all six HUD circles, then align the red dots with their centres. Size, Height and R adjust the circle outlines and curved bar guides; Gap adjusts bar spacing independently; Search adjusts movement allowance with a pixel readout and optional bounds. Select Test while looking forward, starting with rig 1 deployed first. No label learning is required. Use the editor's save or cancel button when finished. Choose the deployment bar color below (bright green by default). Matching colored groups are tracked relative to the calibrated rig positions; gray, white and black do not count as bars."
+                             Margin="0,12,0,0" />
+                </Expander>
+              </StackPanel>
+            </Border>
+            <Border Classes="overlay-section">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Rig location shortcuts" TextWrapping="Wrap" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears." />
+                <ItemsControl ItemsSource="{Binding InputSettings.MiningBindings}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:InputBindingViewModel">
+                      <Grid ColumnDefinitions="*,220" ColumnSpacing="20" Margin="0,4">
+                        <TextBlock Text="{Binding MiningDisplayName}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        <StackPanel Grid.Column="1">
+                          <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}" PlaceholderText="Click, then hold shortcut keys" />
+                          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                     IsVisible="{Binding HasValidationError}"
+                                     Text="{Binding ValidationMessage}"
+                                     FontSize="12"
+                                     TextWrapping="Wrap" />
+                        </StackPanel>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </Border>
-        <Border x:Name="BoxelOverlayCard" Classes="card raised">
+        <Border x:Name="BoxelOverlayCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="14">
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Galaxy Map boxel guidance" />
+              <TextBlock Classes="card-title" Text="Galaxy Map boxel guidance" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state." />
             </StackPanel>
             <CheckBox IsChecked="{Binding BoxelSearch.AutoCopy, Mode=TwoWay}"
-                      Content="Auto-copy next system in Galaxy Map" />
+                      Content="Auto-copy next system in Galaxy Map"
+                      Classes="overlay-wrap" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="Auto-copy is mutually exclusive with Route Manager and FC Routes so only one Galaxy Map destination source can control the clipboard." />
             <Separator />
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Boxel completion notifications" />
+              <TextBlock Classes="card-title" Text="Boxel completion notifications" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings." />
             </StackPanel>
             <CheckBox IsChecked="{Binding Notifications.CurrentBoxelSearchStatus, Mode=TwoWay}"
-                      Content="Show current boxel completion percentage" />
+                      Content="Show current boxel completion percentage"
+                      Classes="overlay-wrap" />
             <CheckBox IsChecked="{Binding Notifications.ShowNextBoxelToSearch, Mode=TwoWay}"
-                      Content="Show the next boxel when the current one is complete" />
+                      Content="Show the next boxel when the current one is complete"
+                      Classes="overlay-wrap" />
             <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                        IsVisible="{Binding Notifications.HasSettingsStatus}"
                        TextWrapping="Wrap"
                        Text="{Binding Notifications.SettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="ExplorationPoiCard" Classes="card raised">
+        <Border x:Name="ExplorationPoiCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="12">
-            <TextBlock Classes="card-title" Text="Current-system POIs" />
+            <TextBlock Classes="card-title" Text="Current-system POIs" TextWrapping="Wrap" />
             <CheckBox IsChecked="{Binding ExplorationPois.AutoShow, Mode=TwoWay}"
-                      Content="Auto-show known POIs in the current system" />
-            <TextBlock Classes="muted" TextWrapping="Wrap"
+                      Content="Auto-show known POIs in the current system"
+                      Classes="overlay-wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
                        Text="Shows known attractions after arrival. Hides during hyperspace and while Galaxy Map or FSS is open. Use the Exploration POIs panel toggle and shortcut below to control visibility." />
           </StackPanel>
         </Border>
-        <Border x:Name="GalaxyMapCard" Classes="card raised">
+        <Border x:Name="GalaxyMapCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="12">
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Galaxy Map intelligence" />
+              <TextBlock Classes="card-title" Text="Galaxy Map intelligence" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open." />
             </StackPanel>
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
               <CheckBox IsChecked="{Binding GalaxyMap.AutoShow, Mode=TwoWay}"
-                        Content="Show exploration preview in Galaxy Map (uses external data)" />
+                        Content="Show exploration preview in Galaxy Map (uses external data)"
+                        Classes="overlay-wrap" />
               <CheckBox Grid.Column="1"
                         IsChecked="{Binding GalaxyMap.ShowFactions, Mode=TwoWay}"
-                        Content="Show factions in gal-map" />
+                        Content="Show factions in gal-map"
+                        Classes="overlay-wrap" />
             </Grid>
             <TextBlock IsVisible="{Binding GalaxyMap.HasSettingsStatus}"
                        Foreground="{DynamicResource RavenWarningBrush}"
@@ -774,70 +907,68 @@
                        TextWrapping="Wrap" />
           </StackPanel>
         </Border>
-        <Border x:Name="CombatOverlayCard" Classes="card raised">
+        <Border x:Name="CombatOverlayCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="14">
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Combat overlays" />
+              <TextBlock Classes="card-title" Text="Combat overlays" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Track Odyssey ground conflict-zone bonds and active ship massacre missions with the same journal rules as the original application." />
             </StackPanel>
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="10">
-                <TextBlock Classes="eyebrow" Text="GROUND COMBAT" />
+                <TextBlock Classes="eyebrow" Text="GROUND COMBAT" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding Combat.AutoShowFootCombat, Mode=TwoWay}"
-                          Content="Show ground combat-zone totals" />
+                          Content="Show ground combat-zone totals"
+                          Classes="overlay-wrap" />
                 <TextBlock Classes="muted"
                            TextWrapping="Wrap"
                            Text="Appears below 100 m while on foot or in an SRV at a settlement whose faction is at war or civil war." />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="10">
-                <TextBlock Classes="eyebrow" Text="MASSACRE MISSIONS" />
+                <TextBlock Classes="eyebrow" Text="MASSACRE MISSIONS" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding Combat.AutoShowMassacreMissions, Mode=TwoWay}"
-                          Content="Massacre mission helper (Experimental)" />
+                          Content="Massacre mission helper (Experimental)"
+                          Classes="overlay-wrap" />
                 <TextBlock Classes="muted"
                            TextWrapping="Wrap"
                            Text="Shows completed / required kills in flight, supercruise, station services, and the navigation panel. Completed objectives use a green checkmark until turn-in. Progress is stored in the commander profile." />
               </StackPanel>
             </Grid>
             <CheckBox IsChecked="{Binding Combat.SuppressForActiveBuildProjects, Mode=TwoWay}"
-                      Content="Hide combat overlays while the colonization commodities panel is visible" />
+                      Content="Hide combat overlays while the colonization commodities panel is visible"
+                      Classes="overlay-wrap" />
             <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                        IsVisible="{Binding Combat.HasStatusMessage}"
                        TextWrapping="Wrap"
                        Text="{Binding Combat.StatusMessage}" />
           </StackPanel>
         </Border>
-        <Border x:Name="GuardianOverlayCard" Classes="card raised">
+        <Border x:Name="GuardianOverlayCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="14">
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Guardian overlays" />
+              <TextBlock Classes="card-title" Text="Guardian overlays" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Show live Guardian maps, system-site summaries, and Ram Tah artifact guidance using the original game-mode rules." />
             </StackPanel>
             <CheckBox IsChecked="{Binding Guardian.EnableGuardianSites, Mode=TwoWay}">
-              <TextBlock Text="Enable Guardian Ruins features"
-                         TextWrapping="Wrap" />
+              <TextBlock Text="Enable Guardian Ruins features" TextWrapping="Wrap" />
             </CheckBox>
-            <Grid x:Name="GuardianPrimaryColumns"
-                  ColumnDefinitions="*,*"
-                  ColumnSpacing="28">
+            <Grid x:Name="GuardianPrimaryColumns" ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="10">
-                <TextBlock Classes="eyebrow" Text="SYSTEM SUMMARY" />
+                <TextBlock Classes="eyebrow" Text="SYSTEM SUMMARY" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding Guardian.AutoShowGuardianSummary, Mode=TwoWay}">
-                  <TextBlock Text="Show summary of Guardian sites"
-                             TextWrapping="Wrap" />
+                  <TextBlock Text="Show summary of Guardian sites" TextWrapping="Wrap" />
                 </CheckBox>
                 <TextBlock Classes="muted"
                            TextWrapping="Wrap"
                            Text="Appears in supercruise, the navigation panel, or the system map and marks the selected destination." />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="10">
-                <TextBlock Classes="eyebrow" Text="RAM TAH" />
+                <TextBlock Classes="eyebrow" Text="RAM TAH" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding Guardian.AutoShowRamTah, Mode=TwoWay}">
-                  <TextBlock Text="Show helper for Ram Tah missions"
-                             TextWrapping="Wrap" />
+                  <TextBlock Text="Show helper for Ram Tah missions" TextWrapping="Wrap" />
                 </CheckBox>
                 <TextBlock Classes="muted"
                            TextWrapping="Wrap"
@@ -848,82 +979,68 @@
               <TextBlock Text="Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active"
                          TextWrapping="Wrap" />
             </CheckBox>
-            <Grid x:Name="GuardianSettingsColumns"
-                  ColumnDefinitions="*,*"
-                  ColumnSpacing="28">
+            <Grid x:Name="GuardianSettingsColumns" ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel x:Name="GuardianLeftColumn" Spacing="22">
                 <StackPanel Spacing="10">
-                  <TextBlock Classes="eyebrow" Text="MAP ZOOM" />
+                  <TextBlock Classes="eyebrow" Text="MAP ZOOM" TextWrapping="Wrap" />
                   <CheckBox IsChecked="{Binding Guardian.AutoZoomNearObelisks, Mode=TwoWay}">
-                    <TextBlock Text="Auto zoom map if within 30 m of obelisks"
-                               TextWrapping="Wrap" />
+                    <TextBlock Text="Auto zoom map if within 30 m of obelisks" TextWrapping="Wrap" />
                   </CheckBox>
                   <CheckBox IsChecked="{Binding Guardian.AutoZoomInSrvTurret, Mode=TwoWay}">
-                    <TextBlock Text="Auto zoom map when using SRV turret"
-                               TextWrapping="Wrap" />
+                    <TextBlock Text="Auto zoom map when using SRV turret" TextWrapping="Wrap" />
                   </CheckBox>
                   <CheckBox IsChecked="{Binding Guardian.ShowComponentMaterials, Mode=TwoWay}">
-                    <TextBlock Text="Track Guardian component materials"
-                               TextWrapping="Wrap" />
+                    <TextBlock Text="Track Guardian component materials" TextWrapping="Wrap" />
                   </CheckBox>
                   <CheckBox IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}">
-                    <TextBlock Text="Show the survey-map legend"
-                               TextWrapping="Wrap" />
+                    <TextBlock Text="Show the survey-map legend" TextWrapping="Wrap" />
                   </CheckBox>
                   <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}">
-                    <TextBlock Text="Show commander notes beside survey maps"
-                               TextWrapping="Wrap" />
+                    <TextBlock Text="Show commander notes beside survey maps" TextWrapping="Wrap" />
                   </CheckBox>
                   <TextBlock Classes="muted"
-                             FontSize="11"
+                             FontSize="12"
                              TextWrapping="Wrap"
                              Text="Shows tower loadouts and destructible panels and preserves the original component survey format. Auto-zoom engages within 30 m of an active obelisk." />
                 </StackPanel>
                 <StackPanel Spacing="10">
-                  <TextBlock Classes="eyebrow" Text="ALIGNMENT GUIDES" />
+                  <TextBlock Classes="eyebrow" Text="ALIGNMENT GUIDES" TextWrapping="Wrap" />
                   <CheckBox IsChecked="{Binding Guardian.DisableRuinsMeasurementGrid, Mode=TwoWay}">
-                    <TextBlock Text="Disable site heading assistance overlay."
-                               TextWrapping="Wrap" />
+                    <TextBlock Text="Disable site heading assistance overlay." TextWrapping="Wrap" />
                   </CheckBox>
                   <CheckBox IsChecked="{Binding Guardian.DisableAerialAlignmentGrid, Mode=TwoWay}">
-                    <TextBlock Text="Disable aerial screenshot alignment overlay."
-                               TextWrapping="Wrap" />
+                    <TextBlock Text="Disable aerial screenshot alignment overlay." TextWrapping="Wrap" />
                   </CheckBox>
                   <TextBlock Classes="muted"
-                             FontSize="11"
+                             FontSize="12"
                              TextWrapping="Wrap"
                              Text="Matches upstream polarity: leave unchecked to keep the heading grid and aerial origin guides available at ruins." />
                 </StackPanel>
               </StackPanel>
-
-              <StackPanel x:Name="GuardianRightColumn"
-                          Grid.Column="1"
-                          Spacing="22">
+              <StackPanel x:Name="GuardianRightColumn" Grid.Column="1" Spacing="22">
                 <StackPanel x:Name="GuardianOverlaySizeSection" Spacing="8">
-                  <TextBlock Classes="eyebrow" Text="OVERLAY SIZE" />
-                  <TextBlock Classes="muted"
-                             TextWrapping="Wrap"
-                             Text="Use one of the five original Guardian plotter sizes." />
+                  <TextBlock Classes="eyebrow" Text="OVERLAY SIZE" TextWrapping="Wrap" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap" Text="Use one of the five original Guardian plotter sizes." />
                   <ComboBox Width="200"
                             HorizontalAlignment="Left"
                             ItemsSource="{Binding Guardian.OverlaySizeOptions}"
                             SelectedItem="{Binding Guardian.SelectedOverlaySize, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate x:DataType="vm:GuardianOverlaySizeOption">
-                        <TextBlock Text="{Binding Label}" />
+                        <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
                       </DataTemplate>
                     </ComboBox.ItemTemplate>
                   </ComboBox>
                 </StackPanel>
                 <StackPanel Spacing="8">
-                  <TextBlock Classes="eyebrow" Text="RUINS AERIAL ALTITUDES" />
+                  <TextBlock Classes="eyebrow" Text="RUINS AERIAL ALTITUDES" TextWrapping="Wrap" />
                   <TextBlock Classes="muted"
-                             FontSize="11"
+                             FontSize="12"
                              TextWrapping="Wrap"
                              Text="Preferred altitude for aerial screenshots (m). Adjust so each site comfortably fits your monitor. Screenshots within 50 m of site origin and 500–2000 m altitude are eligible for aerial copies." />
                   <StackPanel Spacing="8" HorizontalAlignment="Left">
                     <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
-                      <TextBlock VerticalAlignment="Center" Text="Alpha" />
+                      <TextBlock VerticalAlignment="Center" Text="Alpha" TextWrapping="Wrap" />
                       <NumericUpDown Grid.Column="1"
                                      Width="120"
                                      MinWidth="120"
@@ -934,7 +1051,7 @@
                                      Value="{Binding ScreenshotProcessing.AerialAltitudeAlpha, Mode=TwoWay}" />
                     </Grid>
                     <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
-                      <TextBlock VerticalAlignment="Center" Text="Beta" />
+                      <TextBlock VerticalAlignment="Center" Text="Beta" TextWrapping="Wrap" />
                       <NumericUpDown Grid.Column="1"
                                      Width="120"
                                      MinWidth="120"
@@ -945,7 +1062,7 @@
                                      Value="{Binding ScreenshotProcessing.AerialAltitudeBeta, Mode=TwoWay}" />
                     </Grid>
                     <Grid ColumnDefinitions="72,120" ColumnSpacing="10">
-                      <TextBlock VerticalAlignment="Center" Text="Gamma" />
+                      <TextBlock VerticalAlignment="Center" Text="Gamma" TextWrapping="Wrap" />
                       <NumericUpDown Grid.Column="1"
                                      Width="120"
                                      MinWidth="120"
@@ -965,11 +1082,12 @@
                        Text="{Binding Guardian.OverlaySettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="StationInformationCard" Classes="card raised">
+        <Border x:Name="StationInformationCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="10">
-            <TextBlock Classes="card-title" Text="Station information" />
+            <TextBlock Classes="card-title" Text="Station information" TextWrapping="Wrap" />
             <CheckBox IsChecked="{Binding StationInfo.AutoShow, Mode=TwoWay}"
-                      Content="Show station/target details in left nav panel" />
+                      Content="Show station/target details in left nav panel"
+                      Classes="overlay-wrap" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="Uses current Spansh station data for pads, economies, faction, relevant services, and prohibited commodities. Alt+I toggles the overlay manually." />
@@ -979,46 +1097,45 @@
                        Text="{Binding StationInfo.SettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="HumanSettlementCard" Classes="card raised">
+        <Border x:Name="HumanSettlementCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="14">
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Human settlement map" />
+              <TextBlock Classes="card-title" Text="Human settlement map" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Navigate Odyssey settlements with the original site templates, docking guidance, and commander-relative map rendered in the active Raven theme." />
             </StackPanel>
-            <CheckBox IsChecked="{Binding HumanSite.AutoShow, Mode=TwoWay}"
-                      Content="Human settlement maps" />
+            <CheckBox IsChecked="{Binding HumanSite.AutoShow, Mode=TwoWay}" Content="Human settlement maps" Classes="overlay-wrap" />
             <CheckBox IsChecked="{Binding HumanSite.SuppressForActiveBuildProjects, Mode=TwoWay}"
-                      Content="Hide the settlement map while Raven Colonial build projects are active" />
-
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+                      Content="Hide the settlement map while Raven Colonial build projects are active"
+                      Classes="overlay-wrap" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="10">
-                <TextBlock Classes="eyebrow" Text="MAP CONTENT" />
-                <CheckBox IsChecked="{Binding HumanSite.ShowMedkits, Mode=TwoWay}"
-                          Content="Med kits" />
-                <CheckBox IsChecked="{Binding HumanSite.ShowBatteries, Mode=TwoWay}"
-                          Content="Battery packs" />
-                <CheckBox IsChecked="{Binding HumanSite.ShowDataTerminals, Mode=TwoWay}"
-                          Content="Data terminals" />
+                <TextBlock Classes="eyebrow" Text="MAP CONTENT" TextWrapping="Wrap" />
+                <CheckBox IsChecked="{Binding HumanSite.ShowMedkits, Mode=TwoWay}" Content="Med kits" Classes="overlay-wrap" />
+                <CheckBox IsChecked="{Binding HumanSite.ShowBatteries, Mode=TwoWay}" Content="Battery packs" Classes="overlay-wrap" />
+                <CheckBox IsChecked="{Binding HumanSite.ShowDataTerminals, Mode=TwoWay}" Content="Data terminals" Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding HumanSite.ShowCollectedMaterials, Mode=TwoWay}"
-                          Content="Show dots when some material is collected" />
+                          Content="Show dots when some material is collected"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding HumanSite.TrackMaterialCollection, Mode=TwoWay}"
-                          Content="Record material collection surveys" />
+                          Content="Record material collection surveys"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding HumanSite.AutoZoomInside, Mode=TwoWay}"
-                          Content="Auto-zoom if inside buildings" />
+                          Content="Auto-zoom if inside buildings"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding HumanSite.AutoZoomTool, Mode=TwoWay}"
-                          Content="Auto-zoom with analyzer tool" />
+                          Content="Auto-zoom with analyzer tool"
+                          Classes="overlay-wrap" />
                 <TextBlock Classes="muted"
-                           FontSize="11"
+                           FontSize="12"
                            TextWrapping="Wrap"
                            Text="Material dots can lag when collecting quickly. POI markers are randomly generated per settlement and may not match true locations." />
               </StackPanel>
-
               <StackPanel Grid.Column="1" Spacing="10">
-                <TextBlock Classes="eyebrow" Text="WINDOW SIZE" />
+                <TextBlock Classes="eyebrow" Text="WINDOW SIZE" TextWrapping="Wrap" />
                 <Grid ColumnDefinitions="*,132" ColumnSpacing="12">
-                  <TextBlock VerticalAlignment="Center" Text="Width" />
+                  <TextBlock VerticalAlignment="Center" Text="Width" TextWrapping="Wrap" />
                   <NumericUpDown Grid.Column="1"
                                  Minimum="320"
                                  Maximum="1600"
@@ -1026,7 +1143,7 @@
                                  Value="{Binding HumanSite.PreferredWidth, Mode=TwoWay}" />
                 </Grid>
                 <Grid ColumnDefinitions="*,132" ColumnSpacing="12">
-                  <TextBlock VerticalAlignment="Center" Text="Height" />
+                  <TextBlock VerticalAlignment="Center" Text="Height" TextWrapping="Wrap" />
                   <NumericUpDown Grid.Column="1"
                                  Minimum="320"
                                  Maximum="1400"
@@ -1035,49 +1152,48 @@
                 </Grid>
               </StackPanel>
             </Grid>
-
-            <TextBlock Classes="eyebrow" Text="ZOOM BY ACTIVITY" />
+            <TextBlock Classes="eyebrow" Text="ZOOM BY ACTIVITY" TextWrapping="Wrap" />
             <Grid ColumnDefinitions="*,132,*,132" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
-              <TextBlock VerticalAlignment="Center" Text="Ship" />
+              <TextBlock VerticalAlignment="Center" Text="Ship" TextWrapping="Wrap" />
               <NumericUpDown Grid.Column="1"
                              Minimum="0.2"
                              Maximum="15"
                              Increment="0.1"
                              FormatString="0.0"
                              Value="{Binding HumanSite.ShipZoom, Mode=TwoWay}" />
-              <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="SRV" />
+              <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="SRV" TextWrapping="Wrap" />
               <NumericUpDown Grid.Column="3"
                              Minimum="0.2"
                              Maximum="15"
                              Increment="0.1"
                              FormatString="0.0"
                              Value="{Binding HumanSite.SrvZoom, Mode=TwoWay}" />
-              <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="On foot" />
-              <NumericUpDown Grid.Row="1" Grid.Column="1"
+              <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="On foot" TextWrapping="Wrap" />
+              <NumericUpDown Grid.Row="1"
+                             Grid.Column="1"
                              Minimum="0.2"
                              Maximum="15"
                              Increment="0.1"
                              FormatString="0.0"
                              Value="{Binding HumanSite.FootZoom, Mode=TwoWay}" />
-              <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Text="Inside" />
-              <NumericUpDown Grid.Row="1" Grid.Column="3"
+              <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Text="Inside" TextWrapping="Wrap" />
+              <NumericUpDown Grid.Row="1"
+                             Grid.Column="3"
                              Minimum="0.2"
                              Maximum="15"
                              Increment="0.1"
                              FormatString="0.0"
                              Value="{Binding HumanSite.InsideZoom, Mode=TwoWay}" />
-              <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Suit tool" />
-              <NumericUpDown Grid.Row="2" Grid.Column="1"
+              <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Suit tool" TextWrapping="Wrap" />
+              <NumericUpDown Grid.Row="2"
+                             Grid.Column="1"
                              Minimum="0.2"
                              Maximum="15"
                              Increment="0.1"
                              FormatString="0.0"
                              Value="{Binding HumanSite.ToolZoom, Mode=TwoWay}" />
             </Grid>
-
-            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                       TextWrapping="Wrap"
-                       Text="{Binding HumanSite.SettingsStatus}" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" Text="{Binding HumanSite.SettingsStatus}" />
           </StackPanel>
         </Border>
         <Expander x:Name="HumanTemplateAuthoringExpander"
@@ -1087,19 +1203,16 @@
                   IsExpanded="False">
           <Expander.Header>
             <StackPanel Spacing="3">
-              <TextBlock Classes="card-title"
-                         Text="Settlement template authoring" />
-              <TextBlock Classes="muted"
-                         Text="Developer tools for capturing live Odyssey settlement geometry." />
+              <TextBlock Classes="card-title" Text="Settlement template authoring" TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Developer tools for capturing live Odyssey settlement geometry." TextWrapping="Wrap" />
             </StackPanel>
           </Expander.Header>
           <Border Margin="0,12,0,0" Classes="card">
             <StackPanel Spacing="16">
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <StackPanel Spacing="4">
-                  <TextBlock Classes="eyebrow" Text="LIVE TEMPLATE DRAFT" />
-                  <TextBlock Classes="card-title"
-                             Text="{Binding HumanSite.TemplateAuthor.TemplateTitle}" />
+                  <TextBlock Classes="eyebrow" Text="LIVE TEMPLATE DRAFT" TextWrapping="Wrap" />
+                  <TextBlock Classes="card-title" Text="{Binding HumanSite.TemplateAuthor.TemplateTitle}" TextWrapping="Wrap" />
                   <TextBlock Classes="muted"
                              TextWrapping="Wrap"
                              Text="Draft points are previewed on the active settlement map. Nothing changes on disk until you choose an export destination." />
@@ -1110,60 +1223,45 @@
                         Command="{Binding HumanSite.TemplateAuthor.StartCommand}"
                         Content="Start local draft" />
               </Grid>
-
-              <Border Background="{DynamicResource RavenSurfaceBrush}"
-                      CornerRadius="8"
-                      Padding="12">
+              <Border Background="{DynamicResource RavenSurfaceBrush}" CornerRadius="8" Padding="12">
                 <StackPanel Spacing="4">
-                  <TextBlock Text="{Binding HumanSite.TemplateAuthor.CurrentOffsetText}" />
-                  <TextBlock Classes="muted"
-                             TextWrapping="Wrap"
-                             Text="{Binding HumanSite.TemplateAuthor.StatusMessage}" />
+                  <TextBlock Text="{Binding HumanSite.TemplateAuthor.CurrentOffsetText}" TextWrapping="Wrap" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding HumanSite.TemplateAuthor.StatusMessage}" />
                 </StackPanel>
               </Border>
-
-              <StackPanel Spacing="16"
-                          IsVisible="{Binding HumanSite.TemplateAuthor.IsAuthoring}">
+              <StackPanel Spacing="16" IsVisible="{Binding HumanSite.TemplateAuthor.IsAuthoring}">
                 <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
                   <Border Classes="badge" Padding="10,6">
-                    <TextBlock HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap">
                       <Run Text="Buildings " />
-                      <Run FontWeight="Bold"
-                           Text="{Binding HumanSite.TemplateAuthor.BuildingCount}" />
+                      <Run FontWeight="Bold" Text="{Binding HumanSite.TemplateAuthor.BuildingCount}" />
                     </TextBlock>
                   </Border>
                   <Border Grid.Column="1" Classes="badge" Padding="10,6">
-                    <TextBlock HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap">
                       <Run Text="Named " />
-                      <Run FontWeight="Bold"
-                           Text="{Binding HumanSite.TemplateAuthor.NamedPointCount}" />
+                      <Run FontWeight="Bold" Text="{Binding HumanSite.TemplateAuthor.NamedPointCount}" />
                     </TextBlock>
                   </Border>
                   <Border Grid.Column="2" Classes="badge" Padding="10,6">
-                    <TextBlock HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap">
                       <Run Text="Terminals " />
-                      <Run FontWeight="Bold"
-                           Text="{Binding HumanSite.TemplateAuthor.DataTerminalCount}" />
+                      <Run FontWeight="Bold" Text="{Binding HumanSite.TemplateAuthor.DataTerminalCount}" />
                     </TextBlock>
                   </Border>
                   <Border Grid.Column="3" Classes="badge" Padding="10,6">
-                    <TextBlock HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap">
                       <Run Text="Doors " />
-                      <Run FontWeight="Bold"
-                           Text="{Binding HumanSite.TemplateAuthor.SecureDoorCount}" />
+                      <Run FontWeight="Bold" Text="{Binding HumanSite.TemplateAuthor.SecureDoorCount}" />
                     </TextBlock>
                   </Border>
                 </Grid>
-
-                <Border BorderBrush="{DynamicResource RavenBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="14">
+                <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                   <StackPanel Spacing="12">
-                    <TextBlock FontWeight="Bold" Text="Points of interest" />
+                    <TextBlock FontWeight="Bold" Text="Points of interest" TextWrapping="Wrap" />
                     <Grid ColumnDefinitions="110,110,*" ColumnSpacing="12">
                       <StackPanel Spacing="5">
-                        <TextBlock Classes="muted" Text="SECURITY" />
+                        <TextBlock Classes="muted" Text="SECURITY" TextWrapping="Wrap" />
                         <NumericUpDown Minimum="0"
                                        Maximum="3"
                                        Increment="1"
@@ -1171,7 +1269,7 @@
                                        Value="{Binding HumanSite.TemplateAuthor.SecurityLevel, Mode=TwoWay}" />
                       </StackPanel>
                       <StackPanel Grid.Column="1" Spacing="5">
-                        <TextBlock Classes="muted" Text="FLOOR" />
+                        <TextBlock Classes="muted" Text="FLOOR" TextWrapping="Wrap" />
                         <NumericUpDown Minimum="0"
                                        Maximum="99"
                                        Increment="1"
@@ -1179,7 +1277,7 @@
                                        Value="{Binding HumanSite.TemplateAuthor.Floor, Mode=TwoWay}" />
                       </StackPanel>
                       <StackPanel Grid.Column="2" Spacing="5">
-                        <TextBlock Classes="muted" Text="NAMED POINT" />
+                        <TextBlock Classes="muted" Text="NAMED POINT" TextWrapping="Wrap" />
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                           <TextBox Text="{Binding HumanSite.TemplateAuthor.NamedPointName, Mode=TwoWay}"
                                    PlaceholderText="Battery, Medkit, Alarm, Power..." />
@@ -1214,22 +1312,16 @@
                     </WrapPanel>
                   </StackPanel>
                 </Border>
-
-                <Border BorderBrush="{DynamicResource RavenBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="14">
+                <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
                   <StackPanel Spacing="12">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                       <StackPanel Spacing="3">
-                        <TextBlock FontWeight="Bold" Text="Building geometry" />
-                        <TextBlock Classes="muted">
+                        <TextBlock FontWeight="Bold" Text="Building geometry" TextWrapping="Wrap" />
+                        <TextBlock Classes="muted" TextWrapping="Wrap">
                           <Run Text="Polygon points " />
-                          <Run FontWeight="Bold"
-                               Text="{Binding HumanSite.TemplateAuthor.PendingPolygonPointCount}" />
+                          <Run FontWeight="Bold" Text="{Binding HumanSite.TemplateAuthor.PendingPolygonPointCount}" />
                           <Run Text=" · pending paths " />
-                          <Run FontWeight="Bold"
-                               Text="{Binding HumanSite.TemplateAuthor.PendingBuildingPathCount}" />
+                          <Run FontWeight="Bold" Text="{Binding HumanSite.TemplateAuthor.PendingBuildingPathCount}" />
                         </TextBlock>
                       </StackPanel>
                       <Button Grid.Column="1"
@@ -1237,7 +1329,6 @@
                               Command="{Binding HumanSite.TemplateAuthor.RemoveLastBuildingCommand}"
                               Content="Undo committed building" />
                     </Grid>
-
                     <WrapPanel Orientation="Horizontal">
                       <Button Margin="0,0,8,8"
                               Classes="secondary"
@@ -1255,10 +1346,7 @@
                               Classes="secondary"
                               Command="{Binding HumanSite.TemplateAuthor.CancelPolygonCommand}"
                               Content="Cancel polygon" />
-                      <TextBlock Margin="10,0,8,8"
-                                 Classes="muted"
-                                 VerticalAlignment="Center"
-                                 Text="Circle radius" />
+                      <TextBlock Margin="10,0,8,8" Classes="muted" VerticalAlignment="Center" Text="Circle radius" TextWrapping="Wrap" />
                       <NumericUpDown Width="110"
                                      Margin="0,0,8,8"
                                      Minimum="0.1"
@@ -1271,10 +1359,8 @@
                               Command="{Binding HumanSite.TemplateAuthor.AddCircleCommand}"
                               Content="Add circle here" />
                     </WrapPanel>
-
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                      <TextBox Text="{Binding HumanSite.TemplateAuthor.BuildingName, Mode=TwoWay}"
-                               PlaceholderText="Building name" />
+                      <TextBox Text="{Binding HumanSite.TemplateAuthor.BuildingName, Mode=TwoWay}" PlaceholderText="Building name" />
                       <Button Grid.Column="1"
                               Classes="secondary"
                               Command="{Binding HumanSite.TemplateAuthor.RemovePendingPathCommand}"
@@ -1289,7 +1375,6 @@
                                Text="While a polygon is active, toggling ship shields captures the current point just like the original builder." />
                   </StackPanel>
                 </Border>
-
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                   <TextBlock Classes="muted"
                              VerticalAlignment="Center"
@@ -1299,20 +1384,15 @@
                           Classes="secondary"
                           Command="{Binding HumanSite.TemplateAuthor.RequestDiscardCommand}"
                           Content="Discard draft" />
-                  <Button Grid.Column="2"
-                          Classes="secondary"
-                          Click="ExportHumanSiteTemplates_Click"
-                          Content="Export verified catalog..." />
+                  <Button Grid.Column="2" Classes="secondary" Click="ExportHumanSiteTemplates_Click" Content="Export verified catalog..." />
                 </Grid>
-
                 <Border BorderBrush="{DynamicResource RavenWarningBrush}"
                         BorderThickness="1"
                         CornerRadius="8"
                         IsVisible="{Binding HumanSite.TemplateAuthor.IsDiscardConfirmationPending}"
                         Padding="12">
                   <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                    <TextBlock VerticalAlignment="Center"
-                               Text="Discard the unexported in-memory draft?" />
+                    <TextBlock VerticalAlignment="Center" Text="Discard the unexported in-memory draft?" TextWrapping="Wrap" />
                     <Button Grid.Column="1"
                             Classes="secondary"
                             Command="{Binding HumanSite.TemplateAuthor.CancelDiscardCommand}"
@@ -1327,39 +1407,48 @@
             </StackPanel>
           </Border>
         </Expander>
-        <Border x:Name="CarrierNextJumpCard" Classes="card raised">
+        <Border x:Name="CarrierNextJumpCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="8">
+            <TextBlock Text="Personal carrier next jump" Classes="card-title" TextWrapping="Wrap" />
             <CheckBox IsChecked="{Binding FleetCarrierRoute.ShowCarrierNextJumpInformation, Mode=TwoWay}"
-                      Content="Show Carrier Next-Jump Information" />
-            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active." />
+                      Content="Show Carrier Next-Jump Information"
+                      Classes="overlay-wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Show scheduled carrier jumps and jump phases in the Fleet Carrier Route overlay, including when no route is active." />
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding FleetCarrierRoute.CarrierNextJumpSettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="SquadronCarrierNextJumpCard" Classes="card raised">
+        <Border x:Name="SquadronCarrierNextJumpCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="8">
-            <TextBlock Classes="card-title" Text="Squadron carrier next jump" />
+            <TextBlock Classes="card-title" Text="Squadron carrier next jump" TextWrapping="Wrap" />
             <CheckBox IsChecked="{Binding SquadronCarrierRoute.ShowCarrierNextJumpInformation, Mode=TwoWay}"
-                      Content="Show squadron carrier next-jump information" />
-            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active." />
+                      Content="Show squadron carrier next-jump information"
+                      Classes="overlay-wrap" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Show the squadron carrier's scheduled jump, jump phases, and destination in its own overlay, including when no SC route is active." />
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding SquadronCarrierRoute.CarrierNextJumpSettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="JumpInformationCard" Classes="card raised">
+        <Border x:Name="JumpInformationCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="14">
+            <TextBlock Text="Next-jump information" Classes="card-title" TextWrapping="Wrap" />
             <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"
-                      Content="Show next system summary before FSD jumping (uses external data)" />
+                      Content="Show next system summary before FSD jumping (uses external data)"
+                      Classes="overlay-wrap" />
             <TextBlock Margin="28,-8,0,0"
                        Classes="muted"
                        TextWrapping="Wrap"
                        Text="Displays target, route progress, discovery, traffic, services, Guardian sites, and followed-route notes while the FSD is charging or jumping." />
-            <CheckBox IsChecked="{Binding JumpInfo.Minimal, Mode=TwoWay}"
-                      Content="Show hops only" />
+            <CheckBox IsChecked="{Binding JumpInfo.Minimal, Mode=TwoWay}" Content="Show hops only" Classes="overlay-wrap" />
             <TextBlock Margin="28,-8,0,0"
                        Classes="muted"
                        TextWrapping="Wrap"
                        Text="Compact mode keeps the target and route visualization while hiding network metadata and special locations." />
             <CheckBox IsChecked="{Binding JumpInfo.ShowWhenNextHopSelected, Mode=TwoWay}"
-                      Content="Show if destination is next hop in route" />
+                      Content="Show if destination is next hop in route"
+                      Classes="overlay-wrap" />
             <TextBlock Margin="28,-8,0,0"
                        Classes="muted"
                        TextWrapping="Wrap"
@@ -1370,90 +1459,109 @@
                        Text="{Binding JumpInfo.SettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="ColonizationShoppingCard" Classes="card raised">
+        <Border x:Name="ColonizationShoppingCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="14">
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Shopping overlay" />
+              <TextBlock Classes="card-title" Text="Shopping overlay" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Configure the passive in-game commodity list and linked Fleet Carrier columns." />
             </StackPanel>
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="10">
                 <CheckBox x:Name="ColonizationAutoHideUntilDockedCheckBox"
                           IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
-                          Content="Auto hide colonization overlay until docked" />
-                <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
-                       Text="The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it." />
+                          Content="Auto hide colonization overlay until docked"
+                          Classes="overlay-wrap" />
+                <TextBlock Classes="muted"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Text="The panel appears automatically when docking or opening enabled game panels. For persistent display, turn this off and enable Colonization commodities. Turn both off to keep it hidden; the shortcut can still toggle it." />
                 <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
-                          Content="Show when looking at right-hand panel" />
+                          Content="Show when looking at right-hand panel"
+                          Classes="overlay-wrap" />
                 <CheckBox x:Name="CollapseCoveredCommodityGroupsCheckBox"
                           IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
-                          Content="Collapse cargo groups when enough on FCs" />
+                          Content="Collapse cargo groups when enough on FCs"
+                          Classes="overlay-wrap" />
                 <CheckBox x:Name="HideCollapsedCommodityGroupsCheckBox"
                           Margin="24,0,0,0"
                           IsChecked="{Binding Colonization.HideCollapsedCommodityGroups, Mode=TwoWay}"
                           IsEnabled="{Binding Colonization.CollapseCoveredCommodityGroups}"
-                          Content="Hide collapsed groups" />
+                          Content="Hide collapsed groups"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding Colonization.UseCompactScrollingCommoditiesList, Mode=TwoWay}"
-                          Content="Use compact/scrolling commodities list" />
+                          Content="Use compact/scrolling commodities list"
+                          Classes="overlay-wrap" />
                 <CheckBox x:Name="SortNeedsAscendingAtCarriersCheckBox"
                           IsChecked="{Binding Colonization.SortNeedsAscendingAtCarriers, Mode=TwoWay}">
                   <TextBlock Text="Sort needs from least to greatest while docked at FCs" TextWrapping="Wrap" />
                 </CheckBox>
                 <CheckBox x:Name="HideCommodityRowBadgesCheckBox"
                           IsChecked="{Binding Colonization.HideCommodityRowBadges, Mode=TwoWay}"
-                          Content="Hide row badges" />
-                <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                          Content="Hide row badges"
+                          Classes="overlay-wrap" />
+                <TextBlock Classes="muted"
+                           FontSize="12"
+                           TextWrapping="Wrap"
                            Text="Hide status and assignment labels beside commodity names. Completion checkmarks remain visible." />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="10">
                 <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"
-                          Content="Show Fleet Carrier aggregate counts" />
+                          Content="Show Fleet Carrier aggregate counts"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierDelta, Mode=TwoWay}"
                           IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                          Content="Show delta vs sum" />
+                          Content="Show delta vs sum"
+                          Classes="overlay-wrap" />
                 <CheckBox x:Name="CombineShipCargoCountsCheckBox"
                           IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
                           IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                          Content="Combine Ship totals into FC counts" />
+                          Content="Combine Ship totals into FC counts"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding Colonization.HighlightAlmostCoveredFleetCarrierLoads, Mode=TwoWay}"
                           IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                          Content="Highlight if ship can load enough on FCs" />
+                          Content="Highlight if ship can load enough on FCs"
+                          Classes="overlay-wrap" />
               </StackPanel>
             </Grid>
           </StackPanel>
         </Border>
-        <Border x:Name="SystemSurveyCard" Classes="card raised">
+        <Border x:Name="SystemSurveyCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="16">
             <StackPanel Spacing="4">
-              <TextBlock x:Name="SystemSurveyCardTitle" Classes="card-title" Text="System survey overlays" />
-              <TextBlock x:Name="SystemSurveyCardDescription" Classes="muted"
+              <TextBlock x:Name="SystemSurveyCardTitle" Classes="card-title" Text="System survey overlays" TextWrapping="Wrap" />
+              <TextBlock x:Name="SystemSurveyCardDescription"
+                         Classes="muted"
                          TextWrapping="Wrap"
                          Text="Configure body details, the FSS body feed, and compact system-completion overlays. These preserve the original survey rules while using the active Raven theme." />
             </StackPanel>
-
-            <Grid x:Name="ExplorationSurveyGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
+            <Grid x:Name="ExplorationSurveyGrid" ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="12">
-                <TextBlock Classes="eyebrow" Text="FSS BODY FEED" />
+                <TextBlock Classes="eyebrow" Text="FSS BODY FEED" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoShowLastFssBody, Mode=TwoWay}"
-                          Content="Show the last tuned body in FSS" />
+                          Content="Show the last tuned body in FSS"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.FssTuningDetectorEnabled, Mode=TwoWay}"
-                          Content="Detect FSS tuning completion from the game display" />
+                          Content="Detect FSS tuning completion from the game display"
+                          Classes="overlay-wrap" />
                 <CheckBox Margin="24,0,0,0"
                           IsChecked="{Binding SystemSurvey.SaveFssTuningDiagnosticImages, Mode=TwoWay}"
                           IsEnabled="{Binding SystemSurvey.FssTuningDetectorEnabled}"
-                          Content="Save a diagnostic capture when the tuning panel cannot be found" />
+                          Content="Save a diagnostic capture when the tuning panel cannot be found"
+                          Classes="overlay-wrap" />
                 <TextBlock Classes="muted"
                            IsVisible="{Binding SystemSurvey.HasFssTuningDetectorStatus}"
                            Text="{Binding SystemSurvey.FssTuningDetectorStatus}"
                            TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoShowFssInfo, Mode=TwoWay}"
-                          Content="Show exploration values in FSS" />
+                          Content="Show exploration values in FSS"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInSystemMap, Mode=TwoWay}"
-                          Content="Show list in system map" />
+                          Content="Show list in system map"
+                          Classes="overlay-wrap" />
                 <StackPanel Margin="28,0,0,0" Spacing="6">
-                  <TextBlock Text="# of bodies before scrolling:" />
+                  <TextBlock Text="# of bodies before scrolling:" TextWrapping="Wrap" />
                   <NumericUpDown Width="150"
                                  HorizontalAlignment="Left"
                                  Minimum="1"
@@ -1463,11 +1571,11 @@
                                  Value="{Binding SystemSurvey.FssBodiesBeforeScrolling, Mode=TwoWay}" />
                 </StackPanel>
                 <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInNavigationPanel, Mode=TwoWay}"
-                          Content="Show exploration values list" />
-                <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCount, Mode=TwoWay}"
-                          Content="Hide geo signal counts" />
+                          Content="Show exploration values list"
+                          Classes="overlay-wrap" />
+                <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCount, Mode=TwoWay}" Content="Hide geo signal counts" Classes="overlay-wrap" />
                 <StackPanel Spacing="6">
-                  <TextBlock Text="Minimum displayed body value (credits)" />
+                  <TextBlock Text="Minimum displayed body value (credits)" TextWrapping="Wrap" />
                   <NumericUpDown Width="150"
                                  HorizontalAlignment="Left"
                                  Minimum="0"
@@ -1477,22 +1585,23 @@
                                  Value="{Binding SystemSurvey.FssBodyValueFloor, Mode=TwoWay}" />
                 </StackPanel>
               </StackPanel>
-
               <StackPanel Grid.Column="1" Spacing="12">
-                <TextBlock Classes="eyebrow" Text="SURVEY STATUS" />
+                <TextBlock Classes="eyebrow" Text="SURVEY STATUS" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoShowSystemStatus, Mode=TwoWay}"
-                          Content="Show system DSS remaining" />
+                          Content="Show system DSS remaining"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.HighlightDssCandidates, Mode=TwoWay}"
-                          Content="Skip bodies with estimated value below:" />
+                          Content="Skip bodies with estimated value below:"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.SkipGasGiantsForDss, Mode=TwoWay}"
-                          Content="Skip DSS of gas giants" />
-                <CheckBox IsChecked="{Binding SystemSurvey.SkipRingsForDss, Mode=TwoWay}"
-                          Content="Skip DSS of rings" />
+                          Content="Skip DSS of gas giants"
+                          Classes="overlay-wrap" />
+                <CheckBox IsChecked="{Binding SystemSurvey.SkipRingsForDss, Mode=TwoWay}" Content="Skip DSS of rings" Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.SkipDistantDssCandidates, Mode=TwoWay}"
-                          Content="Skip bodies exceeding:" />
-                <StackPanel Spacing="6"
-                            IsEnabled="{Binding SystemSurvey.SkipDistantDssCandidates}">
-                  <TextBlock Text="DSS distance limit (LS from primary star)" />
+                          Content="Skip bodies exceeding:"
+                          Classes="overlay-wrap" />
+                <StackPanel Spacing="6" IsEnabled="{Binding SystemSurvey.SkipDistantDssCandidates}">
+                  <TextBlock Text="DSS distance limit (LS from primary star)" TextWrapping="Wrap" />
                   <NumericUpDown Width="150"
                                  HorizontalAlignment="Left"
                                  Minimum="0"
@@ -1501,9 +1610,8 @@
                                  FormatString="N0"
                                  Value="{Binding SystemSurvey.DssDistanceLimitLs, Mode=TwoWay}" />
                 </StackPanel>
-                <StackPanel Spacing="6"
-                            IsEnabled="{Binding SystemSurvey.HighlightDssCandidates}">
-                  <TextBlock Text="Minimum DSS value (credits)" />
+                <StackPanel Spacing="6" IsEnabled="{Binding SystemSurvey.HighlightDssCandidates}">
+                  <TextBlock Text="Minimum DSS value (credits)" TextWrapping="Wrap" />
                   <NumericUpDown Width="150"
                                  HorizontalAlignment="Left"
                                  Minimum="0"
@@ -1513,35 +1621,34 @@
                                  Value="{Binding SystemSurvey.DssValueFloor, Mode=TwoWay}" />
                 </StackPanel>
                 <CheckBox IsChecked="{Binding SystemSurvey.ShowNonBodySignals, Mode=TwoWay}"
-                          Content="Show non-body signals" />
+                          Content="Show non-body signals"
+                          Classes="overlay-wrap" />
               </StackPanel>
             </Grid>
-
             <Separator x:Name="ExobiologyExternalDataSeparator" />
-
-            <Grid x:Name="ExobiologyExternalDataGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
+            <Grid x:Name="ExobiologyExternalDataGrid" ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="12">
-                <TextBlock Classes="eyebrow" Text="CANONN PRIOR SCANS" />
+                <TextBlock Classes="eyebrow" Text="CANONN PRIOR SCANS" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.UseExternalData, Mode=TwoWay}"
-                          Content="Download star system, bodies and organic signals data from EDSM, Spansh and Canonn" />
+                          Content="Download star system, bodies and organic signals data from EDSM, Spansh and Canonn"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.UseExternalBioData, Mode=TwoWay}"
                           IsEnabled="{Binding SystemSurvey.UseExternalData}"
-                          Content="Use downloaded bio data from Canonn and Spansh" />
-                <StackPanel Spacing="12"
-                            IsEnabled="{Binding SystemSurvey.UseExternalData}">
+                          Content="Use downloaded bio data from Canonn and Spansh"
+                          Classes="overlay-wrap" />
+                <StackPanel Spacing="12" IsEnabled="{Binding SystemSurvey.UseExternalData}">
                   <CheckBox IsChecked="{Binding SystemSurvey.AutoShowPriorScans, Mode=TwoWay}"
-                            Content="Show aiming guidance to bio signals from Canonn" />
-                  <StackPanel Spacing="12"
-                              IsEnabled="{Binding SystemSurvey.AutoShowPriorScans}">
+                            Content="Show aiming guidance to bio signals from Canonn"
+                            Classes="overlay-wrap" />
+                  <StackPanel Spacing="12" IsEnabled="{Binding SystemSurvey.AutoShowPriorScans}">
                     <CheckBox IsChecked="{Binding SystemSurvey.HideOwnCanonnSignals, Mode=TwoWay}"
-                              Content="Hide my own scans. Uncheck to revisit signals after dying" />
+                              Content="Hide my own scans. Uncheck to revisit signals after dying"
+                              Classes="overlay-wrap" />
                     <CheckBox IsChecked="{Binding SystemSurvey.SkipPriorScansLowValue, Mode=TwoWay}"
-                              Content="Skip signals with reward below:" />
-                    <Grid ColumnDefinitions="*,150"
-                          ColumnSpacing="12"
-                          IsEnabled="{Binding SystemSurvey.SkipPriorScansLowValue}">
-                      <TextBlock VerticalAlignment="Center"
-                                 Text="Minimum reward (credits)" />
+                              Content="Skip signals with reward below:"
+                              Classes="overlay-wrap" />
+                    <Grid ColumnDefinitions="*,150" ColumnSpacing="12" IsEnabled="{Binding SystemSurvey.SkipPriorScansLowValue}">
+                      <TextBlock VerticalAlignment="Center" Text="Minimum reward (credits)" TextWrapping="Wrap" />
                       <NumericUpDown Grid.Column="1"
                                      Minimum="0"
                                      Maximum="100000000"
@@ -1555,25 +1662,27 @@
                            TextWrapping="Wrap"
                            Text="Prior-scan guidance uses Canonn coordinates for the current body. Disabling external data prevents these network requests." />
               </StackPanel>
-
-              <StackPanel Grid.Column="1"
-                          Spacing="12">
+              <StackPanel Grid.Column="1" Spacing="12">
                 <StackPanel Spacing="12">
-                  <CheckBox x:Name="CanonnPriorScansEnabledToggle" IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
-                            Content="Show bio signals from Canonn on the radar" />
-                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                  <CheckBox x:Name="CanonnPriorScansEnabledToggle"
+                            IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
+                            Content="Show bio signals from Canonn on the radar"
+                            Classes="overlay-wrap" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
                              Text="Controls the entire Prior Scans panel. The radar is always shown when the panel is visible." />
-                  <StackPanel Spacing="8"
-                              IsEnabled="{Binding SystemSurvey.ShowCanonnSignalsOnRadar}">
+                  <StackPanel Spacing="8" IsEnabled="{Binding SystemSurvey.ShowCanonnSignalsOnRadar}">
                     <RadioButton GroupName="CanonnRadarCircleStyle"
                                  IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"
-                                 Content="Use small circles" />
+                                 Content="Use small circles"
+                                 Classes="overlay-wrap" />
                     <RadioButton GroupName="CanonnRadarCircleStyle"
                                  IsChecked="{Binding SystemSurvey.UseBioSignalRadius, Mode=TwoWay}"
-                                 Content="Use bio signal radius" />
+                                 Content="Use bio signal radius"
+                                 Classes="overlay-wrap" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                       <StackPanel Spacing="4">
-                        <TextBlock Classes="muted" FontSize="11" Text="Small circles (~100 m)" />
+                        <TextBlock Classes="muted" FontSize="12" Text="Small circles (~100 m)" TextWrapping="Wrap" />
                         <Border Background="#101010"
                                 BorderBrush="{DynamicResource RavenBorderBrush}"
                                 BorderThickness="1"
@@ -1587,7 +1696,7 @@
                         </Border>
                       </StackPanel>
                       <StackPanel Grid.Column="1" Spacing="4">
-                        <TextBlock Classes="muted" FontSize="11" Text="Bio signal radius (organism sample range)" />
+                        <TextBlock Classes="muted" FontSize="12" Text="Bio signal radius (organism sample range)" TextWrapping="Wrap" />
                         <Border Background="#101010"
                                 BorderBrush="{DynamicResource RavenBorderBrush}"
                                 BorderThickness="1"
@@ -1608,78 +1717,79 @@
                            Text="Prior-scan guidance uses Canonn coordinates for the current body (PlotPriorScans list). When surface radar is visible, the same coordinates are drawn as rings on PlotGrounded, matching legacy drawPriorScans. Disabling external data prevents Canonn POI requests. Use External Bio Data controls whether Spansh/Canonn body biology is merged into the system scan; prior-scan coordinates still require External Data only." />
               </StackPanel>
             </Grid>
-
             <Separator x:Name="SurfaceRadarSeparator" />
-
             <StackPanel x:Name="SurfaceRadarPanel" Spacing="12">
-              <TextBlock Classes="eyebrow" Text="SURFACE RADAR" />
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+              <TextBlock Classes="eyebrow" Text="SURFACE RADAR" TextWrapping="Wrap" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
                 <StackPanel Spacing="12">
-                <CheckBox IsChecked="{Binding SystemSurvey.AutoShowSurfaceRadar, Mode=TwoWay}"
-                          Content="Show sample scan exclusion zones" />
-                <TextBlock Classes="muted"
-                           FontSize="11"
-                           TextWrapping="Wrap"
-                           Text="Surface history, trackers, and sample-exclusion rings on the bio plot radar." />
-                <CheckBox IsChecked="{Binding SystemSurvey.AutoShowMiniTrack, Mode=TwoWay}"
-                          Content="Mini trackers" />
-                <CheckBox IsChecked="{Binding SystemSurvey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn, Mode=TwoWay}"
-                          IsEnabled="{Binding SystemSurvey.AutoShowSurfaceRadar}">
-                  <TextBlock Text="Onfoot: Show only when Genetic Sampler is drawn."
-                             TextWrapping="Wrap" />
-                </CheckBox>
-                <CheckBox IsChecked="{Binding SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear, Mode=TwoWay}"
-                          Content="Hide if landing gear is not deployed when flying." />
+                  <CheckBox IsChecked="{Binding SystemSurvey.AutoShowSurfaceRadar, Mode=TwoWay}"
+                            Content="Show sample scan exclusion zones"
+                            Classes="overlay-wrap" />
+                  <TextBlock Classes="muted"
+                             FontSize="12"
+                             TextWrapping="Wrap"
+                             Text="Surface history, trackers, and sample-exclusion rings on the bio plot radar." />
+                  <CheckBox IsChecked="{Binding SystemSurvey.AutoShowMiniTrack, Mode=TwoWay}" Content="Mini trackers" Classes="overlay-wrap" />
+                  <CheckBox IsChecked="{Binding SystemSurvey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn, Mode=TwoWay}"
+                            IsEnabled="{Binding SystemSurvey.AutoShowSurfaceRadar}">
+                    <TextBlock Text="Onfoot: Show only when Genetic Sampler is drawn." TextWrapping="Wrap" />
+                  </CheckBox>
+                  <CheckBox IsChecked="{Binding SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear, Mode=TwoWay}"
+                            Content="Hide if landing gear is not deployed when flying."
+                            Classes="overlay-wrap" />
                 </StackPanel>
-
                 <StackPanel Grid.Column="1" Spacing="12">
-                <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnSampling, Mode=TwoWay}"
-                          Content="Auto remove tracker location when sampling an organism within 250 m." />
-                <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnFinalSample, Mode=TwoWay}"
-                          Content="Auto remove tracker locations upon final scan" />
-                <CheckBox IsChecked="{Binding SystemSurvey.AutoTrackCompositionScans, Mode=TwoWay}"
-                          Content="Auto add tracker location when Composition scanning organisms." />
-                <CheckBox IsChecked="{Binding SystemSurvey.SkipAnalyzedCompositionScans, Mode=TwoWay}"
-                          Content="But not if that organism has already been analyzed." />
-                <Button Classes="secondary"
-                        HorizontalAlignment="Left"
-                        Command="{Binding ClearSurfaceTrackersCommand}"
-                        Content="Clear all trackers on current body" />
-                <TextBlock Classes="muted"
-                           TextWrapping="Wrap"
-                           Text="Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control." />
-                <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
-                  <TextBlock VerticalAlignment="Center"
-                             Text="Radar size (0–4)" />
-                  <NumericUpDown Grid.Column="1"
-                                 Minimum="0"
-                                 Maximum="4"
-                                 Increment="1"
-                                 FormatString="N0"
-                                 Value="{Binding SystemSurvey.SurfaceRadarSize, Mode=TwoWay}" />
-                </Grid>
+                  <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnSampling, Mode=TwoWay}"
+                            Content="Auto remove tracker location when sampling an organism within 250 m."
+                            Classes="overlay-wrap" />
+                  <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnFinalSample, Mode=TwoWay}"
+                            Content="Auto remove tracker locations upon final scan"
+                            Classes="overlay-wrap" />
+                  <CheckBox IsChecked="{Binding SystemSurvey.AutoTrackCompositionScans, Mode=TwoWay}"
+                            Content="Auto add tracker location when Composition scanning organisms."
+                            Classes="overlay-wrap" />
+                  <CheckBox IsChecked="{Binding SystemSurvey.SkipAnalyzedCompositionScans, Mode=TwoWay}"
+                            Content="But not if that organism has already been analyzed."
+                            Classes="overlay-wrap" />
+                  <Button Classes="secondary"
+                          HorizontalAlignment="Left"
+                          Command="{Binding ClearSurfaceTrackersCommand}"
+                          Content="Clear all trackers on current body" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control." />
+                  <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                    <TextBlock VerticalAlignment="Center" Text="Radar size (0–4)" TextWrapping="Wrap" />
+                    <NumericUpDown Grid.Column="1"
+                                   Minimum="0"
+                                   Maximum="4"
+                                   Increment="1"
+                                   FormatString="N0"
+                                   Value="{Binding SystemSurvey.SurfaceRadarSize, Mode=TwoWay}" />
+                  </Grid>
                 </StackPanel>
               </Grid>
             </StackPanel>
-
             <Separator x:Name="ExobiologySurveySeparator" />
-
-            <Grid x:Name="ExobiologySurveyGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
+            <Grid x:Name="ExobiologySurveyGrid" ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="12">
-                <TextBlock Classes="eyebrow" Text="EXOBIOLOGY SURVEY" />
+                <TextBlock Classes="eyebrow" Text="EXOBIOLOGY SURVEY" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBioSystem, Mode=TwoWay}"
-                          Content="Show whole system exo bio status" />
+                          Content="Show whole system exo bio status"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBioStatus, Mode=TwoWay}"
-                          Content="Show biological signal summary" />
+                          Content="Show biological signal summary"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.SuppressForActiveBuildProjects, Mode=TwoWay}"
-                          Content="Hide survey overlays while build projects are active" />
+                          Content="Hide survey overlays while build projects are active"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoHideBioPlotOnRepeat, Mode=TwoWay}"
-                          Content="Hide completed biology overlays on repeat visits" />
+                          Content="Hide completed biology overlays on repeat visits"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.KeepBioPlottersVisibleAfterDss, Mode=TwoWay}"
-                          Content="Keep bio overlays visible after DSS scans for:" />
-                <StackPanel Orientation="Horizontal"
-                            Spacing="10"
-                            HorizontalAlignment="Left">
+                          Content="Keep bio overlays visible after DSS scans for:"
+                          Classes="overlay-wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left">
                   <NumericUpDown Width="120"
                                  MinWidth="120"
                                  IsEnabled="{Binding SystemSurvey.KeepBioPlottersVisibleAfterDss}"
@@ -1689,46 +1799,45 @@
                                  FormatString="0"
                                  HorizontalAlignment="Left"
                                  Value="{Binding SystemSurvey.BioPlotterDssDurationSeconds, Mode=TwoWay}" />
-                  <TextBlock VerticalAlignment="Center"
-                             Text="seconds" />
+                  <TextBlock VerticalAlignment="Center" Text="seconds" TextWrapping="Wrap" />
                 </StackPanel>
                 <CheckBox IsChecked="{Binding SystemSurvey.DrawBodyBiosOnlyWhenNear, Mode=TwoWay}"
-                          Content="Show body bio signals only when the target body is close by (DSS always shows the targeted body)." />
+                          Content="Show body bio signals only when the target body is close by (DSS always shows the targeted body)."
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCountInBioSystem, Mode=TwoWay}"
-                          Content="Hide geo signals" />
+                          Content="Hide geo signals"
+                          Classes="overlay-wrap" />
               </StackPanel>
-
               <StackPanel Grid.Column="1" Spacing="12">
-                <TextBlock Classes="eyebrow" Text="BIOLOGY PRESENTATION" />
+                <TextBlock Classes="eyebrow" Text="BIOLOGY PRESENTATION" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.HighlightRegionalFirsts, Mode=TwoWay}"
-                          Content="Highlight regional firsts in gold" />
+                          Content="Highlight regional firsts in gold"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.DimAnalyzedOrganisms, Mode=TwoWay}"
-                          Content="Dim if analyzed" />
+                          Content="Dim if analyzed"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.DisableBioPredictions, Mode=TwoWay}"
-                          Content="Disable organism predictions" />
+                          Content="Disable organism predictions"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.ShowTemperatureRangeDebug, Mode=TwoWay}"
-                          Content="Show biology temperature diagnostics" />
+                          Content="Show biology temperature diagnostics"
+                          Classes="overlay-wrap" />
                 <TextBlock Classes="muted"
                            TextWrapping="Wrap"
                            Text="Predictions use the bundled SrvSurvey Codex criteria; confirmed scans and rewards remain visible when predictions are disabled." />
               </StackPanel>
             </Grid>
-
             <Separator x:Name="BiologyRewardSeparator" />
-
             <StackPanel x:Name="BiologyRewardPanel" Spacing="10" HorizontalAlignment="Stretch">
-              <TextBlock Classes="eyebrow" Text="SPECIES REWARD GROUPS" />
-              <TextBlock Classes="muted"
-                         TextWrapping="Wrap"
-                         Text="Choose the reward level per group by millions of credits:" />
+              <TextBlock Classes="eyebrow" Text="SPECIES REWARD GROUPS" TextWrapping="Wrap" />
+              <TextBlock Classes="muted" TextWrapping="Wrap" Text="Choose the reward level per group by millions of credits:" />
               <!-- Match upstream FormSettings groupRingBuckets:
                    [1 bar] < n1 < [2 bars] < n2 < [3 bars] < n3 > [4 bars] -->
-              <WrapPanel Orientation="Horizontal">
-                <StackPanel Orientation="Horizontal"
-                            Spacing="10"
-                            Margin="0,0,0,8"
-                            VerticalAlignment="Center">
-                  <Border Width="48" Height="48"
+              <WrapPanel x:Name="BiologyRewardExamples">
+                <StackPanel Spacing="6" Margin="0,0,20,8">
+                  <TextBlock Text="1 band" Classes="overlay-field-label" TextWrapping="Wrap" />
+                  <Border Width="48"
+                          Height="48"
                           Background="#000000"
                           BorderBrush="{DynamicResource RavenBorderBrush}"
                           BorderThickness="1"
@@ -1736,27 +1845,22 @@
                           Padding="14,8"
                           VerticalAlignment="Center">
                     <controls:BiologyRewardBandControl Width="16"
-                                                      Height="32"
-                                                      MinimumReward="1"
-                                                      MaximumReward="1"
-                                                      BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
-                                                      BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
-                                                      BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                      FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
-                                                      PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                      EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
-                                                      EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
+                                                       Height="32"
+                                                       MinimumReward="1"
+                                                       MaximumReward="1"
+                                                       BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
+                                                       BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
+                                                       BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
+                                                       FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                       PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                       EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
+                                                       EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
                   </Border>
-                  <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
-                  <NumericUpDown Width="100"
-                                 MinWidth="100"
-                                 Minimum="0"
-                                 Maximum="20"
-                                 Increment="0.5"
-                                 FormatString="0.##"
-                                 VerticalAlignment="Center"
-                                 Value="{Binding BiologyRewards.BucketOneMillions, Mode=TwoWay}" />
-                  <Border Width="48" Height="48"
+                </StackPanel>
+                <StackPanel Spacing="6" Margin="0,0,20,8">
+                  <TextBlock Text="2 bands" Classes="overlay-field-label" TextWrapping="Wrap" />
+                  <Border Width="48"
+                          Height="48"
                           Background="#000000"
                           BorderBrush="{DynamicResource RavenBorderBrush}"
                           BorderThickness="1"
@@ -1764,27 +1868,22 @@
                           Padding="14,8"
                           VerticalAlignment="Center">
                     <controls:BiologyRewardBandControl Width="16"
-                                                      Height="32"
-                                                      MinimumReward="{Binding BiologyRewards.PreviewTwoBarReward}"
-                                                      MaximumReward="{Binding BiologyRewards.PreviewTwoBarReward}"
-                                                      BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
-                                                      BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
-                                                      BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                      FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
-                                                      PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                      EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
-                                                      EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
+                                                       Height="32"
+                                                       MinimumReward="{Binding BiologyRewards.PreviewTwoBarReward}"
+                                                       MaximumReward="{Binding BiologyRewards.PreviewTwoBarReward}"
+                                                       BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
+                                                       BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
+                                                       BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
+                                                       FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                       PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                       EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
+                                                       EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
                   </Border>
-                  <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
-                  <NumericUpDown Width="100"
-                                 MinWidth="100"
-                                 Minimum="0"
-                                 Maximum="20"
-                                 Increment="0.5"
-                                 FormatString="0.##"
-                                 VerticalAlignment="Center"
-                                 Value="{Binding BiologyRewards.BucketTwoMillions, Mode=TwoWay}" />
-                  <Border Width="48" Height="48"
+                </StackPanel>
+                <StackPanel Spacing="6" Margin="0,0,20,8">
+                  <TextBlock Text="3 bands" Classes="overlay-field-label" TextWrapping="Wrap" />
+                  <Border Width="48"
+                          Height="48"
                           Background="#000000"
                           BorderBrush="{DynamicResource RavenBorderBrush}"
                           BorderThickness="1"
@@ -1792,28 +1891,22 @@
                           Padding="14,8"
                           VerticalAlignment="Center">
                     <controls:BiologyRewardBandControl Width="16"
-                                                      Height="32"
-                                                      MinimumReward="{Binding BiologyRewards.PreviewThreeBarReward}"
-                                                      MaximumReward="{Binding BiologyRewards.PreviewThreeBarReward}"
-                                                      BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
-                                                      BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
-                                                      BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                      FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
-                                                      PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                      EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
-                                                      EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
+                                                       Height="32"
+                                                       MinimumReward="{Binding BiologyRewards.PreviewThreeBarReward}"
+                                                       MaximumReward="{Binding BiologyRewards.PreviewThreeBarReward}"
+                                                       BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
+                                                       BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
+                                                       BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
+                                                       FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                       PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                       EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
+                                                       EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
                   </Border>
-                  <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
-                  <NumericUpDown Width="100"
-                                 MinWidth="100"
-                                 Minimum="0"
-                                 Maximum="20"
-                                 Increment="0.5"
-                                 FormatString="0.##"
-                                 VerticalAlignment="Center"
-                                 Value="{Binding BiologyRewards.BucketThreeMillions, Mode=TwoWay}" />
-                  <TextBlock VerticalAlignment="Center" FontSize="16" Text="&gt;" />
-                  <Border Width="48" Height="48"
+                </StackPanel>
+                <StackPanel Spacing="6" Margin="0,0,20,8">
+                  <TextBlock Text="4 bands" Classes="overlay-field-label" TextWrapping="Wrap" />
+                  <Border Width="48"
+                          Height="48"
                           Background="#000000"
                           BorderBrush="{DynamicResource RavenBorderBrush}"
                           BorderThickness="1"
@@ -1821,21 +1914,59 @@
                           Padding="14,8"
                           VerticalAlignment="Center">
                     <controls:BiologyRewardBandControl Width="16"
-                                                      Height="32"
-                                                      MinimumReward="{Binding BiologyRewards.PreviewFourBarReward}"
-                                                      MaximumReward="{Binding BiologyRewards.PreviewFourBarReward}"
-                                                      BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
-                                                      BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
-                                                      BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                      FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
-                                                      PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
-                                                      EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
-                                                      EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
+                                                       Height="32"
+                                                       MinimumReward="{Binding BiologyRewards.PreviewFourBarReward}"
+                                                       MaximumReward="{Binding BiologyRewards.PreviewFourBarReward}"
+                                                       BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
+                                                       BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
+                                                       BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
+                                                       FilledBrush="{DynamicResource RavenOverlayBioConfirmedBrush}"
+                                                       PotentialBrush="{DynamicResource RavenOverlayBioPotentialBrush}"
+                                                       EdgeBrush="{DynamicResource RavenOverlayBioConfirmedEdgeBrush}"
+                                                       EmptyBrush="{DynamicResource RavenOverlayBioEmptyBrush}" />
                   </Border>
                 </StackPanel>
               </WrapPanel>
+              <controls:ResponsiveColumnsPanel MinimumColumnWidth="170" MaximumColumns="3" Spacing="16" x:Name="BiologyRewardThresholdFields">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="2-band threshold (M CR)" Classes="overlay-field-label" TextWrapping="Wrap" />
+                  <NumericUpDown Width="100"
+                                 MinWidth="100"
+                                 Minimum="0"
+                                 Maximum="20"
+                                 Increment="0.5"
+                                 FormatString="0.##"
+                                 VerticalAlignment="Center"
+                                 Value="{Binding BiologyRewards.BucketOneMillions, Mode=TwoWay}"
+                                 HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel Spacing="6">
+                  <TextBlock Text="3-band threshold (M CR)" Classes="overlay-field-label" TextWrapping="Wrap" />
+                  <NumericUpDown Width="100"
+                                 MinWidth="100"
+                                 Minimum="0"
+                                 Maximum="20"
+                                 Increment="0.5"
+                                 FormatString="0.##"
+                                 VerticalAlignment="Center"
+                                 Value="{Binding BiologyRewards.BucketTwoMillions, Mode=TwoWay}"
+                                 HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel Spacing="6">
+                  <TextBlock Text="4-band threshold (M CR)" Classes="overlay-field-label" TextWrapping="Wrap" />
+                  <NumericUpDown Width="100"
+                                 MinWidth="100"
+                                 Minimum="0"
+                                 Maximum="20"
+                                 Increment="0.5"
+                                 FormatString="0.##"
+                                 VerticalAlignment="Center"
+                                 Value="{Binding BiologyRewards.BucketThreeMillions, Mode=TwoWay}"
+                                 HorizontalAlignment="Left" />
+                </StackPanel>
+              </controls:ResponsiveColumnsPanel>
               <TextBlock Classes="muted"
-                         FontSize="11"
+                         FontSize="12"
                          TextWrapping="Wrap"
                          Text="Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M)." />
               <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
@@ -1843,18 +1974,18 @@
                          Text="{Binding BiologyRewards.StatusMessage}"
                          TextWrapping="Wrap" />
             </StackPanel>
-
             <Separator x:Name="BodyInformationSeparator" />
-
-            <Grid x:Name="BodyInformationGrid" ColumnDefinitions="*,*" ColumnSpacing="28">
+            <Grid x:Name="BodyInformationGrid" ColumnDefinitions="*,*" ColumnSpacing="20">
               <StackPanel Spacing="12">
-                <TextBlock Classes="eyebrow" Text="BODY INFORMATION" />
+                <TextBlock Classes="eyebrow" Text="BODY INFORMATION" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBodyInfo, Mode=TwoWay}"
-                          Content="Show body information panel" />
+                          Content="Show body information panel"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInSystemMap, Mode=TwoWay}"
-                          Content="In the System Map" />
+                          Content="In the System Map"
+                          Classes="overlay-wrap" />
                 <StackPanel Margin="24,0,0,0" Spacing="6">
-                  <TextBlock Text="Extend Body Information Preview by:" />
+                  <TextBlock Text="Extend Body Information Preview by:" TextWrapping="Wrap" />
                   <StackPanel Orientation="Horizontal" Spacing="8">
                     <NumericUpDown Width="150"
                                    Minimum="0"
@@ -1862,11 +1993,11 @@
                                    Increment="1"
                                    FormatString="N0"
                                    Value="{Binding SystemSurvey.BodyInformationPreviewExtensionSeconds, Mode=TwoWay}" />
-                    <TextBlock VerticalAlignment="Center" Text="seconds" />
+                    <TextBlock VerticalAlignment="Center" Text="seconds" TextWrapping="Wrap" />
                   </StackPanel>
                 </StackPanel>
                 <StackPanel Margin="24,0,0,0" Spacing="6">
-                  <TextBlock Text="Extend Body Predictions preview by:" />
+                  <TextBlock Text="Extend Body Predictions preview by:" TextWrapping="Wrap" />
                   <StackPanel Orientation="Horizontal" Spacing="8">
                     <NumericUpDown Width="150"
                                    Minimum="0"
@@ -1874,26 +2005,29 @@
                                    Increment="1"
                                    FormatString="N0"
                                    Value="{Binding SystemSurvey.BodyPredictionPreviewExtensionSeconds, Mode=TwoWay}" />
-                    <TextBlock VerticalAlignment="Center" Text="seconds" />
+                    <TextBlock VerticalAlignment="Center" Text="seconds" TextWrapping="Wrap" />
                   </StackPanel>
                 </StackPanel>
                 <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInOrbit, Mode=TwoWay}"
-                          Content="In orbit around a body" />
+                          Content="In orbit around a body"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoAtSurface, Mode=TwoWay}"
-                          Content="When at planet surface and not in Combat mode" />
+                          Content="When at planet surface and not in Combat mode"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.HideBodyInfoInBubble, Mode=TwoWay}"
-                          Content="But keep it hidden when in the bubble near Sol" />
+                          Content="But keep it hidden when in the bubble near Sol"
+                          Classes="overlay-wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.HideBodyInfoMaterials, Mode=TwoWay}"
-                          Content="Hide body materials" />
+                          Content="Hide body materials"
+                          Classes="overlay-wrap" />
               </StackPanel>
-
               <StackPanel Grid.Column="1" Spacing="12">
-                <TextBlock Classes="eyebrow" Text="BODY THRESHOLDS" />
+                <TextBlock Classes="eyebrow" Text="BODY THRESHOLDS" TextWrapping="Wrap" />
                 <CheckBox IsChecked="{Binding SystemSurvey.AutoShowFlightWarnings, Mode=TwoWay}"
-                          Content="Show flight warnings" />
+                          Content="Show flight warnings"
+                          Classes="overlay-wrap" />
                 <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
-                  <TextBlock VerticalAlignment="Center"
-                             Text="Sol bubble radius (ly, default 200)" />
+                  <TextBlock VerticalAlignment="Center" Text="Sol bubble radius (ly, default 200)" TextWrapping="Wrap" />
                   <NumericUpDown Grid.Column="1"
                                  Minimum="0"
                                  Maximum="10000"
@@ -1902,8 +2036,7 @@
                                  Value="{Binding SystemSurvey.BodyInfoBubbleSizeLy, Mode=TwoWay}" />
                 </Grid>
                 <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
-                  <TextBlock VerticalAlignment="Center"
-                             Text="When body gravity is above (g)" />
+                  <TextBlock VerticalAlignment="Center" Text="When body gravity is above (g)" TextWrapping="Wrap" />
                   <NumericUpDown Grid.Column="1"
                                  Minimum="0"
                                  Maximum="50"
@@ -1916,76 +2049,70 @@
                            Text="Alt+B toggles details for the current or selected body. With the bubble rule enabled, the panel stays hidden within the configured Sol radius (upstream default &lt;200 ly)." />
               </StackPanel>
             </Grid>
-
             <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                        IsVisible="{Binding SystemSurvey.HasSettingsStatus}"
                        TextWrapping="Wrap"
                        Text="{Binding SystemSurvey.SettingsStatus}" />
           </StackPanel>
         </Border>
-        <Border x:Name="PanelVisibilityCard" Classes="card raised">
+        <Border x:Name="PanelVisibilityCard" Classes="card raised overlay-settings-card">
           <StackPanel Spacing="14">
             <StackPanel Spacing="4">
-              <TextBlock Classes="card-title" Text="Panel availability and shortcuts" />
+              <TextBlock x:Name="PanelVisibilityHeading" Classes="card-title" Text="Panel availability and shortcuts" TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="These switches control panel availability. See each panel's description for its visibility behavior. Assign shortcuts here or in Settings → Input." />
+              <TextBlock Text="Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears."
+                         Classes="muted"
+                         TextWrapping="Wrap" />
             </StackPanel>
             <ItemsControl x:Name="PanelVisibilityItems">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:OverlayPanelVisibilityEntryViewModel">
-                  <Grid Margin="0,4"
-                        ColumnDefinitions="*,260"
-                        ColumnSpacing="24">
-                    <StackPanel Spacing="3">
-                      <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}"
-                                Content="{Binding DisplayName}" />
-                      <TextBlock Margin="28,0,0,0"
-                                 Classes="muted"
-                                 FontSize="11"
-                                 TextWrapping="Wrap"
-                                 Text="{Binding Description}" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="3">
-                      <TextBlock Classes="muted"
-                                 FontSize="11"
-                                 Text="Optional visibility shortcut" />
-                      <controls:ShortcutCaptureBox Chord="{Binding Shortcut.Chord, Mode=TwoWay}"
-                                                   PlaceholderText="Click, then hold shortcut keys"
-                                                   ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
-                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                                 FontSize="10"
-                                 IsVisible="{Binding Shortcut.HasValidationError}"
-                                 Text="{Binding Shortcut.ValidationMessage}" />
-                    </StackPanel>
-                  </Grid>
+                  <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,4,0,16" Margin="0,0,0,12">
+                    <Grid Margin="0,4" ColumnDefinitions="*,220" ColumnSpacing="20">
+                      <StackPanel Spacing="3">
+                        <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                  Content="{Binding DisplayName}"
+                                  Classes="overlay-wrap"
+                                  VerticalAlignment="Center" />
+                        <TextBlock Margin="28,0,0,0" Classes="muted" FontSize="12" TextWrapping="Wrap" Text="{Binding Description}" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="3">
+                        <controls:ShortcutCaptureBox Chord="{Binding Shortcut.Chord, Mode=TwoWay}"
+                                                     PlaceholderText="Click, then hold shortcut keys"
+                                                     ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
+                        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                   FontSize="12"
+                                   IsVisible="{Binding Shortcut.HasValidationError}"
+                                   Text="{Binding Shortcut.ValidationMessage}"
+                                   TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Grid x:Name="CollapseCoveredGroupsShortcutRow"
-                  Margin="0,4"
-                  ColumnDefinitions="*,260"
-                  ColumnSpacing="24">
+            <Grid x:Name="CollapseCoveredGroupsShortcutRow" Margin="0,4,0,8" ColumnDefinitions="*,220" ColumnSpacing="20">
               <StackPanel Spacing="3">
-                <TextBlock FontWeight="SemiBold" Text="Collapse cargo groups when enough on FCs" />
+                <TextBlock FontWeight="SemiBold" Text="Collapse cargo groups when enough on FCs" TextWrapping="Wrap" />
                 <TextBlock Classes="muted"
-                           FontSize="11"
+                           FontSize="12"
                            TextWrapping="Wrap"
                            Text="{Binding CollapseCoveredColonyGroupsBinding.Definition.Description}" />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="3">
-                <TextBlock Classes="muted" FontSize="11" Text="Collapse/expand shortcut" />
+                <TextBlock Classes="muted" FontSize="12" Text="Collapse/expand shortcut" TextWrapping="Wrap" />
                 <controls:ShortcutCaptureBox x:Name="CollapseCoveredGroupsShortcutBox"
                                              Chord="{Binding CollapseCoveredColonyGroupsBinding.Chord, Mode=TwoWay}"
                                              PlaceholderText="Click, then hold shortcut keys"
                                              ToolTip.Tip="Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears." />
-                <TextBlock Classes="muted"
-                           FontSize="10"
-                           Text="{Binding CollapseCoveredColonyGroupsBinding.DefaultChord}" />
+                <TextBlock Classes="muted" FontSize="12" Text="{Binding CollapseCoveredColonyGroupsBinding.DefaultChord}" TextWrapping="Wrap" />
                 <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                           FontSize="10"
+                           FontSize="12"
                            IsVisible="{Binding CollapseCoveredColonyGroupsBinding.HasValidationError}"
-                           Text="{Binding CollapseCoveredColonyGroupsBinding.ValidationMessage}" />
+                           Text="{Binding CollapseCoveredColonyGroupsBinding.ValidationMessage}"
+                           TextWrapping="Wrap" />
               </StackPanel>
             </Grid>
             <TextBlock Foreground="{DynamicResource RavenWarningBrush}"

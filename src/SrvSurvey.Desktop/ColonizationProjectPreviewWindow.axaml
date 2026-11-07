@@ -8,23 +8,45 @@
         Width="1180" Height="850" MinWidth="700" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         Title="{Binding WindowTitle}">
+  <Window.Styles>
+    <Style Selector="Grid.preview-field > TextBlock.preview-field-value">
+      <Setter Property="Grid.Column" Value="1" />
+    </Style>
+    <Style Selector="Grid.preview-field.full-width > TextBlock.preview-field-label">
+      <Setter Property="Grid.ColumnSpan" Value="2" />
+    </Style>
+    <Style Selector="Grid.preview-field.full-width > TextBlock.preview-field-value">
+      <Setter Property="Grid.Row" Value="1" />
+      <Setter Property="Grid.Column" Value="0" />
+      <Setter Property="Grid.ColumnSpan" Value="2" />
+      <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+  </Window.Styles>
   <Window.DataTemplates>
     <DataTemplate DataType="vm:PreviewField">
-      <Grid ColumnDefinitions="155,*" ColumnSpacing="12" Margin="0,5">
-        <TextBlock Classes="muted" Text="{Binding Label}" TextWrapping="Wrap" />
-        <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" />
+      <Grid Classes="preview-field" Classes.full-width="{Binding IsFullWidth}"
+            ColumnDefinitions="155,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" Margin="0,5">
+        <TextBlock Classes="muted preview-field-label" Text="{Binding Label}" TextWrapping="Wrap" />
+        <TextBlock Classes="preview-field-value" Text="{Binding Value}" TextWrapping="Wrap" />
       </Grid>
     </DataTemplate>
   </Window.DataTemplates>
   <Grid RowDefinitions="Auto,*,Auto">
     <Border Background="{DynamicResource RavenSidebarBrush}" Padding="24,20"
             BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="18">
         <StackPanel Spacing="6">
           <TextBlock Classes="eyebrow" Text="RAVEN BUILD PREVIEW" />
           <TextBlock Classes="page-title" FontSize="26" Text="{Binding Title}" TextWrapping="Wrap" />
-          <TextBlock Classes="muted" Text="{Binding Subtitle}" TextWrapping="Wrap" />
         </StackPanel>
+        <Border Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0">
+        <ScrollViewer x:Name="PreviewSubtitleScroller"
+                      MaxHeight="96" AllowAutoHide="False"
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <TextBlock x:Name="PreviewSubtitle" Classes="muted" Text="{Binding Subtitle}"
+                     TextWrapping="Wrap" Margin="0,0,16,0" />
+        </ScrollViewer>
+        </Border>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
           <ComboBox x:Name="SystemFilter" Width="200" IsVisible="{Binding IsCombinedReport}"
                     ItemsSource="{Binding SystemOptions}" SelectedItem="{Binding SelectedSystem, Mode=TwoWay}"
@@ -82,7 +104,7 @@
               <Border CornerRadius="3" ClipToBounds="True" BorderThickness="1"
                       BorderBrush="{DynamicResource RavenBorderBrush}">
                 <controls:CarrierReadinessBar x:Name="CarrierReadyProgress" Carriers="{Binding ReadyCarriers}"
-                                             Maximum="{Binding Snapshot.MaximumRequired}" Height="16"
+                                             Maximum="{Binding MaximumRequired}" Height="16"
                                              Background="{DynamicResource RavenRaisedSurfaceBrush}"
                                              AutomationProperties.Name="Ready on fleet carriers" />
               </Border>

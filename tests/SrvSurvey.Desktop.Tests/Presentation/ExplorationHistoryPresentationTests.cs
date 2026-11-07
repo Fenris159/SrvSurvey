@@ -1,0 +1,375 @@
+using System.Text.Json;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Logging;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Theming;
+using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Views;
+
+namespace SrvSurvey.Desktop.Tests.Presentation;
+
+[Collection(AvaloniaHeadlessTestCollection.Name)]
+public sealed class ExplorationHistoryPresentationTests
+{
+    [AvaloniaTheory]
+    [InlineData(1120, "monochrome-dark")]
+    [InlineData(1600, "monochrome-dark")]
+    [InlineData(760, "monochrome-dark")]
+    [InlineData(1120, "blue-dark")]
+    [InlineData(1120, "blue-light")]
+    [InlineData(760, "blue-light")]
+    [InlineData(1120, "orange-dark")]
+    [InlineData(1120, "green-dark")]
+    [InlineData(1120, "green-light")]
+    public async Task HistoryUsesTheWorkspaceWidthAndKeepsRowsClearOfTheScrollbars(int width, string theme)
+    {
+        using var fixture = new Fixture(theme);
+        await fixture.PrepareAsync();
+        ILogSink? previous = Logger.Sink;
+        var log = new BindingLogSink();
+        Logger.Sink = log;
+        var view = new ExplorationView { DataContext = fixture.Main };
+        var window = new Window
+        {
+            Width = width,
+            Height = 900,
+            Content = view,
+        };
+        try
+        {
+            window.Show();
+            fixture.Main.SelectedExplorationTabIndex = 1;
+            using WriteableBitmap? first = window.CaptureRenderedFrame();
+            Assert.NotNull(first);
+            SavePreview(first, $"history-{theme}-{width}");
+            ListBox list = view.GetVisualDescendants()
+                .OfType<ListBox>()
+                .Single(item => item.Name == "ExplorationHistoryRows");
+            Assert.Equal(50, list.ItemCount);
+            Assert.InRange(list.Bounds.Width, width - 100, width);
+            ScrollViewer scroll = list.GetVisualDescendants().OfType<ScrollViewer>().First();
+            Assert.False(scroll.AllowAutoHide);
+            ScrollContentPresenter viewport = scroll
+                .GetVisualDescendants()
+                .OfType<ScrollContentPresenter>()
+                .Single(p => p.GetVisualAncestors().OfType<ScrollViewer>().First() == scroll);
+            Assert.True(viewport.Bounds.Height > 100);
+            foreach (
+                TextBlock status in list.GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Where(block => block.Text is "Sold" or "Unsold" or "Lost")
+            )
+            {
+                Point at = status.TranslatePoint(default, viewport)!.Value;
+                Assert.True(
+                    at.X + status.Bounds.Width <= viewport.Bounds.Width - 8,
+                    "A status overlaps the vertical scrollbar."
+                );
+                string resource = status.Text switch
+                {
+                    "Sold" => "RavenSuccessBrush",
+                    "Lost" => "RavenDangerBrush",
+                    _ => "RavenWarningBrush",
+                };
+                Assert.Equal(
+                    ((ISolidColorBrush)Application.Current!.Resources[resource]!).Color,
+                    ((ISolidColorBrush)status.Foreground!).Color
+                );
+            }
+            Point titleBefore = view.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(block => block.Text == "Exploration history" && block.Classes.Contains("page-title"))
+                .TranslatePoint(default, window)!
+                .Value;
+            scroll.ScrollToEnd();
+            using WriteableBitmap? lower = window.CaptureRenderedFrame();
+            Assert.True(scroll.Offset.Y > 0);
+            Point titleAfter = view.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(block => block.Text == "Exploration history" && block.Classes.Contains("page-title"))
+                .TranslatePoint(default, window)!
+                .Value;
+            Assert.Equal(titleBefore, titleAfter);
+            SavePreview(lower!, $"history-scrolled-{theme}-{width}");
+            fixture.Main.ExplorationHistory.SelectedRow = fixture.Main.ExplorationHistory.Rows[0];
+            await fixture.Main.ExplorationHistory.PendingDetails;
+            using WriteableBitmap? details = window.CaptureRenderedFrame();
+            Assert.NotNull(details);
+            SavePreview(details, $"details-{theme}-{width}");
+            Assert.Equal("NS", Assert.Single(fixture.Main.ExplorationHistory.Bodies).BodyClass);
+            Assert.Empty(log.Messages);
+        }
+        finally
+        {
+            window.Close();
+            Logger.Sink = previous;
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task TabSelectionTrackingCopyFiltersAndPagingWorkThroughTheVisibleControls()
+    {
+        using var fixture = new Fixture("blue-light");
+        await fixture.PrepareAsync();
+        var view = new ExplorationView { DataContext = fixture.Main };
+        var window = new Window
+        {
+            Width = 1120,
+            Height = 900,
+            Content = view,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? totals = window.CaptureRenderedFrame();
+            SavePreview(totals!, "survey-totals-blue-light");
+            CheckBox tracking = view.FindControl<CheckBox>("AutoTrackExplorationValue")!;
+            tracking.BringIntoView();
+            using WriteableBitmap? profile = window.CaptureRenderedFrame();
+            SavePreview(profile!, "commander-profile-blue-light");
+            Click(window, tracking);
+            await fixture.Main.ExplorationHistory.PendingPreferenceSave;
+            Assert.True(fixture.Main.ExplorationHistory.AutoResetEstimatedValue);
+            Assert.Equal("577,650 CR", fixture.Main.EstimatedExplorationValue);
+            TabControl tabs = view.GetVisualDescendants().OfType<TabControl>().First();
+            tabs.SelectedIndex = 1;
+            using WriteableBitmap? history = window.CaptureRenderedFrame();
+            Assert.True(fixture.Main.IsExplorationHistorySelected);
+            ExplorationHistoryViewModel model = fixture.Main.ExplorationHistory;
+            Button copy = view.GetVisualDescendants()
+                .OfType<Button>()
+                .First(button => button.Classes.Contains("system-link"));
+            Click(window, copy);
+            Assert.Equal("Survey system 75", await window.Clipboard!.TryGetTextAsync());
+            ComboBox status = view.GetVisualDescendants()
+                .OfType<ExplorationHistoryView>()
+                .Single()
+                .GetVisualDescendants()
+                .OfType<ComboBox>()
+                .Single();
+            status.SelectedItem = ExplorationHistoryViewModel.StatusOptions[2];
+            await model.PendingQuery;
+            Assert.Equal(25, model.Rows.Count);
+            Assert.All(model.Rows, row => Assert.Equal("Sold", row.Status));
+            Button clear = view.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Clear"));
+            Click(window, clear);
+            await model.PendingQuery;
+            Button next = view.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "Next"));
+            Click(window, next);
+            await model.PendingQuery;
+            Assert.Equal("51–75 of 75 entries", model.PageDescription);
+            Assert.Equal(25, model.Rows.Count);
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? lastPage = window.CaptureRenderedFrame();
+            Assert.False(
+                next.IsEffectivelyEnabled,
+                $"Next command can execute: {model.NextCommand.CanExecute(null)}; query busy: {model.IsQueryBusy}; {model.PageDescription}"
+            );
+            Button previousPage = view.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Previous"));
+            Click(window, previousPage);
+            await model.PendingQuery;
+            Assert.Equal("1–50 of 75 entries", model.PageDescription);
+            TextBox search = view.GetVisualDescendants()
+                .OfType<TextBox>()
+                .Single(box => box.Name == "HistorySystemSearch");
+            search.Text = "system 75";
+            await model.PendingQuery;
+            Assert.Equal("Survey system 75", Assert.Single(model.Rows).SystemName);
+            ListBox list = view.GetVisualDescendants()
+                .OfType<ListBox>()
+                .Single(item => item.Name == "ExplorationHistoryRows");
+            list.SelectedIndex = 0;
+            await model.PendingDetails;
+            Assert.Contains("StellarMass", model.RawJson);
+            Button back = view.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => Equals(button.Content, "Back to history"));
+            Click(window, back);
+            Assert.False(model.HasSelection);
+            model.FromDate = new DateTime(2027, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            await model.PendingQuery;
+            Assert.Empty(model.Rows);
+            model.ThroughDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            await model.PendingQuery;
+            Assert.Equal("The start date must be on or before the end date.", model.StatusMessage);
+            Click(window, clear);
+            await model.PendingQuery;
+            Assert.Null(model.FromDate);
+            Assert.Null(model.ThroughDate);
+            Assert.Equal(50, model.Rows.Count);
+            Assert.Equal("History cataloged from 1 journal files for Survey commander.", model.StatusMessage);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task EmptyAndDetachedHistoryRemainSafeDuringCommanderChanges()
+    {
+        using var fixture = new Fixture("monochrome-dark", false);
+        await fixture.PrepareAsync();
+        var view = new ExplorationHistoryView { DataContext = fixture.Main.ExplorationHistory };
+        var window = new Window
+        {
+            Width = 760,
+            Height = 820,
+            Content = view,
+        };
+        window.Show();
+        using WriteableBitmap? empty = window.CaptureRenderedFrame();
+        SavePreview(empty!, "empty-history");
+        Assert.Empty(fixture.Main.ExplorationHistory.Rows);
+        fixture.Main.ExplorationHistory.SetCommander(null, null, true, false);
+        Assert.False(fixture.Main.ExplorationHistory.RefreshCommand.CanExecute(null));
+        window.Close();
+        fixture.Main.ExplorationHistory.SetCommander("F100", "Survey commander", true, true);
+        await fixture.Main.ExplorationHistory.PendingSynchronization;
+        Assert.Empty(fixture.Main.ExplorationHistory.Rows);
+    }
+
+    private static void Click(Window window, Control control)
+    {
+        using WriteableBitmap? frame = window.CaptureRenderedFrame();
+        Point point = control
+            .TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!
+            .Value;
+        window.MouseDown(point, MouseButton.Left);
+        window.MouseUp(point, MouseButton.Left);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    private static void SavePreview(WriteableBitmap frame, string name)
+    {
+        string? output = Environment.GetEnvironmentVariable("SRVSURVEY_EXPLORATION_DESIGN_OUTPUT");
+        if (output is null)
+        {
+            return;
+        }
+        Directory.CreateDirectory(output);
+        frame.Save(Path.Combine(output, name + ".png"), PngBitmapEncoderOptions.Default);
+    }
+
+    private sealed class BindingLogSink : ILogSink
+    {
+        public List<string> Messages { get; } = [];
+
+        public bool IsEnabled(LogEventLevel level, string area) => level >= LogEventLevel.Warning && area == "Binding";
+
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate) =>
+            Log(level, area, source, messageTemplate, []);
+
+        public void Log(
+            LogEventLevel level,
+            string area,
+            object? source,
+            string messageTemplate,
+            params object?[] propertyValues
+        )
+        {
+            if (IsEnabled(level, area))
+            {
+                Messages.Add(messageTemplate + " " + string.Join(" | ", propertyValues));
+            }
+        }
+    }
+
+    private sealed class Fixture : IDisposable
+    {
+        private readonly string directory = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-history-presentation-" + Guid.NewGuid()
+        );
+        private readonly RavenThemeService themes;
+        private readonly string originalTheme;
+
+        public Fixture(string theme, bool withData = true)
+        {
+            Directory.CreateDirectory(directory);
+            var lines = new List<string>
+            {
+                """{"timestamp":"2026-10-01T12:00:00Z","event":"Fileheader","Odyssey":true,"gameversion":"4.0.0"}""",
+                """{"timestamp":"2026-10-01T12:00:01Z","event":"Commander","FID":"F100","Name":"Survey commander"}""",
+            };
+            if (withData)
+            {
+                for (int i = 1; i <= 75; i++)
+                {
+                    string timestamp = new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc)
+                        .AddMinutes(i)
+                        .ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+                    lines.Add(
+                        $$"""{"timestamp":"{{timestamp}}","event":"Location","StarSystem":"Survey system {{i}}","SystemAddress":{{i}},"StarPos":[100,200,-300]}"""
+                    );
+                    lines.Add(
+                        $$"""{"timestamp":"{{timestamp}}","event":"Scan","SystemAddress":{{i}},"BodyID":0,"BodyName":"Survey system {{i}} A","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}"""
+                    );
+                    if (i == 25)
+                    {
+                        string names = JsonSerializer.Serialize(
+                            Enumerable.Range(1, 25).Select(n => "Survey system " + n)
+                        );
+                        lines.Add(
+                            $$"""{"timestamp":"{{timestamp}}","event":"SellExplorationData","Systems":{{names}},"TotalEarnings":500000}"""
+                        );
+                    }
+                    if (i == 50)
+                    {
+                        lines.Add($$"""{"timestamp":"{{timestamp}}","event":"Died"}""");
+                        lines.Add($$"""{"timestamp":"{{timestamp}}","event":"Resurrect","Option":"rebuy","Cost":0}""");
+                    }
+                }
+            }
+            File.WriteAllLines(Path.Combine(directory, "Journal.2026-10-01T120000.01.log"), lines);
+            Main = MainWindowViewModelTestBuilder.Create(
+                directory,
+                builder =>
+                    builder.WithAppDataPaths(
+                        new(
+                            Path.Combine(directory, "config"),
+                            Path.Combine(directory, "data"),
+                            Path.Combine(directory, "cache"),
+                            []
+                        )
+                    )
+            );
+            Application app = Assert.IsType<Application>(Application.Current, exactMatch: false);
+            themes = new RavenThemeService(app, new ThemePreferenceStore(Path.Combine(directory, "theme.json")));
+            Color color = Assert.IsType<ISolidColorBrush>(app.Resources["RavenWindowBrush"], exactMatch: false).Color;
+            originalTheme = RavenThemeCatalog.All.Single(palette => Color.Parse(palette.WindowColor) == color).Key;
+            themes.Select(theme == "blue-dark" ? "monochrome-dark" : "blue-dark");
+            themes.Select(theme);
+        }
+
+        public MainWindowViewModel Main { get; }
+
+        public async Task PrepareAsync()
+        {
+            await Main.RefreshAsync();
+            await Main.ExplorationHistory.PendingSynchronization;
+        }
+
+        public void Dispose()
+        {
+            Main.Dispose();
+            themes.Select(originalTheme);
+            Directory.Delete(directory, true);
+        }
+    }
+}

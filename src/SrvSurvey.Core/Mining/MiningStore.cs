@@ -12,7 +12,6 @@ public enum MiningSessionYieldSort
 
 public sealed record MiningPreferences
 {
-    public bool ReceiveCommunityData { get; set; }
     public MiningSearchPreferences SearchOptions { get; set; } = new();
     public bool AutoStart { get; set; } = true;
     public bool AutoStopAfterTravel { get; set; } = true;
@@ -82,9 +81,23 @@ public sealed record MiningRing
 }
 
 /// <summary>Commander-scoped mining history and recovery, stored independently of overlay configuration.</summary>
-public sealed class MiningStore(string directory)
+public sealed class MiningStore
 {
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
+    private readonly string directory;
+
+    public MiningStore(string directory)
+    {
+        this.directory = directory;
+        try
+        {
+            File.Delete(Path.Combine(directory, "mining", "community-cache.json"));
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // The retired cache is never read. A locked or protected cache must not block mining startup.
+        }
+    }
 
     public MiningCommanderData Load(string commander)
     {

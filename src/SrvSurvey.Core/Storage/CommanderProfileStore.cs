@@ -89,7 +89,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             GetString(root, ActiveJourneyPropertyName),
             GetString(root, "inaraApiKey"),
             GetString(root, "edsmCommanderName"),
-            GetString(root, "edsmApiKey")
+            GetString(root, "edsmApiKey"),
+            GetBoolean(root, "autoResetExplorationValue") ?? false
         );
         return new CommanderProfileLoadResult(path, true, data, null);
     }
@@ -121,6 +122,21 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             )
             .ConfigureAwait(false);
     }
+
+    public Task SaveExplorationTrackingAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        bool autoReset,
+        CancellationToken cancellationToken = default
+    ) =>
+        SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root => root["autoResetExplorationValue"] = autoReset,
+            cancellationToken
+        );
 
     public async Task SaveExobiologyAsync(
         string frontierId,
@@ -997,7 +1013,8 @@ public sealed record CommanderProfileData(
     string? ActiveJourneyFileName = null,
     string? InaraApiKey = null,
     string? EdsmCommanderName = null,
-    string? EdsmApiKey = null
+    string? EdsmApiKey = null,
+    bool AutoResetExplorationValue = false
 );
 
 public sealed record CommanderProfileLoadResult(string Path, bool Exists, CommanderProfileData? Data, string? Error)

@@ -1906,22 +1906,15 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
-    public async Task ExpansionUsesLocalObservationsAndIsOnlyAnAcquisitionCandidate()
+    public async Task ExpansionIsOnlyAnAcquisitionCandidate()
     {
-        var cache = new MiningCommunityCache();
-        DateTimeOffset now = DateTimeOffset.UtcNow;
-        cache.Apply(
-            $$$"""{"$schemaRef":"https://eddn.edcd.io/schemas/journal/1","message":{"timestamp":"{{{now:O}}}","event":"Location","StarSystem":"Wille","StarPos":[0,0,0],"ControllingPower":"Aisling Duval","PowerplayState":"Expansion"}}""",
-            now
-        );
         using var http = new HttpClient(new WorkflowHandler());
         using var model = new MiningSearchViewModel(
             new(http),
             new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
             _ => { },
             () => [],
-            new Resolver(),
-            cache
+            new Resolver()
         )
         {
             Reference = "Wille",
@@ -1941,7 +1934,7 @@ public sealed class MiningSearchViewModelTests
         Assert.Contains("Fortified or Stronghold", model.Status);
         model.Security = "High";
         await model.SearchSystemsAsync();
-        Assert.Empty(model.Systems); // The journal cannot certify security.
+        Assert.Empty(model.Systems);
     }
 
     private sealed class WorkflowHandler : HttpMessageHandler

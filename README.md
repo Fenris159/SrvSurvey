@@ -162,9 +162,9 @@ Select either compact preview to open the full screenshot.
 - Ring and hotspot searches combine local data, bundled reference data and
   Spansh results. Commodity-market, system and trader searches include distance
   shortcuts and available Fleet Carrier observations.
-- Optional receive-only EDDN observations can supplement commodity prices and
-  Powerplay information. Market observations can age or change, so confirm the
-  destination before committing a full cargo load.
+- Commodity prices use Ardent with Spansh fallback; Powerplay searches use
+  Spansh. EDDN sharing contributes your observations through the existing upload
+  settings. Mining searches do not subscribe to or cache incoming EDDN data.
 
 ### Surface Mining maps and survey guidance
 
@@ -456,7 +456,7 @@ The supported stack is intentionally small:
 | Rendering | SkiaSharp 3.119 |
 | Global input | SDL3 and SharpHook |
 | VR support | OVRSharp binding with Valve OpenVR 2.15.6 clients |
-| Messaging and storage | NetMQ, Newtonsoft.Json and application-owned JSON stores |
+| Storage | Newtonsoft.Json and application-owned JSON stores |
 | Formatting and analysis | CSharpier, SDK NetAnalyzers and SonarAnalyzer.CSharp |
 
 See [Development and validation](docs/DEVELOPMENT.md) for the repository layout,

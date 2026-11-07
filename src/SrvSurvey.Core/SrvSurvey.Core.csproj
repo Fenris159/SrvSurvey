@@ -11,6 +11,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\ReferenceData\edsy-modules.json" LogicalName="SrvSurvey.Core.Resources.edsy-modules.json" />
     <PackageReference Include="LuaCSharp" Version="0.5.3" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 

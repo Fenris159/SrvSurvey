@@ -230,7 +230,7 @@
           <Border Classes="card raised">
             <StackPanel Spacing="8">
               <TextBlock Text="Platinum Spots++" Classes="card-title"/>
-              <TextBlock Text="Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump." TextWrapping="Wrap" Classes="muted"/>
+              <TextBlock Text="Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump." TextWrapping="Wrap" Classes="muted"/>
               <WrapPanel>
                 <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Result set"/><ComboBox ItemsSource="{Binding PlatinumModes}" SelectedItem="{Binding PlatinumMode}"/></StackPanel>
                 <StackPanel Spacing="4" Width="190" Margin="0,0,12,10"><TextBlock Text="Reserve level"/><ComboBox ItemsSource="{Binding Reserves}" SelectedItem="{Binding Reserve}"/></StackPanel>
