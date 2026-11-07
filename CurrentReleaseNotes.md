@@ -31,6 +31,8 @@ theme, clearer control groups, and space reserved for scrollbars.
   metadata index stores ownership and source references rather than another
   copy of the journals. Missing originals are flagged, while catalogued history
   is retained. Late imports and changed sources are reconciled transactionally.
+  Missing required journals keep automatic balances paused, including during
+  filter or storage errors. Complete records replay before recovery is confirmed.
   Temporarily unavailable Scan records defer mapping updates until recovery, and
   newly learned identifiers preserve already-paid ownership. Local indexes are
   kept clear of portable profile backup scans.
@@ -51,7 +53,7 @@ theme, clearer control groups, and space reserved for scrollbars.
   projects remain excluded.
 - **Correct loading progress:** Carrier loading projects with no fulfilled needs
   display 0% progress rather than an unknown percentage. Missing remaining
-  totals are calculated from outstanding cargo.
+  totals are calculated from outstanding cargo, with aliases counted once.
 - **Show prepared buildings:** Loading previews, project details, and CSV exports
   list the
   prepared building names and quantities. Comma-separated summaries wrap across

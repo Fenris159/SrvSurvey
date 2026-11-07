@@ -98,8 +98,12 @@ public sealed class ExplorationHistoryViewModelTests
         Assert.Equal("Copied system name: Alpha Survey", model.StatusMessage);
     }
 
-    [Fact]
-    public async Task MissingOriginalScansWithholdTheAutomaticBalanceUntilMappingCanRecover()
+    [Theory]
+    [InlineData("none")]
+    [InlineData("dates")]
+    [InlineData("query")]
+    [InlineData("storage")]
+    public async Task MissingOriginalScansWithholdTheAutomaticBalanceUntilMappingCanRecover(string readFailure)
     {
         using var fixture = new Fixture(false);
         await File.AppendAllTextAsync(
@@ -107,10 +111,30 @@ public sealed class ExplorationHistoryViewModelTests
             """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}"""
                 + "\n"
         );
-        await using ExplorationHistoryViewModel model = fixture.Create();
+        bool failReads = false;
+        await using var model = new ExplorationHistoryViewModel(
+            fixture.Data,
+            fixture.Profiles,
+            () => [fixture.Journals],
+            queryReader: (catalog, query, token) =>
+                failReads
+                    ? Task.FromException<ExplorationHistoryPage>(new IOException("Page unavailable."))
+                    : catalog.QueryAsync(query, token),
+            summaryReader: (catalog, token) =>
+                failReads && readFailure == "storage"
+                    ? Task.FromException<ExplorationHistorySummary>(new IOException("Summary unavailable."))
+                    : catalog.ReadSummaryAsync(token)
+        );
         model.SetCommander("F100", "Survey commander", true, true);
         await model.PendingSynchronization;
         Assert.Equal(449200, model.AutomaticEstimatedValue);
+        if (readFailure == "dates")
+        {
+            model.FromDate = new DateTime(2026, 10, 2, 0, 0, 0, DateTimeKind.Utc);
+            model.ThroughDate = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+            await model.PendingQuery;
+        }
+        failReads = readFailure is "query" or "storage";
         string path = fixture.JournalPath("F100");
         File.Move(path, path + ".saved");
         await File.WriteAllLinesAsync(
@@ -126,8 +150,99 @@ public sealed class ExplorationHistoryViewModelTests
         Assert.Equal("449,200 CR", Assert.Single(model.Rows).Estimate);
         Assert.Contains("Restore the journal", model.StatusMessage);
         File.Move(path + ".saved", path);
+        failReads = false;
+        model.FromDate = null;
+        model.ThroughDate = null;
+        await model.PendingQuery;
         await model.RefreshAsync();
         Assert.Equal(2700541, model.AutomaticEstimatedValue);
+    }
+
+    [Fact]
+    public async Task APreFailurePageCannotRestoreEligibilityWhileRecoverySummaryIsLoading()
+    {
+        using var fixture = new Fixture(false);
+        await File.AppendAllTextAsync(
+            fixture.JournalPath("F100"),
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}"""
+                + "\n"
+        );
+        var queryEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseQuery = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var summaryEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseSummary = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int holdQuery = 0;
+        bool holdSummary = false;
+        await using var model = new ExplorationHistoryViewModel(
+            fixture.Data,
+            fixture.Profiles,
+            () => [fixture.Journals],
+            queryReader: async (catalog, query, token) =>
+            {
+                ExplorationHistoryPage page = await catalog.QueryAsync(query, token);
+                if (Interlocked.Exchange(ref holdQuery, 0) == 1)
+                {
+                    queryEntered.TrySetResult();
+                    await releaseQuery.Task.WaitAsync(token);
+                }
+                return page;
+            },
+            summaryReader: async (catalog, token) =>
+            {
+                ExplorationHistorySummary summary = await catalog.ReadSummaryAsync(token);
+                if (holdSummary)
+                {
+                    summaryEntered.TrySetResult();
+                    await releaseSummary.Task.WaitAsync(token);
+                }
+                return summary;
+            }
+        );
+        try
+        {
+            model.SetCommander("F100", "Survey commander", true, true);
+            await model.PendingSynchronization;
+            Assert.Equal(449200, model.AutomaticEstimatedValue);
+            Interlocked.Exchange(ref holdQuery, 1);
+            model.SearchText = "Alpha";
+            Task previous = model.PendingQuery;
+            await queryEntered.Task;
+            File.Move(fixture.JournalPath("F100"), fixture.JournalPath("F100") + ".saved");
+            const string name = "Journal.2026-10-01T140000.01.log";
+            const string mapping =
+                """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey 1","ProbesUsed":5,"EfficiencyTarget":6}""";
+            await File.WriteAllTextAsync(
+                Path.Combine(fixture.Journals, name),
+                """
+                {"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","Odyssey":true}
+                {"event":"Commander","FID":"F100"}
+                """
+                    + "\n"
+                    + mapping
+                    + "\n"
+            );
+            Assert.True(
+                SrvSurvey.Core.Journal.JournalEventEnvelope.TryParse(
+                    mapping,
+                    out SrvSurvey.Core.Journal.JournalEventEnvelope? observed,
+                    out _
+                )
+            );
+            holdSummary = true;
+            model.Observe([observed! with { SourceRecordIdentity = name + ":0" }]);
+            await summaryEntered.Task;
+            releaseQuery.TrySetResult();
+            await previous;
+            Assert.Null(model.AutomaticEstimatedValue);
+            releaseSummary.TrySetResult();
+            await model.PendingSynchronization;
+            Assert.Null(model.AutomaticEstimatedValue);
+        }
+        finally
+        {
+            releaseQuery.TrySetResult();
+            releaseSummary.TrySetResult();
+        }
     }
 
     [Fact]

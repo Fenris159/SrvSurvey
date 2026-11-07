@@ -4,13 +4,15 @@ namespace SrvSurvey.Core.Exploration.History;
 
 public sealed partial class ExplorationHistoryCatalog
 {
+    private const string NameParameter = "@name";
+    private const string SystemParameter = "@system";
     private const string TimeParameter = "@time";
     private const string SourceParameter = "@source";
     private const string OffsetParameter = "@offset";
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
     private const string ValuationVersionKey = "valuation_version";
-    private const string CurrentValuationVersion = "2";
+    private const string CurrentValuationVersion = "3";
     private const string ReconciliationPendingKey = "reconciliation_pending";
     private const string UnknownMappingPrefix = "unconfirmed_mapping:";
     private const int CurrentSchemaVersion = 5;

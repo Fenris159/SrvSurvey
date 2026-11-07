@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Exploration.History;
@@ -48,6 +49,24 @@ public sealed partial class ExplorationHistoryCatalog
         IReadOnlyList<string> journalDirectories,
         CancellationToken cancellationToken = default
     ) => Task.Run(() => Observe(events, journalDirectories, cancellationToken), cancellationToken);
+
+    /// <summary>Reads commander-wide balance eligibility independently of the history page's display filters.</summary>
+    public Task<ExplorationHistorySummary> ReadSummaryAsync(CancellationToken cancellationToken = default) =>
+        Task.Run(() => ReadCatalogSummary(cancellationToken), cancellationToken);
+
+    private ExplorationHistorySummary ReadCatalogSummary(CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        if (!File.Exists(FilePath))
+        {
+            return new();
+        }
+        using SqliteConnection connection = Open(initialize: false);
+        using SqliteTransaction snapshot = connection.BeginTransaction(deferred: true);
+        ExplorationHistorySummary result = ReadSummary(connection);
+        snapshot.Commit();
+        return result;
+    }
 
     public Task<ExplorationHistoryPage> QueryAsync(
         ExplorationHistoryQuery query,

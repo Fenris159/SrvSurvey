@@ -47,7 +47,11 @@ public sealed record ColonizationProject
     {
         get =>
             remainingRequired
-            ?? (int)Math.Min(int.MaxValue, (Commodities?.Values.Sum(value => Math.Max(0L, value)) ?? 0));
+            ?? (int)
+                Math.Min(
+                    int.MaxValue,
+                    ColonizationCarrierInventory.NormalizeStock(Commodities ?? []).Values.Sum(value => (long)value)
+                );
         init => remainingRequired = value;
     }
 

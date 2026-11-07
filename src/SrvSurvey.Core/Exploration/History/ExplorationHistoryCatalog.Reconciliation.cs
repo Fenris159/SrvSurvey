@@ -9,10 +9,13 @@ public sealed partial class ExplorationHistoryCatalog
 {
     private sealed record BodyOwnership(long PaidValue, long PendingValue, long? BatchId, OriginalReference? Scan);
 
-    private sealed class OriginalScanUnavailableException()
+    private sealed class OriginalScanUnavailableException(OriginalReference record)
         : IOException(
             "An original Scan is unavailable. Restore the journal and refresh; later exploration records have been deferred."
-        ) { }
+        )
+    {
+        public OriginalReference Record { get; } = record;
+    }
 
     private void ApplyEntry(
         SqliteConnection connection,
@@ -159,7 +162,7 @@ public sealed partial class ExplorationHistoryCatalog
                 x=COALESCE(excluded.x,systems.x),y=COALESCE(excluded.y,systems.y),z=COALESCE(excluded.z,systems.z);
             """,
             ("@key", key),
-            ("@name", name ?? "System " + address),
+            (NameParameter, name ?? "System " + address),
             ("@address", address),
             ("@x", samePosition ? context.X : null),
             ("@y", samePosition ? context.Y : null),
@@ -224,8 +227,8 @@ public sealed partial class ExplorationHistoryCatalog
             ON CONFLICT(key) DO UPDATE SET name=COALESCE(excluded.name,bodies.name),body_id=COALESCE(excluded.body_id,bodies.body_id),scan_source_id=excluded.scan_source_id,scan_offset=excluded.scan_offset,scan_hash=excluded.scan_hash;
             """,
             ("@key", body),
-            ("@system", system),
-            ("@name", Text(root, "BodyName") ?? Text(root, "Body")),
+            (SystemParameter, system),
+            (NameParameter, Text(root, "BodyName") ?? Text(root, "Body")),
             ("@bodyId", Integer(root, "BodyID")),
             (SourceParameter, reference.SourceId),
             (OffsetParameter, reference.Offset),
@@ -259,10 +262,18 @@ public sealed partial class ExplorationHistoryCatalog
                     "notice",
                     "Some mapping values need original scan records that are not available."
                 );
+                Execute(
+                    connection,
+                    "INSERT OR IGNORE INTO bodies(key,system_key,name,body_id) VALUES(@key,@system,@name,@id);",
+                    ("@key", body),
+                    (SystemParameter, system),
+                    (NameParameter, Text(entry.Payload, "BodyName") ?? Text(entry.Payload, "Body")),
+                    ("@id", Integer(entry.Payload, "BodyID"))
+                );
                 SetMetadata(connection, UnknownMappingPrefix + body, system!);
                 return;
             }
-            throw new OriginalScanUnavailableException();
+            throw new OriginalScanUnavailableException(reference);
         }
         long probes = Integer(entry.Payload, "ProbesUsed") ?? long.MaxValue;
         long target = Integer(entry.Payload, "EfficiencyTarget") ?? -1;
@@ -316,7 +327,7 @@ public sealed partial class ExplorationHistoryCatalog
         using SqliteCommand find = Command(
             connection,
             "SELECT id FROM batches WHERE system_key=@system AND status=0;",
-            ("@system", system)
+            (SystemParameter, system)
         );
         object? value = find.ExecuteScalar();
         long batch;
@@ -329,7 +340,7 @@ public sealed partial class ExplorationHistoryCatalog
             using SqliteCommand insert = Command(
                 connection,
                 "INSERT INTO batches(system_key,first_time,last_time) VALUES(@system,@time,@time) RETURNING id;",
-                ("@system", system),
+                (SystemParameter, system),
                 (TimeParameter, Timestamp(entry.Timestamp))
             );
             batch = Convert.ToInt64(insert.ExecuteScalar(), CultureInfo.InvariantCulture);
@@ -440,7 +451,7 @@ public sealed partial class ExplorationHistoryCatalog
                 WHERE status=0 AND system_key IN (SELECT key FROM systems WHERE name=@name COLLATE NOCASE);
                 DELETE FROM metadata WHERE key LIKE @unknown AND value IN (SELECT key FROM systems WHERE name=@name COLLATE NOCASE);
                 """,
-                ("@name", name),
+                (NameParameter, name),
                 ("@unknown", UnknownMappingPrefix + "%"),
                 (TimeParameter, Timestamp(entry.Timestamp)),
                 ("@settlement", settlement)

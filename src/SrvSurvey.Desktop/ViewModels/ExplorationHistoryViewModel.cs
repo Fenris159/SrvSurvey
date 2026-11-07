@@ -28,6 +28,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         CancellationToken,
         Task<ExplorationHistoryDetails>
     > detailReader;
+    private readonly Func<ExplorationHistoryCatalog, CancellationToken, Task<ExplorationHistorySummary>> summaryReader;
     private readonly HistoryCommand refreshCommand;
     private readonly HistoryCommand previousCommand;
     private readonly HistoryCommand nextCommand;
@@ -74,7 +75,8 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             ExplorationHistoryRow,
             CancellationToken,
             Task<ExplorationHistoryDetails>
-        >? detailReader = null
+        >? detailReader = null,
+        Func<ExplorationHistoryCatalog, CancellationToken, Task<ExplorationHistorySummary>>? summaryReader = null
     )
     {
         this.dataDirectory = dataDirectory;
@@ -82,6 +84,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         this.journalDirectories = journalDirectories;
         this.queryReader = queryReader ?? (static (catalog, query, token) => catalog.QueryAsync(query, token));
         this.detailReader = detailReader ?? (static (catalog, row, token) => catalog.ReadDetailsAsync(row, token));
+        this.summaryReader = summaryReader ?? (static (catalog, token) => catalog.ReadSummaryAsync(token));
         refreshCommand = new HistoryCommand(RefreshAsync, () => HasCommander && !IsBusy);
         previousCommand = new HistoryCommand(() => MovePageAsync(-1), () => pageOffset > 0 && !IsQueryBusy);
         nextCommand = new HistoryCommand(
@@ -398,10 +401,43 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         {
             return;
         }
+        queryGeneration++;
+        summary = summary with { IsComplete = false };
+        NotifyBalance();
+        await RefreshRecoverySummaryAsync(version, token);
+        if (!Current(version, token))
+        {
+            return;
+        }
         await QueryAsync();
         if (Current(version, token))
         {
             StatusMessage = "Exploration history could not be updated: " + exception.Message;
+        }
+    }
+
+    private async Task RefreshRecoverySummaryAsync(long version, CancellationToken token)
+    {
+        if (catalog is not { } current)
+        {
+            return;
+        }
+        try
+        {
+            ExplorationHistorySummary verified = await TrackIo(summaryReader(current, token));
+            if (Current(version, token))
+            {
+                summary = verified;
+                NotifyBalance();
+            }
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // The owning commander has changed or the workspace has closed.
+        }
+        catch (Exception exception) when (IsStorageFailure(exception))
+        {
+            // Eligibility stays unavailable until an independent summary can be verified.
         }
     }
 

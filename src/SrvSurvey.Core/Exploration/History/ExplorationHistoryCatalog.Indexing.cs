@@ -32,11 +32,14 @@ public sealed partial class ExplorationHistoryCatalog
     {
         using SqliteConnection connection = Open();
         JournalSource[] sources = discover();
-        if (ReadMetadata(connection, ReconciliationPendingKey) is not null)
+        DeferredJournal[] required = ReadDeferredJournals(connection);
+        if (required.Length > 0)
         {
             sources = DiscoverSources(directories, token);
+            required = PrepareDeferredJournals(required, sources, token);
             fullBackfill = true;
         }
+        JournalSource? interrupted = null;
         Execute(connection, "BEGIN IMMEDIATE;");
         try
         {
@@ -46,6 +49,7 @@ public sealed partial class ExplorationHistoryCatalog
             )
             {
                 sources = DiscoverSources(directories, token);
+                required = PrepareDeferredJournals(required, sources, token);
                 Rebuild(connection, sources);
                 fullBackfill = true;
             }
@@ -53,10 +57,12 @@ public sealed partial class ExplorationHistoryCatalog
             foreach (JournalSource source in sources)
             {
                 token.ThrowIfCancellationRequested();
+                interrupted = source;
                 IndexSource(connection, source, ReadSource(connection, source), token);
                 progress?.Report(new ExplorationHistoryProgress(++processed, sources.Length, source.Name));
             }
             token.ThrowIfCancellationRequested();
+            VerifyDeferredProgress(connection, required, sources, token);
             SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
             Execute(connection, "DELETE FROM metadata WHERE key=@key;", ("@key", ReconciliationPendingKey));
             if (fullBackfill)
@@ -69,9 +75,9 @@ public sealed partial class ExplorationHistoryCatalog
         catch (Exception exception)
         {
             Execute(connection, "ROLLBACK;");
-            if (exception is OriginalScanUnavailableException)
+            if (exception is OriginalScanUnavailableException unavailable)
             {
-                SetMetadata(connection, ReconciliationPendingKey, "1");
+                RetainDeferredJournals(connection, sources, interrupted, unavailable, token);
             }
             throw;
         }
