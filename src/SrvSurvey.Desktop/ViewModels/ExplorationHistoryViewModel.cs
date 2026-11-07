@@ -435,9 +435,13 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         {
             if (Current(version, token) && IsBusy)
             {
-                StatusMessage = value.IsPreparing
-                    ? $"Verifying journal {value.ProcessedFiles:N0} of {value.TotalFiles:N0}: {value.CurrentFile}"
-                    : $"Cataloging journal {value.ProcessedFiles:N0} of {value.TotalFiles:N0}: {value.CurrentFile}";
+                StatusMessage = value switch
+                {
+                    { IsDiscovering: true } => $"Discovering journal: {value.CurrentFile}",
+                    { IsPreparing: true } =>
+                        $"Verifying journal {value.ProcessedFiles:N0} of {value.TotalFiles:N0}: {value.CurrentFile}",
+                    _ => $"Cataloging journal {value.ProcessedFiles:N0} of {value.TotalFiles:N0}: {value.CurrentFile}",
+                };
             }
         });
         return confirmRecovery

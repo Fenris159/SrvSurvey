@@ -9345,6 +9345,10 @@
       "translation": "Entdeckungen, die für dieses System im Laufe seiner Zeitschriftengeschichte aufgezeichnet wurden. Tags werden nicht zur Bonitätsschätzung hinzugefügt."
     },
     {
+      "source": "Discovering journal: {0}",
+      "translation": "Entdeckungsjournal: {0}"
+    },
+    {
       "source": "Discovery",
       "translation": "Entdeckung"
     },
@@ -51705,6 +51709,10 @@
     {
       "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
       "translation": "Descubrimientos registrados para este sistema a lo largo de la historia de su revista. Las etiquetas no se suman a la estimación de crédito."
+    },
+    {
+      "source": "Discovering journal: {0}",
+      "translation": "Diario de descubrimiento: {0}"
     },
     {
       "source": "Discovery",
@@ -94069,6 +94077,10 @@
       "translation": "Découvertes enregistrées pour ce système tout au long de l'historique de son journal. Les balises ne s’ajoutent pas à l’estimation du crédit."
     },
     {
+      "source": "Discovering journal: {0}",
+      "translation": "Journal de découverte : {0}"
+    },
+    {
       "source": "Discovery",
       "translation": "Découverte"
     },
@@ -136429,6 +136441,10 @@
     {
       "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
       "translation": "Descobertas registradas para este sistema ao longo da história do diário. As tags não são adicionadas à estimativa de crédito."
+    },
+    {
+      "source": "Discovering journal: {0}",
+      "translation": "Diário de descoberta: {0}"
     },
     {
       "source": "Discovery",
@@ -178793,6 +178809,10 @@
       "translation": "Открытия, зафиксированные для этой системы на протяжении всей ее журнальной истории. Теги не увеличивают кредитную оценку."
     },
     {
+      "source": "Discovering journal: {0}",
+      "translation": "Журнал открытия: {0}"
+    },
+    {
       "source": "Discovery",
       "translation": "Открытие"
     },
@@ -221155,6 +221175,10 @@
       "translation": "该系统在其期刊历史中记录的发现。标签不会添加到信用评估中。"
     },
     {
+      "source": "Discovering journal: {0}",
+      "translation": "发现日志：{0}"
+    },
+    {
       "source": "Discovery",
       "translation": "发现"
     },
@@ -263515,6 +263539,10 @@
     {
       "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
       "translation": "* DISCOVERIES RECORDED FOR THIS SYSTEM ACROSS ITS JOURNAL HISTORY. TAGS DO NOT ADD TO THE CREDIT ESTIMATE. >>>!"
+    },
+    {
+      "source": "Discovering journal: {0}",
+      "translation": "* DISCOVERING JOURNAL: {0} >>>!"
     },
     {
       "source": "Discovery",

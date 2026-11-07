@@ -37,7 +37,10 @@ theme, clearer control groups, and space reserved for scrollbars.
   Older retries that cannot prove every input keep tracking paused until you
   restore the journals and confirm recovery in the History tab. Known
   fingerprints still have to match. Live updates read the appended journal
-  range, and repeated retries keep their metadata compact.
+  range, and repeated retries keep their metadata compact. Required journal
+  evidence survives failed recovery attempts. Commander context is checked
+  before reusing a journal checkpoint, and unstable reads keep tracking paused
+  until every required source returns and replays.
   Temporarily unavailable Scan records defer mapping updates until recovery, and
   newly learned identifiers preserve already-paid ownership. Local indexes are
   kept clear of portable profile backup scans.

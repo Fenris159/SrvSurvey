@@ -18747,6 +18747,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
+    "Text": "Discovering journal: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Discovery",
     "IsFormat": false,
     "SourceKinds": [

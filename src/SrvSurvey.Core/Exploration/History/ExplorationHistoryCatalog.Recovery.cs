@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Exploration.History;
 
@@ -17,7 +18,10 @@ public sealed partial class ExplorationHistoryCatalog
         long ModifiedTicks = 0,
         long CreatedTicks = 0,
         long RawLength = 0,
-        bool ConfirmationRequired = false
+        bool ConfirmationRequired = false,
+        long? RecordOffset = null,
+        string? RecordHash = null,
+        string? CheckpointContext = null
     );
 
     private static DeferredJournal[] ReadDeferredJournals(SqliteConnection connection)
@@ -53,7 +57,8 @@ public sealed partial class ExplorationHistoryCatalog
     }
 
     private static bool NeedsRecoveryConfirmation(SqliteConnection connection, DeferredJournal[] required) =>
-        ReadMetadata(connection, ReconciliationPendingKey) == "1"
+        ReadMetadata(connection, RecoveryConfirmationKey) == "1"
+        || ReadMetadata(connection, ReconciliationPendingKey) == "1"
         || required.Any(item => item.ConfirmationRequired || (item.FormatVersion == 0 && item.PrefixHash is null));
 
     private static void RetainDeferredJournals(SqliteConnection connection, params DeferredJournal[][] batches)
@@ -61,6 +66,10 @@ public sealed partial class ExplorationHistoryCatalog
         DeferredJournal[] required = CompactDeferredJournals(
             ReadDeferredJournals(connection).Concat(batches.SelectMany(batch => batch))
         );
+        if (required.Any(item => item.ConfirmationRequired))
+        {
+            SetMetadata(connection, RecoveryConfirmationKey, "1");
+        }
         if (required.Length > 0)
         {
             SetMetadata(connection, ReconciliationPendingKey, JsonSerializer.Serialize(required));
@@ -71,26 +80,75 @@ public sealed partial class ExplorationHistoryCatalog
     {
         var retained = new List<DeferredJournal>();
         foreach (
-            DeferredJournal item in requirements
+            IGrouping<string, DeferredJournal> group in requirements
                 .Distinct()
-                .OrderByDescending(item => item.PrefixHash is not null)
-                .ThenBy(item => item.StartOffset)
-                .ThenByDescending(item => item.Length)
-                .ThenByDescending(item => item.FormatVersion)
-                .Where(item =>
-                    !retained.Any(known =>
-                        known.PrefixHash is not null
-                        && string.Equals(known.Name, item.Name, StringComparison.OrdinalIgnoreCase)
-                        && known.HeaderHash == item.HeaderHash
-                        && known.StartOffset <= item.StartOffset
-                        && known.Length >= item.Length
-                    )
-                )
+                .GroupBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
         )
         {
-            retained.Add(item);
+            DeferredJournal[] known = group
+                .Where(item => item.PrefixHash is not null)
+                .Select(item =>
+                    item with
+                    {
+                        ModifiedTicks = 0,
+                        CreatedTicks = 0,
+                        RawLength = 0,
+                        ConfirmationRequired = false,
+                    }
+                )
+                .Distinct()
+                .ToArray();
+            retained.AddRange(
+                known.Where(item =>
+                    !known.Any(other =>
+                        other != item
+                        && other.HeaderHash == item.HeaderHash
+                        && other.StartOffset <= item.StartOffset
+                        && other.Length >= item.Length
+                        && (other.StartOffset < item.StartOffset || other.Length > item.Length)
+                    )
+                )
+            );
+            DeferredJournal[] unknown = group.Where(item => item.PrefixHash is null).ToArray();
+            RetainUnknownEnvelope(retained, unknown, known);
         }
         return retained.ToArray();
+    }
+
+    private static void RetainUnknownEnvelope(
+        List<DeferredJournal> retained,
+        DeferredJournal[] unknown,
+        DeferredJournal[] known
+    )
+    {
+        if (unknown.Length > 0)
+        {
+            DeferredJournal first = unknown[0];
+            bool changed = unknown.Any(item =>
+                item.ConfirmationRequired
+                || item.HeaderHash != first.HeaderHash
+                || item.ModifiedTicks != first.ModifiedTicks
+                || item.CreatedTicks != first.CreatedTicks
+                || item.RawLength != first.RawLength
+            );
+            // Unknown history is an obligation, even when a later known range happens to contain it.
+            DeferredJournal envelope = first with
+            {
+                StartOffset = unknown.Min(item => item.StartOffset),
+                Length = unknown.Max(item => item.Length),
+                ConfirmationRequired = changed,
+            };
+            bool covered = known.Any(item =>
+                item.HeaderHash == envelope.HeaderHash
+                && item.StartOffset <= envelope.StartOffset
+                && item.Length >= envelope.Length
+            );
+            if (changed || !covered)
+            {
+                retained.Add(envelope);
+                retained.AddRange(unknown.Where(item => item.RecordHash is not null && item != first));
+            }
+        }
     }
 
     private static DeferredJournal[] CreateDeferredJournals(
@@ -103,14 +161,24 @@ public sealed partial class ExplorationHistoryCatalog
         foreach (JournalSource source in sources)
         {
             long start = 0;
+            string? context = null;
             if (!rebuild)
             {
                 using SqliteCommand command = Command(
                     connection,
-                    "SELECT next_offset FROM sources WHERE name=@name;",
+                    "SELECT context FROM sources WHERE name=@name;",
                     (NameParameter, source.Name)
                 );
-                start = command.ExecuteScalar() is long committed ? committed : 0;
+                if (command.ExecuteScalar() is string stored)
+                {
+                    context = stored;
+                    using SqliteCommand offset = Command(
+                        connection,
+                        "SELECT next_offset FROM sources WHERE name=@name;",
+                        (NameParameter, source.Name)
+                    );
+                    start = (long)offset.ExecuteScalar()!;
+                }
             }
             if (source.CompleteLength > start)
             {
@@ -124,7 +192,8 @@ public sealed partial class ExplorationHistoryCatalog
                         1,
                         source.ModifiedTicks,
                         source.CreatedTicks,
-                        source.Length
+                        source.Length,
+                        CheckpointContext: context
                     )
                 );
             }
@@ -137,7 +206,9 @@ public sealed partial class ExplorationHistoryCatalog
         JournalSource[] sources,
         CancellationToken token,
         bool confirmed = false,
-        IProgress<ExplorationHistoryProgress>? progress = null
+        IProgress<ExplorationHistoryProgress>? progress = null,
+        SqliteConnection? contextConnection = null,
+        bool reconstructContext = false
     )
     {
         Dictionary<string, JournalSource> available = sources.ToDictionary(
@@ -164,6 +235,10 @@ public sealed partial class ExplorationHistoryCatalog
                 );
             }
             required[index] = VerifyDeferredJournal(item, available, confirmed, token);
+            if (contextConnection is not null)
+            {
+                ValidateCommittedContext(contextConnection, required[index], available, reconstructContext, token);
+            }
             progress?.Report(new ExplorationHistoryProgress(index + 1, required.Length, item.Name, IsPreparing: true));
         }
     }
@@ -184,6 +259,7 @@ public sealed partial class ExplorationHistoryCatalog
                     + " before resuming history; the existing catalog has been retained."
             );
         }
+        VerifyLegacyRecord(required, source, token);
         required = NormalizeConfirmedLegacy(required, source, confirmed, token);
         if (source.PrefixHash != required.HeaderHash)
         {
@@ -227,6 +303,32 @@ public sealed partial class ExplorationHistoryCatalog
         };
     }
 
+    private static void VerifyLegacyRecord(DeferredJournal required, JournalSource source, CancellationToken token)
+    {
+        if (required.RecordOffset is not { } offset || required.RecordHash is not { } expected)
+        {
+            return;
+        }
+        JournalLine? record = ReadLines(source.Path, offset, token, source.Length).FirstOrDefault();
+        if (
+            required.PrefixHash is not null
+            && required.StartOffset <= offset
+            && record is { } captured
+            && captured.NextOffset <= required.Length
+        )
+        {
+            return;
+        }
+        if (record?.Content is not { } content || ContentHash(content) != expected)
+        {
+            throw new InvalidDataException(
+                "A verified legacy record changed in "
+                    + required.Name
+                    + "; restore the original journal before recovery."
+            );
+        }
+    }
+
     private static DeferredJournal NormalizeConfirmedLegacy(
         DeferredJournal required,
         JournalSource source,
@@ -241,7 +343,11 @@ public sealed partial class ExplorationHistoryCatalog
         long length = ReadLines(source.Path, 0, token, Math.Min(required.Length, source.Length))
             .Select(line => line.NextOffset)
             .LastOrDefault();
-        return required with { Length = length, HeaderHash = length == 0 ? source.PrefixHash : required.HeaderHash };
+        return required with
+        {
+            Length = length,
+            HeaderHash = required.HeaderHash == ContentHash(string.Empty) ? source.PrefixHash : required.HeaderHash,
+        };
     }
 
     private static string HashJournalRange(string path, long start, long end, CancellationToken token)
@@ -265,6 +371,103 @@ public sealed partial class ExplorationHistoryCatalog
         return Convert.ToHexString(hash.GetHashAndReset());
     }
 
+    private static void CaptureCommanderProof(
+        SourceContext context,
+        JournalEventEnvelope entry,
+        string source,
+        long offset,
+        string hash
+    )
+    {
+        if (entry.EventName is "Commander" or "LoadGame" && Text(entry.Payload, "FID") is not null)
+        {
+            context.CommanderRecord = new(source, offset, hash);
+        }
+    }
+
+    private static void ValidateCommittedContext(
+        SqliteConnection connection,
+        DeferredJournal required,
+        Dictionary<string, JournalSource> available,
+        bool reconstruct,
+        CancellationToken token
+    )
+    {
+        if (required.StartOffset == 0 || required.CheckpointContext is null)
+        {
+            return;
+        }
+        SourceContext expected =
+            JsonSerializer.Deserialize<SourceContext>(required.CheckpointContext, ContextJson) ?? new();
+        VerifyCommanderProof(connection, expected.CommanderRecord, required.Name, available, token);
+        if (!reconstruct || !available.TryGetValue(required.Name, out JournalSource? source))
+        {
+            return;
+        }
+        SourceContext actual = ReadContinuationContext(connection, source);
+        actual.JournalPartNumber = source.FilePart?.Number;
+        foreach (
+            JournalLine line in ReadLines(source.Path, 0, token, required.StartOffset, requireCapturedLength: true)
+        )
+        {
+            if (
+                line.Content is { } text
+                && JournalEventEnvelope.TryParse(text, out JournalEventEnvelope? entry, out _)
+                && entry is not null
+            )
+            {
+                ApplyContext(actual, entry);
+                CaptureCommanderProof(actual, entry, source.Name, line.Offset, ContentHash(text));
+            }
+        }
+        if (JsonSerializer.Serialize(actual) != JsonSerializer.Serialize(expected))
+        {
+            throw new InvalidDataException(
+                "The committed context changed in " + required.Name + "; restore the original journal before recovery."
+            );
+        }
+    }
+
+    private static void VerifyCommanderProof(
+        SqliteConnection connection,
+        CommanderProof? proof,
+        string requiredName,
+        Dictionary<string, JournalSource> available,
+        CancellationToken token
+    )
+    {
+        if (proof is null)
+        {
+            return;
+        }
+        using SqliteCommand command = Command(
+            connection,
+            "SELECT path FROM sources WHERE name=@name;",
+            (NameParameter, proof.Name)
+        );
+        string? path = available.TryGetValue(proof.Name, out JournalSource? source)
+            ? source.Path
+            : command.ExecuteScalar() as string;
+        // A retained parent context can remain usable while its archived source is absent.
+        if (path is null || !File.Exists(path))
+        {
+            if (string.Equals(proof.Name, requiredName, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new IOException(
+                    "The committed commander source is unavailable. Restore the journal before recovery."
+                );
+            }
+            return;
+        }
+        JournalLine? record = ReadLines(path, proof.Offset, token).FirstOrDefault();
+        if (record?.Content is not { } text || ContentHash(text) != proof.Hash)
+        {
+            throw new InvalidDataException(
+                "The committed commander changed in " + proof.Name + "; restore the original journal before recovery."
+            );
+        }
+    }
+
     private static void VerifyDeferredProgress(
         SqliteConnection connection,
         DeferredJournal[] required,
@@ -278,6 +481,7 @@ public sealed partial class ExplorationHistoryCatalog
         );
         foreach (DeferredJournal source in required)
         {
+            ValidateCommittedContext(connection, source, available, reconstruct: false, token);
             using SqliteCommand command = Command(
                 connection,
                 "SELECT next_offset FROM sources WHERE name=@name;",

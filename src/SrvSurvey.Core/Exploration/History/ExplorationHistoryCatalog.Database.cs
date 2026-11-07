@@ -12,7 +12,9 @@ public sealed partial class ExplorationHistoryCatalog
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
     private const string ValuationVersionKey = "valuation_version";
-    private const string CurrentValuationVersion = "5";
+    private const string CurrentValuationVersion = "6";
+    private const string PendingDiscoveryKey = "pending_discovery";
+    private const string RecoveryConfirmationKey = "recovery_confirmation";
     private const string ReconciliationPendingKey = "reconciliation_pending";
     private const string UnknownMappingPrefix = "unconfirmed_mapping:";
     private const int CurrentSchemaVersion = 5;
@@ -256,7 +258,9 @@ public sealed partial class ExplorationHistoryCatalog
                 ReadMetadata(connection, "complete") == "1"
                 && ReadMetadata(connection, ValuationVersionKey) == CurrentValuationVersion
                 && unknownMappings.ExecuteScalar() is null
-                && ReadMetadata(connection, ReconciliationPendingKey) is null,
+                && ReadMetadata(connection, ReconciliationPendingKey) is null
+                && ReadMetadata(connection, RecoveryConfirmationKey) is null
+                && ReadMetadata(connection, PendingDiscoveryKey) is null,
             RecoveryIdentity = ReadMetadata(connection, ReconciliationPendingKey) is { } pending
                 ? ContentHash(pending)
                 : null,

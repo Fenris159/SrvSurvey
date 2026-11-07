@@ -58,6 +58,7 @@ public sealed partial class ExplorationHistoryCatalog
                 if (context.JournalPartNumber is not > 1)
                 {
                     context.FrontierId = null;
+                    context.CommanderRecord = null;
                     context.SystemName = null;
                     context.SystemAddress = null;
                     context.X = null;

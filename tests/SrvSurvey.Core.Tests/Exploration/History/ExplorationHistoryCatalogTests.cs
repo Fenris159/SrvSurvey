@@ -5,7 +5,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Exploration.History;
 
-public sealed class ExplorationHistoryCatalogTests
+public sealed partial class ExplorationHistoryCatalogTests
 {
     [Theory]
     [InlineData(false)]

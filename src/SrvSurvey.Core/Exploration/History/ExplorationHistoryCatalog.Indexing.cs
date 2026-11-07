@@ -14,7 +14,7 @@ public sealed partial class ExplorationHistoryCatalog
     {
         ArgumentNullException.ThrowIfNull(directories);
         return IndexSources(
-            () => DiscoverSources(directories, token),
+            () => DiscoverSources(directories, token, progress),
             directories,
             progress,
             fullBackfill: true,
@@ -32,15 +32,21 @@ public sealed partial class ExplorationHistoryCatalog
     )
     {
         using SqliteConnection connection = Open();
-        JournalSource[] sources = discover();
+        JournalSource[] sources;
         DeferredJournal[] required = [];
         DeferredJournal[] captured = [];
+        DeferredJournal[] original = [];
+        bool confirmationObligation = false;
         Execute(connection, "BEGIN IMMEDIATE;");
+        Execute(connection, "SAVEPOINT recovery_batch;");
         try
         {
+            sources = DiscoverSafely(connection, discover);
             bool previouslyComplete = ReadMetadata(connection, "complete") == "1";
-            required = ReadDeferredJournals(connection);
+            original = ReadDeferredJournals(connection);
+            required = original.ToArray();
             bool confirmation = NeedsRecoveryConfirmation(connection, required);
+            confirmationObligation = confirmation;
             if (confirmation && !confirmRecovery)
             {
                 ExplorationHistorySummary paused = ReadSummary(connection);
@@ -48,14 +54,21 @@ public sealed partial class ExplorationHistoryCatalog
                 return paused;
             }
             captured = CreateDeferredJournals(connection, sources, rebuild: false);
-            if (required.Length > 0 || confirmation)
+            if (required.Length > 0 || confirmation || ReadMetadata(connection, PendingDiscoveryKey) is not null)
             {
-                sources = DiscoverSources(directories, token);
+                sources = DiscoverSources(directories, token, progress);
                 captured = captured
                     .Concat(CreateDeferredJournals(connection, sources, rebuild: false))
                     .Distinct()
                     .ToArray();
-                PrepareDeferredJournals(required, sources, token, confirmRecovery);
+                PrepareDeferredJournals(
+                    required,
+                    sources,
+                    token,
+                    confirmRecovery,
+                    contextConnection: connection,
+                    reconstructContext: true
+                );
                 fullBackfill |= previouslyComplete;
             }
             bool rebuild =
@@ -64,19 +77,33 @@ public sealed partial class ExplorationHistoryCatalog
                 || NeedsRebuild(connection, sources, token);
             if (rebuild)
             {
-                sources = DiscoverSources(directories, token);
+                sources = DiscoverSources(directories, token, progress);
                 captured = captured
                     .Concat(CreateDeferredJournals(connection, sources, rebuild: false))
                     .Distinct()
                     .ToArray();
-                PrepareDeferredJournals(required, sources, token, confirmRecovery);
+                PrepareDeferredJournals(
+                    required,
+                    sources,
+                    token,
+                    confirmRecovery,
+                    contextConnection: connection,
+                    reconstructContext: true
+                );
                 ValidateRebuildSources(connection, sources);
             }
             captured = captured.Concat(CreateDeferredJournals(connection, sources, rebuild)).Distinct().ToArray();
-            PrepareDeferredJournals(captured, sources, token, progress: progress);
+            PrepareDeferredJournals(captured, sources, token, progress: progress, contextConnection: connection);
+            ValidatePendingDiscovery(connection, sources);
             ReplaySources(connection, sources, required.Concat(captured).ToArray(), rebuild, progress, token);
             SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
-            Execute(connection, "DELETE FROM metadata WHERE key=@key;", ("@key", ReconciliationPendingKey));
+            Execute(
+                connection,
+                "DELETE FROM metadata WHERE key IN (@pending,@confirmation,@discovery);",
+                ("@pending", ReconciliationPendingKey),
+                ("@confirmation", RecoveryConfirmationKey),
+                ("@discovery", PendingDiscoveryKey)
+            );
             if (fullBackfill || (rebuild && previouslyComplete))
             {
                 SetMetadata(connection, "complete", "1");
@@ -85,11 +112,85 @@ public sealed partial class ExplorationHistoryCatalog
             Execute(connection, "COMMIT;");
             return result;
         }
-        catch
+        catch (Exception failure)
         {
-            Execute(connection, "ROLLBACK;");
-            RetainDeferredJournals(connection, required, captured);
+            PersistFailedReplay(connection, failure, original, required, captured, confirmationObligation);
             throw;
+        }
+    }
+
+    private static void PersistFailedReplay(
+        SqliteConnection connection,
+        Exception failure,
+        DeferredJournal[] original,
+        DeferredJournal[] attempted,
+        DeferredJournal[] captured,
+        bool confirmationObligation
+    )
+    {
+        Execute(connection, "ROLLBACK TO recovery_batch;");
+        RetainDiscoveryFailure(connection, failure);
+        if (
+            confirmationObligation
+            || attempted.Any(item => item.ConfirmationRequired)
+            || captured.Any(item => item.ConfirmationRequired)
+        )
+        {
+            SetMetadata(connection, RecoveryConfirmationKey, "1");
+        }
+        RetainDeferredJournals(connection, original, captured);
+        Execute(connection, "COMMIT;");
+    }
+
+    private sealed record DiscoveryRequirement(string Name, long Length);
+
+    private static JournalSource[] DiscoverSafely(SqliteConnection connection, Func<JournalSource[]> discover)
+    {
+        try
+        {
+            return discover();
+        }
+        catch (JournalSnapshotUnstableException failure)
+        {
+            RetainDiscoveryFailure(connection, failure);
+            throw;
+        }
+    }
+
+    private static void RetainDiscoveryFailure(SqliteConnection connection, Exception failure)
+    {
+        if (failure is not JournalSnapshotUnstableException unstable)
+        {
+            return;
+        }
+        DiscoveryRequirement[] known = ReadMetadata(connection, PendingDiscoveryKey) is { } json
+            ? System.Text.Json.JsonSerializer.Deserialize<DiscoveryRequirement[]>(json, ContextJson) ?? []
+            : [];
+        DiscoveryRequirement[] required = known
+            .Append(new(unstable.SourceName, unstable.CompleteLength))
+            .GroupBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.OrderByDescending(item => item.Length).First())
+            .ToArray();
+        SetMetadata(connection, PendingDiscoveryKey, System.Text.Json.JsonSerializer.Serialize(required));
+    }
+
+    private static void ValidatePendingDiscovery(SqliteConnection connection, JournalSource[] sources)
+    {
+        if (ReadMetadata(connection, PendingDiscoveryKey) is not { } json)
+        {
+            return;
+        }
+        DiscoveryRequirement[] required =
+            System.Text.Json.JsonSerializer.Deserialize<DiscoveryRequirement[]>(json, ContextJson) ?? [];
+        DiscoveryRequirement? missing = required.FirstOrDefault(item =>
+            !sources.Any(source =>
+                string.Equals(source.Name, item.Name, StringComparison.OrdinalIgnoreCase)
+                && source.CompleteLength >= item.Length
+            )
+        );
+        if (missing is not null)
+        {
+            throw new InvalidDataException("Restore discovery source " + missing.Name + " before resuming history.");
         }
     }
 
@@ -283,6 +384,7 @@ public sealed partial class ExplorationHistoryCatalog
                     entry,
                     new OriginalReference(checkpoint.Id, line.Offset, ContentHash(text))
                 );
+                CaptureCommanderProof(checkpoint.Context, entry, source.Name, line.Offset, ContentHash(text));
             }
             checkpoint = checkpoint with
             {

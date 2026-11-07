@@ -32,9 +32,12 @@ public sealed partial class ExplorationHistoryCatalog
         bool? IsLive
     );
 
+    private sealed record CommanderProof(string Name, long Offset, string Hash);
+
     private sealed class SourceContext
     {
         public string? FrontierId { get; set; }
+        public CommanderProof? CommanderRecord { get; set; }
         public int? JournalPartNumber { get; set; }
         public bool? IsLive { get; set; }
         public string? SystemName { get; set; }
@@ -197,7 +200,11 @@ public sealed partial class ExplorationHistoryCatalog
         }
     }
 
-    private JournalSource[] DiscoverSources(IReadOnlyList<string> directories, CancellationToken cancellationToken)
+    private JournalSource[] DiscoverSources(
+        IReadOnlyList<string> directories,
+        CancellationToken cancellationToken,
+        IProgress<ExplorationHistoryProgress>? progress = null
+    )
     {
         var found = new Dictionary<string, JournalSource>(StringComparer.OrdinalIgnoreCase);
         foreach (string directory in directories.Where(Directory.Exists))
@@ -206,7 +213,7 @@ public sealed partial class ExplorationHistoryCatalog
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string name = Path.GetFileName(path);
-                JournalSource candidate = ReadJournalSource(path, cancellationToken);
+                JournalSource candidate = ReadJournalSource(path, cancellationToken, progress);
                 found[name] = found.TryGetValue(name, out JournalSource? existing)
                     ? ChooseCompleteSource(existing, candidate, cancellationToken)
                     : candidate;
@@ -218,10 +225,54 @@ public sealed partial class ExplorationHistoryCatalog
             .ToArray();
     }
 
-    private static JournalSource ReadJournalSource(string path, CancellationToken token)
+    private sealed class JournalSnapshotUnstableException(string name, long completeLength)
+        : IOException("Journal " + name + " changed during discovery. Refresh history when the file is stable.")
+    {
+        public string SourceName { get; } = name;
+        public long CompleteLength { get; } = completeLength;
+    }
+
+    private static JournalSource ReadJournalSource(
+        string path,
+        CancellationToken token,
+        IProgress<ExplorationHistoryProgress>? progress = null
+    )
+    {
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            try
+            {
+                return ReadJournalSnapshot(path, token, progress);
+            }
+            catch (JournalSnapshotUnstableException) when (attempt < 2)
+            {
+                // A terminal append often settles before a second bounded snapshot.
+                token.ThrowIfCancellationRequested();
+            }
+        }
+        throw new IOException("The journal snapshot could not be captured.");
+    }
+
+    private static JournalSource ReadJournalSnapshot(
+        string path,
+        CancellationToken token,
+        IProgress<ExplorationHistoryProgress>? progress
+    )
     {
         var snapshot = new FileInfo(path);
         snapshot.Refresh();
+        long completeLength;
+        try
+        {
+            completeLength = ReadCompleteLength(path, snapshot.Length, token);
+        }
+        catch (EndOfStreamException)
+        {
+            throw new JournalSnapshotUnstableException(Path.GetFileName(path), 0);
+        }
+        progress?.Report(
+            new ExplorationHistoryProgress(0, 0, Path.GetFileName(path), IsPreparing: true, IsDiscovering: true)
+        );
         JournalLine? first = ReadLines(path, 0, token, snapshot.Length).FirstOrDefault();
         JournalEventEnvelope? header = null;
         if (first?.Content is { } text && JournalEventEnvelope.TryParse(text, out JournalEventEnvelope? parsed, out _))
@@ -236,14 +287,14 @@ public sealed partial class ExplorationHistoryCatalog
             ContentHash(first?.Content ?? string.Empty),
             snapshot.LastWriteTimeUtc.Ticks,
             snapshot.Length,
-            ReadCompleteLength(path, snapshot.Length, token),
+            completeLength,
             snapshot.CreationTimeUtc.Ticks,
             JournalFilePart.Read(path, header),
             header is null ? null : IsLiveHeader(header.Payload)
         );
         if (!SameSourceVersion(source))
         {
-            throw new IOException("A journal changed during discovery. History will retry when the file is stable.");
+            throw new JournalSnapshotUnstableException(source.Name, source.CompleteLength);
         }
         return source;
     }

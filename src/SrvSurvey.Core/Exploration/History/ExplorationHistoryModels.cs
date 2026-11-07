@@ -92,5 +92,6 @@ public sealed record ExplorationHistoryProgress(
     int ProcessedFiles,
     int TotalFiles,
     string CurrentFile,
-    bool IsPreparing = false
+    bool IsPreparing = false,
+    bool IsDiscovering = false
 );
