@@ -13139,7 +13139,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Combine SrvSurvey\u0027s built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots\u002B\u002B prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+    "Text": "Combine SrvSurvey\u0027s built-in ring reference, commander discoveries, and Spansh API results. Spots\u002B\u002B prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -13784,22 +13784,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
-    "Text": "Community cache could not be loaded: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
-    "Text": "Community data",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Community goals",
@@ -19478,22 +19462,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "EDDN reception is off.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
-    "Text": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19532,22 +19500,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "EDDN unavailable: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
-    "Text": "EDDN \u00B7 {0} cached commodity observations",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
   },
   {
     "Text": "EDIT",
@@ -32333,14 +32285,6 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
-    "Text": "Listening for community observations\u2026",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
     "Text": "Listening for live carrier jump events while SrvSurvey is running.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34532,6 +34476,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
+  },
+  {
+    "Text": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings \u003E Privacy \u0026 sharing \u003E Configure EDDN Sharing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -42505,22 +42457,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
-    "Text": "Oversized EDDN frame.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
-    "Text": "Oversized EDDN message.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
     "Text": "Overview",
     "IsFormat": false,
     "SourceKinds": [
@@ -44929,14 +44865,6 @@
   },
   {
     "Text": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Prices are observations and may change. Mining \u2192 Settings \u2192 Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -48286,14 +48214,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
-  },
-  {
-    "Text": "Receive live community market and Powerplay observations from EDDN",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Received",
@@ -58053,14 +57973,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "Spansh \u002B local Powerplay observations",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
     "Text": "Spansh JSON",
     "IsFormat": false,
     "SourceKinds": [
@@ -58094,7 +58006,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
-    "Text": "Spansh conflict progress \u002B local Powerplay observations",
+    "Text": "Spansh conflict progress",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -58326,7 +58238,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
-    "Text": "Spots\u002B\u002B combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+    "Text": "Spots\u002B\u002B combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -69773,7 +69685,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
+    "Text": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

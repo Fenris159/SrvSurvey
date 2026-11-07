@@ -6553,8 +6553,8 @@
       "translation": "Kombinieren Sie die Gesamtzahl der Schiffe zu FC-Zählungen"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Kombinieren Sie SrvSurvey die integrierte Ringreferenz, Kommandantenentdeckungen, Live-Beobachtungen EDDN und Spansh API-Ergebnisse. Spots++ priorisiert kartierte RES-Standorte, Überlappungen, Multi-Hotspot-Ringe und unberührte Reserven, ohne dass ein heruntergeladener Galaxien-Dump erforderlich ist."
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Kombinieren Sie die integrierte Ringreferenz, Commander-Erkennungen und Spansh API-Ergebnisse von SrvSurvey. Spots++ priorisiert kartierte RES-Standorte, Überlappungen, Multi-Hotspot-Ringe und unberührte Reserven, ohne dass ein heruntergeladener Galaxien-Dump erforderlich ist."
     },
     {
       "source": "Combined Build Report",
@@ -6871,14 +6871,6 @@
     {
       "source": "Community Goals update warning",
       "translation": "Aktualisierungswarnung für Community-Ziele"
-    },
-    {
-      "source": "Community cache could not be loaded: {0}",
-      "translation": "Community-Cache konnte nicht geladen werden: {0}"
-    },
-    {
-      "source": "Community data",
-      "translation": "Community-Daten"
     },
     {
       "source": "Community goals",
@@ -9709,14 +9701,6 @@
       "translation": "EDDN Veröffentlichung, Inara Veröffentlichung, direkte EDSM Synchronisierung, menschliche Siedlungsgeometrie, Green Gas Giant-Kandidaten, Raven-Fracht, Flottentransporterdaten, Systemaktualisierungen und Questveröffentlichung erfordern jeweils die entsprechende Einstellung, Anmeldeinformation oder explizite Bestätigung."
     },
     {
-      "source": "EDDN reception is off.",
-      "translation": "EDDN Der Empfang ist ausgeschaltet."
-    },
-    {
-      "source": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-      "translation": "EDDN Empfang öffnet eine separate reine Empfangsverbindung. Warenbeobachtungen verfallen nach 24 Stunden; Die Abdeckung wächst bei Aktivierung."
-    },
-    {
       "source": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
       "translation": "EDDN erfordert kein Konto, keinen persönlichen API-Schlüssel, OAuth-Flow, Zugriffstoken oder Autorisierungsheader."
     },
@@ -9735,14 +9719,6 @@
     {
       "source": "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
       "translation": "EDDN Die Freigabe ist installationsweit, standardmäßig deaktiviert und wird über Einstellungen > Datenschutz und Freigabe konfiguriert."
-    },
-    {
-      "source": "EDDN unavailable: {0}",
-      "translation": "EDDN nicht verfügbar: {0}"
-    },
-    {
-      "source": "EDDN · {0} cached commodity observations",
-      "translation": "EDDN · {0} zwischengespeicherte Warenbeobachtungen"
     },
     {
       "source": "EDIT",
@@ -16113,10 +16089,6 @@
       "translation": "Listen Sie Routenziele auf, an denen der Spediteur Nachschub leisten kann. Eine pro Zeile."
     },
     {
-      "source": "Listening for community observations…",
-      "translation": "Auf Community-Beobachtungen achten …"
-    },
-    {
       "source": "Listening for live carrier jump events while SrvSurvey is running.",
       "translation": "Lauschen auf Live-Trägersprungereignisse, während SrvSurvey ausgeführt wird."
     },
@@ -17207,6 +17179,10 @@
     {
       "source": "Markets",
       "translation": "Märkte"
+    },
+    {
+      "source": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
+      "translation": "Markets verwendet Ardent-Preise mit Spansh Fallback. Die Preise sind Richtwerte und können sich ändern. Konfigurieren Sie EDDN Beiträge separat unter Einstellungen > Datenschutz & Teilen > Teilen EDDN konfigurieren."
     },
     {
       "source": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -21181,14 +21157,6 @@
       "translation": "Überschreiben Sie diese Textrolle mit einem Overlay-Darstellungspinsel"
     },
     {
-      "source": "Oversized EDDN frame.",
-      "translation": "Übergroßer EDDN Rahmen."
-    },
-    {
-      "source": "Oversized EDDN message.",
-      "translation": "Übergroße Nachricht EDDN."
-    },
-    {
       "source": "Overview",
       "translation": "Übersicht"
     },
@@ -22391,10 +22359,6 @@
     {
       "source": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
       "translation": "Bei Preisen und Nachfrage handelt es sich um gemeldete Beobachtungen, nicht um garantierte aktuelle Kurse oder Gesamtgewinne. Überprüfen Sie die Station, bevor Sie eine Bergbaureise unternehmen."
-    },
-    {
-      "source": "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
-      "translation": "Die Preise sind Richtwerte und können sich ändern. Mining → Einstellungen → Sitzung kann reine Empfangsbeobachtungen EDDN ermöglichen, die für Rohstoffe 24 Stunden lang gespeichert werden. Dadurch sind keine Uploads möglich."
     },
     {
       "source": "Primary",
@@ -24063,10 +24027,6 @@
     {
       "source": "Rebuilt {0} system files and {1} journals.",
       "translation": "{0} Systemdateien und {1} Journale neu erstellt."
-    },
-    {
-      "source": "Receive live community market and Powerplay observations from EDDN",
-      "translation": "Erhalten Sie Live-Community-Markt- und Powerplay-Beobachtungen von EDDN"
     },
     {
       "source": "Received",
@@ -28933,10 +28893,6 @@
       "translation": "Spansh + Canonn"
     },
     {
-      "source": "Spansh + local Powerplay observations",
-      "translation": "Spansh + lokale Powerplay-Beobachtungen"
-    },
-    {
       "source": "Spansh JSON",
       "translation": "Spansh JSON"
     },
@@ -28953,8 +28909,8 @@
       "translation": "Spansh URL aus der Zwischenablage"
     },
     {
-      "source": "Spansh conflict progress + local Powerplay observations",
-      "translation": "Spansh Konfliktfortschritt + lokale Powerplay-Beobachtungen"
+      "source": "Spansh conflict progress",
+      "translation": "Spansh Konfliktfortschritt"
     },
     {
       "source": "Spansh could not resolve system '{0}'.",
@@ -29069,8 +29025,8 @@
       "translation": "Flecken++"
     },
     {
-      "source": "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
-      "translation": "Spots++ kombiniert integrierte historische Ringe, Commander-Entdeckungen, Live-Beobachtungen EDDN und Spansh. Eine Überlappungsanmerkung ist ein Beweis aus diesen Quellen; Mehrere gemeldete Hotspots allein beweisen keine Überschneidung."
+      "source": "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+      "translation": "Spots++ kombiniert integrierte historische Ringe, Commander-Entdeckungen und Spansh. Eine Überlappungsanmerkung ist ein Beweis aus diesen Quellen; Mehrere gemeldete Hotspots allein beweisen keine Überschneidung."
     },
     {
       "source": "Squadron Carrier",
@@ -34781,8 +34737,8 @@
       "translation": "unbekannt"
     },
     {
-      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
-      "translation": "Der Besitz unbekannter Macht wird nicht als Feind oder Übernahmeziel behandelt. Einige Staaten sind auf Beobachtungen lokaler Zeitschriften/EDDN angewiesen und fehlen möglicherweise bei einem Online-Anbieter."
+      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
+      "translation": "Der Besitz unbekannter Macht wird nicht als Feind oder Übernahmeziel behandelt. Powerplay-Status stammen von den Suchanbietern und sind möglicherweise unvollständig."
     },
     {
       "source": "Unknown arrival",
@@ -48495,8 +48451,8 @@
       "translation": "Combinar los totales de barcos en recuentos de FC"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Combine la referencia de anillo incorporada de SrvSurvey, los descubrimientos de comandantes, las observaciones en vivo EDDN y los resultados de API Spansh. Spots++ prioriza sitios RES mapeados, superposiciones, anillos de puntos múltiples y reservas prístinas sin necesidad de descargar un volcado de galaxias."
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Combine la referencia de anillo integrada de SrvSurvey, los descubrimientos de comandantes y los resultados de API Spansh. Spots++ prioriza sitios RES mapeados, superposiciones, anillos de puntos múltiples y reservas prístinas sin necesidad de descargar un volcado de galaxias."
     },
     {
       "source": "Combined Build Report",
@@ -48813,14 +48769,6 @@
     {
       "source": "Community Goals update warning",
       "translation": "Advertencia de actualización de objetivos de la comunidad"
-    },
-    {
-      "source": "Community cache could not be loaded: {0}",
-      "translation": "No se pudo cargar la caché de la comunidad: {0}"
-    },
-    {
-      "source": "Community data",
-      "translation": "Datos de la comunidad"
     },
     {
       "source": "Community goals",
@@ -51651,14 +51599,6 @@
       "translation": "La publicación EDDN, la publicación Inara, la sincronización directa EDSM, la geometría de los asentamientos humanos, los candidatos a Gigante Gas Verde, la carga de Raven, los datos de Fleet Carrier, las actualizaciones del sistema y la publicación de misiones requieren la configuración, credencial o confirmación explícita correspondiente."
     },
     {
-      "source": "EDDN reception is off.",
-      "translation": "EDDN la recepción está apagada."
-    },
-    {
-      "source": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-      "translation": "EDDN la recepción abre una conexión separada de solo recepción. Las observaciones sobre productos básicos caducan después de 24 horas; la cobertura crece mientras está habilitada."
-    },
-    {
       "source": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
       "translation": "EDDN no requiere cuenta, clave API personal, flujo OAuth, token de acceso ni encabezado de autorización."
     },
@@ -51677,14 +51617,6 @@
     {
       "source": "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
       "translation": "EDDN el uso compartido afecta a toda la instalación, está deshabilitado de forma predeterminada y se configura desde Configuración > Privacidad y uso compartido."
-    },
-    {
-      "source": "EDDN unavailable: {0}",
-      "translation": "EDDN no disponible: {0}"
-    },
-    {
-      "source": "EDDN · {0} cached commodity observations",
-      "translation": "EDDN · {0} observaciones de productos almacenados en caché"
     },
     {
       "source": "EDIT",
@@ -58055,10 +57987,6 @@
       "translation": "Enumere los destinos de ruta donde el transportista puede recargar. Uno por línea."
     },
     {
-      "source": "Listening for community observations…",
-      "translation": "Escuchando las observaciones de la comunidad..."
-    },
-    {
       "source": "Listening for live carrier jump events while SrvSurvey is running.",
       "translation": "Escuchando eventos de salto de operador en vivo mientras SrvSurvey se está ejecutando."
     },
@@ -59149,6 +59077,10 @@
     {
       "source": "Markets",
       "translation": "Mercados"
+    },
+    {
+      "source": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
+      "translation": "Los mercados utilizan precios Ardent con respaldo Spansh. Los precios son observaciones y pueden cambiar. Configure las contribuciones EDDN por separado en Configuración > Privacidad y uso compartido > Configurar EDDN Compartir."
     },
     {
       "source": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -63123,14 +63055,6 @@
       "translation": "Anule esta función de texto con un pincel de apariencia superpuesta"
     },
     {
-      "source": "Oversized EDDN frame.",
-      "translation": "Marco sobredimensionado EDDN."
-    },
-    {
-      "source": "Oversized EDDN message.",
-      "translation": "Mensaje sobredimensionado EDDN."
-    },
-    {
       "source": "Overview",
       "translation": "descripción general"
     },
@@ -64333,10 +64257,6 @@
     {
       "source": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
       "translation": "Los precios y la demanda son observaciones reportadas, no cotizaciones actuales garantizadas ni ganancias totales. Verifique la estación antes de comprometerse con un viaje minero."
-    },
-    {
-      "source": "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
-      "translation": "Los precios son observaciones y pueden cambiar. Minería → Configuración → Sesión puede habilitar observaciones de solo recepción EDDN, retenidas durante 24 horas para productos básicos. Esto no permite las cargas."
     },
     {
       "source": "Primary",
@@ -66005,10 +65925,6 @@
     {
       "source": "Rebuilt {0} system files and {1} journals.",
       "translation": "Se reconstruyeron los archivos del sistema {0} y los diarios {1}."
-    },
-    {
-      "source": "Receive live community market and Powerplay observations from EDDN",
-      "translation": "Reciba observaciones del mercado comunitario en vivo y de Powerplay de EDDN"
     },
     {
       "source": "Received",
@@ -70875,10 +70791,6 @@
       "translation": "Spansh + Canonn"
     },
     {
-      "source": "Spansh + local Powerplay observations",
-      "translation": "Spansh + observaciones locales de Powerplay"
-    },
-    {
       "source": "Spansh JSON",
       "translation": "Spansh JSON"
     },
@@ -70895,8 +70807,8 @@
       "translation": "Spansh URL del portapapeles"
     },
     {
-      "source": "Spansh conflict progress + local Powerplay observations",
-      "translation": "Spansh progreso del conflicto + observaciones locales de Powerplay"
+      "source": "Spansh conflict progress",
+      "translation": "Spansh progreso del conflicto"
     },
     {
       "source": "Spansh could not resolve system '{0}'.",
@@ -71011,8 +70923,8 @@
       "translation": "Manchas++"
     },
     {
-      "source": "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
-      "translation": "Spots++ combina anillos históricos integrados, descubrimientos de Commander, observaciones en vivo EDDN y Spansh. Una anotación superpuesta es evidencia de esas fuentes; varios puntos críticos reportados por sí solos no demuestran una superposición."
+      "source": "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+      "translation": "Spots++ combina anillos históricos integrados, descubrimientos de Commander y Spansh. Una anotación superpuesta es evidencia de esas fuentes; varios puntos críticos reportados por sí solos no demuestran una superposición."
     },
     {
       "source": "Squadron Carrier",
@@ -76723,8 +76635,8 @@
       "translation": "desconocido"
     },
     {
-      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
-      "translation": "La propiedad del Poder Desconocido no se trata como un enemigo ni como un objetivo de adquisición. Algunos estados dependen de las observaciones de las revistas locales/EDDN y es posible que no aparezcan en un proveedor en línea."
+      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
+      "translation": "La propiedad del Poder Desconocido no se trata como un enemigo ni como un objetivo de adquisición. Los estados de Powerplay provienen de los proveedores de búsqueda y pueden estar incompletos."
     },
     {
       "source": "Unknown arrival",
@@ -90437,8 +90349,8 @@
       "translation": "Combinez les totaux des navires en comptes FC"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Combinez la référence d'anneau intégrée de SrvSurvey, les découvertes du commandant, les observations en direct EDDN et les résultats de l'API Spansh. Spots++ donne la priorité aux sites RES cartographiés, aux chevauchements, aux anneaux multi-hotspots et aux réserves vierges sans nécessiter de téléchargement de vidage de galaxie."
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Combinez la référence d'anneau intégrée de SrvSurvey, les découvertes du commandant et les résultats de l'API Spansh. Spots++ donne la priorité aux sites RES cartographiés, aux chevauchements, aux anneaux multi-hotspots et aux réserves vierges sans nécessiter de téléchargement de vidage de galaxie."
     },
     {
       "source": "Combined Build Report",
@@ -90755,14 +90667,6 @@
     {
       "source": "Community Goals update warning",
       "translation": "Avertissement de mise à jour des objectifs de la communauté"
-    },
-    {
-      "source": "Community cache could not be loaded: {0}",
-      "translation": "Le cache de la communauté n'a pas pu être chargé : {0}"
-    },
-    {
-      "source": "Community data",
-      "translation": "Données communautaires"
     },
     {
       "source": "Community goals",
@@ -93593,14 +93497,6 @@
       "translation": "La publication EDDN, la publication Inara, la synchronisation directe EDSM, la géométrie des établissements humains, les candidats Green Gas Giant, la cargaison Raven, les données de Fleet Carrier, les mises à jour du système et la publication de quête nécessitent chacune le paramètre, les informations d'identification ou la confirmation explicite correspondants."
     },
     {
-      "source": "EDDN reception is off.",
-      "translation": "EDDN la réception est désactivée."
-    },
-    {
-      "source": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-      "translation": "EDDN ouvre une connexion distincte de réception uniquement. Les observations sur les produits expirent après 24 heures ; la couverture augmente lorsqu'elle est activée."
-    },
-    {
       "source": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
       "translation": "EDDN ne nécessite aucun compte, clé API personnelle, flux OAuth, jeton d'accès ou en-tête d'autorisation."
     },
@@ -93619,14 +93515,6 @@
     {
       "source": "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
       "translation": "EDDN le partage est à l'échelle de l'installation, désactivé par défaut et configuré depuis Paramètres > Confidentialité et partage."
-    },
-    {
-      "source": "EDDN unavailable: {0}",
-      "translation": "EDDN indisponible : {0}"
-    },
-    {
-      "source": "EDDN · {0} cached commodity observations",
-      "translation": "EDDN · Observations de produits mises en cache par {0}"
     },
     {
       "source": "EDIT",
@@ -99997,10 +99885,6 @@
       "translation": "Répertoriez les destinations d'itinéraire où le transporteur peut faire le plein. Un par ligne."
     },
     {
-      "source": "Listening for community observations…",
-      "translation": "À l’écoute des observations de la communauté…"
-    },
-    {
       "source": "Listening for live carrier jump events while SrvSurvey is running.",
       "translation": "Écoute des événements de saut de transporteur en direct pendant l'exécution de SrvSurvey."
     },
@@ -101091,6 +100975,10 @@
     {
       "source": "Markets",
       "translation": "Marchés"
+    },
+    {
+      "source": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
+      "translation": "Les marchés utilisent les prix Ardent avec le repli Spansh. Les prix sont des observations et peuvent changer. Configurez les contributions EDDN séparément dans Paramètres > Confidentialité et partage > Configurer le partage EDDN."
     },
     {
       "source": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -105065,14 +104953,6 @@
       "translation": "Remplacez ce rôle de texte par un pinceau d'apparence de superposition"
     },
     {
-      "source": "Oversized EDDN frame.",
-      "translation": "Cadre surdimensionné EDDN."
-    },
-    {
-      "source": "Oversized EDDN message.",
-      "translation": "Message surdimensionné EDDN."
-    },
-    {
       "source": "Overview",
       "translation": "aperçu"
     },
@@ -106275,10 +106155,6 @@
     {
       "source": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
       "translation": "Les prix et la demande sont des observations rapportées, et non des cotations actuelles garanties ou un bénéfice total. Vérifiez la station avant de vous engager dans un voyage minier."
-    },
-    {
-      "source": "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
-      "translation": "Les prix sont des observations et peuvent changer. Exploitation minière → Paramètres → Session peut activer les observations en réception uniquement EDDN, conservées pendant 24 heures pour les matières premières. Cela n'autorise pas les téléchargements."
     },
     {
       "source": "Primary",
@@ -107947,10 +107823,6 @@
     {
       "source": "Rebuilt {0} system files and {1} journals.",
       "translation": "Reconstruction des fichiers système {0} et des journaux {1}."
-    },
-    {
-      "source": "Receive live community market and Powerplay observations from EDDN",
-      "translation": "Recevez en direct le marché communautaire et les observations de Powerplay de EDDN"
     },
     {
       "source": "Received",
@@ -112817,10 +112689,6 @@
       "translation": "Spansh + Canonn"
     },
     {
-      "source": "Spansh + local Powerplay observations",
-      "translation": "Spansh + observations Powerplay locales"
-    },
-    {
       "source": "Spansh JSON",
       "translation": "SpanshJSON"
     },
@@ -112837,8 +112705,8 @@
       "translation": "Spansh URL du presse-papiers"
     },
     {
-      "source": "Spansh conflict progress + local Powerplay observations",
-      "translation": "Spansh progression du conflit + observations Powerplay locales"
+      "source": "Spansh conflict progress",
+      "translation": "Spansh progression du conflit"
     },
     {
       "source": "Spansh could not resolve system '{0}'.",
@@ -112953,8 +112821,8 @@
       "translation": "Spots++"
     },
     {
-      "source": "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
-      "translation": "Spots++ combine des anneaux historiques intégrés, des découvertes Commander, des observations en direct EDDN et Spansh. Une annotation de chevauchement est une preuve provenant de ces sources ; plusieurs points chauds signalés ne prouvent pas à eux seuls un chevauchement."
+      "source": "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+      "translation": "Spots++ combine des anneaux historiques intégrés, des découvertes Commander et Spansh. Une annotation de chevauchement est une preuve provenant de ces sources ; plusieurs points chauds signalés ne prouvent pas à eux seuls un chevauchement."
     },
     {
       "source": "Squadron Carrier",
@@ -118665,8 +118533,8 @@
       "translation": "inconnu"
     },
     {
-      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
-      "translation": "La propriété d'une Puissance inconnue n'est pas traitée comme un ennemi ou une cible d'acquisition. Certains États dépendent des observations d'un journal local/EDDN et peuvent manquer chez un fournisseur en ligne."
+      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
+      "translation": "La propriété d'une Puissance inconnue n'est pas traitée comme un ennemi ou une cible d'acquisition. Les états Powerplay proviennent des moteurs de recherche et peuvent être incomplets."
     },
     {
       "source": "Unknown arrival",
@@ -132379,8 +132247,8 @@
       "translation": "Combine os totais do navio em contagens FC"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Combine a referência de anel integrada de SrvSurvey, descobertas de comandante, observações ao vivo EDDN e resultados de API Spansh. Spots++ prioriza locais RES mapeados, sobreposições, anéis de múltiplos pontos de acesso e reservas intocadas sem a necessidade de download de um despejo de galáxia."
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Combine a referência de anel integrada de SrvSurvey, descobertas de comandante e resultados de API Spansh. O Spots++ prioriza locais RES mapeados, sobreposições, anéis de múltiplos pontos de acesso e reservas intocadas sem a necessidade de download de um despejo de galáxia."
     },
     {
       "source": "Combined Build Report",
@@ -132697,14 +132565,6 @@
     {
       "source": "Community Goals update warning",
       "translation": "Aviso de atualização das metas da comunidade"
-    },
-    {
-      "source": "Community cache could not be loaded: {0}",
-      "translation": "Não foi possível carregar o cache da comunidade: {0}"
-    },
-    {
-      "source": "Community data",
-      "translation": "Dados da comunidade"
     },
     {
       "source": "Community goals",
@@ -135535,14 +135395,6 @@
       "translation": "Publicação EDDN, publicação Inara, sincronização direta EDSM, geometria de assentamento humano, candidatos a Gigante de Gás Verde, carga Raven, dados de Fleet Carrier, atualizações de sistema e publicação de missão exigem, cada um, a configuração correspondente, credencial ou confirmação explícita."
     },
     {
-      "source": "EDDN reception is off.",
-      "translation": "EDDN a recepção está desligada."
-    },
-    {
-      "source": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-      "translation": "EDDN abre uma conexão separada somente para recepção. As observações das mercadorias expiram após 24 horas; a cobertura aumenta enquanto ativada."
-    },
-    {
       "source": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
       "translation": "EDDN não requer conta, chave de API pessoal, fluxo OAuth, token de acesso ou cabeçalho de autorização."
     },
@@ -135561,14 +135413,6 @@
     {
       "source": "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
       "translation": "EDDN o compartilhamento abrange toda a instalação, desabilitado por padrão e configurado em Configurações > Privacidade e compartilhamento."
-    },
-    {
-      "source": "EDDN unavailable: {0}",
-      "translation": "EDDN indisponível: {0}"
-    },
-    {
-      "source": "EDDN · {0} cached commodity observations",
-      "translation": "EDDN · {0} observações de mercadorias em cache"
     },
     {
       "source": "EDIT",
@@ -141939,10 +141783,6 @@
       "translation": "Liste os destinos da rota onde a transportadora pode reabastecer. Um por linha."
     },
     {
-      "source": "Listening for community observations…",
-      "translation": "Ouvindo as observações da comunidade…"
-    },
-    {
       "source": "Listening for live carrier jump events while SrvSurvey is running.",
       "translation": "Ouvindo eventos de salto de portadora ao vivo enquanto SrvSurvey está em execução."
     },
@@ -143033,6 +142873,10 @@
     {
       "source": "Markets",
       "translation": "Mercados"
+    },
+    {
+      "source": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
+      "translation": "Os mercados usam preços Ardent com substituto Spansh. Os preços são observações e podem sofrer alterações. Configure as contribuições EDDN separadamente em Configurações > Privacidade e compartilhamento > Configurar compartilhamento EDDN."
     },
     {
       "source": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -147007,14 +146851,6 @@
       "translation": "Substitua esta função de texto por um pincel de aparência de sobreposição"
     },
     {
-      "source": "Oversized EDDN frame.",
-      "translation": "Quadro superdimensionado EDDN."
-    },
-    {
-      "source": "Oversized EDDN message.",
-      "translation": "Mensagem superdimensionada EDDN."
-    },
-    {
       "source": "Overview",
       "translation": "visão geral"
     },
@@ -148217,10 +148053,6 @@
     {
       "source": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
       "translation": "Os preços e a demanda são observações relatadas e não são cotações atuais garantidas ou lucro total. Verifique a estação antes de iniciar uma viagem de mineração."
-    },
-    {
-      "source": "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
-      "translation": "Os preços são observações e podem sofrer alterações. Mineração → Configurações → A sessão pode permitir observações somente de recebimento EDDN, retidas por 24 horas para commodities. Isso não permite uploads."
     },
     {
       "source": "Primary",
@@ -149889,10 +149721,6 @@
     {
       "source": "Rebuilt {0} system files and {1} journals.",
       "translation": "Arquivos de sistema {0} reconstruídos e diários {1}."
-    },
-    {
-      "source": "Receive live community market and Powerplay observations from EDDN",
-      "translation": "Receba observações do mercado comunitário ao vivo e do Powerplay de EDDN"
     },
     {
       "source": "Received",
@@ -154759,10 +154587,6 @@
       "translation": "Spansh + Canonn"
     },
     {
-      "source": "Spansh + local Powerplay observations",
-      "translation": "Spansh + observações locais do Powerplay"
-    },
-    {
       "source": "Spansh JSON",
       "translation": "Spansh JSON"
     },
@@ -154779,8 +154603,8 @@
       "translation": "Spansh URL da área de transferência"
     },
     {
-      "source": "Spansh conflict progress + local Powerplay observations",
-      "translation": "Spansh progresso do conflito + observações locais do Powerplay"
+      "source": "Spansh conflict progress",
+      "translation": "Spansh progresso do conflito"
     },
     {
       "source": "Spansh could not resolve system '{0}'.",
@@ -154895,8 +154719,8 @@
       "translation": "Pontos++"
     },
     {
-      "source": "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
-      "translation": "Spots++ combina anéis históricos integrados, descobertas do Comandante, observações ao vivo EDDN e Spansh. Uma anotação de sobreposição é uma evidência dessas fontes; vários pontos críticos relatados por si só não provam uma sobreposição."
+      "source": "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+      "translation": "Spots++ combina anéis históricos integrados, descobertas de comandantes e Spansh. Uma anotação de sobreposição é uma evidência dessas fontes; vários pontos críticos relatados por si só não provam uma sobreposição."
     },
     {
       "source": "Squadron Carrier",
@@ -160607,8 +160431,8 @@
       "translation": "desconhecido"
     },
     {
-      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
-      "translation": "A propriedade do poder desconhecido não é tratada como um inimigo ou um alvo de aquisição. Alguns estados dependem de observações do jornal local/EDDN e podem estar faltando em um provedor online."
+      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
+      "translation": "A propriedade do poder desconhecido não é tratada como um inimigo ou um alvo de aquisição. Os estados do Powerplay vêm dos provedores de pesquisa e podem estar incompletos."
     },
     {
       "source": "Unknown arrival",
@@ -174321,8 +174145,8 @@
       "translation": "Объедините общее количество кораблей в количество FC."
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Объедините встроенную кольцевую ссылку SrvSurvey, открытия командира, наблюдения в реальном времени EDDN и результаты API Spansh. Spots++ отдает приоритет нанесенным на карту объектам ВИЭ, перекрытиям, кольцам с несколькими горячими точками и нетронутым резервам, не требуя загрузки дампа галактики."
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "Встроенная ссылка на кольцо объединения SrvSurvey, открытия командира и результаты API Spansh. Spots++ отдает приоритет нанесенным на карту объектам ВИЭ, перекрытиям, кольцам с несколькими горячими точками и нетронутым резервам, не требуя загрузки дампа галактики."
     },
     {
       "source": "Combined Build Report",
@@ -174639,14 +174463,6 @@
     {
       "source": "Community Goals update warning",
       "translation": "Предупреждение об обновлении целей сообщества"
-    },
-    {
-      "source": "Community cache could not be loaded: {0}",
-      "translation": "Не удалось загрузить кэш сообщества: {0}."
-    },
-    {
-      "source": "Community data",
-      "translation": "Данные сообщества"
     },
     {
       "source": "Community goals",
@@ -177477,14 +177293,6 @@
       "translation": "Публикация EDDN, публикация Inara, прямая синхронизация EDSM, геометрия населенных пунктов, кандидаты на гигантов зеленого газа, груз Ворона, данные авианосца флота, обновления системы и публикация квестов требуют соответствующих настроек, учетных данных или явного подтверждения."
     },
     {
-      "source": "EDDN reception is off.",
-      "translation": "EDDN прием отключен."
-    },
-    {
-      "source": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-      "translation": "EDDN Прием открывает отдельное соединение только для приема. Наблюдения за товарами истекают через 24 часа; покрытие растет, пока включено."
-    },
-    {
       "source": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
       "translation": "EDDN не требует учетной записи, личного ключа API, потока OAuth, токена доступа или заголовка авторизации."
     },
@@ -177503,14 +177311,6 @@
     {
       "source": "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
       "translation": "EDDN общий доступ доступен для всей установки, отключен по умолчанию и настраивается в меню «Настройки» > «Конфиденциальность и общий доступ»."
-    },
-    {
-      "source": "EDDN unavailable: {0}",
-      "translation": "EDDN недоступен: {0}"
-    },
-    {
-      "source": "EDDN · {0} cached commodity observations",
-      "translation": "EDDN · {0} кэшированные наблюдения за товарами"
     },
     {
       "source": "EDIT",
@@ -183881,10 +183681,6 @@
       "translation": "Перечислите пункты назначения маршрута, где перевозчик может пополнить счет. По одному на строку."
     },
     {
-      "source": "Listening for community observations…",
-      "translation": "Прислушиваемся к замечаниям сообщества…"
-    },
-    {
       "source": "Listening for live carrier jump events while SrvSurvey is running.",
       "translation": "Прослушивание событий перехода несущей в реальном времени во время работы SrvSurvey."
     },
@@ -184975,6 +184771,10 @@
     {
       "source": "Markets",
       "translation": "Рынки"
+    },
+    {
+      "source": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
+      "translation": "Markets использует цены Ardent с откатом Spansh. Цены являются ориентировочными и могут измениться. Настройте EDDN вклады отдельно в «Настройки» > «Конфиденциальность и обмен» > «Настроить EDDN общий доступ»."
     },
     {
       "source": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -188949,14 +188749,6 @@
       "translation": "Переопределите эту текстовую роль с помощью наложенной кисти внешнего вида."
     },
     {
-      "source": "Oversized EDDN frame.",
-      "translation": "Увеличенная рама EDDN."
-    },
-    {
-      "source": "Oversized EDDN message.",
-      "translation": "Сообщение слишком большого размера EDDN."
-    },
-    {
       "source": "Overview",
       "translation": "обзор"
     },
@@ -190159,10 +189951,6 @@
     {
       "source": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
       "translation": "Цены и спрос представляют собой отчетные наблюдения, а не гарантированные текущие котировки или общую прибыль. Проверьте станцию, прежде чем отправиться в путешествие по добыче полезных ископаемых."
-    },
-    {
-      "source": "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
-      "translation": "Цены являются ориентировочными и могут измениться. Майнинг → Настройки → Сеанс может включить наблюдения только для получения EDDN, сохраняемые в течение 24 часов для сырьевых товаров. Это не позволяет загрузку."
     },
     {
       "source": "Primary",
@@ -191831,10 +191619,6 @@
     {
       "source": "Rebuilt {0} system files and {1} journals.",
       "translation": "Перестроены системные файлы {0} и журналы {1}."
-    },
-    {
-      "source": "Receive live community market and Powerplay observations from EDDN",
-      "translation": "Получайте живые обзоры рынка сообщества и Powerplay от EDDN"
     },
     {
       "source": "Received",
@@ -196701,10 +196485,6 @@
       "translation": "Spansh + Canonn"
     },
     {
-      "source": "Spansh + local Powerplay observations",
-      "translation": "Spansh + местные наблюдения за Powerplay"
-    },
-    {
       "source": "Spansh JSON",
       "translation": "Spansh JSON"
     },
@@ -196721,8 +196501,8 @@
       "translation": "Spansh URL-адрес из буфера обмена"
     },
     {
-      "source": "Spansh conflict progress + local Powerplay observations",
-      "translation": "Spansh ход конфликта + местные наблюдения за Powerplay"
+      "source": "Spansh conflict progress",
+      "translation": "Spansh ход конфликта"
     },
     {
       "source": "Spansh could not resolve system '{0}'.",
@@ -196837,8 +196617,8 @@
       "translation": "Пятна++"
     },
     {
-      "source": "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
-      "translation": "Spots++ сочетает в себе встроенные исторические кольца, открытия Commander, наблюдения в реальном времени EDDN и Spansh. Перекрывающаяся аннотация является свидетельством из этих источников; Сами по себе несколько зарегистрированных «горячих точек» не доказывают совпадения."
+      "source": "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+      "translation": "Spots++ сочетает в себе встроенные исторические кольца, открытия Командира и Spansh. Перекрывающаяся аннотация является свидетельством из этих источников; Сами по себе несколько зарегистрированных «горячих точек» не доказывают совпадения."
     },
     {
       "source": "Squadron Carrier",
@@ -202549,8 +202329,8 @@
       "translation": "неизвестно"
     },
     {
-      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
-      "translation": "Владение неизвестной державой не рассматривается как враг или цель приобретения. Некоторые штаты зависят от наблюдений местных журналов/EDDN и могут отсутствовать у онлайн-провайдера."
+      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
+      "translation": "Владение неизвестной державой не рассматривается как враг или цель приобретения. Состояния Powerplay поступают от поставщиков поиска и могут быть неполными."
     },
     {
       "source": "Unknown arrival",
@@ -216263,8 +216043,8 @@
       "translation": "将船舶总数合并为 FC 计数"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "结合 SrvSurvey 的内置环参考、指挥官发现、实时 EDDN 观察结果和 Spansh API 结果。 Spots++ 优先考虑映射的 RES 站点、重叠、多热点环和原始储备，无需下载星系转储。"
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "结合 SrvSurvey 的内置环参考、指挥官发现和 Spansh API 结果。 Spots++ 优先考虑映射的 RES 站点、重叠、多热点环和原始储备，无需下载星系转储。"
     },
     {
       "source": "Combined Build Report",
@@ -216581,14 +216361,6 @@
     {
       "source": "Community Goals update warning",
       "translation": "社区目标更新警告"
-    },
-    {
-      "source": "Community cache could not be loaded: {0}",
-      "translation": "无法加载社区缓存：{0}"
-    },
-    {
-      "source": "Community data",
-      "translation": "社区数据"
     },
     {
       "source": "Community goals",
@@ -219419,14 +219191,6 @@
       "translation": "EDDN 发布、Inara 发布、直接 EDSM 同步、人类住区几何、绿色气体巨人候选者、乌鸦货物、舰队航母数据、系统更新和任务发布均需要相应的设置、凭证或明确确认。"
     },
     {
-      "source": "EDDN reception is off.",
-      "translation": "EDDN 接收已关闭。"
-    },
-    {
-      "source": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-      "translation": "EDDN 接收打开一个单独的仅接收连接。商品观察24小时后失效；启用后覆盖范围会增加。"
-    },
-    {
       "source": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
       "translation": "EDDN 不需要帐户、个人 API 密钥、OAuth 流程、访问令牌或授权标头。"
     },
@@ -219445,14 +219209,6 @@
     {
       "source": "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
       "translation": "EDDN 共享在安装范围内，默认禁用，并通过“设置”>“隐私和共享”进行配置。"
-    },
-    {
-      "source": "EDDN unavailable: {0}",
-      "translation": "EDDN 不可用：{0}"
-    },
-    {
-      "source": "EDDN · {0} cached commodity observations",
-      "translation": "EDDN · {0} 缓存的商品观察结果"
     },
     {
       "source": "EDIT",
@@ -225823,10 +225579,6 @@
       "translation": "列出承运人可以加注的航线目的地。每行一个。"
     },
     {
-      "source": "Listening for community observations…",
-      "translation": "倾听社区意见……"
-    },
-    {
       "source": "Listening for live carrier jump events while SrvSurvey is running.",
       "translation": "SrvSurvey 运行时侦听实时载波跳跃事件。"
     },
@@ -226917,6 +226669,10 @@
     {
       "source": "Markets",
       "translation": "市场"
+    },
+    {
+      "source": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
+      "translation": "市场使用带有 Spansh 回落的 Ardent 价格。价格为观察结果，可能会发生变化。在设置 > 隐私和共享 > 配置 EDDN 共享中单独配置 EDDN 贡献。"
     },
     {
       "source": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -230891,14 +230647,6 @@
       "translation": "使用覆盖外观画笔覆盖此文本角色"
     },
     {
-      "source": "Oversized EDDN frame.",
-      "translation": "超大 EDDN 框架。"
-    },
-    {
-      "source": "Oversized EDDN message.",
-      "translation": "过大 EDDN 消息。"
-    },
-    {
       "source": "Overview",
       "translation": "概述"
     },
@@ -232101,10 +231849,6 @@
     {
       "source": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
       "translation": "价格和需求是报告的观察结果，不保证当前报价或总利润。在进行采矿之旅之前检查车站。"
-    },
-    {
-      "source": "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
-      "translation": "价格为观察结果，可能会发生变化。挖矿→设置→会话可以启用仅接收EDDN观察，对商品保留24小时。这不会启用上传。"
     },
     {
       "source": "Primary",
@@ -233773,10 +233517,6 @@
     {
       "source": "Rebuilt {0} system files and {1} journals.",
       "translation": "重建 {0} 系统文件和 {1} 日志。"
-    },
-    {
-      "source": "Receive live community market and Powerplay observations from EDDN",
-      "translation": "从 EDDN 接收实时社区市场和 Powerplay 观察"
     },
     {
       "source": "Received",
@@ -238643,10 +238383,6 @@
       "translation": "Spansh + Canonn"
     },
     {
-      "source": "Spansh + local Powerplay observations",
-      "translation": "Spansh + 本地 Powerplay 观察"
-    },
-    {
       "source": "Spansh JSON",
       "translation": "Spansh JSON"
     },
@@ -238663,8 +238399,8 @@
       "translation": "Spansh 剪贴板中的网址"
     },
     {
-      "source": "Spansh conflict progress + local Powerplay observations",
-      "translation": "Spansh 冲突进展 + 本地 Powerplay 观察"
+      "source": "Spansh conflict progress",
+      "translation": "Spansh 冲突进度"
     },
     {
       "source": "Spansh could not resolve system '{0}'.",
@@ -238779,8 +238515,8 @@
       "translation": "景点++"
     },
     {
-      "source": "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
-      "translation": "Spots++ 结合了内置历史环、指挥官发现、实时 EDDN 观察和 Spansh。重叠注释是来自这些来源的证据；仅报告的几个热点并不能证明存在重叠。"
+      "source": "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+      "translation": "Spots++ 结合了内置历史环、指挥官发现和 Spansh。重叠注释是来自这些来源的证据；仅报告的几个热点并不能证明存在重叠。"
     },
     {
       "source": "Squadron Carrier",
@@ -244491,8 +244227,8 @@
       "translation": "未知"
     },
     {
-      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
-      "translation": "未知的权力所有权不被视为敌人或收购目标。某些州依赖于当地期刊/EDDN 的观察结果，并且在线提供商可能会缺失。"
+      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
+      "translation": "未知的权力所有权不被视为敌人或收购目标。 Powerplay 状态来自搜索提供商，可能不完整。"
     },
     {
       "source": "Unknown arrival",
@@ -258205,8 +257941,8 @@
       "translation": "* COMBINE SHIP TOTALS INTO FC COUNTS >>>!"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "* COMBINE SRVSURVEY'S BUILT-IN RING REFERENCE, COMMANDER DISCOVERIES, LIVE EDDN OBSERVATIONS, AND SPANSH API RESULTS. SPOTS++ PRIORITIZES MAPPED RES SITES, OVERLAPS, MULTI-HOTSPOT RINGS, AND PRISTINE RESERVES WITHOUT REQUIRING A DOWNLOADED GALAXY DUMP. >>>!"
+      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+      "translation": "* COMBINE SRVSURVEY'S BUILT-IN RING REFERENCE, COMMANDER DISCOVERIES, AND SPANSH API RESULTS. SPOTS++ PRIORITIZES MAPPED RES SITES, OVERLAPS, MULTI-HOTSPOT RINGS, AND PRISTINE RESERVES WITHOUT REQUIRING A DOWNLOADED GALAXY DUMP. >>>!"
     },
     {
       "source": "Combined Build Report",
@@ -258523,14 +258259,6 @@
     {
       "source": "Community Goals update warning",
       "translation": "* COMMUNITY GOALS UPDATE WARNING >>>!"
-    },
-    {
-      "source": "Community cache could not be loaded: {0}",
-      "translation": "* COMMUNITY CACHE COULD NOT BE LOADED: {0} >>>!"
-    },
-    {
-      "source": "Community data",
-      "translation": "* COMMUNITY DATA >>>!"
     },
     {
       "source": "Community goals",
@@ -261361,14 +261089,6 @@
       "translation": "* EDDN PUBLICATION, INARA PUBLICATION, DIRECT EDSM SYNCHRONIZATION, HUMAN-SETTLEMENT GEOMETRY, GREEN GAS GIANT CANDIDATES, RAVEN CARGO, FLEET CARRIER DATA, SYSTEM UPDATES, AND QUEST PUBLICATION EACH REQUIRE THE CORRESPONDING SETTING, CREDENTIAL, OR EXPLICIT CONFIRMATION. >>>!"
     },
     {
-      "source": "EDDN reception is off.",
-      "translation": "* EDDN RECEPTION IS OFF. >>>!"
-    },
-    {
-      "source": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-      "translation": "* EDDN RECEPTION OPENS A SEPARATE RECEIVE-ONLY CONNECTION. COMMODITY OBSERVATIONS EXPIRE AFTER 24 HOURS; COVERAGE GROWS WHILE ENABLED. >>>!"
-    },
-    {
       "source": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
       "translation": "* EDDN REQUIRES NO ACCOUNT, PERSONAL API KEY, OAUTH FLOW, ACCESS TOKEN, OR AUTHORIZATION HEADER. >>>!"
     },
@@ -261387,14 +261107,6 @@
     {
       "source": "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
       "translation": "* EDDN SHARING IS INSTALLATION-WIDE, DISABLED BY DEFAULT, AND CONFIGURED FROM SETTINGS > PRIVACY & SHARING. >>>!"
-    },
-    {
-      "source": "EDDN unavailable: {0}",
-      "translation": "* EDDN UNAVAILABLE: {0} >>>!"
-    },
-    {
-      "source": "EDDN · {0} cached commodity observations",
-      "translation": "* EDDN · {0} CACHED COMMODITY OBSERVATIONS >>>!"
     },
     {
       "source": "EDIT",
@@ -267765,10 +267477,6 @@
       "translation": "* LIST ROUTE DESTINATIONS WHERE THE CARRIER CAN REFILL. ONE PER LINE. >>>!"
     },
     {
-      "source": "Listening for community observations…",
-      "translation": "* LISTENING FOR COMMUNITY OBSERVATIONS… >>>!"
-    },
-    {
       "source": "Listening for live carrier jump events while SrvSurvey is running.",
       "translation": "* LISTENING FOR LIVE CARRIER JUMP EVENTS WHILE SRVSURVEY IS RUNNING. >>>!"
     },
@@ -268859,6 +268567,10 @@
     {
       "source": "Markets",
       "translation": "* MARKETS >>>!"
+    },
+    {
+      "source": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
+      "translation": "* MARKETS USES ARDENT PRICES WITH SPANSH FALLBACK. PRICES ARE OBSERVATIONS AND MAY CHANGE. CONFIGURE EDDN CONTRIBUTIONS SEPARATELY IN SETTINGS > PRIVACY & SHARING > CONFIGURE EDDN SHARING. >>>!"
     },
     {
       "source": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
@@ -272833,14 +272545,6 @@
       "translation": "* OVERRIDE THIS TEXT ROLE WITH AN OVERLAY APPEARANCE BRUSH >>>!"
     },
     {
-      "source": "Oversized EDDN frame.",
-      "translation": "* OVERSIZED EDDN FRAME. >>>!"
-    },
-    {
-      "source": "Oversized EDDN message.",
-      "translation": "* OVERSIZED EDDN MESSAGE. >>>!"
-    },
-    {
       "source": "Overview",
       "translation": "* OVERVIEW >>>!"
     },
@@ -274043,10 +273747,6 @@
     {
       "source": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
       "translation": "* PRICES AND DEMAND ARE REPORTED OBSERVATIONS, NOT GUARANTEED CURRENT QUOTES OR TOTAL PROFIT. CHECK THE STATION BEFORE COMMITTING TO A MINING TRIP. >>>!"
-    },
-    {
-      "source": "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
-      "translation": "* PRICES ARE OBSERVATIONS AND MAY CHANGE. MINING → SETTINGS → SESSION CAN ENABLE RECEIVE-ONLY EDDN OBSERVATIONS, RETAINED FOR 24 HOURS FOR COMMODITIES. THIS DOES NOT ENABLE UPLOADS. >>>!"
     },
     {
       "source": "Primary",
@@ -275715,10 +275415,6 @@
     {
       "source": "Rebuilt {0} system files and {1} journals.",
       "translation": "* REBUILT {0} SYSTEM FILES AND {1} JOURNALS. >>>!"
-    },
-    {
-      "source": "Receive live community market and Powerplay observations from EDDN",
-      "translation": "* RECEIVE LIVE COMMUNITY MARKET AND POWERPLAY OBSERVATIONS FROM EDDN >>>!"
     },
     {
       "source": "Received",
@@ -280585,10 +280281,6 @@
       "translation": "* SPANSH + CANONN >>>!"
     },
     {
-      "source": "Spansh + local Powerplay observations",
-      "translation": "* SPANSH + LOCAL POWERPLAY OBSERVATIONS >>>!"
-    },
-    {
       "source": "Spansh JSON",
       "translation": "* SPANSH JSON >>>!"
     },
@@ -280605,8 +280297,8 @@
       "translation": "* SPANSH URL FROM CLIPBOARD >>>!"
     },
     {
-      "source": "Spansh conflict progress + local Powerplay observations",
-      "translation": "* SPANSH CONFLICT PROGRESS + LOCAL POWERPLAY OBSERVATIONS >>>!"
+      "source": "Spansh conflict progress",
+      "translation": "* SPANSH CONFLICT PROGRESS >>>!"
     },
     {
       "source": "Spansh could not resolve system '{0}'.",
@@ -280721,8 +280413,8 @@
       "translation": "* SPOTS++ >>>!"
     },
     {
-      "source": "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
-      "translation": "* SPOTS++ COMBINES BUILT-IN HISTORICAL RINGS, COMMANDER DISCOVERIES, LIVE EDDN OBSERVATIONS, AND SPANSH. AN OVERLAP ANNOTATION IS EVIDENCE FROM THOSE SOURCES; SEVERAL REPORTED HOTSPOTS ALONE DO NOT PROVE AN OVERLAP. >>>!"
+      "source": "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+      "translation": "* SPOTS++ COMBINES BUILT-IN HISTORICAL RINGS, COMMANDER DISCOVERIES, AND SPANSH. AN OVERLAP ANNOTATION IS EVIDENCE FROM THOSE SOURCES; SEVERAL REPORTED HOTSPOTS ALONE DO NOT PROVE AN OVERLAP. >>>!"
     },
     {
       "source": "Squadron Carrier",
@@ -286433,8 +286125,8 @@
       "translation": "* UNKNOWN >>>!"
     },
     {
-      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
-      "translation": "* UNKNOWN POWER OWNERSHIP IS NOT TREATED AS AN ENEMY OR AN ACQUISITION TARGET. SOME STATES DEPEND ON LOCAL JOURNAL/EDDN OBSERVATIONS AND MAY BE MISSING FROM AN ONLINE PROVIDER. >>>!"
+      "source": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
+      "translation": "* UNKNOWN POWER OWNERSHIP IS NOT TREATED AS AN ENEMY OR AN ACQUISITION TARGET. POWERPLAY STATES COME FROM THE SEARCH PROVIDERS AND MAY BE INCOMPLETE. >>>!"
     },
     {
       "source": "Unknown arrival",

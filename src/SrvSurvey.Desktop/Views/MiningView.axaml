@@ -741,18 +741,6 @@
                         </CheckBox>
                       </StackPanel>
                     </Border>
-                    <Border x:Name="MiningCommunitySettings" Classes="mining-section">
-                      <StackPanel Spacing="12">
-                        <TextBlock Text="Community data" Classes="card-title" TextWrapping="Wrap"/>
-                        <CheckBox IsChecked="{Binding Settings.ReceiveCommunityData}">
-                          <CheckBox.Content>
-                            <TextBlock Text="Receive live community market and Powerplay observations from EDDN" TextWrapping="Wrap"/>
-                          </CheckBox.Content>
-                        </CheckBox>
-                        <TextBlock Text="EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled." TextWrapping="Wrap" Classes="muted"/>
-                        <TextBlock Text="{Binding CommunityStatus}" TextWrapping="Wrap"/>
-                      </StackPanel>
-                    </Border>
                   </StackPanel>
                   <Border x:Name="MiningSessionShortcuts" Classes="mining-section">
                     <StackPanel Spacing="12">

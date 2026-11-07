@@ -1345,7 +1345,7 @@ public static class GuideCatalog
                         ],
                         [
                             "Unknown coordinates are not treated as nearby. Bundled observations are historical; multiple hotspots alone do not establish an overlap. Local searches show at most 500 rings.",
-                            "Prices are observations and may change. Mining → Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
+                            "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings > Privacy & sharing > Configure EDDN Sharing.",
                             "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier's system.",
                         ]
                     ),
@@ -1358,7 +1358,7 @@ public static class GuideCatalog
                             "Use Find buyers for selected spot to look for selling stations, or bookmark the ring for later.",
                         ],
                         [
-                            "Spots++ combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+                            "Spots++ combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
                         ]
                     ),
                     Section(
@@ -1372,7 +1372,7 @@ public static class GuideCatalog
                         ],
                         [
                             "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
-                            "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
+                            "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
                         ]
                     ),
                     Section(

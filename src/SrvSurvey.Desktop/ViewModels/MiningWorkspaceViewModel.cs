@@ -26,7 +26,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     private readonly FiregroupsWorkspaceViewModel? firegroups;
     private readonly TimeProvider clock;
     private DateTimeOffset lastRecoverySave;
-    private readonly Platform.MiningCommunityListener community;
     private readonly string attachmentDirectory;
     private readonly Platform.IMiningSpeechOutput speech;
     private readonly Platform.IMiningChimeOutput chime;
@@ -102,7 +101,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             options?.OverlaySettings
             ?? new MiningOverlaySettingsStore(Path.Combine(directory, "mining", "overlay-settings.json"));
         overlayCommander = string.IsNullOrWhiteSpace(options?.CommanderId) ? null : options.CommanderId.Trim();
-        community = new Platform.MiningCommunityListener(directory);
         attachmentDirectory = Path.Combine(directory, "mining", "attachments");
         this.resolver = resolver;
         this.bookmarks = bookmarks;
@@ -111,14 +109,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             commodityReportStore: new MiningCommodityPriceReportStore(directory),
             providerResponseCache: new MiningProviderResponseCache(directory)
         );
-        Search = new MiningSearchViewModel(
-            miningSearchClient,
-            bookmarks,
-            CacheRing,
-            () => state.Data.Rings,
-            resolver,
-            community.Cache
-        );
+        Search = new MiningSearchViewModel(miningSearchClient, bookmarks, CacheRing, () => state.Data.Rings, resolver);
         Search.ConfigureResultCache(MiningSearchResultCache.ForDirectory(directory));
         if (miningSearchClient.CachedCommodityPriceReport is { Count: > 0 } cachedPrices)
         {
@@ -167,7 +158,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         LoadOverlayPreferences(readCommanderDefaults: true);
     }
 
-    public string CommunityStatus => community.Status;
     public MiningSearchViewModel Search { get; }
 
     public void UseJournalDirectories(IReadOnlyList<string> paths) => journalDirectories = paths.ToArray();
@@ -807,15 +797,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 capacity = count;
             }
         }
-        if (entry.EventName is FsdJumpEvent or "Location" or "CarrierJump")
-        {
-            var broadcast = new Dictionary<string, object>
-            {
-                ["$schemaRef"] = "https://eddn.edcd.io/schemas/journal/1",
-                ["message"] = entry.Payload,
-            };
-            community.Cache.Apply(JsonSerializer.Serialize(broadcast), clock.GetUtcNow());
-        }
         if (entry.EventName is "Powerplay" or "PowerplayJoin")
         {
             Search.NoteDetectedPower(Text(entry.Payload, "Power"));
@@ -1063,7 +1044,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         miningSearchClient.Dispose();
         speech.Dispose();
         chime.Dispose();
-        community.Dispose();
     }
 
     public void SetThreshold(bool remove)
@@ -1489,7 +1469,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             state = new MiningWorkspaceState(store.Restore(commander, json));
             PauseRecoveredSession();
             Search.LoadOptions(Settings.SearchOptions);
-            community.SetEnabled(Settings.ReceiveCommunityData);
             bool overlaySaved = SaveOverlayPreferences(replaceSnapshot: true);
             Changed(nameof(Settings));
             Changed(nameof(HideProspectsBelowThreshold));
@@ -1544,7 +1523,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         Search.LoadOptions(Settings.SearchOptions);
         RememberPledgedPower(id, commanderName);
         Search.RestoreLastCompletedPowerplaySearch();
-        community.SetEnabled(Settings.ReceiveCommunityData);
         Changed(nameof(Settings));
         Changed(nameof(HideProspectsBelowThreshold));
         Changed(nameof(SessionYieldSortIndex));
@@ -1629,7 +1607,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             return;
         }
         Settings.SearchOptions = Search.SaveOptions();
-        community.SetEnabled(Settings.ReceiveCommunityData);
         SaveOverlayPreferences();
         Save();
         Refresh();
@@ -1705,7 +1682,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             foreach (
                 string? name in new[]
                 {
-                    nameof(CommunityStatus),
                     nameof(SessionSummary),
                     nameof(SessionState),
                     nameof(SessionElapsed),

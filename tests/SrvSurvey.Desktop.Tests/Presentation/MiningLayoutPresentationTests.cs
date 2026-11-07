@@ -17,6 +17,43 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MiningLayoutPresentationTests
 {
+    [AvaloniaFact]
+    public void SessionSettingsOfferAutomationAndShortcutsWithoutEddnReception()
+    {
+        using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MiningWorkspace.SelectedTab = 7;
+        var view = new MiningView { DataContext = model };
+        Window window = CreateWindow(view, 1180);
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            string[] labels = view.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Select(block => block.Text ?? "")
+                .ToArray();
+            Assert.DoesNotContain(
+                labels,
+                label =>
+                    label.Contains("EDDN", StringComparison.OrdinalIgnoreCase)
+                    && (
+                        label.Contains("receiv", StringComparison.OrdinalIgnoreCase)
+                        || label.Contains("reception", StringComparison.OrdinalIgnoreCase)
+                    )
+            );
+            Assert.DoesNotContain("Community data", labels);
+            Assert.Contains("Session behavior", labels);
+            Assert.Contains("Session shortcuts", labels);
+            Assert.Contains("Save mining settings", labels);
+            SaveFrame(frame, "settings-session-no-reception");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(1180, true)]
     [InlineData(660, false)]
