@@ -32,19 +32,22 @@ public sealed partial class ExplorationHistoryCatalog
     {
         using SqliteConnection connection = Open();
         JournalSource[] sources = discover();
+        bool legacyRetry = ReadMetadata(connection, ReconciliationPendingKey) == "1";
         DeferredJournal[] required = ReadDeferredJournals(connection);
-        if (required.Length > 0)
+        if (legacyRetry || required.Length > 0)
         {
             sources = DiscoverSources(directories, token);
             required = PrepareDeferredJournals(required, sources, token);
             fullBackfill = true;
         }
         JournalSource? interrupted = null;
+        DeferredJournal[] captured = [];
         Execute(connection, "BEGIN IMMEDIATE;");
         try
         {
             if (
-                ReadMetadata(connection, ValuationVersionKey) != CurrentValuationVersion
+                legacyRetry
+                || ReadMetadata(connection, ValuationVersionKey) != CurrentValuationVersion
                 || NeedsRebuild(connection, sources, token)
             )
             {
@@ -53,6 +56,7 @@ public sealed partial class ExplorationHistoryCatalog
                 Rebuild(connection, sources);
                 fullBackfill = true;
             }
+            captured = CaptureDeferredJournals(connection, sources, token);
             int processed = 0;
             foreach (JournalSource source in sources)
             {
@@ -77,7 +81,7 @@ public sealed partial class ExplorationHistoryCatalog
             Execute(connection, "ROLLBACK;");
             if (exception is OriginalScanUnavailableException unavailable)
             {
-                RetainDeferredJournals(connection, sources, interrupted, unavailable, token);
+                RetainDeferredJournals(connection, captured, interrupted, unavailable);
             }
             throw;
         }

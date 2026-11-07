@@ -12,7 +12,7 @@ public sealed partial class ExplorationHistoryCatalog
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
     private const string ValuationVersionKey = "valuation_version";
-    private const string CurrentValuationVersion = "3";
+    private const string CurrentValuationVersion = "4";
     private const string ReconciliationPendingKey = "reconciliation_pending";
     private const string UnknownMappingPrefix = "unconfirmed_mapping:";
     private const int CurrentSchemaVersion = 5;

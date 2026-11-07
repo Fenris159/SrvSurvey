@@ -41,7 +41,7 @@ public sealed partial class ExplorationHistoryCatalog
             );
             if (byId.ExecuteScalar() is string known)
             {
-                return known;
+                return ReconcileBodyPlaceholder(connection, known, system, id.Value, name);
             }
         }
         using SqliteCommand byName = Command(
@@ -57,6 +57,49 @@ public sealed partial class ExplorationHistoryCatalog
             Execute(connection, "UPDATE bodies SET body_id=@id WHERE key=@key;", ("@id", id), ("@key", key));
         }
         return key;
+    }
+
+    /// <summary>An ID-only mapping placeholder must not replace a previously valued name-only body.</summary>
+    private static string ReconcileBodyPlaceholder(
+        SqliteConnection connection,
+        string placeholder,
+        string system,
+        long id,
+        string? name
+    )
+    {
+        using SqliteCommand alias = Command(
+            connection,
+            """
+            SELECT key FROM bodies WHERE system_key=@system AND name=@name COLLATE NOCASE AND body_id IS NULL
+                AND EXISTS(SELECT 1 FROM bodies WHERE key=@placeholder AND scan_source_id IS NULL
+                    AND paid_value=0 AND pending_value=0 AND batch_id IS NULL) LIMIT 2;
+            """,
+            (SystemParameter, system),
+            (NameParameter, name),
+            ("@placeholder", placeholder)
+        );
+        string? canonical = UniqueKey(alias);
+        if (canonical is null)
+        {
+            return placeholder;
+        }
+        Execute(
+            connection,
+            """
+            INSERT OR IGNORE INTO metadata(key,value)
+                SELECT @canonicalGuard,value FROM metadata WHERE key=@placeholderGuard;
+            DELETE FROM metadata WHERE key=@placeholderGuard;
+            DELETE FROM bodies WHERE key=@placeholder;
+            UPDATE bodies SET body_id=@id WHERE key=@canonical;
+            """,
+            ("@canonicalGuard", UnknownMappingPrefix + canonical),
+            ("@placeholderGuard", UnknownMappingPrefix + placeholder),
+            ("@placeholder", placeholder),
+            ("@id", id),
+            ("@canonical", canonical)
+        );
+        return canonical;
     }
 
     private static string? UniqueKey(SqliteCommand command)

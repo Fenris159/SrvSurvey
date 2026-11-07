@@ -460,6 +460,124 @@ public sealed class ExplorationHistoryCatalogTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyPendingRetriesRecoverAfterAllOriginalJournalsReturn(bool observed)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Legacy pending", 100, 0), Star(100)]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        using (
+            var connection = new SqliteConnection(
+                new SqliteConnectionStringBuilder { DataSource = fixture.Catalog.FilePath, Pooling = false }.ToString()
+            )
+        )
+        {
+            await connection.OpenAsync();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText =
+                "UPDATE metadata SET value='2' WHERE key='valuation_version'; INSERT INTO metadata(key,value) VALUES('reconciliation_pending','1');";
+            await command.ExecuteNonQueryAsync();
+        }
+        File.Move(fixture.JournalPath, fixture.JournalPath + ".saved");
+        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+        ExplorationHistoryPage retained = await fixture.Catalog.QueryAsync(new());
+        Assert.Equal(23106, Assert.Single(retained.Rows).EstimatedValue);
+        Assert.False(retained.Summary.IsComplete);
+        File.Move(fixture.JournalPath + ".saved", fixture.JournalPath);
+        ExplorationHistorySummary recovered = observed
+            ? await fixture.Catalog.ObserveAsync([], [fixture.Journals])
+            : await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.True(recovered.IsComplete);
+        Assert.Equal(23106, recovered.UnsoldValue);
+        Assert.Equal(recovered, await fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    public async Task InterruptedFingerprintingRetainsVerifiedRecordsWithoutRequiringAnIncompleteSuffix(
+        bool truncateSuffix,
+        bool truncateComplete,
+        bool preserveLength
+    )
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Interrupted recovery", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        File.Move(fixture.JournalPath, fixture.JournalPath + ".saved");
+        string harmless = Path.Combine(fixture.Journals, "Journal.2026-10-01T130000.01.log");
+        string mapping = Path.Combine(fixture.Journals, "Journal.2026-10-01T140000.01.log");
+        string missing = Path.Combine(fixture.Journals, "Journal.2026-10-01T160000.01.log");
+        await File.WriteAllTextAsync(
+            harmless,
+            "{\"timestamp\":\"2026-10-01T13:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+        );
+        string complete =
+            """
+                {"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","Odyssey":true}
+                {"event":"Commander","FID":"F100"}
+                {"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}
+                {"event":"SellExplorationData","Systems":["Interrupted recovery"],"TotalEarnings":2000000}
+                """ + "\n";
+        string captured = complete + "{\"event\":\"Music\"";
+        await File.WriteAllTextAsync(mapping, captured);
+        await File.WriteAllTextAsync(
+            missing,
+            "{\"timestamp\":\"2026-10-01T16:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+        );
+        var interrupt = new SynchronousProgress(progress =>
+        {
+            if (progress.CurrentFile == Path.GetFileName(harmless))
+            {
+                if (truncateComplete)
+                {
+                    string prefix = complete[
+                        ..complete.IndexOf("{\"event\":\"SellExplorationData\"", StringComparison.Ordinal)
+                    ];
+                    File.WriteAllText(
+                        mapping,
+                        prefix + (preserveLength ? new string(' ', captured.Length - prefix.Length) : string.Empty)
+                    );
+                }
+                else if (truncateSuffix)
+                {
+                    File.AppendAllText(mapping, ",\"MusicTrack\":\"Main");
+                }
+                else
+                {
+                    File.Move(missing, missing + ".saved");
+                }
+            }
+        });
+        await Assert.ThrowsAnyAsync<IOException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals], interrupt));
+        File.Move(fixture.JournalPath + ".saved", fixture.JournalPath);
+        if (!truncateSuffix)
+        {
+            if (!truncateComplete)
+            {
+                File.Move(missing + ".saved", missing);
+                await File.WriteAllTextAsync(mapping, captured.Replace("2000000", "9000000", StringComparison.Ordinal));
+            }
+            await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+            ExplorationHistorySummary retained = (await fixture.Catalog.QueryAsync(new())).Summary;
+            Assert.False(retained.IsComplete);
+            Assert.Equal(0, retained.SaleEarnings);
+        }
+        await File.WriteAllTextAsync(mapping, truncateSuffix ? complete : captured);
+        ExplorationHistorySummary recovered = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.True(recovered.IsComplete);
+        Assert.Equal(2700541, recovered.SoldValue);
+        Assert.Equal(0, recovered.UnsoldValue);
+        Assert.Equal(2000000, recovered.SaleEarnings);
+    }
+
+    [Theory]
     [InlineData("mapping")]
     [InlineData("settlement")]
     [InlineData("changed_during_replay")]
@@ -662,17 +780,29 @@ public sealed class ExplorationHistoryCatalogTests
         Assert.Equal(1, summary.UnsoldSystems);
     }
 
-    [Fact]
-    public async Task AMapAfterSellingTheScanAddsOnlyTheUnpaidUpgrade()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AMapAfterSellingTheScanAddsOnlyTheUnpaidUpgrade(bool splitIdentity)
     {
         using var fixture = new HistoryFixture();
         fixture.Write([
             Location("Survey system", 100, 0),
-            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Survey system 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+            """{"event":"Scan","SystemAddress":100,"BodyName":"Survey system 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
             """{"event":"SellExplorationData","Systems":["Survey system"],"TotalEarnings":449200}""",
+        ]);
+        if (splitIdentity)
+        {
+            fixture.Append([
+                """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}""",
+            ]);
+        }
+        fixture.Append([
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Survey system 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
             """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}""",
         ]);
         ExplorationHistorySummary summary = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.True(summary.IsComplete);
         Assert.Equal(449200, summary.SoldValue);
         Assert.Equal(2251341, summary.UnsoldValue);
         ExplorationHistoryRow mapped = Assert.Single(

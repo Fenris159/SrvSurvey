@@ -19,7 +19,8 @@ public sealed partial class ExplorationHistoryCatalog
     private static DeferredJournal[] ReadDeferredJournals(SqliteConnection connection)
     {
         string? value = ReadMetadata(connection, ReconciliationPendingKey);
-        if (value is null)
+        // The previous boolean marker requires a protected full rebuild, enforced by IndexSources.
+        if (value is null or "1")
         {
             return [];
         }
@@ -49,45 +50,66 @@ public sealed partial class ExplorationHistoryCatalog
     private static void WriteDeferredJournals(SqliteConnection connection, DeferredJournal[] required) =>
         SetMetadata(connection, ReconciliationPendingKey, JsonSerializer.Serialize(required));
 
-    /// <summary>Rollback also undoes earlier sources in the batch, so every captured source remains required until a successful replay.</summary>
-    private static void RetainDeferredJournals(
+    /// <summary>Capture only journals with uncommitted bytes before replay can invoke callbacks or external files can disappear.</summary>
+    private static DeferredJournal[] CaptureDeferredJournals(
         SqliteConnection connection,
         JournalSource[] sources,
-        JournalSource? interrupted,
-        OriginalScanUnavailableException failure,
         CancellationToken token
+    )
+    {
+        var captured = new List<DeferredJournal>();
+        foreach (JournalSource source in sources)
+        {
+            using SqliteCommand command = Command(
+                connection,
+                "SELECT length FROM sources WHERE name=@name;",
+                (NameParameter, source.Name)
+            );
+            if (command.ExecuteScalar() is long committedLength && committedLength == source.Length)
+            {
+                continue;
+            }
+            long length = ReadLines(source.Path, 0, token, source.Length, requireCapturedLength: true)
+                .Select(line => line.NextOffset)
+                .LastOrDefault();
+            string hash = HashJournalPrefix(source.Path, length, token);
+            if (!SameSourceVersion(source))
+            {
+                throw new IOException(
+                    "A journal changed while capturing recovery records. History will retry when the file is stable."
+                );
+            }
+            if (length > 0)
+            {
+                captured.Add(new(source.Name, length, source.PrefixHash, hash, null, null));
+            }
+        }
+        return captured.ToArray();
+    }
+
+    /// <summary>Rollback retains every captured uncommitted source without relying on files remaining available afterward.</summary>
+    private static void RetainDeferredJournals(
+        SqliteConnection connection,
+        DeferredJournal[] captured,
+        JournalSource? interrupted,
+        OriginalScanUnavailableException failure
     )
     {
         DeferredJournal[] required = ReadDeferredJournals(connection)
             .Concat(
-                sources.Select(source => new DeferredJournal(
-                    source.Name,
-                    source.Length,
-                    source.PrefixHash,
-                    null,
-                    source.Name == interrupted?.Name ? failure.Record.Offset : null,
-                    source.Name == interrupted?.Name ? failure.Record.Hash : null
-                ))
+                captured.Select(source =>
+                    source.Name == interrupted?.Name
+                        ? source with
+                        {
+                            RecordOffset = failure.Record.Offset,
+                            RecordHash = failure.Record.Hash,
+                        }
+                        : source
+                )
             )
             .Distinct()
             .ToArray();
-        // Save identities before optional fingerprint I/O: disappearing files or cancellation must not lose the retry.
         WriteDeferredJournals(connection, required);
-        try
-        {
-            WriteDeferredJournals(connection, PrepareDeferredJournals(required, sources, token));
-        }
-        catch (Exception exception)
-            when (exception
-                    is IOException
-                        or UnauthorizedAccessException
-                        or InvalidDataException
-                        or OperationCanceledException
-            )
-        {
-            // The durable requirements remain incomplete; a later retry can finish their fingerprints when files settle.
-            return;
-        }
     }
 
     private static DeferredJournal[] PrepareDeferredJournals(
@@ -124,14 +146,7 @@ public sealed partial class ExplorationHistoryCatalog
                     + " before resuming history; the existing catalog has been retained."
             );
         }
-        // An unfinished first record has no data to preserve, even if its header later completes.
-        long length = required.PrefixHash is null
-            ? ReadLines(source.Path, 0, token, required.Length).Select(line => line.NextOffset).LastOrDefault()
-            : required.Length;
-        if (length == 0 && required.RecordOffset is null)
-        {
-            return required with { Length = 0 };
-        }
+        long length = required.Length;
         if (source.PrefixHash != required.HeaderHash)
         {
             throw new InvalidDataException(

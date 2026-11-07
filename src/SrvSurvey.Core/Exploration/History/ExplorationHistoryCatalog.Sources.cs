@@ -57,7 +57,8 @@ public sealed partial class ExplorationHistoryCatalog
         string path,
         long offset,
         CancellationToken cancellationToken,
-        long? maximumOffset = null
+        long? maximumOffset = null,
+        bool requireCapturedLength = false
     )
     {
         using var stream = new FileStream(
@@ -101,9 +102,20 @@ public sealed partial class ExplorationHistoryCatalog
                 lineOffset = position;
             }
         }
+        EnsureCapturedBytesAvailable(remaining, requireCapturedLength);
         if (ReadTail(pending, oversized) is { } tail)
         {
             yield return new JournalLine(lineOffset, position, tail);
+        }
+    }
+
+    private static void EnsureCapturedBytesAvailable(long remaining, bool requireCapturedLength)
+    {
+        if (requireCapturedLength && remaining > 0)
+        {
+            throw new EndOfStreamException(
+                "Captured journal bytes are missing; recovery boundaries have been retained."
+            );
         }
     }
 
