@@ -8,6 +8,96 @@ namespace SrvSurvey.Core.Tests.Exploration.History;
 public sealed class ExplorationHistoryCatalogTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyRareStarEstimatesAreRepricedWithoutChangingRecordedSettlements(bool liveObservation)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Sold rare", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Sold rare star","StarType":"N","StellarMass":1.4}""",
+            """{"event":"SellExplorationData","Systems":["Sold rare"],"TotalEarnings":20000}""",
+            Location("Lost rare", 200, 0),
+            """{"event":"Scan","SystemAddress":200,"BodyID":0,"BodyName":"Lost rare star","StarType":"H","StellarMass":1.4}""",
+            """{"event":"Died"}""",
+            """{"event":"Resurrect","Option":"rebuy","Cost":0}""",
+            Location("Unsold rare", 300, 0),
+            """{"event":"Scan","SystemAddress":300,"BodyID":0,"BodyName":"Unsold rare star","StarType":"N","StellarMass":1.4}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        await SeedPreviousValuationAsync(fixture);
+        ExplorationHistoryRow selected = (await fixture.Catalog.QueryAsync(new())).Rows.Single(row =>
+            row.SystemName == "Unsold rare"
+        );
+        Assert.Equal(1225, selected.EstimatedValue);
+        ExplorationHistorySummary summary = liveObservation
+            ? await fixture.Catalog.ObserveAsync(
+                fixture.Append([
+                    """{"event":"FSSSignalDiscovered","SystemAddress":300,"SignalName":"$Fixed_Event_Life_Cloud;"}""",
+                ]),
+                [fixture.Journals]
+            )
+            : await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(23106, summary.UnsoldValue);
+        Assert.Equal(23106, summary.SoldValue);
+        Assert.Equal(23106, summary.LostValue);
+        Assert.Equal(20000, summary.SaleEarnings);
+        Assert.Equal(1, summary.UnsoldSystems);
+        Assert.Equal(1, summary.SoldSystems);
+        Assert.Equal(1, summary.LostSystems);
+        Assert.True(summary.IsComplete);
+        ExplorationHistoryPage page = await fixture.Catalog.QueryAsync(new(SelectionAnchor: selected.Anchor));
+        Assert.Equal(3, page.TotalRows);
+        Assert.Equal("Unsold rare", page.Rows.Single(row => row.Id == page.SelectedRowId).SystemName);
+        Assert.Equal(ExplorationDataStatus.Sold, page.Rows.Single(row => row.SystemName == "Sold rare").Status);
+        Assert.Equal(ExplorationDataStatus.Lost, page.Rows.Single(row => row.SystemName == "Lost rare").Status);
+        Assert.Equal(summary, await fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+    }
+
+    [Fact]
+    public async Task MissingJournalsDeferRepricingWithoutErasingCachedHistory()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Rare survey", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Rare star","StarType":"H","StellarMass":1.4}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        await SeedPreviousValuationAsync(fixture);
+        string unavailable = fixture.JournalPath + ".saved";
+        File.Move(fixture.JournalPath, unavailable);
+        ExplorationHistoryPage before = await fixture.Catalog.QueryAsync(new());
+        Assert.Equal(1225, Assert.Single(before.Rows).EstimatedValue);
+        Assert.False(before.Summary.IsComplete);
+        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+        ExplorationHistoryPage retained = await fixture.Catalog.QueryAsync(new());
+        Assert.Equal(1225, Assert.Single(retained.Rows).EstimatedValue);
+        Assert.Equal(ExplorationDataStatus.Unsold, retained.Rows[0].Status);
+        Assert.False(retained.Summary.IsComplete);
+        File.Move(unavailable, fixture.JournalPath);
+        ExplorationHistorySummary restored = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(23106, restored.UnsoldValue);
+        Assert.True(restored.IsComplete);
+    }
+
+    private static async Task SeedPreviousValuationAsync(HistoryFixture fixture)
+    {
+        using var connection = new SqliteConnection(
+            new SqliteConnectionStringBuilder { DataSource = fixture.Catalog.FilePath, Pooling = false }.ToString()
+        );
+        await connection.OpenAsync();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE batches SET estimate=1225;
+            UPDATE bodies SET paid_value=CASE WHEN paid_value>0 THEN 1225 ELSE 0 END,
+                pending_value=CASE WHEN pending_value>0 THEN 1225 ELSE 0 END;
+            DELETE FROM metadata WHERE key='valuation_version';
+            PRAGMA user_version=3;
+            """;
+        await command.ExecuteNonQueryAsync();
+    }
+
+    [Theory]
     [InlineData("\"PlanetClass\":\"Earthlike body\"", ExplorationNotables.EarthLikeWorld)]
     [InlineData("\"PlanetClass\":\"Water world\"", ExplorationNotables.WaterWorld)]
     [InlineData("\"PlanetClass\":\"Ammonia world\"", ExplorationNotables.AmmoniaWorld)]

@@ -35,7 +35,10 @@ public sealed partial class ExplorationHistoryCatalog
         Execute(connection, "BEGIN IMMEDIATE;");
         try
         {
-            if (NeedsRebuild(connection, sources, token))
+            if (
+                ReadMetadata(connection, ValuationVersionKey) != CurrentValuationVersion
+                || NeedsRebuild(connection, sources, token)
+            )
             {
                 sources = DiscoverSources(directories, token);
                 Rebuild(connection, sources);
@@ -49,6 +52,7 @@ public sealed partial class ExplorationHistoryCatalog
                 progress?.Report(new ExplorationHistoryProgress(++processed, sources.Length, source.Name));
             }
             token.ThrowIfCancellationRequested();
+            SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
             if (fullBackfill)
             {
                 SetMetadata(connection, "complete", "1");

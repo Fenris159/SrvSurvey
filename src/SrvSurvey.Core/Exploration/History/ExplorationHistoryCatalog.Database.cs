@@ -9,7 +9,9 @@ public sealed partial class ExplorationHistoryCatalog
     private const string OffsetParameter = "@offset";
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
-    private const int CurrentSchemaVersion = 3;
+    private const string ValuationVersionKey = "valuation_version";
+    private const string CurrentValuationVersion = "1";
+    private const int CurrentSchemaVersion = 4;
 
     private SqliteConnection Open(bool initialize = true)
     {
@@ -106,11 +108,15 @@ public sealed partial class ExplorationHistoryCatalog
                 SELECT batch_id,source_id,offset,hash FROM observations WHERE kind IN ('Scan','SAAScanComplete');
             CREATE TABLE IF NOT EXISTS notable_systems (
                 system_key TEXT PRIMARY KEY REFERENCES systems(key), flags INTEGER NOT NULL);
-            PRAGMA user_version=3;
+            PRAGMA user_version=4;
             """
         );
         SetMetadata(connection, "commander", frontierId);
         SetMetadata(connection, "galaxy", isLive ? "live" : "legacy");
+        if (schemaVersion == 0)
+        {
+            SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
+        }
         transaction.Commit();
         return true;
     }
@@ -216,7 +222,9 @@ public sealed partial class ExplorationHistoryCatalog
             SaleEarnings = Convert.ToInt64(earnings.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture),
             SourceFiles = Convert.ToInt32(sources.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture),
             HasCommanderHistory = ReadMetadata(connection, "commander_seen") == "1" && hasDataEvidence,
-            IsComplete = ReadMetadata(connection, "complete") == "1",
+            IsComplete =
+                ReadMetadata(connection, "complete") == "1"
+                && ReadMetadata(connection, ValuationVersionKey) == CurrentValuationVersion,
             Notice = ReadMetadata(connection, "notice"),
         };
     }

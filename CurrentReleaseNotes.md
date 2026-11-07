@@ -29,6 +29,10 @@ theme, clearer control groups, and space reserved for scrollbars.
   metadata index stores ownership and source references rather than another
   copy of the journals. Missing originals are flagged, while catalogued history
   is retained. Late imports and changed sources are reconciled transactionally.
+- **Correct rare-star estimates:** Neutron stars and black holes use the journal
+  codes for their rare-star values. Older history indexes refresh their estimates
+  from the original journals while retaining recorded sale earnings and statuses.
+  If originals are missing, cached history is kept until those files are restored.
 - **Keep survey totals:** Automatic value tracking preserves jump, distance,
   scan, mapping, and landing counters. Mapping upgrades add only their unpaid
   increase, and recorded sale earnings remain separate from estimates.
