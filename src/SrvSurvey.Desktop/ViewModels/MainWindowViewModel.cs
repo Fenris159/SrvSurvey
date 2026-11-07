@@ -3930,7 +3930,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         if (!IsResetExplorationPending)
         {
             IsResetExplorationPending = true;
-            ExplorationStatusMessage = "Select Confirm reset to clear all six exploration totals.";
+            ExplorationStatusMessage = ExplorationHistory.AutoResetEstimatedValue
+                ? "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance."
+                : "Select Confirm reset to clear all six exploration totals.";
             return;
         }
 

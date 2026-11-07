@@ -23,6 +23,39 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class DiagnosticsDesignPresentationTests
 {
     [AvaloniaTheory]
+    [InlineData("monochrome-dark")]
+    [InlineData("blue-light")]
+    public async Task MinimumMainWindowKeepsReplayDateAndTimeFieldsInsideTheirPanel(string theme)
+    {
+        using var fixture = new DiagnosticsFixture(theme);
+        await fixture.PrepareAsync();
+        fixture.Main.IsSidebarCollapsed = false;
+        fixture.Main.SelectedNavigation = fixture.Main.NavigationItems.Single(item => item.Key == "diagnostics");
+        fixture.Main.SelectedDiagnosticsTab = DiagnosticsWorkspaceTab.History;
+        var window = new MainWindow(fixture.Main);
+        try
+        {
+            window.Show();
+            window.Width = 860;
+            window.Height = 600;
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            DiagnosticsView view = window.GetVisualDescendants().OfType<DiagnosticsView>().Single();
+            Assert.True(view.IsEffectivelyVisible);
+            Grid range = view.FindControl<Grid>("ReplayRangeFields")!;
+            ResponsiveColumnsPanel columns = Assert.IsType<ResponsiveColumnsPanel>(range.Parent);
+            Assert.True(range.Bounds.Width > 0 && range.Bounds.Right <= columns.Bounds.Width + 1);
+            foreach (Control control in range.Children.Where(child => Grid.GetColumn(child) == 1))
+            {
+                Assert.True(control.Bounds.Right <= range.Bounds.Width + 1);
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
     [InlineData(1120, "monochrome-dark")]
     [InlineData(1600, "monochrome-dark")]
     [InlineData(760, "monochrome-dark")]
@@ -167,9 +200,12 @@ public sealed class DiagnosticsDesignPresentationTests
             Assert.Single(fixture.Main.JournalHistory.Events);
             ListBox history = view.FindControl<ListBox>("JournalHistoryEventList")!;
             using WriteableBitmap? filtered = window.CaptureRenderedFrame();
+            fixture.Main.JournalHistory.SelectedEvent = null;
+            using WriteableBitmap? cleared = window.CaptureRenderedFrame();
+            Assert.Null(fixture.Main.JournalHistory.SelectedEvent);
             Click(window, history.GetVisualDescendants().OfType<ListBoxItem>().Single());
             Assert.Equal("FSDJump", fixture.Main.JournalHistory.SelectedEvent!.EventName);
-            Assert.Contains("Galactic Survey Outpost", fixture.Main.JournalHistory.SelectedEventRawJson);
+            Assert.Contains("Galactic Survey Outpost", view.FindControl<TextBox>("JournalHistoryRawJson")!.Text);
             CheckBox redact = view.GetVisualDescendants()
                 .OfType<CheckBox>()
                 .Single(box =>

@@ -43,7 +43,15 @@ public sealed record ColonizationProject
     public int MaximumRequired { get; init; }
 
     [JsonPropertyName("sumNeed")]
-    public int RemainingRequired { get; init; }
+    public int RemainingRequired
+    {
+        get =>
+            remainingRequired
+            ?? (int)Math.Min(int.MaxValue, (Commodities?.Values.Sum(value => Math.Max(0L, value)) ?? 0));
+        init => remainingRequired = value;
+    }
+
+    private readonly int? remainingRequired;
 
     [JsonPropertyName("sumTotal")]
     public int TotalContributed { get; init; }

@@ -9,6 +9,11 @@ public sealed partial class ExplorationHistoryCatalog
 {
     private sealed record BodyOwnership(long PaidValue, long PendingValue, long? BatchId, OriginalReference? Scan);
 
+    private sealed class OriginalScanUnavailableException()
+        : IOException(
+            "An original Scan is unavailable. Restore the journal and refresh; later exploration records have been deferred."
+        ) { }
+
     private void ApplyEntry(
         SqliteConnection connection,
         SourceContext context,
@@ -84,8 +89,15 @@ public sealed partial class ExplorationHistoryCatalog
 
     private static void ApplyLocation(SourceContext context, JsonElement root)
     {
-        context.SystemName = Text(root, "StarSystem") ?? context.SystemName;
-        context.SystemAddress = Integer(root, "SystemAddress") ?? context.SystemAddress;
+        string? name = Text(root, "StarSystem") ?? context.SystemName;
+        context.SystemAddress =
+            Integer(root, "SystemAddress")
+            ?? (
+                string.Equals(name, context.SystemName, StringComparison.OrdinalIgnoreCase)
+                    ? context.SystemAddress
+                    : null
+            );
+        context.SystemName = name;
         context.StationName = Text(root, "StationName");
         if (
             root.TryGetProperty("StarPos", out JsonElement position)
@@ -134,13 +146,16 @@ public sealed partial class ExplorationHistoryCatalog
         {
             return null;
         }
-        string key = address is { } value ? "a:" + value.ToString(CultureInfo.InvariantCulture) : "n:" + name;
+        string key =
+            KnownSystemKey(connection, address, name)
+            ?? (address is { } value ? "a:" + value.ToString(CultureInfo.InvariantCulture) : "n:" + name);
         bool samePosition = address == context.SystemAddress;
         Execute(
             connection,
             """
             INSERT INTO systems(key,name,address,x,y,z) VALUES(@key,@name,@address,@x,@y,@z)
             ON CONFLICT(key) DO UPDATE SET name=CASE WHEN @known=1 THEN excluded.name ELSE systems.name END,
+                address=COALESCE(excluded.address,systems.address),
                 x=COALESCE(excluded.x,systems.x),y=COALESCE(excluded.y,systems.y),z=COALESCE(excluded.z,systems.z);
             """,
             ("@key", key),
@@ -154,15 +169,16 @@ public sealed partial class ExplorationHistoryCatalog
         return key;
     }
 
-    private static string? BodyKey(string systemKey, JsonElement root)
+    private static string? BodyKey(SqliteConnection connection, string systemKey, JsonElement root)
     {
         long? id = Integer(root, "BodyID");
         string? name = Text(root, "BodyName") ?? Text(root, "Body");
+        string? key = name is not null ? systemKey + ":n:" + name : null;
         if (id is { } value)
         {
-            return systemKey + ":i:" + value.ToString(CultureInfo.InvariantCulture);
+            key = systemKey + ":i:" + value.ToString(CultureInfo.InvariantCulture);
         }
-        return name is not null ? systemKey + ":n:" + name : null;
+        return KnownBodyKey(connection, systemKey, id, name) ?? key;
     }
 
     private static BodyOwnership ReadBody(SqliteConnection connection, string key)
@@ -196,7 +212,7 @@ public sealed partial class ExplorationHistoryCatalog
             return;
         }
         string? system = EnsureSystem(connection, context, root);
-        string? body = system is null ? null : BodyKey(system, root);
+        string? body = system is null ? null : BodyKey(connection, system, root);
         if (body is null)
         {
             return;
@@ -204,11 +220,13 @@ public sealed partial class ExplorationHistoryCatalog
         Execute(
             connection,
             """
-            INSERT INTO bodies(key,system_key,scan_source_id,scan_offset,scan_hash) VALUES(@key,@system,@source,@offset,@hash)
-            ON CONFLICT(key) DO UPDATE SET scan_source_id=excluded.scan_source_id,scan_offset=excluded.scan_offset,scan_hash=excluded.scan_hash;
+            INSERT INTO bodies(key,system_key,name,body_id,scan_source_id,scan_offset,scan_hash) VALUES(@key,@system,@name,@bodyId,@source,@offset,@hash)
+            ON CONFLICT(key) DO UPDATE SET name=COALESCE(excluded.name,bodies.name),body_id=COALESCE(excluded.body_id,bodies.body_id),scan_source_id=excluded.scan_source_id,scan_offset=excluded.scan_offset,scan_hash=excluded.scan_hash;
             """,
             ("@key", body),
             ("@system", system),
+            ("@name", Text(root, "BodyName") ?? Text(root, "Body")),
+            ("@bodyId", Integer(root, "BodyID")),
             (SourceParameter, reference.SourceId),
             (OffsetParameter, reference.Offset),
             (HashParameter, reference.Hash)
@@ -225,7 +243,7 @@ public sealed partial class ExplorationHistoryCatalog
     )
     {
         string? system = EnsureSystem(connection, context, entry.Payload);
-        string? body = system is null ? null : BodyKey(system, entry.Payload);
+        string? body = system is null ? null : BodyKey(connection, system, entry.Payload);
         if (body is null)
         {
             return;
@@ -234,13 +252,26 @@ public sealed partial class ExplorationHistoryCatalog
         JournalEventEnvelope? scan = owned.Scan is { } source ? ReadOriginal(connection, source) : null;
         if (scan is null)
         {
-            SetMetadata(connection, "notice", "Some mapping values need original scan records that are not available.");
-            return;
+            if (owned.Scan is null)
+            {
+                SetMetadata(
+                    connection,
+                    "notice",
+                    "Some mapping values need original scan records that are not available."
+                );
+                SetMetadata(connection, UnknownMappingPrefix + body, system!);
+                return;
+            }
+            throw new OriginalScanUnavailableException();
         }
         long probes = Integer(entry.Payload, "ProbesUsed") ?? long.MaxValue;
         long target = Integer(entry.Payload, "EfficiencyTarget") ?? -1;
         int candidate = CalculateValue(scan.Payload, context.IsLive == true, true, probes <= target);
         ApplyValue(connection, system!, body, entry, reference, candidate, owned.Scan);
+        if (candidate > 0)
+        {
+            Execute(connection, "DELETE FROM metadata WHERE key=@key;", ("@key", UnknownMappingPrefix + body));
+        }
     }
 
     private static int CalculateValue(JsonElement scan, bool live, bool mapped, bool efficient) =>
@@ -407,8 +438,10 @@ public sealed partial class ExplorationHistoryCatalog
                 WHERE system_key IN (SELECT key FROM systems WHERE name=@name COLLATE NOCASE);
                 UPDATE batches SET status=1,settled_time=@time,settlement_id=@settlement
                 WHERE status=0 AND system_key IN (SELECT key FROM systems WHERE name=@name COLLATE NOCASE);
+                DELETE FROM metadata WHERE key LIKE @unknown AND value IN (SELECT key FROM systems WHERE name=@name COLLATE NOCASE);
                 """,
                 ("@name", name),
+                ("@unknown", UnknownMappingPrefix + "%"),
                 (TimeParameter, Timestamp(entry.Timestamp)),
                 ("@settlement", settlement)
             );
@@ -469,8 +502,10 @@ public sealed partial class ExplorationHistoryCatalog
                 """
                 UPDATE batches SET status=2,settled_time=@time,settlement_id=@settlement WHERE status=0;
                 UPDATE bodies SET pending_value=0,batch_id=NULL;
+                DELETE FROM metadata WHERE key LIKE @unknown;
                 """,
                 (TimeParameter, string.IsNullOrEmpty(died) ? Timestamp(entry.Timestamp) : died),
+                ("@unknown", UnknownMappingPrefix + "%"),
                 ("@settlement", settlement)
             );
         }
@@ -485,7 +520,7 @@ public sealed partial class ExplorationHistoryCatalog
     )
     {
         string? system = EnsureSystem(connection, context, entry.Payload);
-        string? body = system is null ? null : BodyKey(system, entry.Payload);
+        string? body = system is null ? null : BodyKey(connection, system, entry.Payload);
         if (body is null)
         {
             return;

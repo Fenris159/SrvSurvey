@@ -19,7 +19,8 @@ theme, clearer control groups, and space reserved for scrollbars.
   mapping counts, estimated value, and collection and settlement dates. Filter
   by system name, status, or dates; click a system name to copy it and select a
   row to inspect its body details and original journal records. Selected details
-  stay tied to the original collected data during refreshes and imports. History
+  stay tied to the original collected data during refreshes, imports, and page
+  shifts. History
   rows and filters remain accessible in shorter windows.
 - **Spot notable discoveries:** A Notable column highlights ELW, WW, AW,
   terraformable worlds, GGG, NSP, neutron stars, and black holes. Compact tags
@@ -30,14 +31,17 @@ theme, clearer control groups, and space reserved for scrollbars.
   metadata index stores ownership and source references rather than another
   copy of the journals. Missing originals are flagged, while catalogued history
   is retained. Late imports and changed sources are reconciled transactionally.
-  Local indexes are kept clear of portable profile backup scans.
+  Temporarily unavailable Scan records defer mapping updates until recovery, and
+  newly learned identifiers preserve already-paid ownership. Local indexes are
+  kept clear of portable profile backup scans.
 - **Correct rare-star estimates:** Neutron stars and black holes use the journal
   codes for their rare-star values. Older history indexes refresh their estimates
   from the original journals while retaining recorded sale earnings and statuses.
   If originals are missing, cached history is kept until those files are restored.
 - **Keep survey totals:** Automatic value tracking preserves jump, distance,
   scan, mapping, and landing counters. Mapping upgrades add only their unpaid
-  increase, and recorded sale earnings remain separate from estimates.
+  increase, and recorded sale earnings remain separate from estimates. Reset
+  confirmation explains when the journal-derived balance will remain.
 
 ### Colonization and Fleet Carrier loading
 
@@ -46,8 +50,10 @@ theme, clearer control groups, and space reserved for scrollbars.
   unlink actions are available for both Building and Loading results; Planning
   projects remain excluded.
 - **Correct loading progress:** Carrier loading projects with no fulfilled needs
-  display 0% progress rather than an unknown percentage.
-- **Show prepared buildings:** Loading previews and project details list the
+  display 0% progress rather than an unknown percentage. Missing remaining
+  totals are calculated from outstanding cargo.
+- **Show prepared buildings:** Loading previews, project details, and CSV exports
+  list the
   prepared building names and quantities. Comma-separated summaries wrap across
   the preview width, and loading details replace unused system, body, and
   faction fields with the building list.
@@ -63,9 +69,11 @@ theme, clearer control groups, and space reserved for scrollbars.
   reception and the local mining search cache are removed; existing Spansh and
   Ardent searches and opt-in EDDN contributions remain available.
 - **Codex Bingo:** Discovery hierarchy, progress, locations, and related tools
-  use a consistent panel layout, with content kept clear of scrollbars.
+  use a consistent panel layout, with content kept clear of scrollbars. Long
+  warnings scroll without crowding out discovery panels.
 - **Overlay settings:** Category settings, exceptions, and shortcut controls use
-  aligned sections and clearer interactions across application themes.
+  aligned sections and clearer interactions across application themes. Vehicle
+  choices and bulk controls remain reachable during long save errors.
 - **Diagnostics:** History, Processing, and Inspector have fixed headings,
   better-aligned sections, clearer actions, and reserved scrollbar gutters.
 - **Quiet preview bindings:** Carrier readiness no longer logs null-snapshot

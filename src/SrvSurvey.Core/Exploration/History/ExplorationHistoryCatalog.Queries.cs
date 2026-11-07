@@ -7,6 +7,15 @@ namespace SrvSurvey.Core.Exploration.History;
 public sealed partial class ExplorationHistoryCatalog
 {
     private const string UnavailableHistoryMessage = "History is not available.";
+    private const string RowProjection = """
+        SELECT b.id,s.name,s.address,s.x,s.y,s.z,b.first_time,b.last_time,b.settled_time,b.status,b.estimate,b.scans,b.maps,
+            original.name,anchor.offset,anchor.hash,COALESCE(notable.flags,0)
+        FROM batches b JOIN systems s ON s.key=b.system_key
+        LEFT JOIN collection_anchors anchor ON anchor.id=(
+            SELECT id FROM collection_anchors WHERE batch_id=b.id ORDER BY id LIMIT 1)
+        LEFT JOIN sources original ON original.id=anchor.source_id
+        LEFT JOIN notable_systems notable ON notable.system_key=s.key
+        """;
 
     private ExplorationHistoryPage Query(ExplorationHistoryQuery query, CancellationToken token)
     {
@@ -43,18 +52,13 @@ public sealed partial class ExplorationHistoryCatalog
         }
         using SqliteCommand command = Command(
             connection,
-            """
-            SELECT b.id,s.name,s.address,s.x,s.y,s.z,b.first_time,b.last_time,b.settled_time,b.status,b.estimate,b.scans,b.maps,
-                original.name,anchor.offset,anchor.hash,COALESCE(notable.flags,0)
-            FROM batches b JOIN systems s ON s.key=b.system_key
-            LEFT JOIN collection_anchors anchor ON anchor.id=(
-                SELECT id FROM collection_anchors WHERE batch_id=b.id ORDER BY id LIMIT 1)
-            LEFT JOIN sources original ON original.id=anchor.source_id
-            LEFT JOIN notable_systems notable ON notable.system_key=s.key
-            WHERE (@status IS NULL OR b.status=@status) AND instr(lower(s.name),lower(@search))>0
-                AND (@from IS NULL OR b.last_time>=@from) AND (@through IS NULL OR b.last_time<=@through)
-            ORDER BY b.last_time DESC,b.id DESC LIMIT @size OFFSET @offset;
-            """,
+            RowProjection
+                + "\n"
+                + """
+                WHERE (@status IS NULL OR b.status=@status) AND instr(lower(s.name),lower(@search))>0
+                    AND (@from IS NULL OR b.last_time>=@from) AND (@through IS NULL OR b.last_time<=@through)
+                ORDER BY b.last_time DESC,b.id DESC LIMIT @size OFFSET @offset;
+                """,
             [.. parameters, ("@size", size), ("@offset", offset)]
         );
         using SqliteDataReader reader = command.ExecuteReader();
@@ -64,16 +68,38 @@ public sealed partial class ExplorationHistoryCatalog
             token.ThrowIfCancellationRequested();
             rows.Add(ReadRow(reader));
         }
+        long? selectedId = FindSelectedRow(connection, query.SelectionAnchor);
         var page = new ExplorationHistoryPage(
             rows,
             total,
             offset,
             size,
             ReadSummary(connection),
-            FindSelectedRow(connection, query.SelectionAnchor)
+            selectedId,
+            ReadSelectedRow(connection, selectedId, rows)
         );
         snapshot.Commit();
         return page;
+    }
+
+    private static ExplorationHistoryRow? ReadSelectedRow(
+        SqliteConnection connection,
+        long? id,
+        IReadOnlyList<ExplorationHistoryRow> rows
+    )
+    {
+        if (id is null)
+        {
+            return null;
+        }
+        ExplorationHistoryRow? visible = rows.SingleOrDefault(row => row.Id == id);
+        if (visible is not null)
+        {
+            return visible;
+        }
+        using SqliteCommand command = Command(connection, RowProjection + " WHERE b.id=@id;", ("@id", id));
+        using SqliteDataReader reader = command.ExecuteReader();
+        return reader.Read() ? ReadRow(reader) : null;
     }
 
     private static long? FindSelectedRow(SqliteConnection connection, ExplorationHistoryAnchor? anchor)
@@ -155,6 +181,7 @@ public sealed partial class ExplorationHistoryCatalog
         {
             while (reader.Read())
             {
+                token.ThrowIfCancellationRequested();
                 references.Add(new OriginalReference(reader.GetInt64(0), reader.GetInt64(1), reader.GetString(2)));
             }
         }
@@ -163,7 +190,7 @@ public sealed partial class ExplorationHistoryCatalog
         foreach (OriginalReference reference in references)
         {
             token.ThrowIfCancellationRequested();
-            JournalEventEnvelope? original = ReadOriginal(connection, reference);
+            JournalEventEnvelope? original = ReadOriginal(connection, reference, token);
             if (original is not null)
             {
                 events.Add(original);

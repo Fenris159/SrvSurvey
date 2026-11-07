@@ -264,11 +264,71 @@ public sealed class OverlaySettingsDesignPresentationTests
                 Click(window, allow);
                 Assert.All(choices, choice => Assert.True(choice.IsChecked));
                 Assert.Equal(model.Entries.Select(entry => entry.Definition.Id).Order(), store.Load(category)!.Order());
+                OverlayExceptionEntryViewModel entry = Assert.IsType<OverlayExceptionEntryViewModel>(
+                    choices[0].DataContext
+                );
+                Click(window, choices[0]);
+                Assert.False(entry.IsAllowed);
+                Assert.Equal(
+                    model
+                        .Entries.Where(item => item.Definition.Id != entry.Definition.Id)
+                        .Select(item => item.Definition.Id)
+                        .Order(),
+                    store.Load(category)!.Order()
+                );
             }
             finally
             {
                 window.Close();
             }
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("monochrome-dark")]
+    [InlineData("blue-light")]
+    public void LongSaveErrorsKeepIndividualVehiclesReachableAtMinimumSize(string theme)
+    {
+        using var fixture = new SettingsFixture(theme);
+        var store = new OverlayVehicleSettingsStore(fixture.Main.AppDataPaths.UiSettingsPath);
+        var exceptions = new OverlayExceptionsViewModel(store, new OverlayWindowRegistry());
+        OverlayExceptionCategoryViewModel model = exceptions.ForCategory(OverlaySettingsCategory.Mining);
+        model.Status = string.Join(
+            " ",
+            Enumerable.Range(1, 80).Select(index => $"Save error {index}: destination cannot be written.")
+        );
+        var window = new OverlayExceptionsWindow
+        {
+            DataContext = model,
+            Width = 440,
+            Height = 400,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            ScrollViewer list = window.FindControl<ScrollViewer>("ExceptionsGroupsScroll")!;
+            Assert.True(list.Viewport.Height >= 60);
+            CheckBox choice = window.GetVisualDescendants().OfType<CheckBox>().First();
+            choice.BringIntoView();
+            using WriteableBitmap? visible = window.CaptureRenderedFrame();
+            ScrollContentPresenter viewport = list.GetVisualDescendants()
+                .OfType<ScrollContentPresenter>()
+                .Single(presenter => presenter.GetVisualAncestors().OfType<ScrollViewer>().First() == list);
+            Point top = choice.TranslatePoint(default, viewport)!.Value;
+            Assert.True(top.Y >= 0 && top.Y + choice.Bounds.Height <= viewport.Bounds.Height);
+            ScrollViewer status = window.FindControl<ScrollViewer>("ExceptionsStatusViewport")!;
+            Assert.True(status.Extent.Height > status.Viewport.Height);
+            status.ScrollToEnd();
+            using WriteableBitmap? lastWarning = window.CaptureRenderedFrame();
+            Assert.Equal(model.Status, window.FindControl<TextBlock>("ExceptionsStatusText")!.Text);
+            bool before = Assert.IsType<OverlayExceptionEntryViewModel>(choice.DataContext).IsAllowed;
+            Click(window, choice);
+            Assert.Equal(!before, Assert.IsType<OverlayExceptionEntryViewModel>(choice.DataContext).IsAllowed);
+        }
+        finally
+        {
+            window.Close();
         }
     }
 

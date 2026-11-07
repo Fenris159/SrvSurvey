@@ -32,6 +32,11 @@ public sealed partial class ExplorationHistoryCatalog
     {
         using SqliteConnection connection = Open();
         JournalSource[] sources = discover();
+        if (ReadMetadata(connection, ReconciliationPendingKey) is not null)
+        {
+            sources = DiscoverSources(directories, token);
+            fullBackfill = true;
+        }
         Execute(connection, "BEGIN IMMEDIATE;");
         try
         {
@@ -53,6 +58,7 @@ public sealed partial class ExplorationHistoryCatalog
             }
             token.ThrowIfCancellationRequested();
             SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
+            Execute(connection, "DELETE FROM metadata WHERE key=@key;", ("@key", ReconciliationPendingKey));
             if (fullBackfill)
             {
                 SetMetadata(connection, "complete", "1");
@@ -60,9 +66,13 @@ public sealed partial class ExplorationHistoryCatalog
             Execute(connection, "COMMIT;");
             return ReadSummary(connection);
         }
-        catch
+        catch (Exception exception)
         {
             Execute(connection, "ROLLBACK;");
+            if (exception is OriginalScanUnavailableException)
+            {
+                SetMetadata(connection, ReconciliationPendingKey, "1");
+            }
             throw;
         }
     }

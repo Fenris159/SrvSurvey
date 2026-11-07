@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,6 +13,7 @@ public sealed partial class ExplorationHistoryCatalog
     private const int MaximumLineBytes = 1024 * 1024;
     private static readonly UTF8Encoding JournalEncoding = new(false, true);
     private static readonly JsonSerializerOptions ContextJson = new() { PropertyNameCaseInsensitive = true };
+    private readonly ConcurrentDictionary<(JournalSource First, JournalSource Second), bool> verifiedPrefixes = new();
 
     private sealed record JournalLine(long Offset, long NextOffset, string? Content);
 
@@ -24,6 +26,7 @@ public sealed partial class ExplorationHistoryCatalog
         string PrefixHash,
         long ModifiedTicks,
         long Length,
+        long CreatedTicks,
         JournalFilePart? FilePart,
         bool? IsLive
     );
@@ -142,7 +145,11 @@ public sealed partial class ExplorationHistoryCatalog
     private static string ContentHash(string text) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
 
-    private static JournalEventEnvelope? ReadOriginal(SqliteConnection connection, OriginalReference reference)
+    private static JournalEventEnvelope? ReadOriginal(
+        SqliteConnection connection,
+        OriginalReference reference,
+        CancellationToken token = default
+    )
     {
         using SqliteCommand command = Command(
             connection,
@@ -155,7 +162,7 @@ public sealed partial class ExplorationHistoryCatalog
         }
         try
         {
-            JournalLine? line = ReadLines(path, reference.Offset, CancellationToken.None).FirstOrDefault();
+            JournalLine? line = ReadLines(path, reference.Offset, token).FirstOrDefault();
             if (
                 line?.Content is { } text
                 && ContentHash(text) == reference.Hash
@@ -216,6 +223,7 @@ public sealed partial class ExplorationHistoryCatalog
             ContentHash(first?.Content ?? string.Empty),
             snapshot.LastWriteTimeUtc.Ticks,
             snapshot.Length,
+            snapshot.CreationTimeUtc.Ticks,
             JournalFilePart.Read(path, header),
             header is null ? null : IsLiveHeader(header.Payload)
         );
@@ -278,7 +286,36 @@ public sealed partial class ExplorationHistoryCatalog
         return command.ExecuteScalar() as string;
     }
 
-    private static bool MatchingPrefix(JournalSource first, JournalSource second, CancellationToken token)
+    /// <summary>Reuses only unchanged file snapshots; appends, replacements, and timestamp changes require a fresh full comparison.</summary>
+    private bool MatchingPrefix(JournalSource first, JournalSource second, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        if (verifiedPrefixes.TryGetValue((first, second), out bool previous))
+        {
+            return previous;
+        }
+        bool matching = ReadMatchingPrefix(first, second, token);
+        if (SameSourceVersion(first) && SameSourceVersion(second))
+        {
+            if (verifiedPrefixes.Count >= 64)
+            {
+                verifiedPrefixes.Clear();
+            }
+            verifiedPrefixes.TryAdd((first, second), matching);
+        }
+        return matching;
+    }
+
+    private static bool SameSourceVersion(JournalSource source)
+    {
+        var current = new FileInfo(source.Path);
+        return current.Exists
+            && current.Length == source.Length
+            && current.LastWriteTimeUtc.Ticks == source.ModifiedTicks
+            && current.CreationTimeUtc.Ticks == source.CreatedTicks;
+    }
+
+    private static bool ReadMatchingPrefix(JournalSource first, JournalSource second, CancellationToken token)
     {
         using var left = new FileStream(
             first.Path,

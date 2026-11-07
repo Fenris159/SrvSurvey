@@ -301,7 +301,11 @@
             BorderThickness="0,1,0,0"
             Padding="24,10">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-        <TextBlock Classes="muted" Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+        <ScrollViewer x:Name="BingoStatusViewport" MaxHeight="72"
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <TextBlock x:Name="BingoStatusText" Classes="muted" Margin="0,0,16,0"
+                     Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+        </ScrollViewer>
         <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center" Text="{Binding CommanderSummary}" />
       </Grid>
     </Border>

@@ -95,7 +95,7 @@ public sealed partial class ExplorationHistoryCatalog
                 Text(root, "StarType") switch
                 {
                     "N" or "NS" => ExplorationNotables.NeutronStar,
-                    "H" or "SupermassiveBlackHole" => ExplorationNotables.BlackHole,
+                    "H" or "BH" or "SupermassiveBlackHole" => ExplorationNotables.BlackHole,
                     _ => ExplorationNotables.None,
                 }
             );

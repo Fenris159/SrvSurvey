@@ -47,6 +47,7 @@ public sealed class CodexBingoPresentationTests
             ScrollViewer scroll = Assert.Single(tree.GetVisualDescendants().OfType<ScrollViewer>());
             Assert.True(scroll.Extent.Height > scroll.Viewport.Height);
             Assert.Equal(0, scroll.Offset.X);
+            Assert.True(fixture.Model.RootNodes[0].CompletionPercent > 0);
             AssertReadoutFits(tree, viewport, fixture.Model.RootNodes[0]);
             AssertReadoutFits(tree, viewport, fixture.Model.SelectedNode!);
             AssertSelectedTextReadable(tree, fixture.Model.SelectedNode!);
@@ -183,6 +184,43 @@ public sealed class CodexBingoPresentationTests
         Assert.True((lighter + 0.05) / (darker + 0.05) >= 4.5, $"'{text.Text}' has insufficient contrast.");
     }
 
+    [AvaloniaTheory]
+    [InlineData("monochrome-dark")]
+    [InlineData("blue-light")]
+    public async Task LongImportWarningsKeepTheHierarchyUsableAtMinimumSize(string theme)
+    {
+        string warnings = string.Join(
+            " ",
+            Enumerable.Range(1, 80).Select(index => $"Warning {index}: journal reference is unavailable.")
+        );
+        using var fixture = new BingoFixture(theme, warnings);
+        await fixture.InitializeAsync();
+        await fixture.Model.ImportCanonnAsync();
+        Assert.Contains("Warning 80:", fixture.Model.StatusMessage);
+        var window = new BiologyCodexBingoWindow(fixture.Model) { Width = 980, Height = 680 };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            TreeView tree = Assert.Single(window.GetVisualDescendants().OfType<TreeView>());
+            ScrollViewer hierarchy = Assert.Single(tree.GetVisualDescendants().OfType<ScrollViewer>());
+            Assert.True(hierarchy.Viewport.Height > 100);
+            ScrollViewer status = window.FindControl<ScrollViewer>("BingoStatusViewport")!;
+            Assert.True(status.Extent.Height > status.Viewport.Height);
+            status.ScrollToEnd();
+            using WriteableBitmap? scrolled = window.CaptureRenderedFrame();
+            TextBlock text = window.FindControl<TextBlock>("BingoStatusText")!;
+            Assert.Equal(fixture.Model.StatusMessage, text.Text);
+            ScrollContentPresenter viewport = status.GetVisualDescendants().OfType<ScrollContentPresenter>().Single();
+            Point end = text.TranslatePoint(new Point(0, text.Bounds.Height), viewport)!.Value;
+            Assert.InRange(end.Y, 0, viewport.Bounds.Height + 1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static double Luminance(Color color) =>
         0.2126 * LinearChannel(color.R) + 0.7152 * LinearChannel(color.G) + 0.0722 * LinearChannel(color.B);
 
@@ -212,6 +250,7 @@ public sealed class CodexBingoPresentationTests
             $"{node.Name} completion ends at {right.X:N1} in a {viewport.Bounds.Width:N1}px viewport."
         );
         ProgressBar progress = Assert.Single(Assert.IsType<Grid>(readout.Parent).Children.OfType<ProgressBar>());
+        Assert.Equal(node.CompletionPercent, progress.Value);
         Point progressRight = progress.TranslatePoint(new Point(progress.Bounds.Width, 0), viewport)!.Value;
         Assert.True(progressRight.X <= clearEdge, $"{node.Name} progress runs into the scrollbar gutter.");
     }
@@ -238,7 +277,7 @@ public sealed class CodexBingoPresentationTests
         private readonly string originalTheme;
         private readonly CommanderCodexStore store;
 
-        public BingoFixture(string theme)
+        public BingoFixture(string theme, string? challengeError = null)
         {
             Application application = Assert.IsType<Application>(Application.Current, exactMatch: false);
             themes = new RavenThemeService(
@@ -258,7 +297,7 @@ public sealed class CodexBingoPresentationTests
             Model = new BiologyCodexBingoViewModel(
                 store,
                 catalog,
-                new CanonnCodexChallengeImporter(new ChallengeClient(), store, catalog),
+                new CanonnCodexChallengeImporter(new ChallengeClient(challengeError), store, catalog),
                 new CommanderCodexJournalImporter(Path.Combine(directory, "journals"), store),
                 new LocationClient()
             );
@@ -319,12 +358,12 @@ public sealed class CodexBingoPresentationTests
         }
     }
 
-    private sealed class ChallengeClient : ICanonnCodexChallengeClient
+    private sealed class ChallengeClient(string? error) : ICanonnCodexChallengeClient
     {
         public Task<CanonnCodexChallengeLoadResult> GetAsync(
             string commanderName,
             CancellationToken cancellationToken = default
-        ) => Task.FromResult(new CanonnCodexChallengeLoadResult([], null));
+        ) => Task.FromResult(new CanonnCodexChallengeLoadResult([], error));
     }
 
     private sealed class LocationClient : ICodexDiscoveryLocationClient

@@ -76,7 +76,8 @@ public sealed record ExplorationHistoryPage(
     int Offset,
     int PageSize,
     ExplorationHistorySummary Summary,
-    long? SelectedRowId = null
+    long? SelectedRowId = null,
+    ExplorationHistoryRow? SelectedRow = null
 );
 
 public sealed record ExplorationHistoryDetails(

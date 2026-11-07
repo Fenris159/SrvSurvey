@@ -27473,6 +27473,10 @@
       "translation": "Wählen Sie „Zurücksetzen bestätigen“, um alle sechs Erkundungssummen zu löschen."
     },
     {
+      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+      "translation": "Wählen Sie „Zurücksetzen bestätigen“, um die gespeicherten Umfragesummen zu löschen. Durch die automatische Nachverfolgung bleibt der aus dem Journal abgeleitete, nicht verkaufte Saldo erhalten."
+    },
+    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Wählen Sie „Deaktivieren“ und bestätigen Sie, um den API-Schlüssel zu entfernen und die ausstehende Lieferung für diesen Commander abzubrechen. Beim Wechseln von Commanders wird der separate Status EDSM dieses Profils geladen."
     },
@@ -42065,10 +42069,6 @@
       "translation": "{0} % von {1}"
     },
     {
-      "source": "{0}-layout {1}",
-      "translation": "{0}-Layout {1}"
-    },
-    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -42187,10 +42187,6 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
-    },
-    {
-      "source": "{0}x {1}",
-      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -69819,6 +69815,10 @@
       "translation": "Seleccione Confirmar reinicio para borrar los seis totales de exploración."
     },
     {
+      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+      "translation": "Seleccione Confirmar reinicio para borrar los totales de la encuesta guardados. El seguimiento automático mantiene el saldo no vendido derivado del diario."
+    },
+    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Seleccione Desactivar y confirme para eliminar la clave API y cancelar la entrega pendiente para ese Commander. Al cambiar de comandante se carga el estado independiente de ese perfil EDSM."
     },
@@ -84411,10 +84411,6 @@
       "translation": "{0}% de {1}"
     },
     {
-      "source": "{0}-layout {1}",
-      "translation": "Diseño {0} {1}"
-    },
-    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -84533,10 +84529,6 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
-    },
-    {
-      "source": "{0}x {1}",
-      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -112165,6 +112157,10 @@
       "translation": "Sélectionnez Confirmer la réinitialisation pour effacer les six totaux d’exploration."
     },
     {
+      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+      "translation": "Sélectionnez Confirmer la réinitialisation pour effacer les totaux d'enquête enregistrés. Le suivi automatique conserve le solde invendu dérivé du journal."
+    },
+    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Sélectionnez Désactiver et confirmez pour supprimer la clé API et annuler la livraison en attente pour ce Commander. Changer de commandant charge l'état distinct de ce profil EDSM."
     },
@@ -126757,10 +126753,6 @@
       "translation": "{0}% de {1}"
     },
     {
-      "source": "{0}-layout {1}",
-      "translation": "Mise en page {0} {1}"
-    },
-    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -126879,10 +126871,6 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
-    },
-    {
-      "source": "{0}x {1}",
-      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -154511,6 +154499,10 @@
       "translation": "Selecione Confirmar redefinição para limpar todos os seis totais de exploração."
     },
     {
+      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+      "translation": "Selecione Confirmar redefinição para limpar os totais de pesquisa salvos. O rastreamento automático mantém o saldo não vendido derivado do diário."
+    },
+    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Selecione Desativar e confirme para remover a chave de API e cancelar a entrega pendente desse Commander. Switching Commanders carrega o estado separado desse perfil EDSM."
     },
@@ -169103,10 +169095,6 @@
       "translation": "{0}% de {1}"
     },
     {
-      "source": "{0}-layout {1}",
-      "translation": "Layout {0} {1}"
-    },
-    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -169225,10 +169213,6 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
-    },
-    {
-      "source": "{0}x {1}",
-      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -196857,6 +196841,10 @@
       "translation": "Выберите «Подтвердить сброс», чтобы очистить все шесть итогов исследования."
     },
     {
+      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+      "translation": "Выберите «Подтвердить сброс», чтобы удалить сохраненные итоги опроса. Автоматическое отслеживание сохраняет непроданный остаток, полученный из журнала."
+    },
+    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Выберите «Отключить» и подтвердите, чтобы удалить ключ API и отменить ожидающую доставку для этого Commander. Коммандеры переключения загружают отдельное состояние этого профиля EDSM."
     },
@@ -211449,10 +211437,6 @@
       "translation": "{0}% от {1}"
     },
     {
-      "source": "{0}-layout {1}",
-      "translation": "{0}-макет {1}"
-    },
-    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -211571,10 +211555,6 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
-    },
-    {
-      "source": "{0}x {1}",
-      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -239203,6 +239183,10 @@
       "translation": "选择确认重置以清除所有六个探索总数。"
     },
     {
+      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+      "translation": "选择确认重置以清除保存的调查总计。自动跟踪保持日记帐衍生的未售出余额。"
+    },
+    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "选择禁用并确认删除 API 密钥并取消该指挥官的待交付。切换命令加载该配置文件的单独 EDSM 状态。"
     },
@@ -253795,10 +253779,6 @@
       "translation": "{0}% 的 {1}"
     },
     {
-      "source": "{0}-layout {1}",
-      "translation": "{0}-布局{1}"
-    },
-    {
       "source": "{0}.desktop",
       "translation": "{0}.desktop"
     },
@@ -253917,10 +253897,6 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
-    },
-    {
-      "source": "{0}x {1}",
-      "translation": "{0}x {1}"
     },
     {
       "source": "{0}x{1} at ({2},{3})",
@@ -281549,6 +281525,10 @@
       "translation": "* SELECT CONFIRM RESET TO CLEAR ALL SIX EXPLORATION TOTALS. >>>!"
     },
     {
+      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+      "translation": "* SELECT CONFIRM RESET TO CLEAR THE SAVED SURVEY TOTALS. AUTOMATIC TRACKING KEEPS THE JOURNAL-DERIVED UNSOLD BALANCE. >>>!"
+    },
+    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "* SELECT DISABLE AND CONFIRM TO REMOVE THE API KEY AND CANCEL PENDING DELIVERY FOR THAT COMMANDER. SWITCHING COMMANDERS LOADS THAT PROFILE'S SEPARATE EDSM STATE. >>>!"
     },
@@ -296141,10 +296121,6 @@
       "translation": "* {0}% OF {1} >>>!"
     },
     {
-      "source": "{0}-layout {1}",
-      "translation": "* {0}-LAYOUT {1} >>>!"
-    },
-    {
       "source": "{0}.desktop",
       "translation": "* {0}.DESKTOP >>>!"
     },
@@ -296263,10 +296239,6 @@
     {
       "source": "{0}x",
       "translation": "* {0}X >>>!"
-    },
-    {
-      "source": "{0}x {1}",
-      "translation": "* {0}X {1} >>>!"
     },
     {
       "source": "{0}x{1} at ({2},{3})",

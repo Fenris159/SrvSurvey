@@ -36,6 +36,152 @@ public sealed class ExplorationHistoryViewModelTests
     }
 
     [Fact]
+    public async Task NewCollectionsDoNotCloseAnInspectorWhenItsRowMovesToAnotherPage()
+    {
+        using var fixture = new Fixture();
+        for (int index = 1; index <= 49; index++)
+        {
+            await File.AppendAllLinesAsync(
+                fixture.JournalPath("F100"),
+                [
+                    $$"""{"timestamp":"2026-10-01T13:00:00Z","event":"Location","StarSystem":"Survey {{index}}","SystemAddress":{{index}}}""",
+                    $$"""{"timestamp":"2026-10-01T13:01:00Z","event":"Scan","SystemAddress":{{index}},"BodyID":0,"BodyName":"Survey {{index}} A","StarType":"NS","StellarMass":1.4}""",
+                ]
+            );
+        }
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        Assert.Equal(50, model.Rows.Count);
+        model.SelectedRow = Assert.Single(model.Rows, row => row.SystemName == "Alpha Survey");
+        await model.PendingDetails;
+        await File.AppendAllLinesAsync(
+            fixture.JournalPath("F100"),
+            [
+                """{"timestamp":"2026-10-01T14:00:00Z","event":"Location","StarSystem":"Newest survey","SystemAddress":200}""",
+                """{"timestamp":"2026-10-01T14:01:00Z","event":"Scan","SystemAddress":200,"BodyID":0,"BodyName":"Newest survey A","StarType":"NS","StellarMass":1.4}""",
+            ]
+        );
+        await model.RefreshAsync();
+        await model.PendingDetails;
+        Assert.DoesNotContain(model.Rows, row => row.SystemName == "Alpha Survey");
+        Assert.True(model.HasSelection);
+        Assert.Equal("Alpha Survey", model.SelectedRow?.SystemName);
+        Assert.Equal("Alpha Survey A", Assert.Single(model.Bodies).Name);
+    }
+
+    [Fact]
+    public async Task ARecoveredFilterQueryClearsItsErrorAndPreservesLaterClipboardMessages()
+    {
+        using var fixture = new Fixture();
+        int failNext = 0;
+        await using ExplorationHistoryViewModel model = fixture.Create(
+            (catalog, query, token) =>
+                Interlocked.Exchange(ref failNext, 0) == 1
+                    ? Task.FromException<ExplorationHistoryPage>(new IOException("Read interrupted."))
+                    : catalog.QueryAsync(query, token)
+        );
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        Interlocked.Exchange(ref failNext, 1);
+        model.SearchText = "missing";
+        await model.PendingQuery;
+        Assert.Equal("Exploration history could not be read: Read interrupted.", model.StatusMessage);
+        model.SearchText = "Alpha";
+        await model.PendingQuery;
+        Assert.Equal("Alpha Survey", Assert.Single(model.Rows).SystemName);
+        Assert.Equal("History cataloged from 1 journal file for Survey commander.", model.StatusMessage);
+        model.SetClipboardWriter(_ => Task.CompletedTask);
+        model.Rows[0].CopySystemNameCommand.Execute(null);
+        model.SearchText = "Survey";
+        await model.PendingQuery;
+        Assert.Equal("Copied system name: Alpha Survey", model.StatusMessage);
+    }
+
+    [Fact]
+    public async Task MissingOriginalScansWithholdTheAutomaticBalanceUntilMappingCanRecover()
+    {
+        using var fixture = new Fixture(false);
+        await File.AppendAllTextAsync(
+            fixture.JournalPath("F100"),
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}"""
+                + "\n"
+        );
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        Assert.Equal(449200, model.AutomaticEstimatedValue);
+        string path = fixture.JournalPath("F100");
+        File.Move(path, path + ".saved");
+        await File.WriteAllLinesAsync(
+            Path.Combine(fixture.Journals, "Journal.2026-10-01T140000.01.log"),
+            [
+                """{"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","Odyssey":true}""",
+                """{"event":"Commander","FID":"F100"}""",
+                """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey 1","ProbesUsed":5,"EfficiencyTarget":6}""",
+            ]
+        );
+        await model.RefreshAsync();
+        Assert.Null(model.AutomaticEstimatedValue);
+        Assert.Equal("449,200 CR", Assert.Single(model.Rows).Estimate);
+        Assert.Contains("Restore the journal", model.StatusMessage);
+        File.Move(path + ".saved", path);
+        await model.RefreshAsync();
+        Assert.Equal(2700541, model.AutomaticEstimatedValue);
+    }
+
+    [Fact]
+    public async Task SelectingAnotherSystemStopsTheAbandonedOriginalRead()
+    {
+        using var fixture = new Fixture();
+        await File.AppendAllLinesAsync(
+            fixture.JournalPath("F100"),
+            [
+                """{"event":"Location","StarSystem":"Beta Survey","SystemAddress":200}""",
+                """{"event":"Scan","SystemAddress":200,"BodyID":0,"BodyName":"Beta Survey A","StarType":"NS","StellarMass":1.4}""",
+            ]
+        );
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource<ExplorationHistoryDetails>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        CancellationToken abandoned = default;
+        await using var model = new ExplorationHistoryViewModel(
+            fixture.Data,
+            fixture.Profiles,
+            () => [fixture.Journals],
+            detailReader: async (catalog, row, token) =>
+            {
+                if (row.SystemName == "Alpha Survey")
+                {
+                    abandoned = token;
+                    entered.TrySetResult();
+                    return await release.Task.WaitAsync(token);
+                }
+                return await catalog.ReadDetailsAsync(row, token);
+            }
+        );
+        try
+        {
+            model.SetCommander("F100", "Survey commander", true, true);
+            await model.PendingSynchronization;
+            model.SelectedRow = Assert.Single(model.Rows, row => row.SystemName == "Alpha Survey");
+            Task obsolete = model.PendingDetails;
+            await entered.Task;
+            model.SelectedRow = Assert.Single(model.Rows, row => row.SystemName == "Beta Survey");
+            await model.PendingDetails;
+            Assert.True(abandoned.IsCancellationRequested);
+            await obsolete;
+            Assert.Equal("Beta Survey A", Assert.Single(model.Bodies).Name);
+            Assert.Equal("Beta Survey", model.DetailTitle);
+        }
+        finally
+        {
+            release.TrySetResult(new ExplorationHistoryDetails(0, []));
+        }
+    }
+
+    [Fact]
     public async Task SearchSelectionAndCopyExposeOnlyTheRequestedSystemsOriginalData()
     {
         using var fixture = new Fixture();
@@ -111,6 +257,12 @@ public sealed class ExplorationHistoryViewModelTests
         main.ExplorationHistory.AutoResetEstimatedValue = true;
         await main.ExplorationHistory.PendingPreferenceSave;
         Assert.Equal("23,106 CR", main.EstimatedExplorationValue);
+        await main.ResetExplorationAsync();
+        Assert.Equal(
+            "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+            main.ExplorationStatusMessage
+        );
+        main.CancelResetExplorationCommand.Execute(null);
         Assert.Equal("42", main.ExplorationJumps);
         main.ExplorationHistory.AutoResetEstimatedValue = false;
         await main.ExplorationHistory.PendingPreferenceSave;

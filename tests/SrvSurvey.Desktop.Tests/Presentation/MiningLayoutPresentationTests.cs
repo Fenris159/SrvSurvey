@@ -178,7 +178,7 @@ public sealed class MiningLayoutPresentationTests
         LoadCommander(
             model,
             [
-                new CargoItem("platinum", "Platinum", 30, 0),
+                new CargoItem("platinum", "Platinum", 2, 0),
                 new CargoItem("drones", "Limpets", 12, 0),
                 new CargoItem("gold", "Gold", 20, 0),
             ]
@@ -198,8 +198,8 @@ public sealed class MiningLayoutPresentationTests
                 {
                     (name, new[] { "Gold", "Limpets", "Platinum" }),
                     (name, new[] { "Platinum", "Limpets", "Gold" }),
-                    (count, new[] { "Limpets", "Gold", "Platinum" }),
-                    (count, new[] { "Platinum", "Gold", "Limpets" }),
+                    (count, new[] { "Platinum", "Limpets", "Gold" }),
+                    (count, new[] { "Gold", "Limpets", "Platinum" }),
                 }
             )
             {
@@ -326,6 +326,7 @@ public sealed class MiningLayoutPresentationTests
                         Id = Guid.Parse($"00000000-0000-0000-0000-{index:D12}"),
                         Started = session.Started.AddDays(-index),
                         Ended = session.Ended!.Value.AddDays(-index),
+                        Notes = index == 20 ? "Last session notes." : "Earlier session notes.",
                     }
                 )
                 .ToList()
@@ -345,11 +346,14 @@ public sealed class MiningLayoutPresentationTests
             Grid header = view.FindControl<Grid>("HistoryHeader")!;
             Grid row = history.GetVisualDescendants().OfType<Grid>().First(grid => grid.Classes.Contains("table-row"));
             Assert.Equal(header.Bounds.Width, row.Bounds.Width, 1);
+            history.SelectedIndex = 0;
+            using WriteableBitmap? firstSession = window.CaptureRenderedFrame();
+            Assert.Equal("Earlier session notes.", view.FindControl<TextBox>("ReportNotesEditor")!.Text);
             history.SelectedIndex = 19;
             history.ScrollIntoView(history.SelectedItem!);
             using WriteableBitmap? lastSession = window.CaptureRenderedFrame();
             Assert.Equal(Guid.Parse("00000000-0000-0000-0000-000000000020"), model.MiningWorkspace.SelectedSession!.Id);
-            Assert.Equal("Platinum run near the High RES.", view.FindControl<TextBox>("ReportNotesEditor")!.Text);
+            Assert.Equal("Last session notes.", view.FindControl<TextBox>("ReportNotesEditor")!.Text);
         }
         finally
         {

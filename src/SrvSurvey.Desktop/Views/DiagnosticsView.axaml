@@ -150,7 +150,7 @@
                 <TextBlock Grid.Row="3" Classes="muted" Text="Timestamp" />
                 <TextBlock Grid.Row="3" Grid.Column="1" Classes="monospace" FontSize="12" Text="{Binding JournalHistory.SelectedEventTimestamp}" />
               </Grid>
-              <TextBox Classes="code-editor" MinHeight="240" MaxHeight="300" AcceptsReturn="True"
+              <TextBox x:Name="JournalHistoryRawJson" Classes="code-editor" MinHeight="240" MaxHeight="300" AcceptsReturn="True"
                        IsReadOnly="True" TextWrapping="NoWrap"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsScrollChainingEnabled="False"
                        ScrollViewer.VerticalScrollBarVisibility="Auto" Text="{Binding JournalHistory.SelectedEventRawJson}" />

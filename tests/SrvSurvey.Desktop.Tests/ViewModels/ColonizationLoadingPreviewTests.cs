@@ -30,6 +30,14 @@ public sealed partial class ColonizationProjectPreviewViewModelTests
         Assert.Equal("Fleet Carrier loading", Assert.Single(model.Details, row => row.Label == "Build type").Value);
         Assert.Equal("Example Cmdr", Assert.Single(model.Details, row => row.Label == "Architect").Value);
         Assert.Equal("Stage cargo before departure", Assert.Single(model.Details, row => row.Label == "Notes").Value);
+        await model.ExportAsync(
+            (_, csv) =>
+            {
+                Assert.Contains("Buildings", csv);
+                Assert.Contains(expected, csv);
+                return Task.FromResult(true);
+            }
+        );
     }
 
     /// <summary>Older loading projects retain a readable preview when their optional building selection is absent or empty.</summary>
@@ -48,6 +56,14 @@ public sealed partial class ColonizationProjectPreviewViewModelTests
         Assert.Equal(
             "Building list unavailable.",
             Assert.Single(model.Details, row => row.Label == "Buildings:").Value
+        );
+        await model.ExportAsync(
+            (_, csv) =>
+            {
+                Assert.Contains("Buildings", csv);
+                Assert.Contains("Building list unavailable.", csv);
+                return Task.FromResult(true);
+            }
         );
     }
 

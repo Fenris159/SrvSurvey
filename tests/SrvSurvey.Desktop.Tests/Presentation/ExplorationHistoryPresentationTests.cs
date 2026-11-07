@@ -35,6 +35,112 @@ public sealed class ExplorationHistoryPresentationTests
         "Black hole",
     ];
 
+    [AvaloniaFact]
+    public async Task AnOpenInspectorSurvivesARefreshThatMovesItsRowOffTheRenderedPage()
+    {
+        using var fixture = new Fixture("monochrome-dark");
+        await fixture.PrepareAsync();
+        ExplorationHistoryViewModel model = fixture.Main.ExplorationHistory;
+        var view = new ExplorationHistoryView { DataContext = model };
+        var window = new Window
+        {
+            Width = 1120,
+            Height = 900,
+            Content = view,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            ListBox list = view.FindControl<ListBox>("ExplorationHistoryRows")!;
+            ExplorationHistoryRowViewModel selected = Assert.Single(
+                model.Rows,
+                row => row.SystemName == "Survey system 26"
+            );
+            list.ScrollIntoView(selected);
+            using WriteableBitmap? visible = window.CaptureRenderedFrame();
+            ListBoxItem item = Assert.Single(
+                list.GetVisualDescendants().OfType<ListBoxItem>(),
+                container => ReferenceEquals(container.DataContext, selected)
+            );
+            Click(window, item);
+            await model.PendingDetails;
+            using WriteableBitmap? opened = window.CaptureRenderedFrame();
+            Assert.Equal("Survey system 26", model.DetailTitle);
+            await fixture.AddNextSurveyAsync();
+            await model.RefreshAsync();
+            await model.PendingDetails;
+            using WriteableBitmap? refreshed = window.CaptureRenderedFrame();
+            Assert.DoesNotContain(model.Rows, row => row.SystemName == "Survey system 26");
+            Assert.True(model.HasSelection);
+            Assert.Equal("Survey system 26", model.SelectedRow?.SystemName);
+            Assert.Equal("Survey system 26 A", Assert.Single(model.Bodies).Name);
+            Assert.True(
+                view.GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Single(text => text.Text == model.DetailTitle)
+                    .IsEffectivelyVisible
+            );
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("monochrome-dark")]
+    [InlineData("blue-light")]
+    public async Task MinimumMainWindowWithExpandedSidebarKeepsNamesAndDiscoveriesInsideTheirColumns(string theme)
+    {
+        using var fixture = new Fixture(theme, withNotables: true);
+        await fixture.PrepareAsync();
+        fixture.Main.IsSidebarCollapsed = false;
+        fixture.Main.SelectedNavigation = fixture.Main.NavigationItems.Single(item => item.Key == "exploration");
+        fixture.Main.SelectedExplorationTabIndex = 1;
+        var window = new MainWindow(fixture.Main);
+        try
+        {
+            window.Show();
+            window.Width = 860;
+            window.Height = 600;
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            ExplorationHistoryView view = window.GetVisualDescendants().OfType<ExplorationHistoryView>().Single();
+            Assert.True(view.IsEffectivelyVisible);
+            Assert.Equal(248, fixture.Main.SidebarWidth);
+            Assert.True(view.FindControl<Grid>("HistoryLayout")!.Bounds.Height > 340);
+            Assert.True(view.FindControl<ScrollViewer>("HistoryControlsViewport")!.Viewport.Height > 0);
+            ListBox list = view.FindControl<ListBox>("ExplorationHistoryRows")!;
+            ItemsControl tags = list.GetVisualDescendants()
+                .OfType<ItemsControl>()
+                .First(control => control.Name == "HistoryNotableTags");
+            Assert.Equal(8, tags.ItemCount);
+            StackPanel tagColumn = Assert.IsType<StackPanel>(tags.Parent);
+            Grid row = Assert.IsType<Grid>(tagColumn.Parent);
+            Button name = row.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => button.Classes.Contains("system-link"));
+            TextBlock estimate = row.Children.OfType<TextBlock>().Single(text => Grid.GetColumn(text) == 3);
+            Point nameRight = name.TranslatePoint(new Point(name.Bounds.Width, 0), row)!.Value;
+            Assert.True(name.Bounds.Width > 0 && nameRight.X <= tagColumn.Bounds.X - 10);
+            Point tagsRight = tags.TranslatePoint(new Point(tags.Bounds.Width, 0), row)!.Value;
+            Assert.True(tags.Bounds.Width > 0 && tagsRight.X <= estimate.Bounds.X - 10);
+            foreach (
+                Border tag in tags.GetVisualDescendants()
+                    .OfType<Border>()
+                    .Where(border => border.Classes.Contains("discovery-tag"))
+            )
+            {
+                Point point = tag.TranslatePoint(default, tags)!.Value;
+                Assert.True(point.X >= 0 && point.X + tag.Bounds.Width <= tags.Bounds.Width);
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(1120, 900, "monochrome-dark")]
     [InlineData(1600, 900, "monochrome-dark")]
@@ -520,6 +626,15 @@ public sealed class ExplorationHistoryPresentationTests
         }
 
         public MainWindowViewModel Main { get; }
+
+        private static readonly string[] NextSurveyLines =
+        [
+            """{"timestamp":"2026-10-01T15:00:00Z","event":"Location","StarSystem":"Survey system 76","SystemAddress":76,"StarPos":[100,200,-300]}""",
+            """{"timestamp":"2026-10-01T15:00:00Z","event":"Scan","SystemAddress":76,"BodyID":0,"BodyName":"Survey system 76 A","StarType":"N","StellarMass":1.4}""",
+        ];
+
+        public Task AddNextSurveyAsync() =>
+            File.AppendAllLinesAsync(Path.Combine(directory, "Journal.2026-10-01T120000.01.log"), NextSurveyLines);
 
         public async Task PrepareAsync()
         {

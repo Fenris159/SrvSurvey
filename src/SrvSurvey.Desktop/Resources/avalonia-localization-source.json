@@ -55129,6 +55129,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile\u0027s separate EDSM state.",
     "IsFormat": false,
     "SourceKinds": [
@@ -84354,14 +84362,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "{0}-layout {1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
-  },
-  {
     "Text": "{0}.desktop",
     "IsFormat": true,
     "SourceKinds": [
@@ -84600,14 +84600,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
-  },
-  {
-    "Text": "{0}x {1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
   },
   {
     "Text": "{0}x{1} at ({2},{3})",

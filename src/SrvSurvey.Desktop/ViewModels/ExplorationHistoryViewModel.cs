@@ -22,6 +22,12 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         CancellationToken,
         Task<ExplorationHistoryPage>
     > queryReader;
+    private readonly Func<
+        ExplorationHistoryCatalog,
+        ExplorationHistoryRow,
+        CancellationToken,
+        Task<ExplorationHistoryDetails>
+    > detailReader;
     private readonly HistoryCommand refreshCommand;
     private readonly HistoryCommand previousCommand;
     private readonly HistoryCommand nextCommand;
@@ -46,6 +52,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     private ExplorationHistoryStatusOption selectedStatus = StatusOptions[0];
     private int pageOffset;
     private int totalRows;
+    private string? queryErrorMessage;
     private string statusMessage = "Select a commander to catalog exploration history.";
     private IReadOnlyList<ExplorationHistoryRowViewModel> rows = [];
     private ExplorationHistoryRowViewModel? selectedRow;
@@ -61,13 +68,20 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             ExplorationHistoryQuery,
             CancellationToken,
             Task<ExplorationHistoryPage>
-        >? queryReader = null
+        >? queryReader = null,
+        Func<
+            ExplorationHistoryCatalog,
+            ExplorationHistoryRow,
+            CancellationToken,
+            Task<ExplorationHistoryDetails>
+        >? detailReader = null
     )
     {
         this.dataDirectory = dataDirectory;
         this.profiles = profiles;
         this.journalDirectories = journalDirectories;
         this.queryReader = queryReader ?? (static (catalog, query, token) => catalog.QueryAsync(query, token));
+        this.detailReader = detailReader ?? (static (catalog, row, token) => catalog.ReadDetailsAsync(row, token));
         refreshCommand = new HistoryCommand(RefreshAsync, () => HasCommander && !IsBusy);
         previousCommand = new HistoryCommand(() => MovePageAsync(-1), () => pageOffset > 0 && !IsQueryBusy);
         nextCommand = new HistoryCommand(
@@ -266,6 +280,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         contextCancellation.Cancel();
         contextCancellation.Dispose();
         contextCancellation = new();
+        queryErrorMessage = null;
         generation++;
         queryGeneration++;
         frontierId = id;
@@ -364,10 +379,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsStorageFailure(exception))
         {
-            if (Current(version, token))
-            {
-                StatusMessage = "Exploration history could not be updated: " + exception.Message;
-            }
+            await ReportSynchronizationFailureAsync(version, exception, token);
         }
         finally
         {
@@ -377,6 +389,19 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                 IsBusy = pendingOperations > 0;
                 NotifyBalance();
             }
+        }
+    }
+
+    private async Task ReportSynchronizationFailureAsync(long version, Exception exception, CancellationToken token)
+    {
+        if (!Current(version, token))
+        {
+            return;
+        }
+        await QueryAsync();
+        if (Current(version, token))
+        {
+            StatusMessage = "Exploration history could not be updated: " + exception.Message;
         }
     }
 
@@ -423,7 +448,8 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         {
             if (IsCurrentQuery(version, request, token))
             {
-                StatusMessage = "Exploration history could not be read: " + exception.Message;
+                queryErrorMessage = "Exploration history could not be read: " + exception.Message;
+                StatusMessage = queryErrorMessage;
             }
         }
         finally
@@ -473,11 +499,25 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                 new HistoryCommand(() => CopyNameAsync(row.SystemName), () => clipboardWriter is not null && !disposed)
             ))
             .ToArray();
-        SelectedRow = restoreSelection ? Rows.SingleOrDefault(row => row.Data.Id == page.SelectedRowId) : null;
-        if (StatusMessage == InvalidDateRangeMessage)
+        ExplorationHistoryRowViewModel? restored = restoreSelection
+            ? Rows.SingleOrDefault(row => row.Data.Id == page.SelectedRowId)
+            : null;
+        if (restoreSelection && restored is null && page.SelectedRow is { } selected)
+        {
+            restored = new ExplorationHistoryRowViewModel(
+                selected,
+                new HistoryCommand(
+                    () => CopyNameAsync(selected.SystemName),
+                    () => clipboardWriter is not null && !disposed
+                )
+            );
+        }
+        SelectedRow = restored;
+        if (StatusMessage == InvalidDateRangeMessage || StatusMessage == queryErrorMessage)
         {
             StatusMessage = CatalogStatusMessage();
         }
+        queryErrorMessage = null;
         Changed(nameof(PageDescription));
         NotifyBalance();
         RaiseCommands();

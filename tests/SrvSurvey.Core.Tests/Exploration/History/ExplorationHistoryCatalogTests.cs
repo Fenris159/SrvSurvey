@@ -112,6 +112,7 @@ public sealed class ExplorationHistoryCatalogTests
     [InlineData("\"StarType\":\"N\",\"StellarMass\":1.4", ExplorationNotables.NeutronStar)]
     [InlineData("\"StarType\":\"NS\",\"StellarMass\":1.4", ExplorationNotables.NeutronStar)]
     [InlineData("\"StarType\":\"H\",\"StellarMass\":1.4", ExplorationNotables.BlackHole)]
+    [InlineData("\"StarType\":\"BH\",\"StellarMass\":1.4", ExplorationNotables.BlackHole)]
     [InlineData("\"PlanetClass\":\"Class I gas giant\"", ExplorationNotables.None)]
     [InlineData("\"PlanetClass\":\"Earthlike body\",\"ScanType\":\"NavBeaconDetail\"", ExplorationNotables.None)]
     public async Task TheHistoryHighlightsConfirmedValuableAndRareScannedBodies(
@@ -228,6 +229,72 @@ public sealed class ExplorationHistoryCatalogTests
         Assert.Equal(ExplorationNotables.None, Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).Notables);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AnIndexedCompatibilityDiscoveryIsReclassifiedAfterTheModelUpgrade(bool observe)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Compatibility discovery", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Compatibility discovery A","StarType":"BH","StellarMass":1.4}""",
+            """{"event":"SellExplorationData","Systems":["Compatibility discovery"],"TotalEarnings":20000}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        using (
+            var connection = new SqliteConnection(
+                new SqliteConnectionStringBuilder { DataSource = fixture.Catalog.FilePath, Pooling = false }.ToString()
+            )
+        )
+        {
+            await connection.OpenAsync();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText =
+                "DELETE FROM notable_systems; UPDATE metadata SET value='1' WHERE key='valuation_version';";
+            await command.ExecuteNonQueryAsync();
+        }
+        ExplorationHistorySummary summary = observe
+            ? await fixture.Catalog.ObserveAsync([], [fixture.Journals])
+            : await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        ExplorationHistoryRow row = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows);
+        Assert.Equal(ExplorationNotables.BlackHole, row.Notables);
+        Assert.Equal(ExplorationDataStatus.Sold, row.Status);
+        Assert.Equal(23106, summary.SoldValue);
+        Assert.Equal(20000, summary.SaleEarnings);
+        Assert.Equal(0, summary.UnsoldValue);
+        Assert.True(summary.IsComplete);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AConfirmedMappingClearsOnlyItsOwnMissingScanGuard(bool anotherUnresolvedBody)
+    {
+        using var fixture = new HistoryFixture();
+        var initial = new List<string>
+        {
+            Location("Recovered mapping", 100, 0),
+            """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}""",
+        };
+        if (anotherUnresolvedBody)
+        {
+            initial.Add(
+                """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":2,"ProbesUsed":5,"EfficiencyTarget":6}"""
+            );
+        }
+        fixture.Write(initial);
+        Assert.False((await fixture.Catalog.SynchronizeAsync([fixture.Journals])).IsComplete);
+        ExplorationHistorySummary summary = await fixture.Catalog.ObserveAsync(
+            fixture.Append([
+                """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Recovered mapping 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+                """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"BodyName":"Recovered mapping 1","ProbesUsed":5,"EfficiencyTarget":6}""",
+            ]),
+            [fixture.Journals]
+        );
+        Assert.Equal(2700541, summary.UnsoldValue);
+        Assert.Equal(!anotherUnresolvedBody, summary.IsComplete);
+    }
+
     [Fact]
     public async Task NamedSaleLeavesUnlistedNearbyDataUnsoldAndKeepsActualEarningsSeparate()
     {
@@ -296,6 +363,113 @@ public sealed class ExplorationHistoryCatalogTests
         Assert.Equal(2700541, row.EstimatedValue);
         Assert.Equal(1, row.ScannedBodies);
         Assert.Equal(1, row.MappedBodies);
+    }
+
+    [Fact]
+    public async Task LearningASystemAddressAndBodyIdDoesNotMakeSoldDataSellableAgain()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            """{"event":"Location","StarSystem":"Address learned"}""",
+            """{"event":"Scan","BodyName":"Address learned A","StarType":"N","StellarMass":1.4}""",
+            """{"event":"SellExplorationData","Systems":["Address learned"],"TotalEarnings":20000}""",
+            Location("Address learned", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Address learned A","StarType":"N","StellarMass":1.4}""",
+            Location("Different address", 200, 0),
+            """{"event":"Scan","SystemAddress":200,"StarSystem":"Address learned","BodyID":0,"BodyName":"Address learned A","StarType":"N","StellarMass":1.4}""",
+        ]);
+        ExplorationHistorySummary summary = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(23106, summary.SoldValue);
+        Assert.Equal(23106, summary.UnsoldValue);
+        Assert.Equal(20000, summary.SaleEarnings);
+        ExplorationHistoryPage page = await fixture.Catalog.QueryAsync(new());
+        Assert.Equal(2, page.TotalRows);
+        ExplorationHistoryRow sold = Assert.Single(page.Rows, row => row.Status == ExplorationDataStatus.Sold);
+        Assert.Equal(100, sold.SystemAddress);
+        Assert.Equal(200, Assert.Single(page.Rows, row => row.Status == ExplorationDataStatus.Unsold).SystemAddress);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task KnownBodyIdsRemainDistinctEvenWhenTheirNamesMatch(bool initiallyMissingId)
+    {
+        using var fixture = new HistoryFixture();
+        string identity = initiallyMissingId ? string.Empty : "\"BodyID\":0,";
+        fixture.Write([
+            Location("Body aliases", 100, 0),
+            $$"""{"event":"Scan","SystemAddress":100,{{identity}}"BodyName":"Repeated name","StarType":"N","StellarMass":1.4}""",
+            """{"event":"SellExplorationData","Systems":["Body aliases"],"TotalEarnings":20000}""",
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Repeated name","StarType":"N","StellarMass":1.4}""",
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Repeated name","StarType":"N","StellarMass":1.4}""",
+        ]);
+        ExplorationHistorySummary summary = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(23106, summary.SoldValue);
+        Assert.Equal(23106, summary.UnsoldValue);
+        Assert.Equal(20000, summary.SaleEarnings);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MissingScanDefersMappingAndLaterSettlementUntilOriginalsReturn(bool lost)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Mapped survey", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Mapped survey 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+        ]);
+        Assert.Equal(449200, (await fixture.Catalog.SynchronizeAsync([fixture.Journals])).UnsoldValue);
+        string unavailable = fixture.JournalPath + ".saved";
+        File.Move(fixture.JournalPath, unavailable);
+        string later = Path.Combine(fixture.Journals, "Journal.2026-10-01T140000.01.log");
+        await File.WriteAllLinesAsync(
+            later,
+            [
+                """{"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true}""",
+                """{"event":"Commander","FID":"F100"}""",
+                Location("Mapped survey", 100, 0),
+                """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"BodyName":"Mapped survey 1","ProbesUsed":5,"EfficiencyTarget":6}""",
+                lost
+                    ? """{"event":"Resurrect","Option":"rebuy","Cost":0}"""
+                    : """{"event":"SellExplorationData","Systems":["Mapped survey"],"TotalEarnings":2000000}""",
+            ]
+        );
+        Exception? blocked = await Record.ExceptionAsync(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+        ExplorationHistoryPage cached = await fixture.Catalog.QueryAsync(new());
+        File.Move(unavailable, fixture.JournalPath);
+        ExplorationHistorySummary recovered = await fixture.Catalog.ObserveAsync([], [fixture.Journals]);
+        Assert.True(recovered.IsComplete);
+        Assert.Equal(0, recovered.UnsoldValue);
+        Assert.Equal(lost ? 0 : 2700541, recovered.SoldValue);
+        Assert.Equal(lost ? 2700541 : 0, recovered.LostValue);
+        Assert.Equal(lost ? 0 : 2000000, recovered.SaleEarnings);
+        Assert.IsAssignableFrom<IOException>(blocked);
+        Assert.Equal(449200, Assert.Single(cached.Rows).EstimatedValue);
+        Assert.Equal(ExplorationDataStatus.Unsold, cached.Rows[0].Status);
+        Assert.False(cached.Summary.IsComplete);
+        Assert.Equal(recovered, await fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SettledUnknownMappingsDoNotBlockCurrentUnsoldBalances(bool lost)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Old incomplete survey", 100, 0),
+            """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}""",
+            lost
+                ? """{"event":"Resurrect","Option":"rebuy","Cost":0}"""
+                : """{"event":"SellExplorationData","Systems":["Old incomplete survey"],"TotalEarnings":20000}""",
+            Location("Current survey", 200, 0),
+            Star(200),
+        ]);
+        ExplorationHistorySummary summary = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(23106, summary.UnsoldValue);
+        Assert.Equal(lost ? 0 : 20000, summary.SaleEarnings);
+        Assert.True(summary.IsComplete);
     }
 
     [Fact]
@@ -668,6 +842,7 @@ public sealed class ExplorationHistoryCatalogTests
         Assert.Equal(23106, result.UnsoldValue);
         Assert.Equal(5000, result.SaleEarnings);
         Assert.Contains("original scan", result.Notice);
+        Assert.False(result.IsComplete);
         long id = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).Id;
         ExplorationHistoryDetails details = await fixture.Catalog.ReadDetailsAsync(id);
         Assert.Contains(details.Events, entry => entry.EventName == "FSSBodySignals");

@@ -10,8 +10,10 @@ public sealed partial class ExplorationHistoryCatalog
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
     private const string ValuationVersionKey = "valuation_version";
-    private const string CurrentValuationVersion = "1";
-    private const int CurrentSchemaVersion = 4;
+    private const string CurrentValuationVersion = "2";
+    private const string ReconciliationPendingKey = "reconciliation_pending";
+    private const string UnknownMappingPrefix = "unconfirmed_mapping:";
+    private const int CurrentSchemaVersion = 5;
 
     private SqliteConnection Open(bool initialize = true)
     {
@@ -88,6 +90,7 @@ public sealed partial class ExplorationHistoryCatalog
             CREATE INDEX IF NOT EXISTS batch_status ON batches(status, last_time);
             CREATE TABLE IF NOT EXISTS bodies (
                 key TEXT PRIMARY KEY, system_key TEXT NOT NULL REFERENCES systems(key),
+                name TEXT,body_id INTEGER,
                 paid_value INTEGER NOT NULL DEFAULT 0, pending_value INTEGER NOT NULL DEFAULT 0,
                 batch_id INTEGER REFERENCES batches(id),
                 scan_source_id INTEGER REFERENCES sources(id), scan_offset INTEGER, scan_hash TEXT);
@@ -108,8 +111,28 @@ public sealed partial class ExplorationHistoryCatalog
                 SELECT batch_id,source_id,offset,hash FROM observations WHERE kind IN ('Scan','SAAScanComplete');
             CREATE TABLE IF NOT EXISTS notable_systems (
                 system_key TEXT PRIMARY KEY REFERENCES systems(key), flags INTEGER NOT NULL);
-            PRAGMA user_version=4;
+            PRAGMA user_version=5;
             """
+        );
+        using SqliteCommand bodyNameColumn = Command(
+            connection,
+            "SELECT COUNT(*) FROM pragma_table_info('bodies') WHERE name='name';"
+        );
+        if (Convert.ToInt32(bodyNameColumn.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) == 0)
+        {
+            Execute(connection, "ALTER TABLE bodies ADD COLUMN name TEXT;");
+        }
+        using SqliteCommand bodyIdColumn = Command(
+            connection,
+            "SELECT COUNT(*) FROM pragma_table_info('bodies') WHERE name='body_id';"
+        );
+        if (Convert.ToInt32(bodyIdColumn.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) == 0)
+        {
+            Execute(connection, "ALTER TABLE bodies ADD COLUMN body_id INTEGER;");
+        }
+        Execute(
+            connection,
+            "CREATE INDEX IF NOT EXISTS body_name ON bodies(system_key,name COLLATE NOCASE); CREATE INDEX IF NOT EXISTS body_identity ON bodies(system_key,body_id); CREATE INDEX IF NOT EXISTS system_address ON systems(address);"
         );
         SetMetadata(connection, "commander", frontierId);
         SetMetadata(connection, "galaxy", isLive ? "live" : "legacy");
@@ -208,6 +231,11 @@ public sealed partial class ExplorationHistoryCatalog
         );
         using SqliteCommand sources = Command(connection, "SELECT COUNT(*) FROM sources;");
         using SqliteCommand losses = Command(connection, "SELECT COUNT(*) FROM settlements WHERE kind='loss';");
+        using SqliteCommand unknownMappings = Command(
+            connection,
+            "SELECT 1 FROM metadata WHERE key LIKE @prefix LIMIT 1;",
+            ("@prefix", UnknownMappingPrefix + "%")
+        );
         bool hasDataEvidence =
             counts.Sum() > 0
             || Convert.ToInt64(losses.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
@@ -224,7 +252,9 @@ public sealed partial class ExplorationHistoryCatalog
             HasCommanderHistory = ReadMetadata(connection, "commander_seen") == "1" && hasDataEvidence,
             IsComplete =
                 ReadMetadata(connection, "complete") == "1"
-                && ReadMetadata(connection, ValuationVersionKey) == CurrentValuationVersion,
+                && ReadMetadata(connection, ValuationVersionKey) == CurrentValuationVersion
+                && unknownMappings.ExecuteScalar() is null
+                && ReadMetadata(connection, ReconciliationPendingKey) is null,
             Notice = ReadMetadata(connection, "notice"),
         };
     }

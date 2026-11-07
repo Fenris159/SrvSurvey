@@ -115,7 +115,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
             }
             if (!isCombined && snapshot.Project.IsFleetCarrierLoading)
             {
-                string buildings = PreparedBuildingsText(snapshot.Project);
+                string buildings = ColonizationProjectCsvExporter.PreparedBuildingsText(snapshot.Project);
                 return buildings.Length > 0 ? buildings : "Fleet Carrier loading";
             }
             return isCombined

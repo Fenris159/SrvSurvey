@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:presentation="using:SrvSurvey.Desktop.Presentation"
         x:Class="SrvSurvey.Desktop.OverlayExceptionsWindow"
         x:DataType="vm:OverlayExceptionCategoryViewModel"
         Classes="app-window"
@@ -16,16 +17,20 @@
       </Setter>
     </Style>
   </Window.Styles>
-  <Grid RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="16">
-    <StackPanel Spacing="12">
-      <TextBlock Classes="page-title" FontSize="28" Text="{Binding Title}" TextWrapping="Wrap" />
-      <TextBlock Classes="muted" TextWrapping="Wrap"
-                 Text="Allow this category's overlays for the ship or vehicle you are currently aboard. Checked entries permit the normal overlay rules; unchecked entries hide them. On foot is separate from your parked ship. Editor previews are unaffected." />
-      <WrapPanel>
-        <Button Classes="secondary" Margin="0,0,8,4" Content="Check All" Command="{Binding CheckAllCommand}" />
-        <Button Classes="secondary" Margin="0,0,8,4" Content="Uncheck All" Command="{Binding UncheckAllCommand}" />
-      </WrapPanel>
-    </StackPanel>
+  <Grid x:Name="ExceptionsLayout" RowDefinitions="Auto,*,Auto" Margin="24" RowSpacing="16">
+    <ScrollViewer x:Name="ExceptionsControlsViewport"
+                  MaxHeight="{Binding #ExceptionsLayout.Bounds.Height, Converter={x:Static presentation:WorkspaceLayoutExtentConverter.ExceptionsControlsHeight}}"
+                  HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="12" Margin="0,0,16,0">
+        <TextBlock Classes="page-title" FontSize="28" Text="{Binding Title}" TextWrapping="Wrap" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Allow this category's overlays for the ship or vehicle you are currently aboard. Checked entries permit the normal overlay rules; unchecked entries hide them. On foot is separate from your parked ship. Editor previews are unaffected." />
+        <WrapPanel>
+          <Button Classes="secondary" Margin="0,0,8,4" Content="Check All" Command="{Binding CheckAllCommand}" />
+          <Button Classes="secondary" Margin="0,0,8,4" Content="Uncheck All" Command="{Binding UncheckAllCommand}" />
+        </WrapPanel>
+      </StackPanel>
+    </ScrollViewer>
     <ScrollViewer x:Name="ExceptionsGroupsScroll" Grid.Row="1"
                   HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
       <ItemsControl ItemsSource="{Binding Groups}" Margin="0,0,20,8">
@@ -55,7 +60,12 @@
     <Border Grid.Row="2" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,12,0,0">
       <StackPanel Spacing="6">
         <TextBlock Classes="muted" Text="Changes apply immediately." />
-        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="{DynamicResource RavenWarningBrush}" />
+        <ScrollViewer x:Name="ExceptionsStatusViewport"
+                      MaxHeight="{Binding #ExceptionsLayout.Bounds.Height, Converter={x:Static presentation:WorkspaceLayoutExtentConverter.RecoveryHeight}}"
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <TextBlock x:Name="ExceptionsStatusText" Margin="0,0,16,0" Text="{Binding Status}"
+                     TextWrapping="Wrap" Foreground="{DynamicResource RavenWarningBrush}" />
+        </ScrollViewer>
       </StackPanel>
     </Border>
   </Grid>
