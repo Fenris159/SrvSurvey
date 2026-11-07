@@ -369,6 +369,60 @@ public sealed class ExplorationHistoryCatalogTests
         Assert.Throws<ArgumentException>(() => new ExplorationHistoryCatalog(fixture.Data, "..", true));
     }
 
+    [Fact]
+    public async Task AScanImportedBeforeASaleWithTheSameHeaderTimestampIsSettledCorrectly()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Survey system", 100, 0), Star(100)]);
+        string scanJournal = await File.ReadAllTextAsync(fixture.JournalPath);
+        fixture.Write([
+            Location("Survey system", 100, 0),
+            """{"event":"SellExplorationData","Systems":["Survey system"],"TotalEarnings":20000}""",
+        ]);
+        File.Move(fixture.JournalPath, Path.Combine(fixture.Journals, "Journal.2026-10-01T120000.02.log"));
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        await File.WriteAllTextAsync(fixture.JournalPath, scanJournal);
+        ExplorationHistorySummary result = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(0, result.UnsoldValue);
+        Assert.Equal(23106, result.SoldValue);
+        Assert.Equal(20000, result.SaleEarnings);
+        Assert.Equal(ExplorationDataStatus.Sold, Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).Status);
+    }
+
+    [Fact]
+    public async Task AppendsDuringBackfillRemainIncrementalWhenAnOlderIndexedJournalIsRemoved()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Alpha", 100, 0), Star(100)]);
+        string latestPath = Path.Combine(fixture.Journals, "Journal.2026-10-02T120000.01.log");
+        await File.WriteAllLinesAsync(
+            latestPath,
+            [
+                """{"timestamp":"2026-10-02T12:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true}""",
+                """{"timestamp":"2026-10-02T12:00:01Z","event":"Commander","FID":"F100"}""",
+                """{"timestamp":"2026-10-02T12:01:00Z","event":"Location","StarSystem":"Beta","SystemAddress":200,"StarPos":[10,0,0]}""",
+            ]
+        );
+        var append = new SynchronousProgress(progress =>
+        {
+            if (progress.ProcessedFiles == 1)
+            {
+                File.AppendAllText(
+                    latestPath,
+                    """{"timestamp":"2026-10-02T12:02:00Z","event":"Scan","SystemAddress":200,"BodyID":0,"StarType":"NS","StellarMass":1.4,"WasDiscovered":true}"""
+                        + "\n"
+                );
+                File.SetLastWriteTimeUtc(latestPath, new DateTime(2026, 10, 3, 0, 0, 0, DateTimeKind.Utc));
+            }
+        });
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals], append);
+        File.Delete(fixture.JournalPath);
+        ExplorationHistorySummary result = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(46212, result.UnsoldValue);
+        Assert.Equal(2, result.UnsoldSystems);
+        Assert.Equal(2, (await fixture.Catalog.QueryAsync(new())).TotalRows);
+    }
+
     private sealed class SynchronousProgress(Action<ExplorationHistoryProgress> report)
         : IProgress<ExplorationHistoryProgress>
     {

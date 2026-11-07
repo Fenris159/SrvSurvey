@@ -47,7 +47,12 @@ public sealed partial class ExplorationHistoryCatalog
         SourceContext Context
     );
 
-    private static IEnumerable<JournalLine> ReadLines(string path, long offset, CancellationToken cancellationToken)
+    private static IEnumerable<JournalLine> ReadLines(
+        string path,
+        long offset,
+        CancellationToken cancellationToken,
+        long? maximumOffset = null
+    )
     {
         using var stream = new FileStream(
             path,
@@ -62,9 +67,13 @@ public sealed partial class ExplorationHistoryCatalog
         long lineOffset = offset;
         long position = offset;
         bool oversized = false;
+        // Index only the captured file length so concurrent journal appends belong
+        // to the next checkpoint, with their own matching size and modification time.
+        long remaining = Math.Max(0, (maximumOffset ?? stream.Length) - offset);
         int read;
-        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+        while (remaining > 0 && (read = stream.Read(buffer, 0, (int)Math.Min(buffer.Length, remaining))) > 0)
         {
+            remaining -= read;
             cancellationToken.ThrowIfCancellationRequested();
             int start = 0;
             while (start < read)
@@ -197,13 +206,15 @@ public sealed partial class ExplorationHistoryCatalog
             first?.Content is { } text && JournalEventEnvelope.TryParse(text, out JournalEventEnvelope? entry, out _)
                 ? entry?.Timestamp
                 : null;
+        var snapshot = new FileInfo(path);
+        snapshot.Refresh();
         return new JournalSource(
             Path.GetFileName(path),
             Path.GetFullPath(path),
             firstTime,
             ContentHash(first?.Content ?? string.Empty),
-            File.GetLastWriteTimeUtc(path).Ticks,
-            new FileInfo(path).Length
+            snapshot.LastWriteTimeUtc.Ticks,
+            snapshot.Length
         );
     }
 

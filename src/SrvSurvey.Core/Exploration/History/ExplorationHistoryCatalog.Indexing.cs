@@ -53,8 +53,7 @@ public sealed partial class ExplorationHistoryCatalog
 
     private static bool NeedsRebuild(SqliteConnection connection, JournalSource[] sources, CancellationToken token)
     {
-        using SqliteCommand latestCommand = Command(connection, "SELECT MAX(first_time) FROM sources;");
-        string? latest = latestCommand.ExecuteScalar() as string;
+        (string? Time, string? Name) latest = LatestSourceOrder(connection);
         foreach (JournalSource source in sources)
         {
             token.ThrowIfCancellationRequested();
@@ -64,7 +63,7 @@ public sealed partial class ExplorationHistoryCatalog
                 ("@name", source.Name)
             );
             using SqliteDataReader reader = known.ExecuteReader();
-            bool older = latest is not null && string.CompareOrdinal(Timestamp(source.FirstTime), latest) < 0;
+            bool older = IsEarlierSource(source, latest);
             if (!reader.Read())
             {
                 if (older)
@@ -79,6 +78,28 @@ public sealed partial class ExplorationHistoryCatalog
             }
         }
         return false;
+    }
+
+    private static (string? Time, string? Name) LatestSourceOrder(SqliteConnection connection)
+    {
+        using SqliteCommand command = Command(
+            connection,
+            "SELECT first_time,name FROM sources ORDER BY first_time DESC,name DESC LIMIT 1;"
+        );
+        using SqliteDataReader reader = command.ExecuteReader();
+        if (!reader.Read())
+        {
+            return (null, null);
+        }
+        string? time = reader.IsDBNull(0) ? null : reader.GetString(0);
+        return (time, reader.GetString(1));
+    }
+
+    private static bool IsEarlierSource(JournalSource source, (string? Time, string? Name) latest)
+    {
+        int order = string.CompareOrdinal(Timestamp(source.FirstTime), latest.Time);
+        return latest.Name is not null
+            && (order < 0 || (order == 0 && string.CompareOrdinal(source.Name, latest.Name) < 0));
     }
 
     private static bool SourceChanged(
@@ -163,7 +184,7 @@ public sealed partial class ExplorationHistoryCatalog
                 };
             }
         }
-        foreach (JournalLine line in ReadLines(source.Path, checkpoint.NextOffset, token))
+        foreach (JournalLine line in ReadLines(source.Path, checkpoint.NextOffset, token, source.Length))
         {
             if (
                 line.Content is { } text
