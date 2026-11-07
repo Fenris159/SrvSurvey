@@ -30,6 +30,9 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     > detailReader;
     private readonly Func<ExplorationHistoryCatalog, CancellationToken, Task<ExplorationHistorySummary>> summaryReader;
     private readonly HistoryCommand refreshCommand;
+    private readonly HistoryCommand confirmRecoveryCommand;
+    private bool recoverySourcesConfirmed;
+    private string? recoveryIdentity;
     private readonly HistoryCommand previousCommand;
     private readonly HistoryCommand nextCommand;
     private readonly HistoryCommand clearFiltersCommand;
@@ -86,6 +89,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         this.detailReader = detailReader ?? (static (catalog, row, token) => catalog.ReadDetailsAsync(row, token));
         this.summaryReader = summaryReader ?? (static (catalog, token) => catalog.ReadSummaryAsync(token));
         refreshCommand = new HistoryCommand(RefreshAsync, () => HasCommander && !IsBusy);
+        confirmRecoveryCommand = new HistoryCommand(ConfirmRecoveryAsync, CanConfirmRecovery);
         previousCommand = new HistoryCommand(() => MovePageAsync(-1), () => pageOffset > 0 && !IsQueryBusy);
         nextCommand = new HistoryCommand(
             () => MovePageAsync(1),
@@ -113,6 +117,19 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     ];
     public const int PageSize = 50;
     public ICommand RefreshCommand => refreshCommand;
+    public ICommand ConfirmRecoveryCommand => confirmRecoveryCommand;
+    public bool RecoveryConfirmationRequired => summary.RecoveryConfirmationRequired;
+    public bool RecoverySourcesConfirmed
+    {
+        get => recoverySourcesConfirmed;
+        set
+        {
+            if (Set(ref recoverySourcesConfirmed, value))
+            {
+                confirmRecoveryCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
     public ICommand PreviousCommand => previousCommand;
     public ICommand NextCommand => nextCommand;
     public ICommand ClearFiltersCommand => clearFiltersCommand;
@@ -307,6 +324,8 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         Rows = [];
         SelectedRow = null;
         summary = new();
+        recoveryIdentity = null;
+        RecoverySourcesConfirmed = false;
         catalog = id is null ? null : new ExplorationHistoryCatalog(dataDirectory, id, live);
         Changed(nameof(AutoResetEstimatedValue));
         Changed(nameof(HasCommander));
@@ -324,6 +343,20 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool CanConfirmRecovery() =>
+        HasCommander && !IsBusy && RecoveryConfirmationRequired && RecoverySourcesConfirmed;
+
+    public Task ConfirmRecoveryAsync()
+    {
+        if (!CanConfirmRecovery())
+        {
+            return Task.CompletedTask;
+        }
+        RecoverySourcesConfirmed = false;
+        PendingSynchronization = QueueSynchronizationAsync([], full: true, confirmRecovery: true);
+        return PendingSynchronization;
+    }
+
     public Task RefreshAsync()
     {
         if (catalog is null || disposed)
@@ -334,7 +367,11 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         return PendingSynchronization;
     }
 
-    private async Task QueueSynchronizationAsync(IReadOnlyList<JournalEventEnvelope> entries, bool full)
+    private async Task QueueSynchronizationAsync(
+        IReadOnlyList<JournalEventEnvelope> entries,
+        bool full,
+        bool confirmRecovery = false
+    )
     {
         Task previous = PendingSynchronization;
         ExplorationHistoryCatalog? current = catalog;
@@ -353,15 +390,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             if (full)
             {
                 await QueryAsync();
-                var progress = new Progress<ExplorationHistoryProgress>(value =>
-                {
-                    if (Current(version, token) && IsBusy)
-                    {
-                        StatusMessage =
-                            $"Cataloging journal {value.ProcessedFiles:N0} of {value.TotalFiles:N0}: {value.CurrentFile}";
-                    }
-                });
-                candidate = await TrackIo(current.SynchronizeAsync(journalDirectories(), progress, token));
+                candidate = await SynchronizeAllAsync(current, version, confirmRecovery, token);
             }
             else
             {
@@ -393,6 +422,27 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                 NotifyBalance();
             }
         }
+    }
+
+    private async Task<ExplorationHistorySummary> SynchronizeAllAsync(
+        ExplorationHistoryCatalog current,
+        long version,
+        bool confirmRecovery,
+        CancellationToken token
+    )
+    {
+        var progress = new Progress<ExplorationHistoryProgress>(value =>
+        {
+            if (Current(version, token) && IsBusy)
+            {
+                StatusMessage = value.IsPreparing
+                    ? $"Verifying journal {value.ProcessedFiles:N0} of {value.TotalFiles:N0}: {value.CurrentFile}"
+                    : $"Cataloging journal {value.ProcessedFiles:N0} of {value.TotalFiles:N0}: {value.CurrentFile}";
+            }
+        });
+        return confirmRecovery
+            ? await TrackIo(current.ConfirmRecoveryAsync(journalDirectories(), token))
+            : await TrackIo(current.SynchronizeAsync(journalDirectories(), progress, token));
     }
 
     private async Task ReportSynchronizationFailureAsync(long version, Exception exception, CancellationToken token)
@@ -644,6 +694,13 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
 
     private void NotifyBalance()
     {
+        if (recoveryIdentity != summary.RecoveryIdentity || !summary.RecoveryConfirmationRequired)
+        {
+            recoveryIdentity = summary.RecoveryIdentity;
+            RecoverySourcesConfirmed = false;
+        }
+        Changed(nameof(RecoveryConfirmationRequired));
+        confirmRecoveryCommand.RaiseCanExecuteChanged();
         foreach (
             string property in new[]
             {
@@ -667,6 +724,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     private void RaiseCommands()
     {
         refreshCommand.RaiseCanExecuteChanged();
+        confirmRecoveryCommand.RaiseCanExecuteChanged();
         previousCommand.RaiseCanExecuteChanged();
         nextCommand.RaiseCanExecuteChanged();
         clearFiltersCommand.RaiseCanExecuteChanged();

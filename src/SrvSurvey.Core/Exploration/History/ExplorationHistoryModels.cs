@@ -45,6 +45,8 @@ public sealed record ExplorationHistorySummary
     public int SourceFiles { get; init; }
     public bool HasCommanderHistory { get; init; }
     public bool IsComplete { get; init; }
+    public bool RecoveryConfirmationRequired { get; init; }
+    public string? RecoveryIdentity { get; init; }
     public string? Notice { get; init; }
 }
 
@@ -86,4 +88,9 @@ public sealed record ExplorationHistoryDetails(
     string? Notice = null
 );
 
-public sealed record ExplorationHistoryProgress(int ProcessedFiles, int TotalFiles, string CurrentFile);
+public sealed record ExplorationHistoryProgress(
+    int ProcessedFiles,
+    int TotalFiles,
+    string CurrentFile,
+    bool IsPreparing = false
+);

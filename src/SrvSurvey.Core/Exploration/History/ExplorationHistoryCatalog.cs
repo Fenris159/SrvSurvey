@@ -44,6 +44,24 @@ public sealed partial class ExplorationHistoryCatalog
         CancellationToken cancellationToken = default
     ) => Task.Run(() => Synchronize(journalDirectories, progress, cancellationToken), cancellationToken);
 
+    /// <summary>Replays restored sources after the user acknowledges an older retry whose missing inputs cannot be proven.</summary>
+    public Task<ExplorationHistorySummary> ConfirmRecoveryAsync(
+        IReadOnlyList<string> journalDirectories,
+        CancellationToken cancellationToken = default
+    ) =>
+        Task.Run(
+            () =>
+                IndexSources(
+                    () => DiscoverSources(journalDirectories, cancellationToken),
+                    journalDirectories,
+                    null,
+                    true,
+                    cancellationToken,
+                    confirmRecovery: true
+                ),
+            cancellationToken
+        );
+
     public Task<ExplorationHistorySummary> ObserveAsync(
         IReadOnlyList<JournalEventEnvelope> events,
         IReadOnlyList<string> journalDirectories,

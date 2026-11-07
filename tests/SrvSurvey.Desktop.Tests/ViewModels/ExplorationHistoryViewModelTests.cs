@@ -9,6 +9,47 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class ExplorationHistoryViewModelTests
 {
     [Fact]
+    public async Task RecoveryAttestationIsScopedToTheCommanderAndDoesNotEnableBalanceBeforeReplay()
+    {
+        using var fixture = new Fixture();
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "History Commander", true, true);
+        await model.PendingSynchronization;
+        var catalog = new ExplorationHistoryCatalog(fixture.Data, "F100", true);
+        using (
+            var connection = new SqliteConnection(
+                new SqliteConnectionStringBuilder { DataSource = catalog.FilePath, Pooling = false }.ToString()
+            )
+        )
+        {
+            await connection.OpenAsync();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO metadata(key,value) VALUES('reconciliation_pending','1');";
+            await command.ExecuteNonQueryAsync();
+        }
+        await model.RefreshAsync();
+        Assert.True(model.RecoveryConfirmationRequired);
+        Assert.Null(model.AutomaticEstimatedValue);
+        Assert.False(model.ConfirmRecoveryCommand.CanExecute(null));
+        model.RecoverySourcesConfirmed = true;
+        Assert.True(model.ConfirmRecoveryCommand.CanExecute(null));
+        Assert.Null(model.AutomaticEstimatedValue);
+        model.SetCommander("F200", "Other Commander", true, true);
+        await model.PendingSynchronization;
+        Assert.False(model.RecoverySourcesConfirmed);
+        Assert.False(model.ConfirmRecoveryCommand.CanExecute(null));
+        model.SetCommander("F100", "History Commander", true, true);
+        await model.PendingSynchronization;
+        Assert.True(model.RecoveryConfirmationRequired);
+        Assert.False(model.RecoverySourcesConfirmed);
+        model.RecoverySourcesConfirmed = true;
+        await model.ConfirmRecoveryAsync();
+        Assert.False(model.RecoveryConfirmationRequired);
+        Assert.False(model.RecoverySourcesConfirmed);
+        Assert.Equal(23106, model.AutomaticEstimatedValue);
+    }
+
+    [Fact]
     public async Task AutomaticBalanceBackfillsAndTheChoicePersistsWithoutResettingSurveyTotals()
     {
         using var fixture = new Fixture();

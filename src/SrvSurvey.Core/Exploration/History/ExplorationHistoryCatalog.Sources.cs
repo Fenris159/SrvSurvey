@@ -26,6 +26,7 @@ public sealed partial class ExplorationHistoryCatalog
         string PrefixHash,
         long ModifiedTicks,
         long Length,
+        long CompleteLength,
         long CreatedTicks,
         JournalFilePart? FilePart,
         bool? IsLive
@@ -219,26 +220,60 @@ public sealed partial class ExplorationHistoryCatalog
 
     private static JournalSource ReadJournalSource(string path, CancellationToken token)
     {
-        JournalLine? first = ReadLines(path, 0, token).FirstOrDefault();
+        var snapshot = new FileInfo(path);
+        snapshot.Refresh();
+        JournalLine? first = ReadLines(path, 0, token, snapshot.Length).FirstOrDefault();
         JournalEventEnvelope? header = null;
         if (first?.Content is { } text && JournalEventEnvelope.TryParse(text, out JournalEventEnvelope? parsed, out _))
         {
             header = parsed;
         }
         DateTimeOffset? firstTime = header?.Timestamp;
-        var snapshot = new FileInfo(path);
-        snapshot.Refresh();
-        return new JournalSource(
+        var source = new JournalSource(
             Path.GetFileName(path),
             Path.GetFullPath(path),
             firstTime,
             ContentHash(first?.Content ?? string.Empty),
             snapshot.LastWriteTimeUtc.Ticks,
             snapshot.Length,
+            ReadCompleteLength(path, snapshot.Length, token),
             snapshot.CreationTimeUtc.Ticks,
             JournalFilePart.Read(path, header),
             header is null ? null : IsLiveHeader(header.Payload)
         );
+        if (!SameSourceVersion(source))
+        {
+            throw new IOException("A journal changed during discovery. History will retry when the file is stable.");
+        }
+        return source;
+    }
+
+    /// <summary>Finds the terminal complete record using bounded tail reads, without decoding the committed journal prefix.</summary>
+    private static long ReadCompleteLength(string path, long length, CancellationToken token)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        byte[] buffer = new byte[64 * 1024];
+        long position = length;
+        long boundary = 0;
+        while (position > 0)
+        {
+            token.ThrowIfCancellationRequested();
+            int count = (int)Math.Min(buffer.Length, position);
+            position -= count;
+            stream.Position = position;
+            stream.ReadExactly(buffer.AsSpan(0, count));
+            int newline = Array.LastIndexOf(buffer, (byte)'\n', count - 1, count);
+            if (newline >= 0)
+            {
+                boundary = position + newline + 1;
+                break;
+            }
+        }
+        return
+            length - boundary <= MaximumLineBytes
+            && ReadLines(path, boundary, token, length, requireCapturedLength: true).Any()
+            ? length
+            : boundary;
     }
 
     private JournalSource? ResolveSourceCopies(IEnumerable<string> paths, CancellationToken token)

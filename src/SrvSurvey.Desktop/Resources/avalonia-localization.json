@@ -14329,6 +14329,10 @@
       "translation": "Ich habe das gescannt"
     },
     {
+      "source": "I restored every journal involved in this interrupted import.",
+      "translation": "Ich habe alle an diesem unterbrochenen Import beteiligten Journale wiederhergestellt."
+    },
+    {
       "source": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
       "translation": "Ich verstehe, dass SrvSurvey geschlossen wird, den Austausch überprüft und automatisch zurückgesetzt wird, wenn der Start fehlschlägt."
     },
@@ -25433,6 +25437,10 @@
       "translation": "Wiederherstellung fehlgeschlagen; Das vorherige Profil wurde wiederhergestellt."
     },
     {
+      "source": "Restore interrupted history",
+      "translation": "Unterbrochenen Verlauf wiederherstellen"
+    },
+    {
       "source": "Restore journey",
       "translation": "Reise wiederherstellen"
     },
@@ -25515,6 +25523,10 @@
     {
       "source": "Resume an older search or organize searches you want to revisit.",
       "translation": "Setzen Sie eine ältere Suche fort oder organisieren Sie Suchen, die Sie erneut aufrufen möchten."
+    },
+    {
+      "source": "Resume history recovery",
+      "translation": "Setzen Sie die Wiederherstellung des Verlaufs fort"
     },
     {
       "source": "Resume journey",
@@ -34197,6 +34209,10 @@
       "translation": "Diese Zusammenführung löscht niemals vorhandene Premieren und lädt keine historischen Ereignisse hoch. Abgeschlossene Dateien behalten ihre Gültigkeit, wenn Sie vorzeitig aufhören."
     },
     {
+      "source": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+      "translation": "Dieser ältere oder unleserliche Wiederholungsversuch kann nicht jede Originaleingabe beweisen. Die automatische Wertverfolgung bleibt pausiert. Stellen Sie alle am unterbrochenen Import beteiligten Journale wieder her, bevor Sie fortfahren."
+    },
+    {
       "source": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
       "translation": "Mit dieser optionalen Einstellung kann SrvSurvey separate X11/XWayland-Overlay-Fenster direkt platzieren und öffnen."
     },
@@ -36211,6 +36227,10 @@
     {
       "source": "Verified {0} staged files; preparing rollback...",
       "translation": "Verifizierte {0} bereitgestellte Dateien; Rollback wird vorbereitet..."
+    },
+    {
+      "source": "Verifying journal {0} of {1}: {2}",
+      "translation": "Verifizierungsjournal {0} von {1}: {2}"
     },
     {
       "source": "Verifying the staged profile and both source profiles...",
@@ -56671,6 +56691,10 @@
       "translation": "He escaneado esto"
     },
     {
+      "source": "I restored every journal involved in this interrupted import.",
+      "translation": "Restauré todos los diarios involucrados en esta importación interrumpida."
+    },
+    {
       "source": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
       "translation": "Entiendo que SrvSurvey se cerrará, verificará el reemplazo y se revertirá automáticamente si falla el inicio."
     },
@@ -67775,6 +67799,10 @@
       "translation": "La restauración falló; el perfil anterior fue restaurado."
     },
     {
+      "source": "Restore interrupted history",
+      "translation": "Restaurar el historial interrumpido"
+    },
+    {
       "source": "Restore journey",
       "translation": "Restaurar viaje"
     },
@@ -67857,6 +67885,10 @@
     {
       "source": "Resume an older search or organize searches you want to revisit.",
       "translation": "Reanude una búsqueda anterior u organice las búsquedas que desea volver a visitar."
+    },
+    {
+      "source": "Resume history recovery",
+      "translation": "Reanudar la recuperación del historial"
     },
     {
       "source": "Resume journey",
@@ -76539,6 +76571,10 @@
       "translation": "Esta combinación nunca elimina las primicias existentes y no carga eventos históricos. Los archivos completos siguen siendo válidos si se detiene antes de tiempo."
     },
     {
+      "source": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+      "translation": "Este reintento anterior o ilegible no puede probar todas las entradas originales. El seguimiento automático del valor permanece en pausa. Restaure todos los diarios involucrados en la importación interrumpida antes de continuar."
+    },
+    {
       "source": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
       "translation": "Esta configuración opcional permite SrvSurvey colocar y levantar ventanas superpuestas X11/XWayland separadas directamente."
     },
@@ -78553,6 +78589,10 @@
     {
       "source": "Verified {0} staged files; preparing rollback...",
       "translation": "Archivos preparados {0} verificados; preparando la reversión..."
+    },
+    {
+      "source": "Verifying journal {0} of {1}: {2}",
+      "translation": "Diario de verificación {0} de {1}: {2}"
     },
     {
       "source": "Verifying the staged profile and both source profiles...",
@@ -99013,6 +99053,10 @@
       "translation": "j'ai scanné ça"
     },
     {
+      "source": "I restored every journal involved in this interrupted import.",
+      "translation": "J'ai restauré tous les journaux impliqués dans cette importation interrompue."
+    },
+    {
       "source": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
       "translation": "Je comprends que SrvSurvey se fermera, vérifiera le remplacement et annulera automatiquement si le démarrage échoue."
     },
@@ -110117,6 +110161,10 @@
       "translation": "La restauration a échoué ; le profil précédent a été restauré."
     },
     {
+      "source": "Restore interrupted history",
+      "translation": "Restaurer l'historique interrompu"
+    },
+    {
       "source": "Restore journey",
       "translation": "Restaurer le voyage"
     },
@@ -110199,6 +110247,10 @@
     {
       "source": "Resume an older search or organize searches you want to revisit.",
       "translation": "Reprenez une recherche plus ancienne ou organisez les recherches que vous souhaitez revisiter."
+    },
+    {
+      "source": "Resume history recovery",
+      "translation": "Reprendre la récupération de l'historique"
     },
     {
       "source": "Resume journey",
@@ -118881,6 +118933,10 @@
       "translation": "Cette fusion ne supprime jamais les premières existantes et ne télécharge pas les événements historiques. Les dossiers complétés restent valables si vous vous arrêtez plus tôt."
     },
     {
+      "source": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+      "translation": "Cette nouvelle tentative plus ancienne ou illisible ne peut pas prouver chaque entrée originale. Le suivi automatique des valeurs reste en pause. Restaurez tous les journaux impliqués dans l'importation interrompue avant de continuer."
+    },
+    {
       "source": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
       "translation": "Ce paramètre facultatif permet à SrvSurvey de placer et d'élever directement des fenêtres de superposition X11/XWayland distinctes."
     },
@@ -120895,6 +120951,10 @@
     {
       "source": "Verified {0} staged files; preparing rollback...",
       "translation": "{0} fichiers intermédiaires vérifiés ; préparation du rollback..."
+    },
+    {
+      "source": "Verifying journal {0} of {1}: {2}",
+      "translation": "Journal de vérification {0} de {1} : {2}"
     },
     {
       "source": "Verifying the staged profile and both source profiles...",
@@ -141355,6 +141415,10 @@
       "translation": "Eu digitalizei isso"
     },
     {
+      "source": "I restored every journal involved in this interrupted import.",
+      "translation": "Restaurei todos os diários envolvidos nesta importação interrompida."
+    },
+    {
       "source": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
       "translation": "Entendo que SrvSurvey fechará, verificará a substituição e reverterá automaticamente se a inicialização falhar."
     },
@@ -152459,6 +152523,10 @@
       "translation": "Falha na restauração; o perfil anterior foi restaurado."
     },
     {
+      "source": "Restore interrupted history",
+      "translation": "Restaurar histórico interrompido"
+    },
+    {
       "source": "Restore journey",
       "translation": "Restaurar jornada"
     },
@@ -152541,6 +152609,10 @@
     {
       "source": "Resume an older search or organize searches you want to revisit.",
       "translation": "Retome uma pesquisa antiga ou organize as pesquisas que deseja revisitar."
+    },
+    {
+      "source": "Resume history recovery",
+      "translation": "Retomar recuperação do histórico"
     },
     {
       "source": "Resume journey",
@@ -161223,6 +161295,10 @@
       "translation": "Essa mesclagem nunca exclui os primeiros existentes e não carrega eventos históricos. Os arquivos concluídos permanecem válidos se você parar mais cedo."
     },
     {
+      "source": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+      "translation": "Esta nova tentativa mais antiga ou ilegível não pode provar todas as entradas originais. O rastreamento automático de valor permanece pausado. Restaure todos os diários envolvidos na importação interrompida antes de continuar."
+    },
+    {
       "source": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
       "translation": "Esta configuração opcional permite SrvSurvey colocar e elevar janelas de sobreposição X11/XWayland separadas diretamente."
     },
@@ -163237,6 +163313,10 @@
     {
       "source": "Verified {0} staged files; preparing rollback...",
       "translation": "{0} arquivos testados verificados; preparando a reversão..."
+    },
+    {
+      "source": "Verifying journal {0} of {1}: {2}",
+      "translation": "Verificando diário {0} de {1}: {2}"
     },
     {
       "source": "Verifying the staged profile and both source profiles...",
@@ -183697,6 +183777,10 @@
       "translation": "я отсканировал это"
     },
     {
+      "source": "I restored every journal involved in this interrupted import.",
+      "translation": "Я восстановил все журналы, вовлеченные в этот прерванный импорт."
+    },
+    {
       "source": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
       "translation": "Я понимаю, что SrvSurvey закроется, проверит замену и автоматически откатится в случае сбоя запуска."
     },
@@ -194801,6 +194885,10 @@
       "translation": "Восстановление не удалось; предыдущий профиль был восстановлен."
     },
     {
+      "source": "Restore interrupted history",
+      "translation": "Восстановить прерванную историю"
+    },
+    {
       "source": "Restore journey",
       "translation": "Восстановить путешествие"
     },
@@ -194883,6 +194971,10 @@
     {
       "source": "Resume an older search or organize searches you want to revisit.",
       "translation": "Возобновите предыдущий поиск или организуйте поиски, к которым вы хотите вернуться."
+    },
+    {
+      "source": "Resume history recovery",
+      "translation": "Возобновить восстановление истории"
     },
     {
       "source": "Resume journey",
@@ -203565,6 +203657,10 @@
       "translation": "Это слияние никогда не удаляет существующие новинки и не загружает исторические события. Завершенные файлы остаются действительными, если вы остановитесь раньше."
     },
     {
+      "source": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+      "translation": "Эта старая или нечитаемая повторная попытка не может подтвердить все исходные вводимые данные. Автоматическое отслеживание значений остается приостановленным. Прежде чем продолжить, восстановите все журналы, участвующие в прерванном импорте."
+    },
+    {
       "source": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
       "translation": "Этот дополнительный параметр позволяет SrvSurvey напрямую размещать и вызывать отдельные окна наложения X11/XWayland."
     },
@@ -205579,6 +205675,10 @@
     {
       "source": "Verified {0} staged files; preparing rollback...",
       "translation": "Проверено {0} промежуточных файлов; готовлю откат..."
+    },
+    {
+      "source": "Verifying journal {0} of {1}: {2}",
+      "translation": "Проверка журнала {0} для {1}: {2}"
     },
     {
       "source": "Verifying the staged profile and both source profiles...",
@@ -226039,6 +226139,10 @@
       "translation": "我已经扫描了这个"
     },
     {
+      "source": "I restored every journal involved in this interrupted import.",
+      "translation": "我恢复了与这次中断的导入有关的所有日记。"
+    },
+    {
       "source": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
       "translation": "我了解 SrvSurvey 将关闭、验证替换，并在启动失败时自动回滚。"
     },
@@ -237143,6 +237247,10 @@
       "translation": "恢复失败；之前的配置文件已恢复。"
     },
     {
+      "source": "Restore interrupted history",
+      "translation": "恢复中断的历史记录"
+    },
+    {
       "source": "Restore journey",
       "translation": "恢复旅程"
     },
@@ -237225,6 +237333,10 @@
     {
       "source": "Resume an older search or organize searches you want to revisit.",
       "translation": "恢复较旧的搜索或组织您想要重新访问的搜索。"
+    },
+    {
+      "source": "Resume history recovery",
+      "translation": "恢复历史记录恢复"
     },
     {
       "source": "Resume journey",
@@ -245907,6 +246019,10 @@
       "translation": "此合并永远不会删除现有的第一个，也不会上传历史事件。如果您提早停止，已完成的文件仍然有效。"
     },
     {
+      "source": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+      "translation": "这种较旧或不可读的重试无法证明每个原始输入。自动价值跟踪保持暂停状态。在继续之前恢复中断导入涉及的所有日志。"
+    },
+    {
       "source": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
       "translation": "此可选设置允许 SrvSurvey 直接放置和升起单独的 X11/XWayland 覆盖窗口。"
     },
@@ -247921,6 +248037,10 @@
     {
       "source": "Verified {0} staged files; preparing rollback...",
       "translation": "已验证的 {0} 暂存文件；准备回滚..."
+    },
+    {
+      "source": "Verifying journal {0} of {1}: {2}",
+      "translation": "验证{1}的日志{0}：{2}"
     },
     {
       "source": "Verifying the staged profile and both source profiles...",
@@ -268381,6 +268501,10 @@
       "translation": "* I HAVE SCANNED THIS >>>!"
     },
     {
+      "source": "I restored every journal involved in this interrupted import.",
+      "translation": "* I RESTORED EVERY JOURNAL INVOLVED IN THIS INTERRUPTED IMPORT. >>>!"
+    },
+    {
       "source": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
       "translation": "* I UNDERSTAND SRVSURVEY WILL CLOSE, VERIFY THE REPLACEMENT, AND AUTOMATICALLY ROLL BACK IF STARTUP FAILS. >>>!"
     },
@@ -279485,6 +279609,10 @@
       "translation": "* RESTORE FAILED; THE PREVIOUS PROFILE WAS RESTORED. >>>!"
     },
     {
+      "source": "Restore interrupted history",
+      "translation": "* RESTORE INTERRUPTED HISTORY >>>!"
+    },
+    {
       "source": "Restore journey",
       "translation": "* RESTORE JOURNEY >>>!"
     },
@@ -279567,6 +279695,10 @@
     {
       "source": "Resume an older search or organize searches you want to revisit.",
       "translation": "* RESUME AN OLDER SEARCH OR ORGANIZE SEARCHES YOU WANT TO REVISIT. >>>!"
+    },
+    {
+      "source": "Resume history recovery",
+      "translation": "* RESUME HISTORY RECOVERY >>>!"
     },
     {
       "source": "Resume journey",
@@ -288249,6 +288381,10 @@
       "translation": "* THIS MERGE NEVER DELETES EXISTING FIRSTS AND DOES NOT UPLOAD HISTORICAL EVENTS. COMPLETED FILES REMAIN VALID IF YOU STOP EARLY. >>>!"
     },
     {
+      "source": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+      "translation": "* THIS OLDER OR UNREADABLE RETRY CANNOT PROVE EVERY ORIGINAL INPUT. AUTOMATIC VALUE TRACKING STAYS PAUSED. RESTORE ALL JOURNALS INVOLVED IN THE INTERRUPTED IMPORT BEFORE CONTINUING. >>>!"
+    },
+    {
       "source": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
       "translation": "* THIS OPTIONAL SETTING LETS SRVSURVEY PLACE AND RAISE SEPARATE X11/XWAYLAND OVERLAY WINDOWS DIRECTLY. >>>!"
     },
@@ -290263,6 +290399,10 @@
     {
       "source": "Verified {0} staged files; preparing rollback...",
       "translation": "* VERIFIED {0} STAGED FILES; PREPARING ROLLBACK... >>>!"
+    },
+    {
+      "source": "Verifying journal {0} of {1}: {2}",
+      "translation": "* VERIFYING JOURNAL {0} OF {1}: {2} >>>!"
     },
     {
       "source": "Verifying the staged profile and both source profiles...",

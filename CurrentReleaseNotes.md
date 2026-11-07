@@ -34,7 +34,10 @@ theme, clearer control groups, and space reserved for scrollbars.
   Missing required journals keep automatic balances paused, including during
   filter or storage errors. Complete records are fingerprinted before replay so
   disappearing or rewritten journals cannot silently drop deferred settlements.
-  Older pending retries rebuild safely when their original journals return.
+  Older retries that cannot prove every input keep tracking paused until you
+  restore the journals and confirm recovery in the History tab. Known
+  fingerprints still have to match. Live updates read the appended journal
+  range, and repeated retries keep their metadata compact.
   Temporarily unavailable Scan records defer mapping updates until recovery, and
   newly learned identifiers preserve already-paid ownership. Local indexes are
   kept clear of portable profile backup scans.

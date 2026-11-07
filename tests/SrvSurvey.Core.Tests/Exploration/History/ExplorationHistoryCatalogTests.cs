@@ -480,15 +480,21 @@ public sealed class ExplorationHistoryCatalogTests
             await command.ExecuteNonQueryAsync();
         }
         File.Move(fixture.JournalPath, fixture.JournalPath + ".saved");
-        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+        ExplorationHistorySummary paused = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.True(paused.RecoveryConfirmationRequired);
+        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.ConfirmRecoveryAsync([fixture.Journals]));
         ExplorationHistoryPage retained = await fixture.Catalog.QueryAsync(new());
         Assert.Equal(23106, Assert.Single(retained.Rows).EstimatedValue);
         Assert.False(retained.Summary.IsComplete);
         File.Move(fixture.JournalPath + ".saved", fixture.JournalPath);
-        ExplorationHistorySummary recovered = observed
+        ExplorationHistorySummary automatic = observed
             ? await fixture.Catalog.ObserveAsync([], [fixture.Journals])
             : await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.False(automatic.IsComplete);
+        Assert.True(automatic.RecoveryConfirmationRequired);
+        ExplorationHistorySummary recovered = await fixture.Catalog.ConfirmRecoveryAsync([fixture.Journals]);
         Assert.True(recovered.IsComplete);
+        Assert.False(recovered.RecoveryConfirmationRequired);
         Assert.Equal(23106, recovered.UnsoldValue);
         Assert.Equal(recovered, await fixture.Catalog.SynchronizeAsync([fixture.Journals]));
     }
@@ -533,7 +539,7 @@ public sealed class ExplorationHistoryCatalogTests
         );
         var interrupt = new SynchronousProgress(progress =>
         {
-            if (progress.CurrentFile == Path.GetFileName(harmless))
+            if (!progress.IsPreparing && progress.CurrentFile == Path.GetFileName(harmless))
             {
                 if (truncateComplete)
                 {
@@ -577,11 +583,139 @@ public sealed class ExplorationHistoryCatalogTests
         Assert.Equal(2000000, recovered.SaleEarnings);
     }
 
+    [Fact]
+    public async Task RepeatedDeferredAppendsKeepOneCoveringRequirementPerJournal()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Bounded retry", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        File.Move(fixture.JournalPath, fixture.JournalPath + ".saved");
+        string mapping = Path.Combine(fixture.Journals, "Journal.2026-10-01T140000.01.log");
+        await File.WriteAllTextAsync(
+            mapping,
+            """
+            {"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","Odyssey":true}
+            {"event":"Commander","FID":"F100"}
+            {"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}
+            """ + "\n"
+        );
+        for (int index = 0; index < 10; index++)
+        {
+            await File.AppendAllTextAsync(mapping, "{\"event\":\"Music\"}\n");
+            await Assert.ThrowsAnyAsync<IOException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+        }
+        using (
+            var connection = new SqliteConnection(
+                new SqliteConnectionStringBuilder { DataSource = fixture.Catalog.FilePath, Pooling = false }.ToString()
+            )
+        )
+        {
+            await connection.OpenAsync();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "SELECT value FROM metadata WHERE key='reconciliation_pending';";
+            using var manifest = System.Text.Json.JsonDocument.Parse((string)(await command.ExecuteScalarAsync())!);
+            System.Text.Json.JsonElement only = Assert.Single(manifest.RootElement.EnumerateArray());
+            Assert.Equal(Path.GetFileName(mapping), only.GetProperty("Name").GetString());
+            Assert.Equal(0, only.GetProperty("StartOffset").GetInt64());
+            Assert.Equal(64, only.GetProperty("PrefixHash").GetString()!.Length);
+        }
+        File.Move(fixture.JournalPath + ".saved", fixture.JournalPath);
+        ExplorationHistorySummary recovered = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.True(recovered.IsComplete);
+        Assert.Equal(2700541, recovered.UnsoldValue);
+    }
+
+    [Fact]
+    public async Task ConfirmedLegacyRawTailsDoNotBypassOtherVerifiedFingerprints()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Legacy mixed", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        File.Move(fixture.JournalPath, fixture.JournalPath + ".saved");
+        string mapping = Path.Combine(fixture.Journals, "Journal.2026-10-01T140000.01.log");
+        string settlement = Path.Combine(fixture.Journals, "Journal.2026-10-01T160000.01.log");
+        string map =
+            """
+                {"timestamp":"2026-10-01T14:00:00Z","event":"Fileheader","Odyssey":true}
+                {"event":"Commander","FID":"F100"}
+                {"event":"SAAScanComplete","SystemAddress":100,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}
+                """ + "\n";
+        string sale = """
+            {"timestamp":"2026-10-01T16:00:00Z","event":"Fileheader","Odyssey":true}
+            {"event":"Commander","FID":"F100"}
+            {"event":"SellExplorationData","Systems":["Legacy mixed"],"TotalEarnings":2000000}
+            {"event":"Music"
+            """;
+        await File.WriteAllTextAsync(mapping, map);
+        await File.WriteAllTextAsync(settlement, sale);
+        await Assert.ThrowsAnyAsync<IOException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+        using (
+            var connection = new SqliteConnection(
+                new SqliteConnectionStringBuilder { DataSource = fixture.Catalog.FilePath, Pooling = false }.ToString()
+            )
+        )
+        {
+            await connection.OpenAsync();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "SELECT value FROM metadata WHERE key='reconciliation_pending';";
+            System.Text.Json.Nodes.JsonArray manifest = System
+                .Text.Json.Nodes.JsonNode.Parse((string)(await command.ExecuteScalarAsync())!)!
+                .AsArray();
+            System.Text.Json.Nodes.JsonNode old = manifest.Single(item =>
+                item!["Name"]!.GetValue<string>() == Path.GetFileName(settlement)
+            )!;
+            old["PrefixHash"] = null;
+            old["FormatVersion"] = 0;
+            old["Length"] = new FileInfo(settlement).Length;
+            const string partialName = "Journal.2026-10-01T170000.01.log";
+            manifest.Add(
+                new System.Text.Json.Nodes.JsonObject
+                {
+                    ["Name"] = partialName,
+                    ["Length"] = 13,
+                    ["HeaderHash"] = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                    ["PrefixHash"] = null,
+                }
+            );
+            await File.WriteAllTextAsync(
+                Path.Combine(fixture.Journals, partialName),
+                "{\"timestamp\":\"2026-10-01T17:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n{\"event\":\"Commander\",\"FID\":\"F100\"}\n"
+            );
+            command.CommandText = "UPDATE metadata SET value=@value WHERE key='reconciliation_pending';";
+            command.Parameters.AddWithValue("@value", manifest.ToJsonString());
+            await command.ExecuteNonQueryAsync();
+        }
+        File.Move(fixture.JournalPath + ".saved", fixture.JournalPath);
+        Assert.True((await fixture.Catalog.SynchronizeAsync([fixture.Journals])).RecoveryConfirmationRequired);
+        await File.WriteAllTextAsync(
+            mapping,
+            map.Replace("\"ProbesUsed\":5", "\"ProbesUsed\":4", StringComparison.Ordinal)
+        );
+        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.ConfirmRecoveryAsync([fixture.Journals]));
+        Assert.False((await fixture.Catalog.ReadSummaryAsync()).IsComplete);
+        await File.WriteAllTextAsync(mapping, map);
+        ExplorationHistorySummary recovered = await fixture.Catalog.ConfirmRecoveryAsync([fixture.Journals]);
+        Assert.True(recovered.IsComplete);
+        Assert.False(recovered.RecoveryConfirmationRequired);
+        Assert.Equal(2700541, recovered.SoldValue);
+        Assert.Equal(0, recovered.UnsoldValue);
+        Assert.Equal(2000000, recovered.SaleEarnings);
+    }
+
     [Theory]
     [InlineData("mapping")]
     [InlineData("settlement")]
     [InlineData("changed_during_replay")]
     [InlineData("completed_header")]
+    [InlineData("capture")]
+    [InlineData("capture_changed")]
+    [InlineData("changed_mapping")]
     public async Task EveryDeferredJournalMustReturnBeforeItsCompleteRecordsBecomeEligible(string unavailableSource)
     {
         using var fixture = new HistoryFixture();
@@ -616,7 +750,44 @@ public sealed class ExplorationHistoryCatalogTests
             {"event":"Music"
             """
         );
-        await Assert.ThrowsAnyAsync<IOException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+        string originalMapping = await File.ReadAllTextAsync(mapping);
+        string earlier = Path.Combine(fixture.Journals, "Journal.2026-10-01T130000.01.log");
+        if (unavailableSource == "changed_mapping")
+        {
+            await File.WriteAllTextAsync(
+                earlier,
+                "{\"timestamp\":\"2026-10-01T13:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+            );
+        }
+        var interruptCapture = new SynchronousProgress(progress =>
+        {
+            if (
+                unavailableSource is "capture" or "capture_changed"
+                && progress.IsPreparing
+                && progress.CurrentFile == Path.GetFileName(mapping)
+            )
+            {
+                File.Move(settlement, settlement + ".saved");
+            }
+            if (
+                unavailableSource == "changed_mapping"
+                && !progress.IsPreparing
+                && progress.CurrentFile == Path.GetFileName(earlier)
+            )
+            {
+                File.WriteAllText(
+                    mapping,
+                    originalMapping.Replace("\"ProbesUsed\":5", "\"ProbesUsed\":4", StringComparison.Ordinal)
+                );
+            }
+        });
+        await Assert.ThrowsAnyAsync<IOException>(() =>
+            fixture.Catalog.SynchronizeAsync([fixture.Journals], interruptCapture)
+        );
+        if (unavailableSource == "changed_mapping")
+        {
+            await File.WriteAllTextAsync(mapping, originalMapping);
+        }
         if (unavailableSource == "completed_header")
         {
             await File.WriteAllTextAsync(
@@ -629,13 +800,31 @@ public sealed class ExplorationHistoryCatalogTests
         }
         File.Move(fixture.JournalPath + ".saved", fixture.JournalPath);
         string missing = unavailableSource == "mapping" ? mapping : settlement;
-        File.Move(missing, missing + ".saved");
+        if (unavailableSource is not ("capture" or "capture_changed"))
+        {
+            File.Move(missing, missing + ".saved");
+        }
         _ = await Record.ExceptionAsync(() => fixture.Catalog.ObserveAsync([], [fixture.Journals]));
         ExplorationHistorySummary deferred = (await fixture.Catalog.QueryAsync(new())).Summary;
         Assert.False(deferred.IsComplete);
         Assert.Equal(449200, deferred.UnsoldValue);
         Assert.Equal(0, deferred.SaleEarnings);
         File.Move(missing + ".saved", missing);
+        if (unavailableSource == "capture_changed")
+        {
+            string originalSale = await File.ReadAllTextAsync(settlement);
+            await File.WriteAllTextAsync(
+                settlement,
+                originalSale.Replace("2000000", "9000000", StringComparison.Ordinal)
+            );
+            await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Catalog.SynchronizeAsync([fixture.Journals]));
+            ExplorationHistorySummary uncertain = await fixture.Catalog.ReadSummaryAsync();
+            Assert.True(uncertain.RecoveryConfirmationRequired);
+            Assert.False(uncertain.IsComplete);
+            await File.WriteAllTextAsync(settlement, originalSale);
+            Assert.False((await fixture.Catalog.SynchronizeAsync([fixture.Journals])).IsComplete);
+            Assert.True((await fixture.Catalog.ConfirmRecoveryAsync([fixture.Journals])).IsComplete);
+        }
         const string unrelatedName = "Journal.2026-10-01T180000.01.log";
         await File.WriteAllTextAsync(
             Path.Combine(fixture.Journals, unrelatedName),
@@ -650,7 +839,7 @@ public sealed class ExplorationHistoryCatalogTests
             string captured = await File.ReadAllTextAsync(mapping);
             var change = new SynchronousProgress(progress =>
             {
-                if (progress.CurrentFile == Path.GetFileName(fixture.JournalPath))
+                if (!progress.IsPreparing && progress.CurrentFile == Path.GetFileName(fixture.JournalPath))
                 {
                     File.WriteAllText(
                         mapping,
@@ -1139,7 +1328,7 @@ public sealed class ExplorationHistoryCatalogTests
         );
         var append = new SynchronousProgress(progress =>
         {
-            if (progress.ProcessedFiles == 1)
+            if (!progress.IsPreparing && progress.ProcessedFiles == 1)
             {
                 File.AppendAllText(
                     latestPath,

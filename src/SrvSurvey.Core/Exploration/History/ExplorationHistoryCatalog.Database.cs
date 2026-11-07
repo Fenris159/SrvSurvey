@@ -12,7 +12,7 @@ public sealed partial class ExplorationHistoryCatalog
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
     private const string ValuationVersionKey = "valuation_version";
-    private const string CurrentValuationVersion = "4";
+    private const string CurrentValuationVersion = "5";
     private const string ReconciliationPendingKey = "reconciliation_pending";
     private const string UnknownMappingPrefix = "unconfirmed_mapping:";
     private const int CurrentSchemaVersion = 5;
@@ -257,7 +257,13 @@ public sealed partial class ExplorationHistoryCatalog
                 && ReadMetadata(connection, ValuationVersionKey) == CurrentValuationVersion
                 && unknownMappings.ExecuteScalar() is null
                 && ReadMetadata(connection, ReconciliationPendingKey) is null,
-            Notice = ReadMetadata(connection, "notice"),
+            RecoveryIdentity = ReadMetadata(connection, ReconciliationPendingKey) is { } pending
+                ? ContentHash(pending)
+                : null,
+            RecoveryConfirmationRequired = NeedsRecoveryConfirmation(connection, ReadDeferredJournals(connection)),
+            Notice = NeedsRecoveryConfirmation(connection, ReadDeferredJournals(connection))
+                ? "This retry cannot identify every original input. Restore all journals involved in the interrupted import, then confirm recovery."
+                : ReadMetadata(connection, "notice"),
         };
     }
 }

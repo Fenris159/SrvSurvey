@@ -63,6 +63,16 @@
     </Grid>
     <ScrollViewer x:Name="HistoryControlsViewport" Grid.Row="1" IsVisible="{Binding !HasSelection}" AllowAutoHide="False" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" IsScrollChainingEnabled="False" MaxHeight="{Binding #HistoryLayout.Bounds.Height, Converter={x:Static presentation:WorkspaceLayoutExtentConverter.HistoryControlsHeight}}">
       <StackPanel Margin="0,0,16,0" Spacing="16">
+        <Border Classes="card" Padding="16,12" IsVisible="{Binding RecoveryConfirmationRequired}">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Restore interrupted history" FontWeight="SemiBold" TextWrapping="Wrap"/>
+            <TextBlock Classes="muted" Text="This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing." TextWrapping="Wrap"/>
+            <CheckBox IsChecked="{Binding RecoverySourcesConfirmed}">
+              <TextBlock Text="I restored every journal involved in this interrupted import." TextWrapping="Wrap"/>
+            </CheckBox>
+            <Button Classes="secondary" Command="{Binding ConfirmRecoveryCommand}" Content="Resume history recovery" HorizontalAlignment="Left"/>
+          </StackPanel>
+        </Border>
         <Border Classes="card" Padding="16,12">
           <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="24" RowSpacing="6">
             <StackPanel Spacing="4">

@@ -27,64 +27,94 @@ public sealed partial class ExplorationHistoryCatalog
         IReadOnlyList<string> directories,
         IProgress<ExplorationHistoryProgress>? progress,
         bool fullBackfill,
-        CancellationToken token
+        CancellationToken token,
+        bool confirmRecovery = false
     )
     {
         using SqliteConnection connection = Open();
         JournalSource[] sources = discover();
-        bool legacyRetry = ReadMetadata(connection, ReconciliationPendingKey) == "1";
-        DeferredJournal[] required = ReadDeferredJournals(connection);
-        if (legacyRetry || required.Length > 0)
-        {
-            sources = DiscoverSources(directories, token);
-            required = PrepareDeferredJournals(required, sources, token);
-            fullBackfill = true;
-        }
-        JournalSource? interrupted = null;
+        DeferredJournal[] required = [];
         DeferredJournal[] captured = [];
         Execute(connection, "BEGIN IMMEDIATE;");
         try
         {
-            if (
-                legacyRetry
-                || ReadMetadata(connection, ValuationVersionKey) != CurrentValuationVersion
-                || NeedsRebuild(connection, sources, token)
-            )
+            bool previouslyComplete = ReadMetadata(connection, "complete") == "1";
+            required = ReadDeferredJournals(connection);
+            bool confirmation = NeedsRecoveryConfirmation(connection, required);
+            if (confirmation && !confirmRecovery)
+            {
+                ExplorationHistorySummary paused = ReadSummary(connection);
+                Execute(connection, "COMMIT;");
+                return paused;
+            }
+            captured = CreateDeferredJournals(connection, sources, rebuild: false);
+            if (required.Length > 0 || confirmation)
             {
                 sources = DiscoverSources(directories, token);
-                required = PrepareDeferredJournals(required, sources, token);
-                Rebuild(connection, sources);
-                fullBackfill = true;
+                captured = captured
+                    .Concat(CreateDeferredJournals(connection, sources, rebuild: false))
+                    .Distinct()
+                    .ToArray();
+                PrepareDeferredJournals(required, sources, token, confirmRecovery);
+                fullBackfill |= previouslyComplete;
             }
-            captured = CaptureDeferredJournals(connection, sources, token);
-            int processed = 0;
-            foreach (JournalSource source in sources)
+            bool rebuild =
+                confirmation
+                || ReadMetadata(connection, ValuationVersionKey) != CurrentValuationVersion
+                || NeedsRebuild(connection, sources, token);
+            if (rebuild)
             {
-                token.ThrowIfCancellationRequested();
-                interrupted = source;
-                IndexSource(connection, source, ReadSource(connection, source), token);
-                progress?.Report(new ExplorationHistoryProgress(++processed, sources.Length, source.Name));
+                sources = DiscoverSources(directories, token);
+                captured = captured
+                    .Concat(CreateDeferredJournals(connection, sources, rebuild: false))
+                    .Distinct()
+                    .ToArray();
+                PrepareDeferredJournals(required, sources, token, confirmRecovery);
+                ValidateRebuildSources(connection, sources);
             }
-            token.ThrowIfCancellationRequested();
-            VerifyDeferredProgress(connection, required, sources, token);
+            captured = captured.Concat(CreateDeferredJournals(connection, sources, rebuild)).Distinct().ToArray();
+            PrepareDeferredJournals(captured, sources, token, progress: progress);
+            ReplaySources(connection, sources, required.Concat(captured).ToArray(), rebuild, progress, token);
             SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
             Execute(connection, "DELETE FROM metadata WHERE key=@key;", ("@key", ReconciliationPendingKey));
-            if (fullBackfill)
+            if (fullBackfill || (rebuild && previouslyComplete))
             {
                 SetMetadata(connection, "complete", "1");
             }
+            ExplorationHistorySummary result = ReadSummary(connection);
             Execute(connection, "COMMIT;");
-            return ReadSummary(connection);
+            return result;
         }
-        catch (Exception exception)
+        catch
         {
             Execute(connection, "ROLLBACK;");
-            if (exception is OriginalScanUnavailableException unavailable)
-            {
-                RetainDeferredJournals(connection, captured, interrupted, unavailable);
-            }
+            RetainDeferredJournals(connection, required, captured);
             throw;
         }
+    }
+
+    private void ReplaySources(
+        SqliteConnection connection,
+        JournalSource[] sources,
+        DeferredJournal[] required,
+        bool rebuild,
+        IProgress<ExplorationHistoryProgress>? progress,
+        CancellationToken token
+    )
+    {
+        if (rebuild)
+        {
+            Rebuild(connection, sources);
+        }
+        int processed = 0;
+        foreach (JournalSource source in sources)
+        {
+            token.ThrowIfCancellationRequested();
+            IndexSource(connection, source, ReadSource(connection, source), token);
+            progress?.Report(new ExplorationHistoryProgress(++processed, sources.Length, source.Name));
+        }
+        token.ThrowIfCancellationRequested();
+        VerifyDeferredProgress(connection, required, sources, token);
     }
 
     private static bool NeedsRebuild(SqliteConnection connection, JournalSource[] sources, CancellationToken token)
@@ -167,7 +197,7 @@ public sealed partial class ExplorationHistoryCatalog
         return false;
     }
 
-    private static void Rebuild(SqliteConnection connection, JournalSource[] available)
+    private static void ValidateRebuildSources(SqliteConnection connection, JournalSource[] available)
     {
         Dictionary<string, JournalSource> sources = available.ToDictionary(
             source => source.Name,
@@ -201,6 +231,11 @@ public sealed partial class ExplorationHistoryCatalog
                 }
             }
         }
+    }
+
+    private static void Rebuild(SqliteConnection connection, JournalSource[] available)
+    {
+        ValidateRebuildSources(connection, available);
         Execute(
             connection,
             """

@@ -9,14 +9,6 @@ public sealed partial class ExplorationHistoryCatalog
 {
     private sealed record BodyOwnership(long PaidValue, long PendingValue, long? BatchId, OriginalReference? Scan);
 
-    private sealed class OriginalScanUnavailableException(OriginalReference record)
-        : IOException(
-            "An original Scan is unavailable. Restore the journal and refresh; later exploration records have been deferred."
-        )
-    {
-        public OriginalReference Record { get; } = record;
-    }
-
     private void ApplyEntry(
         SqliteConnection connection,
         SourceContext context,
@@ -273,7 +265,9 @@ public sealed partial class ExplorationHistoryCatalog
                 SetMetadata(connection, UnknownMappingPrefix + body, system!);
                 return;
             }
-            throw new OriginalScanUnavailableException(reference);
+            throw new IOException(
+                "An original Scan is unavailable. Restore the journal and refresh; later exploration records have been deferred."
+            );
         }
         long probes = Integer(entry.Payload, "ProbesUsed") ?? long.MaxValue;
         long target = Integer(entry.Payload, "EfficiencyTarget") ?? -1;

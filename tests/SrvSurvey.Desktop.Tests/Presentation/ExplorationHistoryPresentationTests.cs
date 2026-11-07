@@ -35,6 +35,61 @@ public sealed class ExplorationHistoryPresentationTests
         "Black hole",
     ];
 
+    [AvaloniaTheory]
+    [InlineData("monochrome-dark")]
+    [InlineData("blue-light")]
+    public async Task RecoveryControlsRemainReachableInShortThemedWindows(string theme)
+    {
+        using var fixture = new Fixture(theme);
+        await fixture.PrepareAsync();
+        await fixture.RequireRecoveryAsync();
+        ExplorationHistoryViewModel model = fixture.Main.ExplorationHistory;
+        var view = new ExplorationHistoryView { DataContext = model };
+        var window = new Window
+        {
+            Width = 760,
+            Height = 600,
+            Content = view,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? initial = window.CaptureRenderedFrame();
+            Assert.True(model.RecoveryConfirmationRequired);
+            CheckBox restored = Assert.Single(
+                view.GetVisualDescendants().OfType<CheckBox>(),
+                box =>
+                    box.Content is TextBlock text
+                    && text.Text == "I restored every journal involved in this interrupted import."
+            );
+            Button resume = Assert.Single(
+                view.GetVisualDescendants().OfType<Button>(),
+                button => ReferenceEquals(button.Command, model.ConfirmRecoveryCommand)
+            );
+            Assert.False(resume.IsEffectivelyEnabled);
+            restored.BringIntoView();
+            Click(window, restored);
+            Assert.True(model.RecoverySourcesConfirmed);
+            Assert.True(resume.IsEffectivelyEnabled);
+            resume.BringIntoView();
+            using WriteableBitmap? ready = window.CaptureRenderedFrame();
+            ScrollViewer viewport = view.FindControl<ScrollViewer>("HistoryControlsViewport")!;
+            Point origin = resume.TranslatePoint(default, viewport)!.Value;
+            Assert.InRange(origin.Y + resume.Bounds.Height / 2, 0, viewport.Bounds.Height);
+            Assert.True(origin.X + resume.Bounds.Width <= viewport.Bounds.Width - 16);
+            Click(window, resume);
+            await model.PendingSynchronization;
+            using WriteableBitmap? complete = window.CaptureRenderedFrame();
+            Assert.False(model.RecoveryConfirmationRequired);
+            Assert.False(model.RecoverySourcesConfirmed);
+            Assert.Equal(50, model.Rows.Count);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public async Task AnOpenInspectorSurvivesARefreshThatMovesItsRowOffTheRenderedPage()
     {
@@ -635,6 +690,27 @@ public sealed class ExplorationHistoryPresentationTests
 
         public Task AddNextSurveyAsync() =>
             File.AppendAllLinesAsync(Path.Combine(directory, "Journal.2026-10-01T120000.01.log"), NextSurveyLines);
+
+        public async Task RequireRecoveryAsync()
+        {
+            var catalog = new SrvSurvey.Core.Exploration.History.ExplorationHistoryCatalog(
+                Path.Combine(directory, "data"),
+                "F100",
+                true
+            );
+            using var connection = new Microsoft.Data.Sqlite.SqliteConnection(
+                new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
+                {
+                    DataSource = catalog.FilePath,
+                    Pooling = false,
+                }.ToString()
+            );
+            await connection.OpenAsync();
+            using Microsoft.Data.Sqlite.SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO metadata(key,value) VALUES('reconciliation_pending','1');";
+            await command.ExecuteNonQueryAsync();
+            await Main.ExplorationHistory.RefreshAsync();
+        }
 
         public async Task PrepareAsync()
         {

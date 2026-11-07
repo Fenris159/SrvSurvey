@@ -28750,6 +28750,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "I restored every journal involved in this interrupted import.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51030,6 +51038,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "Restore interrupted history",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Restore journey",
     "IsFormat": false,
     "SourceKinds": [
@@ -51196,6 +51212,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Resume history recovery",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Resume journey",
@@ -68606,6 +68630,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
     "IsFormat": false,
     "SourceKinds": [
@@ -72642,6 +72674,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Verifying journal {0} of {1}: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "Verifying the staged profile and both source profiles...",
