@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:localization="using:SrvSurvey.Desktop.Localization" x:Class="SrvSurvey.Desktop.Views.ExplorationHistoryView" x:DataType="vm:ExplorationHistoryViewModel" Classes="exploration-history">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:localization="using:SrvSurvey.Desktop.Localization" xmlns:presentation="using:SrvSurvey.Desktop.Presentation" x:Class="SrvSurvey.Desktop.Views.ExplorationHistoryView" x:DataType="vm:ExplorationHistoryViewModel" Classes="exploration-history">
   <UserControl.Styles>
     <Style Selector=".exploration-history ComboBox">
       <Setter Property="behaviors:ComboBoxFitContentBehavior.Enabled" Value="False"/>
@@ -52,7 +52,7 @@
       <Setter Property="AllowAutoHide" Value="False"/>
     </Style>
   </UserControl.Styles>
-  <Grid Margin="32,20,32,24" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="16">
+  <Grid x:Name="HistoryLayout" Margin="32,20,32,24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
       <StackPanel Spacing="5">
         <TextBlock Classes="page-title" FontSize="32" Text="Exploration history"/>
@@ -61,56 +61,60 @@
       </StackPanel>
       <Button Grid.Column="1" Classes="secondary" VerticalAlignment="Top" Command="{Binding RefreshCommand}" Content="Refresh history"/>
     </Grid>
-    <Border Grid.Row="1" IsVisible="{Binding !HasSelection}" Classes="card" Padding="16,12">
-      <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="24" RowSpacing="6">
-        <StackPanel Spacing="4">
-          <TextBlock Text="Unsold estimate" Classes="muted"/>
-          <TextBlock FontSize="24" FontWeight="SemiBold" Classes="unsold" Text="{Binding UnsoldText}" TextWrapping="Wrap"/>
-          <TextBlock Classes="muted" FontSize="12" Text="{Binding UnsoldCount}"/>
+    <ScrollViewer x:Name="HistoryControlsViewport" Grid.Row="1" IsVisible="{Binding !HasSelection}" AllowAutoHide="False" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" IsScrollChainingEnabled="False" MaxHeight="{Binding #HistoryLayout.Bounds.Height, Converter={x:Static presentation:WorkspaceLayoutExtentConverter.HistoryControlsHeight}}">
+      <StackPanel Margin="0,0,16,0" Spacing="16">
+        <Border Classes="card" Padding="16,12">
+          <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="24" RowSpacing="6">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Unsold estimate" Classes="muted"/>
+              <TextBlock FontSize="24" FontWeight="SemiBold" Classes="unsold" Text="{Binding UnsoldText}" TextWrapping="Wrap"/>
+              <TextBlock Classes="muted" FontSize="12" Text="{Binding UnsoldCount}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+              <TextBlock Text="Sold estimate" Classes="muted"/>
+              <TextBlock FontSize="24" FontWeight="SemiBold" Classes="sold" Text="{Binding SoldText}" TextWrapping="Wrap"/>
+              <TextBlock Classes="muted" FontSize="12" Text="{Binding SoldCount}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="4">
+              <TextBlock Text="Lost estimate" Classes="muted"/>
+              <TextBlock FontSize="24" FontWeight="SemiBold" Classes="lost" Text="{Binding LostText}" TextWrapping="Wrap"/>
+              <TextBlock Classes="muted" FontSize="12" Text="{Binding LostCount}"/>
+            </StackPanel>
+            <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Classes="muted" FontSize="12" Text="{Binding ActualSalesText}" TextWrapping="Wrap"/>
+          </Grid>
+        </Border>
+        <StackPanel Spacing="10">
+          <TextBox x:Name="HistorySystemSearch" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Search system name"/>
+          <WrapPanel>
+            <StackPanel Margin="0,0,16,8" Spacing="6">
+              <TextBlock Classes="muted" FontSize="12" Text="Status"/>
+              <ComboBox Width="145" ItemsSource="{x:Static vm:ExplorationHistoryViewModel.StatusOptions}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ExplorationHistoryStatusOption">
+                    <TextBlock Text="{Binding Label}"/>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Margin="0,0,16,8" Spacing="6">
+              <TextBlock Classes="muted" FontSize="12" Text="Collected from (UTC)"/>
+              <CalendarDatePicker Width="190" SelectedDate="{Binding FromDate, Mode=TwoWay}" PlaceholderText="Any start date"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,16,8" Spacing="6">
+              <TextBlock Classes="muted" FontSize="12" Text="Through (UTC)"/>
+              <CalendarDatePicker Width="190" SelectedDate="{Binding ThroughDate, Mode=TwoWay}" PlaceholderText="Any end date"/>
+            </StackPanel>
+            <Button Classes="secondary" VerticalAlignment="Bottom" Margin="0,0,0,8" Command="{Binding ClearFiltersCommand}" Content="Clear"/>
+          </WrapPanel>
         </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="4">
-          <TextBlock Text="Sold estimate" Classes="muted"/>
-          <TextBlock FontSize="24" FontWeight="SemiBold" Classes="sold" Text="{Binding SoldText}" TextWrapping="Wrap"/>
-          <TextBlock Classes="muted" FontSize="12" Text="{Binding SoldCount}"/>
-        </StackPanel>
-        <StackPanel Grid.Column="2" Spacing="4">
-          <TextBlock Text="Lost estimate" Classes="muted"/>
-          <TextBlock FontSize="24" FontWeight="SemiBold" Classes="lost" Text="{Binding LostText}" TextWrapping="Wrap"/>
-          <TextBlock Classes="muted" FontSize="12" Text="{Binding LostCount}"/>
-        </StackPanel>
-        <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Classes="muted" FontSize="12" Text="{Binding ActualSalesText}" TextWrapping="Wrap"/>
-      </Grid>
-    </Border>
-    <StackPanel Grid.Row="2" IsVisible="{Binding !HasSelection}" Spacing="10">
-      <TextBox x:Name="HistorySystemSearch" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Search system name"/>
-      <WrapPanel>
-        <StackPanel Margin="0,0,16,8" Spacing="6">
-          <TextBlock Classes="muted" FontSize="12" Text="Status"/>
-          <ComboBox Width="145" ItemsSource="{x:Static vm:ExplorationHistoryViewModel.StatusOptions}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}">
-            <ComboBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:ExplorationHistoryStatusOption">
-                <TextBlock Text="{Binding Label}"/>
-              </DataTemplate>
-            </ComboBox.ItemTemplate>
-          </ComboBox>
-        </StackPanel>
-        <StackPanel Margin="0,0,16,8" Spacing="6">
-          <TextBlock Classes="muted" FontSize="12" Text="Collected from (UTC)"/>
-          <CalendarDatePicker Width="190" SelectedDate="{Binding FromDate, Mode=TwoWay}" PlaceholderText="Any start date"/>
-        </StackPanel>
-        <StackPanel Margin="0,0,16,8" Spacing="6">
-          <TextBlock Classes="muted" FontSize="12" Text="Through (UTC)"/>
-          <CalendarDatePicker Width="190" SelectedDate="{Binding ThroughDate, Mode=TwoWay}" PlaceholderText="Any end date"/>
-        </StackPanel>
-        <Button Classes="secondary" VerticalAlignment="Bottom" Margin="0,0,0,8" Command="{Binding ClearFiltersCommand}" Content="Clear"/>
-      </WrapPanel>
-    </StackPanel>
-    <Border Grid.Row="3" IsVisible="{Binding !HasSelection}" Classes="card" Padding="0" ClipToBounds="True">
+      </StackPanel>
+    </ScrollViewer>
+    <Border Grid.Row="2" IsVisible="{Binding !HasSelection}" Classes="card" Padding="0" ClipToBounds="True">
       <Grid RowDefinitions="Auto,*">
         <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="16,10,32,10">
           <Grid ColumnDefinitions="110,1.5*,*,110,90" ColumnSpacing="12">
             <TextBlock Classes="muted" FontSize="12" Text="Collected"/>
-            <TextBlock Grid.Column="1" Classes="muted" FontSize="12" Text="System and contents"/>
+            <TextBlock Grid.Column="1" Classes="muted" FontSize="12" Text="System and contents" TextWrapping="Wrap"/>
             <TextBlock Grid.Column="2" Classes="muted" FontSize="12" Text="Notable" ToolTip.Tip="Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate."/>
             <TextBlock Grid.Column="3" Classes="muted" FontSize="12" Text="Estimate"/>
             <TextBlock Grid.Column="4" Classes="muted" FontSize="12" Text="Status"/>
@@ -160,7 +164,7 @@
         <TextBlock Grid.Row="1" Margin="20" Classes="muted" TextWrapping="Wrap" IsVisible="{Binding !HasRows}" Text="No matching exploration data. History is backfilled automatically from this commander's available journals."/>
       </Grid>
     </Border>
-    <Grid Grid.Row="4" IsVisible="{Binding !HasSelection}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+    <Grid Grid.Row="3" IsVisible="{Binding !HasSelection}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
       <Button Classes="secondary" Command="{Binding PreviousCommand}" Content="Previous"/>
       <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
         <TextBlock HorizontalAlignment="Center" Text="{Binding PageDescription}"/>
@@ -168,7 +172,7 @@
       </StackPanel>
       <Button Grid.Column="2" Classes="secondary" Command="{Binding NextCommand}" Content="Next"/>
     </Grid>
-    <Border Grid.Row="3" Grid.RowSpan="2" IsVisible="{Binding HasSelection}" Classes="card" Padding="20">
+    <Border Grid.Row="2" Grid.RowSpan="2" IsVisible="{Binding HasSelection}" Classes="card" Padding="20">
       <Grid RowDefinitions="Auto,*" RowSpacing="16">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
           <StackPanel Spacing="8">

@@ -36,16 +36,20 @@ public sealed class ExplorationHistoryPresentationTests
     ];
 
     [AvaloniaTheory]
-    [InlineData(1120, "monochrome-dark")]
-    [InlineData(1600, "monochrome-dark")]
-    [InlineData(760, "monochrome-dark")]
-    [InlineData(1120, "blue-dark")]
-    [InlineData(1120, "blue-light")]
-    [InlineData(760, "blue-light")]
-    [InlineData(1120, "orange-dark")]
-    [InlineData(1120, "green-dark")]
-    [InlineData(1120, "green-light")]
-    public async Task HistoryUsesTheWorkspaceWidthAndKeepsRowsClearOfTheScrollbars(int width, string theme)
+    [InlineData(1120, 900, "monochrome-dark")]
+    [InlineData(1600, 900, "monochrome-dark")]
+    [InlineData(760, 900, "monochrome-dark")]
+    [InlineData(1120, 900, "blue-dark")]
+    [InlineData(1120, 900, "blue-light")]
+    [InlineData(760, 900, "blue-light")]
+    [InlineData(1120, 900, "orange-dark")]
+    [InlineData(1120, 900, "green-dark")]
+    [InlineData(1120, 900, "green-light")]
+    [InlineData(760, 600, "monochrome-dark")]
+    [InlineData(760, 600, "blue-light")]
+    [InlineData(640, 600, "monochrome-dark")]
+    [InlineData(640, 600, "blue-light")]
+    public async Task HistoryUsesTheWorkspaceWidthAndKeepsRowsClearOfTheScrollbars(int width, int height, string theme)
     {
         using var fixture = new Fixture(theme);
         await fixture.PrepareAsync();
@@ -56,7 +60,7 @@ public sealed class ExplorationHistoryPresentationTests
         var window = new Window
         {
             Width = width,
-            Height = 900,
+            Height = height,
             Content = view,
         };
         try
@@ -65,7 +69,7 @@ public sealed class ExplorationHistoryPresentationTests
             fixture.Main.SelectedExplorationTabIndex = 1;
             using WriteableBitmap? first = window.CaptureRenderedFrame();
             Assert.NotNull(first);
-            SavePreview(first, $"history-{theme}-{width}");
+            SavePreview(first, $"history-{theme}-{width}-{height}");
             ListBox list = view.GetVisualDescendants()
                 .OfType<ListBox>()
                 .Single(item => item.Name == "ExplorationHistoryRows");
@@ -109,6 +113,32 @@ public sealed class ExplorationHistoryPresentationTests
                 .OfType<ScrollContentPresenter>()
                 .Single(p => p.GetVisualAncestors().OfType<ScrollViewer>().First() == scroll);
             Assert.True(viewport.Bounds.Height > 100);
+            if (height == 600)
+            {
+                ScrollViewer controls = view.GetVisualDescendants()
+                    .OfType<ScrollViewer>()
+                    .Single(control => control.Name == "HistoryControlsViewport");
+                Assert.True(controls.Extent.Height > controls.Viewport.Height);
+                controls.ScrollToEnd();
+                using WriteableBitmap? filters = window.CaptureRenderedFrame();
+                SavePreview(filters!, $"short-filters-{theme}-{width}-{height}");
+                ScrollContentPresenter controlsViewport = controls
+                    .GetVisualDescendants()
+                    .OfType<ScrollContentPresenter>()
+                    .Single(p => p.GetVisualAncestors().OfType<ScrollViewer>().First() == controls);
+                Button clear = view.GetVisualDescendants()
+                    .OfType<Button>()
+                    .Single(button => Equals(button.Content, "Clear"));
+                Point clearAt = clear.TranslatePoint(default, controlsViewport)!.Value;
+                Assert.True(clearAt.X >= 0 && clearAt.X + clear.Bounds.Width <= controlsViewport.Bounds.Width);
+                Assert.True(clearAt.Y >= 0 && clearAt.Y + clear.Bounds.Height <= controlsViewport.Bounds.Height);
+                Button next = view.GetVisualDescendants()
+                    .OfType<Button>()
+                    .Single(button => Equals(button.Content, "Next"));
+                Point nextAt = next.TranslatePoint(default, window)!.Value;
+                Assert.True(nextAt.Y >= 0 && nextAt.Y + next.Bounds.Height <= window.Bounds.Height);
+            }
+
             foreach (
                 TextBlock status in list.GetVisualDescendants()
                     .OfType<TextBlock>()
@@ -145,12 +175,12 @@ public sealed class ExplorationHistoryPresentationTests
                 .TranslatePoint(default, window)!
                 .Value;
             Assert.Equal(titleBefore, titleAfter);
-            SavePreview(lower!, $"history-scrolled-{theme}-{width}");
+            SavePreview(lower!, $"history-scrolled-{theme}-{width}-{height}");
             fixture.Main.ExplorationHistory.SelectedRow = fixture.Main.ExplorationHistory.Rows[0];
             await fixture.Main.ExplorationHistory.PendingDetails;
             using WriteableBitmap? details = window.CaptureRenderedFrame();
             Assert.NotNull(details);
-            SavePreview(details, $"details-{theme}-{width}");
+            SavePreview(details, $"details-{theme}-{width}-{height}");
             Assert.Equal("NS", Assert.Single(fixture.Main.ExplorationHistory.Bodies).BodyClass);
             Assert.Empty(log.Messages);
         }
@@ -323,7 +353,7 @@ public sealed class ExplorationHistoryPresentationTests
             Assert.Null(model.FromDate);
             Assert.Null(model.ThroughDate);
             Assert.Equal(50, model.Rows.Count);
-            Assert.Equal("History cataloged from 1 journal files for Survey commander.", model.StatusMessage);
+            Assert.Equal("History cataloged from 1 journal file for Survey commander.", model.StatusMessage);
         }
         finally
         {

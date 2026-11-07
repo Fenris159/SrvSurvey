@@ -28379,6 +28379,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianOverlayPreviewState.cs"
   },
   {
+    "Text": "History cataloged from 1 journal file for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "History cataloged from {0} journal files for {1}.",
     "IsFormat": true,
     "SourceKinds": [

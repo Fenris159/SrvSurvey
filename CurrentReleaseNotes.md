@@ -19,7 +19,8 @@ theme, clearer control groups, and space reserved for scrollbars.
   mapping counts, estimated value, and collection and settlement dates. Filter
   by system name, status, or dates; click a system name to copy it and select a
   row to inspect its body details and original journal records. Selected details
-  stay tied to the original collected data during refreshes and imports.
+  stay tied to the original collected data during refreshes and imports. History
+  rows and filters remain accessible in shorter windows.
 - **Spot notable discoveries:** A Notable column highlights ELW, WW, AW,
   terraformable worlds, GGG, NSP, neutron stars, and black holes. Compact tags
   wrap within their column and show full descriptions on hover. Tags reflect
@@ -29,6 +30,7 @@ theme, clearer control groups, and space reserved for scrollbars.
   metadata index stores ownership and source references rather than another
   copy of the journals. Missing originals are flagged, while catalogued history
   is retained. Late imports and changed sources are reconciled transactionally.
+  Local indexes are kept clear of portable profile backup scans.
 - **Correct rare-star estimates:** Neutron stars and black holes use the journal
   codes for their rare-star values. Older history indexes refresh their estimates
   from the original journals while retaining recorded sale earnings and statuses.

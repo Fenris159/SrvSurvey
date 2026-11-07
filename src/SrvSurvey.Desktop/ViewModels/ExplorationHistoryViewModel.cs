@@ -439,7 +439,12 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         Current(version, token) && request == queryGeneration;
 
     private string CatalogStatusMessage() =>
-        summary.Notice ?? $"History cataloged from {summary.SourceFiles:N0} journal files for {CommanderLabel}.";
+        summary.Notice
+        ?? (
+            summary.SourceFiles == 1
+                ? $"History cataloged from 1 journal file for {CommanderLabel}."
+                : $"History cataloged from {summary.SourceFiles:N0} journal files for {CommanderLabel}."
+        );
 
     private ExplorationHistoryQuery CreateQuery(ExplorationHistoryAnchor? selection) =>
         new(

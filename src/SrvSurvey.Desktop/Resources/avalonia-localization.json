@@ -14145,6 +14145,10 @@
       "translation": "Geschichte Nr. 16"
     },
     {
+      "source": "History cataloged from 1 journal file for {0}.",
+      "translation": "Der Verlauf wurde aus einer Journaldatei für {0} katalogisiert."
+    },
+    {
       "source": "History cataloged from {0} journal files for {1}.",
       "translation": "Aus {0}-Journaldateien für {1} katalogisierter Verlauf."
     },
@@ -56485,6 +56489,10 @@
     {
       "source": "History #16",
       "translation": "Historia #16"
+    },
+    {
+      "source": "History cataloged from 1 journal file for {0}.",
+      "translation": "Historia catalogada a partir de 1 archivo de diario para {0}."
     },
     {
       "source": "History cataloged from {0} journal files for {1}.",
@@ -98829,6 +98837,10 @@
       "translation": "Histoire #16"
     },
     {
+      "source": "History cataloged from 1 journal file for {0}.",
+      "translation": "Historique catalogué à partir d’un fichier journal pour {0}."
+    },
+    {
       "source": "History cataloged from {0} journal files for {1}.",
       "translation": "Historique catalogué à partir des fichiers journaux {0} pour {1}."
     },
@@ -141169,6 +141181,10 @@
     {
       "source": "History #16",
       "translation": "História #16"
+    },
+    {
+      "source": "History cataloged from 1 journal file for {0}.",
+      "translation": "Histórico catalogado de 1 arquivo de diário para {0}."
     },
     {
       "source": "History cataloged from {0} journal files for {1}.",
@@ -183513,6 +183529,10 @@
       "translation": "История №16"
     },
     {
+      "source": "History cataloged from 1 journal file for {0}.",
+      "translation": "История каталогизирована из 1 файла журнала для {0}."
+    },
+    {
       "source": "History cataloged from {0} journal files for {1}.",
       "translation": "История каталогизирована из журнальных файлов {0} для {1}."
     },
@@ -225855,6 +225875,10 @@
       "translation": "历史#16"
     },
     {
+      "source": "History cataloged from 1 journal file for {0}.",
+      "translation": "历史记录来自 {0} 的 1 个日志文件。"
+    },
+    {
       "source": "History cataloged from {0} journal files for {1}.",
       "translation": "从 {1} 的 {0} 日志文件中编录的历史记录。"
     },
@@ -268195,6 +268219,10 @@
     {
       "source": "History #16",
       "translation": "* HISTORY #16 >>>!"
+    },
+    {
+      "source": "History cataloged from 1 journal file for {0}.",
+      "translation": "* HISTORY CATALOGED FROM 1 JOURNAL FILE FOR {0}. >>>!"
     },
     {
       "source": "History cataloged from {0} journal files for {1}.",
