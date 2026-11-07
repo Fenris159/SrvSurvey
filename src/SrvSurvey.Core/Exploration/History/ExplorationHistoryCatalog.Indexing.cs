@@ -14,7 +14,7 @@ public sealed partial class ExplorationHistoryCatalog
     {
         ArgumentNullException.ThrowIfNull(directories);
         return IndexSources(
-            DiscoverSources(directories, token),
+            () => DiscoverSources(directories, token),
             directories,
             progress,
             fullBackfill: true,
@@ -23,7 +23,7 @@ public sealed partial class ExplorationHistoryCatalog
     }
 
     private ExplorationHistorySummary IndexSources(
-        JournalSource[] sources,
+        Func<JournalSource[]> discover,
         IReadOnlyList<string> directories,
         IProgress<ExplorationHistoryProgress>? progress,
         bool fullBackfill,
@@ -31,6 +31,7 @@ public sealed partial class ExplorationHistoryCatalog
     )
     {
         using SqliteConnection connection = Open();
+        JournalSource[] sources = discover();
         Execute(connection, "BEGIN IMMEDIATE;");
         try
         {
@@ -179,6 +180,7 @@ public sealed partial class ExplorationHistoryCatalog
         Execute(
             connection,
             """
+            DELETE FROM collection_anchors;
             DELETE FROM observations;
             DELETE FROM bodies;
             DELETE FROM batches;
@@ -267,13 +269,21 @@ public sealed partial class ExplorationHistoryCatalog
             .OfType<string>()
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        JournalSource[] sources = names
-            .Select(name => ResolveSourceCopies(directories.Select(directory => Path.Combine(directory, name)), token))
-            .OfType<JournalSource>()
-            .OrderBy(source => source.FirstTime)
-            .ThenBy(source => source.Name, StringComparer.Ordinal)
-            .ToArray();
-        return IndexSources(sources, directories, null, fullBackfill: false, token: token);
+        return IndexSources(
+            () =>
+                names
+                    .Select(name =>
+                        ResolveSourceCopies(directories.Select(directory => Path.Combine(directory, name)), token)
+                    )
+                    .OfType<JournalSource>()
+                    .OrderBy(source => source.FirstTime)
+                    .ThenBy(source => source.Name, StringComparer.Ordinal)
+                    .ToArray(),
+            directories,
+            null,
+            fullBackfill: false,
+            token: token
+        );
     }
 
     private static bool TrySourceIdentity(string? identity, out string name, out long offset)

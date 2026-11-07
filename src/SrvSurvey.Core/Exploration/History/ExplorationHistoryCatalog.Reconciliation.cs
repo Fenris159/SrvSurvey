@@ -208,9 +208,9 @@ public sealed partial class ExplorationHistoryCatalog
             """,
             ("@key", body),
             ("@system", system),
-            ("@source", reference.SourceId),
-            ("@offset", reference.Offset),
-            ("@hash", reference.Hash)
+            (SourceParameter, reference.SourceId),
+            (OffsetParameter, reference.Offset),
+            (HashParameter, reference.Hash)
         );
         int candidate = CalculateValue(root, context.IsLive == true, false, false);
         ApplyValue(connection, system!, body, entry, reference, candidate, null);
@@ -311,7 +311,7 @@ public sealed partial class ExplorationHistoryCatalog
             connection,
             "UPDATE bodies SET pending_value=@value,batch_id=@batch WHERE key=@body;",
             ("@value", unpaid),
-            ("@batch", batch),
+            (BatchParameter, batch),
             ("@body", body)
         );
         Execute(
@@ -323,7 +323,7 @@ public sealed partial class ExplorationHistoryCatalog
             """,
             ("@delta", unpaid - owned.PendingValue),
             (TimeParameter, Timestamp(entry.Timestamp)),
-            ("@batch", batch)
+            (BatchParameter, batch)
         );
     }
 
@@ -333,20 +333,34 @@ public sealed partial class ExplorationHistoryCatalog
         string body,
         string kind,
         OriginalReference reference
-    ) =>
+    )
+    {
+        if (kind is "Scan" or "SAAScanComplete")
+        {
+            // Identity aliases stay immutable while per-body detail references advance.
+            Execute(
+                connection,
+                "INSERT OR IGNORE INTO collection_anchors(batch_id,source_id,offset,hash) VALUES(@batch,@source,@offset,@hash);",
+                (BatchParameter, batch),
+                (SourceParameter, reference.SourceId),
+                (OffsetParameter, reference.Offset),
+                (HashParameter, reference.Hash)
+            );
+        }
         Execute(
             connection,
             """
             INSERT INTO observations(batch_id,body_key,kind,source_id,offset,hash) VALUES(@batch,@body,@kind,@source,@offset,@hash)
             ON CONFLICT(batch_id,body_key,kind) DO UPDATE SET source_id=excluded.source_id,offset=excluded.offset,hash=excluded.hash;
             """,
-            ("@batch", batch),
+            (BatchParameter, batch),
             ("@body", body),
             ("@kind", kind),
-            ("@source", reference.SourceId),
-            ("@offset", reference.Offset),
-            ("@hash", reference.Hash)
+            (SourceParameter, reference.SourceId),
+            (OffsetParameter, reference.Offset),
+            (HashParameter, reference.Hash)
         );
+    }
 
     private static long Settlement(
         SqliteConnection connection,
@@ -363,9 +377,9 @@ public sealed partial class ExplorationHistoryCatalog
             ON CONFLICT(source_id,offset) DO UPDATE SET kind=excluded.kind RETURNING id;
             """,
             ("@kind", kind),
-            ("@source", reference.SourceId),
-            ("@offset", reference.Offset),
-            ("@hash", reference.Hash),
+            (SourceParameter, reference.SourceId),
+            (OffsetParameter, reference.Offset),
+            (HashParameter, reference.Hash),
             (TimeParameter, Timestamp(entry.Timestamp)),
             ("@earnings", earnings)
         );

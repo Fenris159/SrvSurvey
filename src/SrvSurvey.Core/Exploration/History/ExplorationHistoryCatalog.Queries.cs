@@ -47,8 +47,8 @@ public sealed partial class ExplorationHistoryCatalog
             SELECT b.id,s.name,s.address,s.x,s.y,s.z,b.first_time,b.last_time,b.settled_time,b.status,b.estimate,b.scans,b.maps,
                 original.name,anchor.offset,anchor.hash
             FROM batches b JOIN systems s ON s.key=b.system_key
-            LEFT JOIN observations anchor ON anchor.id=(
-                SELECT id FROM observations WHERE batch_id=b.id AND kind IN ('Scan','SAAScanComplete') ORDER BY id LIMIT 1)
+            LEFT JOIN collection_anchors anchor ON anchor.id=(
+                SELECT id FROM collection_anchors WHERE batch_id=b.id ORDER BY id LIMIT 1)
             LEFT JOIN sources original ON original.id=anchor.source_id
             WHERE (@status IS NULL OR b.status=@status) AND instr(lower(s.name),lower(@search))>0
                 AND (@from IS NULL OR b.last_time>=@from) AND (@through IS NULL OR b.last_time<=@through)
@@ -84,9 +84,9 @@ public sealed partial class ExplorationHistoryCatalog
         using SqliteCommand command = Command(
             connection,
             """
-            SELECT DISTINCT o.batch_id FROM observations o JOIN sources s ON s.id=o.source_id
+            SELECT DISTINCT o.batch_id FROM collection_anchors o JOIN sources s ON s.id=o.source_id
             WHERE s.name=@name COLLATE NOCASE AND o.offset=@offset AND o.hash=@hash
-                AND o.kind IN ('Scan','SAAScanComplete') LIMIT 2;
+                LIMIT 2;
             """,
             ("@name", anchor.SourceName),
             ("@offset", anchor.Offset),

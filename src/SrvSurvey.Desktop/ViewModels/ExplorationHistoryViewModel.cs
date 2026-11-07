@@ -16,6 +16,12 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     private readonly string dataDirectory;
     private readonly CommanderProfileStore profiles;
     private readonly Func<IReadOnlyList<string>> journalDirectories;
+    private readonly Func<
+        ExplorationHistoryCatalog,
+        ExplorationHistoryQuery,
+        CancellationToken,
+        Task<ExplorationHistoryPage>
+    > queryReader;
     private readonly HistoryCommand refreshCommand;
     private readonly HistoryCommand previousCommand;
     private readonly HistoryCommand nextCommand;
@@ -49,12 +55,19 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     public ExplorationHistoryViewModel(
         string dataDirectory,
         CommanderProfileStore profiles,
-        Func<IReadOnlyList<string>> journalDirectories
+        Func<IReadOnlyList<string>> journalDirectories,
+        Func<
+            ExplorationHistoryCatalog,
+            ExplorationHistoryQuery,
+            CancellationToken,
+            Task<ExplorationHistoryPage>
+        >? queryReader = null
     )
     {
         this.dataDirectory = dataDirectory;
         this.profiles = profiles;
         this.journalDirectories = journalDirectories;
+        this.queryReader = queryReader ?? (static (catalog, query, token) => catalog.QueryAsync(query, token));
         refreshCommand = new HistoryCommand(RefreshAsync, () => HasCommander && !IsBusy);
         previousCommand = new HistoryCommand(() => MovePageAsync(-1), () => pageOffset > 0 && !IsQueryBusy);
         nextCommand = new HistoryCommand(
@@ -384,34 +397,23 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         long version = generation;
         CancellationToken token = contextCancellation.Token;
         IsQueryBusy = true;
-        ExplorationHistoryAnchor? selection = SelectedRow?.Data.Anchor;
         try
         {
-            ExplorationHistoryPage page = await TrackIo(
-                current.QueryAsync(
-                    new(
-                        SelectedStatus.Status,
-                        SearchText,
-                        pageOffset,
-                        PageSize,
-                        FromDate is { } start
-                            ? new DateTimeOffset(DateTime.SpecifyKind(start.Date, DateTimeKind.Utc))
-                            : null,
-                        ThroughDate is { } end
-                            ? new DateTimeOffset(
-                                DateTime.SpecifyKind(end.Date.AddTicks(TimeSpan.TicksPerDay - 1), DateTimeKind.Utc)
-                            )
-                            : null,
-                        selection
-                    ),
-                    token
-                )
-            );
-            if (!Current(version, token) || request != queryGeneration)
+            while (true)
             {
+                ExplorationHistoryAnchor? selection = SelectedRow?.Data.Anchor;
+                ExplorationHistoryPage page = await TrackIo(queryReader(current, CreateQuery(selection), token));
+                if (!IsCurrentQuery(version, request, token))
+                {
+                    return;
+                }
+                if (selection != SelectedRow?.Data.Anchor)
+                {
+                    continue;
+                }
+                ApplyPage(page, selection);
                 return;
             }
-            ApplyPage(page, selection);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -419,22 +421,40 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsStorageFailure(exception))
         {
-            if (Current(version, token))
+            if (IsCurrentQuery(version, request, token))
             {
                 StatusMessage = "Exploration history could not be read: " + exception.Message;
             }
         }
         finally
         {
-            if (version == generation && request == queryGeneration && !disposed)
+            if (IsCurrentQuery(version, request, token))
             {
                 IsQueryBusy = false;
             }
         }
     }
 
+    private bool IsCurrentQuery(long version, long request, CancellationToken token) =>
+        Current(version, token) && request == queryGeneration;
+
     private string CatalogStatusMessage() =>
         summary.Notice ?? $"History cataloged from {summary.SourceFiles:N0} journal files for {CommanderLabel}.";
+
+    private ExplorationHistoryQuery CreateQuery(ExplorationHistoryAnchor? selection) =>
+        new(
+            SelectedStatus.Status,
+            SearchText,
+            pageOffset,
+            PageSize,
+            FromDate is { } start ? new DateTimeOffset(DateTime.SpecifyKind(start.Date, DateTimeKind.Utc)) : null,
+            ThroughDate is { } end
+                ? new DateTimeOffset(
+                    DateTime.SpecifyKind(end.Date.AddTicks(TimeSpan.TicksPerDay - 1), DateTimeKind.Utc)
+                )
+                : null,
+            selection
+        );
 
     private void ApplyPage(ExplorationHistoryPage page, ExplorationHistoryAnchor? requestedSelection)
     {

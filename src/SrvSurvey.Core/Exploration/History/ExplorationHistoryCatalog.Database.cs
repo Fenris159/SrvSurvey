@@ -5,6 +5,11 @@ namespace SrvSurvey.Core.Exploration.History;
 public sealed partial class ExplorationHistoryCatalog
 {
     private const string TimeParameter = "@time";
+    private const string SourceParameter = "@source";
+    private const string OffsetParameter = "@offset";
+    private const string HashParameter = "@hash";
+    private const string BatchParameter = "@batch";
+    private const int CurrentSchemaVersion = 2;
 
     private SqliteConnection Open(bool initialize = true)
     {
@@ -25,18 +30,32 @@ public sealed partial class ExplorationHistoryCatalog
         {
             connection.Open();
             using SqliteCommand version = Command(connection, "PRAGMA user_version;");
-            if (Convert.ToInt32(version.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 1)
+            int schemaVersion = Convert.ToInt32(
+                version.ExecuteScalar(),
+                System.Globalization.CultureInfo.InvariantCulture
+            );
+            if (schemaVersion > CurrentSchemaVersion)
             {
                 throw new InvalidDataException(
                     "This exploration history catalog requires a newer application version."
                 );
             }
+            ValidateScope(connection);
             if (!initialize)
             {
-                ValidateScope(connection);
+                if (schemaVersion < CurrentSchemaVersion)
+                {
+                    connection.Dispose();
+                    return Open();
+                }
                 return connection;
             }
             Execute(connection, "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;");
+            if (schemaVersion == CurrentSchemaVersion)
+            {
+                return connection;
+            }
+            using SqliteTransaction transaction = connection.BeginTransaction();
             Execute(
                 connection,
                 """
@@ -70,13 +89,21 @@ public sealed partial class ExplorationHistoryCatalog
                     source_id INTEGER NOT NULL REFERENCES sources(id), offset INTEGER NOT NULL, hash TEXT NOT NULL,
                     UNIQUE(batch_id, body_key, kind));
                 CREATE INDEX IF NOT EXISTS observation_batch ON observations(batch_id);
-                CREATE INDEX IF NOT EXISTS observation_source ON observations(source_id,offset);
-                PRAGMA user_version=1;
+                DROP INDEX IF EXISTS observation_source;
+                CREATE TABLE IF NOT EXISTS collection_anchors (
+                    id INTEGER PRIMARY KEY,
+                    batch_id INTEGER NOT NULL REFERENCES batches(id) ON DELETE CASCADE,
+                    source_id INTEGER NOT NULL REFERENCES sources(id), offset INTEGER NOT NULL, hash TEXT NOT NULL,
+                    UNIQUE(source_id,offset,hash,batch_id));
+                CREATE INDEX IF NOT EXISTS collection_anchor_batch ON collection_anchors(batch_id);
+                INSERT OR IGNORE INTO collection_anchors(batch_id,source_id,offset,hash)
+                    SELECT batch_id,source_id,offset,hash FROM observations WHERE kind IN ('Scan','SAAScanComplete');
+                PRAGMA user_version=2;
                 """
             );
-            ValidateScope(connection);
             SetMetadata(connection, "commander", frontierId);
             SetMetadata(connection, "galaxy", isLive ? "live" : "legacy");
+            transaction.Commit();
             return connection;
         }
         catch
@@ -88,6 +115,14 @@ public sealed partial class ExplorationHistoryCatalog
 
     private void ValidateScope(SqliteConnection connection)
     {
+        using SqliteCommand metadata = Command(
+            connection,
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='metadata';"
+        );
+        if (metadata.ExecuteScalar() is null)
+        {
+            return;
+        }
         string? owner = ReadMetadata(connection, "commander");
         string? galaxy = ReadMetadata(connection, "galaxy");
         if (

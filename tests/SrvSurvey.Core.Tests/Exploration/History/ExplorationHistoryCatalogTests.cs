@@ -179,6 +179,37 @@ public sealed class ExplorationHistoryCatalogTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ARepeatedScanRetainsTheSelectedCollectionAndItsLatestDetails(bool importEarlier)
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Survey", 100, 0), Star(100)]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        ExplorationHistoryRow selected = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows);
+        fixture.Append([Star(100)]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        if (importEarlier)
+        {
+            string older = (await File.ReadAllTextAsync(fixture.JournalPath)).Replace(
+                "2026-10-01",
+                "2026-09-30",
+                StringComparison.Ordinal
+            );
+            await File.WriteAllTextAsync(Path.Combine(fixture.Journals, "Journal.2026-09-30T120000.01.log"), older);
+            await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        }
+        ExplorationHistoryPage page = await fixture.Catalog.QueryAsync(new(SelectionAnchor: selected.Anchor));
+        Assert.Equal(1, page.SelectedRowId);
+        ExplorationHistoryRow current = Assert.Single(page.Rows);
+        Assert.Equal(23106, current.EstimatedValue);
+        Assert.Equal(1, current.ScannedBodies);
+        ExplorationHistoryDetails details = await fixture.Catalog.ReadDetailsAsync(selected);
+        Assert.Null(details.Notice);
+        Assert.Equal(new DateTimeOffset(2026, 10, 1, 13, 0, 0, TimeSpan.Zero), Assert.Single(details.Events).Timestamp);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task AStoredRowCannotOpenAnotherSystemsOriginalRecordsAfterReplayReusesItsId(bool retainOriginal)

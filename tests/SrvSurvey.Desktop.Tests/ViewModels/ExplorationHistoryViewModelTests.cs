@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Data.Sqlite;
 using SrvSurvey.Core.Exploration.History;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
@@ -269,6 +270,171 @@ public sealed class ExplorationHistoryViewModelTests
         Assert.False(model.HasSelection);
     }
 
+    [Fact]
+    public async Task ARepeatedScanKeepsTheOpenCollectionsDetailsSelected()
+    {
+        using var fixture = new Fixture();
+        await using ExplorationHistoryViewModel model = fixture.Create();
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        model.SelectedRow = Assert.Single(model.Rows);
+        await model.PendingDetails;
+        await File.AppendAllLinesAsync(
+            fixture.JournalPath("F100"),
+            [
+                """{"timestamp":"2026-10-01T13:00:00Z","event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Alpha Survey A","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}""",
+            ]
+        );
+        await model.RefreshAsync();
+        await model.PendingDetails;
+        Assert.Equal("Alpha Survey", model.SelectedRow?.SystemName);
+        Assert.Equal("Alpha Survey A", Assert.Single(model.Bodies).Name);
+        Assert.Contains("2026-10-01T13:00:00Z", model.RawJson);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ASelectionOpenedWhileAQueryIsPendingRemainsSelected(bool withInitialSelection)
+    {
+        using var fixture = new Fixture();
+        await File.AppendAllLinesAsync(
+            fixture.JournalPath("F100"),
+            [
+                """{"timestamp":"2026-10-01T13:00:00Z","event":"Location","StarSystem":"Beta Survey","SystemAddress":200}""",
+                """{"timestamp":"2026-10-01T13:01:00Z","event":"Scan","SystemAddress":200,"BodyID":0,"BodyName":"Beta Survey A","StarType":"NS","StellarMass":1.4}""",
+            ]
+        );
+        int holdNext = 0;
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using ExplorationHistoryViewModel model = fixture.Create(
+            async (catalog, query, token) =>
+            {
+                ExplorationHistoryPage page = await catalog.QueryAsync(query, token);
+                if (Interlocked.Exchange(ref holdNext, 0) == 1)
+                {
+                    entered.TrySetResult();
+                    await release.Task.WaitAsync(token);
+                }
+                return page;
+            }
+        );
+        try
+        {
+            model.SetCommander("F100", "Survey commander", true, true);
+            await model.PendingSynchronization;
+            if (withInitialSelection)
+            {
+                model.SelectedRow = Assert.Single(model.Rows, row => row.SystemName == "Alpha Survey");
+                await model.PendingDetails;
+            }
+            Interlocked.Exchange(ref holdNext, 1);
+            model.SearchText = "Survey";
+            Task pending = model.PendingQuery;
+            await entered.Task;
+            model.SelectedRow = Assert.Single(model.Rows, row => row.SystemName == "Beta Survey");
+            await model.PendingDetails;
+            release.TrySetResult();
+            await pending;
+            await model.PendingDetails;
+            Assert.Equal("Beta Survey", model.SelectedRow?.SystemName);
+            Assert.Equal("Beta Survey A", Assert.Single(model.Bodies).Name);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+    }
+
+    [Fact]
+    public async Task LegacyCachedRowsRemainVisibleWhenSourceDiscoveryFailsDuringUpgrade()
+    {
+        using var fixture = new Fixture();
+        await using (ExplorationHistoryViewModel initial = fixture.Create())
+        {
+            initial.SetCommander("F100", "Survey commander", true, true);
+            await initial.PendingSynchronization;
+        }
+        string database = new ExplorationHistoryCatalog(fixture.Data, "F100", true).FilePath;
+        using (
+            var connection = new SqliteConnection(
+                new SqliteConnectionStringBuilder { DataSource = database, Pooling = false }.ToString()
+            )
+        )
+        {
+            await connection.OpenAsync();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "DROP TABLE collection_anchors; PRAGMA user_version=1;";
+            await command.ExecuteNonQueryAsync();
+        }
+        string archive = Path.Combine(fixture.Root, "archive");
+        Directory.CreateDirectory(archive);
+        string incompatible = (await File.ReadAllTextAsync(fixture.JournalPath("F100"))).Replace(
+            "Alpha Survey",
+            "Other Survey",
+            StringComparison.Ordinal
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(archive, Path.GetFileName(fixture.JournalPath("F100"))),
+            incompatible
+        );
+        await using var model = new ExplorationHistoryViewModel(
+            fixture.Data,
+            fixture.Profiles,
+            () => [archive, fixture.Journals]
+        );
+        model.SetCommander("F100", "Survey commander", true, true);
+        await model.PendingSynchronization;
+        Assert.Contains("Conflicting copies", model.StatusMessage);
+        model.SelectedRow = Assert.Single(model.Rows);
+        Assert.Equal("Alpha Survey", model.SelectedRow.SystemName);
+        await model.PendingDetails;
+        Assert.Equal("Alpha Survey A", Assert.Single(model.Bodies).Name);
+    }
+
+    [Fact]
+    public async Task AnOlderQueryFailureCannotReplaceTheSuccessfulNewerQueryStatus()
+    {
+        using var fixture = new Fixture();
+        int holdNext = 0;
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using ExplorationHistoryViewModel model = fixture.Create(
+            async (catalog, query, token) =>
+            {
+                ExplorationHistoryPage page = await catalog.QueryAsync(query, token);
+                if (Interlocked.Exchange(ref holdNext, 0) == 1)
+                {
+                    entered.TrySetResult();
+                    await release.Task.WaitAsync(token);
+                    throw new IOException("The older query failed.");
+                }
+                return page;
+            }
+        );
+        try
+        {
+            model.SetCommander("F100", "Survey commander", true, true);
+            await model.PendingSynchronization;
+            Interlocked.Exchange(ref holdNext, 1);
+            model.SearchText = "Alpha";
+            Task older = model.PendingQuery;
+            await entered.Task;
+            model.SearchText = "Survey";
+            await model.PendingQuery;
+            string currentStatus = model.StatusMessage;
+            release.TrySetResult();
+            await older;
+            Assert.Equal("Alpha Survey", Assert.Single(model.Rows).SystemName);
+            Assert.Equal(currentStatus, model.StatusMessage);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+    }
+
     private sealed class Fixture : IDisposable
     {
         public Fixture(bool withScan = true)
@@ -291,7 +457,14 @@ public sealed class ExplorationHistoryViewModelTests
 
         public string JournalPath(string id) => Path.Combine(Journals, $"Journal.2026-10-01T1200{id[1..]}.01.log");
 
-        public ExplorationHistoryViewModel Create() => new(Data, Profiles, () => [Journals]);
+        public ExplorationHistoryViewModel Create(
+            Func<
+                ExplorationHistoryCatalog,
+                ExplorationHistoryQuery,
+                CancellationToken,
+                Task<ExplorationHistoryPage>
+            >? queryReader = null
+        ) => new(Data, Profiles, () => [Journals], queryReader);
 
         public void AddCommander(string id, string system, long address, bool withScan = true)
         {
