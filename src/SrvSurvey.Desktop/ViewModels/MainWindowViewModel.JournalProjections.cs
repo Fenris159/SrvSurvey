@@ -22,6 +22,7 @@ public sealed partial class MainWindowViewModel
                     PulseOverlay = PulseOverlay,
                     GalaxyMap = GalaxyMap,
                     ExplorationPois = ExplorationPois,
+                    ExplorationHistory = ExplorationHistory,
                     NetworkPrivacy = NetworkPrivacy,
                     VoxStellar = VoxStellar,
                     Inara = Inara,

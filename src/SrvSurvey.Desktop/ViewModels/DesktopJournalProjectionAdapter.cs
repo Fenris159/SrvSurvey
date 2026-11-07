@@ -512,11 +512,14 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         );
         operations[JournalProjectionOperation.ExplorationEvents] = Sync(
             (context, tick) =>
+            {
                 ApplyExplorationAndExobiologyJournalEvents(
                     context.JournalEvents,
                     tick.SkipPersistedBootstrapEvents,
                     tick.ScansLostToDeath
-                )
+                );
+                dependencies.ExplorationHistory.Observe(context.JournalEvents);
+            }
         );
         operations[JournalProjectionOperation.ExplorationPersistence] = (_, tick) =>
             PersistExplorationIfChangedAsync(tick.ExplorationBefore);

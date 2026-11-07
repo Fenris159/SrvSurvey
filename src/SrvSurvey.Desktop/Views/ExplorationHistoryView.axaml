@@ -1,0 +1,190 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.ExplorationHistoryView" x:DataType="vm:ExplorationHistoryViewModel" Classes="exploration-history">
+  <UserControl.Styles>
+    <Style Selector=".exploration-history ComboBox">
+      <Setter Property="behaviors:ComboBoxFitContentBehavior.Enabled" Value="False"/>
+      <Setter Property="MinHeight" Value="40"/>
+    </Style>
+    <Style Selector=".exploration-history TextBox">
+      <Setter Property="MinHeight" Value="40"/>
+    </Style>
+    <Style Selector=".exploration-history CalendarDatePicker">
+      <Setter Property="MinHeight" Value="40"/>
+    </Style>
+    <Style Selector=".exploration-history Button.system-link">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="MinWidth" Value="0"/>
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </Style>
+    <Style Selector=".exploration-history TextBlock.sold">
+      <Setter Property="Foreground" Value="{DynamicResource RavenSuccessBrush}"/>
+    </Style>
+    <Style Selector=".exploration-history TextBlock.unsold">
+      <Setter Property="Foreground" Value="{DynamicResource RavenWarningBrush}"/>
+    </Style>
+    <Style Selector=".exploration-history TextBlock.lost">
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}"/>
+    </Style>
+    <Style Selector=".exploration-history ListBox">
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector=".exploration-history ListBoxItem">
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    </Style>
+    <Style Selector=".exploration-history ListBox /template/ ScrollViewer">
+      <Setter Property="AllowAutoHide" Value="False"/>
+    </Style>
+    <Style Selector=".exploration-history TextBox.journal-code /template/ ScrollViewer">
+      <Setter Property="AllowAutoHide" Value="False"/>
+    </Style>
+  </UserControl.Styles>
+  <Grid Margin="32,20,32,24" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="16">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+      <StackPanel Spacing="5">
+        <TextBlock Classes="page-title" FontSize="32" Text="Exploration history"/>
+        <TextBlock Classes="muted" Text="{Binding CommanderLabel}" TextWrapping="Wrap"/>
+        <TextBlock Classes="muted" FontSize="12" Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+      </StackPanel>
+      <Button Grid.Column="1" Classes="secondary" VerticalAlignment="Top" Command="{Binding RefreshCommand}" Content="Refresh history"/>
+    </Grid>
+    <Border Grid.Row="1" IsVisible="{Binding !HasSelection}" Classes="card" Padding="16,12">
+      <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="24" RowSpacing="6">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Unsold estimate" Classes="muted"/>
+          <TextBlock FontSize="24" FontWeight="SemiBold" Classes="unsold" Text="{Binding UnsoldText}" TextWrapping="Wrap"/>
+          <TextBlock Classes="muted" FontSize="12" Text="{Binding UnsoldCount}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="4">
+          <TextBlock Text="Sold estimate" Classes="muted"/>
+          <TextBlock FontSize="24" FontWeight="SemiBold" Classes="sold" Text="{Binding SoldText}" TextWrapping="Wrap"/>
+          <TextBlock Classes="muted" FontSize="12" Text="{Binding SoldCount}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2" Spacing="4">
+          <TextBlock Text="Lost estimate" Classes="muted"/>
+          <TextBlock FontSize="24" FontWeight="SemiBold" Classes="lost" Text="{Binding LostText}" TextWrapping="Wrap"/>
+          <TextBlock Classes="muted" FontSize="12" Text="{Binding LostCount}"/>
+        </StackPanel>
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Classes="muted" FontSize="12" Text="{Binding ActualSalesText}" TextWrapping="Wrap"/>
+      </Grid>
+    </Border>
+    <StackPanel Grid.Row="2" IsVisible="{Binding !HasSelection}" Spacing="10">
+      <TextBox x:Name="HistorySystemSearch" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Search system name"/>
+      <WrapPanel>
+        <StackPanel Margin="0,0,16,8" Spacing="6">
+          <TextBlock Classes="muted" FontSize="12" Text="Status"/>
+          <ComboBox Width="145" ItemsSource="{x:Static vm:ExplorationHistoryViewModel.StatusOptions}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ExplorationHistoryStatusOption">
+                <TextBlock Text="{Binding Label}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+        <StackPanel Margin="0,0,16,8" Spacing="6">
+          <TextBlock Classes="muted" FontSize="12" Text="Collected from (UTC)"/>
+          <CalendarDatePicker Width="190" SelectedDate="{Binding FromDate, Mode=TwoWay}" PlaceholderText="Any start date"/>
+        </StackPanel>
+        <StackPanel Margin="0,0,16,8" Spacing="6">
+          <TextBlock Classes="muted" FontSize="12" Text="Through (UTC)"/>
+          <CalendarDatePicker Width="190" SelectedDate="{Binding ThroughDate, Mode=TwoWay}" PlaceholderText="Any end date"/>
+        </StackPanel>
+        <Button Classes="secondary" VerticalAlignment="Bottom" Margin="0,0,0,8" Command="{Binding ClearFiltersCommand}" Content="Clear"/>
+      </WrapPanel>
+    </StackPanel>
+    <Border Grid.Row="3" IsVisible="{Binding !HasSelection}" Classes="card" Padding="0" ClipToBounds="True">
+      <Grid RowDefinitions="Auto,*">
+        <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="16,10,32,10">
+          <Grid ColumnDefinitions="130,*,110,90" ColumnSpacing="16">
+            <TextBlock Classes="muted" FontSize="12" Text="Collected"/>
+            <TextBlock Grid.Column="1" Classes="muted" FontSize="12" Text="System and contents"/>
+            <TextBlock Grid.Column="2" Classes="muted" FontSize="12" Text="Estimate"/>
+            <TextBlock Grid.Column="3" Classes="muted" FontSize="12" Text="Status"/>
+          </Grid>
+        </Border>
+        <ListBox x:Name="ExplorationHistoryRows" Grid.Row="1" Padding="0" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.IsScrollChainingEnabled="False">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ExplorationHistoryRowViewModel">
+              <Border Padding="16,10" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="130,*,110,90" ColumnSpacing="16">
+                  <StackPanel Spacing="5">
+                    <TextBlock Text="{Binding CollectedDate}"/>
+                    <TextBlock Classes="muted" FontSize="12" Text="{Binding CollectedTime}"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="5">
+                    <Button Classes="system-link" Command="{Binding CopySystemNameCommand}" ToolTip.Tip="Copy system name" AutomationProperties.Name="{Binding SystemName}">
+                      <TextBlock Text="{Binding SystemName}" FontWeight="SemiBold" FontSize="16" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SystemName}"/>
+                    </Button>
+                    <TextBlock Classes="muted" FontSize="12" Text="{Binding Contents}" TextWrapping="Wrap"/>
+                    <TextBlock Classes="muted" FontSize="12" Text="{Binding Position}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="2" Text="{Binding Estimate}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                  <StackPanel Grid.Column="3" Spacing="5">
+                    <TextBlock FontWeight="SemiBold" Classes.sold="{Binding IsSold}" Classes.unsold="{Binding IsUnsold}" Classes.lost="{Binding IsLost}" Text="{Binding Status}"/>
+                    <TextBlock Classes="muted" FontSize="12" Text="{Binding SettlementDate}" TextWrapping="Wrap"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Grid.Row="1" Margin="20" Classes="muted" TextWrapping="Wrap" IsVisible="{Binding !HasRows}" Text="No matching exploration data. History is backfilled automatically from this commander's available journals."/>
+      </Grid>
+    </Border>
+    <Grid Grid.Row="4" IsVisible="{Binding !HasSelection}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+      <Button Classes="secondary" Command="{Binding PreviousCommand}" Content="Previous"/>
+      <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+        <TextBlock HorizontalAlignment="Center" Text="{Binding PageDescription}"/>
+        <TextBlock HorizontalAlignment="Center" Classes="muted" FontSize="12" Text="Select a row for details. Click a system name to copy it." TextWrapping="Wrap"/>
+      </StackPanel>
+      <Button Grid.Column="2" Classes="secondary" Command="{Binding NextCommand}" Content="Next"/>
+    </Grid>
+    <Border Grid.Row="3" Grid.RowSpan="2" IsVisible="{Binding HasSelection}" Classes="card" Padding="20">
+      <Grid RowDefinitions="Auto,*" RowSpacing="16">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="card-title" Text="{Binding DetailTitle}" TextWrapping="Wrap"/>
+            <TextBlock Classes="muted" Text="{Binding DetailStatus}" TextWrapping="Wrap"/>
+            <TextBlock Classes="muted" FontSize="12" Text="{Binding DetailLocation}" TextWrapping="Wrap"/>
+            <TextBlock Classes="muted" FontSize="12" Text="{Binding DetailPeriod}" TextWrapping="Wrap"/>
+          </StackPanel>
+          <Button Grid.Column="1" Classes="secondary" VerticalAlignment="Top" Command="{Binding CloseDetailsCommand}" Content="Back to history"/>
+        </Grid>
+        <ScrollViewer Grid.Row="1" AllowAutoHide="False" HorizontalScrollBarVisibility="Disabled" IsScrollChainingEnabled="False">
+          <StackPanel Margin="0,0,16,12" Spacing="14">
+            <ItemsControl ItemsSource="{Binding Bodies}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ExplorationHistoryBodyViewModel">
+                  <Border Padding="0,0,0,14" Margin="0,0,0,14" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
+                    <StackPanel Spacing="8">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Name}" TextWrapping="Wrap"/>
+                      <TextBlock Classes="muted" Text="{Binding BodyClass}" TextWrapping="Wrap"/>
+                      <ItemsControl ItemsSource="{Binding Facts}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:ExplorationHistoryFact">
+                            <Grid ColumnDefinitions="160,*" ColumnSpacing="16" Margin="0,3">
+                              <TextBlock Classes="muted" Text="{Binding Label}" TextWrapping="Wrap"/>
+                              <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap"/>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Expander Header="Original journal records">
+              <TextBox Classes="journal-code" Margin="0,10,0,0" Height="180" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" FontFamily="Consolas, Menlo, monospace" FontSize="13" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.IsScrollChainingEnabled="False" Text="{Binding RawJson}"/>
+            </Expander>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
