@@ -6767,6 +6767,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "BH",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
     "Text": "BIO",
     "IsFormat": false,
     "SourceKinds": [
@@ -18731,6 +18739,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Discovery",
     "IsFormat": false,
     "SourceKinds": [
@@ -25360,6 +25376,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "GGG",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
     "Text": "GGWL",
     "IsFormat": false,
     "SourceKinds": [
@@ -26569,6 +26593,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Green gas giant",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
   },
   {
     "Text": "Grey",
@@ -37102,6 +37134,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "NS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
+    "Text": "NSP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
     "Text": "Nakato Kaine",
     "IsFormat": false,
     "SourceKinds": [
@@ -39019,6 +39067,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "No notable discoveries recorded in available journals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "No notes",
     "IsFormat": false,
     "SourceKinds": [
@@ -39811,6 +39867,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Notable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Notable stellar phenomena",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
   },
   {
     "Text": "Note saves",
@@ -62666,6 +62738,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "TFC",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
     "Text": "THIS SITE\u0027S CATALOG DETAILS",
     "IsFormat": false,
     "SourceKinds": [
@@ -63066,6 +63146,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Terraformable world",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
   },
   {
     "Text": "Terraforming",

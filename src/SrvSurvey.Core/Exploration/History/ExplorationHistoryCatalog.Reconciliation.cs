@@ -17,14 +17,12 @@ public sealed partial class ExplorationHistoryCatalog
     )
     {
         ApplyContext(context, entry);
-        if (
-            !string.Equals(context.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
-            || context.IsLive != isLive
-        )
+        if (!BelongsToCommander(context))
         {
             return;
         }
         SetMetadata(connection, "commander_seen", "1");
+        ApplyNotableDiscovery(connection, context, entry);
         switch (entry.EventName)
         {
             case "Scan":
@@ -128,7 +126,10 @@ public sealed partial class ExplorationHistoryCatalog
     private static string? EnsureSystem(SqliteConnection connection, SourceContext context, JsonElement root)
     {
         long? address = Integer(root, "SystemAddress") ?? context.SystemAddress;
-        string? name = Text(root, "StarSystem") ?? (address == context.SystemAddress ? context.SystemName : null);
+        string? name =
+            Text(root, "StarSystem")
+            ?? Text(root, "System")
+            ?? (address == context.SystemAddress ? context.SystemName : null);
         if (address is null && string.IsNullOrWhiteSpace(name))
         {
             return null;

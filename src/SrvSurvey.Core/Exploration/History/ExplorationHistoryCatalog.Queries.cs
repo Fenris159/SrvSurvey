@@ -45,11 +45,12 @@ public sealed partial class ExplorationHistoryCatalog
             connection,
             """
             SELECT b.id,s.name,s.address,s.x,s.y,s.z,b.first_time,b.last_time,b.settled_time,b.status,b.estimate,b.scans,b.maps,
-                original.name,anchor.offset,anchor.hash
+                original.name,anchor.offset,anchor.hash,COALESCE(notable.flags,0)
             FROM batches b JOIN systems s ON s.key=b.system_key
             LEFT JOIN collection_anchors anchor ON anchor.id=(
                 SELECT id FROM collection_anchors WHERE batch_id=b.id ORDER BY id LIMIT 1)
             LEFT JOIN sources original ON original.id=anchor.source_id
+            LEFT JOIN notable_systems notable ON notable.system_key=s.key
             WHERE (@status IS NULL OR b.status=@status) AND instr(lower(s.name),lower(@search))>0
                 AND (@from IS NULL OR b.last_time>=@from) AND (@through IS NULL OR b.last_time<=@through)
             ORDER BY b.last_time DESC,b.id DESC LIMIT @size OFFSET @offset;
@@ -118,6 +119,7 @@ public sealed partial class ExplorationHistoryCatalog
             EstimatedValue = reader.GetInt64(10),
             ScannedBodies = reader.GetInt32(11),
             MappedBodies = reader.GetInt32(12),
+            Notables = (ExplorationNotables)reader.GetInt32(16),
         };
 
     private ExplorationHistoryDetails ReadDetails(long rowId, ExplorationHistoryAnchor? anchor, CancellationToken token)

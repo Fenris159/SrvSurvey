@@ -20,6 +20,10 @@ theme, clearer control groups, and space reserved for scrollbars.
   by system name, status, or dates; click a system name to copy it and select a
   row to inspect its body details and original journal records. Selected details
   stay tied to the original collected data during refreshes and imports.
+- **Spot notable discoveries:** A Notable column highlights ELW, WW, AW,
+  terraformable worlds, GGG, NSP, neutron stars, and black holes. Compact tags
+  wrap within their column and show full descriptions on hover. Tags reflect
+  recorded system discoveries and do not change credit estimates.
 - **Backfill automatically:** History is catalogued from each commander's
   available journals, with Live and Legacy kept separate. A compact local
   metadata index stores ownership and source references rather than another

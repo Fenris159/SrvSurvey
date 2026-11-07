@@ -3381,6 +3381,10 @@
       "translation": "Beta"
     },
     {
+      "source": "BH",
+      "translation": "BH"
+    },
+    {
       "source": "BIO",
       "translation": "BIO"
     },
@@ -9337,6 +9341,10 @@
       "translation": "Entdeckt{0}{1}"
     },
     {
+      "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+      "translation": "Entdeckungen, die für dieses System im Laufe seiner Zeitschriftengeschichte aufgezeichnet wurden. Tags werden nicht zur Bonitätsschätzung hinzugefügt."
+    },
+    {
       "source": "Discovery",
       "translation": "Entdeckung"
     },
@@ -12641,6 +12649,10 @@
       "translation": "GGAL"
     },
     {
+      "source": "GGG",
+      "translation": "GGG"
+    },
+    {
       "source": "GGWL",
       "translation": "GGWL"
     },
@@ -13243,6 +13255,10 @@
     {
       "source": "Green Gas Giants",
       "translation": "Grüne Gasriesen"
+    },
+    {
+      "source": "Green gas giant",
+      "translation": "Grüner Gasriese"
     },
     {
       "source": "Grey",
@@ -18485,6 +18501,14 @@
       "translation": "Benachrichtigung"
     },
     {
+      "source": "NS",
+      "translation": "NS"
+    },
+    {
+      "source": "NSP",
+      "translation": "NSP"
+    },
+    {
       "source": "Nakato Kaine",
       "translation": "Nakato Kaine"
     },
@@ -19441,6 +19465,10 @@
       "translation": "Es ist kein nächstes Boxelsystem zum Kopieren verfügbar."
     },
     {
+      "source": "No notable discoveries recorded in available journals.",
+      "translation": "In den verfügbaren Zeitschriften sind keine nennenswerten Entdeckungen verzeichnet."
+    },
+    {
       "source": "No notes",
       "translation": "Keine Notizen"
     },
@@ -19835,6 +19863,14 @@
     {
       "source": "Not visited",
       "translation": "Nicht besucht"
+    },
+    {
+      "source": "Notable",
+      "translation": "Bemerkenswert"
+    },
+    {
+      "source": "Notable stellar phenomena",
+      "translation": "Bemerkenswerte Sternphänomene"
     },
     {
       "source": "Note saves",
@@ -31229,6 +31265,10 @@
       "translation": "TF+"
     },
     {
+      "source": "TFC",
+      "translation": "TFC"
+    },
+    {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DIE KATALOGDETAILS DIESER WEBSITE"
     },
@@ -31427,6 +31467,10 @@
     {
       "source": "Terraformable HMC | 682,100 cr",
       "translation": "Terraformierbares HMC | 682.100 Cr"
+    },
+    {
+      "source": "Terraformable world",
+      "translation": "Terraformierbare Welt"
     },
     {
       "source": "Terraforming",
@@ -45679,6 +45723,10 @@
       "translation": "beta"
     },
     {
+      "source": "BH",
+      "translation": "bh"
+    },
+    {
       "source": "BIO",
       "translation": "BIO"
     },
@@ -51635,6 +51683,10 @@
       "translation": "Descubierto{0}{1}"
     },
     {
+      "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+      "translation": "Descubrimientos registrados para este sistema a lo largo de la historia de su revista. Las etiquetas no se suman a la estimación de crédito."
+    },
+    {
       "source": "Discovery",
       "translation": "Descubrimiento"
     },
@@ -54939,6 +54991,10 @@
       "translation": "GGAL"
     },
     {
+      "source": "GGG",
+      "translation": "GGG"
+    },
+    {
       "source": "GGWL",
       "translation": "GGWL"
     },
@@ -55541,6 +55597,10 @@
     {
       "source": "Green Gas Giants",
       "translation": "Gigantes del gas verde"
+    },
+    {
+      "source": "Green gas giant",
+      "translation": "Gigante gaseoso verde"
     },
     {
       "source": "Grey",
@@ -60783,6 +60843,14 @@
       "translation": "notificación"
     },
     {
+      "source": "NS",
+      "translation": "NS"
+    },
+    {
+      "source": "NSP",
+      "translation": "NSP"
+    },
+    {
       "source": "Nakato Kaine",
       "translation": "Nakato Kaine"
     },
@@ -61739,6 +61807,10 @@
       "translation": "No hay ningún sistema de caja siguiente disponible para copiar."
     },
     {
+      "source": "No notable discoveries recorded in available journals.",
+      "translation": "No hay descubrimientos notables registrados en las revistas disponibles."
+    },
+    {
       "source": "No notes",
       "translation": "Sin notas"
     },
@@ -62133,6 +62205,14 @@
     {
       "source": "Not visited",
       "translation": "No visitado"
+    },
+    {
+      "source": "Notable",
+      "translation": "Notable"
+    },
+    {
+      "source": "Notable stellar phenomena",
+      "translation": "Fenómenos estelares notables"
     },
     {
       "source": "Note saves",
@@ -73527,6 +73607,10 @@
       "translation": "TF+"
     },
     {
+      "source": "TFC",
+      "translation": "TFC"
+    },
+    {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DETALLES DEL CATÁLOGO DE ESTE SITIO"
     },
@@ -73725,6 +73809,10 @@
     {
       "source": "Terraformable HMC | 682,100 cr",
       "translation": "HMC terraformable | 682.100 cr"
+    },
+    {
+      "source": "Terraformable world",
+      "translation": "Mundo terraformable"
     },
     {
       "source": "Terraforming",
@@ -87977,6 +88065,10 @@
       "translation": "bêta"
     },
     {
+      "source": "BH",
+      "translation": "BH"
+    },
+    {
       "source": "BIO",
       "translation": "BIO"
     },
@@ -93933,6 +94025,10 @@
       "translation": "Découvert{0}{1}"
     },
     {
+      "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+      "translation": "Découvertes enregistrées pour ce système tout au long de l'historique de son journal. Les balises ne s’ajoutent pas à l’estimation du crédit."
+    },
+    {
       "source": "Discovery",
       "translation": "Découverte"
     },
@@ -97237,6 +97333,10 @@
       "translation": "GGAL"
     },
     {
+      "source": "GGG",
+      "translation": "GGG"
+    },
+    {
       "source": "GGWL",
       "translation": "GGWL"
     },
@@ -97839,6 +97939,10 @@
     {
       "source": "Green Gas Giants",
       "translation": "Géants du gaz vert"
+    },
+    {
+      "source": "Green gas giant",
+      "translation": "Géant du gaz vert"
     },
     {
       "source": "Grey",
@@ -103081,6 +103185,14 @@
       "translation": "notification"
     },
     {
+      "source": "NS",
+      "translation": "N.-É."
+    },
+    {
+      "source": "NSP",
+      "translation": "PSN"
+    },
+    {
       "source": "Nakato Kaine",
       "translation": "Nakato Kaine"
     },
@@ -104037,6 +104149,10 @@
       "translation": "Aucun système de boxel suivant n'est disponible pour être copié."
     },
     {
+      "source": "No notable discoveries recorded in available journals.",
+      "translation": "Aucune découverte notable enregistrée dans les revues disponibles."
+    },
+    {
       "source": "No notes",
       "translation": "Aucune note"
     },
@@ -104431,6 +104547,14 @@
     {
       "source": "Not visited",
       "translation": "Non visité"
+    },
+    {
+      "source": "Notable",
+      "translation": "Notable"
+    },
+    {
+      "source": "Notable stellar phenomena",
+      "translation": "Phénomènes stellaires notables"
     },
     {
       "source": "Note saves",
@@ -115825,6 +115949,10 @@
       "translation": "TF+"
     },
     {
+      "source": "TFC",
+      "translation": "TFC"
+    },
+    {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DÉTAILS DU CATALOGUE DE CE SITE"
     },
@@ -116023,6 +116151,10 @@
     {
       "source": "Terraformable HMC | 682,100 cr",
       "translation": "HMC terraformable | 682 100 cr"
+    },
+    {
+      "source": "Terraformable world",
+      "translation": "Monde terraformable"
     },
     {
       "source": "Terraforming",
@@ -130275,6 +130407,10 @@
       "translation": "beta"
     },
     {
+      "source": "BH",
+      "translation": "BH"
+    },
+    {
       "source": "BIO",
       "translation": "BIO"
     },
@@ -136231,6 +136367,10 @@
       "translation": "Descoberto{0}{1}"
     },
     {
+      "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+      "translation": "Descobertas registradas para este sistema ao longo da história do diário. As tags não são adicionadas à estimativa de crédito."
+    },
+    {
       "source": "Discovery",
       "translation": "Descoberta"
     },
@@ -139535,6 +139675,10 @@
       "translation": "GGAL"
     },
     {
+      "source": "GGG",
+      "translation": "GGG"
+    },
+    {
       "source": "GGWL",
       "translation": "GGWL"
     },
@@ -140137,6 +140281,10 @@
     {
       "source": "Green Gas Giants",
       "translation": "Gigantes do Gás Verde"
+    },
+    {
+      "source": "Green gas giant",
+      "translation": "Gigante do gás verde"
     },
     {
       "source": "Grey",
@@ -145379,6 +145527,14 @@
       "translation": "notificação"
     },
     {
+      "source": "NS",
+      "translation": "E"
+    },
+    {
+      "source": "NSP",
+      "translation": "NSP"
+    },
+    {
       "source": "Nakato Kaine",
       "translation": "Nakato Kaine"
     },
@@ -146335,6 +146491,10 @@
       "translation": "Nenhum próximo sistema boxel está disponível para cópia."
     },
     {
+      "source": "No notable discoveries recorded in available journals.",
+      "translation": "Nenhuma descoberta notável registrada em periódicos disponíveis."
+    },
+    {
       "source": "No notes",
       "translation": "Sem notas"
     },
@@ -146729,6 +146889,14 @@
     {
       "source": "Not visited",
       "translation": "Não visitado"
+    },
+    {
+      "source": "Notable",
+      "translation": "Notável"
+    },
+    {
+      "source": "Notable stellar phenomena",
+      "translation": "Fenômenos estelares notáveis"
     },
     {
       "source": "Note saves",
@@ -158123,6 +158291,10 @@
       "translation": "TF+"
     },
     {
+      "source": "TFC",
+      "translation": "TFC"
+    },
+    {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "DETALHES DO CATÁLOGO DESTE SITE"
     },
@@ -158321,6 +158493,10 @@
     {
       "source": "Terraformable HMC | 682,100 cr",
       "translation": "HMC terraformável | 682.100 cr"
+    },
+    {
+      "source": "Terraformable world",
+      "translation": "Mundo terraformável"
     },
     {
       "source": "Terraforming",
@@ -172573,6 +172749,10 @@
       "translation": "бета"
     },
     {
+      "source": "BH",
+      "translation": "ЧД"
+    },
+    {
       "source": "BIO",
       "translation": "БИО"
     },
@@ -178529,6 +178709,10 @@
       "translation": "Открыто{0}{1}"
     },
     {
+      "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+      "translation": "Открытия, зафиксированные для этой системы на протяжении всей ее журнальной истории. Теги не увеличивают кредитную оценку."
+    },
+    {
       "source": "Discovery",
       "translation": "Открытие"
     },
@@ -181833,6 +182017,10 @@
       "translation": "ГГАЛ"
     },
     {
+      "source": "GGG",
+      "translation": "ГГГ"
+    },
+    {
       "source": "GGWL",
       "translation": "ГГВЛ"
     },
@@ -182435,6 +182623,10 @@
     {
       "source": "Green Gas Giants",
       "translation": "Гиганты зеленого газа"
+    },
+    {
+      "source": "Green gas giant",
+      "translation": "Зеленый газовый гигант"
     },
     {
       "source": "Grey",
@@ -187677,6 +187869,14 @@
       "translation": "уведомление"
     },
     {
+      "source": "NS",
+      "translation": "НС"
+    },
+    {
+      "source": "NSP",
+      "translation": "НСП"
+    },
+    {
       "source": "Nakato Kaine",
       "translation": "Накато Кейн"
     },
@@ -188633,6 +188833,10 @@
       "translation": "Следующая боксельная система недоступна для копирования."
     },
     {
+      "source": "No notable discoveries recorded in available journals.",
+      "translation": "Никаких заметных открытий в доступных журналах не зафиксировано."
+    },
+    {
       "source": "No notes",
       "translation": "Нет примечаний"
     },
@@ -189027,6 +189231,14 @@
     {
       "source": "Not visited",
       "translation": "Не посещено"
+    },
+    {
+      "source": "Notable",
+      "translation": "Примечательный"
+    },
+    {
+      "source": "Notable stellar phenomena",
+      "translation": "Известные звездные явления"
     },
     {
       "source": "Note saves",
@@ -200421,6 +200633,10 @@
       "translation": "ТФ+"
     },
     {
+      "source": "TFC",
+      "translation": "ТФК"
+    },
+    {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "ДЕТАЛИ КАТАЛОГА ЭТОГО САЙТА"
     },
@@ -200619,6 +200835,10 @@
     {
       "source": "Terraformable HMC | 682,100 cr",
       "translation": "Терраформируемый HMC | 682 100 крон"
+    },
+    {
+      "source": "Terraformable world",
+      "translation": "Терраформируемый мир"
     },
     {
       "source": "Terraforming",
@@ -214871,6 +215091,10 @@
       "translation": "贝塔"
     },
     {
+      "source": "BH",
+      "translation": "乙肝"
+    },
+    {
       "source": "BIO",
       "translation": "生物"
     },
@@ -220827,6 +221051,10 @@
       "translation": "已发现{0}{1}"
     },
     {
+      "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+      "translation": "该系统在其期刊历史中记录的发现。标签不会添加到信用评估中。"
+    },
+    {
       "source": "Discovery",
       "translation": "发现"
     },
@@ -224131,6 +224359,10 @@
       "translation": "GGAL"
     },
     {
+      "source": "GGG",
+      "translation": "格格"
+    },
+    {
       "source": "GGWL",
       "translation": "甘肃古城水利工程有限公司"
     },
@@ -224733,6 +224965,10 @@
     {
       "source": "Green Gas Giants",
       "translation": "绿色气体巨头"
+    },
+    {
+      "source": "Green gas giant",
+      "translation": "绿色气体巨星"
     },
     {
       "source": "Grey",
@@ -229975,6 +230211,14 @@
       "translation": "通知"
     },
     {
+      "source": "NS",
+      "translation": "NS"
+    },
+    {
+      "source": "NSP",
+      "translation": "国家标准计划"
+    },
+    {
       "source": "Nakato Kaine",
       "translation": "中藤凯恩"
     },
@@ -230931,6 +231175,10 @@
       "translation": "没有下一个 boxel 系统可供复制。"
     },
     {
+      "source": "No notable discoveries recorded in available journals.",
+      "translation": "现有期刊中没有记录显着的发现。"
+    },
+    {
       "source": "No notes",
       "translation": "无注释"
     },
@@ -231325,6 +231573,14 @@
     {
       "source": "Not visited",
       "translation": "未访问过"
+    },
+    {
+      "source": "Notable",
+      "translation": "值得注意的"
+    },
+    {
+      "source": "Notable stellar phenomena",
+      "translation": "值得注意的恒星现象"
     },
     {
       "source": "Note saves",
@@ -242719,6 +242975,10 @@
       "translation": "TF+"
     },
     {
+      "source": "TFC",
+      "translation": "TFC"
+    },
+    {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "本网站的目录详细信息"
     },
@@ -242917,6 +243177,10 @@
     {
       "source": "Terraformable HMC | 682,100 cr",
       "translation": "可变形 HMC | 682,100 铬"
+    },
+    {
+      "source": "Terraformable world",
+      "translation": "可改造的世界"
     },
     {
       "source": "Terraforming",
@@ -257169,6 +257433,10 @@
       "translation": "* BETA >>>!"
     },
     {
+      "source": "BH",
+      "translation": "* BH >>>!"
+    },
+    {
       "source": "BIO",
       "translation": "* BIO >>>!"
     },
@@ -263125,6 +263393,10 @@
       "translation": "* DISCOVERED{0}{1} >>>!"
     },
     {
+      "source": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+      "translation": "* DISCOVERIES RECORDED FOR THIS SYSTEM ACROSS ITS JOURNAL HISTORY. TAGS DO NOT ADD TO THE CREDIT ESTIMATE. >>>!"
+    },
+    {
       "source": "Discovery",
       "translation": "* DISCOVERY >>>!"
     },
@@ -266429,6 +266701,10 @@
       "translation": "* GGAL >>>!"
     },
     {
+      "source": "GGG",
+      "translation": "* GGG >>>!"
+    },
+    {
       "source": "GGWL",
       "translation": "* GGWL >>>!"
     },
@@ -267031,6 +267307,10 @@
     {
       "source": "Green Gas Giants",
       "translation": "* GREEN GAS GIANTS >>>!"
+    },
+    {
+      "source": "Green gas giant",
+      "translation": "* GREEN GAS GIANT >>>!"
     },
     {
       "source": "Grey",
@@ -272273,6 +272553,14 @@
       "translation": "* NOTIFICATION >>>!"
     },
     {
+      "source": "NS",
+      "translation": "* NS >>>!"
+    },
+    {
+      "source": "NSP",
+      "translation": "* NSP >>>!"
+    },
+    {
       "source": "Nakato Kaine",
       "translation": "* NAKATO KAINE >>>!"
     },
@@ -273229,6 +273517,10 @@
       "translation": "* NO NEXT BOXEL SYSTEM IS AVAILABLE TO COPY. >>>!"
     },
     {
+      "source": "No notable discoveries recorded in available journals.",
+      "translation": "* NO NOTABLE DISCOVERIES RECORDED IN AVAILABLE JOURNALS. >>>!"
+    },
+    {
       "source": "No notes",
       "translation": "* NO NOTES >>>!"
     },
@@ -273623,6 +273915,14 @@
     {
       "source": "Not visited",
       "translation": "* NOT VISITED >>>!"
+    },
+    {
+      "source": "Notable",
+      "translation": "* NOTABLE >>>!"
+    },
+    {
+      "source": "Notable stellar phenomena",
+      "translation": "* NOTABLE STELLAR PHENOMENA >>>!"
     },
     {
       "source": "Note saves",
@@ -285017,6 +285317,10 @@
       "translation": "* TF+ >>>!"
     },
     {
+      "source": "TFC",
+      "translation": "* TFC >>>!"
+    },
+    {
       "source": "THIS SITE'S CATALOG DETAILS",
       "translation": "* THIS SITE'S CATALOG DETAILS >>>!"
     },
@@ -285215,6 +285519,10 @@
     {
       "source": "Terraformable HMC | 682,100 cr",
       "translation": "* TERRAFORMABLE HMC | 682,100 CR >>>!"
+    },
+    {
+      "source": "Terraformable world",
+      "translation": "* TERRAFORMABLE WORLD >>>!"
     },
     {
       "source": "Terraforming",

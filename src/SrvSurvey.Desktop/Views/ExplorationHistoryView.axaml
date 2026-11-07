@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.ExplorationHistoryView" x:DataType="vm:ExplorationHistoryViewModel" Classes="exploration-history">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" xmlns:localization="using:SrvSurvey.Desktop.Localization" x:Class="SrvSurvey.Desktop.Views.ExplorationHistoryView" x:DataType="vm:ExplorationHistoryViewModel" Classes="exploration-history">
   <UserControl.Styles>
     <Style Selector=".exploration-history ComboBox">
       <Setter Property="behaviors:ComboBoxFitContentBehavior.Enabled" Value="False"/>
@@ -27,6 +27,14 @@
     </Style>
     <Style Selector=".exploration-history TextBlock.lost">
       <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}"/>
+    </Style>
+    <Style Selector=".exploration-history Border.discovery-tag">
+      <Setter Property="Background" Value="{DynamicResource RavenTagFillBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="3"/>
+      <Setter Property="Padding" Value="6,3"/>
+      <Setter Property="Margin" Value="0,0,6,6"/>
     </Style>
     <Style Selector=".exploration-history ListBox">
       <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}"/>
@@ -100,18 +108,19 @@
     <Border Grid.Row="3" IsVisible="{Binding !HasSelection}" Classes="card" Padding="0" ClipToBounds="True">
       <Grid RowDefinitions="Auto,*">
         <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="16,10,32,10">
-          <Grid ColumnDefinitions="130,*,110,90" ColumnSpacing="16">
+          <Grid ColumnDefinitions="110,1.5*,*,110,90" ColumnSpacing="12">
             <TextBlock Classes="muted" FontSize="12" Text="Collected"/>
             <TextBlock Grid.Column="1" Classes="muted" FontSize="12" Text="System and contents"/>
-            <TextBlock Grid.Column="2" Classes="muted" FontSize="12" Text="Estimate"/>
-            <TextBlock Grid.Column="3" Classes="muted" FontSize="12" Text="Status"/>
+            <TextBlock Grid.Column="2" Classes="muted" FontSize="12" Text="Notable" ToolTip.Tip="Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate."/>
+            <TextBlock Grid.Column="3" Classes="muted" FontSize="12" Text="Estimate"/>
+            <TextBlock Grid.Column="4" Classes="muted" FontSize="12" Text="Status"/>
           </Grid>
         </Border>
         <ListBox x:Name="ExplorationHistoryRows" Grid.Row="1" Padding="0" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.IsScrollChainingEnabled="False">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:ExplorationHistoryRowViewModel">
               <Border Padding="16,10" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
-                <Grid ColumnDefinitions="130,*,110,90" ColumnSpacing="16">
+                <Grid ColumnDefinitions="110,1.5*,*,110,90" ColumnSpacing="12">
                   <StackPanel Spacing="5">
                     <TextBlock Text="{Binding CollectedDate}"/>
                     <TextBlock Classes="muted" FontSize="12" Text="{Binding CollectedTime}"/>
@@ -123,8 +132,23 @@
                     <TextBlock Classes="muted" FontSize="12" Text="{Binding Contents}" TextWrapping="Wrap"/>
                     <TextBlock Classes="muted" FontSize="12" Text="{Binding Position}" TextWrapping="Wrap"/>
                   </StackPanel>
-                  <TextBlock Grid.Column="2" Text="{Binding Estimate}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                  <StackPanel Grid.Column="3" Spacing="5">
+                  <StackPanel Grid.Column="2">
+                    <ItemsControl x:Name="HistoryNotableTags" ItemsSource="{Binding NotableTags}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ExplorationNotableTagViewModel">
+                          <Border Classes="discovery-tag" localization:LocalizationBehavior.Enabled="True" ToolTip.Tip="{Binding Description}" AutomationProperties.Name="{Binding Description}">
+                            <TextBlock localization:LocalizationBehavior.Enabled="False" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource RavenAccentForegroundBrush}" Text="{Binding Label}"/>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Classes="muted" IsVisible="{Binding !HasNotables}" Text="—" ToolTip.Tip="No notable discoveries recorded in available journals."/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="3" Classes="history-estimate" Text="{Binding Estimate}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                  <StackPanel Grid.Column="4" Spacing="5">
                     <TextBlock FontWeight="SemiBold" Classes.sold="{Binding IsSold}" Classes.unsold="{Binding IsUnsold}" Classes.lost="{Binding IsLost}" Text="{Binding Status}"/>
                     <TextBlock Classes="muted" FontSize="12" Text="{Binding SettlementDate}" TextWrapping="Wrap"/>
                   </StackPanel>

@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.Data.Sqlite;
 using SrvSurvey.Core.Exploration.History;
 using SrvSurvey.Core.Journal;
 
@@ -6,6 +7,137 @@ namespace SrvSurvey.Core.Tests.Exploration.History;
 
 public sealed class ExplorationHistoryCatalogTests
 {
+    [Theory]
+    [InlineData("\"PlanetClass\":\"Earthlike body\"", ExplorationNotables.EarthLikeWorld)]
+    [InlineData("\"PlanetClass\":\"Water world\"", ExplorationNotables.WaterWorld)]
+    [InlineData("\"PlanetClass\":\"Ammonia world\"", ExplorationNotables.AmmoniaWorld)]
+    [InlineData(
+        "\"PlanetClass\":\"High metal content body\",\"TerraformState\":\"Terraformable\"",
+        ExplorationNotables.TerraformableWorld
+    )]
+    [InlineData(
+        "\"PlanetClass\":\"Water world\",\"TerraformState\":\"Terraformable\"",
+        ExplorationNotables.WaterWorld | ExplorationNotables.TerraformableWorld
+    )]
+    [InlineData("\"StarType\":\"N\",\"StellarMass\":1.4", ExplorationNotables.NeutronStar)]
+    [InlineData("\"StarType\":\"NS\",\"StellarMass\":1.4", ExplorationNotables.NeutronStar)]
+    [InlineData("\"StarType\":\"H\",\"StellarMass\":1.4", ExplorationNotables.BlackHole)]
+    [InlineData("\"PlanetClass\":\"Class I gas giant\"", ExplorationNotables.None)]
+    [InlineData("\"PlanetClass\":\"Earthlike body\",\"ScanType\":\"NavBeaconDetail\"", ExplorationNotables.None)]
+    public async Task TheHistoryHighlightsConfirmedValuableAndRareScannedBodies(
+        string fields,
+        ExplorationNotables expected
+    )
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Notable survey", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Ordinary star","StarType":"G","StellarMass":1,"WasDiscovered":true}""",
+            $$"""{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Survey target","MassEM":1,"WasDiscovered":true,{{fields}}}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(expected, Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).Notables);
+    }
+
+    [Theory]
+    [InlineData(
+        "\"event\":\"CodexEntry\",\"Name\":\"$Codex_Ent_Green_Sudarsky_Class_II_Name;\"",
+        ExplorationNotables.GreenGasGiant
+    )]
+    [InlineData("\"event\":\"CodexEntry\",\"EntryID\":1200602", ExplorationNotables.GreenGasGiant)]
+    [InlineData(
+        "\"event\":\"CodexEntry\",\"Name\":\"$Codex_Ent_Gas_Clds_Blue_Name;\"",
+        ExplorationNotables.StellarPhenomena
+    )]
+    [InlineData(
+        "\"event\":\"FSSSignalDiscovered\",\"SignalName\":\"$Fixed_Event_Life_Cloud;\",\"SignalName_Localised\":\"Phénomènes stellaires remarquables\"",
+        ExplorationNotables.StellarPhenomena
+    )]
+    [InlineData(
+        "\"event\":\"FSSSignalDiscovered\",\"SignalName\":\"Notable stellar phenomena\",\"SignalType\":\"FleetCarrier\"",
+        ExplorationNotables.None
+    )]
+    public async Task RareDiscoveryTagsRequireCanonicalEvidenceRatherThanNames(
+        string fields,
+        ExplorationNotables expected
+    )
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Notable survey", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Ordinary star","StarType":"G","StellarMass":1,"WasDiscovered":true}""",
+            $$"""{ {{fields}},"SystemAddress":100,"System":"Notable survey" }""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(expected, Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).Notables);
+    }
+
+    [Fact]
+    public async Task AnExistingCatalogBackfillsDiscoveriesWithoutReplayingSales()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Notable survey", 100, 0),
+            """{"event":"CodexEntry","Name":"$Codex_Ent_Green_Sudarsky_Class_II_Name;","SystemAddress":100,"System":"Notable survey"}""",
+            Star(100),
+            """{"event":"SellExplorationData","Systems":["Notable survey"],"TotalEarnings":20000}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        using (
+            var connection = new SqliteConnection(
+                new SqliteConnectionStringBuilder { DataSource = fixture.Catalog.FilePath, Pooling = false }.ToString()
+            )
+        )
+        {
+            await connection.OpenAsync();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText =
+                "DROP TABLE IF EXISTS notable_systems; DELETE FROM metadata WHERE key LIKE 'notable_source:%'; PRAGMA user_version=2;";
+            await command.ExecuteNonQueryAsync();
+        }
+        string unavailable = fixture.JournalPath + ".saved";
+        File.Move(fixture.JournalPath, unavailable);
+        ExplorationHistoryRow cached = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows);
+        Assert.Equal(ExplorationDataStatus.Sold, cached.Status);
+        Assert.Equal(23106, cached.EstimatedValue);
+        File.Move(unavailable, fixture.JournalPath);
+        ExplorationHistorySummary summary = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        ExplorationHistoryRow restored = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows);
+        Assert.Equal(ExplorationNotables.NeutronStar | ExplorationNotables.GreenGasGiant, restored.Notables);
+        Assert.Equal(ExplorationDataStatus.Sold, restored.Status);
+        Assert.Equal(23106, summary.SoldValue);
+        Assert.Equal(0, summary.UnsoldValue);
+        Assert.Equal(20000, summary.SaleEarnings);
+        await fixture.Catalog.ObserveAsync(
+            fixture.Append([
+                """{"event":"FSSSignalDiscovered","SystemAddress":100,"SignalName":"$Fixed_Event_Life_Cloud;"}""",
+            ]),
+            [fixture.Journals]
+        );
+        File.Move(fixture.JournalPath, unavailable);
+        ExplorationHistoryRow appended = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows);
+        Assert.Equal(
+            ExplorationNotables.NeutronStar | ExplorationNotables.GreenGasGiant | ExplorationNotables.StellarPhenomena,
+            appended.Notables
+        );
+        Assert.Equal(ExplorationDataStatus.Sold, appended.Status);
+        Assert.Equal(23106, appended.EstimatedValue);
+    }
+
+    [Fact]
+    public async Task DiscoveriesFromAnotherCommanderCannotTagTheSelectedCommandersHistory()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Shared system", 100, 0),
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Ordinary star","StarType":"G","StellarMass":1,"WasDiscovered":true}""",
+            """{"event":"Commander","FID":"F200","Name":"Other commander"}""",
+            """{"event":"CodexEntry","Name":"$Codex_Ent_Green_Sudarsky_Class_II_Name;","SystemAddress":100,"System":"Shared system"}""",
+        ]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.Equal(ExplorationNotables.None, Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).Notables);
+    }
+
     [Fact]
     public async Task NamedSaleLeavesUnlistedNearbyDataUnsoldAndKeepsActualEarningsSeparate()
     {

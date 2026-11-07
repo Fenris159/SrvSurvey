@@ -22,6 +22,19 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ExplorationHistoryPresentationTests
 {
+    private static readonly string[] NotableLabels = ["ELW", "WW", "AW", "TFC", "GGG", "NSP", "NS", "BH"];
+    private static readonly string[] NotableDescriptions =
+    [
+        "Earth-like world",
+        "Water world",
+        "Ammonia world",
+        "Terraformable world",
+        "Green gas giant",
+        "Notable stellar phenomena",
+        "Neutron star",
+        "Black hole",
+    ];
+
     [AvaloniaTheory]
     [InlineData(1120, "monochrome-dark")]
     [InlineData(1600, "monochrome-dark")]
@@ -57,6 +70,37 @@ public sealed class ExplorationHistoryPresentationTests
                 .OfType<ListBox>()
                 .Single(item => item.Name == "ExplorationHistoryRows");
             Assert.Equal(50, list.ItemCount);
+            Assert.Contains(view.GetVisualDescendants().OfType<TextBlock>(), block => block.Text == "Notable");
+            ItemsControl discoveries = list.GetVisualDescendants()
+                .OfType<ItemsControl>()
+                .First(control => control.Name == "HistoryNotableTags");
+            ExplorationNotableTagViewModel neutron = Assert.IsType<ExplorationNotableTagViewModel>(
+                Assert.Single(discoveries.Items)
+            );
+            Assert.Equal("NS", neutron.Label);
+            Assert.Equal("Neutron star", neutron.Description);
+            Border tag = Assert.Single(
+                discoveries.GetVisualDescendants().OfType<Border>(),
+                border => border.Classes.Contains("discovery-tag")
+            );
+            Assert.Equal("Neutron star", ToolTip.GetTip(tag));
+            Point tagAt = tag.TranslatePoint(default, discoveries)!.Value;
+            Assert.True(tagAt.X >= 0 && tagAt.X + tag.Bounds.Width <= discoveries.Bounds.Width);
+            Assert.Equal(
+                Assert.IsType<ISolidColorBrush>(view.FindResource("RavenTagFillBrush"), exactMatch: false).Color,
+                ((ISolidColorBrush)tag.Background!).Color
+            );
+            Assert.Equal(
+                Assert
+                    .IsType<ISolidColorBrush>(view.FindResource("RavenAccentForegroundBrush"), exactMatch: false)
+                    .Color,
+                Assert
+                    .IsType<ISolidColorBrush>(
+                        Assert.Single(tag.GetVisualDescendants().OfType<TextBlock>()).Foreground,
+                        exactMatch: false
+                    )
+                    .Color
+            );
             Assert.InRange(list.Bounds.Width, width - 100, width);
             ScrollViewer scroll = list.GetVisualDescendants().OfType<ScrollViewer>().First();
             Assert.False(scroll.AllowAutoHide);
@@ -114,6 +158,73 @@ public sealed class ExplorationHistoryPresentationTests
         {
             window.Close();
             Logger.Sink = previous;
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(760, "blue-light", true)]
+    [InlineData(1600, "monochrome-dark", false)]
+    public async Task NotableDiscoveriesWrapWithinTheirColumnAndExplainEveryAbbreviation(
+        int width,
+        string theme,
+        bool wraps
+    )
+    {
+        using var fixture = new Fixture(theme, withNotables: true);
+        await fixture.PrepareAsync();
+        var view = new ExplorationView { DataContext = fixture.Main };
+        var window = new Window
+        {
+            Width = width,
+            Height = 900,
+            Content = view,
+        };
+        try
+        {
+            window.Show();
+            fixture.Main.SelectedExplorationTabIndex = 1;
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Assert.NotNull(frame);
+            SavePreview(frame, $"notables-{theme}-{width}");
+            ItemsControl discoveries = view.GetVisualDescendants()
+                .OfType<ItemsControl>()
+                .First(control => control.Name == "HistoryNotableTags");
+            Assert.Equal(
+                NotableLabels,
+                discoveries.Items.OfType<ExplorationNotableTagViewModel>().Select(tag => tag.Label)
+            );
+            Border[] tags = discoveries
+                .GetVisualDescendants()
+                .OfType<Border>()
+                .Where(border => border.Classes.Contains("discovery-tag"))
+                .ToArray();
+            Assert.Equal(8, tags.Length);
+            Assert.Equal(NotableDescriptions, tags.Select(tag => ToolTip.GetTip(tag)));
+            var lines = new HashSet<double>();
+            foreach (Border tag in tags)
+            {
+                Point point = tag.TranslatePoint(default, discoveries)!.Value;
+                Assert.True(point.X >= 0 && point.X + tag.Bounds.Width <= discoveries.Bounds.Width);
+                Assert.True(point.Y >= 0 && point.Y + tag.Bounds.Height <= discoveries.Bounds.Height);
+                lines.Add(point.Y);
+            }
+            Assert.Equal(wraps, lines.Count > 1);
+            Grid row = discoveries.GetVisualAncestors().OfType<Grid>().First();
+            TextBlock estimate = row
+                .Children.OfType<TextBlock>()
+                .Single(block => block.Classes.Contains("history-estimate"));
+            Button system = row.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(button => button.Classes.Contains("system-link"));
+            Point notableAt = discoveries.TranslatePoint(default, row)!.Value;
+            Point systemAt = system.TranslatePoint(default, row)!.Value;
+            Point estimateAt = estimate.TranslatePoint(default, row)!.Value;
+            Assert.True(systemAt.X + system.Bounds.Width <= notableAt.X);
+            Assert.True(notableAt.X + discoveries.Bounds.Width <= estimateAt.X);
+        }
+        finally
+        {
+            window.Close();
         }
     }
 
@@ -299,7 +410,7 @@ public sealed class ExplorationHistoryPresentationTests
         private readonly RavenThemeService themes;
         private readonly string originalTheme;
 
-        public Fixture(string theme, bool withData = true)
+        public Fixture(string theme, bool withData = true, bool withNotables = false)
         {
             Directory.CreateDirectory(directory);
             var lines = new List<string>
@@ -320,6 +431,27 @@ public sealed class ExplorationHistoryPresentationTests
                     lines.Add(
                         $$"""{"timestamp":"{{timestamp}}","event":"Scan","SystemAddress":{{i}},"BodyID":0,"BodyName":"Survey system {{i}} A","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}"""
                     );
+                    if (withNotables && i == 75)
+                    {
+                        lines.Add(
+                            $$"""{"timestamp":"{{timestamp}}","event":"Scan","SystemAddress":75,"BodyID":1,"BodyName":"Survey system 75 1","PlanetClass":"Earthlike body","MassEM":1}"""
+                        );
+                        lines.Add(
+                            $$"""{"timestamp":"{{timestamp}}","event":"Scan","SystemAddress":75,"BodyID":2,"BodyName":"Survey system 75 2","PlanetClass":"Water world","TerraformState":"Terraformable","MassEM":1}"""
+                        );
+                        lines.Add(
+                            $$"""{"timestamp":"{{timestamp}}","event":"Scan","SystemAddress":75,"BodyID":3,"BodyName":"Survey system 75 3","PlanetClass":"Ammonia world","MassEM":1}"""
+                        );
+                        lines.Add(
+                            $$"""{"timestamp":"{{timestamp}}","event":"Scan","SystemAddress":75,"BodyID":4,"BodyName":"Survey system 75 B","StarType":"H","StellarMass":1.4}"""
+                        );
+                        lines.Add(
+                            $$"""{"timestamp":"{{timestamp}}","event":"CodexEntry","Name":"$Codex_Ent_Green_Sudarsky_Class_II_Name;","SystemAddress":75,"System":"Survey system 75"}"""
+                        );
+                        lines.Add(
+                            $$"""{"timestamp":"{{timestamp}}","event":"FSSSignalDiscovered","SystemAddress":75,"SignalName":"$Fixed_Event_Life_Cloud;"}"""
+                        );
+                    }
                     if (i == 25)
                     {
                         string names = JsonSerializer.Serialize(

@@ -703,6 +703,9 @@ public sealed class ExplorationHistoryRowViewModel(ExplorationHistoryRow data, I
         Data.LastCollected?.UtcDateTime.ToString("HH:mm 'UTC'", CultureInfo.InvariantCulture) ?? string.Empty;
     public string Estimate => $"{Data.EstimatedValue:N0} CR";
     public string Contents => $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} mapped";
+    public IReadOnlyList<ExplorationNotableTagViewModel> NotableTags { get; } =
+        ExplorationNotableTagViewModel.From(data.Notables);
+    public bool HasNotables => NotableTags.Count > 0;
     public string Position =>
         Data.X is { } x && Data.Y is { } y && Data.Z is { } z
             ? $"{x:N1} / {y:N1} / {z:N1} ly"

@@ -9,7 +9,7 @@ public sealed partial class ExplorationHistoryCatalog
     private const string OffsetParameter = "@offset";
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
-    private const int CurrentSchemaVersion = 2;
+    private const int CurrentSchemaVersion = 3;
 
     private SqliteConnection Open(bool initialize = true)
     {
@@ -29,88 +29,90 @@ public sealed partial class ExplorationHistoryCatalog
         try
         {
             connection.Open();
-            using SqliteCommand version = Command(connection, "PRAGMA user_version;");
-            int schemaVersion = Convert.ToInt32(
-                version.ExecuteScalar(),
-                System.Globalization.CultureInfo.InvariantCulture
-            );
-            if (schemaVersion > CurrentSchemaVersion)
-            {
-                throw new InvalidDataException(
-                    "This exploration history catalog requires a newer application version."
-                );
-            }
-            ValidateScope(connection);
-            if (!initialize)
-            {
-                if (schemaVersion < CurrentSchemaVersion)
-                {
-                    connection.Dispose();
-                    return Open();
-                }
-                return connection;
-            }
-            Execute(connection, "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;");
-            if (schemaVersion == CurrentSchemaVersion)
+            if (PrepareConnection(connection, initialize))
             {
                 return connection;
             }
-            using SqliteTransaction transaction = connection.BeginTransaction();
-            Execute(
-                connection,
-                """
-                CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-                CREATE TABLE IF NOT EXISTS sources (
-                    id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE, path TEXT NOT NULL,
-                    first_time TEXT, prefix_hash TEXT NOT NULL DEFAULT '', length INTEGER NOT NULL DEFAULT 0, modified_ticks INTEGER NOT NULL DEFAULT 0,
-                    next_offset INTEGER NOT NULL DEFAULT 0, last_offset INTEGER NOT NULL DEFAULT -1, last_hash TEXT NOT NULL DEFAULT '',
-                    context TEXT NOT NULL DEFAULT '{}');
-                CREATE TABLE IF NOT EXISTS systems (
-                    key TEXT PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE, address INTEGER,
-                    x REAL, y REAL, z REAL);
-                CREATE TABLE IF NOT EXISTS settlements (
-                    id INTEGER PRIMARY KEY, kind TEXT NOT NULL, source_id INTEGER NOT NULL REFERENCES sources(id),
-                    offset INTEGER NOT NULL, hash TEXT NOT NULL, timestamp TEXT, earnings INTEGER,
-                    UNIQUE(source_id, offset));
-                CREATE TABLE IF NOT EXISTS batches (
-                    id INTEGER PRIMARY KEY, system_key TEXT NOT NULL REFERENCES systems(key),
-                    first_time TEXT, last_time TEXT, status INTEGER NOT NULL DEFAULT 0,
-                    estimate INTEGER NOT NULL DEFAULT 0, scans INTEGER NOT NULL DEFAULT 0, maps INTEGER NOT NULL DEFAULT 0,
-                    settled_time TEXT, settlement_id INTEGER REFERENCES settlements(id));
-                CREATE INDEX IF NOT EXISTS batch_status ON batches(status, last_time);
-                CREATE TABLE IF NOT EXISTS bodies (
-                    key TEXT PRIMARY KEY, system_key TEXT NOT NULL REFERENCES systems(key),
-                    paid_value INTEGER NOT NULL DEFAULT 0, pending_value INTEGER NOT NULL DEFAULT 0,
-                    batch_id INTEGER REFERENCES batches(id),
-                    scan_source_id INTEGER REFERENCES sources(id), scan_offset INTEGER, scan_hash TEXT);
-                CREATE TABLE IF NOT EXISTS observations (
-                    id INTEGER PRIMARY KEY, batch_id INTEGER NOT NULL REFERENCES batches(id),
-                    body_key TEXT NOT NULL, kind TEXT NOT NULL,
-                    source_id INTEGER NOT NULL REFERENCES sources(id), offset INTEGER NOT NULL, hash TEXT NOT NULL,
-                    UNIQUE(batch_id, body_key, kind));
-                CREATE INDEX IF NOT EXISTS observation_batch ON observations(batch_id);
-                DROP INDEX IF EXISTS observation_source;
-                CREATE TABLE IF NOT EXISTS collection_anchors (
-                    id INTEGER PRIMARY KEY,
-                    batch_id INTEGER NOT NULL REFERENCES batches(id) ON DELETE CASCADE,
-                    source_id INTEGER NOT NULL REFERENCES sources(id), offset INTEGER NOT NULL, hash TEXT NOT NULL,
-                    UNIQUE(source_id,offset,hash,batch_id));
-                CREATE INDEX IF NOT EXISTS collection_anchor_batch ON collection_anchors(batch_id);
-                INSERT OR IGNORE INTO collection_anchors(batch_id,source_id,offset,hash)
-                    SELECT batch_id,source_id,offset,hash FROM observations WHERE kind IN ('Scan','SAAScanComplete');
-                PRAGMA user_version=2;
-                """
-            );
-            SetMetadata(connection, "commander", frontierId);
-            SetMetadata(connection, "galaxy", isLive ? "live" : "legacy");
-            transaction.Commit();
-            return connection;
         }
         catch
         {
             connection.Dispose();
             throw;
         }
+        connection.Dispose();
+        return Open();
+    }
+
+    private bool PrepareConnection(SqliteConnection connection, bool initialize)
+    {
+        using SqliteCommand version = Command(connection, "PRAGMA user_version;");
+        int schemaVersion = Convert.ToInt32(version.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
+        if (schemaVersion > CurrentSchemaVersion)
+        {
+            throw new InvalidDataException("This exploration history catalog requires a newer application version.");
+        }
+        ValidateScope(connection);
+        if (!initialize)
+        {
+            return schemaVersion == CurrentSchemaVersion;
+        }
+        Execute(connection, "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;");
+        if (schemaVersion == CurrentSchemaVersion)
+        {
+            return true;
+        }
+        using SqliteTransaction transaction = connection.BeginTransaction();
+        Execute(
+            connection,
+            """
+            CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS sources (
+                id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE, path TEXT NOT NULL,
+                first_time TEXT, prefix_hash TEXT NOT NULL DEFAULT '', length INTEGER NOT NULL DEFAULT 0, modified_ticks INTEGER NOT NULL DEFAULT 0,
+                next_offset INTEGER NOT NULL DEFAULT 0, last_offset INTEGER NOT NULL DEFAULT -1, last_hash TEXT NOT NULL DEFAULT '',
+                context TEXT NOT NULL DEFAULT '{}');
+            CREATE TABLE IF NOT EXISTS systems (
+                key TEXT PRIMARY KEY, name TEXT NOT NULL COLLATE NOCASE, address INTEGER,
+                x REAL, y REAL, z REAL);
+            CREATE TABLE IF NOT EXISTS settlements (
+                id INTEGER PRIMARY KEY, kind TEXT NOT NULL, source_id INTEGER NOT NULL REFERENCES sources(id),
+                offset INTEGER NOT NULL, hash TEXT NOT NULL, timestamp TEXT, earnings INTEGER,
+                UNIQUE(source_id, offset));
+            CREATE TABLE IF NOT EXISTS batches (
+                id INTEGER PRIMARY KEY, system_key TEXT NOT NULL REFERENCES systems(key),
+                first_time TEXT, last_time TEXT, status INTEGER NOT NULL DEFAULT 0,
+                estimate INTEGER NOT NULL DEFAULT 0, scans INTEGER NOT NULL DEFAULT 0, maps INTEGER NOT NULL DEFAULT 0,
+                settled_time TEXT, settlement_id INTEGER REFERENCES settlements(id));
+            CREATE INDEX IF NOT EXISTS batch_status ON batches(status, last_time);
+            CREATE TABLE IF NOT EXISTS bodies (
+                key TEXT PRIMARY KEY, system_key TEXT NOT NULL REFERENCES systems(key),
+                paid_value INTEGER NOT NULL DEFAULT 0, pending_value INTEGER NOT NULL DEFAULT 0,
+                batch_id INTEGER REFERENCES batches(id),
+                scan_source_id INTEGER REFERENCES sources(id), scan_offset INTEGER, scan_hash TEXT);
+            CREATE TABLE IF NOT EXISTS observations (
+                id INTEGER PRIMARY KEY, batch_id INTEGER NOT NULL REFERENCES batches(id),
+                body_key TEXT NOT NULL, kind TEXT NOT NULL,
+                source_id INTEGER NOT NULL REFERENCES sources(id), offset INTEGER NOT NULL, hash TEXT NOT NULL,
+                UNIQUE(batch_id, body_key, kind));
+            CREATE INDEX IF NOT EXISTS observation_batch ON observations(batch_id);
+            DROP INDEX IF EXISTS observation_source;
+            CREATE TABLE IF NOT EXISTS collection_anchors (
+                id INTEGER PRIMARY KEY,
+                batch_id INTEGER NOT NULL REFERENCES batches(id) ON DELETE CASCADE,
+                source_id INTEGER NOT NULL REFERENCES sources(id), offset INTEGER NOT NULL, hash TEXT NOT NULL,
+                UNIQUE(source_id,offset,hash,batch_id));
+            CREATE INDEX IF NOT EXISTS collection_anchor_batch ON collection_anchors(batch_id);
+            INSERT OR IGNORE INTO collection_anchors(batch_id,source_id,offset,hash)
+                SELECT batch_id,source_id,offset,hash FROM observations WHERE kind IN ('Scan','SAAScanComplete');
+            CREATE TABLE IF NOT EXISTS notable_systems (
+                system_key TEXT PRIMARY KEY REFERENCES systems(key), flags INTEGER NOT NULL);
+            PRAGMA user_version=3;
+            """
+        );
+        SetMetadata(connection, "commander", frontierId);
+        SetMetadata(connection, "galaxy", isLive ? "live" : "legacy");
+        transaction.Commit();
+        return true;
     }
 
     private void ValidateScope(SqliteConnection connection)

@@ -9,6 +9,20 @@ public enum ExplorationDataStatus
     Lost,
 }
 
+[Flags]
+public enum ExplorationNotables
+{
+    None = 0,
+    EarthLikeWorld = 1,
+    WaterWorld = 2,
+    AmmoniaWorld = 4,
+    TerraformableWorld = 8,
+    GreenGasGiant = 16,
+    StellarPhenomena = 32,
+    NeutronStar = 64,
+    BlackHole = 128,
+}
+
 public sealed record ExplorationHistoryQuery(
     ExplorationDataStatus? Status = null,
     string SearchText = "",
@@ -53,6 +67,7 @@ public sealed record ExplorationHistoryRow
     public long EstimatedValue { get; init; }
     public int ScannedBodies { get; init; }
     public int MappedBodies { get; init; }
+    public ExplorationNotables Notables { get; init; }
 }
 
 public sealed record ExplorationHistoryPage(

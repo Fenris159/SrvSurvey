@@ -185,6 +185,7 @@ public sealed partial class ExplorationHistoryCatalog
             DELETE FROM bodies;
             DELETE FROM batches;
             DELETE FROM settlements;
+            DELETE FROM notable_systems;
             DELETE FROM systems;
             DELETE FROM sources;
             DELETE FROM metadata WHERE key NOT IN ('commander','galaxy');
@@ -199,6 +200,11 @@ public sealed partial class ExplorationHistoryCatalog
         CancellationToken token
     )
     {
+        string notableKey = "notable_source:" + checkpoint.Id.ToString(CultureInfo.InvariantCulture);
+        if (checkpoint.NextOffset > 0 && ReadMetadata(connection, notableKey) is null)
+        {
+            BackfillNotables(connection, source, checkpoint.NextOffset, token);
+        }
         if (checkpoint.NextOffset == 0)
         {
             checkpoint = checkpoint with { Context = ReadContinuationContext(connection, source) };
@@ -227,6 +233,7 @@ public sealed partial class ExplorationHistoryCatalog
             };
         }
         SaveSource(connection, source, checkpoint);
+        SetMetadata(connection, notableKey, "1");
     }
 
     private static SourceContext ReadContinuationContext(SqliteConnection connection, JournalSource source)
