@@ -68,6 +68,7 @@ public sealed partial class ColonizationProjectPreviewViewModel : INotifyPropert
 
     public event PropertyChangedEventHandler? PropertyChanged;
     public ColonizationProjectPreview? Snapshot { get; private set; }
+    public long MaximumRequired => Snapshot?.MaximumRequired ?? 0;
     public bool IsBusy { get; private set; }
     public bool CanExport => Snapshot is not null && !isExporting && !disposed;
     public string Title

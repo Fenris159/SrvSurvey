@@ -3,13 +3,59 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
              xmlns:replay="using:SrvSurvey.Core.Diagnostics.Replay"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.DiagnosticsView"
+             Classes="diagnostics-workspace"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
-  <Grid RowDefinitions="Auto,*">
-    <TabControl Margin="32,24,32,0"
+  <UserControl.Styles>
+    <Style Selector=".diagnostics-workspace Border.card">
+      <Setter Property="Padding" Value="20" />
+    </Style>
+    <Style Selector=".diagnostics-workspace Border.card TextBlock">
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector=".diagnostics-workspace TextBox">
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <Style Selector=".diagnostics-workspace ComboBox">
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="behaviors:ComboBoxFitContentBehavior.Enabled" Value="False" />
+    </Style>
+    <Style Selector=".diagnostics-workspace DatePicker">
+      <Setter Property="MinHeight" Value="40" />
+    </Style>
+    <Style Selector=".diagnostics-workspace CalendarDatePicker">
+      <Setter Property="MinHeight" Value="40" />
+    </Style>
+    <Style Selector=".diagnostics-workspace TimePicker">
+      <Setter Property="MinHeight" Value="40" />
+    </Style>
+    <Style Selector=".diagnostics-workspace TextBox.code-editor">
+      <Setter Property="FontFamily" Value="Consolas, Menlo, monospace" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Padding" Value="12,10" />
+    </Style>
+    <Style Selector=".diagnostics-workspace TextBox.code-editor /template/ ScrollViewer">
+      <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <Style Selector=".diagnostics-workspace ListBox.event-list /template/ ScrollViewer">
+      <Setter Property="AllowAutoHide" Value="False" />
+    </Style>
+    <Style Selector=".diagnostics-workspace CheckBox.wrap-label">
+      <Setter Property="ContentTemplate">
+        <DataTemplate x:DataType="x:String">
+          <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+        </DataTemplate>
+      </Setter>
+    </Style>
+  </UserControl.Styles>
+  <Grid RowDefinitions="Auto,Auto,*">
+    <TabControl Margin="32,24,32,0" SelectionChanged="DiagnosticsTabs_SelectionChanged"
                 SelectedIndex="{Binding SelectedDiagnosticsTabIndex, Mode=TwoWay}">
       <TabItem Header="Source"><Border Height="0" /></TabItem>
       <TabItem Header="History"><Border Height="0" /></TabItem>
@@ -19,17 +65,15 @@
       <TabItem Header="Logs"><Border Height="0" /></TabItem>
     </TabControl>
 
-  <ScrollViewer Grid.Row="1"
+    <StackPanel Grid.Row="1" Margin="32,20,48,20" Spacing="6">
+      <TextBlock Classes="page-title" FontSize="32" Text="{Binding DiagnosticsTabTitle}" TextWrapping="Wrap" />
+      <TextBlock Classes="muted" Text="{Binding DiagnosticsTabDescription}" TextWrapping="Wrap" />
+    </StackPanel>
+
+  <ScrollViewer Grid.Row="2"
                 x:Name="DiagnosticsPageScroller"
                 HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="32" Spacing="24" MaxWidth="1000">
-      <StackPanel Spacing="5">
-        <TextBlock Classes="eyebrow" Text="DIAGNOSTICS" />
-        <TextBlock Classes="page-title" Text="{Binding DiagnosticsTabTitle}" />
-        <TextBlock Classes="muted"
-                   TextWrapping="Wrap"
-                   Text="{Binding DiagnosticsTabDescription}" />
-      </StackPanel>
+    <StackPanel x:Name="DiagnosticsPageContent" Margin="32,0,48,32" Spacing="20">
 
       <Border Classes="card"
               IsVisible="{Binding IsDiagnosticsSourceSelected}">
@@ -54,159 +98,102 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card"
-              IsVisible="{Binding IsDiagnosticsHistorySelected}">
-        <StackPanel Spacing="14">
-          <StackPanel Spacing="4">
-            <TextBlock Classes="card-title" Text="Journal history" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data." />
-          </StackPanel>
-
-          <TextBlock Classes="monospace muted"
-                     FontSize="11"
-                     TextWrapping="Wrap"
-                     Text="{Binding JournalHistory.JournalDirectory}" />
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="{Binding JournalHistory.Summary}" />
-
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-            <TextBox Text="{Binding JournalHistory.SearchText, Mode=TwoWay}"
-                     PlaceholderText="Search event, commander, system, file, or JSON" />
-            <Button Grid.Column="1"
-                    Classes="secondary"
-                    Command="{Binding JournalHistory.RefreshCommand}"
-                    Content="Refresh" />
-          </Grid>
-
-          <Grid ColumnDefinitions="300,*" ColumnSpacing="14">
-            <ListBox x:Name="JournalHistoryEventList"
-                     MinHeight="320"
-                     MaxHeight="500"
-                     ItemsSource="{Binding JournalHistory.Events}"
-                     ScrollViewer.IsScrollChainingEnabled="False"
-                     SelectedItem="{Binding JournalHistory.SelectedEvent, Mode=TwoWay}">
-              <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="replay:JournalHistoryEvent">
-                  <StackPanel Margin="4" Spacing="2">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                      <TextBlock FontWeight="SemiBold" Text="{Binding EventName}" />
-                      <TextBlock Grid.Column="1"
-                                 Classes="monospace muted"
-                                 FontSize="10"
-                                 Text="{Binding Index}" />
-                    </Grid>
-                    <TextBlock Classes="monospace muted"
-                               FontSize="10"
-                               Text="{Binding Timestamp}" />
-                    <TextBlock Classes="muted"
-                               FontSize="10"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding SystemName}" />
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-
-            <StackPanel Grid.Column="1" Spacing="10">
-              <Grid ColumnDefinitions="Auto,*"
-                    RowDefinitions="Auto,Auto,Auto,Auto"
-                    ColumnSpacing="12"
-                    RowSpacing="6">
-                <TextBlock Classes="muted" Text="File" />
-                <TextBlock Grid.Column="1"
-                           Classes="monospace"
-                           Text="{Binding JournalHistory.SelectedEventFileName}" />
-                <TextBlock Grid.Row="1" Classes="muted" Text="Commander" />
-                <TextBlock Grid.Row="1" Grid.Column="1"
-                           Text="{Binding JournalHistory.SelectedEventCommanderName}" />
-                <TextBlock Grid.Row="2" Classes="muted" Text="System" />
-                <TextBlock Grid.Row="2" Grid.Column="1"
-                           Text="{Binding JournalHistory.SelectedEventSystemName}" />
-                <TextBlock Grid.Row="3" Classes="muted" Text="Timestamp" />
-                <TextBlock Grid.Row="3" Grid.Column="1"
-                           Classes="monospace"
-                           Text="{Binding JournalHistory.SelectedEventTimestamp}" />
-              </Grid>
-              <TextBox MinHeight="225"
-                       AcceptsReturn="True"
-                       IsReadOnly="True"
-                       TextWrapping="NoWrap"
-                       FontFamily="Consolas, Menlo, monospace"
-                       FontSize="11"
-                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                       ScrollViewer.IsScrollChainingEnabled="False"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto"
-                       Text="{Binding JournalHistory.SelectedEventRawJson}" />
+      <Border Classes="card" IsVisible="{Binding IsDiagnosticsHistorySelected}">
+        <StackPanel Spacing="16">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Event archive" />
+              <TextBlock Classes="muted" Text="{Binding JournalHistory.Summary}" />
             </StackPanel>
+            <Button Grid.Column="1" Classes="secondary" VerticalAlignment="Top"
+                    Command="{Binding JournalHistory.RefreshCommand}" Content="Refresh" />
           </Grid>
-
-          <Separator Margin="0,4" />
-          <TextBlock FontWeight="SemiBold" Text="Replay export range" />
-          <TextBlock Classes="muted" Text="All dates and times use UTC." />
-          <Grid x:Name="ReplayRangeFields"
-                ColumnDefinitions="110,360"
-                RowDefinitions="Auto,Auto,Auto,Auto"
-                ColumnSpacing="10"
-                RowSpacing="8"
-                HorizontalAlignment="Left">
-            <TextBlock Grid.Row="0"
-                       Classes="muted"
-                       VerticalAlignment="Center"
-                       Text="Start Date:" />
-            <CalendarDatePicker Grid.Row="0"
-                                Grid.Column="1"
-                                SelectedDate="{Binding JournalHistory.RangeFromDate, Mode=TwoWay}"
-                                DisplayDateStart="{Binding JournalHistory.RangeMinimumDate}"
-                                DisplayDateEnd="{Binding JournalHistory.RangeMaximumDate}"
-                                SelectedDateFormat="Long"
-                                PlaceholderText="Choose a start date" />
-            <TextBlock Grid.Row="1"
-                       Classes="muted"
-                       VerticalAlignment="Center"
-                       Text="Time H/M/S:" />
-            <TimePicker Grid.Row="1"
-                        Grid.Column="1"
-                        ClockIdentifier="24HourClock"
-                        UseSeconds="True"
-                        SelectedTime="{Binding JournalHistory.RangeFromTime, Mode=TwoWay}" />
-            <TextBlock Grid.Row="2"
-                       Margin="0,8,0,0"
-                       Classes="muted"
-                       VerticalAlignment="Center"
-                       Text="End Date:" />
-            <CalendarDatePicker Grid.Row="2"
-                                Grid.Column="1"
-                                Margin="0,8,0,0"
-                                SelectedDate="{Binding JournalHistory.RangeToDate, Mode=TwoWay}"
-                                DisplayDateStart="{Binding JournalHistory.RangeFromDate}"
-                                DisplayDateEnd="{Binding JournalHistory.RangeToMaximumDate}"
-                                SelectedDateFormat="Long"
-                                PlaceholderText="Choose an end date" />
-            <TextBlock Grid.Row="3"
-                       Classes="muted"
-                       VerticalAlignment="Center"
-                       Text="Time H/M/S:" />
-            <TimePicker Grid.Row="3"
-                        Grid.Column="1"
-                        ClockIdentifier="24HourClock"
-                        UseSeconds="True"
-                        SelectedTime="{Binding JournalHistory.RangeToTime, Mode=TwoWay}" />
-          </Grid>
-          <CheckBox IsChecked="{Binding JournalHistory.RedactExport, Mode=TwoWay}"
-                    Content="Redact commander identities, chat, locations, coordinates, and screenshot paths" />
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="{Binding JournalHistory.ExportPreview}" />
-          <Button Classes="secondary"
-                  HorizontalAlignment="Left"
-                  Click="ExportJournalReplay_Click"
-                  Content="Export replay package" />
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="{Binding JournalHistory.StatusMessage}" />
+          <TextBlock Classes="monospace muted" FontSize="12" Text="{Binding JournalHistory.JournalDirectory}" />
+          <TextBox Text="{Binding JournalHistory.SearchText, Mode=TwoWay}"
+                   PlaceholderText="Search event, commander, system, file, or JSON" />
+          <TextBlock Classes="muted" IsVisible="{Binding !JournalHistory.HasEvents}"
+                     Text="No journal events are available. Check the journal folder in Source, then refresh this archive." />
+          <controls:ResponsiveColumnsPanel MinimumColumnWidth="370" MaximumColumns="2" Spacing="20">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Journal events" />
+              <ListBox x:Name="JournalHistoryEventList" Classes="event-list"
+                       MinHeight="340" MaxHeight="440" Padding="0,0,8,0"
+                       ItemsSource="{Binding JournalHistory.Events}"
+                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                       ScrollViewer.IsScrollChainingEnabled="False"
+                       SelectedItem="{Binding JournalHistory.SelectedEvent, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="replay:JournalHistoryEvent">
+                    <StackPanel Margin="8,6,12,6" Spacing="4">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <TextBlock FontWeight="SemiBold" Text="{Binding EventName}" />
+                        <TextBlock Grid.Column="1" Classes="monospace muted" FontSize="12" Text="{Binding Index}" />
+                      </Grid>
+                      <TextBlock Classes="monospace muted" FontSize="12" Text="{Binding Timestamp}" />
+                      <TextBlock Classes="muted" FontSize="12" TextWrapping="NoWrap"
+                                 TextTrimming="CharacterEllipsis" Text="{Binding SystemName}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+            <StackPanel Spacing="12">
+              <TextBlock FontWeight="SemiBold" Text="Selected event" />
+              <TextBlock Classes="muted" Text="Choose an event to view its details and raw JSON." />
+              <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+                <TextBlock Classes="muted" Text="File" />
+                <TextBlock Grid.Column="1" Classes="monospace" FontSize="12" Text="{Binding JournalHistory.SelectedEventFileName}" />
+                <TextBlock Grid.Row="1" Classes="muted" Text="Commander" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding JournalHistory.SelectedEventCommanderName}" />
+                <TextBlock Grid.Row="2" Classes="muted" Text="System" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding JournalHistory.SelectedEventSystemName}" />
+                <TextBlock Grid.Row="3" Classes="muted" Text="Timestamp" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Classes="monospace" FontSize="12" Text="{Binding JournalHistory.SelectedEventTimestamp}" />
+              </Grid>
+              <TextBox Classes="code-editor" MinHeight="240" MaxHeight="300" AcceptsReturn="True"
+                       IsReadOnly="True" TextWrapping="NoWrap"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsScrollChainingEnabled="False"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" Text="{Binding JournalHistory.SelectedEventRawJson}" />
+            </StackPanel>
+          </controls:ResponsiveColumnsPanel>
+        </StackPanel>
+      </Border>
+      <Border Classes="card" IsVisible="{Binding IsDiagnosticsHistorySelected}">
+        <StackPanel Spacing="16">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Replay export range" />
+            <TextBlock Classes="muted" Text="Export a portable replay package from the archive. All dates and times use UTC." />
+          </StackPanel>
+          <controls:ResponsiveColumnsPanel MinimumColumnWidth="480" MaximumColumns="2" Spacing="20">
+            <Grid x:Name="ReplayRangeFields" ColumnDefinitions="110,360" RowDefinitions="Auto,Auto,Auto,Auto"
+                  ColumnSpacing="10" RowSpacing="10" HorizontalAlignment="Left">
+              <TextBlock Grid.Row="0" Classes="muted" VerticalAlignment="Center" Text="Start Date:" />
+              <CalendarDatePicker Grid.Row="0" Grid.Column="1"
+                                  SelectedDate="{Binding JournalHistory.RangeFromDate, Mode=TwoWay}"
+                                  DisplayDateStart="{Binding JournalHistory.RangeMinimumDate}"
+                                  DisplayDateEnd="{Binding JournalHistory.RangeMaximumDate}"
+                                  SelectedDateFormat="Long" PlaceholderText="Choose a start date" />
+              <TextBlock Grid.Row="1" Classes="muted" VerticalAlignment="Center" Text="Time H/M/S:" />
+              <TimePicker Grid.Row="1" Grid.Column="1" ClockIdentifier="24HourClock" UseSeconds="True"
+                          SelectedTime="{Binding JournalHistory.RangeFromTime, Mode=TwoWay}" />
+              <TextBlock Grid.Row="2" Margin="0,8,0,0" Classes="muted" VerticalAlignment="Center" Text="End Date:" />
+              <CalendarDatePicker Grid.Row="2" Grid.Column="1" Margin="0,8,0,0"
+                                  SelectedDate="{Binding JournalHistory.RangeToDate, Mode=TwoWay}"
+                                  DisplayDateStart="{Binding JournalHistory.RangeFromDate}"
+                                  DisplayDateEnd="{Binding JournalHistory.RangeToMaximumDate}"
+                                  SelectedDateFormat="Long" PlaceholderText="Choose an end date" />
+              <TextBlock Grid.Row="3" Classes="muted" VerticalAlignment="Center" Text="Time H/M/S:" />
+              <TimePicker Grid.Row="3" Grid.Column="1" ClockIdentifier="24HourClock" UseSeconds="True"
+                          SelectedTime="{Binding JournalHistory.RangeToTime, Mode=TwoWay}" />
+            </Grid>
+            <StackPanel Spacing="14">
+              <CheckBox Classes="wrap-label" IsChecked="{Binding JournalHistory.RedactExport, Mode=TwoWay}"
+                        Content="Redact commander identities, chat, locations, coordinates, and screenshot paths" />
+              <TextBlock Classes="muted" Text="{Binding JournalHistory.ExportPreview}" />
+              <Button Classes="secondary" HorizontalAlignment="Left" Click="ExportJournalReplay_Click" Content="Export replay package" />
+              <TextBlock Classes="muted" Text="{Binding JournalHistory.StatusMessage}" />
+            </StackPanel>
+          </controls:ResponsiveColumnsPanel>
         </StackPanel>
       </Border>
 
@@ -305,7 +292,7 @@
                        Value="{Binding ReleaseUpdates.InstallProgressPercent}" />
           <TextBlock Classes="monospace muted"
                      IsVisible="{Binding ReleaseUpdates.IsInstalling}"
-                     FontSize="11"
+                     FontSize="12"
                      TextWrapping="Wrap"
                      Text="{Binding ReleaseUpdates.InstallProgressText}" />
 
@@ -320,11 +307,11 @@
                      TextWrapping="Wrap"
                      Text="{Binding MineMap.CommodityPriceStatus}" />
           <TextBlock Classes="monospace muted"
-                     FontSize="11"
+                     FontSize="12"
                      TextWrapping="Wrap"
                      Text="{Binding ReferenceDataUpdates.UpdatedCatalogs}" />
           <TextBlock Classes="monospace muted"
-                     FontSize="11"
+                     FontSize="12"
                      TextWrapping="Wrap"
                      Text="{Binding ReferenceDataUpdates.BackupDirectory}" />
           <WrapPanel Orientation="Horizontal">
@@ -340,133 +327,72 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised"
-              IsVisible="{Binding IsDiagnosticsProcessingSelected}">
-        <StackPanel Spacing="14">
+      <Border Classes="card" IsVisible="{Binding IsDiagnosticsProcessingSelected}">
+        <StackPanel Spacing="18">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Historical journal processor" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Analyze the original processor statistics without modifying profile data, or explicitly merge earlier Commander Codex first discoveries using atomic writes." />
+            <TextBlock Classes="muted" Text="Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include." />
           </StackPanel>
-
-          <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="12">
-            <ComboBox ItemsSource="{Binding JournalPostProcessor.Commanders}"
-                      SelectedItem="{Binding JournalPostProcessor.SelectedCommander, Mode=TwoWay}"
-                      PlaceholderText="Choose a commander">
-              <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:JournalPostProcessorCommanderViewModel">
-                  <TextBlock Margin="4" Text="{Binding DisplayName}" />
-                </DataTemplate>
-              </ComboBox.ItemTemplate>
-            </ComboBox>
-            <DatePicker Grid.Column="1"
-                        SelectedDate="{Binding JournalPostProcessor.StartDate, Mode=TwoWay}" />
-            <Button Grid.Column="2"
-                    Classes="secondary"
-                    Command="{Binding JournalPostProcessor.SetBeginningCommand}"
-                    Content="Beginning of time" />
-          </Grid>
-
-          <WrapPanel Orientation="Horizontal">
-            <Button Classes="primary"
-                    Margin="0,0,8,8"
-                    Command="{Binding JournalPostProcessor.AnalyzeCommand}"
-                    Content="Analyze journals" />
-            <Button Classes="secondary"
-                    Margin="0,0,8,8"
-                    Command="{Binding JournalPostProcessor.RefreshCommandersCommand}"
-                    Content="Refresh commanders" />
-            <Button Classes="secondary"
-                    Margin="0,0,8,8"
-                    Command="{Binding JournalPostProcessor.AnalyzeSystemsCommand}"
-                    Content="Analyze system files" />
-            <Button Classes="secondary"
-                    Margin="0,0,0,8"
-                    Command="{Binding JournalPostProcessor.CancelCommand}"
-                    Content="Stop" />
+          <controls:ResponsiveColumnsPanel MinimumColumnWidth="340" MaximumColumns="2" Spacing="20">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Commander" />
+              <ComboBox ItemsSource="{Binding JournalPostProcessor.Commanders}"
+                        SelectedItem="{Binding JournalPostProcessor.SelectedCommander, Mode=TwoWay}"
+                        PlaceholderText="Choose a commander">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:JournalPostProcessorCommanderViewModel">
+                    <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Include journals from" />
+              <WrapPanel>
+                <DatePicker Margin="0,0,12,8" SelectedDate="{Binding JournalPostProcessor.StartDate, Mode=TwoWay}" />
+                <Button Classes="secondary" Margin="0,0,0,8" Command="{Binding JournalPostProcessor.SetBeginningCommand}" Content="Beginning of time" />
+              </WrapPanel>
+            </StackPanel>
+          </controls:ResponsiveColumnsPanel>
+          <WrapPanel>
+            <Button Classes="primary" Margin="0,0,10,8" Command="{Binding JournalPostProcessor.AnalyzeCommand}" Content="Analyze journals" />
+            <Button Classes="secondary" Margin="0,0,10,8" Command="{Binding JournalPostProcessor.AnalyzeSystemsCommand}" Content="Analyze system files" />
+            <Button Classes="secondary" Margin="0,0,10,8" Command="{Binding JournalPostProcessor.RefreshCommandersCommand}" Content="Refresh commanders" />
+            <Button Classes="secondary" Margin="0,0,0,8" Command="{Binding JournalPostProcessor.CancelCommand}" Content="Stop" />
           </WrapPanel>
-
-          <ProgressBar Minimum="0"
-                       Maximum="{Binding JournalPostProcessor.ProgressMaximum}"
-                       Value="{Binding JournalPostProcessor.ProgressValue}" />
-
+          <StackPanel Spacing="10">
+            <ProgressBar Minimum="0" Maximum="{Binding JournalPostProcessor.ProgressMaximum}" Value="{Binding JournalPostProcessor.ProgressValue}" />
+            <TextBlock Classes="muted" Text="{Binding JournalPostProcessor.StatusMessage}" />
+          </StackPanel>
           <ItemsControl ItemsSource="{Binding JournalPostProcessor.Statistics}">
             <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <WrapPanel Orientation="Horizontal" ItemWidth="225" />
-              </ItemsPanelTemplate>
+              <ItemsPanelTemplate><controls:ResponsiveColumnsPanel MinimumColumnWidth="180" MaximumColumns="4" Spacing="12" /></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:JournalPostProcessorStatisticViewModel">
-                <Border Margin="0,0,8,8"
-                        BorderBrush="{DynamicResource RavenBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="5"
-                        Padding="10">
-                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Border Background="{DynamicResource RavenRaisedSurfaceBrush}" Padding="14,12" CornerRadius="5">
+                  <StackPanel Spacing="6">
                     <TextBlock Classes="muted" Text="{Binding Name}" />
-                    <TextBlock Grid.Column="1"
-                               FontWeight="SemiBold"
-                               Text="{Binding Value}" />
-                  </Grid>
+                    <TextBlock FontSize="24" FontWeight="SemiBold" Text="{Binding Value}" />
+                  </StackPanel>
                 </Border>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="{Binding JournalPostProcessor.TrailblazersSummary}" />
-
-          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
-                  BorderThickness="1"
-                  CornerRadius="6"
-                  IsVisible="{Binding JournalPostProcessor.HasHistoricalGreenGasGiantCandidates}"
-                  Padding="12">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-              <StackPanel Spacing="4">
-                <CheckBox IsChecked="{Binding JournalPostProcessor.HistoricalGreenGasGiantPublishConfirmed, Mode=TwoWay}"
-                          Content="Confirm publication of the listed historical Green Gas Giant candidates" />
-                <TextBlock Classes="muted"
-                           TextWrapping="Wrap"
-                           Text="{Binding JournalPostProcessor.HistoricalGreenGasGiantSummary}" />
-                <TextBlock Classes="muted"
-                           TextWrapping="Wrap"
-                           Text="The Green Gas Giant upload privacy option in Settings must also be enabled. Analysis and local reconstruction never publish candidates." />
-              </StackPanel>
-              <Button Grid.Column="1"
-                      Classes="secondary"
-                      VerticalAlignment="Center"
-                      Command="{Binding JournalPostProcessor.PublishGreenGasGiantsCommand}"
-                      Content="Publish candidates" />
-            </Grid>
-          </Border>
-
+          <TextBlock Classes="muted" Text="{Binding JournalPostProcessor.TrailblazersSummary}" />
           <Expander Classes="section-pill" Header="Species and atmosphere summary">
-            <StackPanel Margin="0,10,0,0" Spacing="8">
-              <TextBlock Classes="muted"
-                         TextWrapping="Wrap"
-                         Text="{Binding JournalPostProcessor.SystemAnalysisSummary}" />
+            <StackPanel Margin="0,12,0,0" Spacing="12">
+              <TextBlock Classes="muted" Text="{Binding JournalPostProcessor.SystemAnalysisSummary}" />
               <ItemsControl ItemsSource="{Binding JournalPostProcessor.SystemSpecies}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:JournalPostProcessorSpeciesViewModel">
-                    <Border Margin="0,0,0,8"
-                            BorderBrush="{DynamicResource RavenBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="5"
-                            Padding="10">
-                      <StackPanel Spacing="3">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <Border Margin="0,0,0,10" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,10">
+                      <StackPanel Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                           <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                          <TextBlock Grid.Column="1"
-                                     Classes="muted"
-                                     Text="{Binding CountText}" />
+                          <TextBlock Grid.Column="1" Classes="muted" Text="{Binding CountText}" />
                         </Grid>
-                        <TextBlock Classes="monospace muted"
-                                   FontSize="11"
-                                   TextWrapping="Wrap"
-                                   Text="{Binding AtmosphereSummary}" />
+                        <TextBlock Classes="monospace muted" FontSize="12" Text="{Binding AtmosphereSummary}" />
                       </StackPanel>
                     </Border>
                   </DataTemplate>
@@ -474,185 +400,116 @@
               </ItemsControl>
             </StackPanel>
           </Expander>
-
-          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
-                  BorderThickness="1"
-                  CornerRadius="6"
-                  Padding="12">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-              <StackPanel Spacing="4">
-                <CheckBox IsChecked="{Binding JournalPostProcessor.CodexRebuildConfirmed, Mode=TwoWay}"
-                          Content="Confirm an all-history Commander Codex merge" />
-                <TextBlock Classes="muted"
-                           TextWrapping="Wrap"
-                           Text="This merge never deletes existing firsts and does not upload historical events. Completed files remain valid if you stop early." />
-              </StackPanel>
-              <Button Grid.Column="1"
-                      Classes="secondary"
-                      VerticalAlignment="Center"
-                      Command="{Binding JournalPostProcessor.RebuildCodexCommand}"
-                      Content="Rebuild Codex firsts" />
-            </Grid>
+        </StackPanel>
+      </Border>
+      <Border Classes="card" IsVisible="{Binding IsDiagnosticsProcessingSelected}">
+        <StackPanel Spacing="18">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Historical reconstruction" />
+            <TextBlock Classes="muted" Text="Confirm an operation before rebuilding saved data or publishing historical candidates." />
+          </StackPanel>
+          <Border BorderBrush="{DynamicResource RavenWarningBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,18"
+                  IsVisible="{Binding JournalPostProcessor.HasHistoricalGreenGasGiantCandidates}">
+            <StackPanel Spacing="10">
+              <CheckBox Classes="wrap-label" IsChecked="{Binding JournalPostProcessor.HistoricalGreenGasGiantPublishConfirmed, Mode=TwoWay}"
+                        Content="Confirm publication of the listed historical Green Gas Giant candidates" />
+              <TextBlock Classes="muted" Text="{Binding JournalPostProcessor.HistoricalGreenGasGiantSummary}" />
+              <TextBlock Classes="muted" Text="The Green Gas Giant upload privacy option in Settings must also be enabled. Analysis and local reconstruction never publish candidates." />
+              <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding JournalPostProcessor.PublishGreenGasGiantsCommand}" Content="Publish candidates" />
+            </StackPanel>
           </Border>
-
-          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
-                  BorderThickness="1"
-                  CornerRadius="6"
-                  Padding="12">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-              <StackPanel Spacing="4">
-                <CheckBox IsChecked="{Binding JournalPostProcessor.SystemRebuildConfirmed, Mode=TwoWay}"
-                          Content="Confirm a verified historical system rebuild" />
-                <TextBlock Classes="muted"
-                           TextWrapping="Wrap"
-                           Text="Reconstructed facts are merged without deleting unknown fields. Every existing file is checksum-backed up before atomic activation, and an activation failure rolls back completed files." />
-              </StackPanel>
-              <Button Grid.Column="1"
-                      Classes="secondary"
-                      VerticalAlignment="Center"
-                      Command="{Binding JournalPostProcessor.RebuildSystemsCommand}"
-                      Content="Rebuild systems" />
-            </Grid>
+          <StackPanel Spacing="10">
+            <CheckBox Classes="wrap-label" IsChecked="{Binding JournalPostProcessor.CodexRebuildConfirmed, Mode=TwoWay}"
+                      Content="Confirm an all-history Commander Codex merge" />
+            <TextBlock Classes="muted" Text="This merge never deletes existing firsts and does not upload historical events. Completed files remain valid if you stop early." />
+            <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding JournalPostProcessor.RebuildCodexCommand}" Content="Rebuild Codex firsts" />
+          </StackPanel>
+          <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,18,0,0">
+            <StackPanel Spacing="10">
+              <CheckBox Classes="wrap-label" IsChecked="{Binding JournalPostProcessor.SystemRebuildConfirmed, Mode=TwoWay}"
+                        Content="Confirm a verified historical system rebuild" />
+              <TextBlock Classes="muted" Text="Reconstructed facts are merged without deleting unknown fields. Every existing file is checksum-backed up before atomic activation, and an activation failure rolls back completed files." />
+              <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding JournalPostProcessor.RebuildSystemsCommand}" Content="Rebuild systems" />
+            </StackPanel>
           </Border>
-
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="{Binding JournalPostProcessor.StatusMessage}" />
         </StackPanel>
       </Border>
 
-      <Border Classes="card"
-              IsVisible="{Binding IsDiagnosticsInspectorSelected}">
-        <StackPanel Spacing="14">
+      <Border Classes="card" IsVisible="{Binding IsDiagnosticsInspectorSelected}">
+        <StackPanel Spacing="18">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Journal inspector" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Inspect the newest 120 events and select scalar fields to generate a Lua quest handler." />
+            <TextBlock Classes="muted" Text="Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler." />
           </StackPanel>
-
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-            <TextBox MinHeight="110"
-                     MaxHeight="180"
-                     AcceptsReturn="True"
-                     IsReadOnly="True"
-                     TextWrapping="NoWrap"
-                     FontFamily="Consolas, Menlo, monospace"
-                     FontSize="11"
-                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                     ScrollViewer.IsScrollChainingEnabled="False"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     Text="{Binding JournalInspector.StatusText}" />
-            <Button Grid.Column="1"
-                    Classes="secondary"
-                    VerticalAlignment="Top"
-                    Command="{Binding JournalInspector.CopyCoordinatesCommand}"
-                    Content="Copy coordinates" />
-          </Grid>
-
-          <Grid ColumnDefinitions="300,*" ColumnSpacing="14">
-            <ListBox x:Name="JournalInspectorEventList"
-                     MinHeight="280"
-                     MaxHeight="400"
-                     ItemsSource="{Binding JournalInspector.Events}"
-                     ScrollViewer.IsScrollChainingEnabled="False"
-                     SelectedItem="{Binding JournalInspector.SelectedEvent, Mode=TwoWay}">
-              <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                  <StackPanel />
-                </ItemsPanelTemplate>
-              </ListBox.ItemsPanel>
-              <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:JournalInspectorEventViewModel">
-                  <StackPanel Margin="4" Spacing="2">
-                    <TextBlock FontWeight="SemiBold" Text="{Binding EventName}" />
-                    <TextBlock Classes="monospace muted"
-                               FontSize="10"
-                               Text="{Binding Timestamp}" />
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-
-            <Grid Grid.Column="1" RowDefinitions="*,Auto" RowSpacing="10">
-              <ScrollViewer MinHeight="280"
-                            MaxHeight="400"
-                            HorizontalScrollBarVisibility="Auto"
-                            IsScrollChainingEnabled="False"
-                            VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding JournalInspector.Properties}">
+          <controls:ResponsiveColumnsPanel MinimumColumnWidth="350" MaximumColumns="2" Spacing="20">
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Recent events" />
+              <ListBox x:Name="JournalInspectorEventList" Classes="event-list"
+                       MinHeight="320" MaxHeight="400" Padding="0,0,8,0"
+                       ItemsSource="{Binding JournalInspector.Events}" ScrollViewer.IsScrollChainingEnabled="False"
+                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                       SelectedItem="{Binding JournalInspector.SelectedEvent, Mode=TwoWay}">
+                <ListBox.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:JournalInspectorEventViewModel">
+                    <StackPanel Margin="8,6,12,6" Spacing="4">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding EventName}" />
+                      <TextBlock Classes="monospace muted" FontSize="12" Text="{Binding Timestamp}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+            <StackPanel Spacing="8">
+              <TextBlock FontWeight="SemiBold" Text="Event fields" />
+              <ScrollViewer x:Name="InspectorFieldsScroller" MinHeight="320" MaxHeight="400"
+                            AllowAutoHide="False" HorizontalScrollBarVisibility="Disabled"
+                            IsScrollChainingEnabled="False" VerticalScrollBarVisibility="Auto">
+                <ItemsControl Margin="0,0,16,12" ItemsSource="{Binding JournalInspector.Properties}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:JournalInspectorPropertyViewModel">
-                      <Grid Margin="{Binding Indent}"
-                            ColumnDefinitions="Auto,220,*"
-                            ColumnSpacing="8">
-                        <CheckBox IsChecked="{Binding IsIncluded, Mode=TwoWay}"
-                                  IsEnabled="{Binding IsSelectable}" />
-                        <TextBlock Grid.Column="1"
-                                   Classes="monospace"
-                                   FontSize="11"
-                                   Text="{Binding Path}" />
-                        <TextBlock Grid.Column="2"
-                                   Classes="monospace muted"
-                                   FontSize="11"
-                                   TextTrimming="CharacterEllipsis"
-                                   Text="{Binding DisplayValue}" />
-                      </Grid>
+                      <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                        <Grid Margin="{Binding Indent}" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                          <CheckBox IsChecked="{Binding IsIncluded, Mode=TwoWay}" IsEnabled="{Binding IsSelectable}"
+                                    VerticalAlignment="Top" AutomationProperties.Name="{Binding Path}" />
+                          <StackPanel Grid.Column="1" Spacing="5">
+                            <TextBlock Classes="monospace" FontSize="12" Text="{Binding Path}" />
+                            <TextBlock Classes="monospace muted" FontSize="12" Text="{Binding DisplayValue}" />
+                          </StackPanel>
+                        </Grid>
+                      </Border>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
               </ScrollViewer>
-              <TextBox Grid.Row="1"
-                       MinHeight="90"
-                       MaxHeight="160"
-                       AcceptsReturn="True"
-                       IsReadOnly="True"
-                       TextWrapping="NoWrap"
-                       FontFamily="Consolas, Menlo, monospace"
-                       FontSize="11"
-                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                       ScrollViewer.IsScrollChainingEnabled="False"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto"
-                       Text="{Binding JournalInspector.RawJson}" />
-            </Grid>
-          </Grid>
-
-          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
-                  BorderThickness="1"
-                  CornerRadius="6"
-                  Padding="12">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-              <CheckBox IsChecked="{Binding JournalInspector.ReplayConfirmed, Mode=TwoWay}"
-                        Content="I understand replay may change and save active quest progress" />
-              <Button Grid.Column="1"
-                      Classes="secondary"
-                      Command="{Binding JournalInspector.ReplayCommand}"
-                      Content="Replay selected event" />
-            </Grid>
+            </StackPanel>
+          </controls:ResponsiveColumnsPanel>
+          <Expander Classes="section-pill" Header="Raw event JSON">
+            <TextBox Classes="code-editor" Margin="0,12,0,0" MinHeight="150" MaxHeight="240"
+                     AcceptsReturn="True" IsReadOnly="True" TextWrapping="NoWrap"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsScrollChainingEnabled="False"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto" Text="{Binding JournalInspector.RawJson}" />
+          </Expander>
+          <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,18,0,0">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <TextBlock Classes="card-title" Text="Generated quest handler" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Classes="secondary" Command="{Binding JournalInspector.CopyCodeCommand}" Content="Copy handler" />
+              </Grid>
+              <TextBox Classes="code-editor" MinHeight="150" MaxHeight="260" AcceptsReturn="True"
+                       IsReadOnly="True" TextWrapping="NoWrap" ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.IsScrollChainingEnabled="False" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       Text="{Binding JournalInspector.CodeText}" />
+            </StackPanel>
           </Border>
-
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-            <TextBox MinHeight="110"
-                     AcceptsReturn="True"
-                     IsReadOnly="True"
-                     TextWrapping="NoWrap"
-                     FontFamily="Consolas, Menlo, monospace"
-                     FontSize="11"
-                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                     ScrollViewer.IsScrollChainingEnabled="False"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     Text="{Binding JournalInspector.CodeText}" />
-            <Button Grid.Column="1"
-                    Classes="secondary"
-                    VerticalAlignment="Top"
-                    Command="{Binding JournalInspector.CopyCodeCommand}"
-                    Content="Copy handler" />
-          </Grid>
-
-          <TextBlock Classes="muted"
-                     IsVisible="{Binding JournalInspector.HasStatusMessage}"
-                     TextWrapping="Wrap"
-                     Text="{Binding JournalInspector.StatusMessage}" />
+          <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,1,0,0" Padding="0,18,0,0">
+            <StackPanel Spacing="10">
+              <CheckBox Classes="wrap-label" IsChecked="{Binding JournalInspector.ReplayConfirmed, Mode=TwoWay}"
+                        Content="I understand replay may change and save active quest progress" />
+              <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding JournalInspector.ReplayCommand}" Content="Replay selected event" />
+            </StackPanel>
+          </Border>
+          <TextBlock Classes="muted" IsVisible="{Binding JournalInspector.HasStatusMessage}" Text="{Binding JournalInspector.StatusMessage}" />
         </StackPanel>
       </Border>
 
@@ -666,53 +523,64 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card"
-              IsVisible="{Binding IsDiagnosticsInspectorSelected}">
-        <Grid ColumnDefinitions="Auto,*"
-              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-              RowSpacing="10"
-              ColumnSpacing="28">
-          <TextBlock Grid.ColumnSpan="2"
-                     Classes="card-title"
-                     Margin="0,0,0,6"
-                     Text="Latest parsed state" />
-          <TextBlock Grid.Row="1" Classes="muted" Text="Commander" />
-          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CommanderName}" />
-          <TextBlock Grid.Row="2" Classes="muted" Text="Frontier ID" />
-          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FrontierId}" />
-          <TextBlock Grid.Row="3" Classes="muted" Text="Game" />
-          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding GameDescription}" />
-          <TextBlock Grid.Row="4" Classes="muted" Text="Mode" />
-          <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GameMode}" />
-          <TextBlock Grid.Row="5" Classes="muted" Text="System" />
-          <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Text="{Binding SystemDescription}" />
-          <TextBlock Grid.Row="6" Classes="muted" Text="Body" />
-          <TextBlock Grid.Row="6" Grid.Column="1" TextWrapping="Wrap" Text="{Binding BodyName}" />
-          <TextBlock Grid.Row="7" Classes="muted" Text="Session" />
-          <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SessionState}" />
-        </Grid>
-      </Border>
+      <controls:ResponsiveColumnsPanel MinimumColumnWidth="350" MaximumColumns="2" Spacing="20"
+                                       IsVisible="{Binding IsDiagnosticsInspectorSelected}">
+        <Border Classes="card"
+                IsVisible="{Binding IsDiagnosticsInspectorSelected}">
+          <Grid ColumnDefinitions="115,*"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                RowSpacing="10"
+                ColumnSpacing="16">
+            <TextBlock Grid.ColumnSpan="2"
+                       Classes="card-title"
+                       Margin="0,0,0,6"
+                       Text="Latest parsed state" />
+            <TextBlock Grid.Row="1" Classes="muted" Text="Commander" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CommanderName}" />
+            <TextBlock Grid.Row="2" Classes="muted" Text="Frontier ID" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FrontierId}" />
+            <TextBlock Grid.Row="3" Classes="muted" Text="Game" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding GameDescription}" />
+            <TextBlock Grid.Row="4" Classes="muted" Text="Mode" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GameMode}" />
+            <TextBlock Grid.Row="5" Classes="muted" Text="System" />
+            <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Text="{Binding SystemDescription}" />
+            <TextBlock Grid.Row="6" Classes="muted" Text="Body" />
+            <TextBlock Grid.Row="6" Grid.Column="1" TextWrapping="Wrap" Text="{Binding BodyName}" />
+            <TextBlock Grid.Row="7" Classes="muted" Text="Session" />
+            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SessionState}" />
+          </Grid>
+        </Border>
 
-      <Border Classes="card"
-              IsVisible="{Binding IsDiagnosticsInspectorSelected}">
-        <Grid ColumnDefinitions="Auto,*"
-              RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-              RowSpacing="10"
-              ColumnSpacing="28">
-          <TextBlock Grid.ColumnSpan="2"
-                     Classes="card-title"
-                     Margin="0,0,0,6"
-                     Text="Live Status.json state" />
-          <TextBlock Grid.Row="1" Classes="muted" Text="Vehicle" />
-          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding VehicleState}" />
-          <TextBlock Grid.Row="2" Classes="muted" Text="Latitude / longitude" />
-          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SurfacePosition}" />
-          <TextBlock Grid.Row="3" Classes="muted" Text="Heading / altitude" />
-          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding HeadingAndAltitude}" />
-          <TextBlock Grid.Row="4" Classes="muted" Text="Game UI focus" />
-          <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GameUiFocus}" />
-        </Grid>
-      </Border>
+        <Border Classes="card"
+                IsVisible="{Binding IsDiagnosticsInspectorSelected}">
+          <Grid ColumnDefinitions="115,*"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                RowSpacing="10"
+                ColumnSpacing="16">
+            <TextBlock Grid.ColumnSpan="2"
+                       Classes="card-title"
+                       Margin="0,0,0,6"
+                       Text="Live Status.json state" />
+            <TextBlock Grid.Row="1" Classes="muted" Text="Vehicle" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding VehicleState}" />
+            <TextBlock Grid.Row="2" Classes="muted" Text="Latitude / longitude" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SurfacePosition}" />
+            <TextBlock Grid.Row="3" Classes="muted" Text="Heading / altitude" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding HeadingAndAltitude}" />
+            <TextBlock Grid.Row="4" Classes="muted" Text="Game UI focus" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GameUiFocus}" />
+            <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,8,0,0" Spacing="12">
+              <TextBox Classes="code-editor" MinHeight="110" MaxHeight="180" AcceptsReturn="True" IsReadOnly="True"
+                       TextWrapping="NoWrap" ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.IsScrollChainingEnabled="False" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       Text="{Binding JournalInspector.StatusText}" />
+              <Button Classes="secondary" HorizontalAlignment="Left"
+                      Command="{Binding JournalInspector.CopyCoordinatesCommand}" Content="Copy coordinates" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </controls:ResponsiveColumnsPanel>
 
       <Border Classes="card raised"
               IsVisible="{Binding IsDiagnosticsSourceSelected}">
@@ -782,7 +650,7 @@
             <TextBlock Classes="muted" Text="Original backup" />
             <TextBlock Grid.Column="1"
                        Classes="monospace muted"
-                       FontSize="11"
+                       FontSize="12"
                        TextWrapping="Wrap"
                        Text="{Binding VisitedStarsCache.BackupPath}" />
           </Grid>

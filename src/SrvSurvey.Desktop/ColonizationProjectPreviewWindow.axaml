@@ -98,7 +98,7 @@
               <Border CornerRadius="3" ClipToBounds="True" BorderThickness="1"
                       BorderBrush="{DynamicResource RavenBorderBrush}">
                 <controls:CarrierReadinessBar x:Name="CarrierReadyProgress" Carriers="{Binding ReadyCarriers}"
-                                             Maximum="{Binding Snapshot.MaximumRequired}" Height="16"
+                                             Maximum="{Binding MaximumRequired}" Height="16"
                                              Background="{DynamicResource RavenRaisedSurfaceBrush}"
                                              AutomationProperties.Name="Ready on fleet carriers" />
               </Border>

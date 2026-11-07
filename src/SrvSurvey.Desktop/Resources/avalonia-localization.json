@@ -1973,10 +1973,6 @@
       "translation": "Alle Termine"
     },
     {
-      "source": "All dates and times use UTC.",
-      "translation": "Alle Daten und Uhrzeiten verwenden UTC."
-    },
-    {
       "source": "All known signal values",
       "translation": "Alle bekannten Signalwerte"
     },
@@ -2219,6 +2215,10 @@
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "Analysen, Vorschauen, Importe und historische Rekonstruktionen bedeuten keine Veröffentlichung im Netzwerk."
+    },
+    {
+      "source": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+      "translation": "Analysieren Sie historische Journale und Systemdateien, ohne gespeicherte Profildaten zu ändern. Wählen Sie einen Kommandanten und das frühestmögliche Datum aus."
     },
     {
       "source": "Analyze journals",
@@ -5853,6 +5853,10 @@
       "translation": "Wählen Sie einen Eintrag oder eine Gruppe oder geben Sie einen Codexnamen ein. Gruppen suchen gemeinsam ihre Einträge."
     },
     {
+      "source": "Choose an event to view its details and raw JSON.",
+      "translation": "Wählen Sie ein Ereignis aus, um dessen Details und Roh-JSON anzuzeigen."
+    },
+    {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Wählen Sie einen vorhandenen absoluten Screenshot-Quellordner."
     },
@@ -7193,6 +7197,10 @@
       "translation": "Bestätigen Sie eine Zusammenführung des gesamten Commander-Codex"
     },
     {
+      "source": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+      "translation": "Bestätigen Sie einen Vorgang, bevor Sie gespeicherte Daten neu erstellen oder historische Kandidaten veröffentlichen."
+    },
+    {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Bestätigen Sie den Import aller Körper, überprüfen Sie abgeleitete Websites und bearbeiten Sie die Details bei Bedarf manuell."
     },
@@ -8327,10 +8335,6 @@
     {
       "source": "DEVELOPMENT",
       "translation": "ENTWICKLUNG"
-    },
-    {
-      "source": "DIAGNOSTICS",
-      "translation": "Diagnostik"
     },
     {
       "source": "DIRECT TARGET",
@@ -10681,6 +10685,14 @@
       "translation": "Evakuierungsunterkunft"
     },
     {
+      "source": "Event archive",
+      "translation": "Veranstaltungsarchiv"
+    },
+    {
+      "source": "Event fields",
+      "translation": "Ereignisfelder"
+    },
+    {
       "source": "Every Raven site requires a name.",
       "translation": "Jede Raven-Site benötigt einen Namen."
     },
@@ -10979,6 +10991,10 @@
     {
       "source": "Export a portable Journey report",
       "translation": "Exportieren Sie einen tragbaren Reisebericht"
+    },
+    {
+      "source": "Export a portable replay package from the archive. All dates and times use UTC.",
+      "translation": "Exportieren Sie ein tragbares Wiedergabepaket aus dem Archiv. Alle Daten und Uhrzeiten verwenden UTC."
     },
     {
       "source": "Export all CSV…",
@@ -12865,6 +12881,10 @@
       "translation": "Generieren Sie den nächsten Kandidaten und kopieren oder fügen Sie ihn mit den konfigurierten Verknüpfungen in die Galaxy Map ein."
     },
     {
+      "source": "Generated quest handler",
+      "translation": "Generierter Quest-Handler"
+    },
+    {
       "source": "Genus",
       "translation": "Gattung"
     },
@@ -13985,6 +14005,10 @@
       "translation": "Historische Zeitschriften konnten nicht analysiert werden: {0}"
     },
     {
+      "source": "Historical reconstruction",
+      "translation": "Historische Rekonstruktion"
+    },
+    {
       "source": "Historical samples",
       "translation": "Historische Beispiele"
     },
@@ -14777,6 +14801,10 @@
       "translation": "Beziehen Sie ältere POIs ein"
     },
     {
+      "source": "Include journals from",
+      "translation": "Fügen Sie Zeitschriften von hinzu"
+    },
+    {
       "source": "Include outdated local markets",
       "translation": "Beziehen Sie veraltete lokale Märkte ein"
     },
@@ -14875,10 +14903,6 @@
     {
       "source": "Inspect parsed journal events and the current live status state.",
       "translation": "Überprüfen Sie analysierte Journalereignisse und den aktuellen Live-Status."
-    },
-    {
-      "source": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-      "translation": "Untersuchen Sie die neuesten 120 Ereignisse und wählen Sie Skalarfelder aus, um einen Lua-Quest-Handler zu generieren."
     },
     {
       "source": "Inspecting the Survey map",
@@ -15075,6 +15099,10 @@
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
       "translation": "Journaldaten angereichert {0} Raven-Site-Eintrag{1} lokal."
+    },
+    {
+      "source": "Journal events",
+      "translation": "Zeitschriftenveranstaltungen"
     },
     {
       "source": "Journal folder changed",
@@ -19155,6 +19183,10 @@
     {
       "source": "No individual build projects were reported for this selection.",
       "translation": "Für diese Auswahl wurden keine einzelnen Bauprojekte gemeldet."
+    },
+    {
+      "source": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+      "translation": "Es sind keine Journalveranstaltungen verfügbar. Überprüfen Sie den Journalordner in Source und aktualisieren Sie dann dieses Archiv."
     },
     {
       "source": "No journal events were found in {0}.",
@@ -23933,6 +23965,10 @@
       "translation": "Roh"
     },
     {
+      "source": "Raw event JSON",
+      "translation": "Rohereignis-JSON"
+    },
+    {
       "source": "Raw name:",
       "translation": "Rohname:"
     },
@@ -23963,10 +23999,6 @@
     {
       "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
       "translation": "Schreibgeschützte Frachtsummen von CAPI, lokalen Spediteurmärkten und nachfolgenden Journaltransaktionen. N/A bedeutet, dass keine lokale Gesamtsumme verfügbar ist."
-    },
-    {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Schreibgeschützter Verlauf aus dem aktiven Journalordner. Beim Exportieren wird ein portables, versioniertes Wiedergabepaket erstellt, ohne dass Profildaten geändert werden."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -24063,6 +24095,10 @@
     {
       "source": "Recent active journals are excluded from destructive historical reconstruction paths.",
       "translation": "Kürzlich aktive Zeitschriften sind von destruktiven historischen Rekonstruktionspfaden ausgeschlossen."
+    },
+    {
+      "source": "Recent events",
+      "translation": "Aktuelle Ereignisse"
     },
     {
       "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -27437,6 +27473,10 @@
       "translation": "Wählen Sie unten Missionen aus, um eine Vorschau ihrer kombinierten Zielanforderungen anzuzeigen."
     },
     {
+      "source": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+      "translation": "Wählen Sie eines der neuesten 120 Ereignisse aus und aktivieren Sie dann die Skalarfelder, die in einen Lua-Quest-Handler einbezogen werden sollen."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Wählen Sie ein System aus oder geben Sie es ein"
     },
@@ -27491,6 +27531,10 @@
     {
       "source": "Selected entries: {0}",
       "translation": "Ausgewählte Einträge: {0}"
+    },
+    {
+      "source": "Selected event",
+      "translation": "Ausgewähltes Ereignis"
     },
     {
       "source": "Selected folder",
@@ -43903,10 +43947,6 @@
       "translation": "Todas las fechas"
     },
     {
-      "source": "All dates and times use UTC.",
-      "translation": "Todas las fechas y horas utilizan UTC."
-    },
-    {
       "source": "All known signal values",
       "translation": "Todos los valores de señal conocidos"
     },
@@ -44149,6 +44189,10 @@
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "Los análisis, avances, importaciones y reconstrucción histórica no implican publicación en la red."
+    },
+    {
+      "source": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+      "translation": "Analice revistas históricas y archivos del sistema sin cambiar los datos de perfil guardados. Elija un comandante y la fecha más temprana para incluir."
     },
     {
       "source": "Analyze journals",
@@ -47783,6 +47827,10 @@
       "translation": "Elija una entrada o grupo, o escriba un nombre del Codex. Los grupos buscan sus entradas juntos."
     },
     {
+      "source": "Choose an event to view its details and raw JSON.",
+      "translation": "Elija un evento para ver sus detalles y JSON sin formato."
+    },
+    {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Elija una carpeta de origen de captura de pantalla absoluta existente."
     },
@@ -49123,6 +49171,10 @@
       "translation": "Confirmar una fusión del Commander Codex de toda la historia"
     },
     {
+      "source": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+      "translation": "Confirme una operación antes de reconstruir los datos guardados o publicar candidatos históricos."
+    },
+    {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Confirme cualquier importación de cuerpo, revise los sitios inferidos y edite manualmente los detalles según sea necesario."
     },
@@ -50257,10 +50309,6 @@
     {
       "source": "DEVELOPMENT",
       "translation": "DESARROLLO"
-    },
-    {
-      "source": "DIAGNOSTICS",
-      "translation": "diagnóstico"
     },
     {
       "source": "DIRECT TARGET",
@@ -52611,6 +52659,14 @@
       "translation": "Refugio de evacuación"
     },
     {
+      "source": "Event archive",
+      "translation": "Archivo de eventos"
+    },
+    {
+      "source": "Event fields",
+      "translation": "Campos de eventos"
+    },
+    {
       "source": "Every Raven site requires a name.",
       "translation": "Cada sitio de Raven requiere un nombre."
     },
@@ -52909,6 +52965,10 @@
     {
       "source": "Export a portable Journey report",
       "translation": "Exportar un informe de viaje portátil"
+    },
+    {
+      "source": "Export a portable replay package from the archive. All dates and times use UTC.",
+      "translation": "Exporte un paquete de reproducción portátil desde el archivo. Todas las fechas y horas utilizan UTC."
     },
     {
       "source": "Export all CSV…",
@@ -54795,6 +54855,10 @@
       "translation": "Genere el siguiente candidato y cópielo o péguelo en Galaxy Map con los accesos directos configurados."
     },
     {
+      "source": "Generated quest handler",
+      "translation": "Controlador de misiones generadas"
+    },
+    {
       "source": "Genus",
       "translation": "Género"
     },
@@ -55915,6 +55979,10 @@
       "translation": "No se pudieron analizar las revistas históricas: {0}"
     },
     {
+      "source": "Historical reconstruction",
+      "translation": "Reconstrucción histórica"
+    },
+    {
       "source": "Historical samples",
       "translation": "Muestras históricas"
     },
@@ -56707,6 +56775,10 @@
       "translation": "Incluir puntos de interés heredados"
     },
     {
+      "source": "Include journals from",
+      "translation": "Incluye revistas de"
+    },
+    {
       "source": "Include outdated local markets",
       "translation": "Incluir mercados locales obsoletos"
     },
@@ -56805,10 +56877,6 @@
     {
       "source": "Inspect parsed journal events and the current live status state.",
       "translation": "Inspeccione los eventos del diario analizados y el estado actual del estado en vivo."
-    },
-    {
-      "source": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-      "translation": "Inspeccione los 120 eventos más recientes y seleccione campos escalares para generar un controlador de misiones Lua."
     },
     {
       "source": "Inspecting the Survey map",
@@ -57005,6 +57073,10 @@
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
       "translation": "Datos de diario enriquecidos {0} Entrada de sitio Raven{1} localmente."
+    },
+    {
+      "source": "Journal events",
+      "translation": "Eventos de la revista"
     },
     {
       "source": "Journal folder changed",
@@ -61085,6 +61157,10 @@
     {
       "source": "No individual build projects were reported for this selection.",
       "translation": "No se informaron proyectos de construcción individuales para esta selección."
+    },
+    {
+      "source": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+      "translation": "No hay eventos de revista disponibles. Verifique la carpeta del diario en Fuente, luego actualice este archivo."
     },
     {
       "source": "No journal events were found in {0}.",
@@ -65863,6 +65939,10 @@
       "translation": "crudo"
     },
     {
+      "source": "Raw event JSON",
+      "translation": "JSON de evento sin formato"
+    },
+    {
       "source": "Raw name:",
       "translation": "Nombre crudo:"
     },
@@ -65893,10 +65973,6 @@
     {
       "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
       "translation": "Totales de carga de solo lectura de CAPI, mercados de transportistas locales y transacciones de diario posteriores. N/A significa que no hay ningún total local disponible."
-    },
-    {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Historial de solo lectura de la carpeta del diario activo. Exportar crea un paquete de reproducción versionado y portátil sin cambiar los datos del perfil."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -65993,6 +66069,10 @@
     {
       "source": "Recent active journals are excluded from destructive historical reconstruction paths.",
       "translation": "Las revistas activas recientes quedan excluidas de los caminos destructivos de reconstrucción histórica."
+    },
+    {
+      "source": "Recent events",
+      "translation": "Eventos recientes"
     },
     {
       "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -69367,6 +69447,10 @@
       "translation": "Seleccione las misiones a continuación para obtener una vista previa de sus requisitos de destino combinados."
     },
     {
+      "source": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+      "translation": "Seleccione uno de los 120 eventos más nuevos, luego verifique los campos escalares para incluirlos en un controlador de misiones de Lua."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Seleccione o escriba un sistema"
     },
@@ -69421,6 +69505,10 @@
     {
       "source": "Selected entries: {0}",
       "translation": "Entradas seleccionadas: {0}"
+    },
+    {
+      "source": "Selected event",
+      "translation": "Evento seleccionado"
     },
     {
       "source": "Selected folder",
@@ -85833,10 +85921,6 @@
       "translation": "Toutes les dates"
     },
     {
-      "source": "All dates and times use UTC.",
-      "translation": "Toutes les dates et heures utilisent UTC."
-    },
-    {
       "source": "All known signal values",
       "translation": "Toutes les valeurs de signal connues"
     },
@@ -86079,6 +86163,10 @@
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "L'analyse, les aperçus, les importations et la reconstruction historique n'impliquent pas la publication sur le réseau."
+    },
+    {
+      "source": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+      "translation": "Analysez les journaux historiques et les fichiers système sans modifier les données de profil enregistrées. Choisissez un commandant et la première date à inclure."
     },
     {
       "source": "Analyze journals",
@@ -89713,6 +89801,10 @@
       "translation": "Choisissez une entrée ou un groupe, ou saisissez un nom Codex. Les groupes recherchent leurs entrées ensemble."
     },
     {
+      "source": "Choose an event to view its details and raw JSON.",
+      "translation": "Choisissez un événement pour afficher ses détails et son JSON brut."
+    },
+    {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Choisissez un dossier source de capture d'écran absolu existant."
     },
@@ -91053,6 +91145,10 @@
       "translation": "Confirmer une fusion Commander Codex de tout l'historique"
     },
     {
+      "source": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+      "translation": "Confirmez une opération avant de reconstruire les données enregistrées ou de publier des candidats historiques."
+    },
+    {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Confirmez toute importation de corps, examinez les sites déduits et modifiez manuellement les détails si nécessaire."
     },
@@ -92187,10 +92283,6 @@
     {
       "source": "DEVELOPMENT",
       "translation": "DÉVELOPPEMENT"
-    },
-    {
-      "source": "DIAGNOSTICS",
-      "translation": "diagnostic"
     },
     {
       "source": "DIRECT TARGET",
@@ -94541,6 +94633,14 @@
       "translation": "Abri d'évacuation"
     },
     {
+      "source": "Event archive",
+      "translation": "Archives des événements"
+    },
+    {
+      "source": "Event fields",
+      "translation": "Champs d'événement"
+    },
+    {
       "source": "Every Raven site requires a name.",
       "translation": "Chaque site Raven nécessite un nom."
     },
@@ -94839,6 +94939,10 @@
     {
       "source": "Export a portable Journey report",
       "translation": "Exporter un rapport de parcours portable"
+    },
+    {
+      "source": "Export a portable replay package from the archive. All dates and times use UTC.",
+      "translation": "Exportez un package de relecture portable à partir de l’archive. Toutes les dates et heures utilisent UTC."
     },
     {
       "source": "Export all CSV…",
@@ -96725,6 +96829,10 @@
       "translation": "Générez le candidat suivant et copiez-le ou collez-le dans la Galaxy Map avec les raccourcis configurés."
     },
     {
+      "source": "Generated quest handler",
+      "translation": "Gestionnaire de quête généré"
+    },
+    {
       "source": "Genus",
       "translation": "Genre"
     },
@@ -97845,6 +97953,10 @@
       "translation": "Les revues historiques n'ont pas pu être analysées : {0}"
     },
     {
+      "source": "Historical reconstruction",
+      "translation": "Reconstitution historique"
+    },
+    {
       "source": "Historical samples",
       "translation": "Échantillons historiques"
     },
@@ -98637,6 +98749,10 @@
       "translation": "Inclure les POI hérités"
     },
     {
+      "source": "Include journals from",
+      "translation": "Inclure les journaux de"
+    },
+    {
       "source": "Include outdated local markets",
       "translation": "Inclure les marchés locaux obsolètes"
     },
@@ -98735,10 +98851,6 @@
     {
       "source": "Inspect parsed journal events and the current live status state.",
       "translation": "Inspectez les événements du journal analysés et l’état actuel de l’état actuel."
-    },
-    {
-      "source": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-      "translation": "Inspectez les 120 événements les plus récents et sélectionnez des champs scalaires pour générer un gestionnaire de quête Lua."
     },
     {
       "source": "Inspecting the Survey map",
@@ -98935,6 +99047,10 @@
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
       "translation": "Données du journal enrichies {0} entrée du site Raven{1} localement."
+    },
+    {
+      "source": "Journal events",
+      "translation": "Événements du journal"
     },
     {
       "source": "Journal folder changed",
@@ -103015,6 +103131,10 @@
     {
       "source": "No individual build projects were reported for this selection.",
       "translation": "Aucun projet de construction individuel n'a été signalé pour cette sélection."
+    },
+    {
+      "source": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+      "translation": "Aucun événement de journal n'est disponible. Vérifiez le dossier du journal dans Source, puis actualisez cette archive."
     },
     {
       "source": "No journal events were found in {0}.",
@@ -107793,6 +107913,10 @@
       "translation": "Brut"
     },
     {
+      "source": "Raw event JSON",
+      "translation": "Événement brut JSON"
+    },
+    {
       "source": "Raw name:",
       "translation": "Nom brut :"
     },
@@ -107823,10 +107947,6 @@
     {
       "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
       "translation": "Totaux de fret en lecture seule provenant du CAPI, des marchés des transporteurs locaux et des transactions de journaux ultérieures. N/A signifie qu’aucun total local n’est disponible."
-    },
-    {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Historique en lecture seule du dossier de journal actif. L'exportation crée un package de relecture portable et versionné sans modifier les données de profil."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -107923,6 +108043,10 @@
     {
       "source": "Recent active journals are excluded from destructive historical reconstruction paths.",
       "translation": "Les revues actives récentes sont exclues des voies de reconstruction historique destructrices."
+    },
+    {
+      "source": "Recent events",
+      "translation": "Événements récents"
     },
     {
       "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -111297,6 +111421,10 @@
       "translation": "Sélectionnez les missions ci-dessous pour prévisualiser leurs exigences de destination combinées."
     },
     {
+      "source": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+      "translation": "Sélectionnez l'un des 120 événements les plus récents, puis cochez les champs scalaires à inclure dans un gestionnaire de quête Lua."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Sélectionnez ou saisissez un système"
     },
@@ -111351,6 +111479,10 @@
     {
       "source": "Selected entries: {0}",
       "translation": "Entrées sélectionnées : {0}"
+    },
+    {
+      "source": "Selected event",
+      "translation": "Événement sélectionné"
     },
     {
       "source": "Selected folder",
@@ -127763,10 +127895,6 @@
       "translation": "Todas as datas"
     },
     {
-      "source": "All dates and times use UTC.",
-      "translation": "Todas as datas e horários usam UTC."
-    },
-    {
       "source": "All known signal values",
       "translation": "Todos os valores de sinal conhecidos"
     },
@@ -128009,6 +128137,10 @@
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "Análises, visualizações, importações e reconstrução histórica não implicam publicação em rede."
+    },
+    {
+      "source": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+      "translation": "Analise diários históricos e arquivos de sistema sem alterar os dados de perfil salvos. Escolha um comandante e a data mais próxima a ser incluída."
     },
     {
       "source": "Analyze journals",
@@ -131643,6 +131775,10 @@
       "translation": "Escolha uma entrada ou grupo ou digite um nome do Codex. Os grupos pesquisam suas entradas juntos."
     },
     {
+      "source": "Choose an event to view its details and raw JSON.",
+      "translation": "Escolha um evento para visualizar seus detalhes e JSON bruto."
+    },
+    {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Escolha uma pasta de origem absoluta da captura de tela existente."
     },
@@ -132983,6 +133119,10 @@
       "translation": "Confirme uma fusão de todo o histórico do Commander Codex"
     },
     {
+      "source": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+      "translation": "Confirme uma operação antes de reconstruir os dados salvos ou publicar candidatos históricos."
+    },
+    {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Confirme qualquer importação de corpo, revise sites inferidos e edite manualmente os detalhes conforme necessário."
     },
@@ -134117,10 +134257,6 @@
     {
       "source": "DEVELOPMENT",
       "translation": "DESENVOLVIMENTO"
-    },
-    {
-      "source": "DIAGNOSTICS",
-      "translation": "diagnóstico"
     },
     {
       "source": "DIRECT TARGET",
@@ -136471,6 +136607,14 @@
       "translation": "Abrigo de evacuação"
     },
     {
+      "source": "Event archive",
+      "translation": "Arquivo de eventos"
+    },
+    {
+      "source": "Event fields",
+      "translation": "Campos de evento"
+    },
+    {
       "source": "Every Raven site requires a name.",
       "translation": "Cada site Raven requer um nome."
     },
@@ -136769,6 +136913,10 @@
     {
       "source": "Export a portable Journey report",
       "translation": "Exportar um relatório de jornada portátil"
+    },
+    {
+      "source": "Export a portable replay package from the archive. All dates and times use UTC.",
+      "translation": "Exporte um pacote de reprodução portátil do arquivo. Todas as datas e horários usam UTC."
     },
     {
       "source": "Export all CSV…",
@@ -138655,6 +138803,10 @@
       "translation": "Gere o próximo candidato e copie ou cole-o no Galaxy Map com os atalhos configurados."
     },
     {
+      "source": "Generated quest handler",
+      "translation": "Manipulador de missões gerado"
+    },
+    {
       "source": "Genus",
       "translation": "Gênero"
     },
@@ -139775,6 +139927,10 @@
       "translation": "Não foi possível analisar os diários históricos: {0}"
     },
     {
+      "source": "Historical reconstruction",
+      "translation": "Reconstrução histórica"
+    },
+    {
       "source": "Historical samples",
       "translation": "Amostras históricas"
     },
@@ -140567,6 +140723,10 @@
       "translation": "Incluir POIs legados"
     },
     {
+      "source": "Include journals from",
+      "translation": "Incluir diários de"
+    },
+    {
       "source": "Include outdated local markets",
       "translation": "Incluir mercados locais desatualizados"
     },
@@ -140665,10 +140825,6 @@
     {
       "source": "Inspect parsed journal events and the current live status state.",
       "translation": "Inspecione os eventos do diário analisados ​​e o estado atual do status ativo."
-    },
-    {
-      "source": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-      "translation": "Inspecione os 120 eventos mais recentes e selecione campos escalares para gerar um manipulador de missões Lua."
     },
     {
       "source": "Inspecting the Survey map",
@@ -140865,6 +141021,10 @@
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
       "translation": "Dados do diário enriquecidos {0} entrada do site Raven{1} localmente."
+    },
+    {
+      "source": "Journal events",
+      "translation": "Eventos do diário"
     },
     {
       "source": "Journal folder changed",
@@ -144945,6 +145105,10 @@
     {
       "source": "No individual build projects were reported for this selection.",
       "translation": "Nenhum projeto de construção individual foi relatado para esta seleção."
+    },
+    {
+      "source": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+      "translation": "Nenhum evento de diário está disponível. Verifique a pasta do diário em Source e atualize este arquivo."
     },
     {
       "source": "No journal events were found in {0}.",
@@ -149723,6 +149887,10 @@
       "translation": "Cru"
     },
     {
+      "source": "Raw event JSON",
+      "translation": "Evento bruto JSON"
+    },
+    {
       "source": "Raw name:",
       "translation": "Nome bruto:"
     },
@@ -149753,10 +149921,6 @@
     {
       "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
       "translation": "Totais de carga somente leitura do CAPI, mercados de transportadoras locais e transações de diário subsequentes. N/A significa que nenhum total local está disponível."
-    },
-    {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Histórico somente leitura da pasta do diário ativo. A exportação cria um pacote de reprodução portátil e versionado sem alterar os dados do perfil."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -149853,6 +150017,10 @@
     {
       "source": "Recent active journals are excluded from destructive historical reconstruction paths.",
       "translation": "Os periódicos ativos recentes são excluídos dos caminhos destrutivos da reconstrução histórica."
+    },
+    {
+      "source": "Recent events",
+      "translation": "Eventos recentes"
     },
     {
       "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -153227,6 +153395,10 @@
       "translation": "Selecione as missões abaixo para visualizar seus requisitos de destino combinados."
     },
     {
+      "source": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+      "translation": "Selecione um dos 120 eventos mais recentes e verifique os campos escalares para incluir em um manipulador de missões Lua."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Selecione ou digite um sistema"
     },
@@ -153281,6 +153453,10 @@
     {
       "source": "Selected entries: {0}",
       "translation": "Entradas selecionadas: {0}"
+    },
+    {
+      "source": "Selected event",
+      "translation": "Evento selecionado"
     },
     {
       "source": "Selected folder",
@@ -169693,10 +169869,6 @@
       "translation": "Все даты"
     },
     {
-      "source": "All dates and times use UTC.",
-      "translation": "Все даты и время указаны в формате UTC."
-    },
-    {
       "source": "All known signal values",
       "translation": "Все известные значения сигналов"
     },
@@ -169939,6 +170111,10 @@
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "Анализ, предварительный просмотр, импорт и историческая реконструкция не подразумевают сетевую публикацию."
+    },
+    {
+      "source": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+      "translation": "Анализируйте исторические журналы и системные файлы, не изменяя сохраненные данные профиля. Выберите командира и самую раннюю дату, которую нужно включить."
     },
     {
       "source": "Analyze journals",
@@ -173573,6 +173749,10 @@
       "translation": "Выберите запись или группу либо введите название Кодекса. Группы вместе ищут свои записи."
     },
     {
+      "source": "Choose an event to view its details and raw JSON.",
+      "translation": "Выберите событие, чтобы просмотреть его подробную информацию и необработанный JSON."
+    },
+    {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Выберите существующую исходную папку с абсолютным скриншотом."
     },
@@ -174913,6 +175093,10 @@
       "translation": "Подтвердите объединение Кодекса командира за всю историю"
     },
     {
+      "source": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+      "translation": "Подтвердите операцию перед восстановлением сохраненных данных или публикацией исторических кандидатов."
+    },
+    {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Подтвердите импорт любого тела, просмотрите предполагаемые сайты и при необходимости отредактируйте данные вручную."
     },
@@ -176047,10 +176231,6 @@
     {
       "source": "DEVELOPMENT",
       "translation": "РАЗВИТИЕ"
-    },
-    {
-      "source": "DIAGNOSTICS",
-      "translation": "диагностика"
     },
     {
       "source": "DIRECT TARGET",
@@ -178401,6 +178581,14 @@
       "translation": "Эвакуационное убежище"
     },
     {
+      "source": "Event archive",
+      "translation": "Архив событий"
+    },
+    {
+      "source": "Event fields",
+      "translation": "Поля событий"
+    },
+    {
       "source": "Every Raven site requires a name.",
       "translation": "Каждому сайту Raven требуется имя."
     },
@@ -178699,6 +178887,10 @@
     {
       "source": "Export a portable Journey report",
       "translation": "Экспорт портативного отчета о путешествии"
+    },
+    {
+      "source": "Export a portable replay package from the archive. All dates and times use UTC.",
+      "translation": "Экспортируйте портативный пакет реплеев из архива. Все даты и время указаны в формате UTC."
     },
     {
       "source": "Export all CSV…",
@@ -180585,6 +180777,10 @@
       "translation": "Создайте следующего кандидата и скопируйте или вставьте его в карту галактики с помощью настроенных ярлыков."
     },
     {
+      "source": "Generated quest handler",
+      "translation": "Сгенерированный обработчик квеста"
+    },
+    {
       "source": "Genus",
       "translation": "Род"
     },
@@ -181705,6 +181901,10 @@
       "translation": "Не удалось проанализировать исторические журналы: {0}"
     },
     {
+      "source": "Historical reconstruction",
+      "translation": "Историческая реконструкция"
+    },
+    {
       "source": "Historical samples",
       "translation": "Исторические образцы"
     },
@@ -182497,6 +182697,10 @@
       "translation": "Включить устаревшие POI"
     },
     {
+      "source": "Include journals from",
+      "translation": "Включить журналы из"
+    },
+    {
       "source": "Include outdated local markets",
       "translation": "Включить устаревшие местные рынки"
     },
@@ -182595,10 +182799,6 @@
     {
       "source": "Inspect parsed journal events and the current live status state.",
       "translation": "Проверьте проанализированные события журнала и текущее состояние текущего статуса."
-    },
-    {
-      "source": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-      "translation": "Проверьте 120 новейших событий и выберите скалярные поля для создания обработчика запросов Lua."
     },
     {
       "source": "Inspecting the Survey map",
@@ -182795,6 +182995,10 @@
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
       "translation": "Данные журнала пополнили {0} сайт Raven, вход{1} локально."
+    },
+    {
+      "source": "Journal events",
+      "translation": "События журнала"
     },
     {
       "source": "Journal folder changed",
@@ -186875,6 +187079,10 @@
     {
       "source": "No individual build projects were reported for this selection.",
       "translation": "Для этой выборки не было зарегистрировано ни одного отдельного строительного проекта."
+    },
+    {
+      "source": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+      "translation": "События журнала недоступны. Проверьте папку журнала в источнике, затем обновите этот архив."
     },
     {
       "source": "No journal events were found in {0}.",
@@ -191653,6 +191861,10 @@
       "translation": "сырой"
     },
     {
+      "source": "Raw event JSON",
+      "translation": "Необработанный JSON-событие"
+    },
+    {
       "source": "Raw name:",
       "translation": "Сырое имя:"
     },
@@ -191683,10 +191895,6 @@
     {
       "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
       "translation": "Доступные только для чтения общие данные о грузах из CAPI, местных рынков перевозчиков и последующих журнальных транзакций. N/A означает, что локальная сумма недоступна."
-    },
-    {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "Доступная только для чтения история из активной папки журнала. Экспорт создает переносимый пакет воспроизведения с поддержкой версий без изменения данных профиля."
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -191783,6 +191991,10 @@
     {
       "source": "Recent active journals are excluded from destructive historical reconstruction paths.",
       "translation": "Активные журналы последнего времени исключены из деструктивных путей исторической реконструкции."
+    },
+    {
+      "source": "Recent events",
+      "translation": "Недавние события"
     },
     {
       "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -195157,6 +195369,10 @@
       "translation": "Выберите миссии ниже, чтобы просмотреть их совокупные требования к месту назначения."
     },
     {
+      "source": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+      "translation": "Выберите одно из 120 новейших событий, затем проверьте скалярные поля для включения в обработчик квестов Lua."
+    },
+    {
       "source": "Select or type a system",
       "translation": "Выберите или введите систему"
     },
@@ -195211,6 +195427,10 @@
     {
       "source": "Selected entries: {0}",
       "translation": "Выбранные записи: {0}"
+    },
+    {
+      "source": "Selected event",
+      "translation": "Выбранное событие"
     },
     {
       "source": "Selected folder",
@@ -211623,10 +211843,6 @@
       "translation": "所有日期"
     },
     {
-      "source": "All dates and times use UTC.",
-      "translation": "所有日期和时间均使用 UTC。"
-    },
-    {
       "source": "All known signal values",
       "translation": "所有已知信号值"
     },
@@ -211869,6 +212085,10 @@
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "分析、预览、导入、历史重构并不意味着网络发布。"
+    },
+    {
+      "source": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+      "translation": "分析历史日志和系统文件，无需更改保存的配置文件数据。选择指挥官和最早的日期。"
     },
     {
       "source": "Analyze journals",
@@ -215503,6 +215723,10 @@
       "translation": "选择一个条目或组，或者键入 Codex 名称。小组一起搜索他们的条目。"
     },
     {
+      "source": "Choose an event to view its details and raw JSON.",
+      "translation": "选择一个事件以查看其详细信息和原始 JSON。"
+    },
+    {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "选择现有的绝对屏幕截图源文件夹。"
     },
@@ -216843,6 +217067,10 @@
       "translation": "确认全历史指挥官法典合并"
     },
     {
+      "source": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+      "translation": "在重建保存的数据或发布历史候选之前确认操作。"
+    },
+    {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "确认任何正文导入、检查推断的位点并根据需要手动编辑详细信息。"
     },
@@ -217977,10 +218205,6 @@
     {
       "source": "DEVELOPMENT",
       "translation": "发展"
-    },
-    {
-      "source": "DIAGNOSTICS",
-      "translation": "诊断"
     },
     {
       "source": "DIRECT TARGET",
@@ -220331,6 +220555,14 @@
       "translation": "避难所"
     },
     {
+      "source": "Event archive",
+      "translation": "活动档案"
+    },
+    {
+      "source": "Event fields",
+      "translation": "事件字段"
+    },
+    {
       "source": "Every Raven site requires a name.",
       "translation": "每个 Raven 站点都需要一个名称。"
     },
@@ -220629,6 +220861,10 @@
     {
       "source": "Export a portable Journey report",
       "translation": "导出便携式旅程报告"
+    },
+    {
+      "source": "Export a portable replay package from the archive. All dates and times use UTC.",
+      "translation": "从存档中导出便携式重播包。所有日期和时间均使用 UTC。"
     },
     {
       "source": "Export all CSV…",
@@ -222515,6 +222751,10 @@
       "translation": "生成下一个候选并使用配置的快捷方式将其复制或粘贴到 Galaxy Map 中。"
     },
     {
+      "source": "Generated quest handler",
+      "translation": "生成的任务处理程序"
+    },
+    {
       "source": "Genus",
       "translation": "属"
     },
@@ -223635,6 +223875,10 @@
       "translation": "无法分析历史期刊：{0}"
     },
     {
+      "source": "Historical reconstruction",
+      "translation": "历史重建"
+    },
+    {
       "source": "Historical samples",
       "translation": "历史样本"
     },
@@ -224427,6 +224671,10 @@
       "translation": "包括旧 POI"
     },
     {
+      "source": "Include journals from",
+      "translation": "包括来自的期刊"
+    },
+    {
       "source": "Include outdated local markets",
       "translation": "包括过时的本地市场"
     },
@@ -224525,10 +224773,6 @@
     {
       "source": "Inspect parsed journal events and the current live status state.",
       "translation": "检查解析的日志事件和当前的实时状态。"
-    },
-    {
-      "source": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-      "translation": "检查最新的 120 个事件并选择标量字段以生成 Lua 任务处理程序。"
     },
     {
       "source": "Inspecting the Survey map",
@@ -224725,6 +224969,10 @@
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
       "translation": "期刊数据在本地丰富了 {0} Raven 站点 entr{1}。"
+    },
+    {
+      "source": "Journal events",
+      "translation": "期刊事件"
     },
     {
       "source": "Journal folder changed",
@@ -228805,6 +229053,10 @@
     {
       "source": "No individual build projects were reported for this selection.",
       "translation": "此次选择没有报告任何单独的构建项目。"
+    },
+    {
+      "source": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+      "translation": "没有可用的日志事件。检查源中的日志文件夹，然后刷新此存档。"
     },
     {
       "source": "No journal events were found in {0}.",
@@ -233583,6 +233835,10 @@
       "translation": "原料"
     },
     {
+      "source": "Raw event JSON",
+      "translation": "原始事件 JSON"
+    },
+    {
       "source": "Raw name:",
       "translation": "原始名称："
     },
@@ -233613,10 +233869,6 @@
     {
       "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
       "translation": "来自 CAPI、当地承运商市场和后续日记账交易的只读货运总量。 N/A 表示没有可用的本地总数。"
-    },
-    {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "活动日志文件夹中的只读历史记录。导出会创建一个可移植的、版本化的重放包，而无需更改配置文件数据。"
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -233713,6 +233965,10 @@
     {
       "source": "Recent active journals are excluded from destructive historical reconstruction paths.",
       "translation": "最近活跃的期刊被排除在破坏性历史重建路径之外。"
+    },
+    {
+      "source": "Recent events",
+      "translation": "近期活动"
     },
     {
       "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -237087,6 +237343,10 @@
       "translation": "选择下面的任务以预览其综合目的地要求。"
     },
     {
+      "source": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+      "translation": "选择最新的 120 个事件之一，然后检查要包含在 Lua 任务处理程序中的标量字段。"
+    },
+    {
       "source": "Select or type a system",
       "translation": "选择或输入系统"
     },
@@ -237141,6 +237401,10 @@
     {
       "source": "Selected entries: {0}",
       "translation": "所选条目：{0}"
+    },
+    {
+      "source": "Selected event",
+      "translation": "选定的事件"
     },
     {
       "source": "Selected folder",
@@ -253553,10 +253817,6 @@
       "translation": "* ALL DATES >>>!"
     },
     {
-      "source": "All dates and times use UTC.",
-      "translation": "* ALL DATES AND TIMES USE UTC. >>>!"
-    },
-    {
       "source": "All known signal values",
       "translation": "* ALL KNOWN SIGNAL VALUES >>>!"
     },
@@ -253799,6 +254059,10 @@
     {
       "source": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
       "translation": "* ANALYSIS, PREVIEWS, IMPORTS, AND HISTORICAL RECONSTRUCTION DO NOT IMPLY NETWORK PUBLICATION. >>>!"
+    },
+    {
+      "source": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+      "translation": "* ANALYZE HISTORICAL JOURNALS AND SYSTEM FILES WITHOUT CHANGING SAVED PROFILE DATA. CHOOSE A COMMANDER AND THE EARLIEST DATE TO INCLUDE. >>>!"
     },
     {
       "source": "Analyze journals",
@@ -257433,6 +257697,10 @@
       "translation": "* CHOOSE AN ENTRY OR GROUP, OR TYPE A CODEX NAME. GROUPS SEARCH THEIR ENTRIES TOGETHER. >>>!"
     },
     {
+      "source": "Choose an event to view its details and raw JSON.",
+      "translation": "* CHOOSE AN EVENT TO VIEW ITS DETAILS AND RAW JSON. >>>!"
+    },
+    {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "* CHOOSE AN EXISTING ABSOLUTE SCREENSHOT SOURCE FOLDER. >>>!"
     },
@@ -258773,6 +259041,10 @@
       "translation": "* CONFIRM AN ALL-HISTORY COMMANDER CODEX MERGE >>>!"
     },
     {
+      "source": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+      "translation": "* CONFIRM AN OPERATION BEFORE REBUILDING SAVED DATA OR PUBLISHING HISTORICAL CANDIDATES. >>>!"
+    },
+    {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "* CONFIRM ANY BODY IMPORT, REVIEW INFERRED SITES AND MANUALLY EDIT DETAILS AS NEEDED. >>>!"
     },
@@ -259907,10 +260179,6 @@
     {
       "source": "DEVELOPMENT",
       "translation": "* DEVELOPMENT >>>!"
-    },
-    {
-      "source": "DIAGNOSTICS",
-      "translation": "* DIAGNOSTICS >>>!"
     },
     {
       "source": "DIRECT TARGET",
@@ -262261,6 +262529,14 @@
       "translation": "* EVACUATION SHELTER >>>!"
     },
     {
+      "source": "Event archive",
+      "translation": "* EVENT ARCHIVE >>>!"
+    },
+    {
+      "source": "Event fields",
+      "translation": "* EVENT FIELDS >>>!"
+    },
+    {
       "source": "Every Raven site requires a name.",
       "translation": "* EVERY RAVEN SITE REQUIRES A NAME. >>>!"
     },
@@ -262559,6 +262835,10 @@
     {
       "source": "Export a portable Journey report",
       "translation": "* EXPORT A PORTABLE JOURNEY REPORT >>>!"
+    },
+    {
+      "source": "Export a portable replay package from the archive. All dates and times use UTC.",
+      "translation": "* EXPORT A PORTABLE REPLAY PACKAGE FROM THE ARCHIVE. ALL DATES AND TIMES USE UTC. >>>!"
     },
     {
       "source": "Export all CSV…",
@@ -264445,6 +264725,10 @@
       "translation": "* GENERATE THE NEXT CANDIDATE AND COPY OR PASTE IT INTO THE GALAXY MAP WITH THE CONFIGURED SHORTCUTS. >>>!"
     },
     {
+      "source": "Generated quest handler",
+      "translation": "* GENERATED QUEST HANDLER >>>!"
+    },
+    {
       "source": "Genus",
       "translation": "* GENUS >>>!"
     },
@@ -265565,6 +265849,10 @@
       "translation": "* HISTORICAL JOURNALS COULD NOT BE ANALYZED: {0} >>>!"
     },
     {
+      "source": "Historical reconstruction",
+      "translation": "* HISTORICAL RECONSTRUCTION >>>!"
+    },
+    {
       "source": "Historical samples",
       "translation": "* HISTORICAL SAMPLES >>>!"
     },
@@ -266357,6 +266645,10 @@
       "translation": "* INCLUDE LEGACY POIS >>>!"
     },
     {
+      "source": "Include journals from",
+      "translation": "* INCLUDE JOURNALS FROM >>>!"
+    },
+    {
       "source": "Include outdated local markets",
       "translation": "* INCLUDE OUTDATED LOCAL MARKETS >>>!"
     },
@@ -266455,10 +266747,6 @@
     {
       "source": "Inspect parsed journal events and the current live status state.",
       "translation": "* INSPECT PARSED JOURNAL EVENTS AND THE CURRENT LIVE STATUS STATE. >>>!"
-    },
-    {
-      "source": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-      "translation": "* INSPECT THE NEWEST 120 EVENTS AND SELECT SCALAR FIELDS TO GENERATE A LUA QUEST HANDLER. >>>!"
     },
     {
       "source": "Inspecting the Survey map",
@@ -266655,6 +266943,10 @@
     {
       "source": "Journal data enriched {0} Raven site entr{1} locally.",
       "translation": "* JOURNAL DATA ENRICHED {0} RAVEN SITE ENTR{1} LOCALLY. >>>!"
+    },
+    {
+      "source": "Journal events",
+      "translation": "* JOURNAL EVENTS >>>!"
     },
     {
       "source": "Journal folder changed",
@@ -270735,6 +271027,10 @@
     {
       "source": "No individual build projects were reported for this selection.",
       "translation": "* NO INDIVIDUAL BUILD PROJECTS WERE REPORTED FOR THIS SELECTION. >>>!"
+    },
+    {
+      "source": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+      "translation": "* NO JOURNAL EVENTS ARE AVAILABLE. CHECK THE JOURNAL FOLDER IN SOURCE, THEN REFRESH THIS ARCHIVE. >>>!"
     },
     {
       "source": "No journal events were found in {0}.",
@@ -275513,6 +275809,10 @@
       "translation": "* RAW >>>!"
     },
     {
+      "source": "Raw event JSON",
+      "translation": "* RAW EVENT JSON >>>!"
+    },
+    {
       "source": "Raw name:",
       "translation": "* RAW NAME: >>>!"
     },
@@ -275543,10 +275843,6 @@
     {
       "source": "Read-only cargo totals from CAPI, local carrier markets, and subsequent journal transactions. N/A means no local total is available.",
       "translation": "* READ-ONLY CARGO TOTALS FROM CAPI, LOCAL CARRIER MARKETS, AND SUBSEQUENT JOURNAL TRANSACTIONS. N/A MEANS NO LOCAL TOTAL IS AVAILABLE. >>>!"
-    },
-    {
-      "source": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-      "translation": "* READ-ONLY HISTORY FROM THE ACTIVE JOURNAL FOLDER. EXPORT CREATES A PORTABLE, VERSIONED REPLAY PACKAGE WITHOUT CHANGING PROFILE DATA. >>>!"
     },
     {
       "source": "Read-only lookups are unaffected.",
@@ -275643,6 +275939,10 @@
     {
       "source": "Recent active journals are excluded from destructive historical reconstruction paths.",
       "translation": "* RECENT ACTIVE JOURNALS ARE EXCLUDED FROM DESTRUCTIVE HISTORICAL RECONSTRUCTION PATHS. >>>!"
+    },
+    {
+      "source": "Recent events",
+      "translation": "* RECENT EVENTS >>>!"
     },
     {
       "source": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -279017,6 +279317,10 @@
       "translation": "* SELECT MISSIONS BELOW TO PREVIEW THEIR COMBINED DESTINATION REQUIREMENTS. >>>!"
     },
     {
+      "source": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+      "translation": "* SELECT ONE OF THE NEWEST 120 EVENTS, THEN CHECK SCALAR FIELDS TO INCLUDE IN A LUA QUEST HANDLER. >>>!"
+    },
+    {
       "source": "Select or type a system",
       "translation": "* SELECT OR TYPE A SYSTEM >>>!"
     },
@@ -279071,6 +279375,10 @@
     {
       "source": "Selected entries: {0}",
       "translation": "* SELECTED ENTRIES: {0} >>>!"
+    },
+    {
+      "source": "Selected event",
+      "translation": "* SELECTED EVENT >>>!"
     },
     {
       "source": "Selected folder",

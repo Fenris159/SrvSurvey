@@ -3947,14 +3947,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
-    "Text": "All dates and times use UTC.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
-  },
-  {
     "Text": "All known signal values",
     "IsFormat": false,
     "SourceKinds": [
@@ -4443,6 +4435,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Analyze journals",
@@ -11734,6 +11734,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
+    "Text": "Choose an event to view its details and raw JSON.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Choose an existing absolute screenshot source folder.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14428,6 +14436,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Confirm any body import, review inferred sites and manually edit details as needed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -16704,14 +16720,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "DIAGNOSTICS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "DIRECT TARGET",
@@ -21430,6 +21438,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Event archive",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Event fields",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Every Raven site requires a name.",
     "IsFormat": false,
     "SourceKinds": [
@@ -22029,6 +22053,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Export a portable replay package from the archive. All dates and times use UTC.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Export all CSV\u2026",
@@ -25809,6 +25841,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Generated quest handler",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Genus",
     "IsFormat": false,
     "SourceKinds": [
@@ -28057,6 +28097,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Historical reconstruction",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Historical samples",
     "IsFormat": false,
     "SourceKinds": [
@@ -29650,6 +29698,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
+    "Text": "Include journals from",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Include outdated local markets",
     "IsFormat": false,
     "SourceKinds": [
@@ -29848,14 +29904,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Inspecting the Survey map",
@@ -30253,6 +30301,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "Journal events",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Journal folder changed",
     "IsFormat": false,
     "SourceKinds": [
@@ -30304,10 +30360,9 @@
     "Text": "Journal history",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Journal history could not be loaded.",
@@ -38448,6 +38503,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
+  },
+  {
+    "Text": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "No journal events were found in {0}.",
@@ -48027,6 +48090,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Raw event JSON",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Raw name:",
     "IsFormat": false,
     "SourceKinds": [
@@ -48089,14 +48160,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
-  },
-  {
-    "Text": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Read-only lookups are unaffected.",
@@ -48289,6 +48352,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Recent events",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -55056,6 +55127,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
+    "Text": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Select or type a system",
     "IsFormat": false,
     "SourceKinds": [
@@ -55166,6 +55245,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
+  },
+  {
+    "Text": "Selected event",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Selected folder",
