@@ -1585,6 +1585,10 @@
       "translation": "Die aktive Probe gehört zu einem anderen Körper"
     },
     {
+      "source": "Active time",
+      "translation": "Aktive Zeit"
+    },
+    {
       "source": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
       "translation": "Aktive Obelisk-Namen, Protokollcodes und Artefaktcodes dürfen an den erforderlichen Stellen nicht leer sein oder alte Trennzeichen (-, ! oder Kommas innerhalb eines Codes) enthalten."
     },
@@ -2705,6 +2709,10 @@
       "translation": "AsteroidBase"
     },
     {
+      "source": "Asteroids",
+      "translation": "Asteroiden"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Bei einer Einzahlung senden Sie .mine <commodity> <l|m|h>/<l|m|h> here. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Bei einer präzisen Platzierung kann es sein, dass eine vorhandene Markierung überlappt. Beispiel: .mine ruby m/l here. Entfernen Sie die nächstgelegene kartierte Lagerstätte im Umkreis von 0,5 km mit .mine delete here."
     },
@@ -2751,6 +2759,10 @@
     {
       "source": "Atmospheric regulator",
       "translation": "Atmosphärenregler"
+    },
+    {
+      "source": "Attach images to keep the context of this mining run with its report.",
+      "translation": "Hängen Sie Bilder an, um den Kontext dieses Mining-Laufs mit seinem Bericht beizubehalten."
     },
     {
       "source": "Attach location screenshots",
@@ -5073,6 +5085,10 @@
       "translation": "Erinnerung an volle Ladung nach einer Minute Leerlauf"
     },
     {
+      "source": "Cargo hold",
+      "translation": "Frachtraum"
+    },
+    {
       "source": "Cargo hold is empty.",
       "translation": "Der Frachtraum ist leer."
     },
@@ -5147,6 +5163,10 @@
     {
       "source": "CargoMissionRemaining",
       "translation": "CargoMissionRemaining"
+    },
+    {
+      "source": "CargoName",
+      "translation": "Frachtname"
     },
     {
       "source": "CargoTransfer",
@@ -5729,6 +5749,10 @@
       "translation": "Wählen Sie unten einen Abschnitt aus. Änderungen werden automatisch gespeichert, sofern keine Schaltfläche „Speichern“ angezeigt wird."
     },
     {
+      "source": "Choose a session above to edit notes, attach screenshots or export its report.",
+      "translation": "Wählen Sie oben eine Sitzung aus, um Notizen zu bearbeiten, Screenshots anzuhängen oder den Bericht zu exportieren."
+    },
+    {
       "source": "Choose a site on the Sites & surveys tab.",
       "translation": "Wählen Sie auf der Registerkarte „Sites & Umfragen“ eine Site aus."
     },
@@ -5847,6 +5871,10 @@
     {
       "source": "Choose location banners, original-file removal, and Guardian aerial options.",
       "translation": "Wählen Sie Standortbanner, Originaldateientfernung und Guardian-Luftbildoptionen."
+    },
+    {
+      "source": "Choose minerals and a minimum percentage for qualifying prospects.",
+      "translation": "Wählen Sie Mineralien und einen Mindestprozentsatz für qualifizierte Interessenten."
     },
     {
       "source": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -6849,6 +6877,10 @@
       "translation": "Community-Cache konnte nicht geladen werden: {0}"
     },
     {
+      "source": "Community data",
+      "translation": "Community-Daten"
+    },
+    {
       "source": "Community goals",
       "translation": "Gemeinschaftsziele"
     },
@@ -7693,6 +7725,10 @@
       "translation": "Kern: {0}"
     },
     {
+      "source": "Cores",
+      "translation": "Kerne"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -8095,6 +8131,10 @@
     {
       "source": "Current project needs could not be refreshed.",
       "translation": "Aktuelle Projektanforderungen konnten nicht aktualisiert werden."
+    },
+    {
+      "source": "Current session",
+      "translation": "Aktuelle Sitzung"
     },
     {
       "source": "Current ship",
@@ -10347,6 +10387,18 @@
     {
       "source": "Engineering materials collected",
       "translation": "Technische Materialien gesammelt"
+    },
+    {
+      "source": "EngineeringCount",
+      "translation": "EngineeringCount"
+    },
+    {
+      "source": "EngineeringGrade",
+      "translation": "EngineeringGrade"
+    },
+    {
+      "source": "EngineeringName",
+      "translation": "EngineeringName"
     },
     {
       "source": "English",
@@ -13937,6 +13989,22 @@
       "translation": "Geschichte Nr. 16"
     },
     {
+      "source": "HistoryRate",
+      "translation": "HistoryRate"
+    },
+    {
+      "source": "HistoryRing",
+      "translation": "HistoryRing"
+    },
+    {
+      "source": "HistorySystem",
+      "translation": "HistorySystem"
+    },
+    {
+      "source": "HistoryTons",
+      "translation": "GeschichteTonnen"
+    },
+    {
       "source": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
       "translation": "Halten Sie eine Tastenkombination gedrückt und lassen Sie dann alle Tasten los, um zu speichern. Esc bricht ab; Rücktaste oder Entf löschen."
     },
@@ -14005,12 +14073,20 @@
       "translation": "Wie werden Durchschnittswerte berechnet?"
     },
     {
+      "source": "How report totals are calculated",
+      "translation": "So werden Berichtssummen berechnet"
+    },
+    {
       "source": "How the interface is organized",
       "translation": "Wie die Schnittstelle organisiert ist"
     },
     {
       "source": "How the result is displayed",
       "translation": "Wie das Ergebnis angezeigt wird"
+    },
+    {
+      "source": "How thresholds affect results",
+      "translation": "Wie sich Schwellenwerte auf die Ergebnisse auswirken"
     },
     {
       "source": "How to read color",
@@ -15319,6 +15395,10 @@
     {
       "source": "Keep linked cargo current",
       "translation": "Halten Sie die verbundene Ladung auf dem neuesten Stand"
+    },
+    {
+      "source": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+      "translation": "Halten Sie manuelle Schätzungen und Zählkorrekturen getrennt von bestätigten Frachtablesungen."
     },
     {
       "source": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -17215,6 +17295,30 @@
     {
       "source": "Materials count after pickup",
       "translation": "Die Materialien zählen nach der Abholung"
+    },
+    {
+      "source": "MaterialsAverage",
+      "translation": "MaterialienDurchschnitt"
+    },
+    {
+      "source": "MaterialsBest",
+      "translation": "MaterialienAm besten"
+    },
+    {
+      "source": "MaterialsFinds",
+      "translation": "Materialfunde"
+    },
+    {
+      "source": "MaterialsName",
+      "translation": "Materialname"
+    },
+    {
+      "source": "MaterialsQuality",
+      "translation": "MaterialienQualität"
+    },
+    {
+      "source": "MaterialsTons",
+      "translation": "MaterialienTonnen"
     },
     {
       "source": "Mauve",
@@ -19587,6 +19691,10 @@
     {
       "source": "Noticeable",
       "translation": "bemerkbar"
+    },
+    {
+      "source": "NoticesText",
+      "translation": "HinweiseText"
     },
     {
       "source": "Notification duration (seconds)",
@@ -22589,6 +22697,10 @@
       "translation": "Prospektor"
     },
     {
+      "source": "ProspectsMinerals",
+      "translation": "AussichtenMineralien"
+    },
+    {
       "source": "Provider page (0 first)",
       "translation": "Anbieterseite (0 zuerst)"
     },
@@ -24163,6 +24275,10 @@
     {
       "source": "Refined Platinum ×1",
       "translation": "Raffiniertes Platin ×1"
+    },
+    {
+      "source": "Refined cargo",
+      "translation": "Raffinierte Ladung"
     },
     {
       "source": "Refined commodities",
@@ -27405,6 +27521,10 @@
       "translation": "Ausgewähltes Ergebnis"
     },
     {
+      "source": "Selected session",
+      "translation": "Ausgewählte Sitzung"
+    },
+    {
       "source": "Selected surface commodities",
       "translation": "Ausgewählte Oberflächengüter"
     },
@@ -27525,6 +27645,14 @@
       "translation": "Sitzung aktiv"
     },
     {
+      "source": "Session activity",
+      "translation": "Sitzungsaktivität"
+    },
+    {
+      "source": "Session behavior",
+      "translation": "Sitzungsverhalten"
+    },
+    {
       "source": "Session closed",
       "translation": "Sitzung geschlossen"
     },
@@ -27535,6 +27663,10 @@
     {
       "source": "Session overlay",
       "translation": "Sitzungs-Overlay"
+    },
+    {
+      "source": "Session shortcuts",
+      "translation": "Sitzungsverknüpfungen"
     },
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -27551,6 +27683,10 @@
     {
       "source": "Session tons exclude post-session refinery carryover.",
       "translation": "In den Session-Tonnen ist die Verschleppung aus der Raffinerie nach der Session nicht enthalten."
+    },
+    {
+      "source": "Session tools",
+      "translation": "Sitzungstools"
     },
     {
       "source": "Sessions and cargo",
@@ -33987,6 +34123,10 @@
     {
       "source": "Tolerance",
       "translation": "Toleranz"
+    },
+    {
+      "source": "Tons / hour",
+      "translation": "Tonnen/Stunde"
     },
     {
       "source": "Too steep",
@@ -43387,6 +43527,10 @@
       "translation": "La muestra activa pertenece a otro organismo."
     },
     {
+      "source": "Active time",
+      "translation": "tiempo activo"
+    },
+    {
       "source": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
       "translation": "Los nombres de obelisco activo, códigos de registro y códigos de artefactos no pueden estar en blanco cuando sea necesario ni contener delimitadores heredados (-, ! o comas dentro de un código)."
     },
@@ -44507,6 +44651,10 @@
       "translation": "Base de asteroides"
     },
     {
+      "source": "Asteroids",
+      "translation": "asteroides"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "En un depósito, envíe .mine <commodity> <l|m|h>/<l|m|h> here. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. La colocación precisa aquí puede superponerse a un marcador existente. Ejemplo: .mine ruby m/l here. Elimine el depósito mapeado más cercano dentro de 0,5 km con .mine delete here."
     },
@@ -44553,6 +44701,10 @@
     {
       "source": "Atmospheric regulator",
       "translation": "Regulador atmosférico"
+    },
+    {
+      "source": "Attach images to keep the context of this mining run with its report.",
+      "translation": "Adjunte imágenes para mantener el contexto de esta ejecución minera con su informe."
     },
     {
       "source": "Attach location screenshots",
@@ -46875,6 +47027,10 @@
       "translation": "Recordatorio de carga completa después de un minuto de inactividad"
     },
     {
+      "source": "Cargo hold",
+      "translation": "Bodega de carga"
+    },
+    {
       "source": "Cargo hold is empty.",
       "translation": "La bodega de carga está vacía."
     },
@@ -46949,6 +47105,10 @@
     {
       "source": "CargoMissionRemaining",
       "translation": "CargaMisiónRestante"
+    },
+    {
+      "source": "CargoName",
+      "translation": "Nombre de la carga"
     },
     {
       "source": "CargoTransfer",
@@ -47531,6 +47691,10 @@
       "translation": "Elija una sección a continuación. Los cambios se guardan automáticamente a menos que se muestre el botón Guardar."
     },
     {
+      "source": "Choose a session above to edit notes, attach screenshots or export its report.",
+      "translation": "Elija una de las sesiones anteriores para editar notas, adjuntar capturas de pantalla o exportar su informe."
+    },
+    {
       "source": "Choose a site on the Sites & surveys tab.",
       "translation": "Elija un sitio en la pestaña Sitios y encuestas."
     },
@@ -47649,6 +47813,10 @@
     {
       "source": "Choose location banners, original-file removal, and Guardian aerial options.",
       "translation": "Elija pancartas de ubicación, eliminación de archivos originales y opciones aéreas de Guardian."
+    },
+    {
+      "source": "Choose minerals and a minimum percentage for qualifying prospects.",
+      "translation": "Elija minerales y un porcentaje mínimo para los prospectos que califiquen."
     },
     {
       "source": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -48651,6 +48819,10 @@
       "translation": "No se pudo cargar la caché de la comunidad: {0}"
     },
     {
+      "source": "Community data",
+      "translation": "Datos de la comunidad"
+    },
+    {
       "source": "Community goals",
       "translation": "Metas comunitarias"
     },
@@ -49495,6 +49667,10 @@
       "translation": "Núcleo: {0}"
     },
     {
+      "source": "Cores",
+      "translation": "Núcleos"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -49897,6 +50073,10 @@
     {
       "source": "Current project needs could not be refreshed.",
       "translation": "Las necesidades actuales del proyecto no se pudieron actualizar."
+    },
+    {
+      "source": "Current session",
+      "translation": "Sesión actual"
     },
     {
       "source": "Current ship",
@@ -52149,6 +52329,18 @@
     {
       "source": "Engineering materials collected",
       "translation": "Materiales de ingeniería recolectados."
+    },
+    {
+      "source": "EngineeringCount",
+      "translation": "IngenieríaContar"
+    },
+    {
+      "source": "EngineeringGrade",
+      "translation": "IngenieríaGrado"
+    },
+    {
+      "source": "EngineeringName",
+      "translation": "Nombre de ingeniería"
     },
     {
       "source": "English",
@@ -55739,6 +55931,22 @@
       "translation": "Historia #16"
     },
     {
+      "source": "HistoryRate",
+      "translation": "HistoriaTasa"
+    },
+    {
+      "source": "HistoryRing",
+      "translation": "HistoriaAnillo"
+    },
+    {
+      "source": "HistorySystem",
+      "translation": "HistoriaSistema"
+    },
+    {
+      "source": "HistoryTons",
+      "translation": "HistoriaToneladas"
+    },
+    {
       "source": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
       "translation": "Mantenga presionada una combinación de teclas, luego suelte todas las teclas para guardar. Esc cancela; Se borra la tecla Retroceso o Eliminar."
     },
@@ -55807,12 +56015,20 @@
       "translation": "¿Cómo se calculan los promedios?"
     },
     {
+      "source": "How report totals are calculated",
+      "translation": "Cómo se calculan los totales del informe"
+    },
+    {
       "source": "How the interface is organized",
       "translation": "Cómo está organizada la interfaz"
     },
     {
       "source": "How the result is displayed",
       "translation": "Cómo se muestra el resultado"
+    },
+    {
+      "source": "How thresholds affect results",
+      "translation": "Cómo afectan los umbrales a los resultados"
     },
     {
       "source": "How to read color",
@@ -57121,6 +57337,10 @@
     {
       "source": "Keep linked cargo current",
       "translation": "Mantener actualizada la carga vinculada"
+    },
+    {
+      "source": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+      "translation": "Mantenga las estimaciones manuales y las correcciones de recuento separadas de las lecturas de carga confirmadas."
     },
     {
       "source": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -59017,6 +59237,30 @@
     {
       "source": "Materials count after pickup",
       "translation": "Recuento de materiales después de la recogida."
+    },
+    {
+      "source": "MaterialsAverage",
+      "translation": "MaterialesPromedio"
+    },
+    {
+      "source": "MaterialsBest",
+      "translation": "MaterialesMejor"
+    },
+    {
+      "source": "MaterialsFinds",
+      "translation": "MaterialesHallazgos"
+    },
+    {
+      "source": "MaterialsName",
+      "translation": "MaterialesNombre"
+    },
+    {
+      "source": "MaterialsQuality",
+      "translation": "MaterialesCalidad"
+    },
+    {
+      "source": "MaterialsTons",
+      "translation": "Materiales Toneladas"
     },
     {
       "source": "Mauve",
@@ -61389,6 +61633,10 @@
     {
       "source": "Noticeable",
       "translation": "notable"
+    },
+    {
+      "source": "NoticesText",
+      "translation": "AvisosTexto"
     },
     {
       "source": "Notification duration (seconds)",
@@ -64391,6 +64639,10 @@
       "translation": "Prospector"
     },
     {
+      "source": "ProspectsMinerals",
+      "translation": "PerspectivasMinerales"
+    },
+    {
       "source": "Provider page (0 first)",
       "translation": "Página del proveedor (0 primero)"
     },
@@ -65965,6 +66217,10 @@
     {
       "source": "Refined Platinum ×1",
       "translation": "Platino refinado ×1"
+    },
+    {
+      "source": "Refined cargo",
+      "translation": "Carga refinada"
     },
     {
       "source": "Refined commodities",
@@ -69207,6 +69463,10 @@
       "translation": "Resultado seleccionado"
     },
     {
+      "source": "Selected session",
+      "translation": "Sesión seleccionada"
+    },
+    {
       "source": "Selected surface commodities",
       "translation": "Productos de superficie seleccionados"
     },
@@ -69327,6 +69587,14 @@
       "translation": "Sesión activa"
     },
     {
+      "source": "Session activity",
+      "translation": "Actividad de la sesión"
+    },
+    {
+      "source": "Session behavior",
+      "translation": "Comportamiento de la sesión"
+    },
+    {
       "source": "Session closed",
       "translation": "Sesión cerrada"
     },
@@ -69337,6 +69605,10 @@
     {
       "source": "Session overlay",
       "translation": "Superposición de la sesión"
+    },
+    {
+      "source": "Session shortcuts",
+      "translation": "Atajos de sesión"
     },
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -69353,6 +69625,10 @@
     {
       "source": "Session tons exclude post-session refinery carryover.",
       "translation": "Las toneladas de sesión excluyen el remanente de refinería posterior a la sesión."
+    },
+    {
+      "source": "Session tools",
+      "translation": "Herramientas de sesión"
     },
     {
       "source": "Sessions and cargo",
@@ -75789,6 +76065,10 @@
     {
       "source": "Tolerance",
       "translation": "Tolerancia"
+    },
+    {
+      "source": "Tons / hour",
+      "translation": "Toneladas/hora"
     },
     {
       "source": "Too steep",
@@ -85189,6 +85469,10 @@
       "translation": "L'échantillon actif appartient à un autre organisme"
     },
     {
+      "source": "Active time",
+      "translation": "Temps actif"
+    },
+    {
       "source": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
       "translation": "Les noms d'obélisques actifs, les codes de journal et les codes d'artefact ne peuvent pas être vides si nécessaire ou contenir des délimiteurs hérités (-, ! ou virgules à l'intérieur d'un code)."
     },
@@ -86309,6 +86593,10 @@
       "translation": "Base d'astéroïdes"
     },
     {
+      "source": "Asteroids",
+      "translation": "Astéroïdes"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Lors d'un dépôt, envoyez .mine <commodity> <l|m|h>/<l|m|h> here. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Un placement précis ici peut chevaucher un marqueur existant. Exemple : .mine ruby m/l here. Supprimez le gisement cartographié le plus proche dans un rayon de 0,5 km avec .mine delete here."
     },
@@ -86355,6 +86643,10 @@
     {
       "source": "Atmospheric regulator",
       "translation": "Régulateur atmosphérique"
+    },
+    {
+      "source": "Attach images to keep the context of this mining run with its report.",
+      "translation": "Joignez des images pour conserver le contexte de cette analyse minière avec son rapport."
     },
     {
       "source": "Attach location screenshots",
@@ -88677,6 +88969,10 @@
       "translation": "Rappel de chargement plein après une minute d'inactivité"
     },
     {
+      "source": "Cargo hold",
+      "translation": "Cale à marchandises"
+    },
+    {
       "source": "Cargo hold is empty.",
       "translation": "La soute est vide."
     },
@@ -88751,6 +89047,10 @@
     {
       "source": "CargoMissionRemaining",
       "translation": "CargoMissionRemaining"
+    },
+    {
+      "source": "CargoName",
+      "translation": "Nom de la cargaison"
     },
     {
       "source": "CargoTransfer",
@@ -89333,6 +89633,10 @@
       "translation": "Choisissez une section ci-dessous. Les modifications sont enregistrées automatiquement, sauf si un bouton Enregistrer est affiché."
     },
     {
+      "source": "Choose a session above to edit notes, attach screenshots or export its report.",
+      "translation": "Choisissez une session ci-dessus pour modifier des notes, joindre des captures d'écran ou exporter son rapport."
+    },
+    {
       "source": "Choose a site on the Sites & surveys tab.",
       "translation": "Choisissez un site dans l'onglet Sites et enquêtes."
     },
@@ -89451,6 +89755,10 @@
     {
       "source": "Choose location banners, original-file removal, and Guardian aerial options.",
       "translation": "Choisissez les bannières de localisation, la suppression du fichier original et les options aériennes Guardian."
+    },
+    {
+      "source": "Choose minerals and a minimum percentage for qualifying prospects.",
+      "translation": "Choisissez des minéraux et un pourcentage minimum pour les prospects éligibles."
     },
     {
       "source": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -90453,6 +90761,10 @@
       "translation": "Le cache de la communauté n'a pas pu être chargé : {0}"
     },
     {
+      "source": "Community data",
+      "translation": "Données communautaires"
+    },
+    {
       "source": "Community goals",
       "translation": "Objectifs communautaires"
     },
@@ -91297,6 +91609,10 @@
       "translation": "Noyau : {0}"
     },
     {
+      "source": "Cores",
+      "translation": "Noyaux"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -91699,6 +92015,10 @@
     {
       "source": "Current project needs could not be refreshed.",
       "translation": "Les besoins actuels du projet n'ont pas pu être actualisés."
+    },
+    {
+      "source": "Current session",
+      "translation": "Session en cours"
     },
     {
       "source": "Current ship",
@@ -93951,6 +94271,18 @@
     {
       "source": "Engineering materials collected",
       "translation": "Matériaux d'ingénierie collectés"
+    },
+    {
+      "source": "EngineeringCount",
+      "translation": "IngénierieCount"
+    },
+    {
+      "source": "EngineeringGrade",
+      "translation": "Niveau d'ingénierie"
+    },
+    {
+      "source": "EngineeringName",
+      "translation": "Nom de l'ingénierie"
     },
     {
       "source": "English",
@@ -97541,6 +97873,22 @@
       "translation": "Histoire #16"
     },
     {
+      "source": "HistoryRate",
+      "translation": "HistoriqueTaux"
+    },
+    {
+      "source": "HistoryRing",
+      "translation": "HistoireBague"
+    },
+    {
+      "source": "HistorySystem",
+      "translation": "HistoireSystème"
+    },
+    {
+      "source": "HistoryTons",
+      "translation": "HistoireTons"
+    },
+    {
       "source": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
       "translation": "Maintenez une combinaison de touches, puis relâchez toutes les touches pour enregistrer. Esc annule ; Retour arrière ou Supprimer s'efface."
     },
@@ -97609,12 +97957,20 @@
       "translation": "Comment sont calculées les moyennes ?"
     },
     {
+      "source": "How report totals are calculated",
+      "translation": "Comment les totaux des rapports sont calculés"
+    },
+    {
       "source": "How the interface is organized",
       "translation": "Comment l'interface est organisée"
     },
     {
       "source": "How the result is displayed",
       "translation": "Comment le résultat est affiché"
+    },
+    {
+      "source": "How thresholds affect results",
+      "translation": "Comment les seuils affectent les résultats"
     },
     {
       "source": "How to read color",
@@ -98923,6 +99279,10 @@
     {
       "source": "Keep linked cargo current",
       "translation": "Gardez la cargaison liée à jour"
+    },
+    {
+      "source": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+      "translation": "Séparez les estimations manuelles et les corrections de comptage des relevés de fret confirmés."
     },
     {
       "source": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -100819,6 +101179,30 @@
     {
       "source": "Materials count after pickup",
       "translation": "Décompte des matériaux après ramassage"
+    },
+    {
+      "source": "MaterialsAverage",
+      "translation": "MatériauxMoyenne"
+    },
+    {
+      "source": "MaterialsBest",
+      "translation": "MatériauxMeilleur"
+    },
+    {
+      "source": "MaterialsFinds",
+      "translation": "MatériauxTrouve"
+    },
+    {
+      "source": "MaterialsName",
+      "translation": "Nom des matériaux"
+    },
+    {
+      "source": "MaterialsQuality",
+      "translation": "MatériauxQualité"
+    },
+    {
+      "source": "MaterialsTons",
+      "translation": "MatériauxTonnes"
     },
     {
       "source": "Mauve",
@@ -103191,6 +103575,10 @@
     {
       "source": "Noticeable",
       "translation": "perceptible"
+    },
+    {
+      "source": "NoticesText",
+      "translation": "AvisTexte"
     },
     {
       "source": "Notification duration (seconds)",
@@ -106193,6 +106581,10 @@
       "translation": "Prospecteur"
     },
     {
+      "source": "ProspectsMinerals",
+      "translation": "PerspectivesMinéraux"
+    },
+    {
       "source": "Provider page (0 first)",
       "translation": "Page du fournisseur (0 en premier)"
     },
@@ -107767,6 +108159,10 @@
     {
       "source": "Refined Platinum ×1",
       "translation": "Platine raffiné ×1"
+    },
+    {
+      "source": "Refined cargo",
+      "translation": "Cargaison raffinée"
     },
     {
       "source": "Refined commodities",
@@ -111009,6 +111405,10 @@
       "translation": "Résultat sélectionné"
     },
     {
+      "source": "Selected session",
+      "translation": "Séance sélectionnée"
+    },
+    {
       "source": "Selected surface commodities",
       "translation": "Produits de surface sélectionnés"
     },
@@ -111129,6 +111529,14 @@
       "translation": "Séance active"
     },
     {
+      "source": "Session activity",
+      "translation": "Activité de la session"
+    },
+    {
+      "source": "Session behavior",
+      "translation": "Comportement de la session"
+    },
+    {
       "source": "Session closed",
       "translation": "Séance close"
     },
@@ -111139,6 +111547,10 @@
     {
       "source": "Session overlay",
       "translation": "Superposition de session"
+    },
+    {
+      "source": "Session shortcuts",
+      "translation": "Raccourcis de session"
     },
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -111155,6 +111567,10 @@
     {
       "source": "Session tons exclude post-session refinery carryover.",
       "translation": "Les tonnes de session excluent le report de raffinage après la session."
+    },
+    {
+      "source": "Session tools",
+      "translation": "Outils de séance"
     },
     {
       "source": "Sessions and cargo",
@@ -117591,6 +118007,10 @@
     {
       "source": "Tolerance",
       "translation": "Tolérance"
+    },
+    {
+      "source": "Tons / hour",
+      "translation": "Tonnes / heure"
     },
     {
       "source": "Too steep",
@@ -126991,6 +127411,10 @@
       "translation": "A amostra ativa pertence a outro corpo"
     },
     {
+      "source": "Active time",
+      "translation": "Tempo ativo"
+    },
+    {
       "source": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
       "translation": "Nomes de obeliscos ativos, códigos de log e códigos de artefato não podem ficar em branco quando necessário ou conter delimitadores herdados (-,! ou vírgulas dentro de um código)."
     },
@@ -128111,6 +128535,10 @@
       "translation": "AsteroidBase"
     },
     {
+      "source": "Asteroids",
+      "translation": "Asteróides"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Em um depósito, envie .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. O posicionamento preciso aqui pode sobrepor um marcador existente. Exemplo: .mine ruby m/l here. Remova o depósito mapeado mais próximo dentro de 0,5 km com .mine delete here."
     },
@@ -128157,6 +128585,10 @@
     {
       "source": "Atmospheric regulator",
       "translation": "Regulador atmosférico"
+    },
+    {
+      "source": "Attach images to keep the context of this mining run with its report.",
+      "translation": "Anexe imagens para manter o contexto desta mineração com seu relatório."
     },
     {
       "source": "Attach location screenshots",
@@ -130479,6 +130911,10 @@
       "translation": "Lembrete de carga cheia após um minuto de inatividade"
     },
     {
+      "source": "Cargo hold",
+      "translation": "Porão de carga"
+    },
+    {
       "source": "Cargo hold is empty.",
       "translation": "O porão de carga está vazio."
     },
@@ -130553,6 +130989,10 @@
     {
       "source": "CargoMissionRemaining",
       "translation": "CargoMissãoRemanescente"
+    },
+    {
+      "source": "CargoName",
+      "translation": "CargaNome"
     },
     {
       "source": "CargoTransfer",
@@ -131135,6 +131575,10 @@
       "translation": "Escolha uma seção abaixo. As alterações são salvas automaticamente, a menos que um botão Salvar seja mostrado."
     },
     {
+      "source": "Choose a session above to edit notes, attach screenshots or export its report.",
+      "translation": "Escolha uma sessão acima para editar notas, anexar capturas de tela ou exportar seu relatório."
+    },
+    {
       "source": "Choose a site on the Sites & surveys tab.",
       "translation": "Escolha um site na guia Sites e pesquisas."
     },
@@ -131253,6 +131697,10 @@
     {
       "source": "Choose location banners, original-file removal, and Guardian aerial options.",
       "translation": "Escolha banners de localização, remoção de arquivo original e opções aéreas do Guardian."
+    },
+    {
+      "source": "Choose minerals and a minimum percentage for qualifying prospects.",
+      "translation": "Escolha minerais e uma porcentagem mínima para clientes potenciais qualificados."
     },
     {
       "source": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -132255,6 +132703,10 @@
       "translation": "Não foi possível carregar o cache da comunidade: {0}"
     },
     {
+      "source": "Community data",
+      "translation": "Dados da comunidade"
+    },
+    {
       "source": "Community goals",
       "translation": "Objetivos da comunidade"
     },
@@ -133099,6 +133551,10 @@
       "translation": "Núcleo: {0}"
     },
     {
+      "source": "Cores",
+      "translation": "Núcleos"
+    },
+    {
       "source": "Coriolis",
       "translation": "Coriolis"
     },
@@ -133501,6 +133957,10 @@
     {
       "source": "Current project needs could not be refreshed.",
       "translation": "As necessidades atuais do projeto não puderam ser atualizadas."
+    },
+    {
+      "source": "Current session",
+      "translation": "Sessão atual"
     },
     {
       "source": "Current ship",
@@ -135753,6 +136213,18 @@
     {
       "source": "Engineering materials collected",
       "translation": "Materiais de engenharia coletados"
+    },
+    {
+      "source": "EngineeringCount",
+      "translation": "Contagem de Engenharia"
+    },
+    {
+      "source": "EngineeringGrade",
+      "translation": "Grau de Engenharia"
+    },
+    {
+      "source": "EngineeringName",
+      "translation": "EngenhariaNome"
     },
     {
       "source": "English",
@@ -139343,6 +139815,22 @@
       "translation": "História #16"
     },
     {
+      "source": "HistoryRate",
+      "translation": "Taxa de histórico"
+    },
+    {
+      "source": "HistoryRing",
+      "translation": "HistóriaAnel"
+    },
+    {
+      "source": "HistorySystem",
+      "translation": "Sistema Histórico"
+    },
+    {
+      "source": "HistoryTons",
+      "translation": "HistóriaToneladas"
+    },
+    {
       "source": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
       "translation": "Mantenha pressionada uma combinação de teclas e solte todas as teclas para salvar. Esc cancela; Backspace ou Delete são limpos."
     },
@@ -139411,12 +139899,20 @@
       "translation": "Como as médias são calculadas?"
     },
     {
+      "source": "How report totals are calculated",
+      "translation": "Como os totais do relatório são calculados"
+    },
+    {
       "source": "How the interface is organized",
       "translation": "Como a interface é organizada"
     },
     {
       "source": "How the result is displayed",
       "translation": "Como o resultado é exibido"
+    },
+    {
+      "source": "How thresholds affect results",
+      "translation": "Como os limites afetam os resultados"
     },
     {
       "source": "How to read color",
@@ -140725,6 +141221,10 @@
     {
       "source": "Keep linked cargo current",
       "translation": "Mantenha a carga vinculada atualizada"
+    },
+    {
+      "source": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+      "translation": "Mantenha as estimativas manuais e as correções de contagem separadas das leituras de carga confirmadas."
     },
     {
       "source": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -142621,6 +143121,30 @@
     {
       "source": "Materials count after pickup",
       "translation": "Contagem de materiais após a coleta"
+    },
+    {
+      "source": "MaterialsAverage",
+      "translation": "MateriaisMédia"
+    },
+    {
+      "source": "MaterialsBest",
+      "translation": "MateriaisMelhor"
+    },
+    {
+      "source": "MaterialsFinds",
+      "translation": "MateriaisEncontrados"
+    },
+    {
+      "source": "MaterialsName",
+      "translation": "Nome dos Materiais"
+    },
+    {
+      "source": "MaterialsQuality",
+      "translation": "MateriaisQualidade"
+    },
+    {
+      "source": "MaterialsTons",
+      "translation": "Materiais Toneladas"
     },
     {
       "source": "Mauve",
@@ -144993,6 +145517,10 @@
     {
       "source": "Noticeable",
       "translation": "perceptível"
+    },
+    {
+      "source": "NoticesText",
+      "translation": "AvisosTexto"
     },
     {
       "source": "Notification duration (seconds)",
@@ -147995,6 +148523,10 @@
       "translation": "Prospector"
     },
     {
+      "source": "ProspectsMinerals",
+      "translation": "PerspectivasMinerais"
+    },
+    {
       "source": "Provider page (0 first)",
       "translation": "Página do provedor (0 primeiro)"
     },
@@ -149569,6 +150101,10 @@
     {
       "source": "Refined Platinum ×1",
       "translation": "Platina Refinada ×1"
+    },
+    {
+      "source": "Refined cargo",
+      "translation": "Carga refinada"
     },
     {
       "source": "Refined commodities",
@@ -152811,6 +153347,10 @@
       "translation": "Resultado selecionado"
     },
     {
+      "source": "Selected session",
+      "translation": "Sessão selecionada"
+    },
+    {
       "source": "Selected surface commodities",
       "translation": "Mercadorias de superfície selecionadas"
     },
@@ -152931,6 +153471,14 @@
       "translation": "Sessão ativa"
     },
     {
+      "source": "Session activity",
+      "translation": "Atividade da sessão"
+    },
+    {
+      "source": "Session behavior",
+      "translation": "Comportamento da sessão"
+    },
+    {
       "source": "Session closed",
       "translation": "Sessão encerrada"
     },
@@ -152941,6 +153489,10 @@
     {
       "source": "Session overlay",
       "translation": "Sobreposição da sessão"
+    },
+    {
+      "source": "Session shortcuts",
+      "translation": "Atalhos de sessão"
     },
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -152957,6 +153509,10 @@
     {
       "source": "Session tons exclude post-session refinery carryover.",
       "translation": "As toneladas da sessão excluem o transporte da refinaria pós-sessão."
+    },
+    {
+      "source": "Session tools",
+      "translation": "Ferramentas de sessão"
     },
     {
       "source": "Sessions and cargo",
@@ -159393,6 +159949,10 @@
     {
       "source": "Tolerance",
       "translation": "Tolerância"
+    },
+    {
+      "source": "Tons / hour",
+      "translation": "Toneladas/hora"
     },
     {
       "source": "Too steep",
@@ -168793,6 +169353,10 @@
       "translation": "Активный образец принадлежит другому телу"
     },
     {
+      "source": "Active time",
+      "translation": "Активное время"
+    },
+    {
       "source": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
       "translation": "Имена активных обелисков, коды журналов и коды артефактов не могут быть пустыми, если это необходимо, или содержать устаревшие разделители (-, ! или запятые внутри кода)."
     },
@@ -169913,6 +170477,10 @@
       "translation": "АстероидБаза"
     },
     {
+      "source": "Asteroids",
+      "translation": "Астероиды"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "При депозите отправьте .mine <commodity> <l|m|h>/<l|m|h> here. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Точное размещение здесь может перекрывать существующий маркер. Пример: .mine ruby m/l here. Удалите ближайшее обнаруженное месторождение в радиусе 0,5 км с помощью .mine delete here."
     },
@@ -169959,6 +170527,10 @@
     {
       "source": "Atmospheric regulator",
       "translation": "Атмосферный регулятор"
+    },
+    {
+      "source": "Attach images to keep the context of this mining run with its report.",
+      "translation": "Прикрепите изображения, чтобы сохранить контекст этого майнинга вместе с отчетом."
     },
     {
       "source": "Attach location screenshots",
@@ -172281,6 +172853,10 @@
       "translation": "Напоминание о заполнении груза после одной минуты простоя"
     },
     {
+      "source": "Cargo hold",
+      "translation": "Грузовой отсек"
+    },
+    {
       "source": "Cargo hold is empty.",
       "translation": "Грузовой отсек пуст."
     },
@@ -172355,6 +172931,10 @@
     {
       "source": "CargoMissionRemaining",
       "translation": "ГрузМиссияОсталось"
+    },
+    {
+      "source": "CargoName",
+      "translation": "Имя груза"
     },
     {
       "source": "CargoTransfer",
@@ -172937,6 +173517,10 @@
       "translation": "Выберите раздел ниже. Изменения сохраняются автоматически, если не отображается кнопка «Сохранить»."
     },
     {
+      "source": "Choose a session above to edit notes, attach screenshots or export its report.",
+      "translation": "Выберите сеанс выше, чтобы редактировать заметки, прикреплять снимки экрана или экспортировать отчет."
+    },
+    {
       "source": "Choose a site on the Sites & surveys tab.",
       "translation": "Выберите сайт на вкладке Сайты и опросы."
     },
@@ -173055,6 +173639,10 @@
     {
       "source": "Choose location banners, original-file removal, and Guardian aerial options.",
       "translation": "Выберите баннеры местоположения, удаление исходного файла и параметры антенны Guardian."
+    },
+    {
+      "source": "Choose minerals and a minimum percentage for qualifying prospects.",
+      "translation": "Выберите полезные ископаемые и минимальный процент для соответствующих перспектив."
     },
     {
       "source": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -174057,6 +174645,10 @@
       "translation": "Не удалось загрузить кэш сообщества: {0}."
     },
     {
+      "source": "Community data",
+      "translation": "Данные сообщества"
+    },
+    {
       "source": "Community goals",
       "translation": "Цели сообщества"
     },
@@ -174901,6 +175493,10 @@
       "translation": "Ядро: {0}"
     },
     {
+      "source": "Cores",
+      "translation": "Ядра"
+    },
+    {
       "source": "Coriolis",
       "translation": "Кориолис"
     },
@@ -175303,6 +175899,10 @@
     {
       "source": "Current project needs could not be refreshed.",
       "translation": "Текущие потребности проекта не удалось обновить."
+    },
+    {
+      "source": "Current session",
+      "translation": "Текущая сессия"
     },
     {
       "source": "Current ship",
@@ -177555,6 +178155,18 @@
     {
       "source": "Engineering materials collected",
       "translation": "Собраны инженерные материалы"
+    },
+    {
+      "source": "EngineeringCount",
+      "translation": "Инженерный счет"
+    },
+    {
+      "source": "EngineeringGrade",
+      "translation": "Инженерный класс"
+    },
+    {
+      "source": "EngineeringName",
+      "translation": "Инженерное имя"
     },
     {
       "source": "English",
@@ -181145,6 +181757,22 @@
       "translation": "История №16"
     },
     {
+      "source": "HistoryRate",
+      "translation": "ИсторияОценка"
+    },
+    {
+      "source": "HistoryRing",
+      "translation": "ИсторияКольцо"
+    },
+    {
+      "source": "HistorySystem",
+      "translation": "ИсторияСистема"
+    },
+    {
+      "source": "HistoryTons",
+      "translation": "ИсторияТонны"
+    },
+    {
       "source": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
       "translation": "Удерживайте комбинацию клавиш, затем отпустите все клавиши для сохранения. Esc отменяет; Backspace или Удалить очищаются."
     },
@@ -181213,12 +181841,20 @@
       "translation": "Как рассчитываются средние значения?"
     },
     {
+      "source": "How report totals are calculated",
+      "translation": "Как рассчитываются итоги отчета"
+    },
+    {
       "source": "How the interface is organized",
       "translation": "Как устроен интерфейс"
     },
     {
       "source": "How the result is displayed",
       "translation": "Как отображается результат"
+    },
+    {
+      "source": "How thresholds affect results",
+      "translation": "Как пороговые значения влияют на результаты"
     },
     {
       "source": "How to read color",
@@ -182527,6 +183163,10 @@
     {
       "source": "Keep linked cargo current",
       "translation": "Поддерживайте связанный груз в актуальном состоянии"
+    },
+    {
+      "source": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+      "translation": "Храните ручные оценки и корректировки подсчета отдельно от подтвержденных показаний груза."
     },
     {
       "source": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -184423,6 +185063,30 @@
     {
       "source": "Materials count after pickup",
       "translation": "Подсчет материалов после получения"
+    },
+    {
+      "source": "MaterialsAverage",
+      "translation": "МатериалыСредний"
+    },
+    {
+      "source": "MaterialsBest",
+      "translation": "МатериалыЛучший"
+    },
+    {
+      "source": "MaterialsFinds",
+      "translation": "МатериалыНаходки"
+    },
+    {
+      "source": "MaterialsName",
+      "translation": "МатериалыНазвание"
+    },
+    {
+      "source": "MaterialsQuality",
+      "translation": "МатериалыКачество"
+    },
+    {
+      "source": "MaterialsTons",
+      "translation": "МатериалыТонны"
     },
     {
       "source": "Mauve",
@@ -186795,6 +187459,10 @@
     {
       "source": "Noticeable",
       "translation": "заметный"
+    },
+    {
+      "source": "NoticesText",
+      "translation": "УведомленияТекст"
     },
     {
       "source": "Notification duration (seconds)",
@@ -189797,6 +190465,10 @@
       "translation": "Старатель"
     },
     {
+      "source": "ProspectsMinerals",
+      "translation": "ПерспективыПолезные ископаемые"
+    },
+    {
       "source": "Provider page (0 first)",
       "translation": "Страница провайдера (сначала 0)"
     },
@@ -191371,6 +192043,10 @@
     {
       "source": "Refined Platinum ×1",
       "translation": "Очищенная платина ×1"
+    },
+    {
+      "source": "Refined cargo",
+      "translation": "Переработанный груз"
     },
     {
       "source": "Refined commodities",
@@ -194613,6 +195289,10 @@
       "translation": "Выбранный результат"
     },
     {
+      "source": "Selected session",
+      "translation": "Выбранный сеанс"
+    },
+    {
       "source": "Selected surface commodities",
       "translation": "Отдельные поверхностные товары"
     },
@@ -194733,6 +195413,14 @@
       "translation": "Сеанс активен"
     },
     {
+      "source": "Session activity",
+      "translation": "Активность сеанса"
+    },
+    {
+      "source": "Session behavior",
+      "translation": "Поведение сеанса"
+    },
+    {
       "source": "Session closed",
       "translation": "Сессия закрыта"
     },
@@ -194743,6 +195431,10 @@
     {
       "source": "Session overlay",
       "translation": "Оверлей сеанса"
+    },
+    {
+      "source": "Session shortcuts",
+      "translation": "Ярлыки сеанса"
     },
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -194759,6 +195451,10 @@
     {
       "source": "Session tons exclude post-session refinery carryover.",
       "translation": "Сессионные тонны исключают постсессионный перенос нефти."
+    },
+    {
+      "source": "Session tools",
+      "translation": "Инструменты сеанса"
     },
     {
       "source": "Sessions and cargo",
@@ -201195,6 +201891,10 @@
     {
       "source": "Tolerance",
       "translation": "Толерантность"
+    },
+    {
+      "source": "Tons / hour",
+      "translation": "Тонн/час"
     },
     {
       "source": "Too steep",
@@ -210595,6 +211295,10 @@
       "translation": "活动样本属于另一个机构"
     },
     {
+      "source": "Active time",
+      "translation": "活跃时间"
+    },
+    {
       "source": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
       "translation": "活动方尖碑名称、日志代码和工件代码在需要时不能为空，也不能包含旧版分隔符（-、! 或代码内的逗号）。"
     },
@@ -211715,6 +212419,10 @@
       "translation": "小行星基地"
     },
     {
+      "source": "Asteroids",
+      "translation": "小行星"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "存款后，发送.mine <commodity> <l|m|h>/<l|m|h> here。使用 l、m 或 h 表示低、中或高；完整的单词也有效。此处的精确放置可能会与现有标记重叠。示例：.mine ruby m/l here。使用 .mine delete here 移除 0.5 公里内最近的地图沉积物。"
     },
@@ -211761,6 +212469,10 @@
     {
       "source": "Atmospheric regulator",
       "translation": "大气调节器"
+    },
+    {
+      "source": "Attach images to keep the context of this mining run with its report.",
+      "translation": "附加图像以保留此挖掘运行的上下文及其报告。"
     },
     {
       "source": "Attach location screenshots",
@@ -214083,6 +214795,10 @@
       "translation": "闲置一分钟货物已满提醒"
     },
     {
+      "source": "Cargo hold",
+      "translation": "货舱"
+    },
+    {
       "source": "Cargo hold is empty.",
       "translation": "货舱已空。"
     },
@@ -214157,6 +214873,10 @@
     {
       "source": "CargoMissionRemaining",
       "translation": "剩余货运任务"
+    },
+    {
+      "source": "CargoName",
+      "translation": "货物名称"
     },
     {
       "source": "CargoTransfer",
@@ -214739,6 +215459,10 @@
       "translation": "选择下面的一个部分。除非显示“保存”按钮，否则更改会自动保存。"
     },
     {
+      "source": "Choose a session above to edit notes, attach screenshots or export its report.",
+      "translation": "选择上面的会话来编辑注释、附加屏幕截图或导出其报告。"
+    },
+    {
       "source": "Choose a site on the Sites & surveys tab.",
       "translation": "在“站点和调查”选项卡上选择一个站点。"
     },
@@ -214857,6 +215581,10 @@
     {
       "source": "Choose location banners, original-file removal, and Guardian aerial options.",
       "translation": "选择位置横幅、原始文件删除和 Guardian 航空选项。"
+    },
+    {
+      "source": "Choose minerals and a minimum percentage for qualifying prospects.",
+      "translation": "选择矿物和符合资格的前景的最低百分比。"
     },
     {
       "source": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -215859,6 +216587,10 @@
       "translation": "无法加载社区缓存：{0}"
     },
     {
+      "source": "Community data",
+      "translation": "社区数据"
+    },
+    {
       "source": "Community goals",
       "translation": "社区目标"
     },
@@ -216703,6 +217435,10 @@
       "translation": "核心：{0}"
     },
     {
+      "source": "Cores",
+      "translation": "核心"
+    },
+    {
       "source": "Coriolis",
       "translation": "科里奥利"
     },
@@ -217105,6 +217841,10 @@
     {
       "source": "Current project needs could not be refreshed.",
       "translation": "当前的项目需求无法刷新。"
+    },
+    {
+      "source": "Current session",
+      "translation": "当前会话"
     },
     {
       "source": "Current ship",
@@ -219357,6 +220097,18 @@
     {
       "source": "Engineering materials collected",
       "translation": "工程材料收集"
+    },
+    {
+      "source": "EngineeringCount",
+      "translation": "工程计数"
+    },
+    {
+      "source": "EngineeringGrade",
+      "translation": "工程级"
+    },
+    {
+      "source": "EngineeringName",
+      "translation": "工程名称"
     },
     {
       "source": "English",
@@ -222947,6 +223699,22 @@
       "translation": "历史#16"
     },
     {
+      "source": "HistoryRate",
+      "translation": "历史率"
+    },
+    {
+      "source": "HistoryRing",
+      "translation": "历史之环"
+    },
+    {
+      "source": "HistorySystem",
+      "translation": "历史系统"
+    },
+    {
+      "source": "HistoryTons",
+      "translation": "历史吨"
+    },
+    {
       "source": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
       "translation": "按住组合键，然后松开所有键即可保存。 Esc 取消；退格键或删除会清除。"
     },
@@ -223015,12 +223783,20 @@
       "translation": "平均值是如何计算的？"
     },
     {
+      "source": "How report totals are calculated",
+      "translation": "报告总计的计算方式"
+    },
+    {
       "source": "How the interface is organized",
       "translation": "界面是如何组织的"
     },
     {
       "source": "How the result is displayed",
       "translation": "结果如何显示"
+    },
+    {
+      "source": "How thresholds affect results",
+      "translation": "阈值如何影响结果"
     },
     {
       "source": "How to read color",
@@ -224329,6 +225105,10 @@
     {
       "source": "Keep linked cargo current",
       "translation": "保持链接的货物最新"
+    },
+    {
+      "source": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+      "translation": "将手动估计和计数修正与已确认的货物读数分开。"
     },
     {
       "source": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -226225,6 +227005,30 @@
     {
       "source": "Materials count after pickup",
       "translation": "拾取后的材料计数"
+    },
+    {
+      "source": "MaterialsAverage",
+      "translation": "材料平均"
+    },
+    {
+      "source": "MaterialsBest",
+      "translation": "最佳材料"
+    },
+    {
+      "source": "MaterialsFinds",
+      "translation": "材料发现"
+    },
+    {
+      "source": "MaterialsName",
+      "translation": "材料名称"
+    },
+    {
+      "source": "MaterialsQuality",
+      "translation": "材料质量"
+    },
+    {
+      "source": "MaterialsTons",
+      "translation": "材料吨"
     },
     {
       "source": "Mauve",
@@ -228597,6 +229401,10 @@
     {
       "source": "Noticeable",
       "translation": "显"
+    },
+    {
+      "source": "NoticesText",
+      "translation": "通知文本"
     },
     {
       "source": "Notification duration (seconds)",
@@ -231599,6 +232407,10 @@
       "translation": "探矿者"
     },
     {
+      "source": "ProspectsMinerals",
+      "translation": "前景矿产"
+    },
+    {
       "source": "Provider page (0 first)",
       "translation": "提供商页面（第 0 个）"
     },
@@ -233173,6 +233985,10 @@
     {
       "source": "Refined Platinum ×1",
       "translation": "精炼白金×1"
+    },
+    {
+      "source": "Refined cargo",
+      "translation": "精炼货物"
     },
     {
       "source": "Refined commodities",
@@ -236415,6 +237231,10 @@
       "translation": "选定的结果"
     },
     {
+      "source": "Selected session",
+      "translation": "选定的会话"
+    },
+    {
       "source": "Selected surface commodities",
       "translation": "精选面品"
     },
@@ -236535,6 +237355,14 @@
       "translation": "会话活跃"
     },
     {
+      "source": "Session activity",
+      "translation": "会话活动"
+    },
+    {
+      "source": "Session behavior",
+      "translation": "会话行为"
+    },
+    {
       "source": "Session closed",
       "translation": "会议结束"
     },
@@ -236545,6 +237373,10 @@
     {
       "source": "Session overlay",
       "translation": "采矿会话叠加层"
+    },
+    {
+      "source": "Session shortcuts",
+      "translation": "会话快捷方式"
     },
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -236561,6 +237393,10 @@
     {
       "source": "Session tons exclude post-session refinery carryover.",
       "translation": "会议吨数不包括会议后炼油厂结转。"
+    },
+    {
+      "source": "Session tools",
+      "translation": "会话工具"
     },
     {
       "source": "Sessions and cargo",
@@ -242997,6 +243833,10 @@
     {
       "source": "Tolerance",
       "translation": "公差"
+    },
+    {
+      "source": "Tons / hour",
+      "translation": "吨/小时"
     },
     {
       "source": "Too steep",
@@ -252397,6 +253237,10 @@
       "translation": "* ACTIVE SAMPLE BELONGS TO ANOTHER BODY >>>!"
     },
     {
+      "source": "Active time",
+      "translation": "* ACTIVE TIME >>>!"
+    },
+    {
       "source": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
       "translation": "* ACTIVE-OBELISK NAMES, LOG CODES, AND ARTIFACT CODES CANNOT BE BLANK WHERE REQUIRED OR CONTAIN LEGACY DELIMITERS (-, !, OR COMMAS INSIDE A CODE). >>>!"
     },
@@ -253517,6 +254361,10 @@
       "translation": "* ASTEROIDBASE >>>!"
     },
     {
+      "source": "Asteroids",
+      "translation": "* ASTEROIDS >>>!"
+    },
+    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "* AT A DEPOSIT, SEND .MINE <COMMODITY> <L|M|H>/<L|M|H> HERE. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. PRECISE HERE PLACEMENT MAY OVERLAP AN EXISTING MARKER. EXAMPLE: .MINE RUBY M/L HERE. REMOVE THE NEAREST MAPPED DEPOSIT WITHIN 0.5 KM WITH .MINE DELETE HERE. >>>!"
     },
@@ -253563,6 +254411,10 @@
     {
       "source": "Atmospheric regulator",
       "translation": "* ATMOSPHERIC REGULATOR >>>!"
+    },
+    {
+      "source": "Attach images to keep the context of this mining run with its report.",
+      "translation": "* ATTACH IMAGES TO KEEP THE CONTEXT OF THIS MINING RUN WITH ITS REPORT. >>>!"
     },
     {
       "source": "Attach location screenshots",
@@ -255885,6 +256737,10 @@
       "translation": "* CARGO FULL REMINDER AFTER ONE MINUTE IDLE >>>!"
     },
     {
+      "source": "Cargo hold",
+      "translation": "* CARGO HOLD >>>!"
+    },
+    {
       "source": "Cargo hold is empty.",
       "translation": "* CARGO HOLD IS EMPTY. >>>!"
     },
@@ -255959,6 +256815,10 @@
     {
       "source": "CargoMissionRemaining",
       "translation": "* CARGOMISSIONREMAINING >>>!"
+    },
+    {
+      "source": "CargoName",
+      "translation": "* CARGONAME >>>!"
     },
     {
       "source": "CargoTransfer",
@@ -256541,6 +257401,10 @@
       "translation": "* CHOOSE A SECTION BELOW. CHANGES SAVE AUTOMATICALLY UNLESS A SAVE BUTTON IS SHOWN. >>>!"
     },
     {
+      "source": "Choose a session above to edit notes, attach screenshots or export its report.",
+      "translation": "* CHOOSE A SESSION ABOVE TO EDIT NOTES, ATTACH SCREENSHOTS OR EXPORT ITS REPORT. >>>!"
+    },
+    {
       "source": "Choose a site on the Sites & surveys tab.",
       "translation": "* CHOOSE A SITE ON THE SITES & SURVEYS TAB. >>>!"
     },
@@ -256659,6 +257523,10 @@
     {
       "source": "Choose location banners, original-file removal, and Guardian aerial options.",
       "translation": "* CHOOSE LOCATION BANNERS, ORIGINAL-FILE REMOVAL, AND GUARDIAN AERIAL OPTIONS. >>>!"
+    },
+    {
+      "source": "Choose minerals and a minimum percentage for qualifying prospects.",
+      "translation": "* CHOOSE MINERALS AND A MINIMUM PERCENTAGE FOR QUALIFYING PROSPECTS. >>>!"
     },
     {
       "source": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -257661,6 +258529,10 @@
       "translation": "* COMMUNITY CACHE COULD NOT BE LOADED: {0} >>>!"
     },
     {
+      "source": "Community data",
+      "translation": "* COMMUNITY DATA >>>!"
+    },
+    {
       "source": "Community goals",
       "translation": "* COMMUNITY GOALS >>>!"
     },
@@ -258505,6 +259377,10 @@
       "translation": "* CORE: {0} >>>!"
     },
     {
+      "source": "Cores",
+      "translation": "* CORES >>>!"
+    },
+    {
       "source": "Coriolis",
       "translation": "* CORIOLIS >>>!"
     },
@@ -258907,6 +259783,10 @@
     {
       "source": "Current project needs could not be refreshed.",
       "translation": "* CURRENT PROJECT NEEDS COULD NOT BE REFRESHED. >>>!"
+    },
+    {
+      "source": "Current session",
+      "translation": "* CURRENT SESSION >>>!"
     },
     {
       "source": "Current ship",
@@ -261159,6 +262039,18 @@
     {
       "source": "Engineering materials collected",
       "translation": "* ENGINEERING MATERIALS COLLECTED >>>!"
+    },
+    {
+      "source": "EngineeringCount",
+      "translation": "* ENGINEERINGCOUNT >>>!"
+    },
+    {
+      "source": "EngineeringGrade",
+      "translation": "* ENGINEERINGGRADE >>>!"
+    },
+    {
+      "source": "EngineeringName",
+      "translation": "* ENGINEERINGNAME >>>!"
     },
     {
       "source": "English",
@@ -264749,6 +265641,22 @@
       "translation": "* HISTORY #16 >>>!"
     },
     {
+      "source": "HistoryRate",
+      "translation": "* HISTORYRATE >>>!"
+    },
+    {
+      "source": "HistoryRing",
+      "translation": "* HISTORYRING >>>!"
+    },
+    {
+      "source": "HistorySystem",
+      "translation": "* HISTORYSYSTEM >>>!"
+    },
+    {
+      "source": "HistoryTons",
+      "translation": "* HISTORYTONS >>>!"
+    },
+    {
       "source": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
       "translation": "* HOLD A KEY COMBINATION, THEN RELEASE ALL KEYS TO SAVE. ESC CANCELS; BACKSPACE OR DELETE CLEARS. >>>!"
     },
@@ -264817,12 +265725,20 @@
       "translation": "* HOW ARE AVERAGES CALCULATED? >>>!"
     },
     {
+      "source": "How report totals are calculated",
+      "translation": "* HOW REPORT TOTALS ARE CALCULATED >>>!"
+    },
+    {
       "source": "How the interface is organized",
       "translation": "* HOW THE INTERFACE IS ORGANIZED >>>!"
     },
     {
       "source": "How the result is displayed",
       "translation": "* HOW THE RESULT IS DISPLAYED >>>!"
+    },
+    {
+      "source": "How thresholds affect results",
+      "translation": "* HOW THRESHOLDS AFFECT RESULTS >>>!"
     },
     {
       "source": "How to read color",
@@ -266131,6 +267047,10 @@
     {
       "source": "Keep linked cargo current",
       "translation": "* KEEP LINKED CARGO CURRENT >>>!"
+    },
+    {
+      "source": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+      "translation": "* KEEP MANUAL ESTIMATES AND COUNT CORRECTIONS SEPARATE FROM CONFIRMED CARGO READINGS. >>>!"
     },
     {
       "source": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -268027,6 +268947,30 @@
     {
       "source": "Materials count after pickup",
       "translation": "* MATERIALS COUNT AFTER PICKUP >>>!"
+    },
+    {
+      "source": "MaterialsAverage",
+      "translation": "* MATERIALSAVERAGE >>>!"
+    },
+    {
+      "source": "MaterialsBest",
+      "translation": "* MATERIALSBEST >>>!"
+    },
+    {
+      "source": "MaterialsFinds",
+      "translation": "* MATERIALSFINDS >>>!"
+    },
+    {
+      "source": "MaterialsName",
+      "translation": "* MATERIALSNAME >>>!"
+    },
+    {
+      "source": "MaterialsQuality",
+      "translation": "* MATERIALSQUALITY >>>!"
+    },
+    {
+      "source": "MaterialsTons",
+      "translation": "* MATERIALSTONS >>>!"
     },
     {
       "source": "Mauve",
@@ -270399,6 +271343,10 @@
     {
       "source": "Noticeable",
       "translation": "* NOTICEABLE >>>!"
+    },
+    {
+      "source": "NoticesText",
+      "translation": "* NOTICESTEXT >>>!"
     },
     {
       "source": "Notification duration (seconds)",
@@ -273401,6 +274349,10 @@
       "translation": "* PROSPECTOR >>>!"
     },
     {
+      "source": "ProspectsMinerals",
+      "translation": "* PROSPECTSMINERALS >>>!"
+    },
+    {
       "source": "Provider page (0 first)",
       "translation": "* PROVIDER PAGE (0 FIRST) >>>!"
     },
@@ -274975,6 +275927,10 @@
     {
       "source": "Refined Platinum ×1",
       "translation": "* REFINED PLATINUM ×1 >>>!"
+    },
+    {
+      "source": "Refined cargo",
+      "translation": "* REFINED CARGO >>>!"
     },
     {
       "source": "Refined commodities",
@@ -278217,6 +279173,10 @@
       "translation": "* SELECTED RESULT >>>!"
     },
     {
+      "source": "Selected session",
+      "translation": "* SELECTED SESSION >>>!"
+    },
+    {
       "source": "Selected surface commodities",
       "translation": "* SELECTED SURFACE COMMODITIES >>>!"
     },
@@ -278337,6 +279297,14 @@
       "translation": "* SESSION ACTIVE >>>!"
     },
     {
+      "source": "Session activity",
+      "translation": "* SESSION ACTIVITY >>>!"
+    },
+    {
+      "source": "Session behavior",
+      "translation": "* SESSION BEHAVIOR >>>!"
+    },
+    {
       "source": "Session closed",
       "translation": "* SESSION CLOSED >>>!"
     },
@@ -278347,6 +279315,10 @@
     {
       "source": "Session overlay",
       "translation": "* SESSION OVERLAY >>>!"
+    },
+    {
+      "source": "Session shortcuts",
+      "translation": "* SESSION SHORTCUTS >>>!"
     },
     {
       "source": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -278363,6 +279335,10 @@
     {
       "source": "Session tons exclude post-session refinery carryover.",
       "translation": "* SESSION TONS EXCLUDE POST-SESSION REFINERY CARRYOVER. >>>!"
+    },
+    {
+      "source": "Session tools",
+      "translation": "* SESSION TOOLS >>>!"
     },
     {
       "source": "Sessions and cargo",
@@ -284799,6 +285775,10 @@
     {
       "source": "Tolerance",
       "translation": "* TOLERANCE >>>!"
+    },
+    {
+      "source": "Tons / hour",
+      "translation": "* TONS / HOUR >>>!"
     },
     {
       "source": "Too steep",

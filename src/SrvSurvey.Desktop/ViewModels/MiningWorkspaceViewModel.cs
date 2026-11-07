@@ -388,6 +388,12 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     public MiningSession? Current => state.Session.Current;
     public string CurrentSystem => system;
     public string Context => string.Join(" · ", new[] { system, body, ship }.Where(s => s.Length > 0));
+    public string SessionState => Current is { } session ? SessionStateLabel(session) : "No active session";
+    public TimeSpan SessionElapsed => Current?.ActiveDuration ?? TimeSpan.Zero;
+    public double SessionRefinedTons => Current?.RefinedTons ?? 0;
+    public double SessionRate => Current?.TonsPerHour ?? 0;
+    public int SessionAsteroids => Current?.Asteroids ?? 0;
+    public int SessionCores => Current?.CoreHits ?? 0;
     public string SessionSummary =>
         Current is not { } session
             ? "No active session"
@@ -1701,6 +1707,12 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 {
                     nameof(CommunityStatus),
                     nameof(SessionSummary),
+                    nameof(SessionState),
+                    nameof(SessionElapsed),
+                    nameof(SessionRefinedTons),
+                    nameof(SessionRate),
+                    nameof(SessionAsteroids),
+                    nameof(SessionCores),
                     nameof(YieldConfirmation),
                     nameof(RefineryCarryoverSummary),
                     nameof(HasRefineryCarryover),
@@ -1746,6 +1758,12 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 nameof(Context),
                 nameof(CurrentSystem),
                 nameof(SessionSummary),
+                nameof(SessionState),
+                nameof(SessionElapsed),
+                nameof(SessionRefinedTons),
+                nameof(SessionRate),
+                nameof(SessionAsteroids),
+                nameof(SessionCores),
                 nameof(YieldConfirmation),
                 nameof(RefineryCarryoverSummary),
                 nameof(HasRefineryCarryover),

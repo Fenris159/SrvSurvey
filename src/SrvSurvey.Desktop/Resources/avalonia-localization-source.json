@@ -3170,6 +3170,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Active time",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
     "IsFormat": false,
     "SourceKinds": [
@@ -5414,6 +5422,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Asteroids",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "At a deposit, send .mine \u003Ccommodity\u003E \u003Cl|m|h\u003E/\u003Cl|m|h\u003E here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
     "IsFormat": false,
     "SourceKinds": [
@@ -5508,6 +5524,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Attach images to keep the context of this mining run with its report.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Attach location screenshots",
@@ -10170,6 +10194,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Cargo hold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Cargo hold is empty.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10320,6 +10352,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "CargoName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
   },
   {
     "Text": "CargoTransfer",
@@ -11485,6 +11525,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Choose a session above to edit notes, attach screenshots or export its report.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Choose a site on the Sites \u0026 surveys tab.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11723,6 +11771,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose minerals and a minimum percentage for qualifying prospects.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -13738,6 +13794,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
   },
   {
+    "Text": "Community data",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Community goals",
     "IsFormat": false,
     "SourceKinds": [
@@ -15429,6 +15493,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Cores",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Coriolis",
     "IsFormat": false,
     "SourceKinds": [
@@ -16239,6 +16311,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
+  },
+  {
+    "Text": "Current session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Current ship",
@@ -20762,6 +20842,30 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "EngineeringCount",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "EngineeringGrade",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "EngineeringName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
   },
   {
     "Text": "English",
@@ -27961,6 +28065,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianOverlayPreviewState.cs"
   },
   {
+    "Text": "HistoryRate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "HistoryRing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "HistorySystem",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "HistoryTons",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
     "Text": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
     "IsFormat": false,
     "SourceKinds": [
@@ -28098,6 +28234,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
+    "Text": "How report totals are calculated",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "How the interface is organized",
     "IsFormat": false,
     "SourceKinds": [
@@ -28112,6 +28256,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
+    "Text": "How thresholds affect results",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "How to read color",
@@ -30742,6 +30894,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
@@ -34550,6 +34710,54 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "MaterialsAverage",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsBest",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsFinds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsQuality",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsTons",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
     "Text": "Mauve",
     "IsFormat": false,
     "SourceKinds": [
@@ -35368,9 +35576,10 @@
     "Text": "Mining backup",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Mining backup could not be read: {0}",
@@ -39311,6 +39520,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "NoticesText",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
   },
   {
     "Text": "Notification duration (seconds)",
@@ -45333,6 +45550,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "ProspectsMinerals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
     "Text": "Provider page (0 first)",
     "IsFormat": false,
     "SourceKinds": [
@@ -48485,6 +48710,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Refined cargo",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Refined commodities",
@@ -54988,6 +55221,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
+    "Text": "Selected session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Selected surface commodities",
     "IsFormat": false,
     "SourceKinds": [
@@ -55230,6 +55471,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Session activity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Session behavior",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Session closed",
     "IsFormat": false,
     "SourceKinds": [
@@ -55252,6 +55509,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Session shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -55284,6 +55549,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Session tools",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Sessions and cargo",
@@ -68184,6 +68457,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/FirstFootfallInferenceSettingsStore.cs"
+  },
+  {
+    "Text": "Tons / hour",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Too steep",
