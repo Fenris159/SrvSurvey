@@ -77,6 +77,8 @@ for conflict-zone massacre missions.
   transfer updates, and also fixes the same error during external body-data loads.
   Completed ring maps remain recognized when body records share a name. Bodies
   named after their system keep a readable label instead of a blank name.
+  First-footfall commands and destination highlights retain the intended body
+  identity when names are shared.
 - Handle unresolvable boxel-sector names without stopping journal monitoring.
   Unsupported geometry keeps its recorded identity without inventing a system
   address, allowing later journal updates to continue normally.

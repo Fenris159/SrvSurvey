@@ -1975,11 +1975,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             .ToArray();
 
         string? destination = GetDestinationShortName();
-        DssBodies = CreateDssCandidates().Select(name => CreateBodyReference(name, destination)).ToArray();
+        DssBodies = CreateDssCandidates(destination).ToArray();
         BiologicalBodies = snapshot
             .Bodies.Where(body => body.AnalyzedBiologicalSignalCount < body.BiologicalSignalCount)
             .OrderBy(body => body.BodyId)
-            .Select(body => CreateBodyReference(body.ShortName, destination))
+            .Select(body => CreateBodyReference(body.ShortName, destination, body.BodyId))
             .ToArray();
 
         OnPropertyChanged(nameof(Snapshot));
@@ -2714,7 +2714,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         );
     }
 
-    private IEnumerable<string> CreateDssCandidates()
+    private IEnumerable<SurveyBodyReferenceViewModel> CreateDssCandidates(string? destination)
     {
         var completedBodyNames = snapshot
             .Bodies.Where(body => body.IsDssComplete)
@@ -2727,35 +2727,19 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            foreach (string candidate in CreateBodyDssCandidates(body, completedBodyNames))
+            foreach (string candidate in CreateRingDssCandidates(body, completedBodyNames))
             {
-                yield return candidate;
+                yield return CreateBodyReference(candidate, destination, null);
+            }
+
+            if (!ShouldSkipBodyDssCandidate(body))
+            {
+                yield return CreateBodyReference(body.ShortName, destination, body.BodyId);
             }
         }
     }
 
-    private IEnumerable<string> CreateBodyDssCandidates(
-        SystemScanBodySnapshot body,
-        IReadOnlySet<string> completedBodyNames
-    )
-    {
-        foreach (string ringCandidate in CreateRingDssCandidates(body, completedBodyNames))
-        {
-            yield return ringCandidate;
-        }
-
-        if (ShouldSkipBodyDssCandidate(body))
-        {
-            yield break;
-        }
-
-        yield return body.ShortName;
-    }
-
-    private IEnumerable<string> CreateRingDssCandidates(
-        SystemScanBodySnapshot body,
-        IReadOnlySet<string> completedBodyNames
-    )
+    private IEnumerable<string> CreateRingDssCandidates(SystemScanBodySnapshot body, HashSet<string> completedBodyNames)
     {
         if (SkipRingsForDss)
         {
@@ -2809,19 +2793,25 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return null;
         }
 
-        if (!string.IsNullOrWhiteSpace(snapshot.SystemName))
-        {
-            name = name.Replace(snapshot.SystemName, string.Empty, StringComparison.Ordinal);
-        }
-
-        return name.Replace(" ", string.Empty, StringComparison.Ordinal);
+        string shortName =
+            !string.IsNullOrWhiteSpace(snapshot.SystemName)
+            && name.StartsWith(snapshot.SystemName, StringComparison.Ordinal)
+                ? name[snapshot.SystemName.Length..]
+                : name;
+        return string.IsNullOrWhiteSpace(shortName)
+            ? name
+            : shortName.Replace(" ", string.Empty, StringComparison.Ordinal);
     }
 
-    private static SurveyBodyReferenceViewModel CreateBodyReference(string name, string? destination)
+    private SurveyBodyReferenceViewModel CreateBodyReference(string name, string? destination, int? bodyId)
     {
+        bool isDestination =
+            bodyId is { } id && status?.Destination is { System: > 0 } selected
+                ? selected.System == snapshot.SystemAddress && selected.Body == id
+                : string.Equals(name, destination, StringComparison.Ordinal);
         return new SurveyBodyReferenceViewModel(
             name,
-            string.Equals(name, destination, StringComparison.Ordinal),
+            isDestination,
             string.IsNullOrWhiteSpace(destination)
                 || name.Length > 0 && destination.Length > 0 && name[0] == destination[0]
         );

@@ -4031,6 +4031,71 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Theory]
+    [InlineData("Named World", 2)]
+    [InlineData("Named World 2", 1)]
+    public async Task LiveFirstFootfallCommandResolvesSharedNamesToTheMatchingPlanet(
+        string currentBodyName,
+        int expectedBodyId
+    )
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-first-footfall-shared-name-{Guid.NewGuid():N}");
+        try
+        {
+            string journals = Path.Combine(root, "journals");
+            string profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            string journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                $$"""
+                {"timestamp":"2026-07-25T12:00:00Z","event":"Fileheader","Odyssey":true}
+                {"timestamp":"2026-07-25T12:00:01Z","event":"Commander","Name":"Test","FID":"F123"}
+                {"timestamp":"2026-07-25T12:00:02Z","event":"Location","StarSystem":"Named World","SystemAddress":42}
+                {"timestamp":"2026-07-25T12:00:03Z","event":"Scan","SystemAddress":42,"BodyName":"Named World","BodyID":0,"StarType":"K"}
+                {"timestamp":"2026-07-25T12:00:04Z","event":"Scan","SystemAddress":42,"BodyName":"Named World","BodyID":1,"PlanetClass":"Rocky body","Landable":true}
+                {"timestamp":"2026-07-25T12:00:05Z","event":"Scan","SystemAddress":42,"BodyName":"{{currentBodyName}}","BodyID":2,"PlanetClass":"Rocky body","Landable":true}
+                {"timestamp":"2026-07-25T12:00:06Z","event":"ApproachBody","StarSystem":"Named World","SystemAddress":42,"Body":"{{currentBodyName}}","BodyID":2}
+                """ + "\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(paths)
+            );
+            await viewModel.RefreshAsync();
+            Assert.Equal(2, viewModel.SystemSurvey.Snapshot.CurrentBodyId);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                """{"timestamp":"2026-07-25T12:00:07Z","event":"SendText","Message":".ff Named World"}""" + "\n"
+            );
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(
+                [expectedBodyId],
+                viewModel.SystemSurvey.Snapshot.Bodies.Where(body => body.IsFirstFootfall).Select(body => body.BodyId)
+            );
+            string systemPath = Assert.Single(
+                Directory.GetFiles(Path.Combine(profile, "systems"), "*.json", SearchOption.AllDirectories)
+            );
+            JsonArray bodies = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray();
+            Assert.Equal(
+                [expectedBodyId],
+                bodies
+                    .Where(body => body?["firstFootFall"]?.GetValue<bool>() == true)
+                    .Select(body => body!["id"]!.GetValue<int>())
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     [Fact]
     public async Task DesktopTextCommandsAreLiveOnlyAndUsePlatformBoundaries()
     {

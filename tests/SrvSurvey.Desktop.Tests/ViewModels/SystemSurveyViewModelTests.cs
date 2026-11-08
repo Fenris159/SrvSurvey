@@ -448,11 +448,20 @@ public sealed partial class SystemSurveyViewModelTests : IDisposable
                     """{"event":"Scan","SystemAddress":42,"BodyName":"Leesti","BodyID":1,"PlanetClass":"Earthlike body","MassEM":1}"""
                 ),
             ],
-            null
+            new EliteStatus
+            {
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Leesti",
+                },
+            }
         );
 
         Assert.Equal([0, 1], viewModel.Snapshot.Bodies.Select(body => body.BodyId));
         Assert.Equal("Leesti", Assert.Single(viewModel.DssBodies).Name);
+        Assert.True(Assert.Single(viewModel.DssBodies).IsDestination);
 
         viewModel.ApplyUpdate(
             [
@@ -460,10 +469,19 @@ public sealed partial class SystemSurveyViewModelTests : IDisposable
                     """{"event":"Scan","SystemAddress":42,"BodyName":"Leesti 1","BodyID":2,"PlanetClass":"Water world","MassEM":1}"""
                 ),
             ],
-            null
+            new EliteStatus
+            {
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 0,
+                    Name = "Leesti",
+                },
+            }
         );
 
         Assert.Equal(["Leesti", "1"], viewModel.DssBodies.Select(body => body.Name));
+        Assert.All(viewModel.DssBodies, body => Assert.False(body.IsDestination));
     }
 
     [Theory]
