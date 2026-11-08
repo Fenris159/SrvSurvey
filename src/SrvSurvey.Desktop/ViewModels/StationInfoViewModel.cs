@@ -18,6 +18,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         "Repair",
         "Market",
         "Universal Cartographics",
+        "Vista Genomics",
         "Search and Rescue",
         "Interstellar Factors",
         "Material Trader",

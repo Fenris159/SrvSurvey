@@ -49,7 +49,22 @@ public sealed record FrontierAccountSnapshot(
     public long NetWorth => Credits - Debt + FleetValue + (Carrier?.BankBalance ?? 0);
 }
 
-public sealed record FrontierRankSnapshot(string Key, string Category, int Level, string Name);
+public sealed record FrontierRankSnapshot(
+    string Key,
+    string Category,
+    int Level,
+    string Name,
+    double? ProgressPercent = null
+)
+{
+    public bool IsHighestRank =>
+        Key.ToLowerInvariant() switch
+        {
+            "federation" or "empire" => Level == 14,
+            "combat" or "trade" or "explore" or "soldier" or "exobiologist" or "cqc" => Level == 13,
+            _ => false,
+        };
+}
 
 public sealed record FrontierShipSnapshot(
     long? Id,

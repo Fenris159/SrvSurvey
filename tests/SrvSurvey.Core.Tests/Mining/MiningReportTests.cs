@@ -5,6 +5,34 @@ namespace SrvSurvey.Core.Tests.Mining;
 public sealed class MiningReportTests
 {
     [Fact]
+    public void ReportExplainsProspectingStatisticsAndPreservesTheirValuesAndCsvFields()
+    {
+        var start = new DateTimeOffset(2026, 9, 6, 12, 0, 0, TimeSpan.Zero);
+        var session = new MiningSession
+        {
+            Started = start,
+            Ended = start.AddHours(1),
+            Prospects =
+            [
+                new(start, [new("Platinum", 10)], "", "High"),
+                new(start.AddMinutes(1), [new("Platinum", 30)], "", "High"),
+                new(start.AddMinutes(2), [new("Osmium", 15)], "Monazite", "Low"),
+            ],
+            Collections = [new(start.AddMinutes(3), "Platinum", 2, false)],
+        };
+
+        string html = MiningReport.Html([session]);
+        Assert.Contains("Prospected asteroids: 3", html);
+        Assert.Contains("Core finds: 1", html);
+        Assert.Contains("0.67 t/prospect", html);
+        Assert.Contains("Average in matching rocks %", html);
+        Assert.Contains("<td>Platinum</td><td>2</td><td>2</td><td>20.0</td><td>30.0</td>", html);
+        Assert.Contains("Rates use active session time.", html);
+        Assert.Contains("Core finds: 1", MiningReport.Text([session]));
+        Assert.Contains(",Asteroids,CoreHits,", MiningReport.Csv([session]));
+    }
+
+    [Fact]
     public void ExportIncludesRealTotalsAndEscapesCommanderSuppliedText()
     {
         var session = new MiningSession

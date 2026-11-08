@@ -75,15 +75,15 @@
                     <TextBlock x:Name="SessionRefinedTons" Text="{Binding SessionRefinedTons, StringFormat={}{0:N0} t, TargetNullValue=0 t, FallbackValue=0 t}" Classes="mining-readout"/>
                   </StackPanel>
                   <StackPanel Spacing="4">
-                    <TextBlock Text="Tons / hour" Classes="muted"/>
+                    <TextBlock Text="Tons / active hour" Classes="muted" TextWrapping="Wrap"/>
                     <TextBlock x:Name="SessionRate" Text="{Binding SessionRate, StringFormat={}{0:0.0}, TargetNullValue=0.0, FallbackValue=0.0}" Classes="mining-readout"/>
                   </StackPanel>
                   <StackPanel Spacing="4">
-                    <TextBlock Text="Asteroids" Classes="muted"/>
+                    <TextBlock Text="Prospected asteroids" Classes="muted" TextWrapping="Wrap"/>
                     <TextBlock x:Name="SessionAsteroids" Text="{Binding SessionAsteroids, TargetNullValue=0, FallbackValue=0}" Classes="mining-readout"/>
                   </StackPanel>
                   <StackPanel Spacing="4">
-                    <TextBlock Text="Cores" Classes="muted"/>
+                    <TextBlock Text="Core finds" Classes="muted"/>
                     <TextBlock x:Name="SessionCores" Text="{Binding SessionCores, TargetNullValue=0, FallbackValue=0}" Classes="mining-readout"/>
                   </StackPanel>
                 </controls:ResponsiveColumnsPanel>
@@ -94,6 +94,7 @@
             <Border x:Name="SessionYields" Classes="mining-section">
               <StackPanel Spacing="12">
                 <TextBlock Text="Prospecting yields" TextWrapping="Wrap" Classes="card-title"/>
+                <TextBlock x:Name="ProspectingStatisticsGuide" Text="Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions." TextWrapping="Wrap" Classes="muted" MaxWidth="1040" HorizontalAlignment="Left"/>
                 <ScrollViewer x:Name="MaterialsHorizontalScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" IsScrollChainingEnabled="True" Classes="mining-table">
                   <Grid RowDefinitions="Auto,*" MinWidth="{Binding #MaterialsHorizontalScroller.Viewport.Width, Converter={x:Static presentation:MiningTableColumnWidthConverter.MinimumTableWidth}, ConverterParameter=640}">
                     <Grid x:Name="MaterialsHeader" Classes="table-header" ColumnSpacing="20">
@@ -123,7 +124,7 @@
                           <TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=QualityHits}"/>
                         </StackPanel>
                       </Button>
-                      <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Right" Command="{Binding MaterialsSortCommand}" CommandParameter="Average" HorizontalAlignment="Stretch">
+                      <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Right" Command="{Binding MaterialsSortCommand}" CommandParameter="Average" HorizontalAlignment="Stretch" ToolTip.Tip="Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                           <TextBlock Classes="table-heading" Text="AVERAGE"/>
                           <TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Average}"/>
@@ -233,8 +234,8 @@
                     <StackPanel Spacing="8">
                       <TextBlock Text="Correct totals without changing the original journal observations. Quality adjustments apply to the mineral entered below." TextWrapping="Wrap"/>
                       <WrapPanel>
-                        <Button Content="+1 asteroid" Command="{Binding AddAsteroidCommand}" Margin="0,0,8,8"/>
-                        <Button Content="-1 asteroid" Command="{Binding RemoveAsteroidCommand}" Margin="0,0,8,8"/>
+                        <Button Content="+1 prospect" Command="{Binding AddAsteroidCommand}" Margin="0,0,8,8"/>
+                        <Button Content="-1 prospect" Command="{Binding RemoveAsteroidCommand}" Margin="0,0,8,8"/>
                       </WrapPanel>
                       <TextBlock Text="Mineral" TextWrapping="Wrap"/>
                       <TextBox Text="{Binding TargetMaterial}"/>
@@ -531,7 +532,7 @@
               </StackPanel>
             </Border>
             <Expander Header="How report totals are calculated" HorizontalAlignment="Stretch">
-              <TextBlock Text="Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates." TextWrapping="Wrap" Classes="muted"/>
+              <TextBlock Text="Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates." TextWrapping="Wrap" Classes="muted"/>
             </Expander>
           </StackPanel>
         </ScrollViewer>
@@ -701,6 +702,16 @@
             <Expander Header="Resource Extraction Sites (RES)" x:Name="ResourceExtractionSites" HorizontalAlignment="Stretch">
               <StackPanel Spacing="8">
                 <TextBlock Text="Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap." TextWrapping="Wrap" x:Name="ResourceExtractionDescription" FontFamily="avares://Avalonia.Fonts.Inter/Assets#Inter" MaxWidth="1040" HorizontalAlignment="Left"/>
+                <controls:ResponsiveColumnsPanel x:Name="ResGuidanceColumns" MinimumColumnWidth="300" MaximumColumns="2" Spacing="24" Margin="0,8,0,0">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="Laser yield" Classes="card-title"/>
+                    <TextBlock x:Name="ResYieldGuidance" Text="Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment." TextWrapping="Wrap" Classes="muted"/>
+                  </StackPanel>
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="Confirm the location" Classes="card-title"/>
+                    <TextBlock x:Name="ResLocationGuidance" Text="A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site." TextWrapping="Wrap" Classes="muted"/>
+                  </StackPanel>
+                </controls:ResponsiveColumnsPanel>
               </StackPanel>
             </Expander>
           </StackPanel>

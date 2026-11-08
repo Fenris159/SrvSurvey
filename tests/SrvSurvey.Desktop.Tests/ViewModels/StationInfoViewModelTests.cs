@@ -22,7 +22,10 @@ public sealed class StationInfoViewModelTests
         Assert.Equal("Largest pad: Large", viewModel.LargestPadText);
         Assert.Equal("Cooperative · Democracy", viewModel.FactionText);
         Assert.Equal(new StationInfoLineViewModel("High Tech", "75%"), viewModel.EconomyLines[0]);
-        Assert.Equal(["Shipyard", "Market", "Material Trader"], viewModel.RelevantServices);
+        Assert.Equal(
+            ["Shipyard", "Market", "Universal Cartographics", "Vista Genomics", "Material Trader"],
+            viewModel.RelevantServices
+        );
         Assert.Same(viewModel.EconomyLines, viewModel.EconomyLines);
         Assert.Same(viewModel.RelevantServices, viewModel.RelevantServices);
         Assert.Equal(["Narcotics"], viewModel.ProhibitedCommodities);
@@ -120,7 +123,7 @@ public sealed class StationInfoViewModelTests
                     new Dictionary<string, double> { ["Industrial"] = 25, ["High Tech"] = 75 },
                     "Cooperative",
                     "Democracy",
-                    ["Market", "Material Trader", "Shipyard", "Dock"],
+                    ["Market", "Material Trader", "Shipyard", "Dock", "Universal Cartographics", "Vista Genomics"],
                     new StationLandingPadSummary(2, 1, 1),
                     ["Narcotics"],
                     DateTimeOffset.Parse(

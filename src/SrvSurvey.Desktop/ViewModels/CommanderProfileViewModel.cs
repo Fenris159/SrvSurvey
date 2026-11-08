@@ -103,6 +103,7 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
     private IReadOnlyList<FrontierShipModuleGroupViewModel> currentShipModuleGroups = [];
     private IReadOnlyList<FrontierLockerCategoryViewModel> currentShipLockerGroups = [];
     private IReadOnlyList<FrontierRankCardViewModel>? rankRows;
+    private IReadOnlyList<FrontierRankCardViewModel>? pilotRankRows;
     private FrontierPowerplaySnapshot? journalPowerplay;
     private IReadOnlyList<FrontierDetailRowViewModel>? currentShipValueRows;
     private IReadOnlyList<FrontierDetailRowViewModel>? currentShipConditionRows;
@@ -437,6 +438,20 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
 
     public IReadOnlyList<FrontierRankCardViewModel> Ranks => rankRows ??= BuildRanks();
 
+    public IReadOnlyList<FrontierRankCardViewModel> PilotRanks =>
+        pilotRankRows ??= Ranks.Where(rank => rank.Category is not ("Federation" or "Empire")).ToArray();
+
+    /// <summary>Refreshes pilot cards and the navy details embedded in superpower reputation columns together.</summary>
+    private void RaiseRankProperties()
+    {
+        rankRows = null;
+        pilotRankRows = null;
+        commanderReputationRows = null;
+        OnPropertyChanged(nameof(Ranks));
+        OnPropertyChanged(nameof(PilotRanks));
+        OnPropertyChanged(nameof(CommanderReputation));
+    }
+
     /// <summary>Combines Frontier ranks with the applicable remote or newer local Powerplay membership.</summary>
     private List<FrontierRankCardViewModel> BuildRanks()
     {
@@ -447,11 +462,14 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
 
         var rows = Snapshot
             .Ranks.Where(rank => rank.Key != PowerplayRankKey)
+            .Select(rank => IsViewingJournalCommander ? journalRankProgress.Project(rank, Snapshot.FetchedAt) : rank)
             .Select(rank => new FrontierRankCardViewModel(
                 rank.Category,
                 rank.Name,
                 rank.Level,
-                RankIcon(rank.Key, rank.Level)
+                RankIcon(rank.Key, rank.Level),
+                ProgressPercent: rank.ProgressPercent,
+                IsHighestRank: rank.IsHighestRank
             ))
             .ToList();
         FrontierPowerplaySnapshot? powerplay = Snapshot.Powerplay;
@@ -551,8 +569,7 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
         }
 
         journalPowerplay = current;
-        rankRows = null;
-        OnPropertyChanged(nameof(Ranks));
+        RaiseRankProperties();
     }
 
     public IReadOnlyList<FrontierDataPointSnapshot> ProfileData => Snapshot?.ProfileData ?? [];
@@ -1107,12 +1124,27 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
 
     public IReadOnlyList<FrontierReputationRowViewModel> CommanderReputation =>
         commanderReputationRows ??= EffectiveCommanderReputation()
+            .Where(item => CommanderFactionOrder(item.Faction) >= 0)
+            .OrderBy(item => CommanderFactionOrder(item.Faction))
+            .ThenBy(item => item.Faction, StringComparer.CurrentCultureIgnoreCase)
             .Select(item => new FrontierReputationRowViewModel(
                 item.Faction,
                 $"{item.Score:N0}%",
-                FactionIcon(item.Faction)
+                FactionIcon(item.Faction),
+                Ranks.FirstOrDefault(rank =>
+                    string.Equals(rank.Category, item.Faction, StringComparison.OrdinalIgnoreCase)
+                )
             ))
             .ToArray();
+
+    private static int CommanderFactionOrder(string faction) =>
+        faction.ToLowerInvariant() switch
+        {
+            "federation" => 0,
+            "empire" => 1,
+            "alliance" => 2,
+            _ => -1,
+        };
 
     public IReadOnlyList<FrontierDataPointSnapshot> CarrierData =>
         carrierWorkspaceKind == CarrierWorkspaceKind.Squadron
@@ -1535,8 +1567,8 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
         if (detectedIdentityChanged)
         {
             journalPowerplay = null;
-            rankRows = null;
-            OnPropertyChanged(nameof(Ranks));
+            journalRankProgress = new FrontierJournalRankProgress();
+            RaiseRankProperties();
             journalReputationCommanderName = normalizedName;
             journalReputation = [];
             journalReputationUpdatedAt = null;
@@ -2647,6 +2679,7 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
     private void ResetSnapshotProjectionCache()
     {
         rankRows = null;
+        pilotRankRows = null;
         currentShipProjection = null;
         currentShipValueRows = null;
         currentShipConditionRows = null;
@@ -3665,7 +3698,9 @@ public sealed record FrontierRankCardViewModel(
     string Source = "",
     string? IconTint = null,
     string MeritsText = "",
-    string RankBadgeIconPath = ""
+    string RankBadgeIconPath = "",
+    double? ProgressPercent = null,
+    bool IsHighestRank = false
 )
 {
     public string Detail => HasMerits ? $"{RankText} · {MeritsText}" : RankText;
@@ -3681,6 +3716,34 @@ public sealed record FrontierRankCardViewModel(
     public bool HasMerits => MeritsText.Length > 0;
 
     public bool HasRankBadge => RankBadgeIconPath.Length > 0;
+
+    public bool ShowsRankProgress => Category != "Powerplay";
+
+    public bool HasRankProgress => ProgressPercent is { } percent && double.IsFinite(percent);
+
+    public double ProgressValue =>
+        (IsHighestRank, HasRankProgress) switch
+        {
+            (true, _) => 100,
+            (false, true) => Math.Clamp(ProgressPercent!.Value, 0, 100),
+            _ => 0,
+        };
+
+    public string ProgressText =>
+        (IsHighestRank, HasRankProgress) switch
+        {
+            (true, _) => "Highest rank",
+            (false, true) => $"{ProgressValue:0.##}%",
+            _ => "Progress unavailable",
+        };
+
+    public string ProgressDescription =>
+        (IsHighestRank, HasRankProgress) switch
+        {
+            (true, _) => "Highest rank reached",
+            (false, true) => $"{Category}: {ProgressText} to next rank. Last reported by local journals.",
+            _ => "Rank progress has not been reported for this rank in the loaded commander journals.",
+        };
 }
 
 public sealed record FrontierDetailRowViewModel(string Label, string Value, string Detail = "");
@@ -3814,7 +3877,23 @@ public sealed record FrontierCarrierJumpRowViewModel(
     string Duration
 );
 
-public sealed record FrontierReputationRowViewModel(string Faction, string Score, string IconPath);
+public sealed record FrontierReputationRowViewModel(
+    string Faction,
+    string Score,
+    string IconPath,
+    FrontierRankCardViewModel? NavalRank = null
+)
+{
+    public bool HasNavalRank => NavalRank is not null;
+
+    public string NavalRankName => NavalRank?.Name ?? string.Empty;
+
+    public double NavalRankProgressValue => NavalRank?.ProgressValue ?? 0;
+
+    public string NavalRankProgressText => NavalRank?.ProgressText ?? string.Empty;
+
+    public string NavalRankProgressDescription => NavalRank?.ProgressDescription ?? string.Empty;
+}
 
 public sealed record FrontierCommodityRowViewModel(
     string Category,

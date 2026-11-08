@@ -388,7 +388,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     public string SessionSummary =>
         Current is not { } session
             ? "No active session"
-            : $"{SessionStateLabel(session)} · {session.ActiveDuration:hh\\:mm\\:ss} · {session.RefinedTons:N0} t · {session.TonsPerHour:0.0} t/h · {session.Asteroids} asteroids · {session.CoreHits} cores";
+            : $"{SessionStateLabel(session)} · {session.ActiveDuration:hh\\:mm\\:ss} · {session.RefinedTons:N0} t · {session.TonsPerHour:0.0} t/h · Prospected asteroids: {session.Asteroids} · Core finds: {session.CoreHits}";
 
     public string YieldConfirmation =>
         Current switch
@@ -1866,101 +1866,23 @@ public sealed record MiningRingReferenceViewModel(
 
     public static IReadOnlyList<MiningRingReferenceViewModel> All { get; } =
     [
-        Ring(
-            "Icy rings",
-            [
-                Item("Low Temperature Diamonds", 131607),
-                Item("Bromellite", 33414),
-                Item("Hydrogen Peroxide", 3119),
-                Item("Liquid Oxygen", 1639),
-                Item("Lithium Hydroxide", 5655),
-                Item("Methane Clathrate", 1597),
-                Item("Methanol Monohydrate Crystals", 2522),
-                Item("Tritium", 53425),
-                Item("Water", 496),
-            ],
-            [
-                Item("Alexandrite", 227771),
-                Item("Grandidierite", 211582),
-                Item("Low Temperature Diamonds", 131607),
-                Item("Void Opals", 150964),
-                Item("Bromellite", 33414),
-            ]
-        ),
-        Ring(
-            "Metallic rings",
-            [
-                Item("Osmium", 55698),
-                Item("Painite", 57890),
-                Item("Platinum", 70136),
-                Item("Bertrandite", 18476),
-                Item("Gold", 47900),
-                Item("Indite", 11268),
-                Item("Palladium", 52064),
-                Item("Praseodymium", 8636),
-                Item("Samarium", 28658),
-                Item("Silver", 37628),
-            ],
-            [
-                Item("Monazite", 273262),
-                Item("Rhodplumsite", 186345),
-                Item("Serendibite", 186953),
-                Item("Painite", 57890),
-                Item("Platinum", 70136),
-            ]
-        ),
-        Ring(
-            "Metal-rich rings",
-            [
-                Item("Osmium", 55698),
-                Item("Bertrandite", 18476),
-                Item("Coltan", 6144),
-                Item("Gallite", 12235),
-                Item("Gold", 47900),
-                Item("Indite", 11268),
-                Item("Lepidolite", 1796),
-                Item("Praseodymium", 8636),
-                Item("Samarium", 28658),
-                Item("Silver", 37628),
-                Item("Uraninite", 3004),
-            ],
-            [
-                Item("Alexandrite", 227771),
-                Item("Benitoite", 164647),
-                Item("Monazite", 273262),
-                Item("Rhodplumsite", 186345),
-                Item("Serendibite", 186953),
-                Item("Painite", 57890),
-                Item("Platinum", 70136),
-            ]
-        ),
-        Ring(
-            "Rocky rings",
-            [
-                Item("Bertrandite", 18476),
-                Item("Bauxite", 2092),
-                Item("Coltan", 6144),
-                Item("Gallite", 12235),
-                Item("Indite", 11268),
-                Item("Lepidolite", 1796),
-                Item("Rutile", 3084),
-            ],
-            [
-                Item("Alexandrite", 227771),
-                Item("Benitoite", 164647),
-                Item("Monazite", 273262),
-                Item("Musgravite", 220251),
-                Item("Serendibite", 186953),
-            ]
-        ),
+        FromComposition("Icy rings", "Icy"),
+        FromComposition("Metallic rings", "Metallic"),
+        FromComposition("Metal-rich rings", "MetalRich"),
+        FromComposition("Rocky rings", "Rocky"),
     ];
 
-    private static MiningRingReferenceViewModel Ring(
-        string name,
-        IReadOnlyList<MiningReferenceCommodityRowViewModel> laser,
-        IReadOnlyList<MiningReferenceCommodityRowViewModel> core
-    ) => new(name, laser, core);
-
-    private static MiningReferenceCommodityRowViewModel Item(string name, int averageSellPrice) =>
-        new(name, averageSellPrice);
+    private static MiningRingReferenceViewModel FromComposition(string name, string ringType)
+    {
+        RingMiningComposition composition = RingMiningCatalog.Find(ringType)!;
+        return new(
+            name,
+            composition
+                .Laser.Select(item => new MiningReferenceCommodityRowViewModel(item.Name, item.AverageSellPrice))
+                .ToArray(),
+            composition
+                .Core.Select(item => new MiningReferenceCommodityRowViewModel(item.Name, item.AverageSellPrice))
+                .ToArray()
+        );
+    }
 }

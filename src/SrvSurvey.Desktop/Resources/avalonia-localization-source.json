@@ -137,7 +137,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
-    "Text": "\u002B1 asteroid",
+    "Text": "\u002B1 prospect",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -177,7 +177,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
-    "Text": "-1 asteroid",
+    "Text": "-1 prospect",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -1511,6 +1511,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "A Raven API key is saved for this commander.",
@@ -3226,6 +3234,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Active session time, excluding pauses.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
+  },
+  {
     "Text": "Active time",
     "IsFormat": false,
     "SourceKinds": [
@@ -3848,7 +3864,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Align the capture frame and numbered guides with the forward-facing Rhino HUD.",
@@ -5503,14 +5519,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
-    "Text": "Asteroids",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "At a deposit, send .mine \u003Ccommodity\u003E \u003Cl|m|h\u003E/\u003Cl|m|h\u003E here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
     "IsFormat": false,
     "SourceKinds": [
@@ -6343,12 +6351,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Average in finds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
+  },
+  {
     "Text": "Average mineral percentage",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "Average yield",
@@ -7279,7 +7311,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Beacon",
@@ -7351,7 +7383,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Bernal",
@@ -7367,7 +7399,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Best",
@@ -8733,7 +8765,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Browse Codex",
@@ -13234,7 +13266,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Combat",
@@ -13315,14 +13347,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "Combine SrvSurvey\u0027s built-in ring reference, commander discoveries, and Spansh API results. Spots\u002B\u002B prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Combined Build Report",
@@ -14678,6 +14702,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "Confirm the location",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Confirm to ask Raven Colonial to import this system\u0027s body catalog. No local sites will be published.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15671,20 +15703,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Core finds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Core: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Cores",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Coriolis",
@@ -20541,6 +20573,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Empire",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Empty",
     "IsFormat": false,
     "SourceKinds": [
@@ -23361,7 +23401,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Felicia Winters",
@@ -23554,6 +23594,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots\u002B\u002B lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Find Platinum spots",
@@ -25766,7 +25814,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Game",
@@ -26312,7 +26360,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Gold highlights valuable biology, Guardian information, focused targets, or other high-interest rows depending on the overlay.",
@@ -26544,7 +26592,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Gravity",
@@ -28218,6 +28266,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
+    "Text": "Highest rank",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Highest rank reached",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Highest recorded suffix: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -28731,7 +28795,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Hyperspace",
@@ -30040,7 +30104,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
@@ -31932,6 +31996,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Laser yield",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Last",
     "IsFormat": false,
     "SourceKinds": [
@@ -32396,7 +32468,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Level with target",
@@ -32660,7 +32732,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Liquid oxygen",
@@ -32692,7 +32764,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Live / destination",
@@ -33801,7 +33873,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -35483,6 +35555,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "MetalRich",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+  },
+  {
     "Text": "Metallic",
     "IsFormat": false,
     "SourceKinds": [
@@ -35513,7 +35593,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Methanol Monohydrate Crystals",
@@ -35521,7 +35601,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Microsoft Store profile ({0} files)",
@@ -36470,7 +36550,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Monitor",
@@ -36831,7 +36911,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Music",
@@ -41920,7 +42000,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Osseus Discus",
@@ -43323,7 +43403,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Paint job",
@@ -43363,7 +43443,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Panel / top",
@@ -44800,7 +44880,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Pre-download all available biology images",
@@ -46001,6 +46081,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Prospected asteroids",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Prospected asteroids: {0} \u00B7 Core finds: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
     "Text": "Prospecting results",
     "IsFormat": false,
     "SourceKinds": [
@@ -46996,6 +47092,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "RES sites",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
     "Text": "RES sites only",
     "IsFormat": false,
     "SourceKinds": [
@@ -47322,6 +47426,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Rank",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommanderTabView.axaml"
+  },
+  {
+    "Text": "Rank progress has not been reported for this rank in the loaded commander journals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Rank unavailable",
@@ -49210,6 +49330,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Refined tons and tons per active session hour.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MiningSessionOverlayPresentation.axaml"
   },
   {
     "Text": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -51620,7 +51748,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Rig 1",
@@ -52408,7 +52536,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "R\u2212",
@@ -53341,7 +53469,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Sample 1 of 3 recorded",
@@ -55991,7 +56119,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Service terms",
@@ -56108,7 +56236,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
+    "Text": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -58158,7 +58286,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Silver Legal Group",
@@ -58183,6 +58311,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianSiteMapControl.cs"
+  },
+  {
+    "Text": "Site notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "Site origin",
@@ -69183,7 +69319,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/FirstFootfallInferenceSettingsStore.cs"
   },
   {
-    "Text": "Tons / hour",
+    "Text": "Tons / active hour",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -69615,6 +69751,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Traffic",
     "IsFormat": false,
     "SourceKinds": [
@@ -69740,7 +69884,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Tritium in fuel tank (t)",
@@ -71319,7 +71463,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Urn",
@@ -72948,20 +73092,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemePresetCatalog.cs"
   },
   {
-    "Text": "Void Opal",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
     "Text": "Void Opals",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Volcanism",
@@ -73108,14 +73244,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
-  },
-  {
-    "Text": "WHY IT RANKS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
     "Text": "WINDOW SIZE",
@@ -73603,7 +73731,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
   },
   {
     "Text": "Water giant",
@@ -82722,14 +82850,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
-    "Text": "{0} asteroids \u00B7 {1} cores",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
-  },
-  {
     "Text": "{0} at \u0027{1}\u0027: {2}",
     "IsFormat": true,
     "SourceKinds": [
@@ -84346,7 +84466,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
-    "Text": "{0} \u00B7 {1} \u00B7 {2} t \u00B7 {3} t/h \u00B7 {4} asteroids \u00B7 {5} cores",
+    "Text": "{0} \u00B7 {1} \u00B7 {2} t \u00B7 {3} t/h \u00B7 Prospected asteroids: {4} \u00B7 Core finds: {5}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -84448,6 +84568,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0}: {1} to next rank. Last reported by local journals.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "{0}: {1} units for {2}: {3} (unconfirmed).",

@@ -572,7 +572,7 @@ public sealed partial class CommanderProfileViewModelTests
         );
 
         Assert.Null(viewModel.Carrier);
-        Assert.Equal(4, viewModel.CommanderReputation.Count);
+        Assert.Equal(3, viewModel.CommanderReputation.Count);
         Assert.Equal("91%", viewModel.CommanderReputation.Single(item => item.Faction == "Federation").Score);
 
         viewModel.UpdateJournalReputation("Another Commander", []);
@@ -1691,7 +1691,7 @@ public sealed partial class CommanderProfileViewModelTests
 
             Assert.Equal("F123", account.ActiveFrontierId);
             Assert.Null(profile.Carrier);
-            Assert.Equal(4, profile.CommanderReputation.Count);
+            Assert.Equal(3, profile.CommanderReputation.Count);
             Assert.Equal("91%", profile.CommanderReputation.Single(item => item.Faction == "Federation").Score);
             FrontierRankCardViewModel powerplay = profile.Ranks.Single(rank => rank.Category == "Powerplay");
             Assert.Equal("A. Lavigny-Duval", powerplay.Name);

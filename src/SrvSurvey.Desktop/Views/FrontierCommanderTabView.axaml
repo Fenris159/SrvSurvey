@@ -63,12 +63,12 @@
 
       <StackPanel Spacing="2">
         <TextBlock Classes="card-title" Text="Ranks" />
-        <ItemsControl x:Name="CommanderRanks" ItemsSource="{Binding Ranks}" SizeChanged="Ranks_SizeChanged">
+        <ItemsControl x:Name="CommanderRanks" ItemsSource="{Binding PilotRanks}" SizeChanged="Ranks_SizeChanged">
           <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:FrontierRankCardViewModel">
               <Border Classes="rank-card commander-rank" ToolTip.Tip="{Binding Source}">
-                <Grid ColumnDefinitions="56,*" ColumnSpacing="12">
+                <Grid ColumnDefinitions="56,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
                   <Panel Width="52" Height="52" VerticalAlignment="Center">
                     <Image IsVisible="{Binding HasOriginalIcon}" Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}" Stretch="Uniform" />
                     <Border Classes="theme-rank-emblem" IsVisible="{Binding HasThemeIconTint}" Background="{DynamicResource RavenTextBrush}">
@@ -89,9 +89,16 @@
                              IsVisible="{Binding HasRankBadge}" Source="{Binding RankBadgeIconPath, Converter={StaticResource FrontierAssetImageConverter}}"
                              RenderOptions.BitmapInterpolationMode="HighQuality" Stretch="Uniform" />
                     </Grid>
-                    <TextBlock FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Name}" />
+                    <TextBlock Classes="rank-name" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Name}" />
                     <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="{Binding RankText}" IsVisible="{Binding HasDetail}" />
                     <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap" Text="{Binding MeritsText}" IsVisible="{Binding HasMerits}" />
+                  </StackPanel>
+                  <StackPanel Grid.Row="1" Grid.Column="1" Classes="rank-progress" IsVisible="{Binding ShowsRankProgress}"
+                              Spacing="4" ToolTip.Tip="{Binding ProgressDescription}">
+                    <ProgressBar Classes="rank-progress-bar" Minimum="0" Maximum="100" MinWidth="0" Height="5" VerticalAlignment="Center"
+                                 Value="{Binding ProgressValue}" AutomationProperties.Name="{Binding ProgressDescription}"
+                                 Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenBorderBrush}" />
+                    <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap" Text="{Binding ProgressText}" />
                   </StackPanel>
                 </Grid>
               </Border>
@@ -102,17 +109,27 @@
 
       <StackPanel x:Name="CommanderSupport" Spacing="20">
         <StackPanel x:Name="CommanderReputation" Spacing="4">
-          <TextBlock Classes="card-title" Text="{Binding CommanderReputation.Count, StringFormat=Faction reputation ({0})}" />
+          <TextBlock Classes="card-title" Text="{Binding CommanderReputation.Count, StringFormat=Superpower reputation ({0})}" />
           <ItemsControl x:Name="CommanderFactionRows" ItemsSource="{Binding CommanderReputation}">
-            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:FrontierReputationRowViewModel">
                 <Border Classes="console-data-row commander-faction">
                   <Grid ColumnDefinitions="32,*" ColumnSpacing="6">
-                    <Image Width="32" Height="32" VerticalAlignment="Center" Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}" Stretch="Uniform" />
-                    <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <Image Width="32" Height="32" VerticalAlignment="Top" Margin="0,2,0,0" Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}" Stretch="Uniform" />
+                    <StackPanel Grid.Column="1" Spacing="3">
                       <TextBlock Classes="console-label" TextWrapping="Wrap" Text="{Binding Faction}" />
                       <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding Score}" />
+                      <StackPanel Classes="naval-rank" IsVisible="{Binding HasNavalRank}" Margin="0,10,0,0" Spacing="3">
+                        <TextBlock Classes="console-label" Text="Rank" />
+                        <TextBlock Classes="rank-name" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding NavalRankName}" />
+                        <StackPanel Classes="rank-progress naval-rank-progress" Margin="0,6,0,0" Spacing="4" ToolTip.Tip="{Binding NavalRankProgressDescription}">
+                          <ProgressBar Classes="rank-progress-bar" Minimum="0" Maximum="100" MinWidth="0" Height="5"
+                                       Value="{Binding NavalRankProgressValue}" AutomationProperties.Name="{Binding NavalRankProgressDescription}"
+                                       Foreground="{DynamicResource RavenAccentBrush}" Background="{DynamicResource RavenBorderBrush}" />
+                          <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap" Text="{Binding NavalRankProgressText}" />
+                        </StackPanel>
+                      </StackPanel>
                     </StackPanel>
                   </Grid>
                 </Border>

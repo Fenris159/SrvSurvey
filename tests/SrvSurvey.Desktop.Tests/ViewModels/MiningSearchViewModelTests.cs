@@ -1321,7 +1321,7 @@ public sealed class MiningSearchViewModelTests
     }
 
     [Fact]
-    public async Task PlatinumSpotsRanksUsefulLocalRingsAndCanShowAllPlatinumRings()
+    public async Task PlatinumSpotsIncludesSingleHotspotsAndKeepsTheBroaderResultSet()
     {
         const string system = "Platinum Spots Test";
         MiningRing[] rings =
@@ -1351,9 +1351,9 @@ public sealed class MiningSearchViewModelTests
 
         await model.SearchPlatinumAsync();
 
-        Assert.Equal(3, model.PlatinumSpots.Count);
-        Assert.Equal("Mapped A Ring", model.PlatinumSpots[0].Body);
-        Assert.DoesNotContain(model.PlatinumSpots, spot => spot.Body == "Plain D Ring");
+        Assert.Equal(4, model.PlatinumSpots.Count);
+        Assert.Contains(model.PlatinumSpots, spot => spot.Body == "Plain D Ring");
+        Assert.DoesNotContain(model.PlatinumSpots, spot => spot.Body == "Wrong E Ring");
         model.PlatinumMode = "All platinum";
         await model.SearchPlatinumAsync();
         Assert.Equal(4, model.PlatinumSpots.Count);

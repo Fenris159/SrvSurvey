@@ -206,7 +206,7 @@ namespace SrvSurvey.LocalizationTool
         }
 
         /// <summary>
-        /// Extracts desktop and Core route presentation strings in a stable source-file order.
+        /// Extracts desktop and shared Core presentation strings in a stable source-file order.
         /// </summary>
         private void ExtractCSharp(IDictionary<string, LocalizationSourceEntry> entries)
         {
@@ -221,6 +221,7 @@ namespace SrvSurvey.LocalizationTool
                             )
                             .Where(File.Exists)
                     )
+                    .Append(Path.Combine(repositoryRoot, "src", "SrvSurvey.Core", "Mining", "RingMiningCatalog.cs"))
                     .Where(path => !IsBuildOutput(path))
                     .OrderBy(path => Path.GetRelativePath(root, path).Replace('\\', '/'), StringComparer.Ordinal)
             )

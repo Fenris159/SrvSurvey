@@ -113,10 +113,11 @@ public sealed partial class CommanderProfileViewModelTests
             Assert.IsNotType<Expander>(reputation);
             ItemsControl factions = commander.FindControl<ItemsControl>("CommanderFactionRows")!;
             UniformGrid factionRow = Assert.IsType<UniformGrid>(factions.ItemsPanelRoot);
-            Assert.Equal(4, factionRow.Children.Count);
+            Assert.Equal(3, factionRow.Columns);
+            Assert.Equal(3, factionRow.Children.Count);
             Assert.All(factionRow.Children, faction => Assert.True(faction.IsEffectivelyVisible));
             Assert.Single(factionRow.Children.Select(faction => faction.Bounds.Y).Distinct());
-            Assert.True(factionRow.Children[3].Bounds.X > factionRow.Children[0].Bounds.X);
+            Assert.True(factionRow.Children[2].Bounds.X > factionRow.Children[0].Bounds.X);
             ItemsControl ranks = commander.FindControl<ItemsControl>("CommanderRanks")!;
             Point reputationPosition = reputation.TranslatePoint(default, commander)!.Value;
             Point ranksPosition = ranks.TranslatePoint(default, commander)!.Value;
