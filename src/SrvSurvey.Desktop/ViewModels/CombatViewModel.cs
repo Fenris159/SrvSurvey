@@ -202,11 +202,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(journalEvents);
         int remainingVehicleEvents = journalEvents.Count(entry => IsVehicleEvent(entry.EventName));
         bool? shipContext = InitialShipContext(remainingVehicleEvents > 0, currentStatus);
-        if (currentStatus is not null)
-        {
-            status = currentStatus;
-            UpdateFootSession();
-        }
+        ApplyCompanionStatus(currentStatus, remainingVehicleEvents > 0);
 
         bool persistenceChanged = false;
         bool stateChanged = false;
@@ -216,7 +212,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             shipContext = ApplyVehicleContext(
                 journalEvent,
                 shipContext,
-                StatusForLastVehicleEvent(journalEvent, ref remainingVehicleEvents, currentStatus)
+                StatusForLastVehicleEvent(journalEvent, ref remainingVehicleEvents, status)
             );
             if (journalEvent.EventName is "Fileheader" or "LoadGame")
             {
@@ -277,6 +273,20 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     private bool ShouldCountFootCombat(bool? shipContext, bool processHistoricalProgress) =>
         processHistoricalProgress && ShouldShowFootCombat && shipContext != true;
+
+    private void ApplyCompanionStatus(EliteStatus? latestStatus, bool hasVehicleEvents)
+    {
+        if (latestStatus is null)
+        {
+            return;
+        }
+        status = latestStatus;
+        if (!hasVehicleEvents)
+        {
+            vehicleSession.ReconcileVehicleStatus(latestStatus);
+        }
+        UpdateFootSession();
+    }
 
     private bool? InitialShipContext(bool hasVehicleEvents, EliteStatus? latestStatus)
     {
