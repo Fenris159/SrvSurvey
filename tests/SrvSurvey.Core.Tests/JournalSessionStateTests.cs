@@ -320,21 +320,74 @@ public sealed class JournalSessionStateTests
         Assert.Null(state.ActiveSrvType);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(null)]
+    public void UnqualifiedFighterStatusPreservesNomadRecoveryAndReembarkation(int? fighterMinute)
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"timestamp":"2026-11-08T09:00:00Z","event":"DockSRV","SRVType":"lander01","ID":44}"""));
+        state.Apply(
+            Parse("""{"timestamp":"2026-11-08T09:02:00Z","event":"LaunchFighter","ID":44,"PlayerControlled":true}""")
+        );
+        state.ReconcileVehicleStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.InFighter,
+                Timestamp = fighterMinute is { } minute
+                    ? new DateTimeOffset(2026, 11, 8, 9, minute, 0, TimeSpan.Zero)
+                    : default,
+            }
+        );
+        Assert.Equal(44, state.KnownNomadVehicleId);
+        state.ReconcileVehicleStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv,
+                Timestamp = new DateTimeOffset(2026, 11, 8, 9, 3, 0, TimeSpan.Zero),
+            }
+        );
+        Assert.True(state.IsNomadActive);
+        Assert.False(state.IsFighterLaunched);
+        state.Apply(Parse("""{"event":"Disembark","SRV":true,"ID":44}"""));
+        Assert.Equal(EliteSrvTypes.Nomad, state.ParkedSrvType);
+        state.Apply(Parse("""{"event":"Embark","SRV":true,"ID":44}"""));
+        Assert.True(state.IsNomadActive);
+        Assert.Equal(44, state.KnownNomadVehicleId);
+    }
+
     [Fact]
     public void FighterConfirmationCorrectsOnlyTheActiveVehicleIdentity()
     {
         var state = new JournalSessionState();
         state.Apply(Parse("""{"event":"DockSRV","SRVType":"lander01","ID":44}"""));
-        state.Apply(Parse("""{"event":"LaunchFighter","ID":45,"PlayerControlled":true}"""));
-        state.ReconcileVehicleStatus(new EliteStatus { Flags = StatusFlags.InSrv });
+        state.Apply(
+            Parse("""{"timestamp":"2026-11-08T09:00:00Z","event":"LaunchFighter","ID":45,"PlayerControlled":true}""")
+        );
+        state.ReconcileVehicleStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv,
+                Timestamp = new DateTimeOffset(2026, 11, 8, 9, 0, 1, TimeSpan.Zero),
+            }
+        );
         Assert.Equal(45, state.KnownNomadVehicleId);
 
-        state.ReconcileVehicleStatus(new EliteStatus { Flags = StatusFlags.InFighter });
+        state.ReconcileVehicleStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.InFighter,
+                Timestamp = new DateTimeOffset(2026, 11, 8, 9, 0, 2, TimeSpan.Zero),
+            }
+        );
         Assert.True(state.IsFighterLaunched);
         Assert.False(state.IsNomadActive);
         Assert.Null(state.KnownNomadVehicleId);
         state.Apply(Parse("""{"event":"DockFighter","ID":45}"""));
-        state.Apply(Parse("""{"event":"LaunchFighter","ID":45,"PlayerControlled":true}"""));
+        state.Apply(
+            Parse("""{"timestamp":"2026-11-08T09:00:00Z","event":"LaunchFighter","ID":45,"PlayerControlled":true}""")
+        );
         Assert.True(state.IsFighterLaunched);
         Assert.False(state.IsNomadActive);
 
