@@ -24,6 +24,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private bool footSessionActive;
     private string statusMessage = string.Empty;
     private IReadOnlyList<MassacreMissionViewModel> massacreMissions = [];
+    private JournalSessionState vehicleSession = new();
     private bool? journalShipContext;
     private bool? fighterParentShipContext;
     private bool replayUntrackedMissionHistory;
@@ -136,6 +137,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         commanderName = profileCommanderName;
         isOdyssey = profileIsOdyssey;
         state.Reset(snapshot);
+        vehicleSession = new();
         journalShipContext = null;
         fighterParentShipContext = null;
         // Other commander totals can have a checkpoint even when the old tracker ignored every mission.
@@ -297,6 +299,10 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     private bool? ApplyVehicleContext(JournalEventEnvelope entry, bool? previous)
     {
+        if (IsVehicleEvent(entry.EventName))
+        {
+            vehicleSession.Apply(entry);
+        }
         switch (entry.EventName)
         {
             case "Fileheader":
@@ -319,7 +325,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
                 return null;
             case "LaunchFighter" when IsTrue(entry.Payload, "PlayerControlled"):
                 fighterParentShipContext = previous;
-                return true;
+                // Nomad launches also use LaunchFighter; the shared session reducer resolves their vehicle ID.
+                return vehicleSession.IsFighterLaunched;
             case "DockFighter":
                 bool? parent = fighterParentShipContext;
                 fighterParentShipContext = null;
@@ -335,6 +342,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private static bool IsShipSymbol(string symbol) =>
         !string.IsNullOrWhiteSpace(symbol)
         && !symbol.Equals("OnFoot", StringComparison.OrdinalIgnoreCase)
+        && !symbol.Contains("suit", StringComparison.OrdinalIgnoreCase)
         && !symbol.Equals("testbuggy", StringComparison.OrdinalIgnoreCase)
         && !symbol.Contains("_srv_", StringComparison.OrdinalIgnoreCase)
         && !EliteSrvTypes.IsNomad(symbol)

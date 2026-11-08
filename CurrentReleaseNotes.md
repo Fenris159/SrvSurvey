@@ -63,7 +63,8 @@ for conflict-zone massacre missions.
   active mission per giver for each kill. On-foot and SRV combat bonds do not
   advance ship missions, and the mission type is retained when saving progress.
 - **Recover journal progress correctly:** Ship, foot, and SRV transitions are
-  applied at the time of each recorded kill. Empty combat profiles recover
+  applied at the time of each recorded kill. Suit starts and Nomad launches retain
+  their ground-combat identity. Empty combat profiles recover
   previously ignored missions without recounting already-saved mission progress.
 
 ### Reliability

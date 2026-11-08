@@ -40453,6 +40453,10 @@
       "translation": "Suffixe {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "Anzug"
+    },
+    {
       "source": "surface",
       "translation": "Oberfläche"
     },
@@ -82905,6 +82909,10 @@
     {
       "source": "suffixes {0}–{1}",
       "translation": "sufijos {0}–{1}"
+    },
+    {
+      "source": "suit",
+      "translation": "traje"
     },
     {
       "source": "surface",
@@ -125361,6 +125369,10 @@
       "translation": "suffixes {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "costume"
+    },
+    {
       "source": "surface",
       "translation": "surface"
     },
@@ -167813,6 +167825,10 @@
     {
       "source": "suffixes {0}–{1}",
       "translation": "sufixos {0}–{1}"
+    },
+    {
+      "source": "suit",
+      "translation": "terno"
     },
     {
       "source": "surface",
@@ -210269,6 +210285,10 @@
       "translation": "суффиксы {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "подходить"
+    },
+    {
       "source": "surface",
       "translation": "поверхность"
     },
@@ -252723,6 +252743,10 @@
       "translation": "后缀 {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "套装"
+    },
+    {
       "source": "surface",
       "translation": "表面"
     },
@@ -295175,6 +295199,10 @@
     {
       "source": "suffixes {0}–{1}",
       "translation": "* SUFFIXES {0}–{1} >>>!"
+    },
+    {
+      "source": "suit",
+      "translation": "* SUIT >>>!"
     },
     {
       "source": "surface",

@@ -81141,6 +81141,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "suit",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
     "Text": "surface",
     "IsFormat": false,
     "SourceKinds": [

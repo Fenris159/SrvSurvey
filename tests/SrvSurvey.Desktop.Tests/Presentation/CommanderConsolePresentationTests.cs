@@ -88,7 +88,7 @@ public sealed partial class CommanderProfileViewModelTests
                 emblem =>
                     Assert.Equal(
                         Color.Parse(theme.Current.TextColor),
-                        Assert.IsAssignableFrom<ISolidColorBrush>(emblem.Background).Color
+                        Assert.IsType<ISolidColorBrush>(emblem.Background, exactMatch: false).Color
                     )
             );
             ResponsiveColumnsPanel finances = commander.FindControl<ResponsiveColumnsPanel>("CommanderFinance")!;
@@ -137,7 +137,10 @@ public sealed partial class CommanderProfileViewModelTests
                 tabs.SelectedIndex = index;
                 CaptureConsole(window, $"{palette}-{width}-tab-{index}");
                 Assert.True(Assert.IsType<TabItem>(tabs.SelectedItem).IsSelected);
-                Control page = Assert.IsAssignableFrom<Control>(Assert.IsType<TabItem>(tabs.SelectedItem).Content);
+                Control page = Assert.IsType<Control>(
+                    Assert.IsType<TabItem>(tabs.SelectedItem).Content,
+                    exactMatch: false
+                );
                 ScrollViewer pageScroller = page.FindControl<ScrollViewer>("FrontierPageScroller")!;
                 Assert.True(
                     pageScroller.Extent.Width <= pageScroller.Viewport.Width + 1,
