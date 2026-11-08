@@ -200,7 +200,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        bool? shipContext = InitialShipContext(journalEvents, currentStatus);
+        int remainingVehicleEvents = journalEvents.Count(entry => IsVehicleEvent(entry.EventName));
+        bool? shipContext = InitialShipContext(remainingVehicleEvents > 0, currentStatus);
         if (currentStatus is not null)
         {
             status = currentStatus;
@@ -212,7 +213,11 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         bool modeChanged = false;
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            shipContext = ApplyVehicleContext(journalEvent, shipContext);
+            shipContext = ApplyVehicleContext(
+                journalEvent,
+                shipContext,
+                StatusForLastVehicleEvent(journalEvent, ref remainingVehicleEvents, currentStatus)
+            );
             if (journalEvent.EventName is "Fileheader" or "LoadGame")
             {
                 modeChanged |= musicTrack is not null;
@@ -273,9 +278,9 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private bool ShouldCountFootCombat(bool? shipContext, bool processHistoricalProgress) =>
         processHistoricalProgress && ShouldShowFootCombat && shipContext != true;
 
-    private bool? InitialShipContext(IReadOnlyList<JournalEventEnvelope> entries, EliteStatus? latestStatus)
+    private bool? InitialShipContext(bool hasVehicleEvents, EliteStatus? latestStatus)
     {
-        if (entries.Any(entry => IsVehicleEvent(entry.EventName)))
+        if (hasVehicleEvents)
         {
             return journalShipContext ?? ShipContext(status);
         }
@@ -297,7 +302,21 @@ public sealed class CombatViewModel : INotifyPropertyChanged
                 or "LaunchFighter"
                 or "DockFighter";
 
-    private bool? ApplyVehicleContext(JournalEventEnvelope entry, bool? previous)
+    private static EliteStatus? StatusForLastVehicleEvent(
+        JournalEventEnvelope entry,
+        ref int remainingVehicleEvents,
+        EliteStatus? latestStatus
+    )
+    {
+        if (!IsVehicleEvent(entry.EventName))
+        {
+            return null;
+        }
+        remainingVehicleEvents--;
+        return remainingVehicleEvents == 0 ? latestStatus : null;
+    }
+
+    private bool? ApplyVehicleContext(JournalEventEnvelope entry, bool? previous, EliteStatus? confirmedStatus)
     {
         if (IsVehicleEvent(entry.EventName))
         {
@@ -325,6 +344,11 @@ public sealed class CombatViewModel : INotifyPropertyChanged
                 return null;
             case "LaunchFighter" when IsTrue(entry.Payload, "PlayerControlled"):
                 fighterParentShipContext = previous;
+                // Only the latest transition can use the companion snapshot; earlier kills keep their event-time context.
+                if (confirmedStatus is not null)
+                {
+                    vehicleSession.ReconcileVehicleStatus(confirmedStatus);
+                }
                 // Nomad launches also use LaunchFighter; the shared session reducer resolves their vehicle ID.
                 return vehicleSession.IsFighterLaunched;
             case "DockFighter":

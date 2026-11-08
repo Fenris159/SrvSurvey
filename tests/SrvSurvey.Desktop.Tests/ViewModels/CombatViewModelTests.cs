@@ -271,6 +271,41 @@ public sealed class CombatViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task FirstNomadLaunchUsesCurrentSrvStatusWithoutChangingEarlierFighterCredit()
+    {
+        CombatViewModel viewModel = CreateViewModel();
+        viewModel.AutoShowMassacreMissions = true;
+        viewModel.AutoShowFootCombat = true;
+        viewModel.LoadProfile("F123", "Drew", true, CombatSnapshot.Empty);
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse("""{"event":"LoadGame","Ship":"federation_corvette"}"""),
+                Parse(
+                    """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
+                ),
+                Parse("""{"event":"LaunchFighter","ID":45,"PlayerControlled":true}"""),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:00:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+                ),
+                Parse("""{"event":"DockFighter","ID":45}"""),
+                Parse("""{"event":"LaunchFighter","ID":44,"PlayerControlled":true}"""),
+                Parse("""{"event":"ApproachSettlement","Name":"Test Base","StationFaction":{"FactionState":"War"}}"""),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:01:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":17000}"""
+                ),
+            ],
+            new EliteStatus { Flags = StatusFlags.InSrv, Altitude = 50 },
+            processHistoricalProgress: true
+        );
+
+        Assert.Equal("1/3", Assert.Single(viewModel.MassacreMissions).ProgressText);
+        Assert.Equal(1, viewModel.FootCombatKills);
+        Assert.Equal("17,000 CR", viewModel.FootCombatBonds);
+        CommanderProfileLoadResult saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        Assert.Equal(2, Assert.Single(saved.Data!.Combat.MassacreMissions).Remaining);
+    }
+
+    [Fact]
     public async Task ConflictMassacreAppearsFromBootstrapAndRetainsBondTrackingAfterReload()
     {
         CombatViewModel viewModel = CreateViewModel();
