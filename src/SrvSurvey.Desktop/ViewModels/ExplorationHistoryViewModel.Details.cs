@@ -12,7 +12,7 @@ public sealed partial class ExplorationHistoryViewModel
     private string detailStatus = string.Empty;
     private string rawJson = string.Empty;
     private long detailGeneration;
-    private CancellationTokenSource? detailCancellation;
+    private Func<Task>? cancelDetailsAsync;
 
     public IReadOnlyList<ExplorationHistoryBodyViewModel> Bodies
     {
@@ -70,7 +70,9 @@ public sealed partial class ExplorationHistoryViewModel
             return;
         }
         using var selectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
-        detailCancellation = selectionCancellation;
+        // This request owns disposal; later selections retain only its cancellation operation.
+        Func<Task> cancelSelection = selectionCancellation.CancelAsync;
+        cancelDetailsAsync = cancelSelection;
         token = selectionCancellation.Token;
         try
         {
@@ -109,18 +111,18 @@ public sealed partial class ExplorationHistoryViewModel
         }
         finally
         {
-            if (ReferenceEquals(detailCancellation, selectionCancellation))
+            if (ReferenceEquals(cancelDetailsAsync, cancelSelection))
             {
-                detailCancellation = null;
+                cancelDetailsAsync = null;
             }
         }
     }
 
     private async Task<bool> CancelPreviousDetailsAsync(long version, long request, CancellationToken token)
     {
-        if (detailCancellation is { } previous)
+        if (cancelDetailsAsync is { } cancelPrevious)
         {
-            await previous.CancelAsync();
+            await cancelPrevious();
         }
         return Current(version, token) && request == detailGeneration;
     }

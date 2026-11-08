@@ -452,7 +452,7 @@ public sealed partial class ExplorationHistoryCatalogTests
         Assert.Equal(lost ? 0 : 2700541, recovered.SoldValue);
         Assert.Equal(lost ? 2700541 : 0, recovered.LostValue);
         Assert.Equal(lost ? 0 : 2000000, recovered.SaleEarnings);
-        Assert.IsAssignableFrom<IOException>(blocked);
+        Assert.IsType<IOException>(blocked, exactMatch: false);
         Assert.Equal(449200, Assert.Single(cached.Rows).EstimatedValue);
         Assert.Equal(ExplorationDataStatus.Unsold, cached.Rows[0].Status);
         Assert.False(cached.Summary.IsComplete);

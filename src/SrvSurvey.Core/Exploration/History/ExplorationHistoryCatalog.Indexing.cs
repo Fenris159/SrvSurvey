@@ -308,32 +308,30 @@ public sealed partial class ExplorationHistoryCatalog
             source => source.Name,
             StringComparer.OrdinalIgnoreCase
         );
-        using (SqliteCommand existing = Command(connection, "SELECT name,path,next_offset FROM sources;"))
-        using (SqliteDataReader reader = existing.ExecuteReader())
+        using SqliteCommand existing = Command(connection, "SELECT name,path,next_offset FROM sources;");
+        using SqliteDataReader reader = existing.ExecuteReader();
+        while (reader.Read())
         {
-            while (reader.Read())
+            if (!sources.TryGetValue(reader.GetString(0), out JournalSource? source))
             {
-                if (!sources.TryGetValue(reader.GetString(0), out JournalSource? source))
-                {
-                    throw new InvalidDataException(
-                        "Journal history changed, but some indexed journals are missing. Restore those files and refresh history; the existing catalog has been retained."
-                    );
-                }
-                if (
-                    source.Length < reader.GetInt64(2)
-                    && !string.Equals(
-                        source.Path,
-                        reader.GetString(1),
-                        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
-                    )
+                throw new InvalidDataException(
+                    "Journal history changed, but some indexed journals are missing. Restore those files and refresh history; the existing catalog has been retained."
+                );
+            }
+            if (
+                source.Length < reader.GetInt64(2)
+                && !string.Equals(
+                    source.Path,
+                    reader.GetString(1),
+                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
                 )
-                {
-                    throw new InvalidDataException(
-                        "Only an incomplete copy of journal "
-                            + source.Name
-                            + " is available. Restore the complete journal and refresh history; the existing catalog has been retained."
-                    );
-                }
+            )
+            {
+                throw new InvalidDataException(
+                    "Only an incomplete copy of journal "
+                        + source.Name
+                        + " is available. Restore the complete journal and refresh history; the existing catalog has been retained."
+                );
             }
         }
     }
