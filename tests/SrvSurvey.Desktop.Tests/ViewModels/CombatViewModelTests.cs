@@ -279,23 +279,32 @@ public sealed class CombatViewModelTests : IDisposable
         viewModel.AutoShowMassacreMissions = true;
         viewModel.AutoShowFootCombat = true;
         viewModel.LoadProfile("F123", "Drew", true, CombatSnapshot.Empty);
-        var srvStatus = new EliteStatus { Flags = StatusFlags.InSrv, Altitude = 50 };
+        var srvStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+            Altitude = 50,
+            Timestamp = new DateTimeOffset(2026, 11, 8, 9, 1, 1, TimeSpan.Zero),
+        };
         if (retainStatus)
         {
             await viewModel.ApplyUpdateAsync([], srvStatus, processHistoricalProgress: true);
         }
         await viewModel.ApplyUpdateAsync(
             [
-                Parse("""{"event":"LoadGame","Ship":"federation_corvette"}"""),
+                Parse("""{"timestamp":"2026-11-08T08:00:00Z","event":"LoadGame","Ship":"federation_corvette"}"""),
                 Parse(
                     """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
                 ),
-                Parse("""{"event":"LaunchFighter","ID":45,"PlayerControlled":true}"""),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:00:00Z","event":"LaunchFighter","ID":45,"PlayerControlled":true}"""
+                ),
                 Parse(
                     """{"timestamp":"2026-11-08T09:00:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
                 ),
-                Parse("""{"event":"DockFighter","ID":45}"""),
-                Parse("""{"event":"LaunchFighter","ID":44,"PlayerControlled":true}"""),
+                Parse("""{"timestamp":"2026-11-08T09:00:20Z","event":"DockFighter","ID":45}"""),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:00:40Z","event":"LaunchFighter","ID":44,"PlayerControlled":true}"""
+                ),
                 Parse("""{"event":"ApproachSettlement","Name":"Test Base","StationFaction":{"FactionState":"War"}}"""),
                 Parse(
                     """{"timestamp":"2026-11-08T09:01:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":17000}"""
@@ -313,9 +322,14 @@ public sealed class CombatViewModelTests : IDisposable
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task NomadLaunchAndStatusCanArriveInEitherPollOrderBeforeTheGroundBond(bool statusFirst)
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task NomadLaunchAndStatusCanArriveInEitherPollOrderBeforeTheGroundBond(
+        bool statusFirst,
+        bool timestampAvailable
+    )
     {
         CombatViewModel viewModel = CreateViewModel();
         viewModel.AutoShowMassacreMissions = true;
@@ -323,7 +337,7 @@ public sealed class CombatViewModelTests : IDisposable
         viewModel.LoadProfile("F123", "Drew", true, CombatSnapshot.Empty);
         await viewModel.ApplyUpdateAsync(
             [
-                Parse("""{"event":"LoadGame","Ship":"federation_corvette"}"""),
+                Parse("""{"timestamp":"2026-11-08T08:00:00Z","event":"LoadGame","Ship":"federation_corvette"}"""),
                 Parse(
                     """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
                 ),
@@ -332,13 +346,18 @@ public sealed class CombatViewModelTests : IDisposable
             new EliteStatus { Flags = StatusFlags.InMainShip },
             processHistoricalProgress: true
         );
-        var srvStatus = new EliteStatus { Flags = StatusFlags.InSrv, Altitude = 50 };
+        var srvStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+            Altitude = 50,
+            Timestamp = timestampAvailable ? new DateTimeOffset(2026, 11, 8, 9, 0, 0, TimeSpan.Zero) : default,
+        };
         if (statusFirst)
         {
             await viewModel.ApplyUpdateAsync([], srvStatus, processHistoricalProgress: true);
         }
         await viewModel.ApplyUpdateAsync(
-            [Parse("""{"event":"LaunchFighter","ID":44,"PlayerControlled":true}""")],
+            [Parse("""{"timestamp":"2026-11-08T09:00:01Z","event":"LaunchFighter","ID":44,"PlayerControlled":true}""")],
             null,
             processHistoricalProgress: true
         );
@@ -400,6 +419,81 @@ public sealed class CombatViewModelTests : IDisposable
         Assert.Equal("0/3", Assert.Single(viewModel.MassacreMissions).ProgressText);
         CommanderProfileLoadResult saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
         Assert.Equal(3, Assert.Single(saved.Data!.Combat.MassacreMissions).Remaining);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(null)]
+    public async Task CachedSrvStatusCannotPoisonAFighterAfterDocking(int? statusMinute)
+    {
+        CombatViewModel viewModel = CreateViewModel();
+        viewModel.AutoShowMassacreMissions = true;
+        viewModel.LoadProfile("F123", "Drew", true, CombatSnapshot.Empty);
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse("""{"event":"LoadGame","Ship":"federation_corvette"}"""),
+                Parse(
+                    """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
+                ),
+            ],
+            new EliteStatus { Flags = StatusFlags.InMainShip },
+            true
+        );
+        await viewModel.ApplyUpdateAsync(
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv,
+                Timestamp = statusMinute is { } minute
+                    ? new DateTimeOffset(2026, 11, 8, 9, minute, 0, TimeSpan.Zero)
+                    : default,
+            },
+            true
+        );
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse("""{"timestamp":"2026-11-08T09:01:00Z","event":"DockSRV","SRVType":"testbuggy","ID":7}"""),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:02:00Z","event":"LaunchFighter","ID":45,"PlayerControlled":true}"""
+                ),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:03:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+                ),
+            ],
+            null,
+            true
+        );
+        Assert.Equal("1/3", Assert.Single(viewModel.MassacreMissions).ProgressText);
+        await viewModel.ApplyUpdateAsync(
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InFighter,
+                Timestamp = new DateTimeOffset(2026, 11, 8, 9, 4, 0, TimeSpan.Zero),
+            },
+            true
+        );
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse("""{"timestamp":"2026-11-08T09:05:00Z","event":"DockFighter","ID":45}"""),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:06:00Z","event":"LaunchFighter","ID":45,"PlayerControlled":true}"""
+                ),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:07:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+                ),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InFighter,
+                Timestamp = new DateTimeOffset(2026, 11, 8, 9, 8, 0, TimeSpan.Zero),
+            },
+            true
+        );
+        Assert.Equal("2/3", Assert.Single(viewModel.MassacreMissions).ProgressText);
+        CommanderProfileLoadResult saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        Assert.Equal(1, Assert.Single(saved.Data!.Combat.MassacreMissions).Remaining);
     }
 
     [Fact]

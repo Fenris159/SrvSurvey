@@ -9,6 +9,7 @@ public sealed class JournalSessionState
     private const string ShipIdProperty = "ShipID";
     private readonly Dictionary<long, string> srvTypesById = [];
     private long? pendingPlayerControlledFighterId;
+    private long? activePlayerControlledFighterId;
     private bool isNomadStatusConfirmationPending;
 
     public ShipLoadoutState ShipLoadout { get; } = new();
@@ -154,6 +155,7 @@ public sealed class JournalSessionState
                 ActiveSrvType = launchedSrvType ?? ActiveSrvType;
                 RememberSrvType(root, launchedSrvType);
                 pendingPlayerControlledFighterId = null;
+                activePlayerControlledFighterId = null;
                 isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(launchedSrvType);
                 break;
 
@@ -176,6 +178,7 @@ public sealed class JournalSessionState
             case "DockFighter":
                 IsFighterLaunched = false;
                 pendingPlayerControlledFighterId = null;
+                activePlayerControlledFighterId = null;
                 isNomadStatusConfirmationPending = false;
                 if (IsNomadActive)
                 {
@@ -196,6 +199,7 @@ public sealed class JournalSessionState
                         : ActiveSrvType;
                 ActiveSrvType = null;
                 pendingPlayerControlledFighterId = null;
+                activePlayerControlledFighterId = null;
                 isNomadStatusConfirmationPending = false;
                 break;
 
@@ -295,6 +299,8 @@ public sealed class JournalSessionState
     private void ApplySrvEmbark(JsonElement root)
     {
         ParkedSrvType = null;
+        pendingPlayerControlledFighterId = null;
+        activePlayerControlledFighterId = null;
         long? embarkedVehicleId = GetInt64(root, "ID");
         if (embarkedVehicleId is { } embarkedId && srvTypesById.TryGetValue(embarkedId, out string? embarkedSrvType))
         {
@@ -365,7 +371,8 @@ public sealed class JournalSessionState
             return;
         }
 
-        pendingPlayerControlledFighterId = GetInt64(root, "ID");
+        activePlayerControlledFighterId = GetInt64(root, "ID");
+        pendingPlayerControlledFighterId = activePlayerControlledFighterId;
         if (
             pendingPlayerControlledFighterId is { } vehicleId
             && srvTypesById.TryGetValue(vehicleId, out string? srvType)
@@ -373,6 +380,7 @@ public sealed class JournalSessionState
         )
         {
             ActiveSrvType = srvType;
+            KnownNomadVehicleId = vehicleId;
             IsFighterLaunched = false;
             pendingPlayerControlledFighterId = null;
             isNomadStatusConfirmationPending = true;
@@ -400,13 +408,7 @@ public sealed class JournalSessionState
         }
         else if (status.InFighter)
         {
-            if (IsNomadActive)
-            {
-                ActiveSrvType = null;
-            }
-
-            pendingPlayerControlledFighterId = null;
-            isNomadStatusConfirmationPending = false;
+            ConfirmFighterStatus();
         }
         else if (IsNomadActive && !isNomadStatusConfirmationPending)
         {
@@ -417,12 +419,32 @@ public sealed class JournalSessionState
             || previousFighterState != IsFighterLaunched;
     }
 
+    private void ConfirmFighterStatus()
+    {
+        if (activePlayerControlledFighterId is { } vehicleId)
+        {
+            srvTypesById.Remove(vehicleId);
+            if (KnownNomadVehicleId == vehicleId)
+            {
+                KnownNomadVehicleId = null;
+            }
+        }
+        if (IsNomadActive)
+        {
+            ActiveSrvType = null;
+        }
+        IsFighterLaunched = true;
+        pendingPlayerControlledFighterId = null;
+        isNomadStatusConfirmationPending = false;
+    }
+
     private void ClearLiveLocationContext()
     {
         ParkedSrvType = null;
         ActiveSrvType = null;
         IsFighterLaunched = false;
         pendingPlayerControlledFighterId = null;
+        activePlayerControlledFighterId = null;
         isNomadStatusConfirmationPending = false;
         BodyName = null;
     }
@@ -474,6 +496,7 @@ public sealed class JournalSessionState
         ActiveSrvType = null;
         IsFighterLaunched = false;
         pendingPlayerControlledFighterId = null;
+        activePlayerControlledFighterId = null;
         isNomadStatusConfirmationPending = false;
     }
 

@@ -321,6 +321,31 @@ public sealed class JournalSessionStateTests
     }
 
     [Fact]
+    public void FighterConfirmationCorrectsOnlyTheActiveVehicleIdentity()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse("""{"event":"DockSRV","SRVType":"lander01","ID":44}"""));
+        state.Apply(Parse("""{"event":"LaunchFighter","ID":45,"PlayerControlled":true}"""));
+        state.ReconcileVehicleStatus(new EliteStatus { Flags = StatusFlags.InSrv });
+        Assert.Equal(45, state.KnownNomadVehicleId);
+
+        state.ReconcileVehicleStatus(new EliteStatus { Flags = StatusFlags.InFighter });
+        Assert.True(state.IsFighterLaunched);
+        Assert.False(state.IsNomadActive);
+        Assert.Null(state.KnownNomadVehicleId);
+        state.Apply(Parse("""{"event":"DockFighter","ID":45}"""));
+        state.Apply(Parse("""{"event":"LaunchFighter","ID":45,"PlayerControlled":true}"""));
+        Assert.True(state.IsFighterLaunched);
+        Assert.False(state.IsNomadActive);
+
+        state.Apply(Parse("""{"event":"DockFighter","ID":45}"""));
+        state.Apply(Parse("""{"event":"LaunchFighter","ID":44,"PlayerControlled":true}"""));
+        Assert.True(state.IsNomadActive);
+        Assert.False(state.IsFighterLaunched);
+        Assert.Equal(44, state.KnownNomadVehicleId);
+    }
+
+    [Fact]
     public void ConventionalFighterAndSrvTelemetryRemainDistinct()
     {
         var fighterState = new JournalSessionState();

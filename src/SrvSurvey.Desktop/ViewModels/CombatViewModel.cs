@@ -25,6 +25,9 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private string statusMessage = string.Empty;
     private IReadOnlyList<MassacreMissionViewModel> massacreMissions = [];
     private JournalSessionState vehicleSession = new();
+    private DateTimeOffset? latestVehicleEventTime;
+    private DateTimeOffset? vehicleStatusBoundary;
+    private bool canConfirmRetainedStatus;
     private bool? journalShipContext;
     private bool? fighterParentShipContext;
     private bool replayUntrackedMissionHistory;
@@ -138,6 +141,9 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         isOdyssey = profileIsOdyssey;
         state.Reset(snapshot);
         vehicleSession = new();
+        latestVehicleEventTime = null;
+        vehicleStatusBoundary = null;
+        canConfirmRetainedStatus = false;
         journalShipContext = null;
         fighterParentShipContext = null;
         // Other commander totals can have a checkpoint even when the old tracker ignored every mission.
@@ -212,7 +218,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             shipContext = ApplyVehicleContext(
                 journalEvent,
                 shipContext,
-                StatusForLastVehicleEvent(journalEvent, ref remainingVehicleEvents, status)
+                StatusForLastVehicleEvent(journalEvent, ref remainingVehicleEvents, currentStatus is not null)
             );
             if (journalEvent.EventName is "Fileheader" or "LoadGame")
             {
@@ -281,7 +287,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             return;
         }
         status = latestStatus;
-        if (!hasVehicleEvents)
+        canConfirmRetainedStatus = IsStatusContemporary(latestStatus, vehicleStatusBoundary);
+        if (!hasVehicleEvents && canConfirmRetainedStatus)
         {
             vehicleSession.ReconcileVehicleStatus(latestStatus);
         }
@@ -294,7 +301,11 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         {
             return journalShipContext ?? ShipContext(status);
         }
-        return latestStatus is not null ? ShipContext(latestStatus) : journalShipContext ?? ShipContext(status);
+        if (latestStatus is not null && IsStatusContemporary(latestStatus, vehicleStatusBoundary))
+        {
+            return ShipContext(latestStatus);
+        }
+        return journalShipContext ?? ShipContext(status);
     }
 
     private static bool? ShipContext(EliteStatus? value) =>
@@ -312,10 +323,13 @@ public sealed class CombatViewModel : INotifyPropertyChanged
                 or "LaunchFighter"
                 or "DockFighter";
 
-    private static EliteStatus? StatusForLastVehicleEvent(
+    private static bool IsStatusContemporary(EliteStatus snapshot, DateTimeOffset? boundary) =>
+        boundary is null || snapshot.Timestamp == default || snapshot.Timestamp >= boundary.Value;
+
+    private EliteStatus? StatusForLastVehicleEvent(
         JournalEventEnvelope entry,
         ref int remainingVehicleEvents,
-        EliteStatus? latestStatus
+        bool statusWasUpdated
     )
     {
         if (!IsVehicleEvent(entry.EventName))
@@ -323,7 +337,23 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             return null;
         }
         remainingVehicleEvents--;
-        return remainingVehicleEvents == 0 ? latestStatus : null;
+        // Status may lead its launch entry, but cannot precede an intervening dock or other transition.
+        DateTimeOffset? boundary = entry.EventName == "LaunchFighter" ? latestVehicleEventTime : entry.Timestamp;
+        bool snapshotIsLater =
+            status is { Timestamp: var at } && at != default && entry.Timestamp is { } time && at > time;
+        bool canConfirm =
+            status is not null
+            && (
+                canConfirmRetainedStatus
+                || snapshotIsLater
+                || (statusWasUpdated && IsStatusContemporary(status, boundary))
+            );
+        // A retained snapshot cannot cross an unobserved vehicle change. Timestamps can still
+        // establish that a snapshot received before a historical batch describes its final vehicle.
+        canConfirmRetainedStatus = snapshotIsLater;
+        latestVehicleEventTime = entry.Timestamp;
+        vehicleStatusBoundary = boundary;
+        return remainingVehicleEvents == 0 && canConfirm ? status : null;
     }
 
     private bool? ApplyVehicleContext(JournalEventEnvelope entry, bool? previous, EliteStatus? confirmedStatus)
