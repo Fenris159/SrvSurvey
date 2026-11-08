@@ -60,8 +60,14 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
         CombatApplyResult result = journalEvent.EventName switch
         {
             "ApproachSettlement" => ApplySettlement(journalEvent.Payload),
-            "StartJump" or "SupercruiseEntry" or "FSDJump" or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
-                ClearSettlement(),
+            "StartJump"
+            or "SupercruiseEntry"
+            or "LeaveBody"
+            or "FSDJump"
+            or "CarrierJump"
+            or "Died"
+            or "Resurrect"
+            or "Shutdown" => ClearSettlement(),
             "Music"
                 when string.Equals(
                     GetString(journalEvent.Payload, "MusicTrack"),
@@ -156,9 +162,10 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
             FootCombatBonds += GetInt64(root, "Reward") ?? 0;
         }
 
-        CombatApplyResult missionResult = countShipCombat
-            ? ApplyMissionKill(root, timestamp, combatBond: true)
-            : CombatApplyResult.None;
+        CombatApplyResult missionResult =
+            countShipCombat && string.IsNullOrWhiteSpace(SettlementName)
+                ? ApplyMissionKill(root, timestamp, combatBond: true)
+                : CombatApplyResult.None;
         return new CombatApplyResult(countFootCombat || missionResult.StateChanged, missionResult.PersistenceChanged);
     }
 

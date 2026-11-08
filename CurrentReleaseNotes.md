@@ -62,6 +62,9 @@ for conflict-zone massacre missions.
   other massacre missions retain bounty tracking. Credit remains limited to one
   active mission per giver for each kill. On-foot and SRV combat bonds do not
   advance ship missions, and the mission type is retained when saving progress.
+- **Exclude surface combat:** Combat bonds earned at a surface settlement do
+  not advance space conflict-zone missions, even when the commander stays in a
+  ship. Leaving the planet or entering supercruise restores space-bond tracking.
 - **Recover journal progress correctly:** Ship, foot, and SRV transitions are
   applied at the time of each recorded kill. Suit starts and Nomad launches retain
   their ground-combat identity. Empty combat profiles recover

@@ -162,6 +162,68 @@ public sealed class CombatStateTests
     }
 
     [Fact]
+    public void ShipAttacksAtWarSettlementDoNotAdvanceSpaceConflictMissions()
+    {
+        var state = new CombatState();
+        state.Apply(
+            Parse(
+                """{"event":"MissionAccepted","Faction":"Fire Lotus Coalition","Name":"Mission_Massacre_Conflict_CivilWar","TargetFaction":"Sorbago Mastopolos Mining Inc","KillCount":81,"MissionID":1070754782}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"ApproachSettlement","Name":"Ren Horticultural Biosphere","StationFaction":{"Name":"Sorbago Mastopolos Mining Inc","FactionState":"War"}}"""
+            )
+        );
+        state.Apply(
+            Parse("""{"event":"SupercruiseExit","StarSystem":"Sorbago","Body":"Sorbago A 3","BodyType":"Planet"}""")
+        );
+        JournalEventEnvelope bond = Parse(
+            """{"timestamp":"2026-11-08T09:53:11Z","event":"FactionKillBond","Reward":70217,"AwardingFaction":"Fire Lotus Coalition","VictimFaction":"Sorbago Mastopolos Mining Inc"}"""
+        );
+        for (int kill = 0; kill < 12; kill++)
+        {
+            state.Apply(bond, countFootCombat: false, countShipCombat: true);
+        }
+
+        Assert.Equal(81, Assert.Single(state.MassacreMissions).Remaining);
+    }
+
+    [Theory]
+    [InlineData("SupercruiseEntry")]
+    [InlineData("LeaveBody")]
+    public void LeavingSettlementAllowsSpaceConflictBondsToAdvanceTheMission(string departureEvent)
+    {
+        var state = new CombatState();
+        state.Apply(
+            Parse(
+                """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
+            )
+        );
+        state.Apply(
+            Parse("""{"event":"ApproachSettlement","Name":"Surface Base","StationFaction":{"FactionState":"War"}}""")
+        );
+        state.Apply(
+            Parse(
+                """{"timestamp":"2026-11-08T09:00:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+            ),
+            countFootCombat: false,
+            countShipCombat: true
+        );
+        state.Apply(Parse($$"""{"event":"{{departureEvent}}"}"""));
+        state.Apply(Parse("""{"event":"SupercruiseExit","Body":"Nearby planet","BodyType":"Planet"}"""));
+        state.Apply(
+            Parse(
+                """{"timestamp":"2026-11-08T09:02:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+            ),
+            countFootCombat: false,
+            countShipCombat: true
+        );
+
+        Assert.Equal(2, Assert.Single(state.MassacreMissions).Remaining);
+    }
+
+    [Fact]
     public void BountyDoesNotCreditConflictMissions()
     {
         var state = new CombatState();

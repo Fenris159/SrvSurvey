@@ -544,6 +544,36 @@ public sealed class CombatViewModelTests : IDisposable
         Assert.Equal(80, Assert.Single(saved.Data!.Combat.MassacreMissions).Remaining);
     }
 
+    [Fact]
+    public async Task SurfaceBondsDoNotPersistSpaceMissionProgressDuringShipFlight()
+    {
+        CombatViewModel viewModel = CreateViewModel();
+        viewModel.AutoShowMassacreMissions = true;
+        viewModel.LoadProfile("F123", "Drew", true, CombatSnapshot.Empty);
+        var flightStatus = new EliteStatus { Flags = StatusFlags.InMainShip };
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-11-08T09:02:08Z","event":"MissionAccepted","Faction":"Fire Lotus Coalition","Name":"Mission_Massacre_Conflict_CivilWar","TargetFaction":"Sorbago Mastopolos Mining Inc","KillCount":81,"MissionID":1070754782}"""
+                ),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:50:51Z","event":"ApproachSettlement","Name":"Ren Horticultural Biosphere","StationFaction":{"FactionState":"War"}}"""
+                ),
+                Parse(
+                    """{"timestamp":"2026-11-08T09:53:11Z","event":"FactionKillBond","VictimFaction":"Sorbago Mastopolos Mining Inc","Reward":70217}"""
+                ),
+            ],
+            flightStatus,
+            processHistoricalProgress: true
+        );
+
+        Assert.Equal("0/81", Assert.Single(viewModel.MassacreMissions).ProgressText);
+        CommanderProfileLoadResult saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        CombatViewModel reopened = CreateViewModel();
+        reopened.LoadProfile("F123", "Drew", true, saved.Data!.Combat);
+        Assert.Equal("0/81", Assert.Single(reopened.MassacreMissions).ProgressText);
+    }
+
     [Theory]
     [InlineData(StatusFlags.None, StatusFlags2.OnFoot, true, "0/3")]
     [InlineData(StatusFlags.InSrv, StatusFlags2.None, true, "0/3")]
