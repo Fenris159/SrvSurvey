@@ -11,6 +11,9 @@ for conflict-zone massacre missions.
 - **Match mining methods correctly:** Laser and core filters use a shared
   commodity and ring compatibility catalog, including minerals available through
   both methods. Selected minerals also constrain Powerplay mining results.
+- **Keep local observations searchable:** Journal hotspot identities remain
+  independent of language, and previously saved translated hotspot names remain
+  compatible with mineral and extraction-method filters.
 - **Include single Platinum hotspots:** Normal Platinum results include
   compatible singles. Spots++ orders pristine reserves first, then system and
   arrival distance; All platinum orders by distance. Explicit minimum-count and
@@ -34,6 +37,9 @@ for conflict-zone massacre missions.
   progress and promotions. Percentages use the last recorded journal report and
   may differ from the live game panel. Missing progress is identified explicitly,
   highest ranks are marked, and commander changes keep observations separate.
+- **Retain available ranks:** Known navy ranks remain visible when reputation
+  is unavailable, and attributed journals fill categories absent from CAPI.
+  Rank reports keep their own freshness; CQC correctly ends at Elite.
 - **Group the three superpowers:** Reputation is ordered Federation, Empire,
   Alliance. Alliance shows reputation only. Powerplay retains its rank and merits
   display. The layout adapts to compact windows and all application themes.
@@ -43,6 +49,9 @@ for conflict-zone massacre missions.
 - **Include Vista Genomics:** The relevant services list now includes Vista
   Genomics beside Universal Cartographics when the imported station data reports
   it as available. Existing overlay styling and theme colors are retained.
+- **Keep station details accessible:** Matching provider records can fill missing
+  service data. The panel retains its saved width and grows with its contents,
+  keeping services and station details visible.
 
 ### Massacre mission overlay
 
@@ -53,3 +62,11 @@ for conflict-zone massacre missions.
   other massacre missions retain bounty tracking. Credit remains limited to one
   active mission per giver for each kill. On-foot and SRV combat bonds do not
   advance ship missions, and the mission type is retained when saving progress.
+- **Recover journal progress correctly:** Ship, foot, and SRV transitions are
+  applied at the time of each recorded kill. Empty combat profiles recover
+  previously ignored missions without recounting already-saved mission progress.
+
+### Reliability
+
+- Handle journal changes during history reads without failing application
+  shutdown, while retaining recovery checks and unexpected-error reporting.

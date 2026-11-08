@@ -3862,9 +3862,9 @@
     "Text": "Alexandrite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Align the capture frame and numbered guides with the forward-facing Rhino HUD.",
@@ -4097,6 +4097,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Alliance",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Alliance Challenger",
@@ -7309,9 +7317,9 @@
     "Text": "Bauxite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Beacon",
@@ -7381,9 +7389,9 @@
     "Text": "Benitoite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Bernal",
@@ -7397,9 +7405,9 @@
     "Text": "Bertrandite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Best",
@@ -8763,9 +8771,10 @@
     "Text": "Bromellite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
   },
   {
     "Text": "Browse Codex",
@@ -13264,9 +13273,9 @@
     "Text": "Coltan",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Combat",
@@ -18824,7 +18833,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
   },
   {
     "Text": "Dismiss",
@@ -19141,12 +19150,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "DockFighter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
     "Text": "DockSRV",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
   },
   {
     "Text": "DockToDockCard",
@@ -20546,7 +20563,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
   },
   {
     "Text": "Embed location details within image, if known",
@@ -25812,9 +25829,9 @@
     "Text": "Gallite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Game",
@@ -26358,9 +26375,10 @@
     "Text": "Gold",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
     "Text": "Gold highlights valuable biology, Guardian information, focused targets, or other high-interest rows depending on the overlay.",
@@ -26590,9 +26608,9 @@
     "Text": "Grandidierite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Gravity",
@@ -28793,9 +28811,9 @@
     "Text": "Hydrogen Peroxide",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Hyperspace",
@@ -29019,6 +29037,7 @@
     "IsFormat": false,
     "SourceKinds": [
       "csharp",
+      "reference",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
@@ -30102,9 +30121,9 @@
     "Text": "Indite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Individual visibility settings suppress only that overlay. Toggle overlays hides or restores the detached overlay group.",
@@ -32262,6 +32281,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "LaunchFighter",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
+    "Text": "LaunchSRV",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
     "Text": "Lava spout",
     "IsFormat": false,
     "SourceKinds": [
@@ -32466,9 +32501,9 @@
     "Text": "Lepidolite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Level with target",
@@ -32730,9 +32765,9 @@
     "Text": "Liquid Oxygen",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Liquid oxygen",
@@ -32762,9 +32797,9 @@
     "Text": "Lithium Hydroxide",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Live / destination",
@@ -33871,9 +33906,9 @@
     "Text": "Low Temperature Diamonds",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
@@ -35558,15 +35593,17 @@
     "Text": "MetalRich",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
     "Text": "Metallic",
     "IsFormat": false,
     "SourceKinds": [
       "csharp",
+      "reference",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
@@ -35591,17 +35628,17 @@
     "Text": "Methane Clathrate",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Methanol Monohydrate Crystals",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Microsoft Store profile ({0} files)",
@@ -36548,9 +36585,10 @@
     "Text": "Monazite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "Monitor",
@@ -36909,9 +36947,9 @@
     "Text": "Musgravite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Music",
@@ -40574,7 +40612,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
   },
   {
     "Text": "OnFootSettlement",
@@ -41998,9 +42036,10 @@
     "Text": "Osmium",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningCargoOverlayViewModel.cs"
   },
   {
     "Text": "Osseus Discus",
@@ -43401,9 +43440,9 @@
     "Text": "Painite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Paint job",
@@ -43441,9 +43480,9 @@
     "Text": "Palladium",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Panel / top",
@@ -44020,6 +44059,7 @@
     "IsFormat": false,
     "SourceKinds": [
       "csharp",
+      "reference",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
@@ -44103,6 +44143,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "PlayerControlled",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
   },
   {
     "Text": "Please wait {0} seconds before refreshing Frontier again.",
@@ -44878,9 +44926,10 @@
     "Text": "Praseodymium",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionsOverlayViewModel.cs"
   },
   {
     "Text": "Pre-download all available biology images",
@@ -51746,9 +51795,9 @@
     "Text": "Rhodplumsite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Rig 1",
@@ -52092,6 +52141,7 @@
     "IsFormat": false,
     "SourceKinds": [
       "csharp",
+      "reference",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
@@ -52534,9 +52584,9 @@
     "Text": "Rutile",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "R\u2212",
@@ -53135,6 +53185,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "SRVDestroyed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
     "Text": "STAR CLASS UNKNOWN",
     "IsFormat": false,
     "SourceKinds": [
@@ -53467,9 +53525,9 @@
     "Text": "Samarium",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Sample 1 of 3 recorded",
@@ -56117,9 +56175,9 @@
     "Text": "Serendibite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Service terms",
@@ -58284,9 +58342,9 @@
     "Text": "Silver",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Silver Legal Group",
@@ -63153,7 +63211,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
   },
   {
     "Text": "Taxi / shuttle",
@@ -69882,9 +69940,10 @@
     "Text": "Tritium",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Tritium in fuel tank (t)",
@@ -71461,9 +71520,9 @@
     "Text": "Uraninite",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Urn",
@@ -73095,9 +73154,9 @@
     "Text": "Void Opals",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Core/Resources/ReferenceData/ring-mining-compositions.json"
   },
   {
     "Text": "Volcanism",
@@ -73729,9 +73788,10 @@
     "Text": "Water",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "reference"
     ],
-    "FirstSource": "src/SrvSurvey.Core/Mining/RingMiningCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
     "Text": "Water giant",

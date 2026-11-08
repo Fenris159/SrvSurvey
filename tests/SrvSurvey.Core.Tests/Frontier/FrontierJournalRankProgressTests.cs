@@ -94,7 +94,7 @@ public sealed class FrontierJournalRankProgressTests
     [InlineData("explore", 13)]
     [InlineData("soldier", 13)]
     [InlineData("exobiologist", 13)]
-    [InlineData("cqc", 13)]
+    [InlineData("cqc", 8)]
     [InlineData("federation", 14)]
     [InlineData("empire", 14)]
     public void HighestRanksHaveNoNextRank(string key, int highest)
@@ -102,6 +102,17 @@ public sealed class FrontierJournalRankProgressTests
         Assert.True(new FrontierRankSnapshot(key, "", highest, "").IsHighestRank);
         Assert.False(new FrontierRankSnapshot(key, "", highest - 1, "").IsHighestRank);
         Assert.False(new FrontierRankSnapshot("power", "Powerplay", 161, "").IsHighestRank);
+    }
+
+    [Fact]
+    public void NewProgressCannotMakeAnOlderLevelOverrideANewerCapiRank()
+    {
+        var tracker = new FrontierJournalRankProgress();
+        tracker.Apply(Parse("""{"timestamp":"1970-01-01T00:01:00Z","event":"Rank","Combat":6}"""));
+        tracker.Apply(Parse("""{"timestamp":"1970-01-01T00:03:00Z","event":"Progress","Combat":50}"""));
+        var current = new FrontierRankSnapshot("combat", "Combat", 7, "Deadly");
+
+        Assert.Equal(current, tracker.Project(current, DateTimeOffset.UnixEpoch.AddMinutes(2)));
     }
 
     private static JournalEventEnvelope Parse(string json)

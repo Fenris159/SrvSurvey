@@ -612,6 +612,52 @@ public sealed class OverlayLivePanelSizingTests
         Assert.Equal(600, panel.Height);
     }
 
+    /// <summary>Saved widths remain honored while station content can grow past an obsolete saved height.</summary>
+    [AvaloniaTheory]
+    [InlineData(220)]
+    [InlineData(320)]
+    public void StationDetailsRemainVisibleWhenASavedHeightIsTooSmall(int width)
+    {
+        const string plotter = "PlotStationInfo";
+        var model = (StationInfoOverlayViewModel)OverlayEditorPreviewCatalog.Create(plotter);
+        var window = new StationInfoOverlayWindow(model);
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                [plotter] = new(
+                    LegacyHorizontalAnchor.Left,
+                    8,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null,
+                    SizeOverride: new(width, 200)
+                ),
+            },
+            null,
+            null
+        );
+        try
+        {
+            OverlayThemeResources.Apply(window, layout, plotter, new OverlayWindowRegistry());
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            StationInfoOverlayPresentation presentation = Assert.Single(
+                window.GetVisualDescendants().OfType<StationInfoOverlayPresentation>()
+            );
+            TextBlock footer = Assert.Single(
+                presentation.GetVisualDescendants().OfType<TextBlock>(),
+                text => text.Text == model.StationInfo.UpdatedText
+            );
+            Point position = footer.TranslatePoint(default, presentation)!.Value;
+            Assert.Equal(width, presentation.Bounds.Width);
+            Assert.True(position.Y + footer.Bounds.Height <= presentation.Bounds.Height + 1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     /// <summary>Verifies natural panel height and retained typography when Next Jump moves between overlay hosts.</summary>
     [AvaloniaFact]
     public void NextJumpKeepsItsSizeAndTypographyWhenMovedToACombinedHost()

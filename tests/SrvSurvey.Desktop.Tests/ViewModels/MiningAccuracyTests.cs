@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
@@ -33,6 +34,43 @@ public sealed class MiningAccuracyTests
         await fixture.Model.SearchRingsAsync();
 
         Assert.Equal(expected.Order(), fixture.Model.Rings.Select(ring => ring.Body).Order());
+    }
+
+    [Fact]
+    public async Task GermanJournalHotspotsStaySearchableByCanonicalMineral()
+    {
+        var state = new MiningWorkspaceState(new MiningCommanderData { Rings = [Ring("Fixture A Ring", "Platin")] });
+        foreach (
+            string json in new[]
+            {
+                """{"timestamp":"2026-11-08T00:00:00Z","event":"Scan","ReserveLevel":"Pristine","Rings":[{"Name":"Fixture A Ring","RingClass":"eRingClass_Metallic"}]}""",
+                """{"timestamp":"2026-11-08T00:01:00Z","event":"SAASignalsFound","BodyName":"Fixture A Ring","Signals":[{"Type":"Platinum","Type_Localised":"Platin","Count":1}]}""",
+            }
+        )
+        {
+            Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out string? error), error);
+            state.Apply(entry!, false, "Mining accuracy fixture", "", "");
+        }
+        using var fixture = new Fixture(state.Data.Rings.ToArray());
+        fixture.Model.MiningType = "Laser Surface";
+
+        await fixture.Model.SearchRingsAsync();
+
+        Assert.Equal("Fixture A Ring", Assert.Single(fixture.Model.Rings).Body);
+        Assert.Equal(1, Assert.Single(state.Data.Rings).Hotspots["Platinum"]);
+        Assert.Single(Assert.Single(state.Data.Rings).Hotspots);
+    }
+
+    [Fact]
+    public async Task PreviouslySavedLocalizedHotspotsRemainSearchable()
+    {
+        using var fixture = new Fixture(Ring("Legacy A Ring", "Platin"));
+        fixture.Model.MiningType = "Laser Surface";
+        fixture.Model.RingMineralChips.Add("Platinum");
+
+        await fixture.Model.SearchRingsAsync();
+
+        Assert.Equal("Legacy A Ring", Assert.Single(fixture.Model.Rings).Body);
     }
 
     [Fact]

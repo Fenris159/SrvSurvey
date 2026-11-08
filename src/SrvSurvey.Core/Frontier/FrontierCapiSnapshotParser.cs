@@ -123,13 +123,8 @@ public static partial class FrontierCapiSnapshotParser
             "Professional",
             "Champion",
             "Hero",
-            "Gladiator",
+            "Legend",
             RankElite,
-            RankEliteI,
-            RankEliteII,
-            RankEliteIII,
-            RankEliteIV,
-            RankEliteV,
         ],
         ["federation"] =
         [
@@ -549,6 +544,10 @@ public static partial class FrontierCapiSnapshotParser
             level >= 0 && level < names.Length ? names[level] : $"Rank {level.ToString(CultureInfo.InvariantCulture)}";
         return new FrontierRankSnapshot(key, RankCategories[key], level, name);
     }
+
+    internal static bool IsJournalRank(string key) => key != "power" && RankCategories.ContainsKey(key);
+
+    internal static IEnumerable<string> JournalRankKeys => RankCategories.Keys.Where(IsJournalRank);
 
     private static string[] ParseCapabilities(JsonElement? capabilities)
     {

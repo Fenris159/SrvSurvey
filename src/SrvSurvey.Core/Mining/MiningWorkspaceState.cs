@@ -370,13 +370,20 @@ public sealed class MiningWorkspaceState
         MiningRing target = GetRing(system, body, position);
         foreach (JsonElement signal in MiningJson.Array(json, "Signals"))
         {
-            string name = MiningJson.Text(signal, "Type_Localised");
+            string name = MiningJson.Text(signal, "Type");
             if (name.Length == 0)
             {
-                name = MiningJson.Text(signal, "Type");
+                name = MiningJson.Text(signal, "Type_Localised");
             }
 
-            target.Hotspots[name] = (int)MiningJson.Number(signal, "Count");
+            string canonical = MiningCommodityName.Canonical(name);
+            foreach (
+                string oldKey in target.Hotspots.Keys.Where(key => MiningCommodityName.Same(key, canonical)).ToArray()
+            )
+            {
+                target.Hotspots.Remove(oldKey);
+            }
+            target.Hotspots[canonical] = (int)MiningJson.Number(signal, "Count");
         }
         target.Scanned = entry.Timestamp ?? default;
     }

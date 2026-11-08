@@ -17,6 +17,7 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
     private const string CommunityGoalTimestampKey = "journal.communityGoalTimestamp";
     private const string UnavailableLabel = "Unavailable";
     private const string PowerplayRankKey = "power";
+    private static readonly string[] CommanderSuperpowers = ["Federation", "Empire", "Alliance"];
     private static readonly HashSet<string> PowerplayEmblemNames = new(StringComparer.OrdinalIgnoreCase)
     {
         "Aisling Duval",
@@ -460,9 +461,11 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
             return [];
         }
 
-        var rows = Snapshot
-            .Ranks.Where(rank => rank.Key != PowerplayRankKey)
-            .Select(rank => IsViewingJournalCommander ? journalRankProgress.Project(rank, Snapshot.FetchedAt) : rank)
+        IReadOnlyList<FrontierRankSnapshot> ranks = IsViewingJournalCommander
+            ? journalRankProgress.ProjectRanks(Snapshot.Ranks, Snapshot.FetchedAt)
+            : Snapshot.Ranks;
+        var rows = ranks
+            .Where(rank => rank.Key != PowerplayRankKey)
             .Select(rank => new FrontierRankCardViewModel(
                 rank.Category,
                 rank.Name,
@@ -1123,28 +1126,34 @@ public sealed partial class CommanderProfileViewModel : INotifyPropertyChanged, 
             ?? [];
 
     public IReadOnlyList<FrontierReputationRowViewModel> CommanderReputation =>
-        commanderReputationRows ??= EffectiveCommanderReputation()
-            .Where(item => CommanderFactionOrder(item.Faction) >= 0)
-            .OrderBy(item => CommanderFactionOrder(item.Faction))
-            .ThenBy(item => item.Faction, StringComparer.CurrentCultureIgnoreCase)
-            .Select(item => new FrontierReputationRowViewModel(
-                item.Faction,
-                $"{item.Score:N0}%",
-                FactionIcon(item.Faction),
-                Ranks.FirstOrDefault(rank =>
-                    string.Equals(rank.Category, item.Faction, StringComparison.OrdinalIgnoreCase)
-                )
-            ))
-            .ToArray();
+        commanderReputationRows ??= BuildCommanderReputation();
 
-    private static int CommanderFactionOrder(string faction) =>
-        faction.ToLowerInvariant() switch
+    private List<FrontierReputationRowViewModel> BuildCommanderReputation()
+    {
+        IReadOnlyList<FrontierReputationSnapshot> reputation = EffectiveCommanderReputation();
+        var rows = new List<FrontierReputationRowViewModel>();
+        foreach (string faction in CommanderSuperpowers)
         {
-            "federation" => 0,
-            "empire" => 1,
-            "alliance" => 2,
-            _ => -1,
-        };
+            FrontierReputationSnapshot? score = reputation.FirstOrDefault(item =>
+                string.Equals(item.Faction, faction, StringComparison.OrdinalIgnoreCase)
+            );
+            FrontierRankCardViewModel? navalRank = Ranks.FirstOrDefault(rank =>
+                string.Equals(rank.Category, faction, StringComparison.OrdinalIgnoreCase)
+            );
+            if (score is not null || navalRank is not null)
+            {
+                rows.Add(
+                    new(
+                        faction,
+                        score is null ? UnavailableLabel : $"{score.Score:N0}%",
+                        FactionIcon(faction),
+                        navalRank
+                    )
+                );
+            }
+        }
+        return rows;
+    }
 
     public IReadOnlyList<FrontierDataPointSnapshot> CarrierData =>
         carrierWorkspaceKind == CarrierWorkspaceKind.Squadron

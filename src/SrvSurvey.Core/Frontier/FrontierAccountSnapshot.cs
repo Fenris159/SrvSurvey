@@ -61,7 +61,8 @@ public sealed record FrontierRankSnapshot(
         Key.ToLowerInvariant() switch
         {
             "federation" or "empire" => Level == 14,
-            "combat" or "trade" or "explore" or "soldier" or "exobiologist" or "cqc" => Level == 13,
+            "cqc" => Level == 8,
+            "combat" or "trade" or "explore" or "soldier" or "exobiologist" => Level == 13,
             _ => false,
         };
 }

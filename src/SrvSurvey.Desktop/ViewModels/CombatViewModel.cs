@@ -24,6 +24,9 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private bool footSessionActive;
     private string statusMessage = string.Empty;
     private IReadOnlyList<MassacreMissionViewModel> massacreMissions = [];
+    private bool? journalShipContext;
+    private bool? fighterParentShipContext;
+    private bool replayUntrackedMissionHistory;
 
     public CombatViewModel(
         CombatSettingsStore settingsStore,
@@ -133,6 +136,10 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         commanderName = profileCommanderName;
         isOdyssey = profileIsOdyssey;
         state.Reset(snapshot);
+        journalShipContext = null;
+        fighterParentShipContext = null;
+        // Other commander totals can have a checkpoint even when the old tracker ignored every mission.
+        replayUntrackedMissionHistory = state.MassacreMissions.Count == 0;
         RebuildMassacreMissions();
         footSessionActive = false;
         StatusMessage = string.Empty;
@@ -191,6 +198,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
+        bool? shipContext = InitialShipContext(journalEvents, currentStatus);
         if (currentStatus is not null)
         {
             status = currentStatus;
@@ -202,6 +210,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         bool modeChanged = false;
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
+            shipContext = ApplyVehicleContext(journalEvent, shipContext);
             if (journalEvent.EventName is "Fileheader" or "LoadGame")
             {
                 modeChanged |= musicTrack is not null;
@@ -224,15 +233,16 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
             CombatApplyResult result = state.Apply(
                 journalEvent,
-                countProgress: processHistoricalProgress,
-                countFootCombat: ShouldShowFootCombat,
-                countShipCombat: ShouldCountShipCombat
+                countProgress: processHistoricalProgress || replayUntrackedMissionHistory,
+                countFootCombat: ShouldCountFootCombat(shipContext, processHistoricalProgress),
+                countShipCombat: ShouldCountShipCombat(shipContext)
             );
             stateChanged |= result.StateChanged;
             persistenceChanged |= result.PersistenceChanged;
             UpdateFootSession();
         }
 
+        journalShipContext = shipContext;
         if (persistenceChanged)
         {
             await SaveCombatAsync();
@@ -256,10 +266,79 @@ public sealed class CombatViewModel : INotifyPropertyChanged
                 is not ("MissionAccepted" or "MissionCompleted" or "MissionFailed" or "MissionAbandoned" or "Bounty");
     }
 
-    private bool ShouldCountShipCombat =>
-        AutoShowMassacreMissions
-        && status is { OnFoot: false, InSrv: false }
-        && (status.InMainShip || status.InFighter);
+    private bool ShouldCountShipCombat(bool? shipContext) => AutoShowMassacreMissions && shipContext == true;
+
+    private bool ShouldCountFootCombat(bool? shipContext, bool processHistoricalProgress) =>
+        processHistoricalProgress && ShouldShowFootCombat && shipContext != true;
+
+    private bool? InitialShipContext(IReadOnlyList<JournalEventEnvelope> entries, EliteStatus? latestStatus)
+    {
+        if (entries.Any(entry => IsVehicleEvent(entry.EventName)))
+        {
+            return journalShipContext ?? ShipContext(status);
+        }
+        return latestStatus is not null ? ShipContext(latestStatus) : journalShipContext ?? ShipContext(status);
+    }
+
+    private static bool? ShipContext(EliteStatus? value) =>
+        value is null ? null : !value.OnFoot && !value.InSrv && !value.InTaxi && (value.InMainShip || value.InFighter);
+
+    private static bool IsVehicleEvent(string eventName) =>
+        eventName
+            is "Fileheader"
+                or "LoadGame"
+                or "Disembark"
+                or "Embark"
+                or "LaunchSRV"
+                or "DockSRV"
+                or "SRVDestroyed"
+                or "LaunchFighter"
+                or "DockFighter";
+
+    private bool? ApplyVehicleContext(JournalEventEnvelope entry, bool? previous)
+    {
+        switch (entry.EventName)
+        {
+            case "Fileheader":
+                fighterParentShipContext = null;
+                return null;
+            case "LoadGame":
+                fighterParentShipContext = null;
+                return
+                    entry.Payload.TryGetProperty("Ship", out JsonElement ship) && ship.ValueKind == JsonValueKind.String
+                    ? IsShipSymbol(ship.GetString()!)
+                    : previous;
+            case "Disembark":
+            case "LaunchSRV":
+                return false;
+            case "Embark":
+                return !IsTrue(entry.Payload, "SRV") && !IsTrue(entry.Payload, "Taxi");
+            case "DockSRV":
+                return true;
+            case "SRVDestroyed":
+                return null;
+            case "LaunchFighter" when IsTrue(entry.Payload, "PlayerControlled"):
+                fighterParentShipContext = previous;
+                return true;
+            case "DockFighter":
+                bool? parent = fighterParentShipContext;
+                fighterParentShipContext = null;
+                return parent ?? true;
+            default:
+                return previous;
+        }
+    }
+
+    private static bool IsTrue(JsonElement root, string key) =>
+        root.TryGetProperty(key, out JsonElement value) && value.ValueKind == JsonValueKind.True;
+
+    private static bool IsShipSymbol(string symbol) =>
+        !string.IsNullOrWhiteSpace(symbol)
+        && !symbol.Equals("OnFoot", StringComparison.OrdinalIgnoreCase)
+        && !symbol.Equals("testbuggy", StringComparison.OrdinalIgnoreCase)
+        && !symbol.Contains("_srv_", StringComparison.OrdinalIgnoreCase)
+        && !EliteSrvTypes.IsNomad(symbol)
+        && !EliteSrvTypes.IsRhino(symbol);
 
     private void UpdateFootSession()
     {

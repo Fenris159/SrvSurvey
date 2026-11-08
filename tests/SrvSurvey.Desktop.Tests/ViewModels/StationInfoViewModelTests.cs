@@ -32,6 +32,25 @@ public sealed class StationInfoViewModelTests
     }
 
     [Fact]
+    public async Task DuplicateStationRecordsRetainReportedServicesWithoutInventingVistaGenomics()
+    {
+        SystemSummary summary = Summary();
+        SystemStationSummary station = summary.Stations.Single(item => item.Name == "Raven Port");
+        summary = summary with { Stations = [station with { Services = [] }, station] };
+        using var viewModel = new StationInfoViewModel(new FakeSummaryClient(summary));
+        await viewModel.UpdateCurrentSystemAsync("Test", 42);
+        viewModel.UpdateStatus(Status("Raven Port", GuiFocus.ExternalPanel));
+
+        Assert.Contains("Vista Genomics", viewModel.RelevantServices);
+
+        SystemStationSummary withoutVista = station with { Services = ["Market"] };
+        using var other = new StationInfoViewModel(new FakeSummaryClient(summary with { Stations = [withoutVista] }));
+        await other.UpdateCurrentSystemAsync("Test", 42);
+        other.UpdateStatus(Status("Raven Port", GuiFocus.ExternalPanel));
+        Assert.Equal(["Market"], other.RelevantServices);
+    }
+
+    [Fact]
     public async Task ToggleHidesAutomaticOverlayAndForcesItOutsidePanel()
     {
         using var viewModel = new StationInfoViewModel(new FakeSummaryClient(Summary()));

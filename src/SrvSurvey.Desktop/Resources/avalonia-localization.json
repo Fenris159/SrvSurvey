@@ -2049,6 +2049,10 @@
       "translation": "Alle {0} Systeme erreicht."
     },
     {
+      "source": "Alliance",
+      "translation": "Allianz"
+    },
+    {
       "source": "Alliance Challenger",
       "translation": "Herausforderer der Allianz"
     },
@@ -9541,6 +9545,10 @@
       "translation": "Reisetagebuch von Dock zu Dock"
     },
     {
+      "source": "DockFighter",
+      "translation": "DockFighter"
+    },
+    {
       "source": "DockSRV",
       "translation": "DockSRV"
     },
@@ -16077,6 +16085,14 @@
       "translation": "LaunchDrone"
     },
     {
+      "source": "LaunchFighter",
+      "translation": "LaunchFighter"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "Starten Sie SRV"
+    },
+    {
       "source": "Lava spout",
       "translation": "Lavaauslauf"
     },
@@ -21977,6 +21993,10 @@
       "translation": "Spielerdaten werden byteverifiziert, aber die alten UI-Einstellungen konnten nicht übersetzt werden; Die aktuellen Avalonia-Einstellungen wurden unverändert gelassen. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Spielergesteuert"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Bitte warten Sie {0} Sekunden, bevor Sie Frontier erneut aktualisieren."
     },
@@ -26479,6 +26499,10 @@
     {
       "source": "SRV position",
       "translation": "SRV-Position"
+    },
+    {
+      "source": "SRVDestroyed",
+      "translation": "SRVZerstört"
     },
     {
       "source": "STAR CLASS UNKNOWN",
@@ -44479,6 +44503,10 @@
       "translation": "Todos los {0} sistemas alcanzados."
     },
     {
+      "source": "Alliance",
+      "translation": "Alianza"
+    },
+    {
       "source": "Alliance Challenger",
       "translation": "Alianza retadora"
     },
@@ -51971,6 +51999,10 @@
       "translation": "Registro de viajes de muelle a muelle"
     },
     {
+      "source": "DockFighter",
+      "translation": "Muelle de combate"
+    },
+    {
       "source": "DockSRV",
       "translation": "MuelleSRV"
     },
@@ -58507,6 +58539,14 @@
       "translation": "LanzamientoDrone"
     },
     {
+      "source": "LaunchFighter",
+      "translation": "Lanzador de combate"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "LanzarSRV"
+    },
+    {
       "source": "Lava spout",
       "translation": "Pico de lava"
     },
@@ -64407,6 +64447,10 @@
       "translation": "Los datos del jugador se verifican mediante bytes, pero las preferencias de la interfaz de usuario heredada no se pudieron traducir; La configuración actual de Avalonia no se modificó. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Controlado por el jugador"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Espere {0} segundos antes de actualizar Frontier nuevamente."
     },
@@ -68909,6 +68953,10 @@
     {
       "source": "SRV position",
       "translation": "Posición SRV"
+    },
+    {
+      "source": "SRVDestroyed",
+      "translation": "SRVDestruido"
     },
     {
       "source": "STAR CLASS UNKNOWN",
@@ -86909,6 +86957,10 @@
       "translation": "Tous les systèmes {0} atteints."
     },
     {
+      "source": "Alliance",
+      "translation": "Alliance"
+    },
+    {
       "source": "Alliance Challenger",
       "translation": "Challenger de l'Alliance"
     },
@@ -94401,6 +94453,10 @@
       "translation": "Carnet de voyage de quai à quai"
     },
     {
+      "source": "DockFighter",
+      "translation": "DockFighter"
+    },
+    {
       "source": "DockSRV",
       "translation": "DockSRV"
     },
@@ -100937,6 +100993,14 @@
       "translation": "LancementDrone"
     },
     {
+      "source": "LaunchFighter",
+      "translation": "LancementFighter"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "LancerSRV"
+    },
+    {
       "source": "Lava spout",
       "translation": "Bec de lave"
     },
@@ -106837,6 +106901,10 @@
       "translation": "Les données du joueur sont vérifiées en octets, mais les anciennes préférences de l'interface utilisateur n'ont pas pu être traduites ; les paramètres actuels d'Avalonia sont restés inchangés. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Joueur Contrôlé"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Veuillez patienter {0} secondes avant d'actualiser à nouveau Frontier."
     },
@@ -111339,6 +111407,10 @@
     {
       "source": "SRV position",
       "translation": "Position du VRS"
+    },
+    {
+      "source": "SRVDestroyed",
+      "translation": "SRVDétruit"
     },
     {
       "source": "STAR CLASS UNKNOWN",
@@ -129339,6 +129411,10 @@
       "translation": "Todos os sistemas {0} alcançados."
     },
     {
+      "source": "Alliance",
+      "translation": "Aliança"
+    },
+    {
       "source": "Alliance Challenger",
       "translation": "Desafiador da Aliança"
     },
@@ -136831,6 +136907,10 @@
       "translation": "Registro de viagem de doca a doca"
     },
     {
+      "source": "DockFighter",
+      "translation": "DockFighter"
+    },
+    {
       "source": "DockSRV",
       "translation": "DockSRV"
     },
@@ -143367,6 +143447,14 @@
       "translation": "LançamentoDrone"
     },
     {
+      "source": "LaunchFighter",
+      "translation": "LaunchFighter"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "LançamentoSRV"
+    },
+    {
       "source": "Lava spout",
       "translation": "Bico de lava"
     },
@@ -149267,6 +149355,10 @@
       "translation": "Os dados do jogador são verificados por bytes, mas as preferências da UI herdadas não puderam ser traduzidas; as configurações atuais do Avalonia permaneceram inalteradas. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Controlado por jogador"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Aguarde {0} segundos antes de atualizar Frontier novamente."
     },
@@ -153769,6 +153861,10 @@
     {
       "source": "SRV position",
       "translation": "Posição SRV"
+    },
+    {
+      "source": "SRVDestroyed",
+      "translation": "SRVDestruído"
     },
     {
       "source": "STAR CLASS UNKNOWN",
@@ -171769,6 +171865,10 @@
       "translation": "Достигнуты все системы {0} ."
     },
     {
+      "source": "Alliance",
+      "translation": "Альянс"
+    },
+    {
       "source": "Alliance Challenger",
       "translation": "Претендент Альянса"
     },
@@ -179261,6 +179361,10 @@
       "translation": "Журнал путешествия от дока к доку"
     },
     {
+      "source": "DockFighter",
+      "translation": "Док-истребитель"
+    },
+    {
       "source": "DockSRV",
       "translation": "ДокSRV"
     },
@@ -185797,6 +185901,14 @@
       "translation": "ЗапускДрон"
     },
     {
+      "source": "LaunchFighter",
+      "translation": "ЗапускИстребитель"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "ЗапускSRV"
+    },
+    {
       "source": "Lava spout",
       "translation": "Извержение лавы"
     },
@@ -191697,6 +191809,10 @@
       "translation": "Данные игрока проверяются побайтно, но устаревшие настройки пользовательского интерфейса не могут быть переведены; текущие настройки Авалонии остались без изменений. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Контролируемый игроком"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Пожалуйста, подождите {0} секунд, прежде чем снова обновить Frontier секунд."
     },
@@ -196199,6 +196315,10 @@
     {
       "source": "SRV position",
       "translation": "Позиция СРВ"
+    },
+    {
+      "source": "SRVDestroyed",
+      "translation": "СРВРазрушено"
     },
     {
       "source": "STAR CLASS UNKNOWN",
@@ -214199,6 +214319,10 @@
       "translation": "已到达所有 {0} 系统。"
     },
     {
+      "source": "Alliance",
+      "translation": "联盟"
+    },
+    {
       "source": "Alliance Challenger",
       "translation": "联盟挑战者"
     },
@@ -221691,6 +221815,10 @@
       "translation": "码头到码头的旅行日志"
     },
     {
+      "source": "DockFighter",
+      "translation": "码头战斗机"
+    },
+    {
       "source": "DockSRV",
       "translation": "码头SRV"
     },
@@ -228227,6 +228355,14 @@
       "translation": "发射无人机"
     },
     {
+      "source": "LaunchFighter",
+      "translation": "发射战斗机"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "发射SRV"
+    },
+    {
       "source": "Lava spout",
       "translation": "熔岩喷口"
     },
@@ -234127,6 +234263,10 @@
       "translation": "玩家数据经过字节验证，但旧版 UI 首选项无法转换；当前的 Avalonia 设置保持不变。 {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "玩家控制"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "请等待 {0} 秒，然后再次刷新 Frontier。"
     },
@@ -238629,6 +238769,10 @@
     {
       "source": "SRV position",
       "translation": "SRV位置"
+    },
+    {
+      "source": "SRVDestroyed",
+      "translation": "SRV被毁"
     },
     {
       "source": "STAR CLASS UNKNOWN",
@@ -256629,6 +256773,10 @@
       "translation": "* ALL {0} SYSTEMS REACHED. >>>!"
     },
     {
+      "source": "Alliance",
+      "translation": "* ALLIANCE >>>!"
+    },
+    {
       "source": "Alliance Challenger",
       "translation": "* ALLIANCE CHALLENGER >>>!"
     },
@@ -264121,6 +264269,10 @@
       "translation": "* DOCK-TO-DOCK TRAVEL LOG >>>!"
     },
     {
+      "source": "DockFighter",
+      "translation": "* DOCKFIGHTER >>>!"
+    },
+    {
       "source": "DockSRV",
       "translation": "* DOCKSRV >>>!"
     },
@@ -270657,6 +270809,14 @@
       "translation": "* LAUNCHDRONE >>>!"
     },
     {
+      "source": "LaunchFighter",
+      "translation": "* LAUNCHFIGHTER >>>!"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "* LAUNCHSRV >>>!"
+    },
+    {
       "source": "Lava spout",
       "translation": "* LAVA SPOUT >>>!"
     },
@@ -276557,6 +276717,10 @@
       "translation": "* PLAYER DATA IS BYTE-VERIFIED, BUT LEGACY UI PREFERENCES COULD NOT BE TRANSLATED; THE CURRENT AVALONIA SETTINGS WERE LEFT UNCHANGED. {0} >>>!"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "* PLAYERCONTROLLED >>>!"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "* PLEASE WAIT {0} SECONDS BEFORE REFRESHING FRONTIER AGAIN. >>>!"
     },
@@ -281059,6 +281223,10 @@
     {
       "source": "SRV position",
       "translation": "* SRV POSITION >>>!"
+    },
+    {
+      "source": "SRVDestroyed",
+      "translation": "* SRVDESTROYED >>>!"
     },
     {
       "source": "STAR CLASS UNKNOWN",

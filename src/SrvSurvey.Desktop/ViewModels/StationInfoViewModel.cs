@@ -121,9 +121,19 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
                 return null;
             }
 
-            return summary.Stations.FirstOrDefault(station =>
+            SystemStationSummary? selected = summary.Stations.FirstOrDefault(station =>
                 string.Equals(station.Name, destination.Name, StringComparison.OrdinalIgnoreCase)
             );
+            if (selected is null || selected.Services.Count > 0)
+            {
+                return selected;
+            }
+            SystemStationSummary? detailed = summary.Stations.FirstOrDefault(station =>
+                string.Equals(station.Name, destination.Name, StringComparison.OrdinalIgnoreCase)
+                && (selected.Id == 0 || station.Id == selected.Id)
+                && station.Services.Count > 0
+            );
+            return detailed is null ? selected : selected with { Services = detailed.Services };
         }
     }
 

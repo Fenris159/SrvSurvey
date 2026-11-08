@@ -1,0 +1,434 @@
+{
+  "Rings": [
+    {
+      "RingType": "Icy",
+      "Laser": [
+        {
+          "Name": "Low Temperature Diamonds",
+          "AverageSellPrice": 131607
+        },
+        {
+          "Name": "Bromellite",
+          "AverageSellPrice": 33414
+        },
+        {
+          "Name": "Hydrogen Peroxide",
+          "AverageSellPrice": 3119
+        },
+        {
+          "Name": "Liquid Oxygen",
+          "AverageSellPrice": 1639
+        },
+        {
+          "Name": "Lithium Hydroxide",
+          "AverageSellPrice": 5655
+        },
+        {
+          "Name": "Methane Clathrate",
+          "AverageSellPrice": 1597
+        },
+        {
+          "Name": "Methanol Monohydrate Crystals",
+          "AverageSellPrice": 2522
+        },
+        {
+          "Name": "Tritium",
+          "AverageSellPrice": 53425
+        },
+        {
+          "Name": "Water",
+          "AverageSellPrice": 496
+        }
+      ],
+      "Core": [
+        {
+          "Name": "Alexandrite",
+          "AverageSellPrice": 227771
+        },
+        {
+          "Name": "Grandidierite",
+          "AverageSellPrice": 211582
+        },
+        {
+          "Name": "Low Temperature Diamonds",
+          "AverageSellPrice": 131607
+        },
+        {
+          "Name": "Void Opals",
+          "AverageSellPrice": 150964
+        },
+        {
+          "Name": "Bromellite",
+          "AverageSellPrice": 33414
+        }
+      ]
+    },
+    {
+      "RingType": "Metallic",
+      "Laser": [
+        {
+          "Name": "Osmium",
+          "AverageSellPrice": 55698
+        },
+        {
+          "Name": "Painite",
+          "AverageSellPrice": 57890
+        },
+        {
+          "Name": "Platinum",
+          "AverageSellPrice": 70136
+        },
+        {
+          "Name": "Bertrandite",
+          "AverageSellPrice": 18476
+        },
+        {
+          "Name": "Gold",
+          "AverageSellPrice": 47900
+        },
+        {
+          "Name": "Indite",
+          "AverageSellPrice": 11268
+        },
+        {
+          "Name": "Palladium",
+          "AverageSellPrice": 52064
+        },
+        {
+          "Name": "Praseodymium",
+          "AverageSellPrice": 8636
+        },
+        {
+          "Name": "Samarium",
+          "AverageSellPrice": 28658
+        },
+        {
+          "Name": "Silver",
+          "AverageSellPrice": 37628
+        }
+      ],
+      "Core": [
+        {
+          "Name": "Monazite",
+          "AverageSellPrice": 273262
+        },
+        {
+          "Name": "Rhodplumsite",
+          "AverageSellPrice": 186345
+        },
+        {
+          "Name": "Serendibite",
+          "AverageSellPrice": 186953
+        },
+        {
+          "Name": "Painite",
+          "AverageSellPrice": 57890
+        },
+        {
+          "Name": "Platinum",
+          "AverageSellPrice": 70136
+        }
+      ]
+    },
+    {
+      "RingType": "MetalRich",
+      "Laser": [
+        {
+          "Name": "Osmium",
+          "AverageSellPrice": 55698
+        },
+        {
+          "Name": "Bertrandite",
+          "AverageSellPrice": 18476
+        },
+        {
+          "Name": "Coltan",
+          "AverageSellPrice": 6144
+        },
+        {
+          "Name": "Gallite",
+          "AverageSellPrice": 12235
+        },
+        {
+          "Name": "Gold",
+          "AverageSellPrice": 47900
+        },
+        {
+          "Name": "Indite",
+          "AverageSellPrice": 11268
+        },
+        {
+          "Name": "Lepidolite",
+          "AverageSellPrice": 1796
+        },
+        {
+          "Name": "Praseodymium",
+          "AverageSellPrice": 8636
+        },
+        {
+          "Name": "Samarium",
+          "AverageSellPrice": 28658
+        },
+        {
+          "Name": "Silver",
+          "AverageSellPrice": 37628
+        },
+        {
+          "Name": "Uraninite",
+          "AverageSellPrice": 3004
+        }
+      ],
+      "Core": [
+        {
+          "Name": "Alexandrite",
+          "AverageSellPrice": 227771
+        },
+        {
+          "Name": "Benitoite",
+          "AverageSellPrice": 164647
+        },
+        {
+          "Name": "Monazite",
+          "AverageSellPrice": 273262
+        },
+        {
+          "Name": "Rhodplumsite",
+          "AverageSellPrice": 186345
+        },
+        {
+          "Name": "Serendibite",
+          "AverageSellPrice": 186953
+        },
+        {
+          "Name": "Painite",
+          "AverageSellPrice": 57890
+        },
+        {
+          "Name": "Platinum",
+          "AverageSellPrice": 70136
+        }
+      ]
+    },
+    {
+      "RingType": "Rocky",
+      "Laser": [
+        {
+          "Name": "Bertrandite",
+          "AverageSellPrice": 18476
+        },
+        {
+          "Name": "Bauxite",
+          "AverageSellPrice": 2092
+        },
+        {
+          "Name": "Coltan",
+          "AverageSellPrice": 6144
+        },
+        {
+          "Name": "Gallite",
+          "AverageSellPrice": 12235
+        },
+        {
+          "Name": "Indite",
+          "AverageSellPrice": 11268
+        },
+        {
+          "Name": "Lepidolite",
+          "AverageSellPrice": 1796
+        },
+        {
+          "Name": "Rutile",
+          "AverageSellPrice": 3084
+        }
+      ],
+      "Core": [
+        {
+          "Name": "Alexandrite",
+          "AverageSellPrice": 227771
+        },
+        {
+          "Name": "Benitoite",
+          "AverageSellPrice": 164647
+        },
+        {
+          "Name": "Monazite",
+          "AverageSellPrice": 273262
+        },
+        {
+          "Name": "Musgravite",
+          "AverageSellPrice": 220251
+        },
+        {
+          "Name": "Serendibite",
+          "AverageSellPrice": 186953
+        }
+      ]
+    }
+  ],
+  "LegacyNames": {
+    "Alejandrita": "Alexandrite",
+    "Alexandrit": "Alexandrite",
+    "Argent": "Silver",
+    "Bauxit": "Bauxite",
+    "Bauxita": "Bauxite",
+    "Benitoit": "Benitoite",
+    "Benitoita": "Benitoite",
+    "Benitoïte": "Benitoite",
+    "Bertrandit": "Bertrandite",
+    "Bromelita": "Bromellite",
+    "Bromellit": "Bromellite",
+    "Clathrate de méthane": "Methane Clathrate",
+    "Clatrato de metano": "Methane Clathrate",
+    "Coltán": "Coltan",
+    "Composer": "Indite",
+    "Cristais de monohidrato de metanol": "Methanol Monohydrate Crystals",
+    "Cristales de monohidrato de metanol": "Methanol Monohydrate Crystals",
+    "Cristaux de monohydrate de méthanol": "Methanol Monohydrate Crystals",
+    "Diamanten mit niedriger Temperatur": "Low Temperature Diamonds",
+    "Diamantes de baixa temperatura": "Low Temperature Diamonds",
+    "Diamantes de baja temperatura": "Low Temperature Diamonds",
+    "Diamants basse température": "Low Temperature Diamonds",
+    "Eau": "Water",
+    "Endilgar": "Indite",
+    "Flüssiger Sauerstoff": "Liquid Oxygen",
+    "Galita": "Gallite",
+    "Gallit": "Gallite",
+    "Grandidierit": "Grandidierite",
+    "Grandidierita": "Grandidierite",
+    "Grandidiérite": "Grandidierite",
+    "Hidróxido de Lítio": "Lithium Hydroxide",
+    "Hydroxyde de lithium": "Lithium Hydroxide",
+    "Indito": "Indite",
+    "Leere Opale": "Void Opals",
+    "Lepidolita": "Lepidolite",
+    "Lepidolith": "Lepidolite",
+    "Lithiumhydroxid": "Lithium Hydroxide",
+    "Lépidolite": "Lepidolite",
+    "Methanclathrat": "Methane Clathrate",
+    "Methanol-Monohydrat-Kristalle": "Methanol Monohydrate Crystals",
+    "Monacita": "Monazite",
+    "Monazit": "Monazite",
+    "Monazita": "Monazite",
+    "Musgravit": "Musgravite",
+    "Musgravita": "Musgravite",
+    "Opalas do Vazio": "Void Opals",
+    "Opales du Vide": "Void Opals",
+    "Osmio": "Osmium",
+    "Oxigênio Líquido": "Liquid Oxygen",
+    "Oxygène liquide": "Liquid Oxygen",
+    "Oxígeno líquido": "Liquid Oxygen",
+    "Painit": "Painite",
+    "Painita": "Painite",
+    "Paladio": "Palladium",
+    "Paládio": "Palladium",
+    "Peroxyde d'hydrogène": "Hydrogen Peroxide",
+    "Peróxido de Hidrogênio": "Hydrogen Peroxide",
+    "Peróxido de hidrógeno": "Hydrogen Peroxide",
+    "Plata": "Silver",
+    "Platin": "Platinum",
+    "Praseodimio": "Praseodymium",
+    "Praseodym": "Praseodymium",
+    "Praseodímio": "Praseodymium",
+    "Praséodyme": "Praseodymium",
+    "Prata": "Silver",
+    "Rhodplumsita": "Rhodplumsite",
+    "Rutil": "Rutile",
+    "Rutilo": "Rutile",
+    "Samario": "Samarium",
+    "Samário": "Samarium",
+    "Serendibit": "Serendibite",
+    "Serendibita": "Serendibite",
+    "Silber": "Silver",
+    "Sérendibite": "Serendibite",
+    "Trítio": "Tritium",
+    "Uraninit": "Uraninite",
+    "Uraninita": "Uraninite",
+    "Wasser": "Water",
+    "Wasserstoffperoxid": "Hydrogen Peroxide",
+    "agua": "Water",
+    "benitoita": "Benitoite",
+    "bertrandita": "Bertrandite",
+    "coltán": "Coltan",
+    "galita": "Gallite",
+    "hidróxido de litio": "Lithium Hydroxide",
+    "musgravita": "Musgravite",
+    "or": "Gold",
+    "oro": "Gold",
+    "ouro": "Gold",
+    "platina": "Platinum",
+    "platine": "Platinum",
+    "platino": "Platinum",
+    "rodplumsita": "Rhodplumsite",
+    "serendibita": "Serendibite",
+    "tritio": "Tritium",
+    "Água": "Water",
+    "Ópalos vacíos": "Void Opals",
+    "Ósmio": "Osmium",
+    "Александрит": "Alexandrite",
+    "Бенитоит": "Benitoite",
+    "Бертрандит": "Bertrandite",
+    "Боксит": "Bauxite",
+    "Бромеллит": "Bromellite",
+    "Вода": "Water",
+    "Галлит": "Gallite",
+    "Грандидьерит": "Grandidierite",
+    "Жидкий кислород": "Liquid Oxygen",
+    "Индит": "Indite",
+    "Клатрат метана": "Methane Clathrate",
+    "Колтан": "Coltan",
+    "Кристаллы моногидрата метанола": "Methanol Monohydrate Crystals",
+    "Лепидолит": "Lepidolite",
+    "Монацит": "Monazite",
+    "Мусгравит": "Musgravite",
+    "Низкотемпературные алмазы": "Low Temperature Diamonds",
+    "Осмий": "Osmium",
+    "Палладий": "Palladium",
+    "Пейнит": "Painite",
+    "Перекись водорода": "Hydrogen Peroxide",
+    "Празеодим": "Praseodymium",
+    "Пустотные опалы": "Void Opals",
+    "Родплюмсит": "Rhodplumsite",
+    "Рутил": "Rutile",
+    "Самарий": "Samarium",
+    "Серебро": "Silver",
+    "Серендибит": "Serendibite",
+    "Тритий": "Tritium",
+    "Уранинит": "Uraninite",
+    "гидроксид лития": "Lithium Hydroxide",
+    "золото": "Gold",
+    "платина": "Platinum",
+    "一水甲醇晶体": "Methanol Monohydrate Crystals",
+    "伯特兰石": "Bertrandite",
+    "低温金刚石": "Low Temperature Diamonds",
+    "偶然事件": "Serendibite",
+    "加仑石": "Gallite",
+    "因迪特": "Indite",
+    "布氏锰矿": "Bromellite",
+    "氚": "Tritium",
+    "氢氧化锂": "Lithium Hydroxide",
+    "水": "Water",
+    "液氧": "Liquid Oxygen",
+    "潘尼特": "Painite",
+    "独居石": "Monazite",
+    "甲烷笼形物": "Methane Clathrate",
+    "硅藻土": "Grandidierite",
+    "紫翠玉": "Alexandrite",
+    "红梅石": "Rhodplumsite",
+    "蓝锥矿": "Benitoite",
+    "虚空蛋白石": "Void Opals",
+    "过氧化氢": "Hydrogen Peroxide",
+    "金子": "Gold",
+    "金红石": "Rutile",
+    "钐": "Samarium",
+    "钯": "Palladium",
+    "钶钽铁矿": "Coltan",
+    "铀矿": "Uraninite",
+    "铂": "Platinum",
+    "铝土矿": "Bauxite",
+    "银": "Silver",
+    "锂云母": "Lepidolite",
+    "锇": "Osmium",
+    "镨": "Praseodymium",
+    "黑云母": "Musgravite"
+  }
+}

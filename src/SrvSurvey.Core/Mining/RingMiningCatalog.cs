@@ -17,96 +17,21 @@ public sealed record RingMiningComposition(
 /// <summary>Shared ring composition reference for extraction filters and the mining guide.</summary>
 public static class RingMiningCatalog
 {
-    public static IReadOnlyList<RingMiningComposition> All { get; } =
-    [
-        Ring(
-            "Icy",
-            [
-                Item("Low Temperature Diamonds", 131607),
-                Item("Bromellite", 33414),
-                Item("Hydrogen Peroxide", 3119),
-                Item("Liquid Oxygen", 1639),
-                Item("Lithium Hydroxide", 5655),
-                Item("Methane Clathrate", 1597),
-                Item("Methanol Monohydrate Crystals", 2522),
-                Item("Tritium", 53425),
-                Item("Water", 496),
-            ],
-            [
-                Item("Alexandrite", 227771),
-                Item("Grandidierite", 211582),
-                Item("Low Temperature Diamonds", 131607),
-                Item("Void Opals", 150964),
-                Item("Bromellite", 33414),
-            ]
-        ),
-        Ring(
-            "Metallic",
-            [
-                Item("Osmium", 55698),
-                Item("Painite", 57890),
-                Item("Platinum", 70136),
-                Item("Bertrandite", 18476),
-                Item("Gold", 47900),
-                Item("Indite", 11268),
-                Item("Palladium", 52064),
-                Item("Praseodymium", 8636),
-                Item("Samarium", 28658),
-                Item("Silver", 37628),
-            ],
-            [
-                Item("Monazite", 273262),
-                Item("Rhodplumsite", 186345),
-                Item("Serendibite", 186953),
-                Item("Painite", 57890),
-                Item("Platinum", 70136),
-            ]
-        ),
-        Ring(
-            "MetalRich",
-            [
-                Item("Osmium", 55698),
-                Item("Bertrandite", 18476),
-                Item("Coltan", 6144),
-                Item("Gallite", 12235),
-                Item("Gold", 47900),
-                Item("Indite", 11268),
-                Item("Lepidolite", 1796),
-                Item("Praseodymium", 8636),
-                Item("Samarium", 28658),
-                Item("Silver", 37628),
-                Item("Uraninite", 3004),
-            ],
-            [
-                Item("Alexandrite", 227771),
-                Item("Benitoite", 164647),
-                Item("Monazite", 273262),
-                Item("Rhodplumsite", 186345),
-                Item("Serendibite", 186953),
-                Item("Painite", 57890),
-                Item("Platinum", 70136),
-            ]
-        ),
-        Ring(
-            "Rocky",
-            [
-                Item("Bertrandite", 18476),
-                Item("Bauxite", 2092),
-                Item("Coltan", 6144),
-                Item("Gallite", 12235),
-                Item("Indite", 11268),
-                Item("Lepidolite", 1796),
-                Item("Rutile", 3084),
-            ],
-            [
-                Item("Alexandrite", 227771),
-                Item("Benitoite", 164647),
-                Item("Monazite", 273262),
-                Item("Musgravite", 220251),
-                Item("Serendibite", 186953),
-            ]
-        ),
-    ];
+    private static readonly CatalogData Data = Load();
+
+    public static IReadOnlyList<RingMiningComposition> All => Data.Rings;
+
+    internal static IReadOnlyDictionary<string, string> LocalizedCommodityNames => Data.LegacyNames;
+
+    private static CatalogData Load()
+    {
+        using Stream stream =
+            typeof(RingMiningCatalog).Assembly.GetManifestResourceStream(
+                "SrvSurvey.Core.Resources.ring-mining-compositions.json"
+            ) ?? throw new InvalidOperationException("The ring-mining reference resource is missing.");
+        return System.Text.Json.JsonSerializer.Deserialize<CatalogData>(stream)
+            ?? throw new InvalidOperationException("The ring-mining reference resource is empty.");
+    }
 
     public static RingMiningComposition? Find(string ringType)
     {
@@ -145,11 +70,8 @@ public static class RingMiningCatalog
                 .ToArray()
         );
 
-    private static RingMiningComposition Ring(
-        string ringType,
-        IReadOnlyList<RingMiningCommodity> laser,
-        IReadOnlyList<RingMiningCommodity> core
-    ) => new(ringType, laser, core);
-
-    private static RingMiningCommodity Item(string name, int averageSellPrice) => new(name, averageSellPrice);
+    private sealed record CatalogData(
+        IReadOnlyList<RingMiningComposition> Rings,
+        IReadOnlyDictionary<string, string> LegacyNames
+    );
 }
