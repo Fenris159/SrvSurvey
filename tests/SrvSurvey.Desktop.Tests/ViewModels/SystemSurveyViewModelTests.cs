@@ -434,6 +434,71 @@ public sealed partial class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void PlanetSharingTheStarNameRemainsMappableAndDoesNotInterruptSurveyUpdates()
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.HighlightDssCandidates = false;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Leesti","SystemAddress":42}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Leesti","BodyID":0,"StarType":"K","StellarMass":1}"""
+                ),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Leesti","BodyID":1,"PlanetClass":"Earthlike body","MassEM":1}"""
+                ),
+            ],
+            null
+        );
+
+        Assert.Equal([0, 1], viewModel.Snapshot.Bodies.Select(body => body.BodyId));
+        Assert.Equal("Leesti", Assert.Single(viewModel.DssBodies).Name);
+
+        viewModel.ApplyUpdate(
+            [
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Leesti 1","BodyID":2,"PlanetClass":"Water world","MassEM":1}"""
+                ),
+            ],
+            null
+        );
+
+        Assert.Equal(["Leesti", "1"], viewModel.DssBodies.Select(body => body.Name));
+    }
+
+    [Theory]
+    [InlineData(2, 3)]
+    [InlineData(3, 2)]
+    public void KnownBodyAliasesKeepMappedRingsCompleteRegardlessOfBodyOrder(int mappedBodyId, int aliasBodyId)
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.SkipRingsForDss = false;
+        viewModel.HighlightDssCandidates = false;
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Leesti","SystemAddress":42}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Leesti 1","BodyID":1,"PlanetClass":"Water world","MassEM":1,"Rings":[{"Name":"Leesti 1 A Ring"},{"Name":"Leesti 1 B Ring"}]}"""
+                ),
+                Parse(
+                    $$"""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Leesti 1 A Ring","BodyID":{{mappedBodyId}}}"""
+                ),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Leesti 1 B Ring","BodyID":4}"""),
+            ],
+            null
+        );
+        SystemScanBodySnapshot mappedRing = viewModel.Snapshot.Bodies.Single(body => body.BodyId == mappedBodyId);
+        SystemScanSnapshot known = viewModel.Snapshot with
+        {
+            Bodies = [mappedRing with { BodyId = aliasBodyId, IsDssComplete = false }],
+        };
+
+        Assert.True(viewModel.MergeKnownSystemData(known));
+
+        Assert.Equal(["1rB", "1"], viewModel.DssBodies.Select(body => body.Name));
+    }
+
+    [Fact]
     public void DisplayFiltersBodiesAndBuildsDssAndSignalProgress()
     {
         SystemSurveyViewModel viewModel = CreateViewModel();

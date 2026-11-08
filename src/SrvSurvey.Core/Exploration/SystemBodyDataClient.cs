@@ -607,7 +607,9 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         string shortName = bodyName.StartsWith(systemName, StringComparison.Ordinal)
             ? bodyName[systemName.Length..]
             : bodyName;
-        return shortName.Replace(" ", string.Empty, StringComparison.Ordinal);
+        return string.IsNullOrWhiteSpace(shortName)
+            ? bodyName
+            : shortName.Replace(" ", string.Empty, StringComparison.Ordinal);
     }
 
     private static void ValidateAddress(JsonElement owner, long expectedAddress, string source)

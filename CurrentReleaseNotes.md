@@ -72,5 +72,13 @@ for conflict-zone massacre missions.
 
 ### Reliability
 
+- Keep journal monitoring active when system data contains repeated body names.
+  This prevents survey display errors from stopping later Raven Colonial carrier
+  transfer updates, and also fixes the same error during external body-data loads.
+  Completed ring maps remain recognized when body records share a name. Bodies
+  named after their system keep a readable label instead of a blank name.
+- Handle unresolvable boxel-sector names without stopping journal monitoring.
+  Unsupported geometry keeps its recorded identity without inventing a system
+  address, allowing later journal updates to continue normally.
 - Handle journal changes during history reads without failing application
   shutdown, while retaining recovery checks and unexpected-error reporting.

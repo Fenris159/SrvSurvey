@@ -211,6 +211,49 @@ public sealed partial class ColonizationDeliveryRecoveryTests
         Assert.Equal(3, client.FleetCarrierAdjustments.Count);
     }
 
+    [Fact]
+    public async Task FirstTransferToAnEmptyLinkedCarrierUpdatesRavenAndLocalInventory()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = [],
+        };
+        var client = new RecordingRavenClient
+        {
+            Workspace = new([], [], null, [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        ColonizationDeliveryRecovery recovery = Create(client, apiKey: "key", carrierSync: true);
+        recovery.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
+        await ApplyAndSynchronizeAsync(
+            recovery,
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":7268829636017,"StarSystem":"Katta","StationName":"ABC-123","StationType":"FleetCarrier"
+                """
+            )
+        );
+
+        await recovery.SynchronizeLiveEventsAsync(
+            [
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+                    """
+                ),
+            ],
+            allowPublishing: true
+        );
+
+        Assert.Equal(10, Assert.Single(recovery.FleetCarriers).Cargo["steel"]);
+        Assert.Equal(42, Assert.Single(client.FleetCarrierAdjustments).MarketId);
+        Assert.Equal(10, Assert.Single(client.FleetCarrierAdjustments).Changes["steel"]);
+    }
+
     /// <summary>Journal deltas recorded during a market baseline wait and replay after the absolute replacement.</summary>
     [Fact]
     public async Task QueuesJournalCargoDeltasUntilMarketBaselineCompletes()

@@ -1230,6 +1230,12 @@ internal static class BoxelSectorNameResolver
             frags.Add(infix2);
         }
 
+        // Some coordinate slots have no sector name in these fragment tables.
+        if (nextIdx < 0 || nextIdx >= sufs.Count)
+        {
+            return null;
+        }
+
         // Add our suffix to the output, and return it
         frags.Add(sufs[nextIdx]);
         return format_sector_name(frags);

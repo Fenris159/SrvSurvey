@@ -15,6 +15,19 @@ public sealed class BoxelSurveyStatsStateTests
     private const string SystemA4 = "Praea Euq IL-P c5-4";
 
     [Fact]
+    public void UnresolvableBoxelIdentityDoesNotInterruptSnapshotIngestion()
+    {
+        var state = new BoxelSurveyStatsState();
+        Assert.True(state.IngestSnapshot(Snapshot("Wrdgeaia AA-A b7", SystemAAddress, [])));
+        Assert.True(state.IngestSnapshot(Snapshot("Col 285 Sector VF-E c12-5", 1458107814642, [])));
+
+        Assert.Equal(2, state.BoxelCount);
+        Assert.True(state.TryGet("Wrdgeaia AA-A b", out BoxelSurveyBoxelSnapshot? original));
+        Assert.Equal(SystemAAddress, Assert.Single(original.Systems).SystemAddress);
+        Assert.Equal("Wrdgeaia AA-A b7", Assert.Single(original.Systems).GeneratedName);
+    }
+
+    [Fact]
     public void MapsAllNineteenPlanetClassesFromScan()
     {
         var state = new BoxelSurveyStatsState();

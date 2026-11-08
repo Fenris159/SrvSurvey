@@ -2716,7 +2716,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private IEnumerable<string> CreateDssCandidates()
     {
-        var knownRingBodies = snapshot.Bodies.ToDictionary(body => body.Name, StringComparer.Ordinal);
+        var completedBodyNames = snapshot
+            .Bodies.Where(body => body.IsDssComplete)
+            .Select(body => body.Name)
+            .ToHashSet(StringComparer.Ordinal);
         foreach (SystemScanBodySnapshot? body in snapshot.Bodies.OrderBy(body => body.BodyId))
         {
             if (body.IsDssComplete || !body.IsMappable)
@@ -2724,7 +2727,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            foreach (string candidate in CreateBodyDssCandidates(body, knownRingBodies))
+            foreach (string candidate in CreateBodyDssCandidates(body, completedBodyNames))
             {
                 yield return candidate;
             }
@@ -2733,10 +2736,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private IEnumerable<string> CreateBodyDssCandidates(
         SystemScanBodySnapshot body,
-        IReadOnlyDictionary<string, SystemScanBodySnapshot> knownRingBodies
+        IReadOnlySet<string> completedBodyNames
     )
     {
-        foreach (string ringCandidate in CreateRingDssCandidates(body, knownRingBodies))
+        foreach (string ringCandidate in CreateRingDssCandidates(body, completedBodyNames))
         {
             yield return ringCandidate;
         }
@@ -2751,7 +2754,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private IEnumerable<string> CreateRingDssCandidates(
         SystemScanBodySnapshot body,
-        IReadOnlyDictionary<string, SystemScanBodySnapshot> knownRingBodies
+        IReadOnlySet<string> completedBodyNames
     )
     {
         if (SkipRingsForDss)
@@ -2762,9 +2765,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         for (int index = 0; index < body.Rings.Count; index++)
         {
             SystemRingSnapshot ring = body.Rings[index];
-            if (
-                !knownRingBodies.TryGetValue(ring.Name, out SystemScanBodySnapshot? ringBody) || !ringBody.IsDssComplete
-            )
+            if (!completedBodyNames.Contains(ring.Name))
             {
                 yield return body.ShortName + "r" + (char)('A' + index);
             }
