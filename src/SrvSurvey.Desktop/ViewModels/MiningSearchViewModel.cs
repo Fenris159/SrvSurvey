@@ -12,8 +12,7 @@ public sealed class MiningSearchViewModel(
     BookmarksViewModel bookmarks,
     Action<MiningRing> cacheRing,
     Func<IReadOnlyList<MiningRing>> localRings,
-    IStarSystemResolver resolver,
-    MiningCommunityCache? community = null
+    IStarSystemResolver resolver
 ) : WorkspaceObservable, IDisposable
 {
     private const string AllSystems = "All systems";
@@ -1295,8 +1294,7 @@ public sealed class MiningSearchViewModel(
     private async Task<GalacticCoordinate?> ResolveOriginAsync(CancellationToken token)
     {
         GalacticCoordinate? origin =
-            community?.Position(Reference)
-            ?? localRings()
+            localRings()
                 .Concat(MiningReferenceData.Rings)
                 .FirstOrDefault(r => Same(r.System, Reference) && r.Position is not null)
                 ?.Position
@@ -1567,12 +1565,10 @@ public sealed class MiningSearchViewModel(
             && Same(b.System, ring.System)
             && Same(b.CombinedBodyAndRing, ring.Body)
         );
-        MiningPowerObservation? power = community?.Power(ring.System);
         return ring with
         {
             Overlaps = Prefer(bookmark?.Overlaps, ring.Overlaps),
             ResourceExtractionSites = Prefer(bookmark?.ResourceExtractionSites, ring.ResourceExtractionSites),
-            Power = power is null ? ring.Power : $"{power.Power} · {power.State}",
         };
     }
 
@@ -1596,9 +1592,7 @@ public sealed class MiningSearchViewModel(
 
             var quotes = new List<MiningMarketResult>();
             var sources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            GalacticCoordinate? origin =
-                (community is not null || GalaxyWide) && Reference.Length > 0 ? await ResolveOriginAsync(token) : null;
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            GalacticCoordinate? origin = Reference.Length > 0 ? await ResolveOriginAsync(token) : null;
             foreach (string commodity in commodities)
             {
                 token.ThrowIfCancellationRequested();
@@ -1636,7 +1630,6 @@ public sealed class MiningSearchViewModel(
                             : quote
                     )
                 );
-                quotes.AddRange(community?.Markets(query, origin, now) ?? []);
             }
 
             MiningMarketResult[] result = SortMarketQuotes(quotes);
@@ -2226,12 +2219,10 @@ public sealed class MiningSearchViewModel(
                 }
 
                 string source = PowerplayPlan.UsesLiveConflict(Objective, PowerState)
-                    ? "Spansh conflict progress + local Powerplay observations"
-                    : "Spansh + local Powerplay observations";
+                    ? "Spansh conflict progress"
+                    : "Spansh";
 
-                IReadOnlyList<MiningSystemResult> local = community?.FindSystems(query, DateTimeOffset.UtcNow) ?? [];
-                MiningSystemResult[] result = local
-                    .Concat(online)
+                MiningSystemResult[] result = online
                     .DistinctBy(s => s.System, StringComparer.OrdinalIgnoreCase)
                     .Where(MatchesPowerplaySystem)
                     .OrderBy(s => s.Distance ?? double.MaxValue)

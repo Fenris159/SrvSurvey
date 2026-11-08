@@ -14,6 +14,42 @@ namespace SrvSurvey.Desktop.Tests.ProfileSync;
 public sealed class ProfileSyncStoreTests
 {
     [Fact]
+    public void PortableCaptureSkipsLocalExplorationIndexesAndRetainsCommanderPreferences()
+    {
+        using var source = new ProfileSyncTestRoot();
+        using var destination = new ProfileSyncTestRoot();
+        const string preferences = "commanders/F123/cross-platform-ui.json";
+        const string indexDirectory = "commanders/F123/exploration";
+        source.Write("config", preferences, """{"Theme":"blue-dark"}""");
+        source.Write("data", indexDirectory + "/history-live.sqlite-journal", "machine-local SQLite scratch data");
+        string localIndexes = source.Path("data", indexDirectory);
+        UnixFileMode? permissions = null;
+        if (OperatingSystem.IsLinux())
+        {
+            permissions = File.GetUnixFileMode(localIndexes);
+            File.SetUnixFileMode(localIndexes, UnixFileMode.None);
+        }
+        try
+        {
+            ProfileSnapshot snapshot = source.Store.Capture();
+            Assert.Single(snapshot.Portable);
+            Assert.Empty(snapshot.Machine);
+            Assert.False(ProfileSyncPolicy.AllowsDirectory("data", indexDirectory));
+            destination.Store.Apply(snapshot);
+            var restored = JsonNode.Parse(File.ReadAllText(destination.Path("config", preferences)));
+            Assert.Equal("blue-dark", restored!["Theme"]!.GetValue<string>());
+            Assert.False(Directory.Exists(destination.Path("data", indexDirectory)));
+        }
+        finally
+        {
+            if (OperatingSystem.IsLinux() && permissions is { } original)
+            {
+                File.SetUnixFileMode(localIndexes, original);
+            }
+        }
+    }
+
+    [Fact]
     public async Task PortableBackupRetainsBothCarrierWorkspacesAndTheirSharedLibrary()
     {
         using var source = new ProfileSyncTestRoot();

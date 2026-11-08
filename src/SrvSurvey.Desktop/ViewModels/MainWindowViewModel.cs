@@ -415,6 +415,13 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             rollback.Add(JournalHistory.Dispose);
             JournalSettings = new JournalSettingsViewModel(sharedJournalSettingsStore, configuredJournalDirectory);
             commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
+            ExplorationHistory = new ExplorationHistoryViewModel(
+                AppDataPaths.DataDirectory,
+                commanderProfileStore,
+                () => folderResolution.AvailablePaths
+            );
+            ExplorationHistory.BalanceChanged += OnExplorationHistoryBalanceChanged;
+            rollback.Add(ExplorationHistory.DisposeAsync);
             commanderCodexStore = new CommanderCodexStore(AppDataPaths.DataDirectory);
             commanderCodexJournalTracker = new CommanderCodexJournalTracker(commanderCodexStore);
             this.systemScanPersistenceStore = new SystemScanPersistenceStore(AppDataPaths.DataDirectory);
@@ -3028,6 +3035,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
         if (result.Data is null)
         {
+            ExplorationHistory.SetCommander(null, null, isOdyssey, false);
             await boxelSurveyStats.SwitchCommanderAsync(journalState.FrontierId, CancellationToken.None);
             projectionState.ProfileRavenApiKey = null;
             Inara.SetCommanderProfile(null, journalState.CommanderName, isOdyssey, inaraApiKey: null);
@@ -3066,6 +3074,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         );
 
         explorationState.Reset(result.Data.Exploration);
+        ExplorationHistory.SetCommander(
+            result.Data.FrontierId,
+            activeProfileCommanderName,
+            result.Data.IsOdyssey,
+            result.Data.AutoResetExplorationValue
+        );
         exobiologyState.Reset(result.Data.Exobiology);
         SurfaceSurvey.Reset(result.Data.Exobiology);
         Combat.LoadProfile(
@@ -3139,7 +3153,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private void UpdateExplorationDisplay(ExplorationSnapshot snapshot)
     {
-        EstimatedExplorationValue = $"{snapshot.EstimatedRewards:N0} CR";
+        long estimatedValue = ExplorationHistory.AutomaticEstimatedValue ?? snapshot.EstimatedRewards;
+        EstimatedExplorationValue = $"{estimatedValue:N0} CR";
         ExplorationJumps = snapshot.JumpCount.ToString("N0", CultureInfo.CurrentCulture);
         ExplorationDistance = $"{snapshot.DistanceTravelled:N1} ly";
         ExplorationBodies =
@@ -3915,7 +3930,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         if (!IsResetExplorationPending)
         {
             IsResetExplorationPending = true;
-            ExplorationStatusMessage = "Select Confirm reset to clear all six exploration totals.";
+            ExplorationStatusMessage = ExplorationHistory.AutoResetEstimatedValue
+                ? "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance."
+                : "Select Confirm reset to clear all six exploration totals.";
             return;
         }
 
@@ -4820,6 +4837,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(firstFootfallInferenceCancellation.Dispose);
         TryDispose(DiagnosticsLog.Dispose);
         TryDispose(JournalHistory.Dispose);
+        await TryDisposeAsync(ExplorationHistory.DisposeAsync);
         TryDispose(companionTimelineStore.Dispose);
         TryDispose(JumpInfo.Dispose);
         TryDispose(() => ExplorationPois.CatalogChanged -= OnPoiCatalogChanged);

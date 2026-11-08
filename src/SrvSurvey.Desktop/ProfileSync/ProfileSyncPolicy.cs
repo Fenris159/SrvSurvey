@@ -175,7 +175,15 @@ internal static partial class ProfileSyncPolicy
 
         if (parts[0] == "commanders")
         {
-            return parts.Length <= 3;
+            if (parts.Length == 1)
+            {
+                return true;
+            }
+            if (!FrontierId().IsMatch(parts[1]))
+            {
+                return false;
+            }
+            return parts.Length == 2 || (area == "data" && parts.Length == 3 && parts[2] == "overlays");
         }
 
         return area == "data" && DataDirectories.Contains(parts[0]);

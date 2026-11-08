@@ -96,7 +96,7 @@ public static class ExplorationValueCalculator
 
     public static double GetStarBaseValue(string starClass)
     {
-        if (starClass is "NS" or "BH" or "SupermassiveBlackHole")
+        if (starClass is "N" or "H" or "NS" or "BH" or "SupermassiveBlackHole")
         {
             return 22628;
         }

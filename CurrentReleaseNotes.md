@@ -1,35 +1,90 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.8
+# SrvSurvey-XP 2.1.3.0-rc.77.9
 
-RC77.8 adds bulk Fleet Carrier linking and checkbox carrier selection to
-Colonization. Choose the carriers to include, then link or unlink them across
-selected Building projects in one operation. The same selection also controls
-carrier cargo calculations and Market Search.
+RC77.9 adds journal-backed Exploration history and brings the Mining,
+Colonization, Codex Bingo, overlay settings, and Diagnostics workspaces into
+alignment with the application's spaceship-panel design. Layouts use the active
+theme, clearer control groups, and space reserved for scrollbars.
 
 ## What's changed
 
-- **Choose several carriers:** Use Carrier now opens a checkbox list with
-  Select all and Clear selection controls. The list stays open while you choose,
-  and a note below the field shows how many carriers are selected. Keyboard
-  selection and Escape are supported.
-- **Bulk project links:** Filter My build projects to Building, check the
-  projects' Show boxes, and use Link Carrier To Selected Projects or Unlink
-  Carrier From Selected Projects. The action applies the checked carriers to
-  shown projects matching the current filters. Planning projects are always
-  skipped, and an empty carrier selection disables the actions.
-- **Link during build creation:** The new-build form and planned-site workflow
-  offer an optional Link carriers to this build checkbox and carrier picker.
-  Review includes the selected carrier count. The build is created first;
-  carrier linking starts only after Raven returns its build ID.
-- **Consistent cargo calculations:** Checked carriers drive Loaded percentages,
-  carrier cargo totals and Market Search needs. Use Carrier selections are saved
-  per commander and remain synchronized with Market Search through project tag
-  changes and restarts. Renaming or reordering carriers preserves the selection,
-  and clearing every checkbox stays empty rather than reverting to all carriers.
-- **Recover from partial failures:** Individual carrier-link failures leave the
-  created build and successful links intact. Bulk operations continue with the
-  remaining projects and carriers, and report failures for retry. Leaving a
-  construction site during linking keeps the created build, while refreshes
-  retain newer requirements and project details. Disabling Raven permanently
-  stops an older bulk operation, and a changed carrier roster requires another
-  review after a failed creation attempt. The newest saved carrier selection
-  survives a failure writing either the planning or shopping preferences.
+### Exploration history and estimated value
+
+- **Track unsold cartographic data:** An optional setting in Exploration's
+  Commander profile panel adjusts estimated value after recorded sales and
+  confirmed ship losses. It is off by default and saved per commander. Only
+  systems identified by a sale are cleared, so nearby unsold data stays in the
+  balance. Rejoining a surviving ship after a surface death preserves its data.
+- **Browse Exploration history:** A dedicated workspace tab presents Sold,
+  Unsold, and Lost entries with status colors, system coordinates, scan and
+  mapping counts, estimated value, and collection and settlement dates. Filter
+  by system name, status, or dates; click a system name to copy it and select a
+  row to inspect its body details and original journal records. Selected details
+  stay tied to the original collected data during refreshes, imports, and page
+  shifts. History
+  rows and filters remain accessible in shorter windows.
+- **Spot notable discoveries:** A Notable column highlights ELW, WW, AW,
+  terraformable worlds, GGG, NSP, neutron stars, and black holes. Compact tags
+  wrap within their column and show full descriptions on hover. Tags reflect
+  recorded system discoveries and do not change credit estimates.
+- **Backfill automatically:** History is catalogued from each commander's
+  available journals, with Live and Legacy kept separate. A compact local
+  metadata index stores ownership and source references rather than another
+  copy of the journals. Missing originals are flagged, while catalogued history
+  is retained. Late imports and changed sources are reconciled transactionally.
+  Missing required journals keep automatic balances paused, including during
+  filter or storage errors. Complete records are fingerprinted before replay so
+  disappearing or rewritten journals cannot silently drop deferred settlements.
+  Older retries that cannot prove every input keep tracking paused until you
+  restore the journals and confirm recovery in the History tab. Known
+  fingerprints still have to match. Live updates read the appended journal
+  range, and repeated retries keep their metadata compact. Required journal
+  evidence survives failed recovery attempts. Commander context is checked
+  before reusing a journal checkpoint, and unstable reads keep tracking paused
+  until every required source returns and replays.
+  Temporarily unavailable Scan records defer mapping updates until recovery, and
+  newly learned identifiers preserve already-paid ownership. Local indexes are
+  kept clear of portable profile backup scans.
+- **Correct rare-star estimates:** Neutron stars and black holes use the journal
+  codes for their rare-star values. Older history indexes refresh their estimates
+  from the original journals while retaining recorded sale earnings and statuses.
+  If originals are missing, cached history is kept until those files are restored.
+- **Keep survey totals:** Automatic value tracking preserves jump, distance,
+  scan, mapping, and landing counters. Mapping upgrades add only their unpaid
+  increase, and recorded sale earnings remain separate from estimates. Reset
+  confirmation explains when the journal-derived balance will remain.
+
+### Colonization and Fleet Carrier loading
+
+- **Separate Loading projects:** Fleet Carrier Loading projects have their own
+  Loading status filter and no longer appear under Building. Carrier link and
+  unlink actions are available for both Building and Loading results; Planning
+  projects remain excluded.
+- **Correct loading progress:** Carrier loading projects with no fulfilled needs
+  display 0% progress rather than an unknown percentage. Missing remaining
+  totals are calculated from outstanding cargo, with aliases counted once.
+- **Show prepared buildings:** Loading previews, project details, and CSV exports
+  list the
+  prepared building names and quantities. Comma-separated summaries wrap across
+  the preview width, and loading details replace unused system, body, and
+  faction fields with the building list.
+- **Align planning workflows:** Projects, System Editor, and project preparation
+  forms use clearer sections and aligned controls, with cargo requirements and
+  estimated trips in the current ship kept visible.
+
+### Workspace and settings presentation
+
+- **Mining:** Session, Reports, and Settings use clearer groups and better-sized
+  tables. Commodity names begin with a capital letter, and Resource Extraction
+  Site reference descriptions wrap instead of widening their panel. EDDN
+  reception and the local mining search cache are removed; existing Spansh and
+  Ardent searches and opt-in EDDN contributions remain available.
+- **Codex Bingo:** Discovery hierarchy, progress, locations, and related tools
+  use a consistent panel layout, with content kept clear of scrollbars. Long
+  warnings scroll without crowding out discovery panels.
+- **Overlay settings:** Category settings, exceptions, and shortcut controls use
+  aligned sections and clearer interactions across application themes. Vehicle
+  choices and bulk controls remain reachable during long save errors.
+- **Diagnostics:** History, Processing, and Inspector have fixed headings,
+  better-aligned sections, clearer actions, and reserved scrollbar gutters.
+- **Quiet preview bindings:** Carrier readiness no longer logs null-snapshot
+  Maximum binding errors while a build preview is waiting for data.

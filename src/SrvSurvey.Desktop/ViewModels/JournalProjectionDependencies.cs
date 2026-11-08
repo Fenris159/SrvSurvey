@@ -31,6 +31,7 @@ internal sealed class JournalProjectionDependencies
     internal required PulseOverlayViewModel PulseOverlay { get; init; }
     internal required GalaxyMapOverlayViewModel GalaxyMap { get; init; }
     internal ExplorationPoiViewModel? ExplorationPois { get; init; }
+    internal required ExplorationHistoryViewModel ExplorationHistory { get; init; }
     internal required NetworkPrivacyViewModel NetworkPrivacy { get; init; }
     internal required VoxStellarSharingViewModel VoxStellar { get; init; }
     internal required InaraSettingsViewModel Inara { get; init; }

@@ -21,13 +21,14 @@ public sealed partial class ColonizationViewModel
             CanChangeSelectedProjectCarriers
         );
 
-    public bool ShowProjectCarrierActions => projectBuildFilter.Value == ColonizationProjectBuildFilter.Building;
+    public bool ShowProjectCarrierActions =>
+        projectBuildFilter.Value is ColonizationProjectBuildFilter.Building or ColonizationProjectBuildFilter.Loading;
 
     public Task LinkCarrierToSelectedProjectsAsync() => ChangeSelectedProjectCarriersAsync(link: true);
 
     public Task UnlinkCarrierFromSelectedProjectsAsync() => ChangeSelectedProjectCarriersAsync(link: false);
 
-    /// <summary>Requires an enabled commander, Building filter, checked carriers and a shown eligible project.</summary>
+    /// <summary>Requires an enabled commander, Building or Loading filter, checked carriers and a shown eligible project.</summary>
     private bool CanChangeSelectedProjectCarriers() =>
         !disposed
         && IsEnabled

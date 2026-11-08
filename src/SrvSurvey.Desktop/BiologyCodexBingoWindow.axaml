@@ -1,9 +1,10 @@
-<Window Classes="app-window"
-        xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        Classes="app-window"
         x:Class="SrvSurvey.Desktop.BiologyCodexBingoWindow"
         x:DataType="vm:BiologyCodexBingoViewModel"
         mc:Ignorable="d"
@@ -15,159 +16,157 @@
         MinHeight="680"
         WindowStartupLocation="CenterOwner"
         Title="{Binding WindowTitle}">
+  <Window.Styles>
+    <Style Selector="TextBlock.bingo-label">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="behaviors:ComboBoxFitContentBehavior.Enabled" Value="False" />
+    </Style>
+    <Style Selector="Border.bingo-section">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
+      <Setter Property="Padding" Value="0,16,0,0" />
+    </Style>
+    <Style Selector="TreeView.bingo-tree TreeViewItem" x:CompileBindings="False">
+      <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Padding" Value="4,6,32,6" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    </Style>
+    <Style Selector="TreeView.bingo-tree TreeViewItem /template/ Border#PART_LayoutRoot">
+      <Setter Property="BorderThickness" Value="2,0,0,0" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="3" />
+    </Style>
+    <Style Selector="TreeView.bingo-tree TreeViewItem /template/ Border#PART_LayoutRoot:pointerover">
+      <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}" />
+    </Style>
+    <Style Selector="TreeView.bingo-tree TreeViewItem:selected /template/ Border#PART_LayoutRoot, TreeView.bingo-tree TreeViewItem:selected /template/ Border#PART_LayoutRoot:pointerover">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="ProgressBar.bingo-completion">
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <Style Selector="ProgressBar.bingo-completion.complete">
+      <Setter Property="Foreground" Value="{DynamicResource RavenSuccessBrush}" />
+    </Style>
+  </Window.Styles>
   <Grid RowDefinitions="Auto,Auto,*,Auto">
     <Border Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,0,0,1"
             Padding="24,16">
-      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="18">
-        <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="CODEX BINGO" />
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="24">
+        <StackPanel Spacing="3" VerticalAlignment="Center">
+          <TextBlock Classes="page-title" Text="Codex Bingo" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="Commander and regional discovery completion" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="5" MaxWidth="320" VerticalAlignment="Center">
           <TextBlock Classes="page-title"
-                     FontSize="24"
-                     Text="The Codex" />
-          <TextBlock Classes="muted"
-                     Text="Commander and regional discovery completion" />
-        </StackPanel>
-        <StackPanel Grid.Column="1"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Spacing="3">
-          <TextBlock HorizontalAlignment="Right"
-                     FontSize="24"
-                     FontWeight="SemiBold"
+                     FontSize="28"
                      Foreground="{DynamicResource RavenAccentBrush}"
-                     Text="{Binding CompletionText}" />
-          <TextBlock Classes="muted"
                      HorizontalAlignment="Right"
-                     Text="{Binding RemainingText}" />
+                     Text="{Binding CompletionText}" />
+          <ProgressBar Height="4" Maximum="100" Value="{Binding CompletionPercent}" />
+          <TextBlock Classes="muted" TextAlignment="Right" TextWrapping="Wrap" Text="{Binding RemainingText}" />
         </StackPanel>
-        <Button Grid.Column="2"
-                Classes="secondary"
-                VerticalAlignment="Center"
-                Click="Close_Click"
-                Content="Close" />
+        <Button Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Click="Close_Click" Content="Close" />
       </Grid>
     </Border>
-
     <Border Grid.Row="1"
             Background="{DynamicResource RavenSurfaceBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,0,0,1"
-            Padding="20,12">
-      <Grid ColumnDefinitions="2*,2*,Auto,Auto,Auto"
-            ColumnSpacing="10">
-        <StackPanel Spacing="4">
-          <TextBlock Classes="muted" Text="COMMANDER" />
-          <ComboBox ItemsSource="{Binding Commanders}"
-                    SelectedItem="{Binding SelectedCommander, Mode=TwoWay}">
-            <ComboBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:CommanderCodexOptionViewModel">
-                <TextBlock Text="{Binding DisplayName}" />
-              </DataTemplate>
-            </ComboBox.ItemTemplate>
-          </ComboBox>
-        </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="4">
-          <TextBlock Classes="muted" Text="REGION" />
-          <ComboBox ItemsSource="{Binding Regions}"
-                    SelectedItem="{Binding SelectedRegion, Mode=TwoWay}">
-            <ComboBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:CodexBingoRegionOptionViewModel">
-                <TextBlock Text="{Binding DisplayName}" />
-              </DataTemplate>
-            </ComboBox.ItemTemplate>
-          </ComboBox>
-        </StackPanel>
-        <Button Grid.Column="2"
-                Classes="secondary"
-                MinWidth="92"
-                VerticalAlignment="Bottom"
-                Command="{Binding RefreshCommand}"
-                Content="Refresh" />
-        <Button Grid.Column="3"
-                Classes="secondary"
-                MinWidth="150"
+            Padding="24,12,16,8">
+      <WrapPanel x:Name="BingoScopeToolbar">
+        <Grid ColumnDefinitions="240,240" ColumnSpacing="16" Margin="0,0,20,4">
+          <StackPanel Spacing="6">
+            <TextBlock Classes="bingo-label" Text="Commander" />
+            <ComboBox x:Name="BingoCommander" ItemsSource="{Binding Commanders}" SelectedItem="{Binding SelectedCommander, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CommanderCodexOptionViewModel">
+                  <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="6">
+            <TextBlock Classes="bingo-label" Text="Region" />
+            <ComboBox x:Name="BingoRegion" ItemsSource="{Binding Regions}" SelectedItem="{Binding SelectedRegion, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CodexBingoRegionOptionViewModel">
+                  <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+        </Grid>
+        <Button Classes="secondary" Margin="0,0,8,4" VerticalAlignment="Bottom" Command="{Binding RefreshCommand}" Content="Refresh" />
+        <Button Classes="secondary"
+                Margin="0,0,8,4"
                 VerticalAlignment="Bottom"
                 Command="{Binding ImportCanonnCommand}"
                 Content="Import Canonn" />
-        <Button Grid.Column="4"
-                Classes="secondary"
-                MinWidth="150"
+        <Button Classes="secondary"
+                Margin="0,0,8,4"
                 VerticalAlignment="Bottom"
                 Command="{Binding ImportJournalsCommand}"
                 Content="Scan old journals" />
-      </Grid>
+      </WrapPanel>
     </Border>
-
-    <Grid Grid.Row="2"
-          Margin="20"
-          ColumnDefinitions="3*,2*"
-          ColumnSpacing="16">
-      <Border Classes="card" Padding="8">
-        <Grid RowDefinitions="Auto,*" RowSpacing="8">
-          <Grid Margin="8,4"
-                ColumnDefinitions="*,Auto"
-                ColumnSpacing="12">
-            <StackPanel Spacing="2">
-              <TextBlock Classes="card-title" Text="Discovery hierarchy" />
-              <TextBlock Classes="muted" Text="{Binding RegionSummary}" />
-            </StackPanel>
-            <Border Grid.Column="1"
-                    Classes="badge"
-                    VerticalAlignment="Center">
-              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                         Text="{Binding DiscoveredCount, StringFormat='{}{0:N0} FOUND'}" />
-            </Border>
-          </Grid>
-          <TreeView Grid.Row="1"
+    <Grid Grid.Row="2" Margin="24,20" ColumnDefinitions="3*,2*" ColumnSpacing="20">
+      <Border Classes="card" Padding="0" x:Name="BingoHierarchyPanel">
+        <Grid RowDefinitions="Auto,*">
+          <Border Padding="16,14" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="card-title" Text="Discovery hierarchy" />
+                <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding RegionSummary}" />
+              </StackPanel>
+              <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+                <TextBlock Foreground="{DynamicResource RavenTextBrush}" Text="{Binding DiscoveredCount, StringFormat='{}{0:N0} found'}" />
+              </Border>
+            </Grid>
+          </Border>
+          <!-- Flexible rows keep deep entries inside the viewport; right padding clears the scrollbar. -->
+          <TreeView x:Name="BingoHierarchy"
+                    Grid.Row="1"
+                    Classes="bingo-tree"
                     Background="Transparent"
                     BorderThickness="0"
+                    Padding="0,4,0,6"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
                     ItemsSource="{Binding RootNodes}"
                     SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
-            <TreeView.Styles>
-              <Style Selector="TreeViewItem" x:CompileBindings="False">
-                <Setter Property="IsExpanded"
-                        Value="{Binding IsExpanded, Mode=TwoWay}" />
-                <Setter Property="Padding" Value="2" />
-              </Style>
-            </TreeView.Styles>
             <TreeView.ItemTemplate>
-              <TreeDataTemplate x:DataType="vm:CodexBingoTreeNodeViewModel"
-                                ItemsSource="{Binding Children}">
-                <Grid MinWidth="540"
-                      ColumnDefinitions="*,Auto,110"
-                      ColumnSpacing="10"
-                      Margin="0,2">
-                  <StackPanel Spacing="1">
+              <TreeDataTemplate x:DataType="vm:CodexBingoTreeNodeViewModel" ItemsSource="{Binding Children}">
+                <Grid ColumnDefinitions="*,128" ColumnSpacing="10" Margin="0,2">
+                  <StackPanel Spacing="2" VerticalAlignment="Center">
                     <TextBlock FontWeight="SemiBold"
+                               Foreground="{DynamicResource RavenTextBrush}"
                                Text="{Binding Name}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Classes="muted monospace"
-                               FontSize="10"
-                               IsVisible="{Binding IsEntry}"
-                               Text="{Binding EntryId}" />
+                               TextWrapping="Wrap"
+                               MaxLines="2"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding Name}" />
+                    <TextBlock Classes="muted monospace" FontSize="11" IsVisible="{Binding IsEntry}" Text="{Binding EntryId}" />
                   </StackPanel>
-                  <Border Grid.Column="1"
-                          Classes="badge"
-                          VerticalAlignment="Center"
-                          IsVisible="{Binding IsComplete}">
-                    <TextBlock FontSize="10"
-                               Foreground="{DynamicResource RavenSuccessBrush}"
-                               Text="COMPLETE" />
-                  </Border>
-                  <Grid Grid.Column="2"
-                        RowDefinitions="Auto,Auto"
-                        VerticalAlignment="Center"
-                        RowSpacing="3">
-                    <TextBlock Classes="muted"
-                               FontSize="10"
-                               HorizontalAlignment="Right"
-                               Text="{Binding CompletionText}" />
+                  <Grid Grid.Column="1" RowDefinitions="Auto,Auto" RowSpacing="5" VerticalAlignment="Center">
+                    <TextBlock Classes="muted" FontSize="12" HorizontalAlignment="Right" Text="{Binding CompletionText}" />
                     <ProgressBar Grid.Row="1"
-                                 Height="5"
+                                 Height="4"
                                  Maximum="100"
-                                 Value="{Binding CompletionPercent}" />
+                                 Value="{Binding CompletionPercent}"
+                                 Classes="bingo-completion"
+                                 Classes.complete="{Binding IsComplete}" />
                   </Grid>
                 </Grid>
               </TreeDataTemplate>
@@ -175,168 +174,139 @@
           </TreeView>
         </Grid>
       </Border>
-
-      <ScrollViewer Grid.Column="1"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="14">
-          <Border Classes="card raised">
-            <StackPanel Spacing="14">
-              <StackPanel Spacing="4">
-                <TextBlock Classes="eyebrow" Text="SELECTED NODE" />
-                <TextBlock FontSize="23"
-                           FontWeight="SemiBold"
-                           Text="{Binding SelectedTitle}"
-                           TextWrapping="Wrap" />
-                <TextBlock Classes="muted" Text="{Binding SelectedKind}" />
-              </StackPanel>
-              <ProgressBar Height="8"
-                           Maximum="100"
-                           Value="{Binding SelectedCompletionPercent}" />
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                <StackPanel Spacing="3">
-                  <TextBlock Classes="muted" Text="COMPLETION" />
-                  <TextBlock FontWeight="SemiBold"
-                             Text="{Binding SelectedProgress}" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="3">
-                  <TextBlock Classes="muted" Text="STATE" />
-                  <TextBlock FontWeight="SemiBold"
-                             Foreground="{DynamicResource RavenAccentBrush}"
-                             Text="{Binding SelectedState}" />
-                </StackPanel>
-              </Grid>
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                <StackPanel Spacing="3">
-                  <TextBlock Classes="muted" Text="ENTRY ID" />
-                  <TextBlock Classes="monospace" Text="{Binding SelectedEntryId}" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="3">
-                  <TextBlock Classes="muted" Text="REWARD" />
-                  <TextBlock Text="{Binding SelectedReward}" />
-                </StackPanel>
-              </Grid>
-            </StackPanel>
-          </Border>
-
-          <Border Classes="card">
+      <Border Grid.Column="1" Classes="card" Padding="0" x:Name="BingoInspectorPanel">
+        <Grid RowDefinitions="Auto,*,Auto">
+          <Border Padding="20,16" BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1">
             <StackPanel Spacing="12">
-              <TextBlock Classes="card-title" Text="Entry actions" />
-              <WrapPanel Orientation="Horizontal">
-                <Button Classes="secondary"
-                        Margin="0,0,8,8"
-                        Command="{Binding CopyNameCommand}"
-                        Content="Copy name" />
-                <Button Classes="secondary"
-                        Margin="0,0,8,8"
-                        Command="{Binding CopyEntryIdCommand}"
-                        Content="Copy entry ID" />
-                <Button Classes="secondary"
-                        Margin="0,0,8,8"
-                        Command="{Binding OpenCanonnResearchCommand}"
-                        Content="Canonn Research" />
-                <Button Classes="secondary"
-                        Margin="0,0,8,8"
-                        Command="{Binding OpenBioforgeCommand}"
-                        Content="Bioforge" />
-                <Button Classes="secondary"
-                        Margin="0,0,8,8"
-                        Command="{Binding OpenEdAstroCommand}"
-                        Content="EDAstro map" />
-                <Button Classes="secondary"
-                        Margin="0,0,8,8"
-                        Command="{Binding FindNearestCommand}"
-                        Content="Find nearest" />
-                <Button Classes="secondary"
-                        Margin="0,0,8,8"
-                        Command="{Binding FindMissingVariantsCommand}"
-                        Content="{Binding MissingSearchLabel}" />
-              </WrapPanel>
-              <Button Classes="secondary"
-                      HorizontalAlignment="Left"
-                      Command="{Binding RequestManualCommand}"
-                      Content="{Binding ManualActionText}" />
-            </StackPanel>
-          </Border>
-
-          <Border Classes="card"
-                  BorderBrush="{DynamicResource RavenWarningBrush}"
-                  IsVisible="{Binding IsManualConfirmationPending}">
-            <StackPanel Spacing="12">
-              <TextBlock FontWeight="SemiBold"
-                         TextWrapping="Wrap"
-                         Text="{Binding ManualConfirmationText}" />
-              <TextBlock Classes="muted"
-                         TextWrapping="Wrap"
-                         Text="Manual overrides are only for discoveries whose original journal files are no longer available." />
-              <WrapPanel Orientation="Horizontal">
-                <Button Classes="primary"
-                        Margin="0,0,8,0"
-                        Command="{Binding ConfirmManualCommand}"
-                        Content="Confirm" />
-                <Button Classes="secondary"
-                        Command="{Binding CancelManualCommand}"
-                        Content="Cancel" />
-              </WrapPanel>
-            </StackPanel>
-          </Border>
-
-          <Border Classes="card">
-            <StackPanel Spacing="12">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <TextBlock Classes="card-title" Text="Discovery location" />
-                <Button Grid.Column="1"
-                        Classes="secondary"
-                        Command="{Binding OpenLocationCommand}"
-                        Content="Open Spansh" />
-              </Grid>
-              <StackPanel Spacing="3">
-                <TextBlock Classes="muted" Text="BODY / SYSTEM" />
-                <TextBlock Text="{Binding DiscoveryBody}"
-                           TextWrapping="Wrap" />
-              </StackPanel>
-              <StackPanel Spacing="3">
-                <TextBlock Classes="muted" Text="GALACTIC REGION" />
-                <TextBlock Text="{Binding DiscoveryRegion}"
-                           TextWrapping="Wrap" />
-              </StackPanel>
-              <StackPanel Spacing="3">
-                <TextBlock Classes="muted" Text="FIRST RECORDED" />
-                <TextBlock Text="{Binding DiscoveryDate}" />
+              <StackPanel Spacing="5">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <TextBlock Classes="bingo-label" VerticalAlignment="Center" Text="{Binding SelectedKind}" />
+                  <Border Grid.Column="1" Classes="badge">
+                    <TextBlock FontSize="12"
+                               Foreground="{DynamicResource RavenTextBrush}"
+                               Text="{Binding SelectedState}"
+                               TextWrapping="Wrap" />
+                  </Border>
+                </Grid>
+                <TextBlock x:Name="BingoSelectedTitle" Classes="card-title" FontSize="24" Text="{Binding SelectedTitle}" TextWrapping="Wrap" />
               </StackPanel>
             </StackPanel>
           </Border>
-
-          <Border Classes="card">
-            <StackPanel Spacing="10">
-              <TextBlock Classes="card-title" Text="Canonn tools" />
-              <WrapPanel Orientation="Horizontal">
-                <Button Classes="secondary"
-                        Margin="0,0,8,0"
-                        Command="{Binding OpenCanonnChallengeCommand}"
-                        Content="Canonn Challenge" />
-                <Button Classes="secondary"
-                        Command="{Binding OpenUndiscoveredCommand}"
-                        Content="Undiscovered map" />
+          <ScrollViewer x:Name="BingoDetailsScroll" Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16" Margin="20,16,28,20" x:Name="BingoDetailsContent">
+              <StackPanel Spacing="12" x:Name="BingoEntryReadout">
+                <StackPanel Spacing="6">
+                  <TextBlock FontWeight="SemiBold" Text="{Binding SelectedProgress}" TextWrapping="Wrap" />
+                  <ProgressBar Height="6" Maximum="100" Value="{Binding SelectedCompletionPercent}" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="16" IsVisible="{Binding HasSelectedEntry}">
+                  <StackPanel Spacing="3">
+                    <TextBlock Classes="bingo-label" Text="Entry ID" />
+                    <TextBlock Classes="monospace" Text="{Binding SelectedEntryId}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock Classes="bingo-label" Text="Reward" />
+                    <TextBlock Text="{Binding SelectedReward}" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+              <Border Classes="bingo-section">
+                <StackPanel Spacing="10">
+                  <TextBlock Classes="card-title" Text="Find discoveries" />
+                  <WrapPanel>
+                    <Button Classes="primary" Margin="0,0,8,6" Command="{Binding FindNearestCommand}" Content="Find nearest" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,6"
+                            Command="{Binding FindMissingVariantsCommand}"
+                            Content="{Binding MissingSearchLabel}" />
+                  </WrapPanel>
+                </StackPanel>
+              </Border>
+              <Border Classes="bingo-section" IsVisible="{Binding HasSelectedEntry}">
+                <StackPanel Spacing="12">
+                  <TextBlock Classes="card-title" Text="Discovery location" />
+                  <StackPanel Spacing="3">
+                    <TextBlock Classes="bingo-label" Text="Body / system" />
+                    <TextBlock Text="{Binding DiscoveryBody}" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+                    <StackPanel Spacing="3">
+                      <TextBlock Classes="bingo-label" Text="Galactic region" />
+                      <TextBlock Text="{Binding DiscoveryRegion}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="3">
+                      <TextBlock Classes="bingo-label" Text="First recorded" />
+                      <TextBlock Text="{Binding DiscoveryDate}" TextWrapping="Wrap" />
+                    </StackPanel>
+                  </Grid>
+                  <Button Classes="secondary" HorizontalAlignment="Left" Command="{Binding OpenLocationCommand}" Content="Open Spansh" />
+                </StackPanel>
+              </Border>
+              <Border Classes="bingo-section">
+                <StackPanel Spacing="10">
+                  <TextBlock Classes="card-title" Text="Entry tools" />
+                  <WrapPanel>
+                    <Button Classes="secondary" Margin="0,0,8,6" Command="{Binding CopyNameCommand}" Content="Copy name" />
+                    <Button Classes="secondary" Margin="0,0,8,6" Command="{Binding CopyEntryIdCommand}" Content="Copy entry ID" />
+                    <Button Classes="secondary" Margin="0,0,8,6" Command="{Binding OpenCanonnResearchCommand}" Content="Canonn Research" />
+                    <Button Classes="secondary" Margin="0,0,8,6" Command="{Binding OpenBioforgeCommand}" Content="Bioforge" />
+                    <Button Classes="secondary" Margin="0,0,8,6" Command="{Binding OpenEdAstroCommand}" Content="EDAstro map" />
+                  </WrapPanel>
+                  <Button x:Name="BingoManualAction"
+                          Classes="secondary"
+                          HorizontalAlignment="Left"
+                          Command="{Binding RequestManualCommand}"
+                          Content="{Binding ManualActionText}" />
+                  <Border x:Name="BingoManualConfirmation"
+                          Padding="12"
+                          BorderBrush="{DynamicResource RavenWarningBrush}"
+                          BorderThickness="1"
+                          CornerRadius="3"
+                          Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                          IsVisible="{Binding IsManualConfirmationPending}">
+                    <StackPanel Spacing="12">
+                      <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding ManualConfirmationText}" />
+                      <TextBlock Classes="muted"
+                                 TextWrapping="Wrap"
+                                 Text="Manual overrides are only for discoveries whose original journal files are no longer available." />
+                      <WrapPanel>
+                        <Button Classes="primary" Margin="0,0,8,4" Command="{Binding ConfirmManualCommand}" Content="Confirm" />
+                        <Button Classes="secondary" Margin="0,0,8,4" Command="{Binding CancelManualCommand}" Content="Cancel" />
+                      </WrapPanel>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+          <Border x:Name="BingoCanonnTools"
+                  Grid.Row="2"
+                  Padding="20,12,12,8"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="0,1,0,0">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="bingo-label" Text="Canonn tools" />
+              <WrapPanel>
+                <Button Classes="secondary" Margin="0,0,8,4" Command="{Binding OpenCanonnChallengeCommand}" Content="Canonn Challenge" />
+                <Button Classes="secondary" Margin="0,0,8,4" Command="{Binding OpenUndiscoveredCommand}" Content="Undiscovered map" />
               </WrapPanel>
             </StackPanel>
           </Border>
-        </StackPanel>
-      </ScrollViewer>
+        </Grid>
+      </Border>
     </Grid>
-
     <Border Grid.Row="3"
             Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,1,0,0"
-            Padding="20,10">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-        <TextBlock Classes="muted"
-                   Text="{Binding StatusMessage}"
-                   TextTrimming="CharacterEllipsis" />
-        <TextBlock Grid.Column="1"
-                   Classes="monospace muted"
-                   Text="{Binding CommanderSummary}" />
+            Padding="24,10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <ScrollViewer x:Name="BingoStatusViewport" MaxHeight="72"
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <TextBlock x:Name="BingoStatusText" Classes="muted" Margin="0,0,16,0"
+                     Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+        </ScrollViewer>
+        <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center" Text="{Binding CommanderSummary}" />
       </Grid>
     </Border>
   </Grid>

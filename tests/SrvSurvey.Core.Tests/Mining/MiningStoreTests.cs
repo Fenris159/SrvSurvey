@@ -5,6 +5,50 @@ namespace SrvSurvey.Core.Tests.Mining;
 public sealed class MiningStoreTests
 {
     [Fact]
+    public void LegacyReceptionPreferenceIsIgnoredAndNotSavedAgain()
+    {
+        MiningCommanderData data = MiningStore.Parse(
+            """{"SchemaVersion":1,"Settings":{"ReceiveCommunityData":true,"AutoStart":false,"SearchOptions":{"Reference":"Wille"}}}"""
+        );
+        Assert.False(data.Settings.AutoStart);
+        Assert.Equal("Wille", data.Settings.SearchOptions.Reference);
+        Assert.DoesNotContain("ReceiveCommunityData", MiningStore.Export(data), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OpeningMiningStorageRemovesOnlyTheRetiredReceptionCache(bool hasCache)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "mining-no-reception-" + Guid.NewGuid());
+        string mining = Path.Combine(directory, "mining");
+        string obsolete = Path.Combine(mining, "community-cache.json");
+        string history = Path.Combine(mining, "commander.json");
+        string outbound = Path.Combine(directory, "eddn-outbox.json");
+        try
+        {
+            Directory.CreateDirectory(mining);
+            File.WriteAllText(history, "preserve commander history");
+            File.WriteAllText(outbound, "preserve outbound EDDN contributions");
+            if (hasCache)
+            {
+                File.WriteAllText(obsolete, "malformed retired data must never be read");
+            }
+            var store = new MiningStore(directory);
+            Assert.False(File.Exists(obsolete));
+            Assert.Equal("preserve commander history", File.ReadAllText(history));
+            Assert.Equal("preserve outbound EDDN contributions", File.ReadAllText(outbound));
+            store.Save("F1", new MiningCommanderData());
+            Assert.Empty(store.Load("F1").History);
+            Assert.False(File.Exists(obsolete));
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public void LegacyMiningDataUsesFiveSessionResultsSortedByAverage()
     {
         MiningPreferences settings = MiningStore.Parse("""{"SchemaVersion":1}""").Settings;

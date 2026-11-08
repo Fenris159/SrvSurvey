@@ -6,6 +6,47 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class ColonizationProjectTests
 {
     [Fact]
+    public void InferredRemainingCargoUsesOneNormalizedNeedPerCommodity()
+    {
+        ColonizationProject? project = JsonSerializer.Deserialize<ColonizationProject>(
+            """{"maxNeed":20,"commodities":{"STEEL":10," steel ":10,"":99," ":77}}"""
+        );
+        Assert.NotNull(project);
+        Assert.Equal(10, project.RemainingRequired);
+        Assert.Equal(10, project.Delivered);
+        Assert.Equal(0.5, project.Progress);
+        ColonizationProjectTotals totals = ColonizationProjectCalculator.CalculateTotals([project], null, 6);
+        Assert.Equal(10, totals.RemainingCargo);
+        Assert.Equal(2, totals.TripsInCurrentShip);
+    }
+
+    [Theory]
+    [InlineData("", 1000, 1000, 0, 0d)]
+    [InlineData("", 250, 250, 750, 0.75d)]
+    [InlineData("\"sumNeed\":0,", 250, 0, 1000, 1d)]
+    [InlineData("", null, 0, 1000, 1d)]
+    public void MissingRemainingTotalsUseOutstandingCargoWhileExplicitZeroStaysComplete(
+        string remainingField,
+        int? cargo,
+        int remaining,
+        int delivered,
+        double progress
+    )
+    {
+        string commodities = cargo is { } quantity ? $$"""{"steel":{{quantity}}}""" : "null";
+        ColonizationProject? project = JsonSerializer.Deserialize<ColonizationProject>(
+            $$"""
+            {"buildType":"fc_loading","maxNeed":1000,{{remainingField}}"commodities":{{commodities}}
+            }
+            """
+        );
+        Assert.NotNull(project);
+        Assert.Equal(remaining, project.RemainingRequired);
+        Assert.Equal(delivered, project.Delivered);
+        Assert.Equal(progress, project.Progress);
+    }
+
+    [Fact]
     public void ReadsRavenProjectShapeAndCalculatesProgress()
     {
         ColonizationProject? project = JsonSerializer.Deserialize<ColonizationProject>(

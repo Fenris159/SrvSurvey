@@ -240,7 +240,10 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                 $"{RemainingCount:N0} scans to go · each entry is {(1d / TotalCount):P2}"
             );
 
-    public string SelectedTitle => SelectedNode?.Definition.Name ?? "Select a Codex category or entry";
+    public string SelectedTitle =>
+        SelectedNode?.Definition.Entry?.DisplayName
+        ?? SelectedNode?.Definition.Name
+        ?? "Select a Codex category or entry";
 
     public string SelectedKind =>
         SelectedNode?.Definition.Kind switch

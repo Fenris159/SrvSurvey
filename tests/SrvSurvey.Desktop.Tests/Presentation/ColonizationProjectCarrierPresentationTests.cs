@@ -12,14 +12,31 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 
 public sealed partial class ColonizationShoppingPresentationTests
 {
+    /// <summary>Building and Loading expose the same carrier actions, with checked-row guards and usable wrapping.</summary>
     [AvaloniaTheory]
-    [InlineData(820)]
-    [InlineData(1180)]
-    public async Task ProjectCarrierActionsFollowCarrierAndShowSelectionAndWrapWithinTheCard(int width)
+    [InlineData(820, "Building")]
+    [InlineData(1180, "Building")]
+    [InlineData(820, "Loading")]
+    [InlineData(1180, "Loading")]
+    public async Task ProjectCarrierActionsFollowCarrierAndShowSelectionAndWrapWithinTheCard(int width, string status)
     {
         using var http = new HttpClient(
             new RavenHandler
             {
+                ActiveProjects =
+                [
+                    .. ColonizationShoppingViewModelTests.Projects(),
+                    new()
+                    {
+                        BuildId = "loading-project",
+                        BuildName = "Carrier loading",
+                        BuildType = ColonizationProject.FleetCarrierLoadingBuildType,
+                        SystemName = "Sol",
+                        MaximumRequired = 10_080,
+                        RemainingRequired = 10_080,
+                        Commodities = new() { ["steel"] = 10_080 },
+                    },
+                ],
                 LinkedCarriers =
                 [
                     new()
@@ -52,8 +69,9 @@ public sealed partial class ColonizationShoppingPresentationTests
             Button unlink = view.FindControl<Button>("UnlinkCarrierFromSelectedProjectsButton")!;
             Assert.False(link.IsVisible);
             Assert.False(unlink.IsVisible);
-            main.Colonization.ProjectBuildFilter = main.Colonization.ProjectBuildOptions.Single(option =>
-                option.Value == ColonizationProjectBuildFilter.Building
+            main.Colonization.ProjectBuildFilter = Assert.Single(
+                main.Colonization.ProjectBuildOptions,
+                option => option.Label == status
             );
             Assert.True(link.IsVisible);
             Assert.True(unlink.IsVisible);
@@ -67,7 +85,7 @@ public sealed partial class ColonizationShoppingPresentationTests
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
             frame.Save(
-                Path.Combine(Path.GetTempPath(), $"srvsurvey-project-carrier-actions-{width}.png"),
+                Path.Combine(Path.GetTempPath(), $"srvsurvey-project-carrier-actions-{status}-{width}.png"),
                 PngBitmapEncoderOptions.Default
             );
             WrapPanel panel = Assert.IsType<WrapPanel>(link.Parent);

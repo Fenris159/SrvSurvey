@@ -6,6 +6,7 @@ using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -26,7 +27,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     private readonly FiregroupsWorkspaceViewModel? firegroups;
     private readonly TimeProvider clock;
     private DateTimeOffset lastRecoverySave;
-    private readonly Platform.MiningCommunityListener community;
     private readonly string attachmentDirectory;
     private readonly Platform.IMiningSpeechOutput speech;
     private readonly Platform.IMiningChimeOutput chime;
@@ -102,7 +102,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             options?.OverlaySettings
             ?? new MiningOverlaySettingsStore(Path.Combine(directory, "mining", "overlay-settings.json"));
         overlayCommander = string.IsNullOrWhiteSpace(options?.CommanderId) ? null : options.CommanderId.Trim();
-        community = new Platform.MiningCommunityListener(directory);
         attachmentDirectory = Path.Combine(directory, "mining", "attachments");
         this.resolver = resolver;
         this.bookmarks = bookmarks;
@@ -111,14 +110,7 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             commodityReportStore: new MiningCommodityPriceReportStore(directory),
             providerResponseCache: new MiningProviderResponseCache(directory)
         );
-        Search = new MiningSearchViewModel(
-            miningSearchClient,
-            bookmarks,
-            CacheRing,
-            () => state.Data.Rings,
-            resolver,
-            community.Cache
-        );
+        Search = new MiningSearchViewModel(miningSearchClient, bookmarks, CacheRing, () => state.Data.Rings, resolver);
         Search.ConfigureResultCache(MiningSearchResultCache.ForDirectory(directory));
         if (miningSearchClient.CachedCommodityPriceReport is { Count: > 0 } cachedPrices)
         {
@@ -167,7 +159,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         LoadOverlayPreferences(readCommanderDefaults: true);
     }
 
-    public string CommunityStatus => community.Status;
     public MiningSearchViewModel Search { get; }
 
     public void UseJournalDirectories(IReadOnlyList<string> paths) => journalDirectories = paths.ToArray();
@@ -388,6 +379,12 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
     public MiningSession? Current => state.Session.Current;
     public string CurrentSystem => system;
     public string Context => string.Join(" · ", new[] { system, body, ship }.Where(s => s.Length > 0));
+    public string SessionState => Current is { } session ? SessionStateLabel(session) : "No active session";
+    public TimeSpan SessionElapsed => Current?.ActiveDuration ?? TimeSpan.Zero;
+    public double SessionRefinedTons => Current?.RefinedTons ?? 0;
+    public double SessionRate => Current?.TonsPerHour ?? 0;
+    public int SessionAsteroids => Current?.Asteroids ?? 0;
+    public int SessionCores => Current?.CoreHits ?? 0;
     public string SessionSummary =>
         Current is not { } session
             ? "No active session"
@@ -415,7 +412,12 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         cargo is null
             ? "Cargo unavailable"
             : $"Cargo: {cargo.Count:N0} / {CapacityLabel} t · Limpets: {cargo.GetCount("drones")}";
-    public IReadOnlyList<CargoItem> Cargo => cargoSorter.Apply(cargo?.Inventory ?? []);
+    public IReadOnlyList<CargoItem> Cargo =>
+        cargoSorter.Apply(
+            cargo?.Inventory ?? [],
+            nameof(CargoItem.Name),
+            item => MiningItemNameConverter.FormatCargoName(item, CultureInfo.CurrentCulture)
+        );
     public int CargoUsed => cargo?.Count ?? 0;
     public int CargoCapacity => capacity;
     public int CargoRemaining => Math.Max(0, capacity - CargoUsed);
@@ -801,15 +803,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 capacity = count;
             }
         }
-        if (entry.EventName is FsdJumpEvent or "Location" or "CarrierJump")
-        {
-            var broadcast = new Dictionary<string, object>
-            {
-                ["$schemaRef"] = "https://eddn.edcd.io/schemas/journal/1",
-                ["message"] = entry.Payload,
-            };
-            community.Cache.Apply(JsonSerializer.Serialize(broadcast), clock.GetUtcNow());
-        }
         if (entry.EventName is "Powerplay" or "PowerplayJoin")
         {
             Search.NoteDetectedPower(Text(entry.Payload, "Power"));
@@ -1057,7 +1050,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         miningSearchClient.Dispose();
         speech.Dispose();
         chime.Dispose();
-        community.Dispose();
     }
 
     public void SetThreshold(bool remove)
@@ -1483,7 +1475,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             state = new MiningWorkspaceState(store.Restore(commander, json));
             PauseRecoveredSession();
             Search.LoadOptions(Settings.SearchOptions);
-            community.SetEnabled(Settings.ReceiveCommunityData);
             bool overlaySaved = SaveOverlayPreferences(replaceSnapshot: true);
             Changed(nameof(Settings));
             Changed(nameof(HideProspectsBelowThreshold));
@@ -1538,7 +1529,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
         Search.LoadOptions(Settings.SearchOptions);
         RememberPledgedPower(id, commanderName);
         Search.RestoreLastCompletedPowerplaySearch();
-        community.SetEnabled(Settings.ReceiveCommunityData);
         Changed(nameof(Settings));
         Changed(nameof(HideProspectsBelowThreshold));
         Changed(nameof(SessionYieldSortIndex));
@@ -1623,7 +1613,6 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             return;
         }
         Settings.SearchOptions = Search.SaveOptions();
-        community.SetEnabled(Settings.ReceiveCommunityData);
         SaveOverlayPreferences();
         Save();
         Refresh();
@@ -1699,8 +1688,13 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             foreach (
                 string? name in new[]
                 {
-                    nameof(CommunityStatus),
                     nameof(SessionSummary),
+                    nameof(SessionState),
+                    nameof(SessionElapsed),
+                    nameof(SessionRefinedTons),
+                    nameof(SessionRate),
+                    nameof(SessionAsteroids),
+                    nameof(SessionCores),
                     nameof(YieldConfirmation),
                     nameof(RefineryCarryoverSummary),
                     nameof(HasRefineryCarryover),
@@ -1746,6 +1740,12 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
                 nameof(Context),
                 nameof(CurrentSystem),
                 nameof(SessionSummary),
+                nameof(SessionState),
+                nameof(SessionElapsed),
+                nameof(SessionRefinedTons),
+                nameof(SessionRate),
+                nameof(SessionAsteroids),
+                nameof(SessionCores),
                 nameof(YieldConfirmation),
                 nameof(RefineryCarryoverSummary),
                 nameof(HasRefineryCarryover),

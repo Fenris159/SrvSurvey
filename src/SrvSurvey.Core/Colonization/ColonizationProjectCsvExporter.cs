@@ -213,7 +213,21 @@ public static partial class ColonizationProjectCsvExporter
             ["Linked fleet carriers"] = string.Join("; ", preview.Carriers.Select(carrier => carrier.Label)),
             ["Notes"] = project.Notes ?? string.Empty,
             ["Discord"] = project.DiscordLink ?? string.Empty,
-        }.Concat(SummaryDetails(preview));
+        }
+            .Concat(PreparedBuildDetails(project))
+            .Concat(SummaryDetails(preview));
+    }
+
+    private static IEnumerable<KeyValuePair<string, string>> PreparedBuildDetails(ColonizationProject project)
+    {
+        if (project.IsFleetCarrierLoading)
+        {
+            string buildings = PreparedBuildingsText(project);
+            yield return KeyValuePair.Create(
+                "Buildings",
+                buildings.Length > 0 ? buildings : "Building list unavailable."
+            );
+        }
     }
 
     /// <summary>Exports the same cargo, progress, trips, and availability fields for individual and combined reports.</summary>

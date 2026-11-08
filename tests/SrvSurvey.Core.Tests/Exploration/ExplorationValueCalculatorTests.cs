@@ -4,6 +4,17 @@ namespace SrvSurvey.Core.Tests.Exploration;
 
 public sealed class ExplorationValueCalculatorTests
 {
+    [Theory]
+    [InlineData("N")]
+    [InlineData("H")]
+    public void JournalNeutronAndBlackHoleCodesReceiveTheRareStarEstimate(string journalCode)
+    {
+        int value = ExplorationValueCalculator.Calculate(
+            new ExplorationValueRequest { BodyClass = journalCode, Mass = 1.4 }
+        );
+        Assert.Equal(23106, value);
+    }
+
     [Fact]
     public void StarValueMatchesLegacyFormula()
     {

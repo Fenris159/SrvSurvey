@@ -218,7 +218,9 @@ jobs:
       - name: Test
         # Linux PR validation already ran the full solution with retained TRX and coverage.
         if: matrix.rid != 'linux-x64' || github.event_name != 'pull_request'
-        timeout-minutes: 10
+        # Hosted Windows runners can exceed ten minutes for the complete desktop suite.
+        # Keep the per-test two-minute hang detector while allowing the full suite to finish.
+        timeout-minutes: 15
         run: >-
           dotnet test SrvSurvey.slnx
           --configuration Release --no-build --no-restore
@@ -264,17 +266,19 @@ jobs:
           GoogleDriveClientId: ${{ secrets.GOOGLE_DRIVE_CLIENT_ID }}
           GoogleDriveClientSecret: ${{ secrets.GOOGLE_DRIVE_CLIENT_SECRET }}
         run: |
-          dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj `
-            --configuration Release `
-            --runtime "${{ matrix.rid }}" `
-            --self-contained true `
-            --output "artifacts/${{ matrix.rid }}" `
-            -p:Version="${{ needs.release-metadata.outputs.package_version }}" `
-            -p:FileVersion="${{ needs.release-metadata.outputs.file_version }}" `
-            -p:InaraApplicationApiKey="$env:INARA_APPLICATION_API_KEY" `
-            -p:VoxStellarSharedKey="$env:VOXSTELLAR_SHARED_KEY" `
-            -p:DebugType=None `
-            -p:DebugSymbols=false
+          $desktopPublishArguments = @(
+            '--configuration', 'Release'
+            '--runtime', '${{ matrix.rid }}'
+            '--self-contained', 'true'
+            '--output', 'artifacts/${{ matrix.rid }}'
+            '-p:Version=${{ needs.release-metadata.outputs.package_version }}'
+            '-p:FileVersion=${{ needs.release-metadata.outputs.file_version }}'
+            "-p:InaraApplicationApiKey=$env:INARA_APPLICATION_API_KEY"
+            "-p:VoxStellarSharedKey=$env:VOXSTELLAR_SHARED_KEY"
+            '-p:DebugType=None'
+            '-p:DebugSymbols=false'
+          )
+          dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj @desktopPublishArguments
 
       - name: Publish diagnostic replay controller
         shell: pwsh

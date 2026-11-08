@@ -34,6 +34,7 @@ public sealed partial class ColonizationViewModel
     [
         AllProjectBuilds,
         new(ColonizationProjectBuildFilter.Building, "Building"),
+        new(ColonizationProjectBuildFilter.Loading, "Loading"),
         new(ColonizationProjectBuildFilter.Planning, "Planning"),
     ];
 
@@ -126,7 +127,11 @@ public sealed partial class ColonizationViewModel
                         {
                             ColonizationProjectBuildFilter.Planning => row.Project.IsPlanned,
                             ColonizationProjectBuildFilter.Building => !row.Project.IsPlanned
-                                && !row.Project.IsComplete,
+                                && !row.Project.IsComplete
+                                && !row.Project.IsFleetCarrierLoading,
+                            ColonizationProjectBuildFilter.Loading => !row.Project.IsPlanned
+                                && !row.Project.IsComplete
+                                && row.Project.IsFleetCarrierLoading,
                             _ => true,
                         }
                     )
@@ -148,6 +153,7 @@ public enum ColonizationProjectBuildFilter
     All,
     Building,
     Planning,
+    Loading,
 }
 
 public sealed record ColonizationProjectBuildOption(ColonizationProjectBuildFilter Value, string Label);

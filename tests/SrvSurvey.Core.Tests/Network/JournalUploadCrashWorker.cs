@@ -6,6 +6,10 @@ internal static class JournalUploadCrashWorker
     /// <summary>Runs explicit persistence-worker commands; ordinary tests execute through VSTest.</summary>
     public static async Task<int> Main(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--exploration-io-worker")
+        {
+            return await Exploration.History.ExplorationHistoryIoTests.RunWorkerAsync(args[1]);
+        }
         if (args.Length == 3 && args[0] == "--journey-profile-cas-worker")
         {
             return await Journeys.JourneyUpgradeRecoveryTests.RunProfileSelectionWorkerAsync(args[1], args[2]);

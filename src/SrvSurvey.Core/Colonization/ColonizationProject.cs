@@ -43,7 +43,19 @@ public sealed record ColonizationProject
     public int MaximumRequired { get; init; }
 
     [JsonPropertyName("sumNeed")]
-    public int RemainingRequired { get; init; }
+    public int RemainingRequired
+    {
+        get =>
+            remainingRequired
+            ?? (int)
+                Math.Min(
+                    int.MaxValue,
+                    ColonizationCarrierInventory.NormalizeStock(Commodities ?? []).Values.Sum(value => (long)value)
+                );
+        init => remainingRequired = value;
+    }
+
+    private readonly int? remainingRequired;
 
     [JsonPropertyName("sumTotal")]
     public int TotalContributed { get; init; }
@@ -62,6 +74,10 @@ public sealed record ColonizationProject
 
     [JsonPropertyName("notes")]
     public string? Notes { get; init; }
+
+    [JsonPropertyName("prepBuilds")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public Dictionary<string, int>? PreparedBuilds { get; init; }
 
     [JsonPropertyName("commodities")]
     public Dictionary<string, int> Commodities { get; init; } = new(StringComparer.OrdinalIgnoreCase);

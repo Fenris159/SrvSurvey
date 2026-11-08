@@ -345,6 +345,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "1 band",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "1 biological signal",
     "IsFormat": false,
     "SourceKinds": [
@@ -785,6 +793,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MultipleApplicationInstancesDialog.axaml.cs"
   },
   {
+    "Text": "2 bands",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "2 black holes \u00B7 5 T Tauri stars",
     "IsFormat": false,
     "SourceKinds": [
@@ -855,6 +871,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "2-band threshold (M CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "2.84 G | CHECK DESCENT RATE",
@@ -993,6 +1017,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "3 bands",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "3 biological signals",
     "IsFormat": false,
     "SourceKinds": [
@@ -1033,6 +1065,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "3-band threshold (M CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "300 need | 80 FC | 12 ship",
     "IsFormat": false,
     "SourceKinds": [
@@ -1065,6 +1105,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "4 bands",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "4 biological signals",
     "IsFormat": false,
     "SourceKinds": [
@@ -1087,6 +1135,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "4-band threshold (M CR)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "400 Bad Request",
@@ -1377,14 +1433,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "? of {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
     "Text": "A 3",
     "IsFormat": false,
     "SourceKinds": [
@@ -1511,6 +1559,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "A balance could not be derived from available journals. The saved estimate is shown.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
@@ -2714,14 +2770,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "ARCHITECT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "ARRIVAL",
     "IsFormat": false,
     "SourceKinds": [
@@ -3176,6 +3224,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Active time",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).",
@@ -3891,20 +3947,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCarrierSelectionViewModel.cs"
   },
   {
+    "Text": "All data",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "All dates",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
-  },
-  {
-    "Text": "All dates and times use UTC.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "All known signal values",
@@ -4397,6 +4453,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Analyze historical journals and system files without changing saved profile data. Choose a commander and the earliest date to include.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Analyze journals",
     "IsFormat": false,
     "SourceKinds": [
@@ -4675,6 +4739,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Any end date",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Any start date",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Any surface material",
@@ -5093,6 +5173,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "Architect",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Architect systems are cached for a day. Refresh Systems updates the list now.",
     "IsFormat": false,
     "SourceKinds": [
@@ -5414,6 +5503,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Asteroids",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "At a deposit, send .mine \u003Ccommodity\u003E \u003Cl|m|h\u003E/\u003Cl|m|h\u003E here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
     "IsFormat": false,
     "SourceKinds": [
@@ -5499,7 +5596,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Atmospheric regulator",
@@ -5508,6 +5605,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Attach images to keep the context of this mining run with its report.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Attach location screenshots",
@@ -6150,6 +6255,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Automatically adjust estimated value after data sales and confirmed ship losses",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
+  },
+  {
     "Text": "Automatically clear saved rigs when you board your own ship or dock the Rhino. Send --- in game chat to clear all bookmarks and rigs on the current body at any time.",
     "IsFormat": false,
     "SourceKinds": [
@@ -6654,6 +6767,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "BH",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
     "Text": "BIO",
     "IsFormat": false,
     "SourceKinds": [
@@ -6726,36 +6847,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
-    "Text": "BODY / SYSTEM",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
-    "Text": "BODY ID",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "BODY INFORMATION",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BodyInformationOverlayPresentation.axaml"
-  },
-  {
-    "Text": "BODY NAME: i.e. Peralta 4 a",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "BODY PREDICTIONS",
@@ -6893,6 +6990,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Back to history",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Back up and continue on another computer",
@@ -8045,12 +8150,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Body / system",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "Body Details",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/PowerplayAcquireSharedCluster.axaml"
+  },
+  {
+    "Text": "Body ID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Body ID help",
@@ -8166,6 +8287,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
+    "Text": "Body name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Body predictions",
     "IsFormat": false,
     "SourceKinds": [
@@ -8214,6 +8343,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Body {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Body {0} of {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -8235,7 +8372,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "BodyInfoBubbleSizeLy",
@@ -8687,6 +8824,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/BiologyRewardSettingsStore.cs"
   },
   {
+    "Text": "Build ID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+  },
+  {
     "Text": "Build a named reference configuration from your ship\u0027s equipped modules. This does not set controls in Elite. The settings icon beside Firegroups in the sidebar opens its dedicated overlay window with enable/disable, hotkey and Overlay Exceptions. The panel follows your ship and active A\u2013H group.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8703,6 +8848,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Build details",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Build preview",
     "IsFormat": false,
     "SourceKinds": [
@@ -8717,6 +8870,15 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "Build type",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "BuildSiteRepairVisits",
@@ -8759,6 +8921,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Building list unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+  },
+  {
     "Text": "Building name",
     "IsFormat": false,
     "SourceKinds": [
@@ -8781,6 +8951,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Buildings:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
   },
   {
     "Text": "Bumper",
@@ -9120,14 +9298,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
   },
   {
-    "Text": "CODEX BINGO",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "CODEX ENTRY OR GROUP",
     "IsFormat": false,
     "SourceKinds": [
@@ -9181,7 +9351,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
     "Text": "COMMANDER CONTEXT",
@@ -9235,10 +9405,9 @@
     "Text": "COMPLETE",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
     "Text": "COMPLETED",
@@ -9247,14 +9416,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "COMPLETION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "COMPONENT MATERIALS",
@@ -9603,6 +9764,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Calibration guide",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Calibration preview \u2014 saved trackers are unchanged.",
@@ -10138,6 +10307,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Cargo hold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Cargo hold is empty.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10290,6 +10467,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
+    "Text": "CargoName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
     "Text": "CargoTransfer",
     "IsFormat": false,
     "SourceKinds": [
@@ -10345,6 +10530,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Carrier linking",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Carrier linking was skipped because no valid build ID was returned.",
@@ -10611,6 +10804,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Cataloging journal {0} of {1}: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Catalogs updated this session:",
     "IsFormat": false,
     "SourceKinds": [
@@ -10716,12 +10917,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Changes apply immediately.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
+  },
+  {
     "Text": "Changes only the displayed FSS-complete statistic. It does not affect boxel-search completion, next targets, body counts, or values.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
+  },
+  {
+    "Text": "Changes save automatically unless a Save button is shown.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayCategorySettingsWindow.axaml"
   },
   {
     "Text": "Changes saved. Next system: {0}.",
@@ -10794,6 +11011,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
+  },
+  {
+    "Text": "Check Show to include a project\u0027s needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Check application and reference-data releases without changing profile data.",
@@ -11453,6 +11678,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Choose a session above to edit notes, attach screenshots or export its report.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Choose a site on the Sites \u0026 surveys tab.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11573,6 +11806,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
+    "Text": "Choose an event to view its details and raw JSON.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Choose an existing absolute screenshot source folder.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11691,6 +11932,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Choose minerals and a minimum percentage for qualifying prospects.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Choose one of your linked carriers, or search Raven by carrier name or callsign.",
@@ -11962,7 +12211,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Class II gas giant",
@@ -11986,7 +12235,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Clear Decoding the Ancient Ruins progress?",
@@ -12475,7 +12724,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ExobiologyView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Codex Bingo groups discoveries by region and lets you inspect where and when an entry was found.",
@@ -12715,9 +12964,10 @@
     "Text": "Collected",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Collected engineering materials",
@@ -12728,12 +12978,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Collected from (UTC)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Collected material",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Collected {0} to {1}. {2} {3}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Collected: {0}x {1}, new total {2}",
@@ -13051,7 +13317,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Combine SrvSurvey\u0027s built-in ring reference, commander discoveries, live EDDN observations, and Spansh API results. Spots\u002B\u002B prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
+    "Text": "Combine SrvSurvey\u0027s built-in ring reference, commander discoveries, and Spansh API results. Spots\u002B\u002B prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -13130,7 +13396,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Commander Codex could not be loaded: {0}",
@@ -13698,14 +13964,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
-    "Text": "Community cache could not be loaded: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
     "Text": "Community goals",
     "IsFormat": false,
     "SourceKinds": [
@@ -14260,6 +14518,14 @@
   },
   {
     "Text": "Confirm an all-history Commander Codex merge",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Confirm an operation before rebuilding saved data or publishing historical candidates.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -15045,6 +15311,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Coordinates unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "Copied system name: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Copied the Guardian survey ZIP as a file attachment.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15395,6 +15677,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Cores",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Coriolis",
@@ -16209,6 +16499,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
   },
   {
+    "Text": "Current session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Current ship",
     "IsFormat": false,
     "SourceKinds": [
@@ -16527,14 +16825,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "DIAGNOSTICS",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "DIRECT TARGET",
@@ -18449,6 +18739,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Discovering journal: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Discovery",
     "IsFormat": false,
     "SourceKinds": [
@@ -19366,22 +19672,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "EDDN reception is off.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
-    "Text": "EDDN reception opens a separate receive-only connection. Commodity observations expire after 24 hours; coverage grows while enabled.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "EDDN requires no account, personal API key, OAuth flow, access token, or Authorization header.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19420,22 +19710,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "EDDN unavailable: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
-    "Text": "EDDN \u00B7 {0} cached commodity observations",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
   },
   {
     "Text": "EDIT",
@@ -19557,14 +19831,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "ENTRY ID",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "ERROR REPORT",
@@ -19743,6 +20009,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningMissionDestinationViewModel.cs"
+  },
+  {
+    "Text": "Earth masses",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Earth-like",
@@ -20064,6 +20338,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Efficiency target",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "EfficiencyTarget",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Election",
@@ -20732,6 +21022,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "EngineeringCount",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "EngineeringGrade",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "EngineeringName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
     "Text": "English",
     "IsFormat": false,
     "SourceKinds": [
@@ -21085,6 +21399,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiagnosticsLogViewModel.cs"
   },
   {
+    "Text": "Entry ID",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "Entry ID {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -21093,20 +21415,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
-    "Text": "Entry actions",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "Entry or group",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
+    "Text": "Entry tools",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Entry {0} of {1}",
@@ -21197,6 +21519,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
   },
   {
+    "Text": "Estimate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Estimated",
     "IsFormat": false,
     "SourceKinds": [
@@ -21253,12 +21583,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationWishListViewModel.cs"
   },
   {
+    "Text": "Estimated value of unsold cartographic data in this commander\u0027s available journals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Evacuation shelter",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "Event archive",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Event fields",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Every Raven site requires a name.",
@@ -21694,6 +22048,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Exploration history",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Exploration history could not be read: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "Exploration history could not be updated: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Exploration rewards",
     "IsFormat": false,
     "SourceKinds": [
@@ -21860,6 +22238,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Export a portable replay package from the archive. All dates and times use UTC.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Export all CSV\u2026",
@@ -22392,14 +22778,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "FIRST RECORDED",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "FLEET CARRIER",
     "IsFormat": false,
     "SourceKinds": [
@@ -22775,7 +23153,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "FSSDiscoveryScan",
@@ -23219,6 +23597,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Find discoveries",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "Find help quickly",
     "IsFormat": false,
     "SourceKinds": [
@@ -23565,6 +23951,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "First recorded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
     "Text": "First-footfall detection",
     "IsFormat": false,
     "SourceKinds": [
@@ -23763,7 +24157,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
   },
   {
     "Text": "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier\u0027s system.",
@@ -24854,14 +25248,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
   },
   {
-    "Text": "GALACTIC REGION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "GALACTIC-REGION CANDIDATE",
     "IsFormat": false,
     "SourceKinds": [
@@ -24996,6 +25382,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "GGG",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
   },
   {
     "Text": "GGWL",
@@ -25133,6 +25527,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
+    "Text": "Galactic region",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Galactic search tools",
@@ -25616,6 +26018,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "Genera",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "General",
     "IsFormat": false,
     "SourceKinds": [
@@ -25632,6 +26042,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Generated quest handler",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Genus",
     "IsFormat": false,
     "SourceKinds": [
@@ -25646,6 +26064,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
+  },
+  {
+    "Text": "Genuses",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Geo #{0}",
@@ -26129,6 +26555,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Gravity (m/s\u00B2)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Great Annihilator",
     "IsFormat": false,
     "SourceKinds": [
@@ -26167,6 +26601,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Green gas giant",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
   },
   {
     "Text": "Grey",
@@ -27069,6 +27511,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "HH:mm \u0027UTC\u0027",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "HH:mm:ss",
     "IsFormat": false,
     "SourceKinds": [
@@ -27880,6 +28330,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Historical reconstruction",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Historical samples",
     "IsFormat": false,
     "SourceKinds": [
@@ -27927,6 +28385,54 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianOverlayPreviewState.cs"
+  },
+  {
+    "Text": "History cataloged from 1 journal file for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "History cataloged from {0} journal files for {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "HistoryRate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "HistoryRing",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "HistorySystem",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "HistoryTons",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
   },
   {
     "Text": "Hold a key combination, then release all keys to save. Esc cancels; Backspace or Delete clears.",
@@ -28066,6 +28572,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
   },
   {
+    "Text": "How report totals are calculated",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "How the interface is organized",
     "IsFormat": false,
     "SourceKinds": [
@@ -28080,6 +28594,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
+    "Text": "How thresholds affect results",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "How to read color",
@@ -28234,6 +28756,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "I restored every journal involved in this interrupted import.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails.",
@@ -29425,6 +29955,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationPoiView.axaml"
   },
   {
+    "Text": "Include journals from",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Include outdated local markets",
     "IsFormat": false,
     "SourceKinds": [
@@ -29623,14 +30161,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "Inspect the newest 120 events and select scalar fields to generate a Lua quest handler.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Inspecting the Survey map",
@@ -29867,14 +30397,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "JOURNAL COVERAGE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "JSON catalog",
     "IsFormat": false,
     "SourceKinds": [
@@ -30020,12 +30542,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Journal coverage",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Journal data enriched {0} Raven site entr{1} locally.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
+    "Text": "Journal events",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Journal folder changed",
@@ -30079,10 +30617,9 @@
     "Text": "Journal history",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Journal history could not be loaded.",
@@ -30712,6 +31249,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Keep manual estimates and count corrections separate from confirmed cargo readings.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Keep mining rings, saved surface mining maps, locations, POIs and other destinations in one catalog. Assign one or more categories to control where each bookmark appears.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31049,14 +31594,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
-    "Text": "LAYOUT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "LEP",
     "IsFormat": false,
     "SourceKinds": [
@@ -31158,7 +31695,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
   },
   {
     "Text": "LOCATION IN SEARCH",
@@ -31254,7 +31791,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Landing pad",
@@ -31664,9 +32201,10 @@
     "Text": "Layout",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Layout recovery failed",
@@ -32139,14 +32677,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
-  },
-  {
-    "Text": "Listening for community observations\u2026",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
   },
   {
     "Text": "Listening for live carrier jump events while SrvSurvey is running.",
@@ -32741,6 +33271,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Loading",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.ProjectFilters.cs"
+  },
+  {
     "Text": "Loading Canonn signals for {0}\u2026",
     "IsFormat": true,
     "SourceKinds": [
@@ -33223,6 +33761,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
+  },
+  {
+    "Text": "Lost",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "Lost estimate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Lost surface scans were not marked: {0}",
@@ -34061,6 +34615,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Mapped",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Mapped site or Codex item",
     "IsFormat": false,
     "SourceKinds": [
@@ -34075,6 +34637,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Mapping record",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Mark Next Empty",
@@ -34334,6 +34904,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Markets uses Ardent prices with Spansh fallback. Prices are observations and may change. Configure EDDN contributions separately in Settings \u003E Privacy \u0026 sharing \u003E Configure EDDN Sharing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Markets uses Trade objective to find buyers for mined cargo or sellers for supplies. Choose a commodity category and up to five commodities; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
     "IsFormat": false,
     "SourceKinds": [
@@ -34372,6 +34950,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "MassEM",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Massacre mission helper (Experimental)",
@@ -34508,6 +35094,54 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "MaterialsAverage",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsBest",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsFinds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsName",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsQuality",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
+  },
+  {
+    "Text": "MaterialsTons",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
   },
   {
     "Text": "Mauve",
@@ -35328,9 +35962,10 @@
     "Text": "Mining backup",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Mining backup could not be read: {0}",
@@ -36119,6 +36754,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
   },
   {
+    "Text": "MultiSellExplorationData",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Multicrew",
     "IsFormat": false,
     "SourceKinds": [
@@ -36368,14 +37011,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
-    "Text": "NEW BUILD",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "NEW MAP DRAFT",
     "IsFormat": false,
     "SourceKinds": [
@@ -36521,6 +37156,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "NS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
+    "Text": "NSP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
   },
   {
     "Text": "Nakato Kaine",
@@ -37096,9 +37747,10 @@
     "Text": "Next",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Next Elite window",
@@ -37280,9 +37932,10 @@
     "Text": "Next-jump information",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Next-jump information and route overlays",
@@ -38174,6 +38827,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
+    "Text": "No journal events are available. Check the journal folder in Source, then refresh this archive.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "No journal events were found in {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -38350,6 +39011,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FiregroupsWorkspaceViewModel.cs"
   },
   {
+    "Text": "No matching exploration data. History is backfilled automatically from this commander\u0027s available journals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "No matching subjects. Try a feature name, a setting label, or a chat command. You can also browse the categories on the left.",
     "IsFormat": false,
     "SourceKinds": [
@@ -38364,6 +39033,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
+  },
+  {
+    "Text": "No matching systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "No matching systems found.",
@@ -38412,6 +39089,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "No notable discoveries recorded in available journals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "No notes",
@@ -39208,6 +39893,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Notable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Notable stellar phenomena",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
     "Text": "Note saves",
     "IsFormat": false,
     "SourceKinds": [
@@ -39271,6 +39972,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "NoticesText",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
   },
   {
     "Text": "Notification duration (seconds)",
@@ -39507,14 +40216,6 @@
   },
   {
     "Text": "OVERLAY SIZE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
-    "Text": "OVERLAYS",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -41022,14 +41723,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Optional visibility shortcut",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
-  },
-  {
     "Text": "Optional {0} \u00B7 Class {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -41196,6 +41889,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VisitedStarsCacheViewModel.cs"
+  },
+  {
+    "Text": "Original exploration records could not be read: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "Original journal records",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Orrery",
@@ -42248,22 +42957,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
-    "Text": "Oversized EDDN frame.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
-    "Text": "Oversized EDDN message.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningCommunityListener.cs"
-  },
-  {
     "Text": "Overview",
     "IsFormat": false,
     "SourceKinds": [
@@ -42407,14 +43100,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
-  },
-  {
-    "Text": "PLANNED RAVEN SITE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "PNG image",
@@ -42570,14 +43255,6 @@
   },
   {
     "Text": "PROJECT",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "PROJECT NAME",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -42969,6 +43646,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Personal carrier next jump",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Personal fleet carrier",
     "IsFormat": false,
     "SourceKinds": [
@@ -43130,6 +43815,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
+    "Text": "PlanetClass",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Planetary",
     "IsFormat": false,
     "SourceKinds": [
@@ -43152,6 +43845,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Planned Raven site",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Planned focus is saved locally per Commander. Use Carrier selects which carrier cargo is compared with the plan\u2019s catalog estimates.",
@@ -44367,6 +45068,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/BiologyCodexWindowCoordinator.cs"
   },
   {
+    "Text": "Preparing the journal-derived unsold balance. The saved estimate is shown until history is available.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Preparing the journey report...",
     "IsFormat": false,
     "SourceKinds": [
@@ -44511,6 +45220,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml.cs"
   },
   {
+    "Text": "Previous",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Previous Firegroups were restored.",
     "IsFormat": false,
     "SourceKinds": [
@@ -44636,7 +45353,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "Previously mapped",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Previously selected controller",
@@ -44672,14 +45397,6 @@
   },
   {
     "Text": "Prices and demand are reported observations, not guaranteed current quotes or total profit. Check the station before committing to a mining trip.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Prices are observations and may change. Mining \u2192 Settings \u2192 Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -44937,6 +45654,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationNexusEditorWindow.axaml"
   },
   {
+    "Text": "Probes used",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "ProbesUsed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Procedural boxel searches and completion tracking",
     "IsFormat": false,
     "SourceKinds": [
@@ -45174,6 +45907,7 @@
     "Text": "Project name",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
@@ -45209,6 +45943,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "Project status",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "Project visibility saved to Raven Colonial.",
@@ -45290,6 +46032,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "ProspectsMinerals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Presentation/MiningTableColumnWidthConverter.cs"
   },
   {
     "Text": "Provider page (0 first)",
@@ -46142,14 +46892,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"
   },
   {
-    "Text": "REGION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "REGIONAL FIRST",
     "IsFormat": false,
     "SourceKinds": [
@@ -46292,14 +47034,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
-  },
-  {
-    "Text": "REWARD",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "RIB",
@@ -47782,6 +48516,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Raw event JSON",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Raw name:",
     "IsFormat": false,
     "SourceKinds": [
@@ -47844,14 +48586,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
-  },
-  {
-    "Text": "Read-only history from the active journal folder. Export creates a portable, versioned replay package without changing profile data.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Read-only lookups are unaffected.",
@@ -48022,14 +48756,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
-    "Text": "Receive live community market and Powerplay observations from EDDN",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
     "Text": "Received",
     "IsFormat": false,
     "SourceKinds": [
@@ -48052,6 +48778,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Recent events",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
     "Text": "Recent journal organic-scan history could not be backfilled for the current system: {0}",
@@ -48158,6 +48892,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "Recorded sale earnings: {0} CR",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Recorded systems required for averages",
     "IsFormat": false,
     "SourceKinds": [
@@ -48188,6 +48930,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Recorded transaction earnings: {0} CR. This receipt may include other systems.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Recorded {0} Commander Codex ledger entries across {1} files.",
@@ -48446,6 +49196,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Refined cargo",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Refined commodities",
     "IsFormat": false,
     "SourceKinds": [
@@ -48621,6 +49379,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Refresh history",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Refresh hotspot search after jumps and scans",
@@ -48870,6 +49636,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml"
+  },
+  {
+    "Text": "Region",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Regional firsts in {0}",
@@ -50272,6 +51046,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "Restore interrupted history",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Restore journey",
     "IsFormat": false,
     "SourceKinds": [
@@ -50438,6 +51220,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelSearchLibraryWindow.axaml"
+  },
+  {
+    "Text": "Resume history recovery",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Resume journey",
@@ -50741,7 +51531,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
     "Text": "Reward bands changed for this session but could not be saved: {0}",
@@ -50991,6 +51781,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningViewModel.cs"
+  },
+  {
+    "Text": "Rig tracking",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Rig tracking with key chords",
@@ -51650,7 +52448,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "SAASignalsFound",
@@ -51658,7 +52456,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "SAMPLE",
@@ -51991,14 +52789,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "SELECTED NODE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
-  },
-  {
     "Text": "SELECTED SURVEY POINT",
     "IsFormat": false,
     "SourceKinds": [
@@ -52262,7 +53052,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "STATION",
@@ -52496,14 +53286,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
-  },
-  {
-    "Text": "SYSTEM EDITOR",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "SYSTEM ESTIMATE",
@@ -53546,6 +54328,7 @@
     "Text": "Scanned",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
@@ -54113,6 +54896,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Search system name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Search systems",
     "IsFormat": false,
     "SourceKinds": [
@@ -54370,6 +55161,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
     "Text": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile\u0027s separate EDSM state.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54546,6 +55345,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Select a commander to catalog exploration history.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Select a completed Journey and choose Export as HTML. Keep index.html with its images subfolder and share the whole containing folder.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54666,6 +55473,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuidesView.axaml"
   },
   {
+    "Text": "Select a row for details. Click a system name to copy it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Select a saved configuration to remove.",
     "IsFormat": false,
     "SourceKinds": [
@@ -54682,12 +55497,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Select a shortcut field, hold a combination, then release to save. Escape cancels; Backspace or Delete clears.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Select a station or commodities in Search Markets to build your ShoppingList.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
+  },
+  {
+    "Text": "Select a system to inspect its collected data",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Select a threshold group to delete.",
@@ -54803,6 +55634,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningMissionCardsView.axaml"
   },
   {
+    "Text": "Select one of the newest 120 events, then check scalar fields to include in a Lua quest handler.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Select or type a system",
     "IsFormat": false,
     "SourceKinds": [
@@ -54915,6 +55754,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
+    "Text": "Selected event",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
     "Text": "Selected folder",
     "IsFormat": false,
     "SourceKinds": [
@@ -54945,6 +55792,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
+    "Text": "Selected session",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Selected surface commodities",
@@ -55025,6 +55880,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "SellExplorationData",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "SellLinkAnchor",
@@ -55189,6 +56052,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Session activity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Session behavior",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Session closed",
     "IsFormat": false,
     "SourceKinds": [
@@ -55211,6 +56090,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Session shortcuts",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
@@ -55243,6 +56130,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Session tools",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
     "Text": "Sessions and cargo",
@@ -56362,14 +57257,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Show controls aggregate cargo requirements and is saved with Save selection. Choose projects for Market Search with its Select Projects tags.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "Show current boxel completion percentage",
     "IsFormat": false,
     "SourceKinds": [
@@ -57247,7 +58134,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Signals below {0} hidden",
@@ -57570,6 +58457,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Solar masses",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "Sold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "Sold estimate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "Some Canonn settlement data was ignored: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -57739,14 +58650,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
-    "Text": "Spansh \u002B local Powerplay observations",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
-  },
-  {
     "Text": "Spansh JSON",
     "IsFormat": false,
     "SourceKinds": [
@@ -57780,7 +58683,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
-    "Text": "Spansh conflict progress \u002B local Powerplay observations",
+    "Text": "Spansh conflict progress",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -58012,7 +58915,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
-    "Text": "Spots\u002B\u002B combines built-in historical rings, Commander discoveries, live EDDN observations, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
+    "Text": "Spots\u002B\u002B combines built-in historical rings, Commander discoveries, and Spansh. An overlap annotation is evidence from those sources; several reported hotspots alone do not prove an overlap.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -59231,6 +60134,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/FleetCarrierJumpCountdownTracker.cs"
   },
   {
+    "Text": "StarType",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Starports",
     "IsFormat": false,
     "SourceKinds": [
@@ -59759,7 +60670,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierMarketTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Status \u0026 utilities",
@@ -60009,6 +60920,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "StellarMass",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Still to plan: {0}",
@@ -60741,6 +61660,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
   },
   {
+    "Text": "SurfaceGravity",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "SurfaceMining",
     "IsFormat": false,
     "SourceKinds": [
@@ -60789,6 +61716,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "SurfaceTemperature",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Surplus",
     "IsFormat": false,
     "SourceKinds": [
@@ -60820,6 +61755,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Survey estimate accumulated since the last manual reset.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Journeys, Search, and Bookmarks; Activities groups Mining, Surface Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
@@ -61103,6 +62046,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml"
   },
   {
+    "Text": "System and contents",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "System biology",
     "IsFormat": false,
     "SourceKinds": [
@@ -61351,6 +62302,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "System sites",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "System state",
@@ -61827,6 +62786,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "TFC",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
     "Text": "THIS SITE\u0027S CATALOG DETAILS",
     "IsFormat": false,
     "SourceKinds": [
@@ -62157,6 +63124,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Temperature (K)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Temperature criteria unavailable",
     "IsFormat": false,
     "SourceKinds": [
@@ -62197,6 +63172,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
+    "Text": "TerraformState",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Terraformable",
     "IsFormat": false,
     "SourceKinds": [
@@ -62211,6 +63194,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Terraformable world",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationNotableTagViewModel.cs"
+  },
+  {
+    "Text": "Terraforming",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Terrorist Attack",
@@ -62400,10 +63399,9 @@
     "Text": "The Codex",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
     "Text": "The Codex image URL is invalid.",
@@ -66726,6 +67724,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "The start date must be on or before the end date.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "The startup resource was already transferred.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66812,6 +67818,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
+  },
+  {
+    "Text": "The system name could not be copied: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "The system nickname preference could not be saved: {0}",
@@ -66980,6 +67994,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The tracking choice applies to this session but could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "The two carrier-route tabs track personal and squadron carriers simultaneously, with separate routes and overlays.",
@@ -67616,6 +68638,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "This older or unreadable retry cannot prove every original input. Automatic value tracking stays paused. Restore all journals involved in the interrupted import before continuing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
     "Text": "This optional setting lets SrvSurvey place and raise separate X11/XWayland overlay windows directly.",
     "IsFormat": false,
     "SourceKinds": [
@@ -67790,6 +68820,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Through (UTC)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Thrusters",
@@ -68145,6 +69183,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/FirstFootfallInferenceSettingsStore.cs"
   },
   {
+    "Text": "Tons / hour",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
     "Text": "Too steep",
     "IsFormat": false,
     "SourceKinds": [
@@ -68249,6 +69295,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
   },
   {
+    "Text": "TotalEarnings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "TotalItemsToDeliver",
     "IsFormat": false,
     "SourceKinds": [
@@ -68294,7 +69348,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Touchdowns",
@@ -69451,7 +70505,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
-    "Text": "Unknown Power ownership is not treated as an enemy or an acquisition target. Some states depend on local journal/EDDN observations and may be missing from an online provider.",
+    "Text": "Unknown Power ownership is not treated as an enemy or an acquisition target. Powerplay states come from the search providers and may be incomplete.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -69480,7 +70534,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Unknown body type",
@@ -69489,6 +70543,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
+  },
+  {
+    "Text": "Unknown class",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Unknown compatible JSON fields are preserved where the modern store supports lossless merging. Incompatible reference catalogs are ignored safely and reported in logs.",
@@ -69505,6 +70567,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Unknown date",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Unknown delivery notice.",
@@ -69745,6 +70815,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Unsold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "Unsold estimate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Unsupported VR pointer event.",
@@ -71149,7 +72235,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Uses the same body-class, terraformability, discovery, mapping, Odyssey, and probe-efficiency formula as the WinForms application.",
+    "Text": "Uses unsold cartographic data from this commander\u0027s journals. Rejoining a surviving ship after a surface death does not clear this balance.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -71598,6 +72684,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "Verifying journal {0} of {1}: {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Verifying the staged profile and both source profiles...",
     "IsFormat": false,
     "SourceKinds": [
@@ -71868,6 +72962,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Volcanism",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "VoxStellar",
@@ -72454,6 +73556,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "WasDiscovered",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "WasMapped",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Watch source folder",
@@ -73653,6 +74771,7 @@
     "Text": "Yes",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/DeleteFiregroupDialog.axaml"
@@ -74946,6 +76065,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/GuardianArtifactGlyphControl.cs"
   },
   {
+    "Text": "category-overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml.cs"
+  },
+  {
     "Text": "center",
     "IsFormat": false,
     "SourceKinds": [
@@ -75800,6 +76927,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/CodexSearchView.axaml"
+  },
+  {
+    "Text": "e.g. Peralta 4 a",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "e.g. Platinum \u00D72",
@@ -81088,7 +82223,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "yyyy-MM-dd HH:mm:ss",
@@ -81201,6 +82336,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "{0} / {1} / {2} ly",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{0} / {1} BODIES COMPLETE",
@@ -81409,14 +82552,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
-  },
-  {
-    "Text": "{0} OVERLAYS",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml.cs"
   },
   {
     "Text": "{0} Platinum Spots\u002B\u002B results \u00B7 {1} \u00B7 {2}.",
@@ -82041,6 +83176,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "{0} lost entries",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{0} ls",
@@ -82675,6 +83818,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
+    "Text": "{0} scanned, {1} mapped",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "{0} scans to go \u00B7 each entry is {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -82761,6 +83912,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0} sold entries",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{0} star",
@@ -82953,6 +84112,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderPreferenceSettingsStore.cs"
+  },
+  {
+    "Text": "{0} unsold entries",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{0} visits \u2022 set out {1}",
@@ -83259,6 +84426,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalShortcutsPortalInput.cs"
   },
   {
+    "Text": "{0}: {1} estimated from {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "{0}: {1} of {2}{3}",
     "IsFormat": true,
     "SourceKinds": [
@@ -83313,6 +84488,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "{0}; system address {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "{0}?alt=media",
@@ -83513,6 +84696,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
+  },
+  {
+    "Text": "{0}\u2013{1} of {2} entries",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{{top5}}",
