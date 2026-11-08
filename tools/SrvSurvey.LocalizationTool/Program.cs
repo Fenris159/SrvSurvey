@@ -176,6 +176,7 @@ namespace SrvSurvey.LocalizationTool
             var entries = new Dictionary<string, LocalizationSourceEntry>(StringComparer.Ordinal);
             ExtractXaml(entries);
             ExtractCSharp(entries);
+            ExtractRingMiningReference(entries);
             return entries.Values.OrderBy(entry => entry.Text, StringComparer.Ordinal).ToArray();
         }
 
@@ -205,9 +206,39 @@ namespace SrvSurvey.LocalizationTool
             }
         }
 
-        /// <summary>
-        /// Extracts desktop and Core route presentation strings in a stable source-file order.
-        /// </summary>
+        /// <summary>Extracts canonical commodity and ring labels from their embedded reference data.</summary>
+        private void ExtractRingMiningReference(IDictionary<string, LocalizationSourceEntry> entries)
+        {
+            string path = Path.Combine(
+                repositoryRoot,
+                "src",
+                "SrvSurvey.Core",
+                "Resources",
+                "ReferenceData",
+                "ring-mining-compositions.json"
+            );
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            foreach (JsonElement ring in document.RootElement.GetProperty("Rings").EnumerateArray())
+            {
+                if (TryNormalize(ring.GetProperty("RingType").GetString() ?? string.Empty, out string? ringType))
+                {
+                    Add(entries, ringType, path, "reference");
+                }
+                foreach (
+                    JsonElement item in ring.GetProperty("Laser")
+                        .EnumerateArray()
+                        .Concat(ring.GetProperty("Core").EnumerateArray())
+                )
+                {
+                    if (TryNormalize(item.GetProperty("Name").GetString() ?? string.Empty, out string? name))
+                    {
+                        Add(entries, name, path, "reference");
+                    }
+                }
+            }
+        }
+
+        /// <summary>Extracts desktop and shared Core presentation strings in a stable source-file order.</summary>
         private void ExtractCSharp(IDictionary<string, LocalizationSourceEntry> entries)
         {
             string root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");

@@ -653,7 +653,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 GetString(mission, "targetFaction") ?? string.Empty,
                 GetDateTimeOffset(mission, "expires"),
                 Math.Max(0, GetInt32(mission, "killCount") ?? 0),
-                Math.Max(0, GetInt32(mission, "remaining") ?? 0)
+                Math.Max(0, GetInt32(mission, "remaining") ?? 0),
+                GetString(mission, "missionName") ?? "Mission_Massacre"
             ))
             .Where(mission =>
                 mission.MissionId > 0
@@ -806,6 +807,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                     ["expires"] = mission.Expires,
                     ["killCount"] = mission.KillCount,
                     ["remaining"] = mission.Remaining,
+                    ["missionName"] = mission.MissionName,
                 }
             );
         }

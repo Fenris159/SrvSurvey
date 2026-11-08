@@ -60,7 +60,9 @@ public sealed class MiningSessionOverlayViewModel : WorkspaceObservable, IDispos
     public string Yield =>
         Session is { } session ? $"{session.RefinedTons:N0} t · {session.TonsPerHour:0.0} t/h" : "0 t";
     public string Activity =>
-        Session is { } session ? $"{session.Asteroids:N0} asteroids · {session.CoreHits:N0} cores" : string.Empty;
+        Session is { } session
+            ? $"Prospected asteroids: {session.Asteroids:N0} · Core finds: {session.CoreHits:N0}"
+            : string.Empty;
     public string Limpets =>
         Session is { } session
             ? $"{session.ProspectorLimpets:N0} prospectors · {session.CollectorLimpets:N0} collectors"

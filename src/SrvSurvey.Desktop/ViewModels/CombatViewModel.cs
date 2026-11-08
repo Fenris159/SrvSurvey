@@ -24,6 +24,13 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private bool footSessionActive;
     private string statusMessage = string.Empty;
     private IReadOnlyList<MassacreMissionViewModel> massacreMissions = [];
+    private JournalSessionState vehicleSession = new();
+    private DateTimeOffset? latestVehicleEventTime;
+    private DateTimeOffset? vehicleStatusBoundary;
+    private bool canConfirmRetainedStatus;
+    private bool? journalShipContext;
+    private bool? fighterParentShipContext;
+    private bool replayUntrackedMissionHistory;
 
     public CombatViewModel(
         CombatSettingsStore settingsStore,
@@ -133,6 +140,14 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         commanderName = profileCommanderName;
         isOdyssey = profileIsOdyssey;
         state.Reset(snapshot);
+        vehicleSession = new();
+        latestVehicleEventTime = null;
+        vehicleStatusBoundary = null;
+        canConfirmRetainedStatus = false;
+        journalShipContext = null;
+        fighterParentShipContext = null;
+        // Other commander totals can have a checkpoint even when the old tracker ignored every mission.
+        replayUntrackedMissionHistory = state.MassacreMissions.Count == 0;
         RebuildMassacreMissions();
         footSessionActive = false;
         StatusMessage = string.Empty;
@@ -191,17 +206,20 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        if (currentStatus is not null)
-        {
-            status = currentStatus;
-            UpdateFootSession();
-        }
+        int remainingVehicleEvents = journalEvents.Count(entry => IsVehicleEvent(entry.EventName));
+        bool? shipContext = InitialShipContext(remainingVehicleEvents > 0, currentStatus);
+        ApplyCompanionStatus(currentStatus, remainingVehicleEvents > 0);
 
         bool persistenceChanged = false;
         bool stateChanged = false;
         bool modeChanged = false;
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
+            shipContext = ApplyVehicleContext(
+                journalEvent,
+                shipContext,
+                StatusForLastVehicleEvent(journalEvent, ref remainingVehicleEvents, currentStatus is not null)
+            );
             if (journalEvent.EventName is "Fileheader" or "LoadGame")
             {
                 modeChanged |= musicTrack is not null;
@@ -224,14 +242,16 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
             CombatApplyResult result = state.Apply(
                 journalEvent,
-                countProgress: processHistoricalProgress,
-                countFootCombat: ShouldShowFootCombat
+                countProgress: processHistoricalProgress || replayUntrackedMissionHistory,
+                countFootCombat: ShouldCountFootCombat(shipContext, processHistoricalProgress),
+                countShipCombat: ShouldCountShipCombat(shipContext)
             );
             stateChanged |= result.StateChanged;
             persistenceChanged |= result.PersistenceChanged;
             UpdateFootSession();
         }
 
+        journalShipContext = shipContext;
         if (persistenceChanged)
         {
             await SaveCombatAsync();
@@ -254,6 +274,143 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             || eventName
                 is not ("MissionAccepted" or "MissionCompleted" or "MissionFailed" or "MissionAbandoned" or "Bounty");
     }
+
+    private bool ShouldCountShipCombat(bool? shipContext) => AutoShowMassacreMissions && shipContext == true;
+
+    private bool ShouldCountFootCombat(bool? shipContext, bool processHistoricalProgress) =>
+        processHistoricalProgress && ShouldShowFootCombat && shipContext != true;
+
+    private void ApplyCompanionStatus(EliteStatus? latestStatus, bool hasVehicleEvents)
+    {
+        if (latestStatus is null)
+        {
+            return;
+        }
+        status = latestStatus;
+        canConfirmRetainedStatus = IsStatusContemporary(latestStatus, vehicleStatusBoundary);
+        if (!hasVehicleEvents && canConfirmRetainedStatus)
+        {
+            vehicleSession.ReconcileVehicleStatus(latestStatus);
+        }
+        UpdateFootSession();
+    }
+
+    private bool? InitialShipContext(bool hasVehicleEvents, EliteStatus? latestStatus)
+    {
+        if (hasVehicleEvents)
+        {
+            return journalShipContext ?? ShipContext(status);
+        }
+        if (latestStatus is not null && IsStatusContemporary(latestStatus, vehicleStatusBoundary))
+        {
+            return ShipContext(latestStatus);
+        }
+        return journalShipContext ?? ShipContext(status);
+    }
+
+    private static bool? ShipContext(EliteStatus? value) =>
+        value is null ? null : !value.OnFoot && !value.InSrv && !value.InTaxi && (value.InMainShip || value.InFighter);
+
+    private static bool IsVehicleEvent(string eventName) =>
+        eventName
+            is "Fileheader"
+                or "LoadGame"
+                or "Disembark"
+                or "Embark"
+                or "LaunchSRV"
+                or "DockSRV"
+                or "SRVDestroyed"
+                or "LaunchFighter"
+                or "DockFighter";
+
+    private static bool IsStatusContemporary(EliteStatus snapshot, DateTimeOffset? boundary) =>
+        boundary is null || snapshot.Timestamp == default || snapshot.Timestamp >= boundary.Value;
+
+    private EliteStatus? StatusForLastVehicleEvent(
+        JournalEventEnvelope entry,
+        ref int remainingVehicleEvents,
+        bool statusWasUpdated
+    )
+    {
+        if (!IsVehicleEvent(entry.EventName))
+        {
+            return null;
+        }
+        remainingVehicleEvents--;
+        // Status may lead its launch entry, but cannot precede an intervening dock or other transition.
+        DateTimeOffset? boundary = entry.EventName == "LaunchFighter" ? latestVehicleEventTime : entry.Timestamp;
+        bool snapshotIsLater =
+            status is { Timestamp: var at } && at != default && entry.Timestamp is { } time && at > time;
+        bool canConfirm =
+            status is not null
+            && (
+                canConfirmRetainedStatus
+                || snapshotIsLater
+                || (statusWasUpdated && IsStatusContemporary(status, boundary))
+            );
+        // A retained snapshot cannot cross an unobserved vehicle change. Timestamps can still
+        // establish that a snapshot received before a historical batch describes its final vehicle.
+        canConfirmRetainedStatus = snapshotIsLater;
+        latestVehicleEventTime = entry.Timestamp;
+        vehicleStatusBoundary = boundary;
+        return remainingVehicleEvents == 0 && canConfirm ? status : null;
+    }
+
+    private bool? ApplyVehicleContext(JournalEventEnvelope entry, bool? previous, EliteStatus? confirmedStatus)
+    {
+        if (IsVehicleEvent(entry.EventName))
+        {
+            vehicleSession.Apply(entry);
+        }
+        switch (entry.EventName)
+        {
+            case "Fileheader":
+                fighterParentShipContext = null;
+                return null;
+            case "LoadGame":
+                fighterParentShipContext = null;
+                return
+                    entry.Payload.TryGetProperty("Ship", out JsonElement ship) && ship.ValueKind == JsonValueKind.String
+                    ? IsShipSymbol(ship.GetString()!)
+                    : previous;
+            case "Disembark":
+            case "LaunchSRV":
+                return false;
+            case "Embark":
+                return !IsTrue(entry.Payload, "SRV") && !IsTrue(entry.Payload, "Taxi");
+            case "DockSRV":
+                return true;
+            case "SRVDestroyed":
+                return null;
+            case "LaunchFighter" when IsTrue(entry.Payload, "PlayerControlled"):
+                fighterParentShipContext = previous;
+                // Only the latest transition can use the companion snapshot; earlier kills keep their event-time context.
+                if (confirmedStatus is not null)
+                {
+                    vehicleSession.ReconcileVehicleStatus(confirmedStatus);
+                }
+                // Nomad launches also use LaunchFighter; the shared session reducer resolves their vehicle ID.
+                return vehicleSession.IsFighterLaunched;
+            case "DockFighter":
+                bool? parent = fighterParentShipContext;
+                fighterParentShipContext = null;
+                return parent ?? true;
+            default:
+                return previous;
+        }
+    }
+
+    private static bool IsTrue(JsonElement root, string key) =>
+        root.TryGetProperty(key, out JsonElement value) && value.ValueKind == JsonValueKind.True;
+
+    private static bool IsShipSymbol(string symbol) =>
+        !string.IsNullOrWhiteSpace(symbol)
+        && !symbol.Equals("OnFoot", StringComparison.OrdinalIgnoreCase)
+        && !symbol.Contains("suit", StringComparison.OrdinalIgnoreCase)
+        && !symbol.Equals("testbuggy", StringComparison.OrdinalIgnoreCase)
+        && !symbol.Contains("_srv_", StringComparison.OrdinalIgnoreCase)
+        && !EliteSrvTypes.IsNomad(symbol)
+        && !EliteSrvTypes.IsRhino(symbol);
 
     private void UpdateFootSession()
     {

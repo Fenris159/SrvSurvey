@@ -88,7 +88,7 @@ public sealed partial class CommanderProfileViewModelTests
                 emblem =>
                     Assert.Equal(
                         Color.Parse(theme.Current.TextColor),
-                        Assert.IsAssignableFrom<ISolidColorBrush>(emblem.Background).Color
+                        Assert.IsType<ISolidColorBrush>(emblem.Background, exactMatch: false).Color
                     )
             );
             ResponsiveColumnsPanel finances = commander.FindControl<ResponsiveColumnsPanel>("CommanderFinance")!;
@@ -113,10 +113,11 @@ public sealed partial class CommanderProfileViewModelTests
             Assert.IsNotType<Expander>(reputation);
             ItemsControl factions = commander.FindControl<ItemsControl>("CommanderFactionRows")!;
             UniformGrid factionRow = Assert.IsType<UniformGrid>(factions.ItemsPanelRoot);
-            Assert.Equal(4, factionRow.Children.Count);
+            Assert.Equal(3, factionRow.Columns);
+            Assert.Equal(3, factionRow.Children.Count);
             Assert.All(factionRow.Children, faction => Assert.True(faction.IsEffectivelyVisible));
             Assert.Single(factionRow.Children.Select(faction => faction.Bounds.Y).Distinct());
-            Assert.True(factionRow.Children[3].Bounds.X > factionRow.Children[0].Bounds.X);
+            Assert.True(factionRow.Children[2].Bounds.X > factionRow.Children[0].Bounds.X);
             ItemsControl ranks = commander.FindControl<ItemsControl>("CommanderRanks")!;
             Point reputationPosition = reputation.TranslatePoint(default, commander)!.Value;
             Point ranksPosition = ranks.TranslatePoint(default, commander)!.Value;
@@ -136,7 +137,10 @@ public sealed partial class CommanderProfileViewModelTests
                 tabs.SelectedIndex = index;
                 CaptureConsole(window, $"{palette}-{width}-tab-{index}");
                 Assert.True(Assert.IsType<TabItem>(tabs.SelectedItem).IsSelected);
-                Control page = Assert.IsAssignableFrom<Control>(Assert.IsType<TabItem>(tabs.SelectedItem).Content);
+                Control page = Assert.IsType<Control>(
+                    Assert.IsType<TabItem>(tabs.SelectedItem).Content,
+                    exactMatch: false
+                );
                 ScrollViewer pageScroller = page.FindControl<ScrollViewer>("FrontierPageScroller")!;
                 Assert.True(
                     pageScroller.Extent.Width <= pageScroller.Viewport.Width + 1,

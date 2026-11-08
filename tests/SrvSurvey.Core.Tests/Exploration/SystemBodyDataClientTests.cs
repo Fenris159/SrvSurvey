@@ -55,6 +55,35 @@ public sealed class SystemBodyDataClientTests
     }
 
     [Fact]
+    public async Task ProvidersKeepReadableNamesForPlanetsNamedAfterTheirSystem()
+    {
+        const string bodies = """
+            {"id64":42,"name":"Leesti","bodies":[
+              {"bodyId":0,"name":"Leesti","type":"Star","subType":"Main Sequence Star (K)"},
+              {"bodyId":1,"name":"Leesti","type":"Planet","subType":"Earth-like world","earthMasses":1}
+            ]}
+            """;
+        var handler = new ProviderHandler { EdsmJson = bodies, SpanshJson = "{\"system\":" + bodies + "}" };
+        var client = new SystemBodyDataClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+
+        SystemBodyDataLoadResult result = await client.GetAsync("Leesti", 42);
+
+        Assert.Empty(result.Warnings);
+        Assert.Equal(["EDSM", "Spansh"], result.Providers.Select(provider => provider.Provider));
+        foreach (SystemBodyDataProviderSnapshot provider in result.Providers)
+        {
+            Assert.Equal([0, 1], provider.Snapshot.Bodies.Select(body => body.BodyId));
+            SystemScanBodySnapshot planet = provider.Snapshot.Bodies.Single(body => body.BodyId == 1);
+            Assert.True(planet.IsEarthLike);
+            Assert.Equal("Leesti", planet.ShortName);
+        }
+    }
+
+    [Fact]
     public async Task StaleSignalCountIsIgnoredButGenusRemainsAvailableForConsent()
     {
         var handler = new ProviderHandler

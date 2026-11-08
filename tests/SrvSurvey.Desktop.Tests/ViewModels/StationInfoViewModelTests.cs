@@ -22,10 +22,32 @@ public sealed class StationInfoViewModelTests
         Assert.Equal("Largest pad: Large", viewModel.LargestPadText);
         Assert.Equal("Cooperative · Democracy", viewModel.FactionText);
         Assert.Equal(new StationInfoLineViewModel("High Tech", "75%"), viewModel.EconomyLines[0]);
-        Assert.Equal(["Shipyard", "Market", "Material Trader"], viewModel.RelevantServices);
+        Assert.Equal(
+            ["Shipyard", "Market", "Universal Cartographics", "Vista Genomics", "Material Trader"],
+            viewModel.RelevantServices
+        );
         Assert.Same(viewModel.EconomyLines, viewModel.EconomyLines);
         Assert.Same(viewModel.RelevantServices, viewModel.RelevantServices);
         Assert.Equal(["Narcotics"], viewModel.ProhibitedCommodities);
+    }
+
+    [Fact]
+    public async Task DuplicateStationRecordsRetainReportedServicesWithoutInventingVistaGenomics()
+    {
+        SystemSummary summary = Summary();
+        SystemStationSummary station = summary.Stations.Single(item => item.Name == "Raven Port");
+        summary = summary with { Stations = [station with { Services = [] }, station] };
+        using var viewModel = new StationInfoViewModel(new FakeSummaryClient(summary));
+        await viewModel.UpdateCurrentSystemAsync("Test", 42);
+        viewModel.UpdateStatus(Status("Raven Port", GuiFocus.ExternalPanel));
+
+        Assert.Contains("Vista Genomics", viewModel.RelevantServices);
+
+        SystemStationSummary withoutVista = station with { Services = ["Market"] };
+        using var other = new StationInfoViewModel(new FakeSummaryClient(summary with { Stations = [withoutVista] }));
+        await other.UpdateCurrentSystemAsync("Test", 42);
+        other.UpdateStatus(Status("Raven Port", GuiFocus.ExternalPanel));
+        Assert.Equal(["Market"], other.RelevantServices);
     }
 
     [Fact]
@@ -120,7 +142,7 @@ public sealed class StationInfoViewModelTests
                     new Dictionary<string, double> { ["Industrial"] = 25, ["High Tech"] = 75 },
                     "Cooperative",
                     "Democracy",
-                    ["Market", "Material Trader", "Shipyard", "Dock"],
+                    ["Market", "Material Trader", "Shipyard", "Dock", "Universal Cartographics", "Vista Genomics"],
                     new StationLandingPadSummary(2, 1, 1),
                     ["Narcotics"],
                     DateTimeOffset.Parse(

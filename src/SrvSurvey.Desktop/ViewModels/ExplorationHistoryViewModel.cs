@@ -771,15 +771,24 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         {
             retained = activeIo.ToArray();
         }
+        var completion = Task.WhenAll(retained);
         try
         {
-            await Task.WhenAll(retained).ConfigureAwait(false);
+            await completion.ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (Exception exception) when (IsHandledShutdownFailure(completion, exception))
         {
-            // Cancellation is the normal way an indexing worker releases its journal and database handles.
+            // Drain file handles, not UI continuations. Workspace operations report storage failures
+            // and retain recovery state; unexpected programming failures still propagate.
         }
     }
+
+    private static bool IsHandledShutdownFailure(Task completion, Exception failure) =>
+        completion.Exception is { } aggregate
+            ? aggregate
+                .Flatten()
+                .InnerExceptions.All(error => error is OperationCanceledException || IsStorageFailure(error))
+            : failure is OperationCanceledException;
 
     private TTask TrackIo<TTask>(TTask operation)
         where TTask : Task

@@ -8,6 +8,63 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ExplorationHistoryViewModelTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ShutdownDrainsActiveHistoryReadsAndPreservesUnexpectedFailures(bool storageFailure)
+    {
+        using var fixture = new Fixture();
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource<ExplorationHistoryPage>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        bool holdQuery = false;
+        ExplorationHistoryViewModel model = fixture.Create(
+            (catalog, query, token) =>
+            {
+                if (!holdQuery)
+                {
+                    return catalog.QueryAsync(query, token);
+                }
+                entered.SetResult();
+                return release.Task;
+            }
+        );
+        Task? shutdown = null;
+        try
+        {
+            model.SetCommander("F100", "History Commander", true, true);
+            await model.PendingSynchronization;
+            holdQuery = true;
+            model.SearchText = "held read";
+            await entered.Task;
+            shutdown = model.DisposeAsync().AsTask();
+            Assert.False(shutdown.IsCompleted);
+            release.SetException(
+                storageFailure
+                    ? new IOException("Journal changed during recovery verification.")
+                    : new InvalidOperationException("Unexpected query failure.")
+            );
+            if (storageFailure)
+            {
+                await shutdown;
+                await model.PendingQuery;
+            }
+            else
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() => shutdown);
+            }
+        }
+        finally
+        {
+            release.TrySetCanceled();
+            if (shutdown is null)
+            {
+                await model.DisposeAsync();
+            }
+        }
+    }
+
     [Fact]
     public async Task RecoveryAttestationIsScopedToTheCommanderAndDoesNotEnableBalanceBeforeReplay()
     {

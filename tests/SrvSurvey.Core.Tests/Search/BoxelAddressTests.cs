@@ -88,6 +88,37 @@ public sealed class BoxelAddressTests
     }
 
     [Fact]
+    public void UnsupportedSectorAddressFailsDecodingWithoutThrowing()
+    {
+        Assert.False(BoxelAddress.TryFromSystemAddress(365480737, null, out BoxelAddress? boxel));
+        Assert.Null(boxel);
+    }
+
+    [Fact]
+    public void UnresolvableSectorKeepsItsNameWithoutInventingAMinimumAddress()
+    {
+        BoxelAddress minimum = BoxelAddress.Parse("Wrdgeaia AA-A b7").WithSystemNumber(0);
+
+        Assert.Equal("Wrdgeaia AA-A b0", minimum.Name);
+        Assert.Equal(0, minimum.SystemAddress);
+        Assert.False(minimum.TryEncodeSystemAddress(out long address));
+        Assert.Equal(0, address);
+    }
+
+    [Fact]
+    public void ReportedNamedSectorKeepsItsAuthoritativeAddressAndEncodesItsMinimum()
+    {
+        Assert.True(
+            BoxelAddress.TryFromSystemAddress(1458107814642, "Col 285 Sector VF-E c12-5", out BoxelAddress? boxel)
+        );
+        Assert.NotNull(boxel);
+        Assert.Equal("Col 285 Sector VF-E c12-5", boxel.Name);
+        Assert.Equal(1458107814642, boxel.SystemAddress);
+
+        Assert.Equal(83718279922, boxel.WithSystemNumber(0).SystemAddress);
+    }
+
+    [Fact]
     public void WithSystemNumberPopulatesTheProceduralAddress()
     {
         BoxelAddress system = BoxelAddress.Parse("Wregoe BU-Y b2-0").WithSystemNumber(7);

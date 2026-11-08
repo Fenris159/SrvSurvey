@@ -204,6 +204,7 @@ public sealed class SystemSummaryClientTests
         Assert.Equal("Corporate", guardianLab.Government);
         Assert.Equal("Large", guardianLab.LandingPads?.Largest);
         Assert.Contains("Technology Broker", guardianLab.Services);
+        Assert.Contains("Vista Genomics", guardianLab.Services);
         Assert.Equal(["Narcotics", "Slaves"], guardianLab.ProhibitedCommodities);
         Assert.Equal(
             DateTimeOffset.Parse("2026-01-02T03:04:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
@@ -385,7 +386,7 @@ public sealed class SystemSummaryClientTests
                           "medium": 1,
                           "large": 1
                         },
-                        "services": ["Technology Broker", "Market"],
+                        "services": ["Technology Broker", "Market", "Vista Genomics"],
                         "market": {
                           "prohibitedCommodities": ["Slaves", "Narcotics"]
                         },

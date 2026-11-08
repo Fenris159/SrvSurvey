@@ -18,8 +18,11 @@ public static class MiningReport
             output.AppendLine(
                 string.Create(
                     CultureInfo.CurrentCulture,
-                    $"{s.RefinedTons:0.##} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration} · {s.Asteroids} asteroids · {s.CoreHits} cores"
+                    $"{s.RefinedTons:0.##} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration} · Prospected asteroids: {s.Asteroids} · Core finds: {s.CoreHits}"
                 )
+            );
+            output.AppendLine(
+                "Rates use active session time. Core finds count discoveries, not completed extractions. Prospect counts include manual corrections."
             );
             output.AppendLine(s.Notes);
             AppendYieldNotes(output, s);
@@ -175,7 +178,10 @@ public static class MiningReport
         );
         text.Append(
             CultureInfo.InvariantCulture,
-            $"<p class='metric'>{s.RefinedTons} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration:hh\\:mm\\:ss}</p><p>{s.Asteroids} asteroids · {s.CoreHits} cores · {s.TonsPerAsteroid:0.00} t/asteroid · {s.ProspectorLimpets} prospectors · {s.CollectorLimpets} collectors</p>"
+            $"<p class='metric'>{s.RefinedTons} t · {s.TonsPerHour:0.0} t/h · active {s.ActiveDuration:hh\\:mm\\:ss}</p><p>Prospected asteroids: {s.Asteroids} · Core finds: {s.CoreHits} · {s.TonsPerAsteroid:0.00} t/prospect · {s.ProspectorLimpets} prospectors · {s.CollectorLimpets} collectors</p>"
+        );
+        text.Append(
+            "<p>Rates use active session time. Core finds count discoveries, not completed extractions. Prospect counts include manual corrections.</p>"
         );
         text.Append(
             s.HasUnconfirmedYield
@@ -238,7 +244,7 @@ public static class MiningReport
         }
 
         text.Append(
-            "<h3>Prospecting yields</h3><table><thead><tr><th>Mineral</th><th>Finds</th><th>Quality hits</th><th title='Mean proportion over asteroids containing the mineral'>Average %</th><th>Best %</th></tr></thead><tbody>"
+            "<h3>Prospecting yields</h3><table><thead><tr><th>Mineral</th><th>Finds</th><th>Quality hits</th><th title='Mean percentage in matching rocks; absent minerals and core-only finds without a percentage are excluded'>Average in matching rocks %</th><th>Best %</th></tr></thead><tbody>"
         );
         foreach (MiningMaterialSummary material in s.Summarize(s.Thresholds))
         {

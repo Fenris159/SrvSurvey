@@ -107,6 +107,14 @@ public sealed class MiningLayoutPresentationTests
             Assert.Equal("01:00:00", view.FindControl<TextBlock>("SessionElapsed")!.Text);
             Assert.Equal("30 t", view.FindControl<TextBlock>("SessionRefinedTons")!.Text);
             Assert.Equal("1", view.FindControl<TextBlock>("SessionAsteroids")!.Text);
+            Assert.Contains("matching rocks", view.FindControl<TextBlock>("ProspectingStatisticsGuide")!.Text);
+            string[] labels = view.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Select(block => block.Text ?? "")
+                .ToArray();
+            Assert.Contains("Prospected asteroids", labels);
+            Assert.Contains("Core finds", labels);
+            Assert.Contains("Tons / active hour", labels);
             model.MiningWorkspace.AddAsteroidCommand.Execute(null);
             using WriteableBitmap? corrected = window.CaptureRenderedFrame();
             Assert.Equal("2", view.FindControl<TextBlock>("SessionAsteroids")!.Text);
@@ -408,14 +416,18 @@ public sealed class MiningLayoutPresentationTests
     }
 
     [AvaloniaTheory]
-    [InlineData(1180, 2)]
-    [InlineData(660, 4)]
-    public void ResDescriptionWrapsWithoutWideningTheReferencePage(int width, int lines)
+    [InlineData(1180, 2, "blue-dark")]
+    [InlineData(660, 4, "blue-light")]
+    [InlineData(1180, 2, "orange-dark")]
+    [InlineData(660, 4, "green-light")]
+    [InlineData(1180, 2, "green-dark")]
+    [InlineData(660, 4, "monochrome-dark")]
+    public void ResDescriptionWrapsWithoutWideningTheReferencePage(int width, int lines, string theme)
     {
         using MainWindowViewModel model = MainWindowViewModelTestBuilder.Create(null, _ => { });
         model.MiningWorkspace.SelectedTab = 6;
         var view = new MiningView { DataContext = model };
-        Window window = CreateWindow(view, width);
+        Window window = CreateWindow(view, width, theme);
         try
         {
             window.Show();
@@ -432,7 +444,16 @@ public sealed class MiningLayoutPresentationTests
             Assert.Equal(originalWidth, page.Bounds.Width, 1);
             Assert.InRange(page.Extent.Width, 0, page.Viewport.Width + 1);
             Assert.EndsWith("do not themselves prove an overlap.", description.Text);
-            SaveFrame(expanded, $"reference-res-{width}");
+            TextBlock yield = view.FindControl<TextBlock>("ResYieldGuidance")!;
+            TextBlock location = view.FindControl<TextBlock>("ResLocationGuidance")!;
+            Assert.Contains("within 20 km", yield.Text);
+            Assert.Contains("Confirm your distance in game.", location.Text);
+            AssertPairedOrStacked((Control)yield.Parent!, (Control)location.Parent!, width > 1000);
+            Assert.Equal(
+                Color.Parse(RavenThemeCatalog.Get(theme).MutedTextColor),
+                Assert.IsType<ISolidColorBrush>(yield.Foreground, exactMatch: false).Color
+            );
+            SaveFrame(expanded, $"reference-res-{theme}-{width}");
         }
         finally
         {
@@ -440,7 +461,7 @@ public sealed class MiningLayoutPresentationTests
         }
     }
 
-    private static Window CreateWindow(MiningView view, int width)
+    private static Window CreateWindow(MiningView view, int width, string themeKey = "monochrome-dark")
     {
         var window = new Window
         {
@@ -448,8 +469,8 @@ public sealed class MiningLayoutPresentationTests
             Width = width,
             Height = 1100,
         };
-        RavenThemeDefinition theme = RavenThemeCatalog.Get("monochrome-dark");
-        window.RequestedThemeVariant = ThemeVariant.Dark;
+        RavenThemeDefinition theme = RavenThemeCatalog.Get(themeKey);
+        window.RequestedThemeVariant = theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
         foreach (
             KeyValuePair<string, string> entry in new Dictionary<string, string>
             {

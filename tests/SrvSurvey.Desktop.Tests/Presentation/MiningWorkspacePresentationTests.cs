@@ -258,7 +258,7 @@ public sealed class MiningWorkspacePresentationTests
                     {
                         "SYSTEM",
                         "RING",
-                        "WHY IT RANKS",
+                        "Site notes",
                         "RES",
                         "OVERLAP",
                         "RESERVE",

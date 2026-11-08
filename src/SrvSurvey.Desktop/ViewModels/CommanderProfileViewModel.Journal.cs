@@ -7,6 +7,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed partial class CommanderProfileViewModel
 {
     private FrontierJournalShipState journalShip = new();
+    private FrontierJournalRankProgress journalRankProgress = new();
     private FrontierShipSnapshot? currentShipProjection;
     public FrontierShipSnapshot? CurrentShip => currentShipProjection ??= ReadCurrentShip();
 
@@ -29,9 +30,15 @@ public sealed partial class CommanderProfileViewModel
         UpdateJournalCommunityGoals(detectedCommanderName, attributed);
         UpdateJournalCarrierJump(detectedCommanderName, attributed);
         bool shipChanged = false;
+        bool ranksChanged = false;
         foreach (JournalEventEnvelope entry in attributed)
         {
             shipChanged |= journalShip.Apply(entry);
+            ranksChanged |= journalRankProgress.Apply(entry);
+        }
+        if (ranksChanged)
+        {
+            RaiseRankProperties();
         }
         if (shipChanged)
         {

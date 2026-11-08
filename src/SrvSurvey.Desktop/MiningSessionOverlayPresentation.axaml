@@ -12,10 +12,10 @@
    <StackPanel Spacing="6">
    <TextBlock Classes="type-title" Foreground="{DynamicResource RavenAccentBrush}" Text="{Binding Location}" TextWrapping="Wrap" />
    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-    <TextBlock Classes="type-value" Text="{Binding Yield}" />
-    <TextBlock Grid.Column="1" Classes="type-value" Text="{Binding Duration}" />
+    <TextBlock Classes="type-value" Text="{Binding Yield}" ToolTip.Tip="Refined tons and tons per active session hour." />
+    <TextBlock Grid.Column="1" Classes="type-value" Text="{Binding Duration}" ToolTip.Tip="Active session time, excluding pauses." />
    </Grid>
-   <TextBlock Classes="type-body" Text="{Binding Activity}" />
+   <TextBlock Classes="type-body" Text="{Binding Activity}" TextWrapping="Wrap" />
    <TextBlock Classes="type-detail" Text="{Binding Limpets}" />
    <TextBlock Classes="type-header" Text="Prospecting yields" />
    <TextBlock Classes="type-detail muted" Text="No prospecting data yet." IsVisible="{Binding !HasProspectingYields}" TextWrapping="Wrap" />
@@ -43,7 +43,7 @@
         <TextBlock Grid.Column="1" Classes="type-detail" Text="{Binding Finds}" />
         <TextBlock Grid.Column="2" Classes="type-detail" Text="{Binding QualityHits}" />
         <WrapPanel Grid.Row="1" Grid.ColumnSpan="3">
-         <TextBlock Classes="type-detail muted" Text="Average" Margin="0,0,5,0" />
+         <TextBlock Classes="type-detail muted" Text="Average in finds" Margin="0,0,5,0" ToolTip.Tip="Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded." />
          <TextBlock Classes="type-detail" Text="{Binding Average, StringFormat={}{0:0.0}%}" Margin="0,0,12,0" />
          <TextBlock Classes="type-detail muted" Text="Best" Margin="0,0,5,0" />
          <TextBlock Classes="type-detail" Text="{Binding Best, StringFormat={}{0:0.0}%}" />

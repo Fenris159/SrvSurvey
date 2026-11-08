@@ -69,8 +69,8 @@
       "translation": "+ ausstehend"
     },
     {
-      "source": "+1 asteroid",
-      "translation": "+1 Asteroid"
+      "source": "+1 prospect",
+      "translation": "+1 Interessent"
     },
     {
       "source": "+1 quality hit",
@@ -89,8 +89,8 @@
       "translation": ", Ruinen{0} {1}"
     },
     {
-      "source": "-1 asteroid",
-      "translation": "-1 Asteroid"
+      "source": "-1 prospect",
+      "translation": "-1 Interessent"
     },
     {
       "source": "-1 quality hit",
@@ -755,6 +755,10 @@
     {
       "source": "A Guardian beacon scan was detected without a system name.",
       "translation": "Es wurde ein Guardian-Beacon-Scan ohne Systemnamen erkannt."
+    },
+    {
+      "source": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+      "translation": "Ein RES an einer anderen Stelle im Ring bringt Sie nicht in seine Ertragszone. Bestätigen Sie Ihre Distanz im Spiel. RES-Notizen identifizieren Standorte; Eine Asteroidenroute benötigt eine eigene Karte. Bei Kernfunden kommen separate Mechanismen zum Einsatz, und mehr Hotspot-Signale führen nicht zu einem besseren Bergbaustandort."
     },
     {
       "source": "A Raven API key is saved for this commander.",
@@ -1613,6 +1617,10 @@
       "translation": "Die aktive Probe gehört zu einem anderen Körper"
     },
     {
+      "source": "Active session time, excluding pauses.",
+      "translation": "Aktive Sitzungszeit, ohne Pausen."
+    },
+    {
       "source": "Active time",
       "translation": "Aktive Zeit"
     },
@@ -2039,6 +2047,10 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Alle {0} Systeme erreicht."
+    },
+    {
+      "source": "Alliance",
+      "translation": "Allianz"
     },
     {
       "source": "Alliance Challenger",
@@ -2749,10 +2761,6 @@
       "translation": "AsteroidBase"
     },
     {
-      "source": "Asteroids",
-      "translation": "Asteroiden"
-    },
-    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Bei einer Einzahlung senden Sie .mine <commodity> <l|m|h>/<l|m|h> here. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Bei einer präzisen Platzierung kann es sein, dass eine vorhandene Markierung überlappt. Beispiel: .mine ruby m/l here. Entfernen Sie die nächstgelegene kartierte Lagerstätte im Umkreis von 0,5 km mit .mine delete here."
     },
@@ -3169,8 +3177,20 @@
       "translation": "Durchschnittlich / Am besten"
     },
     {
+      "source": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+      "translation": "Durchschnittlicher und bester Mineralgehalt in passenden Gesteinen. Kernfunde zählen Entdeckungen, nicht abgeschlossene Extraktionen."
+    },
+    {
+      "source": "Average in finds",
+      "translation": "Durchschnittlich in Funden"
+    },
+    {
       "source": "Average mineral percentage",
       "translation": "Durchschnittlicher Mineralanteil"
+    },
+    {
+      "source": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+      "translation": "Durchschnittlicher Mineralanteil in passenden Gesteinen. Gesteine ​​ohne Mineralgehalt und Nur-Kern-Erkennungen ohne Prozentsatz werden ausgeschlossen."
     },
     {
       "source": "Average yield",
@@ -6641,10 +6661,6 @@
       "translation": "Kombinieren Sie die Gesamtzahl der Schiffe zu FC-Zählungen"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Kombinieren Sie die integrierte Ringreferenz, Commander-Erkennungen und Spansh API-Ergebnisse von SrvSurvey. Spots++ priorisiert kartierte RES-Standorte, Überlappungen, Multi-Hotspot-Ringe und unberührte Reserven, ohne dass ein heruntergeladener Galaxien-Dump erforderlich ist."
-    },
-    {
       "source": "Combined Build Report",
       "translation": "Kombinierter Build-Bericht"
     },
@@ -7317,6 +7333,10 @@
       "translation": "Bestätigen Sie die große Netzwerkprüfung, bevor Sie damit beginnen."
     },
     {
+      "source": "Confirm the location",
+      "translation": "Bestätigen Sie den Standort"
+    },
+    {
       "source": "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.",
       "translation": "Bestätigen Sie, um Raven Colonial aufzufordern, den Körperkatalog dieses Systems zu importieren. Es werden keine lokalen Websites veröffentlicht."
     },
@@ -7813,12 +7833,12 @@
       "translation": "Kernkosten"
     },
     {
-      "source": "Core: {0}",
-      "translation": "Kern: {0}"
+      "source": "Core finds",
+      "translation": "Kernfunde"
     },
     {
-      "source": "Cores",
-      "translation": "Kerne"
+      "source": "Core: {0}",
+      "translation": "Kern: {0}"
     },
     {
       "source": "Coriolis",
@@ -9525,6 +9545,10 @@
       "translation": "Reisetagebuch von Dock zu Dock"
     },
     {
+      "source": "DockFighter",
+      "translation": "DockFighter"
+    },
+    {
       "source": "DockSRV",
       "translation": "DockSRV"
     },
@@ -10235,6 +10259,10 @@
     {
       "source": "Emergency power cells",
       "translation": "Notstromzellen"
+    },
+    {
+      "source": "Empire",
+      "translation": "Reich"
     },
     {
       "source": "Empty",
@@ -11739,6 +11767,10 @@
     {
       "source": "Find",
       "translation": "Finden"
+    },
+    {
+      "source": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots++ lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+      "translation": "Finden Sie metallische Ringe aus der integrierten Referenz, Ihren Entdeckungen und Spansh. Spots++ listet zuerst unberührte Naturschutzgebiete auf, dann nahegelegene Standorte, einschließlich einzelner Hotspots. Alle Platinsorten werden nach Entfernung sortiert. Hotspot-Zählungen und Standortnotizen beschreiben den Ring; Sie messen seinen Ertrag nicht."
     },
     {
       "source": "Find Platinum spots",
@@ -14065,6 +14097,14 @@
       "translation": "HighGravityWarningLevel"
     },
     {
+      "source": "Highest rank",
+      "translation": "Höchster Rang"
+    },
+    {
+      "source": "Highest rank reached",
+      "translation": "Höchster erreichter Rang"
+    },
+    {
       "source": "Highest recorded suffix: {0}",
       "translation": "Höchstes aufgezeichnetes Suffix: {0}"
     },
@@ -15913,6 +15953,10 @@
       "translation": "Laser-Mining"
     },
     {
+      "source": "Laser yield",
+      "translation": "Laserausbeute"
+    },
+    {
       "source": "Last",
       "translation": "Zuletzt"
     },
@@ -16039,6 +16083,14 @@
     {
       "source": "LaunchDrone",
       "translation": "LaunchDrone"
+    },
+    {
+      "source": "LaunchFighter",
+      "translation": "LaunchFighter"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "Starten Sie SRV"
     },
     {
       "source": "Lava spout",
@@ -17679,6 +17731,10 @@
     {
       "source": "Metal-rich rings",
       "translation": "Metallreiche Ringe"
+    },
+    {
+      "source": "MetalRich",
+      "translation": "MetalRich"
     },
     {
       "source": "Metallic",
@@ -21937,6 +21993,10 @@
       "translation": "Spielerdaten werden byteverifiziert, aber die alten UI-Einstellungen konnten nicht übersetzt werden; Die aktuellen Avalonia-Einstellungen wurden unverändert gelassen. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Spielergesteuert"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Bitte warten Sie {0} Sekunden, bevor Sie Frontier erneut aktualisieren."
     },
@@ -22921,6 +22981,14 @@
       "translation": "Voraussichtlich"
     },
     {
+      "source": "Prospected asteroids",
+      "translation": "Voraussichtliche Asteroiden"
+    },
+    {
+      "source": "Prospected asteroids: {0} · Core finds: {1}",
+      "translation": "Voraussichtliche Asteroiden: {0} · Kernfunde: {1}"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Prospektive Ergebnisse"
     },
@@ -23417,6 +23485,10 @@
       "translation": "RES kartiert"
     },
     {
+      "source": "RES sites",
+      "translation": "RES-Standorte"
+    },
+    {
       "source": "RES sites only",
       "translation": "Nur RES-Standorte"
     },
@@ -23579,6 +23651,14 @@
     {
       "source": "Range (LY)",
       "translation": "Reichweite (LY)"
+    },
+    {
+      "source": "Rank",
+      "translation": "Rang"
+    },
+    {
+      "source": "Rank progress has not been reported for this rank in the loaded commander journals.",
+      "translation": "In den geladenen Kommandantentagebüchern wurde für diesen Rang kein Rangfortschritt gemeldet."
     },
     {
       "source": "Rank unavailable",
@@ -24523,6 +24603,10 @@
     {
       "source": "Refined commodities",
       "translation": "Raffinierte Waren"
+    },
+    {
+      "source": "Refined tons and tons per active session hour.",
+      "translation": "Raffinierte Tonnen und Tonnen pro aktive Sitzungsstunde."
     },
     {
       "source": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -26417,6 +26501,10 @@
       "translation": "SRV-Position"
     },
     {
+      "source": "SRVDestroyed",
+      "translation": "SRVZerstört"
+    },
+    {
       "source": "STAR CLASS UNKNOWN",
       "translation": "STERNKLASSE UNBEKANNT"
     },
@@ -27961,8 +28049,8 @@
       "translation": "Die Sitzung zeigt Prospektionsprozentsätze, Kernentdeckungen, Qualitätstreffer, raffinierte Tonnage, Napfschnecken, technische Materialien und Fracht. Bei manuellen Zählkorrekturen bleiben die ursprünglichen Beobachtungen erhalten."
     },
     {
-      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
-      "translation": "Die Sitzungstonnen werden anhand der Frachtablesungen bestätigt. Die Raffinerieübertragung nach der Sitzung ist separat und ändert sich nicht in T/Stunde. Berichte ohne ausreichende Ladungswerte werden als Schätzungen gekennzeichnet."
+      "source": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Die Sitzungstonnen werden anhand der Frachtablesungen bestätigt. Die Preise nutzen die aktive Sitzungszeit und schließen Pausen aus. Die Raffinerieverschleppung nach der Sitzung ist separat und ändert sich nicht in T/Stunde. Die Anzahl potenzieller Kunden umfasst manuelle Korrekturen. Kernfunde zählen Entdeckungen. Berichte ohne ausreichende Ladungswerte werden als Schätzungen gekennzeichnet."
     },
     {
       "source": "Session tons confirmed from cargo readings.",
@@ -28995,6 +29083,10 @@
     {
       "source": "Site heading",
       "translation": "Überschrift der Website"
+    },
+    {
+      "source": "Site notes",
+      "translation": "Site-Notizen"
     },
     {
       "source": "Site origin",
@@ -34485,8 +34577,8 @@
       "translation": "Toleranz"
     },
     {
-      "source": "Tons / hour",
-      "translation": "Tonnen/Stunde"
+      "source": "Tons / active hour",
+      "translation": "Tonnen / aktive Stunde"
     },
     {
       "source": "Too steep",
@@ -34699,6 +34791,10 @@
     {
       "source": "Traders",
       "translation": "Händler"
+    },
+    {
+      "source": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+      "translation": "Traditionelles Laser-Mining erzielt zusätzliche Erträge im Umkreis von 20 km um das RES-Zentrum. Der Nutzen variiert je nach Standortqualität; Gefährliche Standorte weisen den größten gemeldeten Anstieg auf. Die tatsächliche Produktion hängt auch vom Schürfer und der Bergbauausrüstung ab."
     },
     {
       "source": "Traffic",
@@ -36365,10 +36461,6 @@
       "translation": "Leerer Amethyst"
     },
     {
-      "source": "Void Opal",
-      "translation": "Leereopal"
-    },
-    {
       "source": "Void Opals",
       "translation": "Leere Opale"
     },
@@ -36443,10 +36535,6 @@
     {
       "source": "WG Life",
       "translation": "WG Leben"
-    },
-    {
-      "source": "WHY IT RANKS",
-      "translation": "WARUM ES RANGIERT"
     },
     {
       "source": "WINDOW SIZE",
@@ -40365,6 +40453,10 @@
       "translation": "Suffixe {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "Anzug"
+    },
+    {
       "source": "surface",
       "translation": "Oberfläche"
     },
@@ -41249,10 +41341,6 @@
       "translation": "{0} wie gescannt · {1} falls zugeordnet"
     },
     {
-      "source": "{0} asteroids · {1} cores",
-      "translation": "{0} Asteroiden · {1} Kerne"
-    },
-    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} bei '{1}': {2}"
     },
@@ -42061,8 +42149,8 @@
       "translation": "{0} · {1} · {2} km-Grenze"
     },
     {
-      "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
-      "translation": "{0} · {1} · {2} t · {3} t/h · {4} Asteroiden · {5} Kerne"
+      "source": "{0} · {1} · {2} t · {3} t/h · Prospected asteroids: {4} · Core finds: {5}",
+      "translation": "{0} · {1} · {2} t · {3} t/h · Voraussichtliche Asteroiden: {4} · Kernfunde: {5}"
     },
     {
       "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
@@ -42111,6 +42199,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} t"
+    },
+    {
+      "source": "{0}: {1} to next rank. Last reported by local journals.",
+      "translation": "{0}: {1} zum nächsten Rang. Zuletzt von lokalen Fachzeitschriften berichtet."
     },
     {
       "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
@@ -42435,8 +42527,8 @@
       "translation": "+ pendiente"
     },
     {
-      "source": "+1 asteroid",
-      "translation": "+1 asteroide"
+      "source": "+1 prospect",
+      "translation": "+1 prospecto"
     },
     {
       "source": "+1 quality hit",
@@ -42455,8 +42547,8 @@
       "translation": ", Ruinas{0} {1}"
     },
     {
-      "source": "-1 asteroid",
-      "translation": "-1 asteroide"
+      "source": "-1 prospect",
+      "translation": "-1 prospecto"
     },
     {
       "source": "-1 quality hit",
@@ -43121,6 +43213,10 @@
     {
       "source": "A Guardian beacon scan was detected without a system name.",
       "translation": "Se detectó un escaneo de baliza Guardian sin un nombre de sistema."
+    },
+    {
+      "source": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+      "translation": "Un RES en otra parte del ring no te coloca dentro de su zona de rendimiento. Confirma tu distancia en el juego. Las notas RES identifican sitios; una ruta de asteroide necesita su propio mapa. Los hallazgos de núcleos utilizan mecanismos separados y más señales de puntos de acceso no establecen un mejor sitio de minería."
     },
     {
       "source": "A Raven API key is saved for this commander.",
@@ -43979,6 +44075,10 @@
       "translation": "La muestra activa pertenece a otro organismo."
     },
     {
+      "source": "Active session time, excluding pauses.",
+      "translation": "Tiempo de sesión activa, excluyendo pausas."
+    },
+    {
       "source": "Active time",
       "translation": "tiempo activo"
     },
@@ -44405,6 +44505,10 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Todos los {0} sistemas alcanzados."
+    },
+    {
+      "source": "Alliance",
+      "translation": "Alianza"
     },
     {
       "source": "Alliance Challenger",
@@ -45115,10 +45219,6 @@
       "translation": "Base de asteroides"
     },
     {
-      "source": "Asteroids",
-      "translation": "asteroides"
-    },
-    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "En un depósito, envíe .mine <commodity> <l|m|h>/<l|m|h> here. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. La colocación precisa aquí puede superponerse a un marcador existente. Ejemplo: .mine ruby m/l here. Elimine el depósito mapeado más cercano dentro de 0,5 km con .mine delete here."
     },
@@ -45535,8 +45635,20 @@
       "translation": "Promedio / Mejor"
     },
     {
+      "source": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+      "translation": "El promedio y el mejor muestran el contenido mineral en rocas coincidentes. Los hallazgos básicos cuentan los descubrimientos, no las extracciones completadas."
+    },
+    {
+      "source": "Average in finds",
+      "translation": "Promedio en hallazgos"
+    },
+    {
       "source": "Average mineral percentage",
       "translation": "Porcentaje medio del mineral"
+    },
+    {
+      "source": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+      "translation": "Porcentaje mineral promedio en rocas coincidentes. Se excluyen las rocas sin el mineral y las detecciones de núcleos únicamente sin porcentaje."
     },
     {
       "source": "Average yield",
@@ -49007,10 +49119,6 @@
       "translation": "Combinar los totales de barcos en recuentos de FC"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Combine la referencia de anillo integrada de SrvSurvey, los descubrimientos de comandantes y los resultados de API Spansh. Spots++ prioriza sitios RES mapeados, superposiciones, anillos de puntos múltiples y reservas prístinas sin necesidad de descargar un volcado de galaxias."
-    },
-    {
       "source": "Combined Build Report",
       "translation": "Informe de construcción combinado"
     },
@@ -49683,6 +49791,10 @@
       "translation": "Confirme la auditoría de la red grande antes de iniciarla."
     },
     {
+      "source": "Confirm the location",
+      "translation": "Confirmar la ubicación"
+    },
+    {
       "source": "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.",
       "translation": "Confirme para solicitarle a Raven Colonial que importe el catálogo de carrocerías de este sistema. No se publicarán sitios locales."
     },
@@ -50179,12 +50291,12 @@
       "translation": "Costo básico"
     },
     {
-      "source": "Core: {0}",
-      "translation": "Núcleo: {0}"
+      "source": "Core finds",
+      "translation": "Hallazgos básicos"
     },
     {
-      "source": "Cores",
-      "translation": "Núcleos"
+      "source": "Core: {0}",
+      "translation": "Núcleo: {0}"
     },
     {
       "source": "Coriolis",
@@ -51891,6 +52003,10 @@
       "translation": "Registro de viajes de muelle a muelle"
     },
     {
+      "source": "DockFighter",
+      "translation": "Muelle de combate"
+    },
+    {
       "source": "DockSRV",
       "translation": "MuelleSRV"
     },
@@ -52601,6 +52717,10 @@
     {
       "source": "Emergency power cells",
       "translation": "Células de energía de emergencia"
+    },
+    {
+      "source": "Empire",
+      "translation": "Imperio"
     },
     {
       "source": "Empty",
@@ -54105,6 +54225,10 @@
     {
       "source": "Find",
       "translation": "Encontrar"
+    },
+    {
+      "source": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots++ lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+      "translation": "Encuentra anillos metálicos de la referencia incorporada, tus descubrimientos y Spansh. Spots++ enumera primero las reservas prístinas, luego los sitios cercanos, incluidos los puntos críticos individuales. Todo el platino se clasifica por distancia. Los recuentos de puntos de acceso y las notas del sitio describen el anillo; no miden su rendimiento."
     },
     {
       "source": "Find Platinum spots",
@@ -56431,6 +56555,14 @@
       "translation": "Nivel de advertencia de alta gravedad"
     },
     {
+      "source": "Highest rank",
+      "translation": "Rango más alto"
+    },
+    {
+      "source": "Highest rank reached",
+      "translation": "Rango más alto alcanzado"
+    },
+    {
       "source": "Highest recorded suffix: {0}",
       "translation": "Sufijo más alto registrado: {0}"
     },
@@ -58279,6 +58411,10 @@
       "translation": "Minería láser"
     },
     {
+      "source": "Laser yield",
+      "translation": "Rendimiento del láser"
+    },
+    {
       "source": "Last",
       "translation": "Último"
     },
@@ -58405,6 +58541,14 @@
     {
       "source": "LaunchDrone",
       "translation": "LanzamientoDrone"
+    },
+    {
+      "source": "LaunchFighter",
+      "translation": "Lanzador de combate"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "LanzarSRV"
     },
     {
       "source": "Lava spout",
@@ -60045,6 +60189,10 @@
     {
       "source": "Metal-rich rings",
       "translation": "Anillos ricos en metales"
+    },
+    {
+      "source": "MetalRich",
+      "translation": "MetalRico"
     },
     {
       "source": "Metallic",
@@ -64303,6 +64451,10 @@
       "translation": "Los datos del jugador se verifican mediante bytes, pero las preferencias de la interfaz de usuario heredada no se pudieron traducir; La configuración actual de Avalonia no se modificó. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Controlado por el jugador"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Espere {0} segundos antes de actualizar Frontier nuevamente."
     },
@@ -65287,6 +65439,14 @@
       "translation": "Prospectado"
     },
     {
+      "source": "Prospected asteroids",
+      "translation": "Asteroides prospectados"
+    },
+    {
+      "source": "Prospected asteroids: {0} · Core finds: {1}",
+      "translation": "Asteroides prospectados: {0} · Hallazgos principales: {1}"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Resultados de prospección"
     },
@@ -65783,6 +65943,10 @@
       "translation": "RES mapeado"
     },
     {
+      "source": "RES sites",
+      "translation": "Sitios RES"
+    },
+    {
       "source": "RES sites only",
       "translation": "Solo sitios RES"
     },
@@ -65945,6 +66109,14 @@
     {
       "source": "Range (LY)",
       "translation": "Rango (LY)"
+    },
+    {
+      "source": "Rank",
+      "translation": "Rango"
+    },
+    {
+      "source": "Rank progress has not been reported for this rank in the loaded commander journals.",
+      "translation": "No se ha informado del progreso de rango para este rango en los diarios de comandante cargados."
     },
     {
       "source": "Rank unavailable",
@@ -66889,6 +67061,10 @@
     {
       "source": "Refined commodities",
       "translation": "Productos refinados"
+    },
+    {
+      "source": "Refined tons and tons per active session hour.",
+      "translation": "Toneladas y toneladas refinadas por hora de sesión activa."
     },
     {
       "source": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -68783,6 +68959,10 @@
       "translation": "Posición SRV"
     },
     {
+      "source": "SRVDestroyed",
+      "translation": "SRVDestruido"
+    },
+    {
       "source": "STAR CLASS UNKNOWN",
       "translation": "CLASE DE ESTRELLA DESCONOCIDA"
     },
@@ -70327,8 +70507,8 @@
       "translation": "La sesión muestra porcentajes de prospección, descubrimientos de núcleos, resultados de calidad, tonelaje refinado, lapas, materiales de ingeniería y carga. Las correcciones de recuento manual conservan las observaciones originales."
     },
     {
-      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
-      "translation": "Las toneladas de sesión se confirman a partir de lecturas de carga. El arrastre de refinería después de la sesión es independiente y no cambia t/hora. Los informes sin suficientes lecturas de carga se marcan como estimaciones."
+      "source": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Las toneladas de sesión se confirman a partir de lecturas de carga. Las tarifas utilizan el tiempo de sesión activa y excluyen las pausas. El arrastre de refinería después de la sesión es independiente y no cambia t/hora. Los recuentos de prospectos incluyen correcciones manuales; Los hallazgos básicos cuentan los descubrimientos. Los informes sin suficientes lecturas de carga se marcan como estimaciones."
     },
     {
       "source": "Session tons confirmed from cargo readings.",
@@ -71361,6 +71541,10 @@
     {
       "source": "Site heading",
       "translation": "Título del sitio"
+    },
+    {
+      "source": "Site notes",
+      "translation": "Notas del sitio"
     },
     {
       "source": "Site origin",
@@ -76851,8 +77035,8 @@
       "translation": "Tolerancia"
     },
     {
-      "source": "Tons / hour",
-      "translation": "Toneladas/hora"
+      "source": "Tons / active hour",
+      "translation": "Toneladas/hora activa"
     },
     {
       "source": "Too steep",
@@ -77065,6 +77249,10 @@
     {
       "source": "Traders",
       "translation": "Comerciantes"
+    },
+    {
+      "source": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+      "translation": "La minería láser tradicional gana rendimiento adicional dentro de 20 km del centro RES. El beneficio varía según el grado del sitio; Los sitios peligrosos ofrecen el mayor aumento reportado. La producción real también depende del buscador y del equipo minero."
     },
     {
       "source": "Traffic",
@@ -78731,10 +78919,6 @@
       "translation": "Amatista vacía"
     },
     {
-      "source": "Void Opal",
-      "translation": "Ópalo vacío"
-    },
-    {
       "source": "Void Opals",
       "translation": "Ópalos vacíos"
     },
@@ -78809,10 +78993,6 @@
     {
       "source": "WG Life",
       "translation": "vida del grupo de trabajo"
-    },
-    {
-      "source": "WHY IT RANKS",
-      "translation": "POR QUÉ SE clasifica"
     },
     {
       "source": "WINDOW SIZE",
@@ -82731,6 +82911,10 @@
       "translation": "sufijos {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "traje"
+    },
+    {
       "source": "surface",
       "translation": "superficie"
     },
@@ -83615,10 +83799,6 @@
       "translation": "{0} como escaneado · {1} si está asignado"
     },
     {
-      "source": "{0} asteroids · {1} cores",
-      "translation": "Asteroides {0} · Núcleos {1}"
-    },
-    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} en '{1}': {2}"
     },
@@ -84427,8 +84607,8 @@
       "translation": "{0} · {1} · {2} km frontera"
     },
     {
-      "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
-      "translation": "{0} · {1} · {2} t · {3} t/h · {4} asteroides · {5} núcleos"
+      "source": "{0} · {1} · {2} t · {3} t/h · Prospected asteroids: {4} · Core finds: {5}",
+      "translation": "{0} · {1} · {2} t · {3} t/h · Asteroides prospectados: {4} · Hallazgos principales: {5}"
     },
     {
       "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
@@ -84477,6 +84657,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1}"
+    },
+    {
+      "source": "{0}: {1} to next rank. Last reported by local journals.",
+      "translation": "{0}: {1} al siguiente rango. Último reportado por revistas locales."
     },
     {
       "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
@@ -84801,8 +84985,8 @@
       "translation": "+ en attente"
     },
     {
-      "source": "+1 asteroid",
-      "translation": "+1 astéroïde"
+      "source": "+1 prospect",
+      "translation": "+1 prospect"
     },
     {
       "source": "+1 quality hit",
@@ -84821,8 +85005,8 @@
       "translation": ", Ruines{0} {1}"
     },
     {
-      "source": "-1 asteroid",
-      "translation": "-1 astéroïde"
+      "source": "-1 prospect",
+      "translation": "-1 prospect"
     },
     {
       "source": "-1 quality hit",
@@ -85487,6 +85671,10 @@
     {
       "source": "A Guardian beacon scan was detected without a system name.",
       "translation": "Une analyse de balise Guardian a été détectée sans nom de système."
+    },
+    {
+      "source": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+      "translation": "Un RES ailleurs dans l’anneau ne vous place pas dans sa zone de rendement. Confirmez votre distance dans le jeu. Les notes RES identifient les sites ; une route d'astéroïdes a besoin de sa propre carte. Les découvertes de base utilisent des mécanismes distincts, et davantage de signaux de points chauds n'établissent pas un meilleur site minier."
     },
     {
       "source": "A Raven API key is saved for this commander.",
@@ -86345,6 +86533,10 @@
       "translation": "L'échantillon actif appartient à un autre organisme"
     },
     {
+      "source": "Active session time, excluding pauses.",
+      "translation": "Durée de la session active, hors pauses."
+    },
+    {
       "source": "Active time",
       "translation": "Temps actif"
     },
@@ -86771,6 +86963,10 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Tous les systèmes {0} atteints."
+    },
+    {
+      "source": "Alliance",
+      "translation": "Alliance"
     },
     {
       "source": "Alliance Challenger",
@@ -87481,10 +87677,6 @@
       "translation": "Base d'astéroïdes"
     },
     {
-      "source": "Asteroids",
-      "translation": "Astéroïdes"
-    },
-    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Lors d'un dépôt, envoyez .mine <commodity> <l|m|h>/<l|m|h> here. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Un placement précis ici peut chevaucher un marqueur existant. Exemple : .mine ruby m/l here. Supprimez le gisement cartographié le plus proche dans un rayon de 0,5 km avec .mine delete here."
     },
@@ -87901,8 +88093,20 @@
       "translation": "Moyen / Meilleur"
     },
     {
+      "source": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+      "translation": "La moyenne et la meilleure montrent la teneur en minéraux des roches correspondantes. Les découvertes principales comptent les découvertes, et non les extractions terminées."
+    },
+    {
+      "source": "Average in finds",
+      "translation": "Moyenne des trouvailles"
+    },
+    {
       "source": "Average mineral percentage",
       "translation": "Pourcentage moyen du minerai"
+    },
+    {
+      "source": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+      "translation": "Pourcentage minéral moyen dans les roches correspondantes. Les roches sans minéraux et les détections de carottes uniquement sans pourcentage sont exclues."
     },
     {
       "source": "Average yield",
@@ -91373,10 +91577,6 @@
       "translation": "Combinez les totaux des navires en comptes FC"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Combinez la référence d'anneau intégrée de SrvSurvey, les découvertes du commandant et les résultats de l'API Spansh. Spots++ donne la priorité aux sites RES cartographiés, aux chevauchements, aux anneaux multi-hotspots et aux réserves vierges sans nécessiter de téléchargement de vidage de galaxie."
-    },
-    {
       "source": "Combined Build Report",
       "translation": "Rapport de construction combiné"
     },
@@ -92049,6 +92249,10 @@
       "translation": "Confirmez l’audit du grand réseau avant de le démarrer."
     },
     {
+      "source": "Confirm the location",
+      "translation": "Confirmez l'emplacement"
+    },
+    {
       "source": "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.",
       "translation": "Confirmez pour demander à Raven Colonial d'importer le catalogue de carrosserie de ce système. Aucun site local ne sera publié."
     },
@@ -92545,12 +92749,12 @@
       "translation": "Coût de base"
     },
     {
-      "source": "Core: {0}",
-      "translation": "Noyau : {0}"
+      "source": "Core finds",
+      "translation": "Trouvailles principales"
     },
     {
-      "source": "Cores",
-      "translation": "Noyaux"
+      "source": "Core: {0}",
+      "translation": "Noyau : {0}"
     },
     {
       "source": "Coriolis",
@@ -94257,6 +94461,10 @@
       "translation": "Carnet de voyage de quai à quai"
     },
     {
+      "source": "DockFighter",
+      "translation": "DockFighter"
+    },
+    {
       "source": "DockSRV",
       "translation": "DockSRV"
     },
@@ -94967,6 +95175,10 @@
     {
       "source": "Emergency power cells",
       "translation": "Cellules de secours"
+    },
+    {
+      "source": "Empire",
+      "translation": "Empire"
     },
     {
       "source": "Empty",
@@ -96471,6 +96683,10 @@
     {
       "source": "Find",
       "translation": "Trouver"
+    },
+    {
+      "source": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots++ lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+      "translation": "Retrouvez les anneaux métalliques de la référence intégrée, vos découvertes et Spansh. Spots++ répertorie d'abord les réserves vierges, puis les sites à proximité, y compris les hotspots uniques. Toutes les sortes de platine par distance. Le nombre de points chauds et les notes du site décrivent l'anneau ; ils ne mesurent pas son rendement."
     },
     {
       "source": "Find Platinum spots",
@@ -98797,6 +99013,14 @@
       "translation": "Niveau d'avertissement de gravité élevée"
     },
     {
+      "source": "Highest rank",
+      "translation": "Rang le plus élevé"
+    },
+    {
+      "source": "Highest rank reached",
+      "translation": "Plus haut rang atteint"
+    },
+    {
       "source": "Highest recorded suffix: {0}",
       "translation": "Suffixe enregistré le plus élevé : {0}"
     },
@@ -100645,6 +100869,10 @@
       "translation": "Exploitation minière au laser"
     },
     {
+      "source": "Laser yield",
+      "translation": "Rendement du laser"
+    },
+    {
       "source": "Last",
       "translation": "Dernier"
     },
@@ -100771,6 +100999,14 @@
     {
       "source": "LaunchDrone",
       "translation": "LancementDrone"
+    },
+    {
+      "source": "LaunchFighter",
+      "translation": "LancementFighter"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "LancerSRV"
     },
     {
       "source": "Lava spout",
@@ -102411,6 +102647,10 @@
     {
       "source": "Metal-rich rings",
       "translation": "Des bagues riches en métaux"
+    },
+    {
+      "source": "MetalRich",
+      "translation": "MétalRiche"
     },
     {
       "source": "Metallic",
@@ -106669,6 +106909,10 @@
       "translation": "Les données du joueur sont vérifiées en octets, mais les anciennes préférences de l'interface utilisateur n'ont pas pu être traduites ; les paramètres actuels d'Avalonia sont restés inchangés. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Joueur Contrôlé"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Veuillez patienter {0} secondes avant d'actualiser à nouveau Frontier."
     },
@@ -107653,6 +107897,14 @@
       "translation": "Prospecté"
     },
     {
+      "source": "Prospected asteroids",
+      "translation": "Astéroïdes prospectés"
+    },
+    {
+      "source": "Prospected asteroids: {0} · Core finds: {1}",
+      "translation": "Astéroïdes prospectés : {0} · Découvertes principales : {1}"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Résultats de prospection"
     },
@@ -108149,6 +108401,10 @@
       "translation": "RES cartographiés"
     },
     {
+      "source": "RES sites",
+      "translation": "Sites EnR"
+    },
+    {
       "source": "RES sites only",
       "translation": "Sites RES uniquement"
     },
@@ -108311,6 +108567,14 @@
     {
       "source": "Range (LY)",
       "translation": "Portée (LY)"
+    },
+    {
+      "source": "Rank",
+      "translation": "Rang"
+    },
+    {
+      "source": "Rank progress has not been reported for this rank in the loaded commander journals.",
+      "translation": "La progression du grade n'a pas été rapportée pour ce grade dans les journaux de commandant chargés."
     },
     {
       "source": "Rank unavailable",
@@ -109255,6 +109519,10 @@
     {
       "source": "Refined commodities",
       "translation": "Produits raffinés"
+    },
+    {
+      "source": "Refined tons and tons per active session hour.",
+      "translation": "Des tonnes et des tonnes raffinées par heure de session active."
     },
     {
       "source": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -111149,6 +111417,10 @@
       "translation": "Position du VRS"
     },
     {
+      "source": "SRVDestroyed",
+      "translation": "SRVDétruit"
+    },
+    {
       "source": "STAR CLASS UNKNOWN",
       "translation": "CLASSE ÉTOILES INCONNUE"
     },
@@ -112693,8 +112965,8 @@
       "translation": "La session montre les pourcentages de prospection, les découvertes principales, les résultats de qualité, le tonnage raffiné, les patelles, les matériaux d'ingénierie et la cargaison. Les corrections de comptage manuelles conservent les observations originales."
     },
     {
-      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
-      "translation": "Les tonnes de session sont confirmées à partir des relevés de cargaison. Le report de la raffinerie après la session est distinct et ne change pas le t/heure. Les rapports ne comportant pas suffisamment de relevés de fret sont marqués comme estimations."
+      "source": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Les tonnes de session sont confirmées à partir des relevés de cargaison. Les tarifs utilisent la durée de la session active et excluent les pauses. Le report de la raffinerie après la session est distinct et ne change pas le t/heure. Le décompte des prospects inclut des corrections manuelles ; les découvertes principales comptent les découvertes. Les rapports ne comportant pas suffisamment de relevés de fret sont marqués comme estimations."
     },
     {
       "source": "Session tons confirmed from cargo readings.",
@@ -113727,6 +113999,10 @@
     {
       "source": "Site heading",
       "translation": "Rubrique du site"
+    },
+    {
+      "source": "Site notes",
+      "translation": "Remarques sur le site"
     },
     {
       "source": "Site origin",
@@ -119217,8 +119493,8 @@
       "translation": "Tolérance"
     },
     {
-      "source": "Tons / hour",
-      "translation": "Tonnes / heure"
+      "source": "Tons / active hour",
+      "translation": "Tonnes / heure active"
     },
     {
       "source": "Too steep",
@@ -119431,6 +119707,10 @@
     {
       "source": "Traders",
       "translation": "Commerçants"
+    },
+    {
+      "source": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+      "translation": "L’exploitation minière laser traditionnelle gagne un rendement supplémentaire dans un rayon de 20 km autour du centre RES. L'avantage varie selon le niveau du site ; Les sites dangereux présentent la plus forte augmentation signalée. La production réelle dépend également du prospecteur et de l’équipement minier."
     },
     {
       "source": "Traffic",
@@ -121097,10 +121377,6 @@
       "translation": "Améthyste du Vide"
     },
     {
-      "source": "Void Opal",
-      "translation": "Opale du Vide"
-    },
-    {
       "source": "Void Opals",
       "translation": "Opales du Vide"
     },
@@ -121175,10 +121451,6 @@
     {
       "source": "WG Life",
       "translation": "Vie du GT"
-    },
-    {
-      "source": "WHY IT RANKS",
-      "translation": "POURQUOI IL CLASSE"
     },
     {
       "source": "WINDOW SIZE",
@@ -125097,6 +125369,10 @@
       "translation": "suffixes {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "costume"
+    },
+    {
       "source": "surface",
       "translation": "surface"
     },
@@ -125981,10 +126257,6 @@
       "translation": "{0} tel qu'analysé · {1} si mappé"
     },
     {
-      "source": "{0} asteroids · {1} cores",
-      "translation": "Astéroïdes {0} · Noyaux {1}"
-    },
-    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} à '{1}' : {2}"
     },
@@ -126793,8 +127065,8 @@
       "translation": "{0} · {1} · {2} frontière km"
     },
     {
-      "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
-      "translation": "{0} · {1} · {2} t · {3} t/h · Astéroïdes {4} · Noyaux {5}"
+      "source": "{0} · {1} · {2} t · {3} t/h · Prospected asteroids: {4} · Core finds: {5}",
+      "translation": "{0} · {1} · {2} t · {3} t/h · Astéroïdes prospectés : {4} · Découvertes principales : {5}"
     },
     {
       "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
@@ -126843,6 +127115,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0} : {1} t"
+    },
+    {
+      "source": "{0}: {1} to next rank. Last reported by local journals.",
+      "translation": "{0} : {1} au rang suivant. Rapporté pour la dernière fois par les journaux locaux."
     },
     {
       "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
@@ -127167,8 +127443,8 @@
       "translation": "+ pendente"
     },
     {
-      "source": "+1 asteroid",
-      "translation": "+1 asteróide"
+      "source": "+1 prospect",
+      "translation": "+1 cliente potencial"
     },
     {
       "source": "+1 quality hit",
@@ -127187,8 +127463,8 @@
       "translation": ", Ruínas{0} {1}"
     },
     {
-      "source": "-1 asteroid",
-      "translation": "-1 asteróide"
+      "source": "-1 prospect",
+      "translation": "-1 cliente potencial"
     },
     {
       "source": "-1 quality hit",
@@ -127853,6 +128129,10 @@
     {
       "source": "A Guardian beacon scan was detected without a system name.",
       "translation": "Uma varredura do farol do Guardian foi detectada sem um nome de sistema."
+    },
+    {
+      "source": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+      "translation": "Um RES em outro lugar do ringue não o coloca dentro de sua zona de produção. Confirme sua distância no jogo. As notas RES identificam os locais; uma rota de asteróide precisa de seu próprio mapa. As descobertas principais usam uma mecânica separada e mais sinais de pontos de acesso não estabelecem um local de mineração melhor."
     },
     {
       "source": "A Raven API key is saved for this commander.",
@@ -128711,6 +128991,10 @@
       "translation": "A amostra ativa pertence a outro corpo"
     },
     {
+      "source": "Active session time, excluding pauses.",
+      "translation": "Tempo de sessão ativa, excluindo pausas."
+    },
+    {
       "source": "Active time",
       "translation": "Tempo ativo"
     },
@@ -129137,6 +129421,10 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Todos os sistemas {0} alcançados."
+    },
+    {
+      "source": "Alliance",
+      "translation": "Aliança"
     },
     {
       "source": "Alliance Challenger",
@@ -129847,10 +130135,6 @@
       "translation": "AsteroidBase"
     },
     {
-      "source": "Asteroids",
-      "translation": "Asteróides"
-    },
-    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "Em um depósito, envie .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. O posicionamento preciso aqui pode sobrepor um marcador existente. Exemplo: .mine ruby m/l here. Remova o depósito mapeado mais próximo dentro de 0,5 km com .mine delete here."
     },
@@ -130267,8 +130551,20 @@
       "translation": "Média / Melhor"
     },
     {
+      "source": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+      "translation": "Média e melhor mostram conteúdo mineral em rochas correspondentes. As descobertas principais contam descobertas, não extrações concluídas."
+    },
+    {
+      "source": "Average in finds",
+      "translation": "Média em descobertas"
+    },
+    {
       "source": "Average mineral percentage",
       "translation": "Percentual médio do mineral"
+    },
+    {
+      "source": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+      "translation": "Porcentagem mineral média em rochas correspondentes. Rochas sem o mineral e detecções apenas de núcleo sem porcentagem são excluídas."
     },
     {
       "source": "Average yield",
@@ -133739,10 +134035,6 @@
       "translation": "Combine os totais do navio em contagens FC"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Combine a referência de anel integrada de SrvSurvey, descobertas de comandante e resultados de API Spansh. O Spots++ prioriza locais RES mapeados, sobreposições, anéis de múltiplos pontos de acesso e reservas intocadas sem a necessidade de download de um despejo de galáxia."
-    },
-    {
       "source": "Combined Build Report",
       "translation": "Relatório de construção combinado"
     },
@@ -134415,6 +134707,10 @@
       "translation": "Confirme a grande auditoria de rede antes de iniciá-la."
     },
     {
+      "source": "Confirm the location",
+      "translation": "Confirme a localização"
+    },
+    {
       "source": "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.",
       "translation": "Confirme para pedir ao Raven Colonial para importar o catálogo de carrocerias deste sistema. Nenhum site local será publicado."
     },
@@ -134911,12 +135207,12 @@
       "translation": "Custo principal"
     },
     {
-      "source": "Core: {0}",
-      "translation": "Núcleo: {0}"
+      "source": "Core finds",
+      "translation": "Principais descobertas"
     },
     {
-      "source": "Cores",
-      "translation": "Núcleos"
+      "source": "Core: {0}",
+      "translation": "Núcleo: {0}"
     },
     {
       "source": "Coriolis",
@@ -136623,6 +136919,10 @@
       "translation": "Registro de viagem de doca a doca"
     },
     {
+      "source": "DockFighter",
+      "translation": "DockFighter"
+    },
+    {
       "source": "DockSRV",
       "translation": "DockSRV"
     },
@@ -137333,6 +137633,10 @@
     {
       "source": "Emergency power cells",
       "translation": "Células de energia de emergência"
+    },
+    {
+      "source": "Empire",
+      "translation": "Império"
     },
     {
       "source": "Empty",
@@ -138837,6 +139141,10 @@
     {
       "source": "Find",
       "translation": "Encontrar"
+    },
+    {
+      "source": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots++ lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+      "translation": "Encontre anéis metálicos na referência integrada, suas descobertas e Spansh. O Spots++ lista primeiro as reservas intocadas e depois os locais próximos, incluindo pontos de acesso únicos. Todas as classificações de platina por distância. Contagens de pontos de acesso e notas do site descrevem o anel; eles não medem seu rendimento."
     },
     {
       "source": "Find Platinum spots",
@@ -141163,6 +141471,14 @@
       "translation": "Nível de aviso de alta gravidade"
     },
     {
+      "source": "Highest rank",
+      "translation": "Classificação mais alta"
+    },
+    {
+      "source": "Highest rank reached",
+      "translation": "Classificação mais alta alcançada"
+    },
+    {
       "source": "Highest recorded suffix: {0}",
       "translation": "Sufixo mais alto registrado: {0}"
     },
@@ -143011,6 +143327,10 @@
       "translation": "Mineração a laser"
     },
     {
+      "source": "Laser yield",
+      "translation": "Rendimento do laser"
+    },
+    {
       "source": "Last",
       "translation": "Durar"
     },
@@ -143137,6 +143457,14 @@
     {
       "source": "LaunchDrone",
       "translation": "LançamentoDrone"
+    },
+    {
+      "source": "LaunchFighter",
+      "translation": "LaunchFighter"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "LançamentoSRV"
     },
     {
       "source": "Lava spout",
@@ -144777,6 +145105,10 @@
     {
       "source": "Metal-rich rings",
       "translation": "Anéis ricos em metal"
+    },
+    {
+      "source": "MetalRich",
+      "translation": "Metal rico"
     },
     {
       "source": "Metallic",
@@ -149035,6 +149367,10 @@
       "translation": "Os dados do jogador são verificados por bytes, mas as preferências da UI herdadas não puderam ser traduzidas; as configurações atuais do Avalonia permaneceram inalteradas. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Controlado por jogador"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Aguarde {0} segundos antes de atualizar Frontier novamente."
     },
@@ -150019,6 +150355,14 @@
       "translation": "Prospectado"
     },
     {
+      "source": "Prospected asteroids",
+      "translation": "Asteróides prospectados"
+    },
+    {
+      "source": "Prospected asteroids: {0} · Core finds: {1}",
+      "translation": "Asteróides prospectados: {0} · Descobertas principais: {1}"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Prospecção de resultados"
     },
@@ -150515,6 +150859,10 @@
       "translation": "RES mapeado"
     },
     {
+      "source": "RES sites",
+      "translation": "Locais RES"
+    },
+    {
       "source": "RES sites only",
       "translation": "Somente sites RES"
     },
@@ -150677,6 +151025,14 @@
     {
       "source": "Range (LY)",
       "translation": "Alcance (LY)"
+    },
+    {
+      "source": "Rank",
+      "translation": "Classificação"
+    },
+    {
+      "source": "Rank progress has not been reported for this rank in the loaded commander journals.",
+      "translation": "O progresso de classificação não foi relatado para esta classificação nos diários de comandante carregados."
     },
     {
       "source": "Rank unavailable",
@@ -151621,6 +151977,10 @@
     {
       "source": "Refined commodities",
       "translation": "Commodities refinadas"
+    },
+    {
+      "source": "Refined tons and tons per active session hour.",
+      "translation": "Toneladas e toneladas refinadas por hora de sessão ativa."
     },
     {
       "source": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -153515,6 +153875,10 @@
       "translation": "Posição SRV"
     },
     {
+      "source": "SRVDestroyed",
+      "translation": "SRVDestruído"
+    },
+    {
       "source": "STAR CLASS UNKNOWN",
       "translation": "CLASSE ESTRELA DESCONHECIDA"
     },
@@ -155059,8 +155423,8 @@
       "translation": "A sessão mostra percentagens de prospecção, descobertas principais, resultados de qualidade, tonelagem refinada, lapas, materiais de engenharia e carga. As correções manuais de contagem retêm as observações originais."
     },
     {
-      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
-      "translation": "As toneladas da sessão são confirmadas pelas leituras de carga. O transporte da refinaria após a sessão é separado e não muda em t/hora. Relatórios sem leituras de carga suficientes são marcados como estimativas."
+      "source": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
+      "translation": "As toneladas da sessão são confirmadas pelas leituras de carga. As tarifas usam o tempo da sessão ativa e excluem pausas. O transporte da refinaria após a sessão é separado e não muda em t/hora. As contagens de clientes potenciais incluem correções manuais; descobertas principais contam descobertas. Relatórios sem leituras de carga suficientes são marcados como estimativas."
     },
     {
       "source": "Session tons confirmed from cargo readings.",
@@ -156093,6 +156457,10 @@
     {
       "source": "Site heading",
       "translation": "Título do site"
+    },
+    {
+      "source": "Site notes",
+      "translation": "Notas do site"
     },
     {
       "source": "Site origin",
@@ -161583,8 +161951,8 @@
       "translation": "Tolerância"
     },
     {
-      "source": "Tons / hour",
-      "translation": "Toneladas/hora"
+      "source": "Tons / active hour",
+      "translation": "Toneladas/hora ativa"
     },
     {
       "source": "Too steep",
@@ -161797,6 +162165,10 @@
     {
       "source": "Traders",
       "translation": "Comerciantes"
+    },
+    {
+      "source": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+      "translation": "A mineração a laser tradicional obtém rendimento adicional num raio de 20 km do centro RES. O benefício varia de acordo com o nível do site; Locais perigosos oferecem o maior aumento relatado. A produção real também depende do prospector e do equipamento de mineração."
     },
     {
       "source": "Traffic",
@@ -163463,10 +163835,6 @@
       "translation": "Ametista Vazia"
     },
     {
-      "source": "Void Opal",
-      "translation": "Opala do Vazio"
-    },
-    {
       "source": "Void Opals",
       "translation": "Opalas do Vazio"
     },
@@ -163541,10 +163909,6 @@
     {
       "source": "WG Life",
       "translation": "GT Vida"
-    },
-    {
-      "source": "WHY IT RANKS",
-      "translation": "POR QUE É CLASSIFICADO"
     },
     {
       "source": "WINDOW SIZE",
@@ -167463,6 +167827,10 @@
       "translation": "sufixos {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "terno"
+    },
+    {
       "source": "surface",
       "translation": "superfície"
     },
@@ -168347,10 +168715,6 @@
       "translation": "{0} conforme verificado · {1} se mapeado"
     },
     {
-      "source": "{0} asteroids · {1} cores",
-      "translation": "Asteróides {0} · Núcleos {1}"
-    },
-    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} em '{1}': {2}"
     },
@@ -169159,8 +169523,8 @@
       "translation": "{0} · {1} · {2} km fronteira"
     },
     {
-      "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
-      "translation": "{0} · {1} · {2} t · {3} t/h · Asteroides {4} · Núcleos {5}"
+      "source": "{0} · {1} · {2} t · {3} t/h · Prospected asteroids: {4} · Core finds: {5}",
+      "translation": "{0} · {1} · {2} t · {3} t/h · Asteróides prospectados: {4} · Descobertas principais: {5}"
     },
     {
       "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
@@ -169209,6 +169573,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} t"
+    },
+    {
+      "source": "{0}: {1} to next rank. Last reported by local journals.",
+      "translation": "{0}: {1} para a próxima classificação. Relatado pela última vez por jornais locais."
     },
     {
       "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
@@ -169533,8 +169901,8 @@
       "translation": "+ в ожидании"
     },
     {
-      "source": "+1 asteroid",
-      "translation": "+1 астероид"
+      "source": "+1 prospect",
+      "translation": "+1 перспектива"
     },
     {
       "source": "+1 quality hit",
@@ -169553,8 +169921,8 @@
       "translation": ", Руины{0} {1}"
     },
     {
-      "source": "-1 asteroid",
-      "translation": "-1 астероид"
+      "source": "-1 prospect",
+      "translation": "-1 перспектива"
     },
     {
       "source": "-1 quality hit",
@@ -170219,6 +170587,10 @@
     {
       "source": "A Guardian beacon scan was detected without a system name.",
       "translation": "Обнаружено сканирование маяка Guardian без имени системы."
+    },
+    {
+      "source": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+      "translation": "RES в другом месте кольца не помещает вас в зону выхода. Подтвердите расстояние в игре. В примечаниях к RES указаны места; маршруту астероида нужна собственная карта. Для находок керна используется отдельная механика, и большее количество сигналов о горячих точках не указывает на лучшее место для добычи полезных ископаемых."
     },
     {
       "source": "A Raven API key is saved for this commander.",
@@ -171077,6 +171449,10 @@
       "translation": "Активный образец принадлежит другому телу"
     },
     {
+      "source": "Active session time, excluding pauses.",
+      "translation": "Время активной сессии, без учета пауз."
+    },
+    {
       "source": "Active time",
       "translation": "Активное время"
     },
@@ -171503,6 +171879,10 @@
     {
       "source": "All {0} systems reached.",
       "translation": "Достигнуты все системы {0} ."
+    },
+    {
+      "source": "Alliance",
+      "translation": "Альянс"
     },
     {
       "source": "Alliance Challenger",
@@ -172213,10 +172593,6 @@
       "translation": "АстероидБаза"
     },
     {
-      "source": "Asteroids",
-      "translation": "Астероиды"
-    },
-    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "При депозите отправьте .mine <commodity> <l|m|h>/<l|m|h> here. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Точное размещение здесь может перекрывать существующий маркер. Пример: .mine ruby m/l here. Удалите ближайшее обнаруженное месторождение в радиусе 0,5 км с помощью .mine delete here."
     },
@@ -172633,8 +173009,20 @@
       "translation": "Средний/Лучший"
     },
     {
+      "source": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+      "translation": "Средние и лучшие показатели содержания минералов в соответствующих породах. Находки керна считаются открытиями, а не завершенными извлечениями."
+    },
+    {
+      "source": "Average in finds",
+      "translation": "Среднее количество находок"
+    },
+    {
       "source": "Average mineral percentage",
       "translation": "Средняя доля минерала"
+    },
+    {
+      "source": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+      "translation": "Средний процент минералов в соответствующих породах. Породы без минералов и обнаружения только керна без процентного содержания исключаются."
     },
     {
       "source": "Average yield",
@@ -176105,10 +176493,6 @@
       "translation": "Объедините общее количество кораблей в количество FC."
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "Встроенная ссылка на кольцо объединения SrvSurvey, открытия командира и результаты API Spansh. Spots++ отдает приоритет нанесенным на карту объектам ВИЭ, перекрытиям, кольцам с несколькими горячими точками и нетронутым резервам, не требуя загрузки дампа галактики."
-    },
-    {
       "source": "Combined Build Report",
       "translation": "Комбинированный отчет о сборке"
     },
@@ -176781,6 +177165,10 @@
       "translation": "Подтвердите аудит большой сети перед его запуском."
     },
     {
+      "source": "Confirm the location",
+      "translation": "Подтвердите местоположение"
+    },
+    {
       "source": "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.",
       "translation": "Подтвердите запрос Raven Colonial на импорт каталога тел этой системы. Никакие локальные сайты публиковаться не будут."
     },
@@ -177277,12 +177665,12 @@
       "translation": "Основная стоимость"
     },
     {
-      "source": "Core: {0}",
-      "translation": "Ядро: {0}"
+      "source": "Core finds",
+      "translation": "Керновые находки"
     },
     {
-      "source": "Cores",
-      "translation": "Ядра"
+      "source": "Core: {0}",
+      "translation": "Ядро: {0}"
     },
     {
       "source": "Coriolis",
@@ -178989,6 +179377,10 @@
       "translation": "Журнал путешествия от дока к доку"
     },
     {
+      "source": "DockFighter",
+      "translation": "Док-истребитель"
+    },
+    {
       "source": "DockSRV",
       "translation": "ДокSRV"
     },
@@ -179699,6 +180091,10 @@
     {
       "source": "Emergency power cells",
       "translation": "Аварийные силовые элементы"
+    },
+    {
+      "source": "Empire",
+      "translation": "Империя"
     },
     {
       "source": "Empty",
@@ -181203,6 +181599,10 @@
     {
       "source": "Find",
       "translation": "Находить"
+    },
+    {
+      "source": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots++ lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+      "translation": "Найдите металлические кольца по встроенному справочнику, своим открытиям и Spansh. Spots++ сначала перечисляет нетронутые заповедники, затем близлежащие объекты, включая отдельные горячие точки. Вся платина сортируется по расстоянию. Количество точек доступа и примечания к сайтам описывают кольцо; они не измеряют его урожайность."
     },
     {
       "source": "Find Platinum spots",
@@ -183529,6 +183929,14 @@
       "translation": "Высокая гравитацияПредупреждениеУровень"
     },
     {
+      "source": "Highest rank",
+      "translation": "Высший ранг"
+    },
+    {
+      "source": "Highest rank reached",
+      "translation": "Достигнут наивысший ранг"
+    },
+    {
       "source": "Highest recorded suffix: {0}",
       "translation": "Самый высокий зарегистрированный суффикс: {0}"
     },
@@ -185377,6 +185785,10 @@
       "translation": "Лазерная добыча"
     },
     {
+      "source": "Laser yield",
+      "translation": "Мощность лазера"
+    },
+    {
       "source": "Last",
       "translation": "Последний"
     },
@@ -185503,6 +185915,14 @@
     {
       "source": "LaunchDrone",
       "translation": "ЗапускДрон"
+    },
+    {
+      "source": "LaunchFighter",
+      "translation": "ЗапускИстребитель"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "ЗапускSRV"
     },
     {
       "source": "Lava spout",
@@ -187143,6 +187563,10 @@
     {
       "source": "Metal-rich rings",
       "translation": "Металлические кольца"
+    },
+    {
+      "source": "MetalRich",
+      "translation": "МеталлРич"
     },
     {
       "source": "Metallic",
@@ -191401,6 +191825,10 @@
       "translation": "Данные игрока проверяются побайтно, но устаревшие настройки пользовательского интерфейса не могут быть переведены; текущие настройки Авалонии остались без изменений. {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "Контролируемый игроком"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "Пожалуйста, подождите {0} секунд, прежде чем снова обновить Frontier секунд."
     },
@@ -192385,6 +192813,14 @@
       "translation": "Разведанный"
     },
     {
+      "source": "Prospected asteroids",
+      "translation": "Разведанные астероиды"
+    },
+    {
+      "source": "Prospected asteroids: {0} · Core finds: {1}",
+      "translation": "Предполагаемые астероиды: {0} · Находки ядра: {1}"
+    },
+    {
       "source": "Prospecting results",
       "translation": "Результаты поиска"
     },
@@ -192881,6 +193317,10 @@
       "translation": "ВИЭ сопоставлены"
     },
     {
+      "source": "RES sites",
+      "translation": "Площадки ВИЭ"
+    },
+    {
       "source": "RES sites only",
       "translation": "Только сайты ВИЭ"
     },
@@ -193043,6 +193483,14 @@
     {
       "source": "Range (LY)",
       "translation": "Диапазон (ЛИ)"
+    },
+    {
+      "source": "Rank",
+      "translation": "Классифицировать"
+    },
+    {
+      "source": "Rank progress has not been reported for this rank in the loaded commander journals.",
+      "translation": "В загруженных журналах командиров для этого звания не сообщается о прогрессе."
     },
     {
       "source": "Rank unavailable",
@@ -193987,6 +194435,10 @@
     {
       "source": "Refined commodities",
       "translation": "Нефтепродукты"
+    },
+    {
+      "source": "Refined tons and tons per active session hour.",
+      "translation": "Тонны и тонны рафинированного за час активной сессии."
     },
     {
       "source": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -195881,6 +196333,10 @@
       "translation": "Позиция СРВ"
     },
     {
+      "source": "SRVDestroyed",
+      "translation": "СРВРазрушено"
+    },
+    {
       "source": "STAR CLASS UNKNOWN",
       "translation": "ЗВЕЗДНЫЙ КЛАСС НЕИЗВЕСТЕН"
     },
@@ -197425,8 +197881,8 @@
       "translation": "Сессия показывает процент разведки, основные открытия, качественные результаты, переработанный тоннаж, блюда, инженерные материалы и грузы. Ручные корректировки подсчета сохраняют исходные наблюдения."
     },
     {
-      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
-      "translation": "Сессионные тонны подтверждаются показаниями груза. Перенос НПЗ после сеанса является отдельным и не меняется т/час. Отчеты без достаточного количества показаний груза помечаются как оценки."
+      "source": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
+      "translation": "Сессионные тонны подтверждаются показаниями груза. Тарифы учитывают активное время сеанса и исключают паузы. Перенос НПЗ после сеанса является отдельным и не меняется т/час. Подсчет потенциальных клиентов включает ручные исправления; ядро находки считать открытия. Отчеты без достаточного количества показаний груза помечаются как оценки."
     },
     {
       "source": "Session tons confirmed from cargo readings.",
@@ -198459,6 +198915,10 @@
     {
       "source": "Site heading",
       "translation": "Заголовок сайта"
+    },
+    {
+      "source": "Site notes",
+      "translation": "Примечания к сайту"
     },
     {
       "source": "Site origin",
@@ -203949,8 +204409,8 @@
       "translation": "Толерантность"
     },
     {
-      "source": "Tons / hour",
-      "translation": "Тонн/час"
+      "source": "Tons / active hour",
+      "translation": "Тонн/активный час"
     },
     {
       "source": "Too steep",
@@ -204163,6 +204623,10 @@
     {
       "source": "Traders",
       "translation": "Трейдеры"
+    },
+    {
+      "source": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+      "translation": "Традиционная лазерная добыча дает дополнительную прибыль в радиусе 20 км от центра ВИЭ. Преимущество зависит от уровня сайта; Наибольший зарегистрированный рост наблюдается на опасных объектах. Фактический объем добычи также зависит от старателя и горнодобывающего оборудования."
     },
     {
       "source": "Traffic",
@@ -205829,10 +206293,6 @@
       "translation": "Пустотный аметист"
     },
     {
-      "source": "Void Opal",
-      "translation": "Пустотный опал"
-    },
-    {
       "source": "Void Opals",
       "translation": "Пустотные опалы"
     },
@@ -205907,10 +206367,6 @@
     {
       "source": "WG Life",
       "translation": "РГ Жизнь"
-    },
-    {
-      "source": "WHY IT RANKS",
-      "translation": "ПОЧЕМУ ЭТО ЗНАЧИТ"
     },
     {
       "source": "WINDOW SIZE",
@@ -209829,6 +210285,10 @@
       "translation": "суффиксы {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "подходить"
+    },
+    {
       "source": "surface",
       "translation": "поверхность"
     },
@@ -210713,10 +211173,6 @@
       "translation": "{0} при сканировании · {1} при сопоставлении"
     },
     {
-      "source": "{0} asteroids · {1} cores",
-      "translation": "Астероиды {0} · Ядра {1}"
-    },
-    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} в '{1}': {2}"
     },
@@ -211525,8 +211981,8 @@
       "translation": "{0} · {1} · {2} км границы"
     },
     {
-      "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
-      "translation": "{0} · {1} · {2} t · {3} т/ч · {4} астероиды · {5} ядра"
+      "source": "{0} · {1} · {2} t · {3} t/h · Prospected asteroids: {4} · Core finds: {5}",
+      "translation": "{0} · {1} · {2} t · {3} т/ч · Ожидаемые астероиды: {4} · Находки ядра: {5}"
     },
     {
       "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
@@ -211575,6 +212031,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} т"
+    },
+    {
+      "source": "{0}: {1} to next rank. Last reported by local journals.",
+      "translation": "{0}: {1} на следующий ранг. Последнее сообщение сообщили местные журналы."
     },
     {
       "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
@@ -211899,8 +212359,8 @@
       "translation": "+ 待定"
     },
     {
-      "source": "+1 asteroid",
-      "translation": "+1 小行星"
+      "source": "+1 prospect",
+      "translation": "+1 潜在客户"
     },
     {
       "source": "+1 quality hit",
@@ -211919,8 +212379,8 @@
       "translation": ", 废墟{0} {1}"
     },
     {
-      "source": "-1 asteroid",
-      "translation": "-1小行星"
+      "source": "-1 prospect",
+      "translation": "-1 前景"
     },
     {
       "source": "-1 quality hit",
@@ -212585,6 +213045,10 @@
     {
       "source": "A Guardian beacon scan was detected without a system name.",
       "translation": "检测到卫报信标扫描，但没有系统名称。"
+    },
+    {
+      "source": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+      "translation": "环中其他位置的 RES 不会将您置于其屈服区域内。确认您在游戏中的距离。 RES 注释标识站点；小行星路线需要自己的地图。核心发现使用单独的机制，更多的热点信号并不能建立更好的采矿地点。"
     },
     {
       "source": "A Raven API key is saved for this commander.",
@@ -213443,6 +213907,10 @@
       "translation": "活动样本属于另一个机构"
     },
     {
+      "source": "Active session time, excluding pauses.",
+      "translation": "活动会话时间，不包括暂停。"
+    },
+    {
       "source": "Active time",
       "translation": "活跃时间"
     },
@@ -213869,6 +214337,10 @@
     {
       "source": "All {0} systems reached.",
       "translation": "已到达所有 {0} 系统。"
+    },
+    {
+      "source": "Alliance",
+      "translation": "联盟"
     },
     {
       "source": "Alliance Challenger",
@@ -214579,10 +215051,6 @@
       "translation": "小行星基地"
     },
     {
-      "source": "Asteroids",
-      "translation": "小行星"
-    },
-    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "存款后，发送.mine <commodity> <l|m|h>/<l|m|h> here。使用 l、m 或 h 表示低、中或高；完整的单词也有效。此处的精确放置可能会与现有标记重叠。示例：.mine ruby m/l here。使用 .mine delete here 移除 0.5 公里内最近的地图沉积物。"
     },
@@ -214999,8 +215467,20 @@
       "translation": "平均/最佳"
     },
     {
+      "source": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+      "translation": "平均和最佳显示匹配岩石中的矿物质含量。核心发现指的是发现，而不是完成的提取。"
+    },
+    {
+      "source": "Average in finds",
+      "translation": "平均发现数"
+    },
+    {
       "source": "Average mineral percentage",
       "translation": "平均矿物百分比"
+    },
+    {
+      "source": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+      "translation": "匹配岩石中的平均矿物百分比。没有矿物的岩石和没有百分比的仅检测到岩心的岩石被排除在外。"
     },
     {
       "source": "Average yield",
@@ -218471,10 +218951,6 @@
       "translation": "将船舶总数合并为 FC 计数"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "结合 SrvSurvey 的内置环参考、指挥官发现和 Spansh API 结果。 Spots++ 优先考虑映射的 RES 站点、重叠、多热点环和原始储备，无需下载星系转储。"
-    },
-    {
       "source": "Combined Build Report",
       "translation": "组合构建报告"
     },
@@ -219147,6 +219623,10 @@
       "translation": "在开始之前确认大型网络审核。"
     },
     {
+      "source": "Confirm the location",
+      "translation": "确认地点"
+    },
+    {
       "source": "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.",
       "translation": "确认要求Raven Colonial导入该系统的主体目录。不会发布任何本地站点。"
     },
@@ -219643,12 +220123,12 @@
       "translation": "核心成本"
     },
     {
-      "source": "Core: {0}",
-      "translation": "核心：{0}"
+      "source": "Core finds",
+      "translation": "核心发现"
     },
     {
-      "source": "Cores",
-      "translation": "核心"
+      "source": "Core: {0}",
+      "translation": "核心：{0}"
     },
     {
       "source": "Coriolis",
@@ -221355,6 +221835,10 @@
       "translation": "码头到码头的旅行日志"
     },
     {
+      "source": "DockFighter",
+      "translation": "码头战斗机"
+    },
+    {
       "source": "DockSRV",
       "translation": "码头SRV"
     },
@@ -222065,6 +222549,10 @@
     {
       "source": "Emergency power cells",
       "translation": "应急电池"
+    },
+    {
+      "source": "Empire",
+      "translation": "帝国"
     },
     {
       "source": "Empty",
@@ -223569,6 +224057,10 @@
     {
       "source": "Find",
       "translation": "寻找"
+    },
+    {
+      "source": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots++ lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+      "translation": "从内置参考、您的发现和 Spansh 中查找金属戒指。 Spots++ 首先列出原始保护区，然后列出附近的地点，包括单个热点。所有铂金均按距离排序。热点计数和站点注释描述了该环；他们不测量其产量。"
     },
     {
       "source": "Find Platinum spots",
@@ -225895,6 +226387,14 @@
       "translation": "高重力警告级别"
     },
     {
+      "source": "Highest rank",
+      "translation": "最高等级"
+    },
+    {
+      "source": "Highest rank reached",
+      "translation": "达到最高排名"
+    },
+    {
       "source": "Highest recorded suffix: {0}",
       "translation": "最高记录后缀：{0}"
     },
@@ -227743,6 +228243,10 @@
       "translation": "激光采矿"
     },
     {
+      "source": "Laser yield",
+      "translation": "激光产量"
+    },
+    {
       "source": "Last",
       "translation": "最后的"
     },
@@ -227869,6 +228373,14 @@
     {
       "source": "LaunchDrone",
       "translation": "发射无人机"
+    },
+    {
+      "source": "LaunchFighter",
+      "translation": "发射战斗机"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "发射SRV"
     },
     {
       "source": "Lava spout",
@@ -229509,6 +230021,10 @@
     {
       "source": "Metal-rich rings",
       "translation": "富含金属的戒指"
+    },
+    {
+      "source": "MetalRich",
+      "translation": "富金属"
     },
     {
       "source": "Metallic",
@@ -233767,6 +234283,10 @@
       "translation": "玩家数据经过字节验证，但旧版 UI 首选项无法转换；当前的 Avalonia 设置保持不变。 {0}"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "玩家控制"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "请等待 {0} 秒，然后再次刷新 Frontier。"
     },
@@ -234751,6 +235271,14 @@
       "translation": "展望"
     },
     {
+      "source": "Prospected asteroids",
+      "translation": "预计的小行星"
+    },
+    {
+      "source": "Prospected asteroids: {0} · Core finds: {1}",
+      "translation": "预期小行星：{0} · 核心发现：{1}"
+    },
+    {
       "source": "Prospecting results",
       "translation": "勘探结果"
     },
@@ -235247,6 +235775,10 @@
       "translation": "RES 映射"
     },
     {
+      "source": "RES sites",
+      "translation": "RES站点"
+    },
+    {
       "source": "RES sites only",
       "translation": "仅限 RES 网站"
     },
@@ -235409,6 +235941,14 @@
     {
       "source": "Range (LY)",
       "translation": "射程（LY）"
+    },
+    {
+      "source": "Rank",
+      "translation": "秩"
+    },
+    {
+      "source": "Rank progress has not been reported for this rank in the loaded commander journals.",
+      "translation": "加载的指挥官日志中尚未报告该军衔的军衔进度。"
     },
     {
       "source": "Rank unavailable",
@@ -236353,6 +236893,10 @@
     {
       "source": "Refined commodities",
       "translation": "精炼商品"
+    },
+    {
+      "source": "Refined tons and tons per active session hour.",
+      "translation": "每个活跃会话小时的精炼吨数和吨数。"
     },
     {
       "source": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -238247,6 +238791,10 @@
       "translation": "SRV位置"
     },
     {
+      "source": "SRVDestroyed",
+      "translation": "SRV被毁"
+    },
+    {
       "source": "STAR CLASS UNKNOWN",
       "translation": "星级未知"
     },
@@ -239791,8 +240339,8 @@
       "translation": "会议展示了勘探百分比、核心发现、质量命中、精炼吨位、帽贝、工程材料和货物。手动计数校正保留原始观察结果。"
     },
     {
-      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
-      "translation": "会话吨数由货物读数确认。炼油厂结转量在时段后是单独的并且不改变t/小时。没有足够货物读数的报告被标记为估计值。"
+      "source": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
+      "translation": "会话吨数由货物读数确认。费率使用活动会话时间并排除暂停。炼油厂结转量在时段后是单独的并且不改变t/小时。潜在客户计数包括手动更正；核心发现计数发现。没有足够货物读数的报告被标记为估计值。"
     },
     {
       "source": "Session tons confirmed from cargo readings.",
@@ -240825,6 +241373,10 @@
     {
       "source": "Site heading",
       "translation": "网站标题"
+    },
+    {
+      "source": "Site notes",
+      "translation": "站点注释"
     },
     {
       "source": "Site origin",
@@ -246315,8 +246867,8 @@
       "translation": "公差"
     },
     {
-      "source": "Tons / hour",
-      "translation": "吨/小时"
+      "source": "Tons / active hour",
+      "translation": "吨/活跃小时"
     },
     {
       "source": "Too steep",
@@ -246529,6 +247081,10 @@
     {
       "source": "Traders",
       "translation": "贸易商"
+    },
+    {
+      "source": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+      "translation": "传统激光采矿在 RES 中心 20 公里范围内获得额外产量。收益因站点等级而异；危险场所的增幅最大。实际产量还取决于探矿者和采矿设备。"
     },
     {
       "source": "Traffic",
@@ -248195,10 +248751,6 @@
       "translation": "虚空紫晶"
     },
     {
-      "source": "Void Opal",
-      "translation": "虚空蛋白石"
-    },
-    {
       "source": "Void Opals",
       "translation": "虚空蛋白石"
     },
@@ -248273,10 +248825,6 @@
     {
       "source": "WG Life",
       "translation": "工作生活"
-    },
-    {
-      "source": "WHY IT RANKS",
-      "translation": "为什么它排名"
     },
     {
       "source": "WINDOW SIZE",
@@ -252195,6 +252743,10 @@
       "translation": "后缀 {0}–{1}"
     },
     {
+      "source": "suit",
+      "translation": "套装"
+    },
+    {
       "source": "surface",
       "translation": "表面"
     },
@@ -253079,10 +253631,6 @@
       "translation": "{0} 扫描 · {1} 如果映射"
     },
     {
-      "source": "{0} asteroids · {1} cores",
-      "translation": "{0} 小行星 · {1} 核心"
-    },
-    {
       "source": "{0} at '{1}': {2}",
       "translation": "{0} 在“{1}”：{2}"
     },
@@ -253891,8 +254439,8 @@
       "translation": "{0} · {1} · {2} 公里边界"
     },
     {
-      "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
-      "translation": "{0} · {1} · {2} t · {3} t/h · {4} 小行星 · {5} 核心"
+      "source": "{0} · {1} · {2} t · {3} t/h · Prospected asteroids: {4} · Core finds: {5}",
+      "translation": "{0} · {1} · {2} t · {3} t/h · 预期小行星：{4} · 核心发现：{5}"
     },
     {
       "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
@@ -253941,6 +254489,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "{0}: {1} t"
+    },
+    {
+      "source": "{0}: {1} to next rank. Last reported by local journals.",
+      "translation": "{0}：{1} 进入下一个等级。最后由当地期刊报道。"
     },
     {
       "source": "{0}: {1} units for {2}: {3} (unconfirmed).",
@@ -254265,8 +254817,8 @@
       "translation": "* + PENDING >>>!"
     },
     {
-      "source": "+1 asteroid",
-      "translation": "* +1 ASTEROID >>>!"
+      "source": "+1 prospect",
+      "translation": "* +1 PROSPECT >>>!"
     },
     {
       "source": "+1 quality hit",
@@ -254285,8 +254837,8 @@
       "translation": "* , RUINS{0} {1} >>>!"
     },
     {
-      "source": "-1 asteroid",
-      "translation": "* -1 ASTEROID >>>!"
+      "source": "-1 prospect",
+      "translation": "* -1 PROSPECT >>>!"
     },
     {
       "source": "-1 quality hit",
@@ -254951,6 +255503,10 @@
     {
       "source": "A Guardian beacon scan was detected without a system name.",
       "translation": "* A GUARDIAN BEACON SCAN WAS DETECTED WITHOUT A SYSTEM NAME. >>>!"
+    },
+    {
+      "source": "A RES elsewhere in the ring does not place you inside its yield zone. Confirm your distance in game. RES notes identify sites; an asteroid route needs its own map. Core finds use separate mechanics, and more hotspot signals do not establish a better mining site.",
+      "translation": "* A RES ELSEWHERE IN THE RING DOES NOT PLACE YOU INSIDE ITS YIELD ZONE. CONFIRM YOUR DISTANCE IN GAME. RES NOTES IDENTIFY SITES; AN ASTEROID ROUTE NEEDS ITS OWN MAP. CORE FINDS USE SEPARATE MECHANICS, AND MORE HOTSPOT SIGNALS DO NOT ESTABLISH A BETTER MINING SITE. >>>!"
     },
     {
       "source": "A Raven API key is saved for this commander.",
@@ -255809,6 +256365,10 @@
       "translation": "* ACTIVE SAMPLE BELONGS TO ANOTHER BODY >>>!"
     },
     {
+      "source": "Active session time, excluding pauses.",
+      "translation": "* ACTIVE SESSION TIME, EXCLUDING PAUSES. >>>!"
+    },
+    {
       "source": "Active time",
       "translation": "* ACTIVE TIME >>>!"
     },
@@ -256235,6 +256795,10 @@
     {
       "source": "All {0} systems reached.",
       "translation": "* ALL {0} SYSTEMS REACHED. >>>!"
+    },
+    {
+      "source": "Alliance",
+      "translation": "* ALLIANCE >>>!"
     },
     {
       "source": "Alliance Challenger",
@@ -256945,10 +257509,6 @@
       "translation": "* ASTEROIDBASE >>>!"
     },
     {
-      "source": "Asteroids",
-      "translation": "* ASTEROIDS >>>!"
-    },
-    {
       "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
       "translation": "* AT A DEPOSIT, SEND .MINE <COMMODITY> <L|M|H>/<L|M|H> HERE. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. PRECISE HERE PLACEMENT MAY OVERLAP AN EXISTING MARKER. EXAMPLE: .MINE RUBY M/L HERE. REMOVE THE NEAREST MAPPED DEPOSIT WITHIN 0.5 KM WITH .MINE DELETE HERE. >>>!"
     },
@@ -257365,8 +257925,20 @@
       "translation": "* AVERAGE / BEST >>>!"
     },
     {
+      "source": "Average and best show mineral content in matching rocks. Core finds count discoveries, not completed extractions.",
+      "translation": "* AVERAGE AND BEST SHOW MINERAL CONTENT IN MATCHING ROCKS. CORE FINDS COUNT DISCOVERIES, NOT COMPLETED EXTRACTIONS. >>>!"
+    },
+    {
+      "source": "Average in finds",
+      "translation": "* AVERAGE IN FINDS >>>!"
+    },
+    {
       "source": "Average mineral percentage",
       "translation": "* AVERAGE MINERAL PERCENTAGE >>>!"
+    },
+    {
+      "source": "Average mineral percentage in matching rocks. Rocks without the mineral and core-only detections without a percentage are excluded.",
+      "translation": "* AVERAGE MINERAL PERCENTAGE IN MATCHING ROCKS. ROCKS WITHOUT THE MINERAL AND CORE-ONLY DETECTIONS WITHOUT A PERCENTAGE ARE EXCLUDED. >>>!"
     },
     {
       "source": "Average yield",
@@ -260837,10 +261409,6 @@
       "translation": "* COMBINE SHIP TOTALS INTO FC COUNTS >>>!"
     },
     {
-      "source": "Combine SrvSurvey's built-in ring reference, commander discoveries, and Spansh API results. Spots++ prioritizes mapped RES sites, overlaps, multi-hotspot rings, and pristine reserves without requiring a downloaded galaxy dump.",
-      "translation": "* COMBINE SRVSURVEY'S BUILT-IN RING REFERENCE, COMMANDER DISCOVERIES, AND SPANSH API RESULTS. SPOTS++ PRIORITIZES MAPPED RES SITES, OVERLAPS, MULTI-HOTSPOT RINGS, AND PRISTINE RESERVES WITHOUT REQUIRING A DOWNLOADED GALAXY DUMP. >>>!"
-    },
-    {
       "source": "Combined Build Report",
       "translation": "* COMBINED BUILD REPORT >>>!"
     },
@@ -261513,6 +262081,10 @@
       "translation": "* CONFIRM THE LARGE NETWORK AUDIT BEFORE STARTING IT. >>>!"
     },
     {
+      "source": "Confirm the location",
+      "translation": "* CONFIRM THE LOCATION >>>!"
+    },
+    {
       "source": "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.",
       "translation": "* CONFIRM TO ASK RAVEN COLONIAL TO IMPORT THIS SYSTEM'S BODY CATALOG. NO LOCAL SITES WILL BE PUBLISHED. >>>!"
     },
@@ -262009,12 +262581,12 @@
       "translation": "* CORE COST >>>!"
     },
     {
-      "source": "Core: {0}",
-      "translation": "* CORE: {0} >>>!"
+      "source": "Core finds",
+      "translation": "* CORE FINDS >>>!"
     },
     {
-      "source": "Cores",
-      "translation": "* CORES >>>!"
+      "source": "Core: {0}",
+      "translation": "* CORE: {0} >>>!"
     },
     {
       "source": "Coriolis",
@@ -263721,6 +264293,10 @@
       "translation": "* DOCK-TO-DOCK TRAVEL LOG >>>!"
     },
     {
+      "source": "DockFighter",
+      "translation": "* DOCKFIGHTER >>>!"
+    },
+    {
       "source": "DockSRV",
       "translation": "* DOCKSRV >>>!"
     },
@@ -264431,6 +265007,10 @@
     {
       "source": "Emergency power cells",
       "translation": "* EMERGENCY POWER CELLS >>>!"
+    },
+    {
+      "source": "Empire",
+      "translation": "* EMPIRE >>>!"
     },
     {
       "source": "Empty",
@@ -265935,6 +266515,10 @@
     {
       "source": "Find",
       "translation": "* FIND >>>!"
+    },
+    {
+      "source": "Find Metallic rings from the built-in reference, your discoveries and Spansh. Spots++ lists pristine reserves first, then nearby sites, including single hotspots. All platinum sorts by distance. Hotspot counts and site notes describe the ring; they do not measure its yield.",
+      "translation": "* FIND METALLIC RINGS FROM THE BUILT-IN REFERENCE, YOUR DISCOVERIES AND SPANSH. SPOTS++ LISTS PRISTINE RESERVES FIRST, THEN NEARBY SITES, INCLUDING SINGLE HOTSPOTS. ALL PLATINUM SORTS BY DISTANCE. HOTSPOT COUNTS AND SITE NOTES DESCRIBE THE RING; THEY DO NOT MEASURE ITS YIELD. >>>!"
     },
     {
       "source": "Find Platinum spots",
@@ -268261,6 +268845,14 @@
       "translation": "* HIGHGRAVITYWARNINGLEVEL >>>!"
     },
     {
+      "source": "Highest rank",
+      "translation": "* HIGHEST RANK >>>!"
+    },
+    {
+      "source": "Highest rank reached",
+      "translation": "* HIGHEST RANK REACHED >>>!"
+    },
+    {
       "source": "Highest recorded suffix: {0}",
       "translation": "* HIGHEST RECORDED SUFFIX: {0} >>>!"
     },
@@ -270109,6 +270701,10 @@
       "translation": "* LASER MINING >>>!"
     },
     {
+      "source": "Laser yield",
+      "translation": "* LASER YIELD >>>!"
+    },
+    {
       "source": "Last",
       "translation": "* LAST >>>!"
     },
@@ -270235,6 +270831,14 @@
     {
       "source": "LaunchDrone",
       "translation": "* LAUNCHDRONE >>>!"
+    },
+    {
+      "source": "LaunchFighter",
+      "translation": "* LAUNCHFIGHTER >>>!"
+    },
+    {
+      "source": "LaunchSRV",
+      "translation": "* LAUNCHSRV >>>!"
     },
     {
       "source": "Lava spout",
@@ -271875,6 +272479,10 @@
     {
       "source": "Metal-rich rings",
       "translation": "* METAL-RICH RINGS >>>!"
+    },
+    {
+      "source": "MetalRich",
+      "translation": "* METALRICH >>>!"
     },
     {
       "source": "Metallic",
@@ -276133,6 +276741,10 @@
       "translation": "* PLAYER DATA IS BYTE-VERIFIED, BUT LEGACY UI PREFERENCES COULD NOT BE TRANSLATED; THE CURRENT AVALONIA SETTINGS WERE LEFT UNCHANGED. {0} >>>!"
     },
     {
+      "source": "PlayerControlled",
+      "translation": "* PLAYERCONTROLLED >>>!"
+    },
+    {
       "source": "Please wait {0} seconds before refreshing Frontier again.",
       "translation": "* PLEASE WAIT {0} SECONDS BEFORE REFRESHING FRONTIER AGAIN. >>>!"
     },
@@ -277117,6 +277729,14 @@
       "translation": "* PROSPECTED >>>!"
     },
     {
+      "source": "Prospected asteroids",
+      "translation": "* PROSPECTED ASTEROIDS >>>!"
+    },
+    {
+      "source": "Prospected asteroids: {0} · Core finds: {1}",
+      "translation": "* PROSPECTED ASTEROIDS: {0} · CORE FINDS: {1} >>>!"
+    },
+    {
       "source": "Prospecting results",
       "translation": "* PROSPECTING RESULTS >>>!"
     },
@@ -277613,6 +278233,10 @@
       "translation": "* RES MAPPED >>>!"
     },
     {
+      "source": "RES sites",
+      "translation": "* RES SITES >>>!"
+    },
+    {
       "source": "RES sites only",
       "translation": "* RES SITES ONLY >>>!"
     },
@@ -277775,6 +278399,14 @@
     {
       "source": "Range (LY)",
       "translation": "* RANGE (LY) >>>!"
+    },
+    {
+      "source": "Rank",
+      "translation": "* RANK >>>!"
+    },
+    {
+      "source": "Rank progress has not been reported for this rank in the loaded commander journals.",
+      "translation": "* RANK PROGRESS HAS NOT BEEN REPORTED FOR THIS RANK IN THE LOADED COMMANDER JOURNALS. >>>!"
     },
     {
       "source": "Rank unavailable",
@@ -278719,6 +279351,10 @@
     {
       "source": "Refined commodities",
       "translation": "* REFINED COMMODITIES >>>!"
+    },
+    {
+      "source": "Refined tons and tons per active session hour.",
+      "translation": "* REFINED TONS AND TONS PER ACTIVE SESSION HOUR. >>>!"
     },
     {
       "source": "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
@@ -280613,6 +281249,10 @@
       "translation": "* SRV POSITION >>>!"
     },
     {
+      "source": "SRVDestroyed",
+      "translation": "* SRVDESTROYED >>>!"
+    },
+    {
       "source": "STAR CLASS UNKNOWN",
       "translation": "* STAR CLASS UNKNOWN >>>!"
     },
@@ -282157,8 +282797,8 @@
       "translation": "* SESSION SHOWS PROSPECTING PERCENTAGES, CORE DISCOVERIES, QUALITY HITS, REFINED TONNAGE, LIMPETS, ENGINEERING MATERIALS AND CARGO. MANUAL COUNT CORRECTIONS RETAIN THE ORIGINAL OBSERVATIONS. >>>!"
     },
     {
-      "source": "Session tons are confirmed from cargo readings. Refinery carryover after the session is separate and does not change t/hour. Reports without enough cargo readings are marked as estimates.",
-      "translation": "* SESSION TONS ARE CONFIRMED FROM CARGO READINGS. REFINERY CARRYOVER AFTER THE SESSION IS SEPARATE AND DOES NOT CHANGE T/HOUR. REPORTS WITHOUT ENOUGH CARGO READINGS ARE MARKED AS ESTIMATES. >>>!"
+      "source": "Session tons are confirmed from cargo readings. Rates use active session time and exclude pauses. Refinery carryover after the session is separate and does not change t/hour. Prospect counts include manual corrections; core finds count discoveries. Reports without enough cargo readings are marked as estimates.",
+      "translation": "* SESSION TONS ARE CONFIRMED FROM CARGO READINGS. RATES USE ACTIVE SESSION TIME AND EXCLUDE PAUSES. REFINERY CARRYOVER AFTER THE SESSION IS SEPARATE AND DOES NOT CHANGE T/HOUR. PROSPECT COUNTS INCLUDE MANUAL CORRECTIONS; CORE FINDS COUNT DISCOVERIES. REPORTS WITHOUT ENOUGH CARGO READINGS ARE MARKED AS ESTIMATES. >>>!"
     },
     {
       "source": "Session tons confirmed from cargo readings.",
@@ -283191,6 +283831,10 @@
     {
       "source": "Site heading",
       "translation": "* SITE HEADING >>>!"
+    },
+    {
+      "source": "Site notes",
+      "translation": "* SITE NOTES >>>!"
     },
     {
       "source": "Site origin",
@@ -288681,8 +289325,8 @@
       "translation": "* TOLERANCE >>>!"
     },
     {
-      "source": "Tons / hour",
-      "translation": "* TONS / HOUR >>>!"
+      "source": "Tons / active hour",
+      "translation": "* TONS / ACTIVE HOUR >>>!"
     },
     {
       "source": "Too steep",
@@ -288895,6 +289539,10 @@
     {
       "source": "Traders",
       "translation": "* TRADERS >>>!"
+    },
+    {
+      "source": "Traditional laser mining gains additional yield within 20 km of the RES center. The benefit varies by site grade; Hazardous sites offer the largest reported increase. Actual output also depends on the prospector and mining equipment.",
+      "translation": "* TRADITIONAL LASER MINING GAINS ADDITIONAL YIELD WITHIN 20 KM OF THE RES CENTER. THE BENEFIT VARIES BY SITE GRADE; HAZARDOUS SITES OFFER THE LARGEST REPORTED INCREASE. ACTUAL OUTPUT ALSO DEPENDS ON THE PROSPECTOR AND MINING EQUIPMENT. >>>!"
     },
     {
       "source": "Traffic",
@@ -290561,10 +291209,6 @@
       "translation": "* VOID AMETHYST >>>!"
     },
     {
-      "source": "Void Opal",
-      "translation": "* VOID OPAL >>>!"
-    },
-    {
       "source": "Void Opals",
       "translation": "* VOID OPALS >>>!"
     },
@@ -290639,10 +291283,6 @@
     {
       "source": "WG Life",
       "translation": "* WG LIFE >>>!"
-    },
-    {
-      "source": "WHY IT RANKS",
-      "translation": "* WHY IT RANKS >>>!"
     },
     {
       "source": "WINDOW SIZE",
@@ -294561,6 +295201,10 @@
       "translation": "* SUFFIXES {0}–{1} >>>!"
     },
     {
+      "source": "suit",
+      "translation": "* SUIT >>>!"
+    },
+    {
       "source": "surface",
       "translation": "* SURFACE >>>!"
     },
@@ -295445,10 +296089,6 @@
       "translation": "* {0} AS SCANNED · {1} IF MAPPED >>>!"
     },
     {
-      "source": "{0} asteroids · {1} cores",
-      "translation": "* {0} ASTEROIDS · {1} CORES >>>!"
-    },
-    {
       "source": "{0} at '{1}': {2}",
       "translation": "* {0} AT '{1}': {2} >>>!"
     },
@@ -296257,8 +296897,8 @@
       "translation": "* {0} · {1} · {2} KM BORDER >>>!"
     },
     {
-      "source": "{0} · {1} · {2} t · {3} t/h · {4} asteroids · {5} cores",
-      "translation": "* {0} · {1} · {2} T · {3} T/H · {4} ASTEROIDS · {5} CORES >>>!"
+      "source": "{0} · {1} · {2} t · {3} t/h · Prospected asteroids: {4} · Core finds: {5}",
+      "translation": "* {0} · {1} · {2} T · {3} T/H · PROSPECTED ASTEROIDS: {4} · CORE FINDS: {5} >>>!"
     },
     {
       "source": "{0} · {1} · {2} · {3} · {4} reserve · within {5} ly",
@@ -296307,6 +296947,10 @@
     {
       "source": "{0}: {1} t",
       "translation": "* {0}: {1} T >>>!"
+    },
+    {
+      "source": "{0}: {1} to next rank. Last reported by local journals.",
+      "translation": "* {0}: {1} TO NEXT RANK. LAST REPORTED BY LOCAL JOURNALS. >>>!"
     },
     {
       "source": "{0}: {1} units for {2}: {3} (unconfirmed).",

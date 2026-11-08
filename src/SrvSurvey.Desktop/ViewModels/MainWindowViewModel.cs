@@ -4096,17 +4096,19 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         string? requestedBodyName
     )
     {
-        SystemScanBodySnapshot? body = string.IsNullOrWhiteSpace(requestedBodyName)
-            ? null
-            : system.Bodies.FirstOrDefault(candidate =>
+        IEnumerable<SystemScanBodySnapshot> candidates = system.Bodies.Where(body => body.Kind != SystemBodyKind.Star);
+        SystemScanBodySnapshot? currentBody = candidates.FirstOrDefault(body => body.BodyId == system.CurrentBodyId);
+        if (
+            string.IsNullOrWhiteSpace(requestedBodyName)
+            || currentBody is not null && BodyNameMatchesCommand(currentBody, system.SystemName, requestedBodyName)
+        )
+        {
+            return currentBody;
+        }
+
+        return candidates.FirstOrDefault(candidate =>
                 BodyNameMatchesCommand(candidate, system.SystemName, requestedBodyName)
-            );
-        return body
-            ?? (
-                system.CurrentBodyId is { } currentBodyId
-                    ? system.Bodies.FirstOrDefault(candidate => candidate.BodyId == currentBodyId)
-                    : null
-            );
+            ) ?? currentBody;
     }
 
     private async Task<bool> ApplyDesktopTextCommandsAsync(IReadOnlyList<JournalEventEnvelope> journalEvents)

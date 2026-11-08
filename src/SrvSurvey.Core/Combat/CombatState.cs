@@ -5,12 +5,6 @@ namespace SrvSurvey.Core.Combat;
 
 public sealed class CombatState(TimeProvider? timeProvider = null)
 {
-    private static readonly HashSet<string> MassacreMissionNames = new(StringComparer.Ordinal)
-    {
-        "Mission_Massacre",
-        "Mission_MassacreWing",
-    };
-
     private readonly TimeProvider timeProvider = timeProvider ?? TimeProvider.System;
     private readonly List<MassacreMissionSnapshot> massacreMissions = [];
 
@@ -58,28 +52,41 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
     public CombatApplyResult Apply(
         JournalEventEnvelope journalEvent,
         bool countProgress = true,
-        bool countFootCombat = true
+        bool countFootCombat = true,
+        bool countShipCombat = false
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         CombatApplyResult result = journalEvent.EventName switch
         {
             "ApproachSettlement" => ApplySettlement(journalEvent.Payload),
-            "StartJump" or "SupercruiseEntry" or "FSDJump" or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
-                ClearSettlement(),
+            "StartJump"
+            or "SupercruiseEntry"
+            or "LeaveBody"
+            or "FSDJump"
+            or "CarrierJump"
+            or "Died"
+            or "Resurrect"
+            or "Shutdown" => ClearSettlement(),
             "Music"
                 when string.Equals(
                     GetString(journalEvent.Payload, "MusicTrack"),
                     "MainMenu",
                     StringComparison.Ordinal
                 ) => ClearSettlement(),
-            "FactionKillBond" when countProgress && countFootCombat => ApplyFactionKillBond(journalEvent.Payload),
+            "FactionKillBond" when countProgress => ApplyFactionKillBond(
+                journalEvent.Payload,
+                journalEvent.Timestamp ?? timeProvider.GetUtcNow(),
+                countFootCombat,
+                countShipCombat
+            ),
             "MissionAccepted" => ApplyMissionAccepted(journalEvent.Payload),
             "MissionCompleted" or "MissionFailed" or "MissionAbandoned" => ApplyMissionRemoved(journalEvent.Payload),
             "Missions" => ApplyMissionReconciliation(journalEvent.Payload),
-            "Bounty" when countProgress => ApplyBounty(
+            "Bounty" when countProgress => ApplyMissionKill(
                 journalEvent.Payload,
-                journalEvent.Timestamp ?? timeProvider.GetUtcNow()
+                journalEvent.Timestamp ?? timeProvider.GetUtcNow(),
+                combatBond: false
             ),
             _ => CombatApplyResult.None,
         };
@@ -142,11 +149,24 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
         return CombatApplyResult.SessionOnly;
     }
 
-    private CombatApplyResult ApplyFactionKillBond(JsonElement root)
+    private CombatApplyResult ApplyFactionKillBond(
+        JsonElement root,
+        DateTimeOffset timestamp,
+        bool countFootCombat,
+        bool countShipCombat
+    )
     {
-        FootCombatKills++;
-        FootCombatBonds += GetInt64(root, "Reward") ?? 0;
-        return CombatApplyResult.SessionOnly;
+        if (countFootCombat)
+        {
+            FootCombatKills++;
+            FootCombatBonds += GetInt64(root, "Reward") ?? 0;
+        }
+
+        CombatApplyResult missionResult =
+            countShipCombat && string.IsNullOrWhiteSpace(SettlementName)
+                ? ApplyMissionKill(root, timestamp, combatBond: true)
+                : CombatApplyResult.None;
+        return new CombatApplyResult(countFootCombat || missionResult.StateChanged, missionResult.PersistenceChanged);
     }
 
     private CombatApplyResult ApplyMissionAccepted(JsonElement root)
@@ -154,7 +174,7 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
         string? missionName = GetString(root, "Name");
         long missionId = GetInt64(root, "MissionID") ?? 0;
         if (
-            !MassacreMissionNames.Contains(missionName ?? string.Empty)
+            missionName?.StartsWith("Mission_Massacre", StringComparison.Ordinal) != true
             || missionId <= 0
             || massacreMissions.Any(mission => mission.MissionId == missionId)
         )
@@ -168,7 +188,8 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
             GetString(root, "TargetFaction") ?? string.Empty,
             GetDateTimeOffset(root, "Expiry"),
             Math.Max(0, GetInt32(root, "KillCount") ?? 0),
-            Math.Max(0, GetInt32(root, "KillCount") ?? 0)
+            Math.Max(0, GetInt32(root, "KillCount") ?? 0),
+            missionName
         );
         if (!IsValidMission(mission))
         {
@@ -194,7 +215,7 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
         return removed > 0 ? CombatApplyResult.Persisted : CombatApplyResult.None;
     }
 
-    private CombatApplyResult ApplyBounty(JsonElement root, DateTimeOffset timestamp)
+    private CombatApplyResult ApplyMissionKill(JsonElement root, DateTimeOffset timestamp, bool combatBond)
     {
         string? victimFaction = GetString(root, "VictimFaction");
         if (string.IsNullOrWhiteSpace(victimFaction))
@@ -209,6 +230,7 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
             MassacreMissionSnapshot mission = massacreMissions[index];
             if (
                 !string.Equals(mission.TargetFaction, victimFaction, StringComparison.Ordinal)
+                || mission.MissionName.Contains("_Conflict", StringComparison.Ordinal) != combatBond
                 || mission.Remaining <= 0
                 || mission.Expires is { } expires && timestamp > expires
                 || !creditedMissionGivers.Add(mission.MissionGiver)
@@ -302,7 +324,8 @@ public sealed record MassacreMissionSnapshot(
     string TargetFaction,
     DateTimeOffset? Expires,
     int KillCount,
-    int Remaining
+    int Remaining,
+    string MissionName = "Mission_Massacre"
 );
 
 public sealed record CombatSnapshot(IReadOnlyList<MassacreMissionSnapshot> MassacreMissions)

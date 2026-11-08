@@ -17,6 +17,7 @@ public sealed class MiningSearchViewModel(
 {
     private const string AllSystems = "All systems";
     private const string PlatinumMineral = "Platinum";
+    private const string ResSitesMode = "RES sites";
     private const string ReinforceObjective = "Reinforce";
     private const string UndermineObjective = "Undermine";
     private const string AcquireObjective = "Acquire";
@@ -385,7 +386,10 @@ public sealed class MiningSearchViewModel(
     public string PlatinumMode
     {
         get => options.PlatinumMode;
-        set { Set(ref options, options with { PlatinumMode = value ?? "Spots++" }); }
+        set
+        {
+            Set(ref options, options with { PlatinumMode = value == "RES mapped" ? ResSitesMode : value ?? "Spots++" });
+        }
     }
     public string StationType
     {
@@ -1026,7 +1030,7 @@ public sealed class MiningSearchViewModel(
             }
         }
     }
-    public static IReadOnlyList<string> PlatinumModes { get; } = ["Spots++", "RES mapped", "Overlaps", "All platinum"];
+    public static IReadOnlyList<string> PlatinumModes { get; } = ["Spots++", ResSitesMode, "Overlaps", "All platinum"];
     public static IReadOnlyList<string> TraderTypes { get; } = ["Raw", "Manufactured", "Encoded"];
     public string Status
     {
@@ -1202,8 +1206,11 @@ public sealed class MiningSearchViewModel(
                 .Where(ring => MatchesRing(ring, mineral, ringType, MinimumHotspots, Reserve))
                 .Select(PlatinumSpotRowViewModel.Create)
                 .Where(MatchesPlatinumMode)
-                .OrderByDescending(spot => spot.Score)
+                .OrderByDescending(spot => PlatinumMode != "All platinum" && Same(spot.Reserve, "Pristine"))
                 .ThenBy(spot => spot.DistanceLy ?? double.MaxValue)
+                .ThenBy(spot => spot.ArrivalLs ?? double.MaxValue)
+                .ThenBy(spot => spot.System, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(spot => spot.Body, StringComparer.OrdinalIgnoreCase)
                 .Take(ResultLimit)
                 .ToArray();
             token.ThrowIfCancellationRequested();
@@ -1219,10 +1226,9 @@ public sealed class MiningSearchViewModel(
     private bool MatchesPlatinumMode(PlatinumSpotRowViewModel spot) =>
         PlatinumMode switch
         {
-            "RES mapped" => spot.HasRes,
+            ResSitesMode => spot.HasRes,
             "Overlaps" => spot.HasOverlap,
-            "All platinum" => true,
-            _ => spot.HasRes || spot.HasOverlap || spot.HotspotCount >= 2,
+            _ => true,
         };
 
     public void UseSelectedPlatinumSpot()
@@ -1483,18 +1489,17 @@ public sealed class MiningSearchViewModel(
 
     private bool MatchesMiningType(MiningRing ring, string mineral)
     {
-        if (MiningType is "All" or "")
+        if (ExtractionMethod(MiningType) is not { } method)
         {
             return true;
         }
 
-        bool core = MiningType == "Core";
         if (mineral.Length > 0)
         {
-            return core ? IsCoreMineral(mineral) : !IsCoreMineral(mineral);
+            return RingMiningCatalog.Supports(ring.RingType, mineral, method);
         }
 
-        return ring.Hotspots.Keys.Any(name => IsCoreMineral(name) == core);
+        return RingMiningCatalog.SupportsAny(ring.RingType, ring.Hotspots.Keys, method, []);
     }
 
     private bool MatchesSelectedMiningType(MiningRing ring)
@@ -1511,29 +1516,20 @@ public sealed class MiningSearchViewModel(
             return true;
         }
 
+        string[] named = MiningMaterialSelection.Named(MineralChips.Selected);
         return types.Any(type =>
-            type.Equals("Core", StringComparison.OrdinalIgnoreCase)
-                ? ring.Hotspots.Keys.Any(name => IsCoreMineral(name) && !PlanetaryMiningPlan.IsSurfaceExclusive(name))
-                : ring.Hotspots.Keys.Any(name => !PlanetaryMiningPlan.IsSurfaceExclusive(name))
+            ExtractionMethod(type) is not { } method
+            || RingMiningCatalog.SupportsAny(ring.RingType, ring.Hotspots.Keys, method, named)
         );
     }
 
-    private static bool IsCoreMineral(string name) =>
-        CoreMinerals.Any(mineral => MiningCommodityName.Same(mineral, name));
-
-    private static readonly HashSet<string> CoreMinerals = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Alexandrite",
-        "Benitoite",
-        "Bromellite",
-        "Grandidierite",
-        "Monazite",
-        "Musgravite",
-        "Rhodplumsite",
-        "Serendibite",
-        "Void Opal",
-        "Void Opals",
-    };
+    private static RingMiningMethod? ExtractionMethod(string type) =>
+        type switch
+        {
+            "Core" => RingMiningMethod.Core,
+            "Laser Surface" => RingMiningMethod.Laser,
+            _ => null,
+        };
 
     private static void MergeRing(List<MiningRing> candidates, MiningRing ring, double distance)
     {
@@ -3406,7 +3402,6 @@ public sealed record PlatinumSpotRowViewModel(
     int HotspotCount,
     bool HasRes,
     bool HasOverlap,
-    int Score,
     string Features
 )
 {
@@ -3424,8 +3419,6 @@ public sealed record PlatinumSpotRowViewModel(
         int hotspotCount = ring.Hotspots.GetValueOrDefault("Platinum");
         bool hasRes = ring.ResourceExtractionSites.Length > 0;
         bool hasOverlap = ring.Overlaps.Length > 0;
-        int score =
-            hotspotCount * 10 + (hasRes ? 30 : 0) + (hasOverlap ? 20 : 0) + (ring.Reserve == "Pristine" ? 10 : 0);
         string features = string.Join(
             " · ",
             new[]
@@ -3436,6 +3429,6 @@ public sealed record PlatinumSpotRowViewModel(
                 ring.Reserve,
             }.Where(value => value.Length > 0)
         );
-        return new(ring, hotspotCount, hasRes, hasOverlap, score, features);
+        return new(ring, hotspotCount, hasRes, hasOverlap, features);
     }
 }

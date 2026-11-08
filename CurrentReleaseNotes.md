@@ -1,90 +1,86 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.9
+# SrvSurvey-XP 2.1.3.0-rc.77.10
 
-RC77.9 adds journal-backed Exploration history and brings the Mining,
-Colonization, Codex Bingo, overlay settings, and Diagnostics workspaces into
-alignment with the application's spaceship-panel design. Layouts use the active
-theme, clearer control groups, and space reserved for scrollbars.
+RC77.10 improves mining search accuracy, adds commander rank progress, includes
+Vista Genomics in the Station information overlay panel, and restores tracking
+for conflict-zone massacre missions.
 
 ## What's changed
 
-### Exploration history and estimated value
+### Mining searches and reference
 
-- **Track unsold cartographic data:** An optional setting in Exploration's
-  Commander profile panel adjusts estimated value after recorded sales and
-  confirmed ship losses. It is off by default and saved per commander. Only
-  systems identified by a sale are cleared, so nearby unsold data stays in the
-  balance. Rejoining a surviving ship after a surface death preserves its data.
-- **Browse Exploration history:** A dedicated workspace tab presents Sold,
-  Unsold, and Lost entries with status colors, system coordinates, scan and
-  mapping counts, estimated value, and collection and settlement dates. Filter
-  by system name, status, or dates; click a system name to copy it and select a
-  row to inspect its body details and original journal records. Selected details
-  stay tied to the original collected data during refreshes, imports, and page
-  shifts. History
-  rows and filters remain accessible in shorter windows.
-- **Spot notable discoveries:** A Notable column highlights ELW, WW, AW,
-  terraformable worlds, GGG, NSP, neutron stars, and black holes. Compact tags
-  wrap within their column and show full descriptions on hover. Tags reflect
-  recorded system discoveries and do not change credit estimates.
-- **Backfill automatically:** History is catalogued from each commander's
-  available journals, with Live and Legacy kept separate. A compact local
-  metadata index stores ownership and source references rather than another
-  copy of the journals. Missing originals are flagged, while catalogued history
-  is retained. Late imports and changed sources are reconciled transactionally.
-  Missing required journals keep automatic balances paused, including during
-  filter or storage errors. Complete records are fingerprinted before replay so
-  disappearing or rewritten journals cannot silently drop deferred settlements.
-  Older retries that cannot prove every input keep tracking paused until you
-  restore the journals and confirm recovery in the History tab. Known
-  fingerprints still have to match. Live updates read the appended journal
-  range, and repeated retries keep their metadata compact. Required journal
-  evidence survives failed recovery attempts. Commander context is checked
-  before reusing a journal checkpoint, and unstable reads keep tracking paused
-  until every required source returns and replays.
-  Temporarily unavailable Scan records defer mapping updates until recovery, and
-  newly learned identifiers preserve already-paid ownership. Local indexes are
-  kept clear of portable profile backup scans.
-- **Correct rare-star estimates:** Neutron stars and black holes use the journal
-  codes for their rare-star values. Older history indexes refresh their estimates
-  from the original journals while retaining recorded sale earnings and statuses.
-  If originals are missing, cached history is kept until those files are restored.
-- **Keep survey totals:** Automatic value tracking preserves jump, distance,
-  scan, mapping, and landing counters. Mapping upgrades add only their unpaid
-  increase, and recorded sale earnings remain separate from estimates. Reset
-  confirmation explains when the journal-derived balance will remain.
+- **Match mining methods correctly:** Laser and core filters use a shared
+  commodity and ring compatibility catalog, including minerals available through
+  both methods. Selected minerals also constrain Powerplay mining results.
+- **Keep local observations searchable:** Journal hotspot identities remain
+  independent of language, and previously saved translated hotspot names remain
+  compatible with mineral and extraction-method filters.
+- **Include single Platinum hotspots:** Normal Platinum results include
+  compatible singles. Spots++ orders pristine reserves first, then system and
+  arrival distance; All platinum orders by distance. Explicit minimum-count and
+  overlap filters remain available.
+- **Explain results clearly:** Site notes replace Why it ranks. Hotspot count
+  no longer acts as a productivity score, and the current sorting policy is
+  explained beside the existing controls.
+- **Clarify RES guidance:** RES sites replaces RES mapped, with existing saved
+  selections carried forward. Reference guidance explains the local laser-mining
+  yield context, the approximately 20 km radius, and security considerations.
+- **Clarify statistics:** Session, overlay, and report labels distinguish
+  prospected asteroids, core finds, and tons per active hour. Average percentages
+  describe matching rocks. Existing calculations and CSV columns are retained.
 
-### Colonization and Fleet Carrier loading
+### Commander ranks and reputation
 
-- **Separate Loading projects:** Fleet Carrier Loading projects have their own
-  Loading status filter and no longer appear under Building. Carrier link and
-  unlink actions are available for both Building and Loading results; Planning
-  projects remain excluded.
-- **Correct loading progress:** Carrier loading projects with no fulfilled needs
-  display 0% progress rather than an unknown percentage. Missing remaining
-  totals are calculated from outstanding cargo, with aliases counted once.
-- **Show prepared buildings:** Loading previews, project details, and CSV exports
-  list the
-  prepared building names and quantities. Comma-separated summaries wrap across
-  the preview width, and loading details replace unused system, body, and
-  faction fields with the building list.
-- **Align planning workflows:** Projects, System Editor, and project preparation
-  forms use clearer sections and aligned controls, with cargo requirements and
-  estimated trips in the current ship kept visible.
+- **Show rank progress:** Pilot rank cards show a progress bar beneath the rank
+  name, aligned within the text column. Federation and Empire navy ranks and
+  their progress appear beneath their respective reputation values.
+- **Use reported commander data:** CAPI rank levels are combined with journal
+  progress and promotions. Percentages use the last recorded journal report and
+  may differ from the live game panel. Missing progress is identified explicitly,
+  highest ranks are marked, and commander changes keep observations separate.
+- **Retain available ranks:** Known navy ranks remain visible when reputation
+  is unavailable, and attributed journals fill categories absent from CAPI.
+  Rank reports keep their own freshness; CQC correctly ends at Elite.
+- **Group the three superpowers:** Reputation is ordered Federation, Empire,
+  Alliance. Alliance shows reputation only. Powerplay retains its rank and merits
+  display. The layout adapts to compact windows and all application themes.
 
-### Workspace and settings presentation
+### Station information overlay panel
 
-- **Mining:** Session, Reports, and Settings use clearer groups and better-sized
-  tables. Commodity names begin with a capital letter, and Resource Extraction
-  Site reference descriptions wrap instead of widening their panel. EDDN
-  reception and the local mining search cache are removed; existing Spansh and
-  Ardent searches and opt-in EDDN contributions remain available.
-- **Codex Bingo:** Discovery hierarchy, progress, locations, and related tools
-  use a consistent panel layout, with content kept clear of scrollbars. Long
-  warnings scroll without crowding out discovery panels.
-- **Overlay settings:** Category settings, exceptions, and shortcut controls use
-  aligned sections and clearer interactions across application themes. Vehicle
-  choices and bulk controls remain reachable during long save errors.
-- **Diagnostics:** History, Processing, and Inspector have fixed headings,
-  better-aligned sections, clearer actions, and reserved scrollbar gutters.
-- **Quiet preview bindings:** Carrier readiness no longer logs null-snapshot
-  Maximum binding errors while a build preview is waiting for data.
+- **Include Vista Genomics:** The relevant services list now includes Vista
+  Genomics beside Universal Cartographics when the imported station data reports
+  it as available. Existing overlay styling and theme colors are retained.
+- **Keep station details accessible:** Matching provider records can fill missing
+  service data. The panel retains its saved width and grows with its contents,
+  keeping services and station details visible.
+
+### Massacre mission overlay
+
+- **Recognize massacre variants:** Mission tracking accepts journal names that
+  begin with `Mission_Massacre`, including War, Civil War, wing, and additional
+  suffixes. Valid mission IDs, givers, and target factions are still required.
+- **Track the right kills:** Conflict-zone ship kills use combat bonds while
+  other massacre missions retain bounty tracking. Credit remains limited to one
+  active mission per giver for each kill. On-foot and SRV combat bonds do not
+  advance ship missions, and the mission type is retained when saving progress.
+- **Exclude surface combat:** Combat bonds earned at a surface settlement do
+  not advance space conflict-zone missions, even when the commander stays in a
+  ship. Leaving the planet or entering supercruise restores space-bond tracking.
+- **Recover journal progress correctly:** Ship, foot, and SRV transitions are
+  applied at the time of each recorded kill. Suit starts and Nomad launches retain
+  their ground-combat identity. Empty combat profiles recover
+  previously ignored missions without recounting already-saved mission progress.
+
+### Reliability
+
+- Keep journal monitoring active when system data contains repeated body names.
+  This prevents survey display errors from stopping later Raven Colonial carrier
+  transfer updates, and also fixes the same error during external body-data loads.
+  Completed ring maps remain recognized when body records share a name. Bodies
+  named after their system keep a readable label instead of a blank name.
+  First-footfall commands and destination highlights retain the intended body
+  identity when names are shared.
+- Handle unresolvable boxel-sector names without stopping journal monitoring.
+  Unsupported geometry keeps its recorded identity without inventing a system
+  address, allowing later journal updates to continue normally.
+- Handle journal changes during history reads without failing application
+  shutdown, while retaining recovery checks and unexpected-error reporting.

@@ -83,15 +83,21 @@ public sealed class CombatStateTests
         Assert.Single(state.MassacreMissions);
     }
 
-    [Fact]
-    public void TracksAndRemovesMassacreMission()
+    [Theory]
+    [InlineData("Mission_Massacre")]
+    [InlineData("Mission_MassacreWing")]
+    [InlineData("Mission_Massacre_Conflict_CivilWar")]
+    [InlineData("Mission_Massacre_Conflict_War")]
+    [InlineData("Mission_MassacreWing_Conflict_War")]
+    [InlineData("Mission_Massacre_FutureVariant")]
+    public void TracksAndRemovesMassacreMission(string missionName)
     {
         var state = new CombatState();
 
         CombatApplyResult accepted = state.Apply(
             Parse(
-                """
-                {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Mission Giver","Name":"Mission_MassacreWing","TargetFaction":"Enemy Faction","KillCount":7,"Expiry":"2026-07-26T01:00:00Z","MissionID":123}
+                $$"""
+                {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Mission Giver","Name":"{{missionName}}","TargetFaction":"Enemy Faction","KillCount":7,"Expiry":"2026-07-26T01:00:00Z","MissionID":123}
                 """
             )
         );
@@ -104,7 +110,8 @@ public sealed class CombatStateTests
                 "Enemy Faction",
                 DateTimeOffset.Parse("2026-07-26T01:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 7,
-                7
+                7,
+                missionName
             ),
             Assert.Single(state.MassacreMissions)
         );
@@ -119,6 +126,121 @@ public sealed class CombatStateTests
 
         Assert.True(removed.PersistenceChanged);
         Assert.Empty(state.MassacreMissions);
+    }
+
+    [Fact]
+    public void CombatBondCreditsOneConflictMissionPerGiverAndDoesNotCreditPirateMissions()
+    {
+        var state = new CombatState();
+        foreach (
+            string mission in new[]
+            {
+                """{"event":"MissionAccepted","Faction":"Giver A","Name":"Mission_Massacre_Conflict_CivilWar","TargetFaction":"Enemy","KillCount":2,"MissionID":1}""",
+                """{"event":"MissionAccepted","Faction":"Giver A","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":4,"MissionID":2}""",
+                """{"event":"MissionAccepted","Faction":"Giver B","Name":"Mission_MassacreWing_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":3}""",
+                """{"event":"MissionAccepted","Faction":"Giver C","Name":"Mission_MassacreWing","TargetFaction":"Enemy","KillCount":5,"MissionID":4}""",
+                """{"event":"MissionAccepted","Faction":"Giver D","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Other","KillCount":6,"MissionID":5}""",
+            }
+        )
+        {
+            state.Apply(Parse(mission));
+        }
+
+        JournalEventEnvelope bond = Parse(
+            """{"timestamp":"2026-11-08T09:10:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+        );
+        CombatApplyResult result = state.Apply(bond, countFootCombat: false, countShipCombat: true);
+
+        Assert.True(result.PersistenceChanged);
+        Assert.Equal([1, 4, 2, 5, 6], state.MassacreMissions.Select(mission => mission.Remaining));
+        Assert.Equal(0, state.FootCombatKills);
+        Assert.Equal(0, state.FootCombatBonds);
+
+        state.Apply(bond, countFootCombat: false, countShipCombat: true);
+        state.Apply(bond, countFootCombat: false, countShipCombat: true);
+        Assert.Equal([0, 3, 0, 5, 6], state.MassacreMissions.Select(mission => mission.Remaining));
+    }
+
+    [Fact]
+    public void ShipAttacksAtWarSettlementDoNotAdvanceSpaceConflictMissions()
+    {
+        var state = new CombatState();
+        state.Apply(
+            Parse(
+                """{"event":"MissionAccepted","Faction":"Fire Lotus Coalition","Name":"Mission_Massacre_Conflict_CivilWar","TargetFaction":"Sorbago Mastopolos Mining Inc","KillCount":81,"MissionID":1070754782}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"ApproachSettlement","Name":"Ren Horticultural Biosphere","StationFaction":{"Name":"Sorbago Mastopolos Mining Inc","FactionState":"War"}}"""
+            )
+        );
+        state.Apply(
+            Parse("""{"event":"SupercruiseExit","StarSystem":"Sorbago","Body":"Sorbago A 3","BodyType":"Planet"}""")
+        );
+        JournalEventEnvelope bond = Parse(
+            """{"timestamp":"2026-11-08T09:53:11Z","event":"FactionKillBond","Reward":70217,"AwardingFaction":"Fire Lotus Coalition","VictimFaction":"Sorbago Mastopolos Mining Inc"}"""
+        );
+        for (int kill = 0; kill < 12; kill++)
+        {
+            state.Apply(bond, countFootCombat: false, countShipCombat: true);
+        }
+
+        Assert.Equal(81, Assert.Single(state.MassacreMissions).Remaining);
+    }
+
+    [Theory]
+    [InlineData("SupercruiseEntry")]
+    [InlineData("LeaveBody")]
+    public void LeavingSettlementAllowsSpaceConflictBondsToAdvanceTheMission(string departureEvent)
+    {
+        var state = new CombatState();
+        state.Apply(
+            Parse(
+                """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
+            )
+        );
+        state.Apply(
+            Parse("""{"event":"ApproachSettlement","Name":"Surface Base","StationFaction":{"FactionState":"War"}}""")
+        );
+        state.Apply(
+            Parse(
+                """{"timestamp":"2026-11-08T09:00:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+            ),
+            countFootCombat: false,
+            countShipCombat: true
+        );
+        state.Apply(Parse($$"""{"event":"{{departureEvent}}"}"""));
+        state.Apply(Parse("""{"event":"SupercruiseExit","Body":"Nearby planet","BodyType":"Planet"}"""));
+        state.Apply(
+            Parse(
+                """{"timestamp":"2026-11-08T09:02:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+            ),
+            countFootCombat: false,
+            countShipCombat: true
+        );
+
+        Assert.Equal(2, Assert.Single(state.MassacreMissions).Remaining);
+    }
+
+    [Fact]
+    public void BountyDoesNotCreditConflictMissions()
+    {
+        var state = new CombatState();
+        state.Apply(
+            Parse(
+                """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_CivilWar","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre","TargetFaction":"Enemy","KillCount":4,"MissionID":2}"""
+            )
+        );
+
+        state.Apply(Parse("""{"timestamp":"2026-11-08T09:10:00Z","event":"Bounty","VictimFaction":"Enemy"}"""));
+
+        Assert.Equal([3, 3], state.MassacreMissions.Select(mission => mission.Remaining));
     }
 
     [Fact]
@@ -146,8 +268,10 @@ public sealed class CombatStateTests
         Assert.Equal([4, 4, 2, 2], state.MassacreMissions.Select(mission => mission.Remaining));
     }
 
-    [Fact]
-    public void ExpiredMissionDoesNotReceiveBountyCredit()
+    [Theory]
+    [InlineData("Bounty", "Mission_Massacre")]
+    [InlineData("FactionKillBond", "Mission_Massacre_Conflict_War")]
+    public void ExpiredMissionDoesNotReceiveKillCredit(string eventName, string missionName)
     {
         var state = new CombatState();
         state.Reset(
@@ -161,16 +285,21 @@ public sealed class CombatStateTests
                         "2026-07-25T01:00:00Z",
                         global::System.Globalization.CultureInfo.InvariantCulture
                     )
-                ),
+                ) with
+                {
+                    MissionName = missionName,
+                },
             ])
         );
 
         CombatApplyResult result = state.Apply(
             Parse(
+                $$"""
+                {"timestamp":"2026-07-25T02:00:00Z","event":"{{eventName}}","VictimFaction":"Enemy"}
                 """
-                {"timestamp":"2026-07-25T02:00:00Z","event":"Bounty","VictimFaction":"Enemy"}
-                """
-            )
+            ),
+            countFootCombat: false,
+            countShipCombat: true
         );
 
         Assert.False(result.StateChanged);
@@ -197,13 +326,16 @@ public sealed class CombatStateTests
         Assert.Equal([1L, 3L], state.MassacreMissions.Select(mission => mission.MissionId));
     }
 
-    [Fact]
-    public void NonMassacreMissionAndDuplicateAreIgnored()
+    [Theory]
+    [InlineData("Mission_Delivery")]
+    [InlineData("Mission_Assassinate")]
+    [InlineData("Other_Mission_Massacre")]
+    public void NonMassacreMissionAndDuplicateAreIgnored(string missionName)
     {
         var state = new CombatState();
         JournalEventEnvelope unrelated = Parse(
-            """
-            {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Giver","Name":"Mission_Delivery","TargetFaction":"Enemy","KillCount":2,"MissionID":123}
+            $$"""
+            {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Giver","Name":"{{missionName}}","TargetFaction":"Enemy","KillCount":2,"MissionID":123}
             """
         );
         JournalEventEnvelope massacre = Parse(
