@@ -225,7 +225,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             CombatApplyResult result = state.Apply(
                 journalEvent,
                 countProgress: processHistoricalProgress,
-                countFootCombat: ShouldShowFootCombat
+                countFootCombat: ShouldShowFootCombat,
+                countShipCombat: ShouldCountShipCombat
             );
             stateChanged |= result.StateChanged;
             persistenceChanged |= result.PersistenceChanged;
@@ -254,6 +255,11 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             || eventName
                 is not ("MissionAccepted" or "MissionCompleted" or "MissionFailed" or "MissionAbandoned" or "Bounty");
     }
+
+    private bool ShouldCountShipCombat =>
+        AutoShowMassacreMissions
+        && status is { OnFoot: false, InSrv: false }
+        && (status.InMainShip || status.InFighter);
 
     private void UpdateFootSession()
     {

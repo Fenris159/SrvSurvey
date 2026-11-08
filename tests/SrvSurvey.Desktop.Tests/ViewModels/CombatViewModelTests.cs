@@ -131,6 +131,92 @@ public sealed class CombatViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ConflictMassacreAppearsFromBootstrapAndRetainsBondTrackingAfterReload()
+    {
+        CombatViewModel viewModel = CreateViewModel();
+        viewModel.AutoShowMassacreMissions = true;
+        viewModel.LoadProfile("F123", "Drew", true, CombatSnapshot.Empty);
+        var flightStatus = new EliteStatus { Flags = StatusFlags.InMainShip };
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(
+                    """{"event":"MissionAccepted","Faction":"Fire Lotus Coalition","Name":"Mission_Massacre_Conflict_CivilWar","TargetFaction":"Sorbago Mastopolos Mining Inc","KillCount":81,"MissionID":1070754782}"""
+                ),
+            ],
+            flightStatus,
+            processHistoricalProgress: false
+        );
+
+        Assert.True(viewModel.ShouldShowMassacreMissions);
+        Assert.Equal("0/81", Assert.Single(viewModel.MassacreMissions).ProgressText);
+        CommanderProfileLoadResult saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        CombatViewModel reopened = CreateViewModel();
+        reopened.LoadProfile("F123", "Drew", true, saved.Data!.Combat);
+        await reopened.ApplyUpdateAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-11-08T09:10:00Z","event":"FactionKillBond","VictimFaction":"Sorbago Mastopolos Mining Inc","Reward":1000}"""
+                ),
+            ],
+            flightStatus,
+            processHistoricalProgress: false
+        );
+        Assert.Equal("0/81", Assert.Single(reopened.MassacreMissions).ProgressText);
+        await reopened.ApplyUpdateAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-11-08T09:10:00Z","event":"FactionKillBond","VictimFaction":"Sorbago Mastopolos Mining Inc","Reward":1000}"""
+                ),
+            ],
+            flightStatus,
+            processHistoricalProgress: true
+        );
+
+        Assert.True(reopened.ShouldShowMassacreMissions);
+        Assert.Equal("1/81", Assert.Single(reopened.MassacreMissions).ProgressText);
+        saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        Assert.Equal(80, Assert.Single(saved.Data!.Combat.MassacreMissions).Remaining);
+    }
+
+    [Theory]
+    [InlineData(StatusFlags.None, StatusFlags2.OnFoot, true, "0/3")]
+    [InlineData(StatusFlags.InSrv, StatusFlags2.None, true, "0/3")]
+    [InlineData(StatusFlags.InFighter, StatusFlags2.None, true, "1/3")]
+    [InlineData(StatusFlags.None, StatusFlags2.None, true, "0/3")]
+    [InlineData(StatusFlags.InMainShip, StatusFlags2.None, false, "0/3")]
+    public async Task CombatBondsHonorMissionTrackingAndVehicleContext(
+        StatusFlags flags,
+        StatusFlags2 flags2,
+        bool trackingEnabled,
+        string progress
+    )
+    {
+        CombatViewModel viewModel = CreateViewModel();
+        viewModel.AutoShowMassacreMissions = true;
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(
+                    """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre_Conflict_War","TargetFaction":"Enemy","KillCount":3,"MissionID":1}"""
+                ),
+            ],
+            new EliteStatus { Flags = StatusFlags.InMainShip },
+            processHistoricalProgress: true
+        );
+        viewModel.AutoShowMassacreMissions = trackingEnabled;
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-11-08T09:10:00Z","event":"FactionKillBond","VictimFaction":"Enemy","Reward":1000}"""
+                ),
+            ],
+            new EliteStatus { Flags = flags, Flags2 = flags2 },
+            processHistoricalProgress: true
+        );
+
+        Assert.Equal(progress, Assert.Single(viewModel.MassacreMissions).ProgressText);
+    }
+
+    [Fact]
     public async Task MassacreProgressPersistsAndMatchesLegacyModes()
     {
         CombatViewModel viewModel = CreateViewModel();

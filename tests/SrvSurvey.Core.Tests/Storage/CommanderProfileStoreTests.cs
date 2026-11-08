@@ -278,6 +278,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
 
         MassacreMissionSnapshot mission = Assert.Single(loaded.Data!.Combat.MassacreMissions);
         Assert.Equal(879230525, mission.MissionId);
+        Assert.Equal("Mission_Massacre", mission.MissionName);
         Assert.Equal("Raven Colonial Corporation", mission.MissionGiver);
         Assert.Equal("Grabru Crimson Family", mission.TargetFaction);
         Assert.Equal(7, mission.KillCount);

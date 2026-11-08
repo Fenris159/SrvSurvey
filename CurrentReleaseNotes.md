@@ -1,7 +1,8 @@
 # SrvSurvey-XP 2.1.3.0-rc.77.10
 
-RC77.10 improves mining search accuracy, adds commander rank progress, and
-includes Vista Genomics in the Station information overlay panel.
+RC77.10 improves mining search accuracy, adds commander rank progress, includes
+Vista Genomics in the Station information overlay panel, and restores tracking
+for conflict-zone massacre missions.
 
 ## What's changed
 
@@ -42,3 +43,13 @@ includes Vista Genomics in the Station information overlay panel.
 - **Include Vista Genomics:** The relevant services list now includes Vista
   Genomics beside Universal Cartographics when the imported station data reports
   it as available. Existing overlay styling and theme colors are retained.
+
+### Massacre mission overlay
+
+- **Recognize massacre variants:** Mission tracking accepts journal names that
+  begin with `Mission_Massacre`, including War, Civil War, wing, and additional
+  suffixes. Valid mission IDs, givers, and target factions are still required.
+- **Track the right kills:** Conflict-zone ship kills use combat bonds while
+  other massacre missions retain bounty tracking. Credit remains limited to one
+  active mission per giver for each kill. On-foot and SRV combat bonds do not
+  advance ship missions, and the mission type is retained when saving progress.
