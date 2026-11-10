@@ -13229,6 +13229,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "ColonizationTab",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WorkspaceContinuitySettingsStore.cs"
+  },
+  {
     "Text": "Color",
     "IsFormat": false,
     "SourceKinds": [
@@ -18459,6 +18467,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "DiagnosticsTab",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WorkspaceContinuitySettingsStore.cs"
+  },
+  {
     "Text": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body\u0027s reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
     "IsFormat": false,
     "SourceKinds": [
@@ -22183,6 +22199,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "ExplorationTab",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WorkspaceContinuitySettingsStore.cs"
   },
   {
     "Text": "Explore child boxels",
@@ -76557,6 +76581,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
+    "Text": "commander",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
+  },
+  {
     "Text": "commander journal publication upload credential api key flight log",
     "IsFormat": false,
     "SourceKinds": [
@@ -76979,6 +77011,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "dev-",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
   },
   {
     "Text": "development",
@@ -80579,6 +80619,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "screenshot settings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
     "Text": "screenshots",

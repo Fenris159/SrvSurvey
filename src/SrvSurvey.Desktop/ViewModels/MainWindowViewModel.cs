@@ -1533,6 +1533,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         MiningWorkspace.SelectedTab = preferences.MiningTab;
         MineMap.SelectedTab = preferences.SurfaceMiningTab;
         Guardian.SelectedWorkspaceTabIndex = preferences.GuardianTab;
+        SelectedExplorationTabIndex = preferences.ExplorationTab;
+        Colonization.SelectedWorkspaceTabIndex = preferences.ColonizationTab;
+        SelectedDiagnosticsTabIndex = preferences.DiagnosticsTab;
         ICommand carrierTab = preferences.FleetCarrierTab switch
         {
             1 => FleetCarrierWorkspace.SelectSquadronTabCommand,
@@ -1552,7 +1555,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 MiningWorkspace.SelectedTab,
                 MineMap.SelectedTab,
                 Guardian.SelectedWorkspaceTabIndex,
-                (int)FleetCarrierWorkspace.SelectedTab
+                (int)FleetCarrierWorkspace.SelectedTab,
+                SelectedExplorationTabIndex,
+                Colonization.SelectedWorkspaceTabIndex,
+                SelectedDiagnosticsTabIndex
             )
         );
 

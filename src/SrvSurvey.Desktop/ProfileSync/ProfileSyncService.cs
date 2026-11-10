@@ -341,9 +341,7 @@ internal sealed class ProfileSyncService : IDisposable
                 }
 
                 ProfileSnapshot fresh = Store.Capture();
-                ProfileSnapshot? staged = RestartRequired
-                    ? ProfileSnapshot.Parse(File.ReadAllBytes(Store.PendingPath))
-                    : null;
+                ProfileSnapshot? staged = RestartRequired ? Store.LoadPending() : null;
                 var values = new Dictionary<string, SyncValue>(pendingMerge.Values, StringComparer.Ordinal);
                 foreach ((string key, SyncValue value) in fresh.Portable)
                 {
@@ -466,8 +464,7 @@ internal sealed class ProfileSyncService : IDisposable
     /// <summary>Stages a local export after validation, retaining a recovery backup first.</summary>
     internal void RestoreLocal(byte[] bytes, bool restoreMachine)
     {
-        var snapshot = ProfileSnapshot.Parse(bytes);
-        ProfileSyncStore.ValidateScope(snapshot);
+        ProfileSnapshot snapshot = ProfileSyncStore.ValidateScope(ProfileSnapshot.Parse(bytes));
         Store.SaveBackup(Store.Capture());
         Store.StageExplicitRestore(snapshot, restoreMachine);
         SetStatus("Local backup selected. Restart SrvSurvey to restore it.");
@@ -516,7 +513,7 @@ internal sealed class ProfileSyncService : IDisposable
                 throw new InvalidDataException("Cloud backup identity does not match its metadata.");
             }
 
-            ProfileSyncStore.ValidateScope(remote);
+            remote = ProfileSyncStore.ValidateScope(remote);
             SyncMergeResult merged = ProfileSyncMerge.Merge(values, remote.Portable);
             values = merged.Values;
             conflicts.AddRange(merged.Conflicts);

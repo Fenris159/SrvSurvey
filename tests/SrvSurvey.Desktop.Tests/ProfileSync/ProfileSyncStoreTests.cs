@@ -470,10 +470,16 @@ public sealed class ProfileSyncStoreTests
         root.Write("data", "plotters.json", "{\"Panel\":\"left:10,top:20\"}");
         root.Write("data", "mining-provider-cache/anything.json", "{}");
         root.Write("data", "screenshot-conversion/pending.json", "{\"capture\":\"private-capture\"}");
+        root.Write("data", "journals/Journal.example.log", "private-journal-content");
         ProfileSnapshot snapshot = root.Store.Capture();
         string text = Encoding.UTF8.GetString(snapshot.Serialize());
         Assert.DoesNotContain("secret", text);
-        Assert.DoesNotContain("/journal", text);
+        Assert.DoesNotContain("private-journal-content", text);
+        Assert.DoesNotContain(snapshot.Portable.Keys, key => key.Contains("#/Journal/", StringComparison.Ordinal));
+        Assert.Equal(
+            "/journal",
+            snapshot.Machine[Key("config", "cross-platform-ui.json", "/Journal/Directories")]![0]!.GetValue<string>()
+        );
         Assert.DoesNotContain("/local/image.png", text);
         Assert.DoesNotContain("eddn-outbox", text);
         Assert.DoesNotContain("private-capture", text);

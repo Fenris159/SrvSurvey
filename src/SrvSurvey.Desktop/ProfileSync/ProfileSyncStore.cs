@@ -40,6 +40,14 @@ internal sealed class ProfileSyncStore
     internal ProfileSyncDevice Device { get; }
     internal string PendingPath => Path.Combine(StateDirectory, "pending-restore.json");
 
+    /// <summary>Keeps formerly portable screenshot options from acquiring machine-restore permission after staging.</summary>
+    internal ProfileSnapshot LoadPending()
+    {
+        var snapshot = ProfileSnapshot.Parse(File.ReadAllBytes(PendingPath));
+        // Older portable stages already carry this device's identity; only their original machine section is authorized.
+        return ValidateScope(snapshot) with { Machine = snapshot.Machine };
+    }
+
     /// <summary>Reads publisher configuration and this machine's opt-in to automatic synchronization.</summary>
     internal ProfileSyncPreferences LoadPreferences()
     {
@@ -65,12 +73,12 @@ internal sealed class ProfileSyncStore
     /// <summary>Returns the last local change counters, including deletions.</summary>
     internal ProfileSnapshot? LoadBaseline() =>
         File.Exists(Path.Combine(StateDirectory, BaselineFileName))
-            ? ProfileSnapshot.Parse(File.ReadAllBytes(Path.Combine(StateDirectory, BaselineFileName)))
+            ? ValidateScope(ProfileSnapshot.Parse(File.ReadAllBytes(Path.Combine(StateDirectory, BaselineFileName))))
             : null;
 
     /// <summary>Records captured counters only after the snapshot is safely stored locally.</summary>
     internal void SaveBaseline(ProfileSnapshot snapshot) =>
-        WriteAtomic(Path.Combine(StateDirectory, BaselineFileName), snapshot.Serialize());
+        WriteAtomic(Path.Combine(StateDirectory, BaselineFileName), ValidateScope(snapshot).Serialize());
 
     /// <summary>Reads allowed profile data without including credentials, journals, or queued API reports.</summary>
     internal ProfileSnapshot Capture()
@@ -126,9 +134,12 @@ internal sealed class ProfileSyncStore
         var contents = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         foreach (string marker in markers)
         {
-            foreach (string name in OverlayLayoutFileAccess.JournalFileNames)
+            string directory = Path.GetDirectoryName(marker)!;
+            IEnumerable<string> files = OverlayLayoutFileAccess
+                .JournalFileNames.Select(name => Path.Combine(directory, name))
+                .Concat(CalibrationFiles(directory));
+            foreach (string file in files)
             {
-                string file = Path.Combine(Path.GetDirectoryName(marker)!, name);
                 string relative = Path.GetRelativePath(paths.DataDirectory, file).Replace('\\', '/');
                 if (
                     File.Exists(file)
@@ -143,9 +154,33 @@ internal sealed class ProfileSyncStore
         return contents;
     }
 
+    /// <summary>Reads VR override folders only while their owning layout folder is leased, without following links.</summary>
+    private static IEnumerable<string> CalibrationFiles(string directory)
+    {
+        string vr = Path.Combine(directory, "vr");
+        if (!Directory.Exists(vr) || (File.GetAttributes(vr) & FileAttributes.ReparsePoint) != 0)
+        {
+            yield break;
+        }
+        foreach (string folder in new[] { vr, Path.Combine(vr, "vdxr") })
+        {
+            if (Directory.Exists(folder) && (File.GetAttributes(folder) & FileAttributes.ReparsePoint) == 0)
+            {
+                foreach (string file in Directory.EnumerateFiles(folder, "*.json"))
+                {
+                    yield return file;
+                }
+            }
+        }
+    }
+
     /// <summary>Prevents rereading layout files after their coherent snapshot, including files created after the leases ended.</summary>
     private static bool IsLayoutProfileFile(string area, string relative)
     {
+        if (area == "data" && ProfileSyncPolicy.IsVrCalibrationFile(relative))
+        {
+            return true;
+        }
         if (
             area != "data"
             || !OverlayLayoutFileAccess.JournalFileNames.Contains(Path.GetFileName(relative), StringComparer.Ordinal)
@@ -183,6 +218,7 @@ internal sealed class ProfileSyncStore
             log("Profile sync skipped malformed JSON file: " + file);
             return;
         }
+        ProfileSyncPolicy.PrepareCapture(area, relative, node);
         ProfileSyncPolicy.RemoveLocalReferencesFromArrays(node);
         foreach ((string pointer, JsonNode? value) in ProfileSyncPolicy.Flatten(node))
         {
@@ -254,6 +290,7 @@ internal sealed class ProfileSyncStore
     /// <summary>Keeps ten local recovery snapshots independently of Google Drive availability.</summary>
     internal string SaveBackup(ProfileSnapshot snapshot)
     {
+        snapshot = ValidateScope(snapshot);
         string directory = Path.Combine(StateDirectory, "backups");
         string file = Path.Combine(
             directory,
@@ -261,7 +298,6 @@ internal sealed class ProfileSyncStore
         );
         byte[] bytes = snapshot.Serialize();
         _ = ProfileSnapshot.Parse(bytes);
-        ValidateScope(snapshot);
         WriteAtomic(file, bytes);
         foreach (
             string old in Directory
@@ -286,7 +322,7 @@ internal sealed class ProfileSyncStore
     /// <summary>Completes validation and cancelable serialization before publishing restore state.</summary>
     private byte[] PrepareRestore(ProfileSnapshot snapshot, bool restoreMachine, CancellationToken cancellationToken)
     {
-        ValidateScope(snapshot);
+        snapshot = ValidateScope(snapshot);
         if (restoreMachine && !IsOriginalMachine(snapshot))
         {
             throw new InvalidOperationException(
@@ -318,7 +354,7 @@ internal sealed class ProfileSyncStore
         CancellationToken cancellationToken = default
     )
     {
-        ValidateScope(snapshot);
+        snapshot = ValidateScope(snapshot);
         cancellationToken.ThrowIfCancellationRequested();
         ProfileSnapshot current = Capture();
         cancellationToken.ThrowIfCancellationRequested();
@@ -355,8 +391,7 @@ internal sealed class ProfileSyncStore
             return false;
         }
 
-        var staged = ProfileSnapshot.Parse(File.ReadAllBytes(PendingPath));
-        ValidateScope(staged);
+        ProfileSnapshot staged = LoadPending();
         if (!IsOriginalMachine(staged))
         {
             throw new InvalidOperationException(
@@ -461,7 +496,7 @@ internal sealed class ProfileSyncStore
     /// <summary>Writes validated JSON changes atomically and rolls all changed files back on failure.</summary>
     internal void Apply(ProfileSnapshot snapshot, bool restoreMachine = false)
     {
-        ValidateScope(snapshot);
+        snapshot = ValidateScope(snapshot);
         if (restoreMachine && !IsOriginalMachine(snapshot))
         {
             throw new InvalidOperationException(
@@ -478,7 +513,7 @@ internal sealed class ProfileSyncStore
                         key,
                         machine: snapshot.Machine.ContainsKey(key)
                     );
-                    return ResolveTarget(parsed.Area, parsed.Relative);
+                    return ResolveLayoutLeaseTarget(parsed.Area, parsed.Relative);
                 })
         );
         (Dictionary<string, JsonNode?> updates, Dictionary<string, byte[]?> originals) = ReadUpdates(
@@ -520,6 +555,17 @@ internal sealed class ProfileSyncStore
                 ? snapshot.DeviceId == Device.Id
                 : string.Equals(snapshot.MachineFingerprint, Device.MachineHash, StringComparison.OrdinalIgnoreCase)
         );
+
+    /// <summary>VR mode files share the owning desktop layout's lease rather than locking their nested folder.</summary>
+    private string ResolveLayoutLeaseTarget(string area, string relative)
+    {
+        if (area == "data" && ProfileSyncPolicy.IsVrCalibrationFile(relative))
+        {
+            int vr = relative.IndexOf("/vr/", StringComparison.Ordinal);
+            relative = vr < 0 ? "plotters.json" : relative[..vr] + "/plotters.json";
+        }
+        return ResolveTarget(area, relative);
+    }
 
     /// <summary>Builds only changed files while preserving credentials and other excluded local fields.</summary>
     private (Dictionary<string, JsonNode?> Updates, Dictionary<string, byte[]?> Originals) ReadUpdates(
@@ -671,9 +717,11 @@ internal sealed class ProfileSyncStore
             ? JsonValue.Create(Encoding.UTF8.GetString(bytes))
             : JsonNode.Parse(bytes, documentOptions: JsonOptions);
 
-    /// <summary>Rejects even well-formed snapshots that contain forbidden file or setting keys.</summary>
-    internal static void ValidateScope(ProfileSnapshot snapshot)
+    /// <summary>Upgrades legacy screenshot settings and rejects forbidden file or setting keys before use.</summary>
+    internal static ProfileSnapshot ValidateScope(ProfileSnapshot snapshot)
     {
+        snapshot = ProfileSyncPolicy.MigrateScreenshotSettings(snapshot);
+        CheckValueLimit(snapshot.Machine.Count, "machine", "screenshot settings");
         foreach (string key in snapshot.Portable.Keys)
         {
             _ = ProfileSyncPolicy.ParseKey(key, machine: false);
@@ -683,6 +731,7 @@ internal sealed class ProfileSyncStore
         {
             _ = ProfileSyncPolicy.ParseKey(key, machine: true);
         }
+        return snapshot;
     }
 
     /// <summary>Replaces a file through a unique temporary file on the same filesystem.</summary>
