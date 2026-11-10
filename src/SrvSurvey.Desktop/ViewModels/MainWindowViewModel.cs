@@ -40,6 +40,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
+    internal static string PublicationSoftwareVersion { get; } =
+        ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly).ToString();
     private const string OverviewNavigationKey = "overview";
 
     private static readonly TimeSpan DefaultSystemBodyDataRetryDelay = TimeSpan.FromSeconds(30);
@@ -517,7 +519,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.inaraPublisher =
                 resolvedInaraPublisher
                 ?? new InaraPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     httpClient: externalNetworkClient,
                     log: message => resolvedApplicationLogService?.Append(message),
                     acceptedEventLog: new InaraAcceptedEventLog(
@@ -533,7 +535,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.edsmPublisher =
                 resolvedEdsmPublisher
                 ?? new EdsmPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     httpClient: externalNetworkClient,
                     log: message => resolvedApplicationLogService?.Append(message),
                     outboxDirectory: JournalUploadStorageDirectory
@@ -545,7 +547,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.eddnPublisher =
                 resolvedEddnPublisher
                 ?? new EddnCommanderPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     Path.Combine(AppDataPaths.JournalUploadDirectory, "eddn"),
                     Path.Combine(AppDataPaths.DataDirectory, "eddn-outbox-v1.json"),
                     client: externalNetworkClient,
@@ -559,7 +561,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.edAstroPublisher =
                 resolvedEdAstroPublisher
                 ?? new EdAstroPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     client: externalNetworkClient,
                     log: message => resolvedApplicationLogService?.Append(message),
                     outboxDirectory: JournalUploadStorageDirectory
@@ -572,7 +574,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.voxStellarPublisher =
                 resolvedVoxStellarPublisher
                 ?? new VoxStellarPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     IsDiagnosticReplay ? string.Empty : VoxStellarSharedKeyProvider.GetSharedKey(),
                     new VoxStellarPublisherOptions
                     {

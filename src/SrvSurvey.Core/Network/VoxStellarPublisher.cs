@@ -360,7 +360,11 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
                 "voxstellar",
                 item => item.Identity,
                 ValidateStoredUpload,
-                WriteLog
+                WriteLog,
+                item =>
+                    JournalUploadIdentity.CaptureContent(
+                        Newtonsoft.Json.Linq.JToken.Parse(Encoding.UTF8.GetString(item.Body))
+                    )
             );
             outboxes.Add(commander, outbox);
         }
@@ -420,7 +424,7 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             bool transient = status is null or 408 or 429 or >= 500;
             if (!transient)
             {
-                outbox?.Complete([upload.Identity]);
+                outbox?.Complete([upload.Identity], contentAccepted: status is >= 200 and <= 299);
                 return;
             }
             TimeSpan retry =

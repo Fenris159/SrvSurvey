@@ -66,6 +66,44 @@ restarts.
   that captured origin context.
 - Journal processing does not hold a session lock across disk or network I/O.
 
+## Shared data quality
+
+- Newly captured EDDN, EDSM, EDAstro, Inara and VoxStellar publications identify
+  the full release version, including its RC suffix. Retained EDDN messages keep
+  their original captured headers.
+- Source-record receipts remain authoritative for replay and personal
+  transactions. EDDN additionally stores a bounded content fingerprint beside
+  the source identity. EDSM applies content suppression only to galaxy and
+  travel observations; EDAstro applies it to organic/Codex survey observations,
+  preserving distinct docking and carrier-operation records. VoxStellar applies
+  it to its existing observational feed. Inara's personal commands retain
+  source-based identity.
+- Accepted-content receipts are committed only when the provider acknowledges
+  the data. Rejections and policy discards retire source records without blocking
+  a later valid submission from new evidence.
+- Fingerprints canonicalize object-key order while retaining arrays, values and
+  event timestamps. A new timestamp, commander, game context or changed payload
+  remains a distinct observation. No freshness cutoff is added for Stealth Mode.
+- EDSM's own discard list remains authoritative. Its transient system/station
+  metadata is added only when it agrees with the event, and a newly identified
+  system never inherits the previous system's coordinates.
+- EDDN does not publish temporary Operations stations with MarketIDs
+  127000000 through 127999999. Their events still update local context before
+  publication is considered. Personal journal APIs retain their own event rules.
+- `LeaveBody` clears EDDN's tracked body. A verified Status body name can be
+  supplied without an unverified body ID; explicit journal identity remains
+  authoritative.
+- `ScanOrganic` uses `scanorganic/1` for `Log` and `Sample`, renaming `Body` to
+  `BodyID` and including coordinates only with matching body context. `Analyse`
+  is excluded by that schema; the other providers retain their accepted journal
+  formats and event policies.
+- Complete outfitting catalogs use `outfitting/3`, including `id`, `Name`,
+  `BuyPrice` and `BuyMercCoinsPrice` (zero when absent). Legacy name-only catalogs
+  retain the supported version 2 format rather than inventing IDs or prices.
+- There is no FCMaterials CAPI ingestion. The existing live journal/companion
+  feed remains enabled under its own schema. Observed prices, names, population
+  and physical values are not changed to match a validator's reference sample.
+
 ## Verification
 
 - Regressions cover Commander A-to-B isolation, mismatched `LoadGame`, stale

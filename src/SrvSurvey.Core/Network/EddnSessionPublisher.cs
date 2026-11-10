@@ -19,6 +19,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private static readonly HashSet<string> JournalEvents = new(StringComparer.Ordinal)
     {
         "CodexEntry",
+        "ScanOrganic",
         "ApproachSettlement",
         "DockingGranted",
         "DockingDenied",
@@ -52,6 +53,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private EddnSignalBatchContext? pendingSignalContext;
     private EddnLocationContext? location;
     private string? statusBodyName;
+    private EliteStatus? currentStatus;
     private string? trackedBodyName;
     private int? trackedBodyId;
     private string? trackedBodyType;
@@ -352,7 +354,10 @@ internal sealed class EddnSessionPublisher : IDisposable
             return ProcessCompanionEvent(eventName, raw, request, captured, ingestionGeneration, warnings);
         }
 
-        if (JournalEvents.Contains(eventName))
+        if (
+            JournalEvents.Contains(eventName)
+            && !(eventName == "ScanOrganic" && raw.Value<string>("ScanType") == "Analyse")
+        )
         {
             PublishJournalEvent(eventName, raw, captured, ingestionGeneration, published, warnings);
         }
@@ -400,10 +405,8 @@ internal sealed class EddnSessionPublisher : IDisposable
                 ClearTrackedBodyLocked();
             }
 
-            statusBodyName =
-                request.AllowSharedData && !string.IsNullOrWhiteSpace(request.Status?.BodyName)
-                    ? request.Status.BodyName
-                    : null;
+            currentStatus = request.AllowSharedData ? request.Status : null;
+            statusBodyName = currentStatus?.BodyName;
             UpdateBodyContextLocked(raw);
             UpdateExpansionFlagsLocked(raw);
             UpdateCrewMembershipLocked(eventName);
@@ -967,7 +970,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private void UpdateBodyContextLocked(JObject raw)
     {
         string? eventName = raw.Value<string>(EventProperty);
-        if (eventName is "FSDJump" or "CarrierJump" or "StartJump")
+        if (eventName is "FSDJump" or "CarrierJump" or "StartJump" or "LeaveBody")
         {
             ClearTrackedBodyLocked();
             return;
@@ -1002,7 +1005,8 @@ internal sealed class EddnSessionPublisher : IDisposable
             statusBodyName,
             trackedBodyName,
             trackedBodyId,
-            trackedBodyType
+            trackedBodyType,
+            currentStatus
         );
     }
 

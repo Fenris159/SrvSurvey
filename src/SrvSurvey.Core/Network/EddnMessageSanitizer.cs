@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Network;
 
@@ -12,7 +13,8 @@ internal sealed record EddnMessageContext(
     string? statusBodyName = null,
     string? trackedBodyName = null,
     int? trackedBodyId = null,
-    string? trackedBodyType = null
+    string? trackedBodyType = null,
+    EliteStatus? status = null
 );
 
 internal sealed record EddnPreparedMessage(string eventName, string schemaRef, JObject message)
@@ -35,6 +37,12 @@ internal static class EddnMessageSanitizer
     private const string FsdJumpEvent = "FSDJump";
     private const string CarrierJumpEvent = "CarrierJump";
     private const string ScanEvent = "Scan";
+    private const string ScanOrganicEvent = "ScanOrganic";
+    private const string ScanTypeProperty = "ScanType";
+    private const string GenusProperty = "Genus";
+    private const string SpeciesProperty = "Species";
+    private const string VariantProperty = "Variant";
+    private const string MercCoinsPriceProperty = "BuyMercCoinsPrice";
     private const string LocationEvent = "Location";
     private const string SaasSignalsFoundEvent = "SAASignalsFound";
     private const string MarketEvent = "Market";
@@ -123,6 +131,7 @@ internal static class EddnMessageSanitizer
     private const string StarClassProperty = "StarClass";
     private const string LandingPadProperty = "LandingPad";
     private const string TheEventDidNotMatchTrackedSystemMessage = "the event did not match the tracked system";
+    private const string TemporaryStationReason = "the station is a temporary Operations instance";
     private static readonly TimeSpan regexTimeout = TimeSpan.FromSeconds(1);
     private static readonly string[] RequiredCommodityFields =
     [
@@ -233,6 +242,12 @@ internal static class EddnMessageSanitizer
             return false;
         }
 
+        if (IsTemporaryStation(raw))
+        {
+            reason = TemporaryStationReason;
+            return false;
+        }
+
         if (genericEvents.Contains(eventName))
         {
             return tryBuildGenericJournal(raw, context, out prepared, out reason);
@@ -270,6 +285,7 @@ internal static class EddnMessageSanitizer
         return eventName switch
         {
             CodexEntryEvent => tryBuildCodexEntry(raw, context, out message, out schema, out reason),
+            ScanOrganicEvent => tryBuildScanOrganic(raw, context, out message, out schema, out reason),
             ApproachSettlementEvent => tryBuildApproachSettlement(raw, context, out message, out schema, out reason),
             DockingDeniedEvent => tryBuildDockingDenied(raw, context, out message, out schema, out reason),
             DockingGrantedEvent => tryBuildDockingGranted(raw, context, out message, out schema, out reason),
@@ -375,14 +391,88 @@ internal static class EddnMessageSanitizer
     {
         if (
             message.ContainsKey(BodyNameProperty)
-            || !bodyNamesAgree
-            || (message.ContainsKey(BodyIdProperty) && message.Value<int?>(BodyIdProperty) != context.trackedBodyId)
+            || string.IsNullOrWhiteSpace(context.statusBodyName)
+            || (
+                message.ContainsKey(BodyIdProperty)
+                && (!bodyNamesAgree || message.Value<int?>(BodyIdProperty) != context.trackedBodyId)
+            )
         )
         {
             return;
         }
 
         message[BodyNameProperty] = context.statusBodyName;
+    }
+
+    /// <summary>Publishes location-checked sampling evidence without the game's unreliable Analyse coordinates.</summary>
+    private static bool tryBuildScanOrganic(
+        JObject raw,
+        EddnMessageContext context,
+        out JObject? message,
+        out string schema,
+        out string reason
+    )
+    {
+        schema = "scanorganic/1";
+        message = null;
+        int? bodyId = raw.Value<int?>(BodyIdProperty) ?? raw.Value<int?>(BodyProperty);
+        if (
+            !hasMatchingLocation(raw, context, raw.ContainsKey(StarSystemProperty) ? StarSystemProperty : null)
+            || bodyId is not >= 0
+            || raw.Value<string>(ScanTypeProperty) is not ("Log" or "Sample")
+            || raw[GenusProperty]?.Type != JTokenType.String
+            || raw[SpeciesProperty]?.Type != JTokenType.String
+        )
+        {
+            reason = "the organic scan lacked matching location or supported sampling evidence";
+            return false;
+        }
+
+        message = select(
+            raw,
+            TimestampKey,
+            EventKey,
+            ScanTypeProperty,
+            GenusProperty,
+            SpeciesProperty,
+            VariantProperty,
+            SystemAddressProperty,
+            BodyNameProperty
+        );
+        message[StarSystemProperty] = context.location!.systemName;
+        message[StarPosProperty] = position(context.location);
+        message[BodyIdProperty] = bodyId;
+        bool matchingBody =
+            BodyNamesAgree(context)
+            && context.trackedBodyId == bodyId
+            && (
+                !message.ContainsKey(BodyNameProperty)
+                || message.Value<string>(BodyNameProperty) == context.statusBodyName
+            );
+        if (matchingBody)
+        {
+            message[BodyNameProperty] ??= context.statusBodyName;
+            AddSurfaceCoordinates(message, context.status);
+        }
+        addFlags(message, context);
+        reason = string.Empty;
+        return true;
+    }
+
+    private static void AddSurfaceCoordinates(JObject message, EliteStatus? status)
+    {
+        if (
+            status is { Latitude: { } latitude, Longitude: { } longitude }
+            && (status.Flags & StatusFlags.HasLatLong) != 0
+            && double.IsFinite(latitude)
+            && latitude is >= -90 and <= 90
+            && double.IsFinite(longitude)
+            && longitude is >= -180 and <= 180
+        )
+        {
+            message[LatitudeProperty] = latitude;
+            message[LongitudeProperty] = longitude;
+        }
     }
 
     private static void TryFillCodexBodyId(JObject message, EddnMessageContext context, bool bodyNamesAgree)
@@ -652,6 +742,11 @@ internal static class EddnMessageSanitizer
         ArgumentNullException.ThrowIfNull(context);
 
         prepared = null;
+        if (IsTemporaryStation(companion))
+        {
+            reason = TemporaryStationReason;
+            return false;
+        }
         string? eventName = companion.Value<string>(EventKey);
         JObject message;
         string schema;
@@ -663,8 +758,8 @@ internal static class EddnMessageSanitizer
                 break;
 
             case OutfittingEvent:
-                schema = "outfitting/2";
-                message = buildOutfitting(companion, context);
+                message = buildOutfitting(companion, context, out bool detailedModules);
+                schema = detailedModules ? "outfitting/3" : "outfitting/2";
                 break;
 
             case ShipyardEvent:
@@ -918,9 +1013,11 @@ internal static class EddnMessageSanitizer
         return message;
     }
 
-    private static JObject buildOutfitting(JObject source, EddnMessageContext context)
+    private static JObject buildOutfitting(JObject source, EddnMessageContext context, out bool detailedModules)
     {
         var modules = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var details = new Dictionary<long, JObject>();
+        bool completeDetails = true;
         foreach (JToken item in source[ItemsKey] as JArray ?? [])
         {
             if (item is not JObject module)
@@ -940,7 +1037,17 @@ internal static class EddnMessageSanitizer
                 continue;
             }
             modules.Add(normalizeModuleName(name));
+            if (TryGetModuleDetails(module, out long id, out JObject? detail))
+            {
+                details.TryAdd(id, detail!);
+            }
+            else
+            {
+                completeDetails = false;
+            }
         }
+
+        detailedModules = completeDetails && details.Count > 0;
 
         var message = new JObject
         {
@@ -948,12 +1055,42 @@ internal static class EddnMessageSanitizer
             [StationNameResultKey] = source.Value<string>(StationNameProperty),
             [MarketIdResultKey] = source.Value<long?>(MarketIdProperty),
             [TimestampKey] = source[TimestampKey]?.DeepClone(),
-            [ModulesProperty] = new JArray(modules.OrderBy(value => value, StringComparer.Ordinal)),
+            [ModulesProperty] = detailedModules
+                ? new JArray(details.Values.OrderBy(value => value.Value<string>(NameProperty), StringComparer.Ordinal))
+                : new JArray(modules.OrderBy(value => value, StringComparer.Ordinal)),
         };
         addFlags(message, context with { horizons = source.Value<bool?>("Horizons") ?? context.horizons });
         removeNulls(message);
         return message;
     }
+
+    /// <summary>Keeps legacy name-only catalogs usable without inventing module IDs or credit prices.</summary>
+    private static bool TryGetModuleDetails(JObject module, out long id, out JObject? detail)
+    {
+        id = 0;
+        detail = null;
+        JToken? coins = module[MercCoinsPriceProperty];
+        if (
+            module[IdProperty]?.Type != JTokenType.Integer
+            || module[BuyPriceSourceProperty]?.Type != JTokenType.Integer
+            || (coins is not null && coins.Type != JTokenType.Integer)
+        )
+        {
+            return false;
+        }
+        id = module.Value<long>(IdProperty);
+        if (id <= 0 || module.Value<long>(BuyPriceSourceProperty) < 0 || (coins?.Value<long>() ?? 0) < 0)
+        {
+            return false;
+        }
+        detail = select(module, IdProperty, NameProperty, BuyPriceSourceProperty, MercCoinsPriceProperty);
+        detail[NameProperty] = normalizeModuleName(module.Value<string>(NameProperty)!);
+        detail[MercCoinsPriceProperty] ??= 0;
+        return true;
+    }
+
+    private static bool IsTemporaryStation(JObject source) =>
+        source.Value<long?>(MarketIdProperty) is >= 127000000 and <= 127999999;
 
     private static JObject buildShipyard(JObject source, EddnMessageContext context)
     {
@@ -1091,6 +1228,18 @@ internal static class EddnMessageSanitizer
                 StarPosProperty,
                 SystemAddressProperty,
                 EntryIdProperty,
+            ],
+            ScanOrganicEvent =>
+            [
+                TimestampKey,
+                EventKey,
+                StarSystemProperty,
+                StarPosProperty,
+                SystemAddressProperty,
+                ScanTypeProperty,
+                GenusProperty,
+                SpeciesProperty,
+                BodyIdProperty,
             ],
             ApproachSettlementEvent =>
             [

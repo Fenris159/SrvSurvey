@@ -30629,8 +30629,8 @@
       "translation": "Unterstützte Live-Journal-Ereignisse können Flugverlauf, Standort, Credits, Schiffe und Ladungen, Fracht, Materialien, Rucksack- und Schließfachinventar, Missionen, Technik, Community-Ziele, Statistiken, sozialen Status und Entdeckungen aktualisieren EDSM."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Unterstützte neue Journalereignisse und validierte Markt-, Ausrüstungs-, Werft-, Flottenträgermaterialien- und NavRoute-Begleitdateidaten. Der Verlauf des Startup-Tagebuchs und die Multicrew-Aktivitäten werden nicht hochgeladen."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Unterstützte neue Journalereignisse, einschließlich organischer Protokoll- und Probenscans mit verifizierten Körperkoordinaten und validierten Markt-, Ausrüstungs-, Werft-, Flottenträgermaterialien- und NavRoute-Begleitdateidaten. Die Ausstattung beinhaltet die Modulpreise, sofern verfügbar. Der Verlauf des Startup-Tagebuchs und die Multicrew-Aktivitäten werden nicht hochgeladen."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -73107,8 +73107,8 @@
       "translation": "Los eventos de diario en vivo admitidos pueden actualizar EDSM el historial de vuelos, la ubicación, los créditos, los barcos y el equipamiento, la carga, los materiales, el inventario de mochilas y casilleros, las misiones, la ingeniería, los objetivos de la comunidad, las estadísticas, el estatus social y los descubrimientos."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Admitió nuevos eventos de revistas y datos validados de archivos complementarios de mercado, equipamiento, astilleros, flotas y archivos complementarios de NavRoute. El historial del diario de inicio y la actividad multitripulación no se cargan."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Se admitieron nuevos eventos de revistas, incluidos escaneos orgánicos de registros y muestras con coordenadas corporales verificadas y datos validados de archivos complementarios de mercado, equipamiento, astilleros, flotas y archivos complementarios de NavRoute. El equipamiento incluye los precios de los módulos cuando estén disponibles. El historial del diario de inicio y la actividad multitripulación no se cargan."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -115585,8 +115585,8 @@
       "translation": "Les événements du journal en direct pris en charge peuvent mettre à jour EDSM l'historique des vols, l'emplacement, les crédits, les navires et les chargements, la cargaison, les matériaux, l'inventaire des sacs à dos et des casiers, les missions, l'ingénierie, les objectifs communautaires, les statistiques, le statut social et les découvertes."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Prise en charge de nouveaux événements de journal et validation des données du marché, des pourvoiries, du chantier naval, des matériaux de transport de flotte et des fichiers compagnons NavRoute. L’historique du journal de démarrage et l’activité multi-équipage ne sont pas téléchargés."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Prise en charge de nouveaux événements de journal, y compris des analyses organiques de journaux et d'échantillons avec des coordonnées corporelles vérifiées et des données validées sur le marché, les pourvoiries, le chantier naval, les matériaux de transport de flotte et les fichiers compagnons NavRoute. La pourvoirie comprend les prix des modules lorsqu'ils sont disponibles. L’historique du journal de démarrage et l’activité multi-équipage ne sont pas téléchargés."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -158063,8 +158063,8 @@
       "translation": "Os eventos de diário ao vivo suportados podem atualizar EDSM histórico de voo, localização, créditos, navios e carregamentos, carga, materiais, inventário de mochilas e armários, missões, engenharia, objetivos da comunidade, estatísticas, status social e descobertas."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Apoiou novos eventos de diário e dados validados de mercado, equipamento, estaleiro, materiais de transporte de frota e dados de arquivo complementar NavRoute. O histórico do diário de inicialização e a atividade multitripulação não são carregados."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Apoiou novos eventos de diário, incluindo varreduras orgânicas de registros e amostras com coordenadas corporais verificadas e dados validados de mercado, equipamento, estaleiro, materiais de transportador de frota e dados de arquivo complementar NavRoute. O equipamento inclui preços de módulos, quando disponíveis. O histórico do diário de inicialização e a atividade multitripulação não são carregados."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -200541,8 +200541,8 @@
       "translation": "Поддерживаемые события живого журнала могут обновлять EDSM историю полетов, местоположение, кредиты, корабли и снаряжение, груз, материалы, инвентарь рюкзака и шкафчика, миссии, инженерное дело, цели сообщества, статистику, социальный статус и открытия."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Поддерживаются новые события журнала и проверенные данные о рынке, оснащении, верфи, материалах для авианосцев и сопутствующих файлах NavRoute. История журнала запуска и деятельность многочленного экипажа не загружаются."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Поддерживаются новые события журнала, включая органическое сканирование журналов и образцов с проверенными координатами тела, а также проверенные данные о рынке, оборудовании, верфи, материалах для авианосцев и сопутствующих файлах NavRoute. Оснащение включает в себя цены на модули, если таковые имеются. История журнала запуска и деятельность многочленного экипажа не загружаются."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -243019,8 +243019,8 @@
       "translation": "支持的实时日志事件可以更新 EDSM 飞行历史记录、位置、积分、船舶和装载、货物、材料、背包和储物柜库存、任务、工程、社区目标、统计数据、社会地位和发现。"
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "支持新的期刊活动并验证市场、舾装、造船厂、舰队运输材料和 NavRoute 配套文件数据。不会上传启动日志历史记录和多人活动。"
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "支持新的日志事件，包括经过验证的身体坐标的有机日志和样本扫描，以及经过验证的市场、舾装、造船厂、舰队航母材料和 NavRoute 配套文件数据。装备包括可用的模块价格。不会上传启动日志历史记录和多人活动。"
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -285497,8 +285497,8 @@
       "translation": "* SUPPORTED LIVE JOURNAL EVENTS CAN UPDATE EDSM FLIGHT HISTORY, LOCATION, CREDITS, SHIPS AND LOADOUTS, CARGO, MATERIALS, BACKPACK AND LOCKER INVENTORY, MISSIONS, ENGINEERING, COMMUNITY GOALS, STATISTICS, SOCIAL STATUS, AND DISCOVERIES. >>>!"
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "* SUPPORTED NEW JOURNAL EVENTS AND VALIDATED MARKET, OUTFITTING, SHIPYARD, FLEET CARRIER MATERIALS, AND NAVROUTE COMPANION-FILE DATA. STARTUP JOURNAL HISTORY AND MULTICREW ACTIVITY ARE NOT UPLOADED. >>>!"
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "* SUPPORTED NEW JOURNAL EVENTS, INCLUDING ORGANIC LOG AND SAMPLE SCANS WITH VERIFIED BODY COORDINATES, AND VALIDATED MARKET, OUTFITTING, SHIPYARD, FLEET CARRIER MATERIALS, AND NAVROUTE COMPANION-FILE DATA. OUTFITTING INCLUDES MODULE PRICES WHEN AVAILABLE. STARTUP JOURNAL HISTORY AND MULTICREW ACTIVITY ARE NOT UPLOADED. >>>!"
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",

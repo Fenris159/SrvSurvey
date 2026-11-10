@@ -200,21 +200,52 @@ internal sealed class EdsmJournalContext
     internal JObject AddTransientFields(JObject entry)
     {
         var augmented = (JObject)entry.DeepClone();
-        SetIfKnown(augmented, "_systemAddress", SystemAddress);
-        SetIfKnown(augmented, "_systemName", SystemName);
-        if (SystemCoordinates is not null)
+        if (MatchesSystem(entry))
         {
-            augmented["_systemCoordinates"] = SystemCoordinates.DeepClone();
+            SetIfKnown(augmented, "_systemAddress", SystemAddress);
+            SetIfKnown(augmented, "_systemName", SystemName);
+            if (SystemCoordinates is not null)
+            {
+                augmented["_systemCoordinates"] = SystemCoordinates.DeepClone();
+            }
+            long? market = ReadInt64(entry, "MarketID");
+            string? station = entry.Value<string>("StationName");
+            if ((market is null || market == MarketId) && (station is null || station == StationName))
+            {
+                SetIfKnown(augmented, "_marketId", MarketId);
+                SetIfKnown(augmented, "_stationName", StationName);
+            }
         }
-
-        SetIfKnown(augmented, "_marketId", MarketId);
-        SetIfKnown(augmented, "_stationName", StationName);
         SetIfKnown(augmented, "_shipId", ShipId);
         return augmented;
     }
 
+    private bool MatchesSystem(JObject entry)
+    {
+        long? address = ReadInt64(entry, nameof(SystemAddress));
+        string? name = entry.Value<string>("StarSystem") ?? entry.Value<string>("SystemName");
+        if (entry.Value<string>("event") == "CodexEntry")
+        {
+            name ??= entry.Value<string>("System");
+        }
+        return (address is null || address == SystemAddress) && (name is null || name == SystemName);
+    }
+
     private void ApplySystem(JObject entry)
     {
+        long? address = ReadInt64(entry, nameof(SystemAddress));
+        string? name = entry.Value<string>("StarSystem");
+        if (
+            (address is not null && SystemAddress is not null && address != SystemAddress)
+            || (name is not null && SystemName is not null && name != SystemName)
+        )
+        {
+            SystemName = null;
+            SystemAddress = null;
+            SystemCoordinates = null;
+            MarketId = null;
+            StationName = null;
+        }
         SystemName = entry.Value<string>("StarSystem") ?? SystemName;
         SystemAddress = ReadInt64(entry, nameof(SystemAddress)) ?? SystemAddress;
         if (

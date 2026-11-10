@@ -2,7 +2,8 @@
 
 RC77.11 expands backup coverage for saved preferences, Colonization planning,
 and workspace continuity, keeps screenshot and hardware configuration specific
-to each computer, and makes outstanding ring scans clearer in System status.
+to each computer, makes outstanding ring scans clearer in System status, and
+improves shared journal data quality while preserving each provider's format.
 
 ## What's changed
 
@@ -45,6 +46,25 @@ to each computer, and makes outstanding ring scans clearer in System status.
 - **Keep existing controls and context:** Respect Skip DSS of rings and body
   filters, preserve navigation destination highlighting and the separate
   biological-body list, and use the same presentation in the overlay editor.
+
+### Shared journal data quality
+
+- **Avoid duplicate survey reports:** EDDN, EDSM, EDAstro, and VoxStellar retain
+  bounded content receipts for eligible observations across restarts. New
+  timestamps, changed observations, and different Commanders remain distinct.
+  Personal transactions and EDAstro docking records retain their source identity.
+  Rejected reports do not become successful content receipts.
+- **Keep location context accurate:** Clear EDDN's tracked body after leaving it,
+  retain known Codex body names without inventing body IDs, and prevent EDSM
+  events from inheriting conflicting system, station, or coordinate metadata.
+- **Expand supported EDDN contributions:** Send organic Log/Sample scans with
+  verified surface coordinates and detailed outfitting catalogs with module IDs
+  and prices when available. Keep live Fleet Carrier Materials sharing; no
+  FCMaterials CAPI collection is added.
+- **Respect provider rules:** Exclude temporary Operations stations from EDDN,
+  honor each other service's accepted event types, and identify new uploads with
+  the full RC version. Preserve actual market prices, names, physical values,
+  event timestamps, retry pacing, and Stealth Mode delays.
 
 ### Backup compatibility and safeguards
 

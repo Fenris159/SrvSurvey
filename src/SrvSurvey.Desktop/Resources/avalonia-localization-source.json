@@ -61469,7 +61469,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
+    "Text": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
