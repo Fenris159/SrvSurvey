@@ -10,6 +10,38 @@
              MaxWidth="220"
              HorizontalAlignment="Left"
              ClipToBounds="True">
+  <UserControl.Styles>
+    <Style Selector="Border.ring-layer">
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Border.ring-layer.slot">
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.ring-a.unscanned">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenWarningBrush}" />
+    </Style>
+    <Style Selector="Border.ring-b.unscanned">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenSuccessBrush}" />
+    </Style>
+    <Style Selector="Border.ring-c.unscanned">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenSuccessDimBrush}" />
+    </Style>
+    <Style Selector="Border.ring-b.inner-a">
+      <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    <Style Selector="Border.ring-c.inner-a">
+      <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    <Style Selector="Border.ring-c.inner-b">
+      <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    <Style Selector="Border.ring-c.inner-a.inner-b">
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+  </UserControl.Styles>
   <!-- Content-sized live/editor presentation; the editor folder tab is host
        chrome and does not alter this panel's runtime dimensions. -->
   <Border Margin="0"
@@ -35,22 +67,38 @@
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:SurveyBodyReferenceViewModel">
-              <Border Margin="0,0,4,2"
-                      Padding="5,2"
-                      Background="{DynamicResource RavenAccentMutedBrush}"
-                      CornerRadius="3">
-                <Grid>
-                  <TextBlock FontSize="9" Classes="type-body"
-                             FontWeight="SemiBold"
-                             Foreground="{DynamicResource RavenSecondaryBrush}"
-                             IsVisible="{Binding !IsDestination}"
-                             Text="{Binding Name}" />
-                  <TextBlock FontSize="9" Classes="type-body"
-                             FontWeight="Bold"
-                             Foreground="{DynamicResource RavenWarningBrush}"
-                             IsVisible="{Binding IsDestination}"
-                             Text="{Binding Name}" />
-                </Grid>
+              <Border Classes="ring-layer ring-c"
+                      Classes.slot="{Binding HasUnscannedRingC}"
+                      Classes.unscanned="{Binding HasUnscannedRingC}"
+                      Classes.inner-a="{Binding HasUnscannedRingA}"
+                      Classes.inner-b="{Binding HasUnscannedRingB}"
+                      Margin="0,0,6,2"
+                      VerticalAlignment="Center">
+                <Border Classes="ring-layer ring-b"
+                        Classes.slot="{Binding HasUnscannedRingB}"
+                        Classes.unscanned="{Binding HasUnscannedRingB}"
+                        Classes.inner-a="{Binding HasUnscannedRingA}">
+                  <Border Classes="ring-layer ring-a"
+                          Classes.slot="{Binding HasUnscannedRingA}"
+                          Classes.unscanned="{Binding HasUnscannedRingA}">
+                    <Border Padding="5,2"
+                            Background="{DynamicResource RavenAccentMutedBrush}"
+                            CornerRadius="3">
+                      <Grid>
+                        <TextBlock FontSize="9" Classes="type-body"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource RavenSecondaryBrush}"
+                                   IsVisible="{Binding !IsDestination}"
+                                   Text="{Binding Name}" />
+                        <TextBlock FontSize="9" Classes="type-body"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource RavenWarningBrush}"
+                                   IsVisible="{Binding IsDestination}"
+                                   Text="{Binding Name}" />
+                      </Grid>
+                    </Border>
+                  </Border>
+                </Border>
               </Border>
             </DataTemplate>
           </ItemsControl.ItemTemplate>

@@ -1,8 +1,8 @@
 # SrvSurvey-XP 2.1.3.0-rc.77.11
 
 RC77.11 expands backup coverage for saved preferences, Colonization planning,
-and workspace continuity, while keeping screenshot and hardware configuration
-specific to each computer.
+and workspace continuity, keeps screenshot and hardware configuration specific
+to each computer, and makes outstanding ring scans clearer in System status.
 
 ## What's changed
 
@@ -33,6 +33,18 @@ specific to each computer.
 - **Read VR layouts consistently:** Capture and restore calibration overrides
   under their owning layout lock without following linked folders outside the
   profile.
+
+### System status overlay panel
+
+- **Group rings with their body:** Show one body tag with nested, touching
+  borders for its unscanned rings instead of separate ring-suffix tags. Count
+  each body once and retain its tag until the body and included rings are mapped.
+- **Use configured theme colors:** Inner-to-outer borders identify rings A, B,
+  and C using General Warning, General Success, and General Success (dim).
+  Each border disappears after its ring is DSS-scanned without leaving a gap.
+- **Keep existing controls and context:** Respect Skip DSS of rings and body
+  filters, preserve navigation destination highlighting and the separate
+  biological-body list, and use the same presentation in the overlay editor.
 
 ### Backup compatibility and safeguards
 

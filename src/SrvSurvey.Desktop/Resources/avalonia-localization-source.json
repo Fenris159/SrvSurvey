@@ -84878,14 +84878,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "{0}r{1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
-  },
-  {
     "Text": "{0}x",
     "IsFormat": true,
     "SourceKinds": [

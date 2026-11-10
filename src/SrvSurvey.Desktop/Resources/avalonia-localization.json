@@ -42321,10 +42321,6 @@
       "translation": "{0}min"
     },
     {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
-    },
-    {
       "source": "{0}x",
       "translation": "{0}x"
     },
@@ -84801,10 +84797,6 @@
     {
       "source": "{0}min",
       "translation": "{0}min"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -127285,10 +127277,6 @@
       "translation": "{0}min"
     },
     {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
-    },
-    {
       "source": "{0}x",
       "translation": "{0}x"
     },
@@ -169765,10 +169753,6 @@
     {
       "source": "{0}min",
       "translation": "{0}min"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -212249,10 +212233,6 @@
       "translation": "{0}мин"
     },
     {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
-    },
-    {
       "source": "{0}x",
       "translation": "{0}x"
     },
@@ -254731,10 +254711,6 @@
       "translation": "{0}min"
     },
     {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
-    },
-    {
       "source": "{0}x",
       "translation": "{0}x"
     },
@@ -297211,10 +297187,6 @@
     {
       "source": "{0}min",
       "translation": "* {0}MIN >>>!"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "* {0}R{1} >>>!"
     },
     {
       "source": "{0}x",
