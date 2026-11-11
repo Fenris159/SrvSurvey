@@ -16,6 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\SrvSurvey.CameraBridge\Profiles\EliteOdyssey-RigidCockpit.ini"
+                      LogicalName="SrvSurvey.Core.Resources.cockpit-camera-profile.ini" />
     <EmbeddedResource Include="Resources\ReferenceData\firegroup-modules.json" LogicalName="SrvSurvey.Core.Resources.firegroup-modules.json" />
     <EmbeddedResource Include="Resources\ReferenceData\mining-commodities.json" LogicalName="SrvSurvey.Core.Resources.mining-commodities.json" />
     <EmbeddedResource Include="Resources\ReferenceData\ring-mining-compositions.json" LogicalName="SrvSurvey.Core.Resources.ring-mining-compositions.json" />

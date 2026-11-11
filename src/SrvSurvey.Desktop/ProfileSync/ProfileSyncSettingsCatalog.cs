@@ -95,6 +95,7 @@ internal static class ProfileSyncSettingsCatalog
             ProfileBackupExclusion.LocalConsent
         ),
         new(typeof(VrOverlaySettingsStore), ProfileBackupScope.Machine, ["VirtualReality"]),
+        new(typeof(CockpitOverlaySettingsStore), ProfileBackupScope.Machine, ["CockpitPanelsPrototype"]),
         new(typeof(WaylandCaptureSettingsStore), ProfileBackupScope.Machine, ["WaylandCapture"]),
         new(typeof(WorkspaceContinuitySettingsStore), ProfileBackupScope.Portable, ["Workspace"]),
         new(typeof(UiSettingsDocumentStore), ProfileBackupScope.Portable, ["Version"]),

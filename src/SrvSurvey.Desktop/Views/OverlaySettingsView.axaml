@@ -168,6 +168,33 @@
                 </StackPanel>
               </StackPanel>
             </Border>
+            <Border x:Name="CockpitPanelsPrototypeCard" Classes="card raised">
+              <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <TextBlock Classes="card-title" Text="Cockpit panels" />
+                  <TextBlock Grid.Column="1" Classes="muted" Text="Experimental" VerticalAlignment="Center" />
+                </Grid>
+                <CheckBox Content="Follow Elite's cockpit camera on my monitor"
+                          IsChecked="{Binding CockpitPanels.Enabled, Mode=TwoWay}" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor." />
+                <TextBlock IsVisible="{Binding CockpitPanels.RestartRequired}"
+                           Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap"
+                           Text="Restart SrvSurvey to enable the shared cockpit display." />
+                <StackPanel Spacing="8" IsVisible="{Binding CockpitPanels.Enabled}">
+                  <TextBlock Text="{Binding CockpitPanels.CaptureProfileStatus}" TextWrapping="Wrap"
+                             ToolTip.Tip="Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts."
+                             Foreground="{DynamicResource RavenMutedTextBrush}" />
+                  <TextBlock Text="{Binding CockpitPanels.StatusMessage}" TextWrapping="Wrap"
+                             Foreground="{DynamicResource RavenMutedTextBrush}" />
+                  <Button Classes="secondary" Content="Calibrate centered view"
+                          Command="{Binding CockpitPanels.CalibrateCommand}"
+                          ToolTip.Tip="Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships." />
+                  <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                             Text="Center freelook before calibrating. Panels return to their desktop positions if the live camera connection stops." />
+                </StackPanel>
+              </StackPanel>
+            </Border>
             <Expander x:Name="OverlayOpacityOptions" Classes="section-pill" Header="Opacity override and layout recovery" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
               <StackPanel Margin="0,14,0,0" Spacing="14">
                 <StackPanel Spacing="10">

@@ -52,6 +52,7 @@ internal sealed partial class DesktopRuntime
     private PulseOverlayCoordinator? pulseOverlayCoordinator;
     private StreamOverlayCoordinator? streamOverlayCoordinator;
     private VrOverlayCoordinator? vrOverlayCoordinator;
+    private CockpitOverlayCoordinator? cockpitOverlayCoordinator;
     private GalaxyMapOverlayCoordinator? galaxyMapOverlayCoordinator;
     private ExplorationPoiOverlayCoordinator? explorationPoiOverlayCoordinator;
     private MultiGameCommanderOverlayCoordinator? multiGameCommanderOverlayCoordinator;
@@ -186,7 +187,8 @@ internal sealed partial class DesktopRuntime
                         + $"{diagnostic.Phase} -> {diagnostic.Health}: "
                         + diagnostic.Status
                 ),
-            CreateRawGameWindowTracker
+            CreateRawGameWindowTracker,
+            cockpitPanels: new CockpitOverlaySettingsStore(appDataPaths.UiSettingsPath).Load().Enabled
         );
         overlayPresentationSession = overlayPresentation;
         applicationLog.Append(
@@ -433,6 +435,11 @@ internal sealed partial class DesktopRuntime
             viewModel.VrOverlay,
             modeProvider: () => viewModel.CurrentVrOverlayMode
         );
+        cockpitOverlayCoordinator = new CockpitOverlayCoordinator(
+            viewModel.CockpitPanels,
+            overlayPresentation,
+            () => viewModel.VrOverlay is { Enabled: true, ConnectionState: VrOverlayConnectionState.Ready }
+        );
         galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(viewModel.GalaxyMap, overlayPresentation);
         explorationPoiOverlayCoordinator = new ExplorationPoiOverlayCoordinator(
             viewModel.ExplorationPois,
@@ -558,6 +565,7 @@ internal sealed partial class DesktopRuntime
         {
             _ = viewModel.ReleaseUpdates.CheckAsync();
             _ = viewModel.ReferenceDataUpdates.RefreshAsync();
+            _ = viewModel.CockpitPanels.RefreshCaptureProfileAsync(cancellationToken);
         }
         await viewModel.RefreshAsync();
         if (!cancellationToken.IsCancellationRequested)
@@ -1001,6 +1009,7 @@ internal sealed partial class DesktopRuntime
         DisposeResource(ref notificationOverlayCoordinator);
         DisposeResource(ref pulseOverlayCoordinator);
         DisposeResource(ref streamOverlayCoordinator);
+        DisposeResource(ref cockpitOverlayCoordinator);
         DisposeResource(ref vrOverlayCoordinator);
         DisposeResource(ref galaxyMapOverlayCoordinator);
         DisposeResource(ref explorationPoiOverlayCoordinator);

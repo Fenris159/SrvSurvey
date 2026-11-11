@@ -881,6 +881,10 @@
       "translation": "Ein korrekter Standorttyp und eine korrekte Überschrift sorgen dafür, dass die projizierte Karte mit den Ruinen oder dem Bauwerk übereinstimmt."
     },
     {
+      "source": "A current cockpit camera sample is needed before calibration.",
+      "translation": "Vor der Kalibrierung ist ein aktuelles Cockpit-Kameramuster erforderlich."
+    },
+    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Zur Kalibrierung des Cockpit-Offsets sind eine aktuelle Schiffs- und Oberflächenposition erforderlich."
     },
@@ -2305,6 +2309,10 @@
       "translation": "Analysierendes Journal {0} von {1}: {2}"
     },
     {
+      "source": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor.",
+      "translation": "Verankern Sie die Paneele im Cockpit, sodass sie sich mit normaler Freelook-Funktion bewegen können. Erfordert die optionale Kamerabrücke. Desktop-Positionen sind Ihr Ausgangslayout; Passen Sie den Winkel jedes Panels im Positionseditor an."
+    },
+    {
       "source": "Ancient Ruins ({0})",
       "translation": "Antike Ruinen ({0})"
     },
@@ -2363,6 +2371,10 @@
     {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Eine andere SrvSurvey-Instanz wird ausgeführt. Bestätigen Sie, ob alle Instanzen vor der Aktualisierung geschlossen werden sollen."
+    },
+    {
+      "source": "Another SrvSurvey instance is updating the camera profile.",
+      "translation": "Eine andere Instanz SrvSurvey aktualisiert das Kameraprofil."
     },
     {
       "source": "Another update operation is already active.",
@@ -4877,6 +4889,10 @@
       "translation": "Startkraftstoff berechnen"
     },
     {
+      "source": "Calibrate centered view",
+      "translation": "Zentrierte Ansicht kalibrieren"
+    },
+    {
       "source": "Calibrate panels in the headset",
       "translation": "Kalibrieren Sie die Panels im Headset"
     },
@@ -4907,6 +4923,22 @@
     {
       "source": "Calls out the next action, selected destination, active target, route note, or focused row.",
       "translation": "Ruft die nächste Aktion, das ausgewählte Ziel, das aktive Ziel, die Routennotiz oder die fokussierte Zeile auf."
+    },
+    {
+      "source": "Camera profile check canceled; the current profile was retained.",
+      "translation": "Überprüfung des Kameraprofils abgebrochen; Das aktuelle Profil wurde beibehalten."
+    },
+    {
+      "source": "Camera profile check failed; the current profile was retained.",
+      "translation": "Überprüfung des Kameraprofils fehlgeschlagen; Das aktuelle Profil wurde beibehalten."
+    },
+    {
+      "source": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+      "translation": "Das Kameraprofil v{0} ist aktuell. Beim Start von SrvSurvey überprüft."
+    },
+    {
+      "source": "Camera profiles are checked on launch while cockpit mode is enabled.",
+      "translation": "Kameraprofile werden beim Start überprüft, während der Cockpit-Modus aktiviert ist."
     },
     {
       "source": "Can fulfill all selected needs",
@@ -5433,12 +5465,20 @@
       "translation": "Cavas"
     },
     {
+      "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+      "translation": "Zentrieren Sie den freien Blick auf das normale Cockpit und nehmen Sie dann die neutrale Ansicht auf. Nach einem Schiffswechsel wiederholen."
+    },
+    {
       "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
       "translation": "Zentrieren Sie das Rhino-Chassis auf einer kartierten Lagerstättenkante, wechseln Sie in den Turmmodus, lassen Sie den Mineralienscanner aktiv und senden Sie .mine splat. Fahren Sie den vollständig sichtbaren Stromkreis, bis SrvSurvey die Spur schließt, und verwenden Sie dann die Vorschläge für die quadratische Riggposition, um jeden Einsatz auszurichten. Das kompakte Radar zoomt automatisch in die Nähe der Lagerstätte und Empfehlungen. Senden Sie .mine splat cancel, um eine nicht abgeschlossene Ablaufverfolgung zu verwerfen."
     },
     {
       "source": "Center the Rhino on the edge (HUD colors vary).",
       "translation": "Zentrieren Sie das Nashorn am Rand (HUD-Farben variieren)."
+    },
+    {
+      "source": "Centered view calibrated. Use the position editor to adjust each panel's angle.",
+      "translation": "Zentrierte Ansicht kalibriert. Verwenden Sie den Positionseditor, um den Winkel jedes Panels anzupassen."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -5561,6 +5601,10 @@
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
     },
     {
+      "source": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+      "translation": "Beim Start von SrvSurvey überprüft. Aktualisierte Profile werden beim nächsten Start von Elite wirksam."
+    },
+    {
       "source": "Checking Google Drive backup history...",
       "translation": "Sicherungsverlauf von Google Drive wird überprüft..."
     },
@@ -5587,6 +5631,10 @@
     {
       "source": "Checking sell-system eligibility…",
       "translation": "Prüfung der Berechtigung zum Verkaufssystem …"
+    },
+    {
+      "source": "Checking the published camera profile...",
+      "translation": "Überprüfen des veröffentlichten Kameraprofils..."
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -6357,8 +6405,32 @@
       "translation": "Cockpit-Offset: {0}"
     },
     {
+      "source": "Cockpit panel angle",
+      "translation": "Winkel der Cockpitverkleidung"
+    },
+    {
+      "source": "Cockpit panel angles or depth are outside the supported range.",
+      "translation": "Winkel oder Tiefe der Cockpitverkleidung liegen außerhalb des unterstützten Bereichs."
+    },
+    {
+      "source": "Cockpit panels",
+      "translation": "Cockpitverkleidungen"
+    },
+    {
+      "source": "Cockpit panels are off.",
+      "translation": "Cockpitverkleidungen sind ausgeschaltet."
+    },
+    {
+      "source": "Cockpit panels need a supported shared desktop overlay host.",
+      "translation": "Cockpit-Panels benötigen einen unterstützten Shared-Desktop-Overlay-Host."
+    },
+    {
       "source": "Cockpit view visibility",
       "translation": "Sichtbarkeit der Cockpitansicht"
+    },
+    {
+      "source": "CockpitPanelsPrototype",
+      "translation": "CockpitPanelsPrototype"
     },
     {
       "source": "Codex",
@@ -7867,6 +7939,10 @@
     {
       "source": "Could not allocate the FSS capture buffer.",
       "translation": "Der FSS-Erfassungspuffer konnte nicht zugewiesen werden."
+    },
+    {
+      "source": "Could not check GitHub. Camera profile v{0} remains available.",
+      "translation": "GitHub konnte nicht überprüft werden. Das Kameraprofil v{0} bleibt verfügbar."
     },
     {
       "source": "Could not choose an export folder: {0}",
@@ -9661,6 +9737,10 @@
       "translation": "Herunterladen, überprüfen und installieren"
     },
     {
+      "source": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+      "translation": "Heruntergeladenes Kameraprofil v{0}. Elite prüft es bei seinem nächsten Start."
+    },
+    {
       "source": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
       "translation": "Heruntergeladene Kataloge werden begrenzt, validiert, mit Prüfsummen versehen, bereitgestellt und mit Zustandsbestätigung und Rollback aktiviert."
     },
@@ -9697,6 +9777,10 @@
       "translation": "Entwurfspunkte werden auf der aktiven Siedlungskarte in der Vorschau angezeigt. Auf der Festplatte ändert sich nichts, bis Sie ein Exportziel auswählen."
     },
     {
+      "source": "Drag center to tilt. Drag rim to roll.",
+      "translation": "Zum Neigen die Mitte ziehen. Ziehen Sie die Felge, um sie zu rollen."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Ziehen Sie Punkte auf Kreismittelpunkte. Zum Verschieben leeren Raum ziehen; unten rechts, um die Größe zu ändern. {0}"
     },
@@ -9707,6 +9791,10 @@
     {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Ziehen Sie die umrandeten Vorschaubilder auf die gewünschten Monitore und Positionen. Vorschauinhalte stammen aus einem falschen Spielstatus, der wie echte Overlay-Daten aussieht."
+    },
+    {
+      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+      "translation": "Ziehen Sie die Mitte, um sie zu neigen. Ziehen Sie die Felge, um sie zu rollen. Pfeiltasten neigen, Strg plus Links- oder Rechtsrollen; Die Verschiebung ändert sich um fünf Grad."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -10965,6 +11053,10 @@
       "translation": "Expeditionsverlauf, Statistiken und Berichte"
     },
     {
+      "source": "Experimental",
+      "translation": "Experimental"
+    },
+    {
       "source": "Experimental EDVR controller input",
       "translation": "Experimenteller EDVR-Controller-Eingang"
     },
@@ -12209,6 +12301,10 @@
       "translation": "Ordner gespeichert. Starten Sie SrvSurvey neu, um sie zu scannen."
     },
     {
+      "source": "Follow Elite's cockpit camera on my monitor",
+      "translation": "Verfolgen Sie die Cockpitkamera von Elite auf meinem Monitor"
+    },
+    {
       "source": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
       "translation": "Folgen Sie dem Schiff, um die Schiffsführung zu erhalten. Folgen Sie nach dem Aussteigen dem Rhino-Chevron zurück zum geparkten Fahrzeug."
     },
@@ -13289,6 +13385,10 @@
       "translation": "Großer Vernichter"
     },
     {
+      "source": "Greater distance makes this panel smaller, as it would in VR.",
+      "translation": "Bei einem größeren Abstand wird dieses Panel kleiner, wie es auch in VR der Fall wäre."
+    },
+    {
       "source": "Green",
       "translation": "grün"
     },
@@ -13887,6 +13987,10 @@
     {
       "source": "Headings must be -1 for unknown or a whole number from 0 through 359.",
       "translation": "Überschriften müssen -1 für unbekannt oder eine ganze Zahl von 0 bis 359 sein."
+    },
+    {
+      "source": "Headset overlays are active; desktop cockpit tracking is paused.",
+      "translation": "Headset-Overlays sind aktiv; Das Desktop-Cockpit-Tracking ist angehalten."
     },
     {
       "source": "Health unavailable",
@@ -16375,6 +16479,14 @@
     {
       "source": "Live bearing and descent guidance",
       "translation": "Live-Peilung und Abstiegsführung"
+    },
+    {
+      "source": "Live camera connected. Center freelook, then select Calibrate centered view.",
+      "translation": "Live-Kamera angeschlossen. Zentrieren Sie den freien Blick und wählen Sie dann „Zentrierte Ansicht kalibrieren“ aus."
+    },
+    {
+      "source": "Live cockpit camera connected. Panels follow normal freelook.",
+      "translation": "Live-Cockpit-Kamera angeschlossen. Die Panels folgen dem normalen Freelook."
     },
     {
       "source": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -21689,6 +21801,18 @@
       "translation": "Die Panel-Verfügbarkeit hat sich für diese Sitzung geändert, konnte aber nicht gespeichert werden: {0}"
     },
     {
+      "source": "Panel distance",
+      "translation": "Plattenabstand"
+    },
+    {
+      "source": "Panel rotation",
+      "translation": "Panel-Rotation"
+    },
+    {
+      "source": "Panels",
+      "translation": "Panels"
+    },
+    {
       "source": "Panther Clipper Mk II",
       "translation": "Panther Clipper Mk II"
     },
@@ -21867,6 +21991,10 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Tonhöhe (Grad)"
+    },
+    {
+      "source": "Pitch (°)",
+      "translation": "Neigung (°)"
     },
     {
       "source": "Place in front of me",
@@ -25353,6 +25481,10 @@
       "translation": "Beim Zurücksetzen der VR-Ausrichtung wird die aktuelle Gierbewegung des Headsets SteamVR oder die Headset-Pose VDXR als Overlay-Ursprung erfasst, ohne dass die gespeicherte Panel-Platzierung geändert wird."
     },
     {
+      "source": "Reset angle and depth",
+      "translation": "Winkel und Tiefe zurücksetzen"
+    },
+    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Zurücksetzen abgebrochen; Summen wurden nicht verändert."
     },
@@ -25459,6 +25591,10 @@
     {
       "source": "Restart SrvSurvey to apply the selected language.",
       "translation": "Starten Sie SrvSurvey neu, um die ausgewählte Sprache anzuwenden."
+    },
+    {
+      "source": "Restart SrvSurvey to enable the shared cockpit display.",
+      "translation": "Starten Sie SrvSurvey neu, um die gemeinsame Cockpit-Anzeige zu aktivieren."
     },
     {
       "source": "Restart SrvSurvey to load the migrated profile.",
@@ -26029,6 +26165,10 @@
       "translation": "Rolle (Grad)"
     },
     {
+      "source": "Roll (°)",
+      "translation": "Rolle (°)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Rollback-Backup: {0}"
     },
@@ -26511,6 +26651,10 @@
     {
       "source": "SRV position",
       "translation": "SRV-Position"
+    },
+    {
+      "source": "SRVCAM01",
+      "translation": "SRVCAM01"
     },
     {
       "source": "SRVDestroyed",
@@ -27011,6 +27155,10 @@
     {
       "source": "Saved overlay theme state '{0}'.",
       "translation": "Overlay-Theme-Status „{0}“ gespeichert."
+    },
+    {
+      "source": "Saved panel angle and calibration changes.",
+      "translation": "Gespeicherte Panelwinkel- und Kalibrierungsänderungen."
     },
     {
       "source": "Saved pending live overlay positions.",
@@ -32969,6 +33117,10 @@
       "translation": "Der lokale Autorenentwurf wurde verworfen. Es wurde keine Datei geändert."
     },
     {
+      "source": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+      "translation": "Die lokale Kameraverbindung ist nicht verfügbar ({0}). Desktop-Positionen bleiben aktiv."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "Der lokale Pflanzenpfad ist nicht absolut. Zwischengespeicherte und Remote-Codex-Bilder bleiben verfügbar."
     },
@@ -33121,8 +33273,16 @@
       "translation": "Der Vorgang wurde nicht abgeschlossen."
     },
     {
+      "source": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+      "translation": "Der Opt-in-Cockpit-Panel-Prototyp nutzt eine gemeinsame Desktop-Oberfläche für die perspektivische Projektion."
+    },
+    {
       "source": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
       "translation": "Die optionale Erinnerung „Ladung voll“ wartet, bis die Ladung voll ist und die Sammlung eine Minute lang inaktiv ist."
+    },
+    {
+      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+      "translation": "Die Kugel zeigt eine Vorschau der Perspektive dieses Panels an. Mit der Editor-Symbolleiste speichern oder abbrechen; Die Headset-Kalibrierung erfolgt separat."
     },
     {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -33355,6 +33515,18 @@
     {
       "source": "The project workspace is busy. Try refreshing again when it finishes.",
       "translation": "Der Projektarbeitsbereich ist beschäftigt. Versuchen Sie es erneut, wenn die Aktualisierung abgeschlossen ist."
+    },
+    {
+      "source": "The published camera profile changed without a version bump. The current profile was retained.",
+      "translation": "Das veröffentlichte Kameraprofil wurde ohne Versionsänderung geändert. Das aktuelle Profil wurde beibehalten."
+    },
+    {
+      "source": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+      "translation": "Das veröffentlichte Kameraprofil verwendet ein nicht unterstütztes Protokoll. Das aktuelle Profil wurde beibehalten."
+    },
+    {
+      "source": "The published camera profile was invalid. The current profile was retained.",
+      "translation": "Das veröffentlichte Kameraprofil war ungültig. Das aktuelle Profil wurde beibehalten."
     },
     {
       "source": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -36729,6 +36901,14 @@
       "translation": "Warten auf das aktuelle System."
     },
     {
+      "source": "Waiting for the live cockpit camera bridge.",
+      "translation": "Warten auf die Live-Cockpit-Kamerabrücke."
+    },
+    {
+      "source": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+      "translation": "Warten auf die Live-Cockpit-Kamerabrücke. Desktop-Positionen bleiben aktiv."
+    },
+    {
       "source": "Waiting for the selected VR session",
       "translation": "Warten auf die ausgewählte VR-Sitzung"
     },
@@ -37355,6 +37535,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Gier (Grad)"
+    },
+    {
+      "source": "Yaw (°)",
+      "translation": "Gier (°)"
     },
     {
       "source": "Years",
@@ -43371,6 +43555,10 @@
       "translation": "Un tipo de sitio y un rumbo correctos hacen que el mapa proyectado se alinee con las ruinas o la estructura."
     },
     {
+      "source": "A current cockpit camera sample is needed before calibration.",
+      "translation": "Se necesita una muestra actual de la cámara de la cabina antes de la calibración."
+    },
+    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Se requiere una posición actual del barco y de la superficie para calibrar el desplazamiento de la cabina."
     },
@@ -44795,6 +44983,10 @@
       "translation": "Analizando el diario {0} de {1}: {2}"
     },
     {
+      "source": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor.",
+      "translation": "Ancla los paneles en la cabina para que se muevan con libertad normal. Requiere el puente de cámara opcional. Las posiciones del escritorio son su diseño inicial; ajuste el ángulo de cada panel en el editor de posición."
+    },
+    {
       "source": "Ancient Ruins ({0})",
       "translation": "Ruinas antiguas ({0})"
     },
@@ -44853,6 +45045,10 @@
     {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Se está ejecutando otra instancia SrvSurvey. Confirme si todas las instancias deben cerrarse antes de actualizar."
+    },
+    {
+      "source": "Another SrvSurvey instance is updating the camera profile.",
+      "translation": "Otra instancia SrvSurvey está actualizando el perfil de la cámara."
     },
     {
       "source": "Another update operation is already active.",
@@ -47367,6 +47563,10 @@
       "translation": "Calcular el combustible inicial."
     },
     {
+      "source": "Calibrate centered view",
+      "translation": "Calibrar vista centrada"
+    },
+    {
       "source": "Calibrate panels in the headset",
       "translation": "Calibrar paneles en el auricular"
     },
@@ -47397,6 +47597,22 @@
     {
       "source": "Calls out the next action, selected destination, active target, route note, or focused row.",
       "translation": "Indica la siguiente acción, el destino seleccionado, el objetivo activo, la nota de ruta o la fila enfocada."
+    },
+    {
+      "source": "Camera profile check canceled; the current profile was retained.",
+      "translation": "Verificación del perfil de la cámara cancelada; Se mantuvo el perfil actual."
+    },
+    {
+      "source": "Camera profile check failed; the current profile was retained.",
+      "translation": "Falló la verificación del perfil de la cámara; Se mantuvo el perfil actual."
+    },
+    {
+      "source": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+      "translation": "El perfil de cámara v{0} es actual. Comprobado en el lanzamiento SrvSurvey."
+    },
+    {
+      "source": "Camera profiles are checked on launch while cockpit mode is enabled.",
+      "translation": "Los perfiles de la cámara se verifican en el inicio mientras el modo de cabina está habilitado."
     },
     {
       "source": "Can fulfill all selected needs",
@@ -47923,12 +48139,20 @@
       "translation": "cavas"
     },
     {
+      "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+      "translation": "Centre la vista libre de la cabina normal y luego capture la vista neutral. Repita después de cambiar de barco."
+    },
+    {
       "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
       "translation": "Centre el chasis de Rhino en un borde de depósito mapeado, cambie al modo torreta, mantenga activo el escáner de minerales y envíe .mine splat. Conduzca por todo el circuito visible hasta que SrvSurvey cierre el rastro, luego use las sugerencias de posición del equipo cuadrado para alinear cada despliegue. El radar compacto se acerca automáticamente al depósito y a las recomendaciones. Envíe .mine splat cancel para descartar un seguimiento inacabado."
     },
     {
       "source": "Center the Rhino on the edge (HUD colors vary).",
       "translation": "Centre el Rhino en el borde (los colores del HUD varían)."
+    },
+    {
+      "source": "Centered view calibrated. Use the position editor to adjust each panel's angle.",
+      "translation": "Vista centrada calibrada. Utilice el editor de posición para ajustar el ángulo de cada panel."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -48051,6 +48275,10 @@
       "translation": "CheckBoxCheckGlyphForegroundIndeterminadoPresionado"
     },
     {
+      "source": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+      "translation": "Comprobado en el lanzamiento SrvSurvey. Los perfiles actualizados entrarán en vigor la próxima vez que se inicie Elite."
+    },
+    {
       "source": "Checking Google Drive backup history...",
       "translation": "Comprobando el historial de copias de seguridad de Google Drive..."
     },
@@ -48077,6 +48305,10 @@
     {
       "source": "Checking sell-system eligibility…",
       "translation": "Comprobando la elegibilidad del sistema de venta..."
+    },
+    {
+      "source": "Checking the published camera profile...",
+      "translation": "Comprobando el perfil de cámara publicado..."
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -48847,8 +49079,32 @@
       "translation": "Desplazamiento de la cabina: {0}"
     },
     {
+      "source": "Cockpit panel angle",
+      "translation": "Ángulo del panel de la cabina"
+    },
+    {
+      "source": "Cockpit panel angles or depth are outside the supported range.",
+      "translation": "Los ángulos o la profundidad del panel de la cabina están fuera del rango admitido."
+    },
+    {
+      "source": "Cockpit panels",
+      "translation": "Paneles de cabina"
+    },
+    {
+      "source": "Cockpit panels are off.",
+      "translation": "Los paneles de la cabina están apagados."
+    },
+    {
+      "source": "Cockpit panels need a supported shared desktop overlay host.",
+      "translation": "Los paneles de la cabina necesitan un host de superposición de escritorio compartido compatible."
+    },
+    {
       "source": "Cockpit view visibility",
       "translation": "Visibilidad de la vista de cabina"
+    },
+    {
+      "source": "CockpitPanelsPrototype",
+      "translation": "CabinaPanelesPrototipo"
     },
     {
       "source": "Codex",
@@ -50357,6 +50613,10 @@
     {
       "source": "Could not allocate the FSS capture buffer.",
       "translation": "No se pudo asignar el búfer de captura FSS."
+    },
+    {
+      "source": "Could not check GitHub. Camera profile v{0} remains available.",
+      "translation": "No se pudo comprobar GitHub. El perfil de cámara v{0} permanece disponible."
     },
     {
       "source": "Could not choose an export folder: {0}",
@@ -52151,6 +52411,10 @@
       "translation": "Descargar, verificar e instalar"
     },
     {
+      "source": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+      "translation": "Perfil de cámara descargado v{0}. Elite lo comprueba en su próximo lanzamiento."
+    },
+    {
       "source": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
       "translation": "Los catálogos descargados están delimitados, validados, sumados de verificación, preparados y activados con confirmación de estado y reversión."
     },
@@ -52187,6 +52451,10 @@
       "translation": "Los puntos borrador se obtienen una vista previa en el mapa de asentamiento activo. Nada cambia en el disco hasta que elija un destino de exportación."
     },
     {
+      "source": "Drag center to tilt. Drag rim to roll.",
+      "translation": "Arrastra el centro para inclinarlo. Arrastre el borde para rodar."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Arrastra puntos a los centros de los círculos. Arrastra el espacio vacío para moverte; esquina inferior derecha para cambiar el tamaño. {0}"
     },
@@ -52197,6 +52465,10 @@
     {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Arrastre las vistas previas con bordes a los monitores y posiciones deseados. El contenido de la vista previa proviene de un estado de juego falso con forma de datos superpuestos reales."
+    },
+    {
+      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+      "translation": "Arrastre el centro para inclinarlo; Arrastre el borde para rodar. Teclas de flecha inclinadas, Control más giros hacia la izquierda o hacia la derecha; El cambio cambia cinco grados."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -53455,6 +53727,10 @@
       "translation": "Historial, estadísticas e informes de expediciones."
     },
     {
+      "source": "Experimental",
+      "translation": "Experimental"
+    },
+    {
       "source": "Experimental EDVR controller input",
       "translation": "Entrada del controlador EDVR experimental"
     },
@@ -54699,6 +54975,10 @@
       "translation": "Carpetas guardadas. Reinicie SrvSurvey para escanearlos."
     },
     {
+      "source": "Follow Elite's cockpit camera on my monitor",
+      "translation": "Siga la cámara de la cabina de Elite en mi monitor"
+    },
+    {
       "source": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
       "translation": "Siga a Barco para obtener orientación sobre el barco. Después de desembarcar, siga el galón de Rhino de regreso al vehículo estacionado."
     },
@@ -55779,6 +56059,10 @@
       "translation": "Gran aniquilador"
     },
     {
+      "source": "Greater distance makes this panel smaller, as it would in VR.",
+      "translation": "Una mayor distancia hace que este panel sea más pequeño, como lo haría en la realidad virtual."
+    },
+    {
       "source": "Green",
       "translation": "verde"
     },
@@ -56377,6 +56661,10 @@
     {
       "source": "Headings must be -1 for unknown or a whole number from 0 through 359.",
       "translation": "Los encabezados deben ser -1 para números desconocidos o enteros del 0 al 359."
+    },
+    {
+      "source": "Headset overlays are active; desktop cockpit tracking is paused.",
+      "translation": "Las superposiciones de auriculares están activas; El seguimiento de la cabina de escritorio está en pausa."
     },
     {
       "source": "Health unavailable",
@@ -58865,6 +59153,14 @@
     {
       "source": "Live bearing and descent guidance",
       "translation": "Guía de rumbo y descenso en vivo"
+    },
+    {
+      "source": "Live camera connected. Center freelook, then select Calibrate centered view.",
+      "translation": "Cámara en vivo conectada. Centrar vista libre y luego seleccione Calibrar vista centrada."
+    },
+    {
+      "source": "Live cockpit camera connected. Panels follow normal freelook.",
+      "translation": "Cámara de cabina en vivo conectada. Los paneles siguen el aspecto libre normal."
     },
     {
       "source": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -64179,6 +64475,18 @@
       "translation": "La disponibilidad del panel cambió para esta sesión pero no se pudo guardar: {0}"
     },
     {
+      "source": "Panel distance",
+      "translation": "Distancia entre paneles"
+    },
+    {
+      "source": "Panel rotation",
+      "translation": "Rotación de paneles"
+    },
+    {
+      "source": "Panels",
+      "translation": "Paneles"
+    },
+    {
       "source": "Panther Clipper Mk II",
       "translation": "Pantera Clipper Mk II"
     },
@@ -64357,6 +64665,10 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Paso (grados)"
+    },
+    {
+      "source": "Pitch (°)",
+      "translation": "Paso (°)"
     },
     {
       "source": "Place in front of me",
@@ -67843,6 +68155,10 @@
       "translation": "Restablecer la orientación de VR captura la orientación actual del visor SteamVR, o la posición del visor VDXR, como origen de superposición sin cambiar la ubicación guardada del panel."
     },
     {
+      "source": "Reset angle and depth",
+      "translation": "Restablecer ángulo y profundidad"
+    },
+    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Reinicio cancelado; los totales no fueron cambiados."
     },
@@ -67949,6 +68265,10 @@
     {
       "source": "Restart SrvSurvey to apply the selected language.",
       "translation": "Reinicie SrvSurvey para aplicar el idioma seleccionado."
+    },
+    {
+      "source": "Restart SrvSurvey to enable the shared cockpit display.",
+      "translation": "Reinicie SrvSurvey para habilitar la pantalla de cabina compartida."
     },
     {
       "source": "Restart SrvSurvey to load the migrated profile.",
@@ -68519,6 +68839,10 @@
       "translation": "Rollo (grados)"
     },
     {
+      "source": "Roll (°)",
+      "translation": "Rollo (°)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Revertir copia de seguridad: {0}"
     },
@@ -69001,6 +69325,10 @@
     {
       "source": "SRV position",
       "translation": "Posición SRV"
+    },
+    {
+      "source": "SRVCAM01",
+      "translation": "SRVCAM01"
     },
     {
       "source": "SRVDestroyed",
@@ -69501,6 +69829,10 @@
     {
       "source": "Saved overlay theme state '{0}'.",
       "translation": "Estado del tema de superposición guardado '{0}'."
+    },
+    {
+      "source": "Saved panel angle and calibration changes.",
+      "translation": "Cambios de calibración y ángulo del panel guardados."
     },
     {
       "source": "Saved pending live overlay positions.",
@@ -75459,6 +75791,10 @@
       "translation": "El borrador de autoría local fue descartado. No se modificó ningún archivo."
     },
     {
+      "source": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+      "translation": "La conexión de la cámara local no está disponible ({0}). Las posiciones de escritorio permanecen activas."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "El camino de la flora local no es absoluto. Las imágenes del Codex remotas y en caché siguen estando disponibles."
     },
@@ -75611,8 +75947,16 @@
       "translation": "La operación no se completó."
     },
     {
+      "source": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+      "translation": "El prototipo del panel de cabina optativo utiliza una superficie de escritorio compartida para la proyección en perspectiva."
+    },
+    {
       "source": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
       "translation": "El recordatorio de carga completa opcional espera hasta que la carga esté llena y la recolección esté inactiva durante un minuto."
+    },
+    {
+      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+      "translation": "El orbe muestra una vista previa de la perspectiva de este panel. Guarde o cancele con la barra de herramientas del editor; La calibración de los auriculares es independiente."
     },
     {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -75845,6 +76189,18 @@
     {
       "source": "The project workspace is busy. Try refreshing again when it finishes.",
       "translation": "El espacio de trabajo del proyecto está ocupado. Intente actualizar nuevamente cuando termine."
+    },
+    {
+      "source": "The published camera profile changed without a version bump. The current profile was retained.",
+      "translation": "El perfil de cámara publicado cambió sin ningún cambio de versión. Se mantuvo el perfil actual."
+    },
+    {
+      "source": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+      "translation": "El perfil de cámara publicado utiliza un protocolo no compatible. Se mantuvo el perfil actual."
+    },
+    {
+      "source": "The published camera profile was invalid. The current profile was retained.",
+      "translation": "El perfil de cámara publicado no era válido. Se mantuvo el perfil actual."
     },
     {
       "source": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -79219,6 +79575,14 @@
       "translation": "Esperando el sistema actual."
     },
     {
+      "source": "Waiting for the live cockpit camera bridge.",
+      "translation": "Esperando el puente de la cámara de la cabina en vivo."
+    },
+    {
+      "source": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+      "translation": "Esperando el puente de la cámara de la cabina en vivo. Las posiciones de escritorio permanecen activas."
+    },
+    {
       "source": "Waiting for the selected VR session",
       "translation": "Esperando la sesión de realidad virtual seleccionada"
     },
@@ -79845,6 +80209,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Guiñada (grados)"
+    },
+    {
+      "source": "Yaw (°)",
+      "translation": "Guiñada (°)"
     },
     {
       "source": "Years",
@@ -85861,6 +86229,10 @@
       "translation": "Un type de site et un cap corrects permettent d'aligner la carte projetée avec les ruines ou la structure."
     },
     {
+      "source": "A current cockpit camera sample is needed before calibration.",
+      "translation": "Un échantillon actuel de la caméra du cockpit est nécessaire avant l’étalonnage."
+    },
+    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Une position actuelle du navire et de la surface est nécessaire pour calibrer le décalage de son cockpit."
     },
@@ -87285,6 +87657,10 @@
       "translation": "Journal d'analyse {0} de {1} : {2}"
     },
     {
+      "source": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor.",
+      "translation": "Ancrez les panneaux dans le cockpit pour qu'ils se déplacent avec un aspect libre normal. Nécessite le pont de caméra en option. Les positions sur le bureau constituent votre disposition de départ ; ajustez l'angle de chaque panneau dans l'éditeur de position."
+    },
+    {
       "source": "Ancient Ruins ({0})",
       "translation": "Ruines antiques ({0})"
     },
@@ -87343,6 +87719,10 @@
     {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Une autre instance SrvSurvey est en cours d'exécution. Confirmez si toutes les instances doivent se fermer avant la mise à jour."
+    },
+    {
+      "source": "Another SrvSurvey instance is updating the camera profile.",
+      "translation": "Une autre instance SrvSurvey met à jour le profil de la caméra."
     },
     {
       "source": "Another update operation is already active.",
@@ -89857,6 +90237,10 @@
       "translation": "Calculer le carburant de démarrage"
     },
     {
+      "source": "Calibrate centered view",
+      "translation": "Calibrer la vue centrée"
+    },
+    {
       "source": "Calibrate panels in the headset",
       "translation": "Calibrer les panneaux dans le casque"
     },
@@ -89887,6 +90271,22 @@
     {
       "source": "Calls out the next action, selected destination, active target, route note, or focused row.",
       "translation": "Appelle l'action suivante, la destination sélectionnée, la cible active, la note d'itinéraire ou la ligne ciblée."
+    },
+    {
+      "source": "Camera profile check canceled; the current profile was retained.",
+      "translation": "Vérification du profil de la caméra annulée ; le profil actuel a été conservé."
+    },
+    {
+      "source": "Camera profile check failed; the current profile was retained.",
+      "translation": "La vérification du profil de la caméra a échoué ; le profil actuel a été conservé."
+    },
+    {
+      "source": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+      "translation": "Le profil de caméra v{0} est actuel. Vérifié au lancement de SrvSurvey."
+    },
+    {
+      "source": "Camera profiles are checked on launch while cockpit mode is enabled.",
+      "translation": "Les profils de caméra sont vérifiés au lancement lorsque le mode cockpit est activé."
     },
     {
       "source": "Can fulfill all selected needs",
@@ -90413,12 +90813,20 @@
       "translation": "Cavas"
     },
     {
+      "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+      "translation": "Centrez le look libre du cockpit normal, puis capturez la vue neutre. Répétez après avoir changé de navire."
+    },
+    {
       "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
       "translation": "Centrez le châssis Rhino sur un bord de dépôt cartographié, passez en mode tourelle, gardez le scanner de minéraux actif et envoyez .mine splat. Parcourez le circuit entièrement visible jusqu'à ce que SrvSurvey ferme la trace, puis utilisez les suggestions de position de plate-forme carrée pour aligner chaque déploiement. Le radar compact zoome automatiquement à proximité du gisement et des recommandations. Envoyez .mine splat cancel pour supprimer une trace inachevée."
     },
     {
       "source": "Center the Rhino on the edge (HUD colors vary).",
       "translation": "Centrez le Rhino sur le bord (les couleurs du HUD varient)."
+    },
+    {
+      "source": "Centered view calibrated. Use the position editor to adjust each panel's angle.",
+      "translation": "Vue centrée calibrée. Utilisez l'éditeur de position pour ajuster l'angle de chaque panneau."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -90541,6 +90949,10 @@
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
     },
     {
+      "source": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+      "translation": "Vérifié au lancement de SrvSurvey. Les profils mis à jour prendront effet au prochain démarrage d'Elite."
+    },
+    {
       "source": "Checking Google Drive backup history...",
       "translation": "Vérification de l'historique des sauvegardes de Google Drive..."
     },
@@ -90567,6 +90979,10 @@
     {
       "source": "Checking sell-system eligibility…",
       "translation": "Vérification de l'éligibilité du système de vente…"
+    },
+    {
+      "source": "Checking the published camera profile...",
+      "translation": "Vérification du profil de caméra publié..."
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -91337,8 +91753,32 @@
       "translation": "Décalage du cockpit : {0}"
     },
     {
+      "source": "Cockpit panel angle",
+      "translation": "Angle du panneau de cockpit"
+    },
+    {
+      "source": "Cockpit panel angles or depth are outside the supported range.",
+      "translation": "Les angles ou la profondeur du panneau du cockpit sont en dehors de la plage prise en charge."
+    },
+    {
+      "source": "Cockpit panels",
+      "translation": "Panneaux de cockpit"
+    },
+    {
+      "source": "Cockpit panels are off.",
+      "translation": "Les panneaux du cockpit sont retirés."
+    },
+    {
+      "source": "Cockpit panels need a supported shared desktop overlay host.",
+      "translation": "Les panneaux de cockpit nécessitent un hôte de superposition de bureau partagé pris en charge."
+    },
+    {
       "source": "Cockpit view visibility",
       "translation": "Visibilité de la vue du cockpit"
+    },
+    {
+      "source": "CockpitPanelsPrototype",
+      "translation": "CockpitPanneauxPrototype"
     },
     {
       "source": "Codex",
@@ -92847,6 +93287,10 @@
     {
       "source": "Could not allocate the FSS capture buffer.",
       "translation": "Impossible d'allouer le tampon de capture FSS."
+    },
+    {
+      "source": "Could not check GitHub. Camera profile v{0} remains available.",
+      "translation": "Impossible de vérifier GitHub. Le profil de caméra v{0} reste disponible."
     },
     {
       "source": "Could not choose an export folder: {0}",
@@ -94641,6 +95085,10 @@
       "translation": "Téléchargez, vérifiez et installez"
     },
     {
+      "source": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+      "translation": "Profil de caméra téléchargé v{0}. Elite le vérifie lors de son prochain lancement."
+    },
+    {
       "source": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
       "translation": "Les catalogues téléchargés sont limités, validés, additionnés de contrôle, préparés et activés avec confirmation de santé et restauration."
     },
@@ -94677,6 +95125,10 @@
       "translation": "Les points de draft sont prévisualisés sur la carte de colonie active. Rien ne change sur le disque jusqu'à ce que vous choisissiez une destination d'exportation."
     },
     {
+      "source": "Drag center to tilt. Drag rim to roll.",
+      "translation": "Faites glisser le centre pour incliner. Faites glisser la jante pour rouler."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Faites glisser les points sur les centres des cercles. Faites glisser l'espace vide pour vous déplacer ; coin inférieur droit pour redimensionner. {0}"
     },
@@ -94687,6 +95139,10 @@
     {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Faites glisser les aperçus bordés vers les moniteurs et les positions souhaités. Le contenu de l'aperçu provient d'un faux état de jeu façonné comme de véritables données de superposition."
+    },
+    {
+      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+      "translation": "Faites glisser le centre pour l'incliner ; faites glisser la jante pour rouler. Inclinaison des touches fléchées, contrôle plus rouleaux gauche ou droit ; Le décalage change de cinq degrés."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -95945,6 +96401,10 @@
       "translation": "Historique, statistiques et rapports de l'expédition"
     },
     {
+      "source": "Experimental",
+      "translation": "Expérimental"
+    },
+    {
       "source": "Experimental EDVR controller input",
       "translation": "Entrée du contrôleur EDVR expérimental"
     },
@@ -97189,6 +97649,10 @@
       "translation": "Dossiers enregistrés. Redémarrez SrvSurvey pour les analyser."
     },
     {
+      "source": "Follow Elite's cockpit camera on my monitor",
+      "translation": "Suivez la caméra du cockpit d'Elite sur mon moniteur"
+    },
+    {
       "source": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
       "translation": "Suivez le navire pour obtenir des conseils sur le navire. Après avoir débarqué, suivez le chevron Rhino jusqu'au véhicule garé."
     },
@@ -98269,6 +98733,10 @@
       "translation": "Grand Annihilateur"
     },
     {
+      "source": "Greater distance makes this panel smaller, as it would in VR.",
+      "translation": "Une plus grande distance rend ce panneau plus petit, comme ce serait le cas en VR."
+    },
+    {
       "source": "Green",
       "translation": "vert"
     },
@@ -98867,6 +99335,10 @@
     {
       "source": "Headings must be -1 for unknown or a whole number from 0 through 359.",
       "translation": "Les titres doivent être -1 pour inconnu ou un nombre entier compris entre 0 et 359."
+    },
+    {
+      "source": "Headset overlays are active; desktop cockpit tracking is paused.",
+      "translation": "Les superpositions de casques sont actives ; le suivi du cockpit de bureau est suspendu."
     },
     {
       "source": "Health unavailable",
@@ -101355,6 +101827,14 @@
     {
       "source": "Live bearing and descent guidance",
       "translation": "Guidage de relèvement et de descente"
+    },
+    {
+      "source": "Live camera connected. Center freelook, then select Calibrate centered view.",
+      "translation": "Caméra en direct connectée. Centrez le freelook, puis sélectionnez Calibrer la vue centrée."
+    },
+    {
+      "source": "Live cockpit camera connected. Panels follow normal freelook.",
+      "translation": "Caméra de cockpit en direct connectée. Les panneaux suivent le look libre normal."
     },
     {
       "source": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -106669,6 +107149,18 @@
       "translation": "La disponibilité du panneau a changé pour cette session mais n'a pas pu être enregistrée : {0}"
     },
     {
+      "source": "Panel distance",
+      "translation": "Distance du panneau"
+    },
+    {
+      "source": "Panel rotation",
+      "translation": "Rotation du panneau"
+    },
+    {
+      "source": "Panels",
+      "translation": "Panneaux"
+    },
+    {
       "source": "Panther Clipper Mk II",
       "translation": "Panther Clipper MkII"
     },
@@ -106847,6 +107339,10 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Pas (degrés)"
+    },
+    {
+      "source": "Pitch (°)",
+      "translation": "Pas (°)"
     },
     {
       "source": "Place in front of me",
@@ -110333,6 +110829,10 @@
       "translation": "La réinitialisation de l'orientation VR capture le lacet actuel du casque SteamVR ou la pose du casque VDXR, comme origine de superposition sans modifier le placement du panneau enregistré."
     },
     {
+      "source": "Reset angle and depth",
+      "translation": "Réinitialiser l'angle et la profondeur"
+    },
+    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Réinitialisation annulée ; les totaux n’ont pas été modifiés."
     },
@@ -110439,6 +110939,10 @@
     {
       "source": "Restart SrvSurvey to apply the selected language.",
       "translation": "Redémarrez SrvSurvey pour appliquer la langue sélectionnée."
+    },
+    {
+      "source": "Restart SrvSurvey to enable the shared cockpit display.",
+      "translation": "Redémarrez SrvSurvey pour activer l'affichage du cockpit partagé."
     },
     {
       "source": "Restart SrvSurvey to load the migrated profile.",
@@ -111009,6 +111513,10 @@
       "translation": "Rouleau (degrés)"
     },
     {
+      "source": "Roll (°)",
+      "translation": "Roulement (°)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Sauvegarde de restauration : {0}"
     },
@@ -111491,6 +111999,10 @@
     {
       "source": "SRV position",
       "translation": "Position du VRS"
+    },
+    {
+      "source": "SRVCAM01",
+      "translation": "SRVCAM01"
     },
     {
       "source": "SRVDestroyed",
@@ -111991,6 +112503,10 @@
     {
       "source": "Saved overlay theme state '{0}'.",
       "translation": "État du thème de superposition enregistré '{0}'."
+    },
+    {
+      "source": "Saved panel angle and calibration changes.",
+      "translation": "Modifications enregistrées de l’angle du panneau et de l’étalonnage."
     },
     {
       "source": "Saved pending live overlay positions.",
@@ -117949,6 +118465,10 @@
       "translation": "Le projet de rédaction local a été rejeté. Aucun fichier n'a été modifié."
     },
     {
+      "source": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+      "translation": "La connexion de la caméra locale n'est pas disponible ({0}). Les postes de bureau restent actifs."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "Le sentier de la flore locale n'est pas absolu. Les images Codex mises en cache et distantes restent disponibles."
     },
@@ -118101,8 +118621,16 @@
       "translation": "L'opération n'a pas abouti."
     },
     {
+      "source": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+      "translation": "Le prototype de panneau de cockpit opt-in utilise une surface de bureau partagée pour la projection en perspective."
+    },
+    {
       "source": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
       "translation": "Le rappel optionnel de chargement plein attend que le chargement soit plein et que la collecte soit inactive pendant une minute."
+    },
+    {
+      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+      "translation": "L'orbe donne un aperçu de la perspective de ce panneau. Enregistrez ou annulez avec la barre d'outils de l'éditeur ; l’étalonnage du casque est séparé."
     },
     {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -118335,6 +118863,18 @@
     {
       "source": "The project workspace is busy. Try refreshing again when it finishes.",
       "translation": "L'espace de travail du projet est occupé. Essayez à nouveau d'actualiser une fois l'opération terminée."
+    },
+    {
+      "source": "The published camera profile changed without a version bump. The current profile was retained.",
+      "translation": "Le profil de caméra publié a été modifié sans changement de version. Le profil actuel a été conservé."
+    },
+    {
+      "source": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+      "translation": "Le profil de caméra publié utilise un protocole non pris en charge. Le profil actuel a été conservé."
+    },
+    {
+      "source": "The published camera profile was invalid. The current profile was retained.",
+      "translation": "Le profil de caméra publié n'était pas valide. Le profil actuel a été conservé."
     },
     {
       "source": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -121709,6 +122249,14 @@
       "translation": "En attendant le système actuel."
     },
     {
+      "source": "Waiting for the live cockpit camera bridge.",
+      "translation": "En attendant le pont caméra du cockpit en direct."
+    },
+    {
+      "source": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+      "translation": "En attendant le pont caméra du cockpit en direct. Les postes de bureau restent actifs."
+    },
+    {
       "source": "Waiting for the selected VR session",
       "translation": "En attente de la session VR sélectionnée"
     },
@@ -122335,6 +122883,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Lacet (degrés)"
+    },
+    {
+      "source": "Yaw (°)",
+      "translation": "Lacet (°)"
     },
     {
       "source": "Years",
@@ -128351,6 +128903,10 @@
       "translation": "Um tipo de local e título corretos fazem com que o mapa projetado se alinhe com as ruínas ou estrutura."
     },
     {
+      "source": "A current cockpit camera sample is needed before calibration.",
+      "translation": "Uma amostra atual da câmera da cabine é necessária antes da calibração."
+    },
+    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "A posição atual do navio e da superfície é necessária para calibrar o deslocamento da cabine."
     },
@@ -129775,6 +130331,10 @@
       "translation": "Analisando diário {0} de {1}: {2}"
     },
     {
+      "source": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor.",
+      "translation": "Fixe os painéis no cockpit para que se movam com aparência normal. Requer a ponte de câmera opcional. As posições da área de trabalho são o seu layout inicial; ajuste o ângulo de cada painel no editor de posição."
+    },
+    {
       "source": "Ancient Ruins ({0})",
       "translation": "Ruínas Antigas ({0})"
     },
@@ -129833,6 +130393,10 @@
     {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Outra instância SrvSurvey está em execução. Confirme se todas as instâncias devem ser fechadas antes da atualização."
+    },
+    {
+      "source": "Another SrvSurvey instance is updating the camera profile.",
+      "translation": "Outra instância SrvSurvey está atualizando o perfil da câmera."
     },
     {
       "source": "Another update operation is already active.",
@@ -132347,6 +132911,10 @@
       "translation": "Calcular o combustível inicial"
     },
     {
+      "source": "Calibrate centered view",
+      "translation": "Calibrar visualização centralizada"
+    },
+    {
       "source": "Calibrate panels in the headset",
       "translation": "Calibrar painéis no headset"
     },
@@ -132377,6 +132945,22 @@
     {
       "source": "Calls out the next action, selected destination, active target, route note, or focused row.",
       "translation": "Chama a próxima ação, destino selecionado, alvo ativo, nota de rota ou linha em foco."
+    },
+    {
+      "source": "Camera profile check canceled; the current profile was retained.",
+      "translation": "Verificação do perfil da câmera cancelada; o perfil atual foi mantido."
+    },
+    {
+      "source": "Camera profile check failed; the current profile was retained.",
+      "translation": "Falha na verificação do perfil da câmera; o perfil atual foi mantido."
+    },
+    {
+      "source": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+      "translation": "O perfil da câmera v{0} é atual. Verificado no lançamento SrvSurvey."
+    },
+    {
+      "source": "Camera profiles are checked on launch while cockpit mode is enabled.",
+      "translation": "Os perfis das câmeras são verificados na inicialização enquanto o modo cockpit está ativado."
     },
     {
       "source": "Can fulfill all selected needs",
@@ -132903,12 +133487,20 @@
       "translation": "cavas"
     },
     {
+      "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+      "translation": "Centralize o freelook normal da cabine e capture a visão neutra. Repita depois de mudar de navio."
+    },
+    {
       "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
       "translation": "Centralize o chassi do Rhino em uma borda de depósito mapeada, mude para o modo torre, mantenha o scanner mineral ativo e envie .mine splat. Dirija todo o circuito visível até que SrvSurvey feche o rastreamento e, em seguida, use as sugestões de posição quadrada da plataforma para alinhar cada implantação. O radar compacto aproxima-se automaticamente do depósito e das recomendações. Envie .mine splat cancel para descartar um rastreio inacabado."
     },
     {
       "source": "Center the Rhino on the edge (HUD colors vary).",
       "translation": "Centralize o Rhino na borda (as cores do HUD variam)."
+    },
+    {
+      "source": "Centered view calibrated. Use the position editor to adjust each panel's angle.",
+      "translation": "Vista centralizada calibrada. Use o editor de posição para ajustar o ângulo de cada painel."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -133031,6 +133623,10 @@
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
     },
     {
+      "source": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+      "translation": "Verificado no lançamento SrvSurvey. Os perfis atualizados entrarão em vigor na próxima vez que o Elite for iniciado."
+    },
+    {
       "source": "Checking Google Drive backup history...",
       "translation": "Verificando o histórico de backup do Google Drive..."
     },
@@ -133057,6 +133653,10 @@
     {
       "source": "Checking sell-system eligibility…",
       "translation": "Verificando a elegibilidade do sistema de vendas…"
+    },
+    {
+      "source": "Checking the published camera profile...",
+      "translation": "Verificando o perfil da câmera publicado..."
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -133827,8 +134427,32 @@
       "translation": "Deslocamento da cabine: {0}"
     },
     {
+      "source": "Cockpit panel angle",
+      "translation": "Ângulo do painel da cabine"
+    },
+    {
+      "source": "Cockpit panel angles or depth are outside the supported range.",
+      "translation": "Os ângulos ou a profundidade do painel da cabine estão fora da faixa suportada."
+    },
+    {
+      "source": "Cockpit panels",
+      "translation": "Painéis da cabine"
+    },
+    {
+      "source": "Cockpit panels are off.",
+      "translation": "Os painéis da cabine estão desligados."
+    },
+    {
+      "source": "Cockpit panels need a supported shared desktop overlay host.",
+      "translation": "Os painéis do Cockpit precisam de um host de sobreposição de área de trabalho compartilhada compatível."
+    },
+    {
       "source": "Cockpit view visibility",
       "translation": "Visibilidade da visualização do cockpit"
+    },
+    {
+      "source": "CockpitPanelsPrototype",
+      "translation": "CockpitPanelsProtótipo"
     },
     {
       "source": "Codex",
@@ -135337,6 +135961,10 @@
     {
       "source": "Could not allocate the FSS capture buffer.",
       "translation": "Não foi possível alocar o buffer de captura do FSS."
+    },
+    {
+      "source": "Could not check GitHub. Camera profile v{0} remains available.",
+      "translation": "Não foi possível verificar o GitHub. O perfil da câmera v{0} permanece disponível."
     },
     {
       "source": "Could not choose an export folder: {0}",
@@ -137131,6 +137759,10 @@
       "translation": "Baixe, verifique e instale"
     },
     {
+      "source": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+      "translation": "Perfil de câmera baixado v{0}. Elite verifica isso em seu próximo lançamento."
+    },
+    {
       "source": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
       "translation": "Os catálogos baixados são vinculados, validados, verificados, preparados e ativados com confirmação de integridade e reversão."
     },
@@ -137167,6 +137799,10 @@
       "translation": "Os pontos de calado são visualizados no mapa de assentamento ativo. Nada muda no disco até que você escolha um destino de exportação."
     },
     {
+      "source": "Drag center to tilt. Drag rim to roll.",
+      "translation": "Arraste o centro para inclinar. Arraste a borda para rolar."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Arraste os pontos para os centros dos círculos. Arraste o espaço vazio para mover; canto inferior direito para redimensionar. {0}"
     },
@@ -137177,6 +137813,10 @@
     {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Arraste as visualizações com bordas para os monitores e posições desejadas. O conteúdo de visualização vem de um estado de jogo falso em forma de dados de sobreposição reais."
+    },
+    {
+      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+      "translation": "Arraste o centro para inclinar; arraste o aro para rolar. Inclinação das teclas de seta, controle mais rolagens para a esquerda ou direita; O turno muda em cinco graus."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -138435,6 +139075,10 @@
       "translation": "Histórico de expedição, estatísticas e relatórios"
     },
     {
+      "source": "Experimental",
+      "translation": "Experimental"
+    },
+    {
       "source": "Experimental EDVR controller input",
       "translation": "Entrada experimental do controlador EDVR"
     },
@@ -139679,6 +140323,10 @@
       "translation": "Pastas salvas. Reinicie SrvSurvey para verificá-los."
     },
     {
+      "source": "Follow Elite's cockpit camera on my monitor",
+      "translation": "Siga a câmera da cabine do Elite no meu monitor"
+    },
+    {
       "source": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
       "translation": "Siga o navio para orientação do navio. Após desembarcar, siga a divisa Rhino de volta ao veículo estacionado."
     },
@@ -140759,6 +141407,10 @@
       "translation": "Grande Aniquilador"
     },
     {
+      "source": "Greater distance makes this panel smaller, as it would in VR.",
+      "translation": "Uma distância maior torna este painel menor, como seria em VR."
+    },
+    {
       "source": "Green",
       "translation": "verde"
     },
@@ -141357,6 +142009,10 @@
     {
       "source": "Headings must be -1 for unknown or a whole number from 0 through 359.",
       "translation": "Os títulos devem ser -1 para desconhecido ou um número inteiro de 0 a 359."
+    },
+    {
+      "source": "Headset overlays are active; desktop cockpit tracking is paused.",
+      "translation": "As sobreposições de fone de ouvido estão ativas; o rastreamento do cockpit da área de trabalho está pausado."
     },
     {
       "source": "Health unavailable",
@@ -143845,6 +144501,14 @@
     {
       "source": "Live bearing and descent guidance",
       "translation": "Orientação ao vivo e orientação de descida"
+    },
+    {
+      "source": "Live camera connected. Center freelook, then select Calibrate centered view.",
+      "translation": "Câmera ao vivo conectada. Centralize o freelook e selecione Calibrar visualização centralizada."
+    },
+    {
+      "source": "Live cockpit camera connected. Panels follow normal freelook.",
+      "translation": "Câmera ao vivo da cabine conectada. Os painéis seguem o freelook normal."
     },
     {
       "source": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -149159,6 +149823,18 @@
       "translation": "A disponibilidade do painel foi alterada para esta sessão, mas não pôde ser salva: {0}"
     },
     {
+      "source": "Panel distance",
+      "translation": "Distância do painel"
+    },
+    {
+      "source": "Panel rotation",
+      "translation": "Rotação do painel"
+    },
+    {
+      "source": "Panels",
+      "translation": "Painéis"
+    },
+    {
       "source": "Panther Clipper Mk II",
       "translation": "Pantera Clipper Mk II"
     },
@@ -149337,6 +150013,10 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Passo (graus)"
+    },
+    {
+      "source": "Pitch (°)",
+      "translation": "Passo (°)"
     },
     {
       "source": "Place in front of me",
@@ -152823,6 +153503,10 @@
       "translation": "A redefinição da orientação VR captura a guinada atual do headset ativada SteamVR ou a pose do headset ativada VDXR, como a origem da sobreposição sem alterar o posicionamento salvo do painel."
     },
     {
+      "source": "Reset angle and depth",
+      "translation": "Redefinir ângulo e profundidade"
+    },
+    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Redefinição cancelada; os totais não foram alterados."
     },
@@ -152929,6 +153613,10 @@
     {
       "source": "Restart SrvSurvey to apply the selected language.",
       "translation": "Reinicie SrvSurvey para aplicar o idioma selecionado."
+    },
+    {
+      "source": "Restart SrvSurvey to enable the shared cockpit display.",
+      "translation": "Reinicie SrvSurvey para ativar a exibição compartilhada do cockpit."
     },
     {
       "source": "Restart SrvSurvey to load the migrated profile.",
@@ -153499,6 +154187,10 @@
       "translation": "Rolar (graus)"
     },
     {
+      "source": "Roll (°)",
+      "translation": "Rolar (°)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Backup de reversão: {0}"
     },
@@ -153981,6 +154673,10 @@
     {
       "source": "SRV position",
       "translation": "Posição SRV"
+    },
+    {
+      "source": "SRVCAM01",
+      "translation": "SRVCAM01"
     },
     {
       "source": "SRVDestroyed",
@@ -154481,6 +155177,10 @@
     {
       "source": "Saved overlay theme state '{0}'.",
       "translation": "Estado do tema de sobreposição salvo '{0}'."
+    },
+    {
+      "source": "Saved panel angle and calibration changes.",
+      "translation": "Ângulo do painel salvo e alterações de calibração."
     },
     {
       "source": "Saved pending live overlay positions.",
@@ -160439,6 +161139,10 @@
       "translation": "O rascunho de autoria local foi descartado. Nenhum arquivo foi alterado."
     },
     {
+      "source": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+      "translation": "A conexão da câmera local não está disponível ({0}). As posições da área de trabalho permanecem ativas."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "A trajetória da flora local não é absoluta. Imagens do Codex em cache e remotas permanecem disponíveis."
     },
@@ -160591,8 +161295,16 @@
       "translation": "A operação não foi concluída."
     },
     {
+      "source": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+      "translation": "O protótipo opcional do painel do cockpit usa uma superfície de área de trabalho compartilhada para projeção em perspectiva."
+    },
+    {
       "source": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
       "translation": "O lembrete opcional de carga cheia aguarda até que a carga esteja cheia e a coleta ociosa por um minuto."
+    },
+    {
+      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+      "translation": "O orbe visualiza a perspectiva deste painel. Salve ou cancele com a barra de ferramentas do editor; a calibração do fone de ouvido é separada."
     },
     {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -160825,6 +161537,18 @@
     {
       "source": "The project workspace is busy. Try refreshing again when it finishes.",
       "translation": "A área de trabalho do projeto está ocupada. Tente atualizar novamente quando terminar."
+    },
+    {
+      "source": "The published camera profile changed without a version bump. The current profile was retained.",
+      "translation": "O perfil da câmera publicado foi alterado sem alteração de versão. O perfil atual foi mantido."
+    },
+    {
+      "source": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+      "translation": "O perfil de câmera publicado usa um protocolo não compatível. O perfil atual foi mantido."
+    },
+    {
+      "source": "The published camera profile was invalid. The current profile was retained.",
+      "translation": "O perfil da câmera publicado era inválido. O perfil atual foi mantido."
     },
     {
       "source": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -164199,6 +164923,14 @@
       "translation": "Aguardando o sistema atual."
     },
     {
+      "source": "Waiting for the live cockpit camera bridge.",
+      "translation": "Esperando pela ponte da câmera do cockpit ao vivo."
+    },
+    {
+      "source": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+      "translation": "Esperando pela ponte da câmera do cockpit ao vivo. As posições da área de trabalho permanecem ativas."
+    },
+    {
       "source": "Waiting for the selected VR session",
       "translation": "Aguardando a sessão de VR selecionada"
     },
@@ -164825,6 +165557,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Guinada (graus)"
+    },
+    {
+      "source": "Yaw (°)",
+      "translation": "Guinada (°)"
     },
     {
       "source": "Years",
@@ -170841,6 +171577,10 @@
       "translation": "Правильный тип участка и заголовок позволяют совместить проецируемую карту с руинами или сооружением."
     },
     {
+      "source": "A current cockpit camera sample is needed before calibration.",
+      "translation": "Перед калибровкой необходим текущий образец камеры кабины."
+    },
+    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "Текущее положение корабля и поверхности необходимо для калибровки смещения его кабины."
     },
@@ -172265,6 +173005,10 @@
       "translation": "Анализ журнала {0} из {1}: {2}"
     },
     {
+      "source": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor.",
+      "translation": "Закрепите панели в кабине, чтобы они двигались с нормальным свободным обзором. Требуется дополнительный мост камеры. Позиции рабочего стола — это ваш стартовый макет; отрегулируйте угол каждой панели в редакторе положения."
+    },
+    {
       "source": "Ancient Ruins ({0})",
       "translation": "Древние руины ({0})"
     },
@@ -172323,6 +173067,10 @@
     {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "Другой экземпляр SrvSurvey запущен. Перед обновлением убедитесь, что все экземпляры должны быть закрыты."
+    },
+    {
+      "source": "Another SrvSurvey instance is updating the camera profile.",
+      "translation": "Другой экземпляр SrvSurvey обновляет профиль камеры."
     },
     {
       "source": "Another update operation is already active.",
@@ -174837,6 +175585,10 @@
       "translation": "Рассчитать стартовое топливо"
     },
     {
+      "source": "Calibrate centered view",
+      "translation": "Калибровка центрированного вида"
+    },
+    {
       "source": "Calibrate panels in the headset",
       "translation": "Калибровка панелей в гарнитуре"
     },
@@ -174867,6 +175619,22 @@
     {
       "source": "Calls out the next action, selected destination, active target, route note, or focused row.",
       "translation": "Вызывает следующее действие, выбранный пункт назначения, активную цель, заметку о маршруте или выделенную строку."
+    },
+    {
+      "source": "Camera profile check canceled; the current profile was retained.",
+      "translation": "Проверка профиля камеры отменена; текущий профиль был сохранен."
+    },
+    {
+      "source": "Camera profile check failed; the current profile was retained.",
+      "translation": "Проверка профиля камеры не удалась; текущий профиль был сохранен."
+    },
+    {
+      "source": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+      "translation": "Профиль камеры v{0} является текущим. Проверено при запуске SrvSurvey."
+    },
+    {
+      "source": "Camera profiles are checked on launch while cockpit mode is enabled.",
+      "translation": "Профили камеры проверяются при запуске, когда включен режим кабины."
     },
     {
       "source": "Can fulfill all selected needs",
@@ -175393,12 +176161,20 @@
       "translation": "Кавас"
     },
     {
+      "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+      "translation": "Отцентрируйте нормальный вид из кабины, затем сделайте нейтральный вид. Повторите после смены кораблей."
+    },
+    {
       "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
       "translation": "Отцентрируйте шасси Rhino на нанесенном на карту краю месторождения, переключитесь в режим турели, оставьте активным сканер минералов и отправьте .mine splat. Проезжайте всю видимую цепь до тех пор, пока SrvSurvey не замкнет трассу, затем используйте квадратные предложения по расположению буровой установки для выстраивания каждого развертывания. Компактный радар автоматически приближается к месторождению и рекомендациям. Отправьте .mine splat cancel, чтобы отменить незавершенную трассировку."
     },
     {
       "source": "Center the Rhino on the edge (HUD colors vary).",
       "translation": "Отцентрируйте Rhino на краю (цвета HUD различаются)."
+    },
+    {
+      "source": "Centered view calibrated. Use the position editor to adjust each panel's angle.",
+      "translation": "Центрированный вид откалиброван. Используйте редактор положения, чтобы настроить угол каждой панели."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -175521,6 +176297,10 @@
       "translation": "CheckBoxCheckGlyphForegroundIndeterminatePressed"
     },
     {
+      "source": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+      "translation": "Проверено при запуске SrvSurvey. Обновленные профили вступят в силу при следующем запуске Elite."
+    },
+    {
       "source": "Checking Google Drive backup history...",
       "translation": "Проверка истории резервного копирования на Google Диске..."
     },
@@ -175547,6 +176327,10 @@
     {
       "source": "Checking sell-system eligibility…",
       "translation": "Проверка соответствия системе продаж…"
+    },
+    {
+      "source": "Checking the published camera profile...",
+      "translation": "Проверка опубликованного профиля камеры..."
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -176317,8 +177101,32 @@
       "translation": "Смещение кабины: {0}"
     },
     {
+      "source": "Cockpit panel angle",
+      "translation": "Угол панели кабины"
+    },
+    {
+      "source": "Cockpit panel angles or depth are outside the supported range.",
+      "translation": "Углы или глубина панели кабины находятся за пределами поддерживаемого диапазона."
+    },
+    {
+      "source": "Cockpit panels",
+      "translation": "Панели кабины"
+    },
+    {
+      "source": "Cockpit panels are off.",
+      "translation": "Панели кабины отключены."
+    },
+    {
+      "source": "Cockpit panels need a supported shared desktop overlay host.",
+      "translation": "Панелям кабины требуется поддерживаемый хост оверлея общего рабочего стола."
+    },
+    {
       "source": "Cockpit view visibility",
       "translation": "Видимость из кабины"
+    },
+    {
+      "source": "CockpitPanelsPrototype",
+      "translation": "КабинаПанелиПрототип"
     },
     {
       "source": "Codex",
@@ -177827,6 +178635,10 @@
     {
       "source": "Could not allocate the FSS capture buffer.",
       "translation": "Не удалось выделить буфер захвата FSS."
+    },
+    {
+      "source": "Could not check GitHub. Camera profile v{0} remains available.",
+      "translation": "Не удалось проверить GitHub. Профиль камеры v{0} остается доступным."
     },
     {
       "source": "Could not choose an export folder: {0}",
@@ -179621,6 +180433,10 @@
       "translation": "Загрузите, проверьте и установите"
     },
     {
+      "source": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+      "translation": "Скачал профиль камеры v{0}. Elite проверит это при следующем запуске."
+    },
+    {
       "source": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
       "translation": "Загруженные каталоги ограничиваются, проверяются, проверяются контрольной суммой, размещаются и активируются с подтверждением работоспособности и откатом."
     },
@@ -179657,6 +180473,10 @@
       "translation": "Точки уклона предварительно просматриваются на активной карте поселения. На диске ничего не изменится, пока вы не выберете место назначения экспорта."
     },
     {
+      "source": "Drag center to tilt. Drag rim to roll.",
+      "translation": "Перетащите центр, чтобы наклонить. Перетащите край, чтобы свернуть."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Перетащите точки в центры кругов. Перетащите пустое место для перемещения; нижний правый угол для изменения размера. {0}"
     },
@@ -179667,6 +180487,10 @@
     {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Перетащите границы предварительного просмотра на нужные мониторы и в нужные позиции. Содержимое предварительного просмотра создается из ложного состояния игры, имеющего форму реальных данных наложения."
+    },
+    {
+      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+      "translation": "Перетащите центр, чтобы наклонить; перетащите обод, чтобы свернуть. Наклон клавиш со стрелками, управление плюс прокрутка влево или вправо; Сдвиг меняется на пять градусов."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -180925,6 +181749,10 @@
       "translation": "История экспедиций, статистика и отчеты"
     },
     {
+      "source": "Experimental",
+      "translation": "Экспериментальный"
+    },
+    {
       "source": "Experimental EDVR controller input",
       "translation": "Экспериментальный вход контроллера EDVR"
     },
@@ -182169,6 +182997,10 @@
       "translation": "Папки сохранены. Перезапустите SrvSurvey, чтобы просканировать их."
     },
     {
+      "source": "Follow Elite's cockpit camera on my monitor",
+      "translation": "Следите за камерой кабины Elite на моем мониторе."
+    },
+    {
       "source": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
       "translation": "Следуйте за кораблем, чтобы получить указания по кораблю. После высадки следуйте по шеврону Rhino обратно к припаркованному автомобилю."
     },
@@ -183249,6 +184081,10 @@
       "translation": "Великий Аннигилятор"
     },
     {
+      "source": "Greater distance makes this panel smaller, as it would in VR.",
+      "translation": "Большее расстояние делает эту панель меньше, как в виртуальной реальности."
+    },
+    {
       "source": "Green",
       "translation": "зеленый"
     },
@@ -183847,6 +184683,10 @@
     {
       "source": "Headings must be -1 for unknown or a whole number from 0 through 359.",
       "translation": "Заголовки должны иметь значение -1 для неизвестных или целое число от 0 до 359."
+    },
+    {
+      "source": "Headset overlays are active; desktop cockpit tracking is paused.",
+      "translation": "Накладки на гарнитуру активны; Отслеживание кабины рабочего стола приостановлено."
     },
     {
       "source": "Health unavailable",
@@ -186335,6 +187175,14 @@
     {
       "source": "Live bearing and descent guidance",
       "translation": "Динамический пеленг и наведение при спуске"
+    },
+    {
+      "source": "Live camera connected. Center freelook, then select Calibrate centered view.",
+      "translation": "Подключена прямая трансляция камеры. Отцентрируйте свободный просмотр, затем выберите «Калибровать центрированный вид»."
+    },
+    {
+      "source": "Live cockpit camera connected. Panels follow normal freelook.",
+      "translation": "Подключена прямая камера в кабине. Панели следуют обычному свободному обзору."
     },
     {
       "source": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -191649,6 +192497,18 @@
       "translation": "Доступность панели для этого сеанса изменилась, но не удалось сохранить: {0}"
     },
     {
+      "source": "Panel distance",
+      "translation": "Расстояние до панели"
+    },
+    {
+      "source": "Panel rotation",
+      "translation": "Вращение панели"
+    },
+    {
+      "source": "Panels",
+      "translation": "Панели"
+    },
+    {
       "source": "Panther Clipper Mk II",
       "translation": "Пантера Клипер Мк II"
     },
@@ -191827,6 +192687,10 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Шаг (градусы)"
+    },
+    {
+      "source": "Pitch (°)",
+      "translation": "Угол наклона (°)"
     },
     {
       "source": "Place in front of me",
@@ -195313,6 +196177,10 @@
       "translation": "Сброс ориентации VR фиксирует текущее положение гарнитуры SteamVR или положение гарнитуры VDXR в качестве исходной точки наложения без изменения сохраненного расположения панели."
     },
     {
+      "source": "Reset angle and depth",
+      "translation": "Сбросить угол и глубину"
+    },
+    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Сброс отменен; итоговые суммы не изменились."
     },
@@ -195419,6 +196287,10 @@
     {
       "source": "Restart SrvSurvey to apply the selected language.",
       "translation": "Перезапустите SrvSurvey, чтобы применить выбранный язык."
+    },
+    {
+      "source": "Restart SrvSurvey to enable the shared cockpit display.",
+      "translation": "Перезапустите SrvSurvey, чтобы включить общий дисплей в кабине."
     },
     {
       "source": "Restart SrvSurvey to load the migrated profile.",
@@ -195989,6 +196861,10 @@
       "translation": "Крен (градусы)"
     },
     {
+      "source": "Roll (°)",
+      "translation": "Крен (°)"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "Резервная копия для отката: {0}"
     },
@@ -196471,6 +197347,10 @@
     {
       "source": "SRV position",
       "translation": "Позиция СРВ"
+    },
+    {
+      "source": "SRVCAM01",
+      "translation": "СРВКАМ01"
     },
     {
       "source": "SRVDestroyed",
@@ -196971,6 +197851,10 @@
     {
       "source": "Saved overlay theme state '{0}'.",
       "translation": "Сохранено состояние темы наложения «{0}»."
+    },
+    {
+      "source": "Saved panel angle and calibration changes.",
+      "translation": "Сохранены изменения угла наклона панели и калибровки."
     },
     {
       "source": "Saved pending live overlay positions.",
@@ -202929,6 +203813,10 @@
       "translation": "Локальный авторский черновик был отклонен. Ни один файл не был изменен."
     },
     {
+      "source": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+      "translation": "Подключение к локальной камере недоступно ({0}). Позиции настольных компьютеров остаются активными."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "Траектория местной флоры не является абсолютной. Кэшированные и удаленные изображения Кодекса остаются доступными."
     },
@@ -203081,8 +203969,16 @@
       "translation": "Операция не завершилась."
     },
     {
+      "source": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+      "translation": "Прототип панели кабины с возможностью выбора использует общую поверхность рабочего стола для перспективной проекции."
+    },
+    {
       "source": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
       "translation": "Дополнительное напоминание о заполнении груза ожидает, пока груз не будет заполнен и сбор не будет приостановлен в течение одной минуты."
+    },
+    {
+      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+      "translation": "Сфера позволяет просмотреть перспективу этой панели. Сохранить или отменить с помощью панели инструментов редактора; калибровка гарнитуры осуществляется отдельно."
     },
     {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -203315,6 +204211,18 @@
     {
       "source": "The project workspace is busy. Try refreshing again when it finishes.",
       "translation": "Рабочая область проекта занята. Попробуйте обновить еще раз, когда оно закончится."
+    },
+    {
+      "source": "The published camera profile changed without a version bump. The current profile was retained.",
+      "translation": "Опубликованный профиль камеры изменился без обновления версии. Текущий профиль был сохранен."
+    },
+    {
+      "source": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+      "translation": "Опубликованный профиль камеры использует неподдерживаемый протокол. Текущий профиль был сохранен."
+    },
+    {
+      "source": "The published camera profile was invalid. The current profile was retained.",
+      "translation": "Опубликованный профиль камеры недействителен. Текущий профиль был сохранен."
     },
     {
       "source": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -206689,6 +207597,14 @@
       "translation": "Ждем нынешнюю систему."
     },
     {
+      "source": "Waiting for the live cockpit camera bridge.",
+      "translation": "Ожидание прямой трансляции камеры из кабины."
+    },
+    {
+      "source": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+      "translation": "Ожидание прямой трансляции камеры из кабины. Позиции настольных компьютеров остаются активными."
+    },
+    {
       "source": "Waiting for the selected VR session",
       "translation": "Ожидание выбранного сеанса VR"
     },
@@ -207315,6 +208231,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Отклонение от курса (градусы)"
+    },
+    {
+      "source": "Yaw (°)",
+      "translation": "Отклонение (°)"
     },
     {
       "source": "Years",
@@ -213331,6 +214251,10 @@
       "translation": "正确的场地类型和标题可使投影地图与废墟或结构对齐。"
     },
     {
+      "source": "A current cockpit camera sample is needed before calibration.",
+      "translation": "校准之前需要当前驾驶舱摄像机样本。"
+    },
+    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "需要当前的船舶和表面位置来校准其驾驶舱偏移。"
     },
@@ -214755,6 +215679,10 @@
       "translation": "正在分析 {1} 的日志 {0}：{2}"
     },
     {
+      "source": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor.",
+      "translation": "将面板固定在驾驶舱中，以便它们以正常的自由视角移动。需要可选的相机桥。桌面位置是您的起始布局；在位置编辑器中调整每个面板的角度。"
+    },
+    {
       "source": "Ancient Ruins ({0})",
       "translation": "远古遗迹 ({0})"
     },
@@ -214813,6 +215741,10 @@
     {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "另一个 SrvSurvey 实例正在运行。确认更新前是否应关闭所有实例。"
+    },
+    {
+      "source": "Another SrvSurvey instance is updating the camera profile.",
+      "translation": "另一个 SrvSurvey 实例正在更新相机配置文件。"
     },
     {
       "source": "Another update operation is already active.",
@@ -217327,6 +218259,10 @@
       "translation": "计算启动燃油"
     },
     {
+      "source": "Calibrate centered view",
+      "translation": "校准居中视图"
+    },
+    {
       "source": "Calibrate panels in the headset",
       "translation": "校准耳机中的面板"
     },
@@ -217357,6 +218293,22 @@
     {
       "source": "Calls out the next action, selected destination, active target, route note, or focused row.",
       "translation": "调出下一个操作、选定的目的地、活动目标、路线注释或焦点行。"
+    },
+    {
+      "source": "Camera profile check canceled; the current profile was retained.",
+      "translation": "相机配置文件检查已取消；当前的配置文件被保留。"
+    },
+    {
+      "source": "Camera profile check failed; the current profile was retained.",
+      "translation": "相机配置文件检查失败；当前的配置文件被保留。"
+    },
+    {
+      "source": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+      "translation": "摄像机配置文件 v{0} 是最新的。在 SrvSurvey 启动时检查。"
+    },
+    {
+      "source": "Camera profiles are checked on launch while cockpit mode is enabled.",
+      "translation": "当驾驶舱模式启用时，相机配置文件会在启动时检查。"
     },
     {
       "source": "Can fulfill all selected needs",
@@ -217883,12 +218835,20 @@
       "translation": "卡瓦斯"
     },
     {
+      "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+      "translation": "将正常驾驶舱自由观察置于中心，然后捕捉中性视图。更换船只后重复此操作。"
+    },
+    {
       "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
       "translation": "将 Rhino 底盘置于映射的矿床边缘中心，切换到炮塔模式，保持矿物扫描仪处于活动状态，然后发送 .mine splat。驱动完整的可见电路，直到 SrvSurvey 关闭走线，然后使用方形钻机位置建议来排列每个部署。紧凑型雷达自动变焦靠近存款和建议。发送 .mine splat cancel 以放弃未完成的跟踪。"
     },
     {
       "source": "Center the Rhino on the edge (HUD colors vary).",
       "translation": "将 Rhino 置于边缘中心（HUD 颜色有所不同）。"
+    },
+    {
+      "source": "Centered view calibrated. Use the position editor to adjust each panel's angle.",
+      "translation": "已校准居中视图。使用位置编辑器调整每个面板的角度。"
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -218011,6 +218971,10 @@
       "translation": "复选框检查字形前景不确定按下"
     },
     {
+      "source": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+      "translation": "在 SrvSurvey 启动时检查。更新的配置文件将在下次 Elite 启动时生效。"
+    },
+    {
       "source": "Checking Google Drive backup history...",
       "translation": "正在检查 Google 云端硬盘备份历史记录..."
     },
@@ -218037,6 +219001,10 @@
     {
       "source": "Checking sell-system eligibility…",
       "translation": "检查销售系统资格..."
+    },
+    {
+      "source": "Checking the published camera profile...",
+      "translation": "检查已发布的相机配置文件..."
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -218807,8 +219775,32 @@
       "translation": "驾驶舱偏移：{0}"
     },
     {
+      "source": "Cockpit panel angle",
+      "translation": "驾驶舱面板角度"
+    },
+    {
+      "source": "Cockpit panel angles or depth are outside the supported range.",
+      "translation": "驾驶舱面板角度或深度超出支持范围。"
+    },
+    {
+      "source": "Cockpit panels",
+      "translation": "驾驶舱面板"
+    },
+    {
+      "source": "Cockpit panels are off.",
+      "translation": "驾驶舱面板已关闭。"
+    },
+    {
+      "source": "Cockpit panels need a supported shared desktop overlay host.",
+      "translation": "驾驶舱面板需要受支持的共享桌面覆盖主机。"
+    },
+    {
       "source": "Cockpit view visibility",
       "translation": "驾驶舱视野可见度"
+    },
+    {
+      "source": "CockpitPanelsPrototype",
+      "translation": "驾驶舱面板原型"
     },
     {
       "source": "Codex",
@@ -220317,6 +221309,10 @@
     {
       "source": "Could not allocate the FSS capture buffer.",
       "translation": "无法分配 FSS 捕获缓冲区。"
+    },
+    {
+      "source": "Could not check GitHub. Camera profile v{0} remains available.",
+      "translation": "无法检查 GitHub。摄像机配置文件 v{0} 仍然可用。"
     },
     {
       "source": "Could not choose an export folder: {0}",
@@ -222111,6 +223107,10 @@
       "translation": "下载、验证并安装"
     },
     {
+      "source": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+      "translation": "下载的相机配置文件 v{0}。 Elite 在下次发布时会检查它。"
+    },
+    {
       "source": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
       "translation": "下载的目录经过健康确认和回滚进行绑定、验证、校验和、暂存和激活。"
     },
@@ -222147,6 +223147,10 @@
       "translation": "在活动的定居点地图上预览吃水点。在您选择导出目标之前，磁盘上不会发生任何变化。"
     },
     {
+      "source": "Drag center to tilt. Drag rim to roll.",
+      "translation": "拖动中心进行倾斜。拖动边缘进行滚动。"
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "将点拖到圆心上。拖动空白处进行移动；右下角可以调整大小。 {0}"
     },
@@ -222157,6 +223161,10 @@
     {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "将带边框的预览拖动到所需的监视器和位置。预览内容来自形状像真实叠加数据的虚假游戏状态。"
+    },
+    {
+      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+      "translation": "拖动中心倾斜；拖动边缘滚动。方向键倾斜，Control 加向左或向右滚动；平移改变五度。"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -223415,6 +224423,10 @@
       "translation": "探险历史、统计数据和报告"
     },
     {
+      "source": "Experimental",
+      "translation": "实验性的"
+    },
+    {
       "source": "Experimental EDVR controller input",
       "translation": "实验 EDVR 控制器输入"
     },
@@ -224659,6 +225671,10 @@
       "translation": "文件夹已保存。重新启动SrvSurvey以扫描它们。"
     },
     {
+      "source": "Follow Elite's cockpit camera on my monitor",
+      "translation": "在我的显示器上关注 Elite 的驾驶舱摄像头"
+    },
+    {
       "source": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
       "translation": "跟随船舶获取船舶引导。下车后，沿着 Rhino V 形标志回到停放的车辆处。"
     },
@@ -225739,6 +226755,10 @@
       "translation": "大歼灭者"
     },
     {
+      "source": "Greater distance makes this panel smaller, as it would in VR.",
+      "translation": "距离越大，面板越小，就像在 VR 中一样。"
+    },
+    {
       "source": "Green",
       "translation": "绿色"
     },
@@ -226337,6 +227357,10 @@
     {
       "source": "Headings must be -1 for unknown or a whole number from 0 through 359.",
       "translation": "对于未知或 0 到 359 之间的整数，标题必须为 -1。"
+    },
+    {
+      "source": "Headset overlays are active; desktop cockpit tracking is paused.",
+      "translation": "耳机覆盖处于活动状态；桌面驾驶舱跟踪已暂停。"
     },
     {
       "source": "Health unavailable",
@@ -228825,6 +229849,14 @@
     {
       "source": "Live bearing and descent guidance",
       "translation": "活轴承和下降引导"
+    },
+    {
+      "source": "Live camera connected. Center freelook, then select Calibrate centered view.",
+      "translation": "实时摄像头已连接。居中自由查看，然后选择校准居中视图。"
+    },
+    {
+      "source": "Live cockpit camera connected. Panels follow normal freelook.",
+      "translation": "实时驾驶舱摄像头已连接。面板遵循正常的自由外观。"
     },
     {
       "source": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -234139,6 +235171,18 @@
       "translation": "此会话的面板可用性已更改，但无法保存：{0}"
     },
     {
+      "source": "Panel distance",
+      "translation": "面板距离"
+    },
+    {
+      "source": "Panel rotation",
+      "translation": "面板旋转"
+    },
+    {
+      "source": "Panels",
+      "translation": "面板"
+    },
+    {
       "source": "Panther Clipper Mk II",
       "translation": "黑豹快艇 Mk II"
     },
@@ -234317,6 +235361,10 @@
     {
       "source": "Pitch (degrees)",
       "translation": "螺距（度）"
+    },
+    {
+      "source": "Pitch (°)",
+      "translation": "螺距（°）"
     },
     {
       "source": "Place in front of me",
@@ -237803,6 +238851,10 @@
       "translation": "重置 VR 方向捕获当前耳机偏航 SteamVR 或耳机姿势 VDXR 作为叠加原点，而不更改已保存的面板位置。"
     },
     {
+      "source": "Reset angle and depth",
+      "translation": "重置角度和深度"
+    },
+    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "重置已取消；总数没有改变。"
     },
@@ -237909,6 +238961,10 @@
     {
       "source": "Restart SrvSurvey to apply the selected language.",
       "translation": "重新启动 SrvSurvey 以应用所选语言。"
+    },
+    {
+      "source": "Restart SrvSurvey to enable the shared cockpit display.",
+      "translation": "重新启动SrvSurvey以启用共享驾驶舱显示。"
     },
     {
       "source": "Restart SrvSurvey to load the migrated profile.",
@@ -238479,6 +239535,10 @@
       "translation": "滚动（度）"
     },
     {
+      "source": "Roll (°)",
+      "translation": "滚动（°）"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "回滚备份：{0}"
     },
@@ -238961,6 +240021,10 @@
     {
       "source": "SRV position",
       "translation": "SRV位置"
+    },
+    {
+      "source": "SRVCAM01",
+      "translation": "SRVCAM01"
     },
     {
       "source": "SRVDestroyed",
@@ -239461,6 +240525,10 @@
     {
       "source": "Saved overlay theme state '{0}'.",
       "translation": "已保存叠加主题状态“{0}”。"
+    },
+    {
+      "source": "Saved panel angle and calibration changes.",
+      "translation": "保存面板角度和校准更改。"
     },
     {
       "source": "Saved pending live overlay positions.",
@@ -245419,6 +246487,10 @@
       "translation": "本地创作草稿被丢弃。没有更改任何文件。"
     },
     {
+      "source": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+      "translation": "本地摄像机连接不可用（{0}）。桌面位置仍然有效。"
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "本地植物区系路径不是绝对的。缓存和远程 Codex 图像仍然可用。"
     },
@@ -245571,8 +246643,16 @@
       "translation": "操作未完成。"
     },
     {
+      "source": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+      "translation": "选择加入的驾驶舱面板原型使用共享桌面进行透视投影。"
+    },
+    {
       "source": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
       "translation": "可选的货物已满提醒会等待货物已满且收集空闲一分钟。"
+    },
+    {
+      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+      "translation": "球体预览该面板的视角。使用编辑器工具栏保存或取消；耳机校准是单独的。"
     },
     {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -245805,6 +246885,18 @@
     {
       "source": "The project workspace is busy. Try refreshing again when it finishes.",
       "translation": "项目工作区很忙。完成后再次尝试刷新。"
+    },
+    {
+      "source": "The published camera profile changed without a version bump. The current profile was retained.",
+      "translation": "已发布的相机配置文件发生了变化，但版本没有变化。当前的配置文件被保留。"
+    },
+    {
+      "source": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+      "translation": "已发布的相机配置文件使用不受支持的协议。当前的配置文件被保留。"
+    },
+    {
+      "source": "The published camera profile was invalid. The current profile was retained.",
+      "translation": "发布的相机配置文件无效。当前的配置文件被保留。"
     },
     {
       "source": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -249179,6 +250271,14 @@
       "translation": "等待当前系统。"
     },
     {
+      "source": "Waiting for the live cockpit camera bridge.",
+      "translation": "等待实时驾驶舱摄像机桥。"
+    },
+    {
+      "source": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+      "translation": "等待实时驾驶舱摄像机桥。桌面位置仍然有效。"
+    },
+    {
       "source": "Waiting for the selected VR session",
       "translation": "等待选定的 VR 会话"
     },
@@ -249805,6 +250905,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "偏航（度）"
+    },
+    {
+      "source": "Yaw (°)",
+      "translation": "偏航角 (°)"
     },
     {
       "source": "Years",
@@ -255821,6 +256925,10 @@
       "translation": "* A CORRECT SITE TYPE AND HEADING MAKE THE PROJECTED MAP LINE UP WITH THE RUINS OR STRUCTURE. >>>!"
     },
     {
+      "source": "A current cockpit camera sample is needed before calibration.",
+      "translation": "* A CURRENT COCKPIT CAMERA SAMPLE IS NEEDED BEFORE CALIBRATION. >>>!"
+    },
+    {
       "source": "A current ship and surface position are required to calibrate its cockpit offset.",
       "translation": "* A CURRENT SHIP AND SURFACE POSITION ARE REQUIRED TO CALIBRATE ITS COCKPIT OFFSET. >>>!"
     },
@@ -257245,6 +258353,10 @@
       "translation": "* ANALYZING JOURNAL {0} OF {1}: {2} >>>!"
     },
     {
+      "source": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel's angle in the position editor.",
+      "translation": "* ANCHOR PANELS IN THE COCKPIT SO THEY MOVE WITH NORMAL FREELOOK. REQUIRES THE OPTIONAL CAMERA BRIDGE. DESKTOP POSITIONS ARE YOUR STARTING LAYOUT; ADJUST EACH PANEL'S ANGLE IN THE POSITION EDITOR. >>>!"
+    },
+    {
       "source": "Ancient Ruins ({0})",
       "translation": "* ANCIENT RUINS ({0}) >>>!"
     },
@@ -257303,6 +258415,10 @@
     {
       "source": "Another SrvSurvey instance is running. Confirm whether all instances should close before updating.",
       "translation": "* ANOTHER SRVSURVEY INSTANCE IS RUNNING. CONFIRM WHETHER ALL INSTANCES SHOULD CLOSE BEFORE UPDATING. >>>!"
+    },
+    {
+      "source": "Another SrvSurvey instance is updating the camera profile.",
+      "translation": "* ANOTHER SRVSURVEY INSTANCE IS UPDATING THE CAMERA PROFILE. >>>!"
     },
     {
       "source": "Another update operation is already active.",
@@ -259817,6 +260933,10 @@
       "translation": "* CALCULATE STARTING FUEL >>>!"
     },
     {
+      "source": "Calibrate centered view",
+      "translation": "* CALIBRATE CENTERED VIEW >>>!"
+    },
+    {
       "source": "Calibrate panels in the headset",
       "translation": "* CALIBRATE PANELS IN THE HEADSET >>>!"
     },
@@ -259847,6 +260967,22 @@
     {
       "source": "Calls out the next action, selected destination, active target, route note, or focused row.",
       "translation": "* CALLS OUT THE NEXT ACTION, SELECTED DESTINATION, ACTIVE TARGET, ROUTE NOTE, OR FOCUSED ROW. >>>!"
+    },
+    {
+      "source": "Camera profile check canceled; the current profile was retained.",
+      "translation": "* CAMERA PROFILE CHECK CANCELED; THE CURRENT PROFILE WAS RETAINED. >>>!"
+    },
+    {
+      "source": "Camera profile check failed; the current profile was retained.",
+      "translation": "* CAMERA PROFILE CHECK FAILED; THE CURRENT PROFILE WAS RETAINED. >>>!"
+    },
+    {
+      "source": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+      "translation": "* CAMERA PROFILE V{0} IS CURRENT. CHECKED AT SRVSURVEY LAUNCH. >>>!"
+    },
+    {
+      "source": "Camera profiles are checked on launch while cockpit mode is enabled.",
+      "translation": "* CAMERA PROFILES ARE CHECKED ON LAUNCH WHILE COCKPIT MODE IS ENABLED. >>>!"
     },
     {
       "source": "Can fulfill all selected needs",
@@ -260373,12 +261509,20 @@
       "translation": "* CAVAS >>>!"
     },
     {
+      "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+      "translation": "* CENTER NORMAL COCKPIT FREELOOK, THEN CAPTURE THE NEUTRAL VIEW. REPEAT AFTER CHANGING SHIPS. >>>!"
+    },
+    {
       "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
       "translation": "* CENTER THE RHINO CHASSIS ON A MAPPED DEPOSIT EDGE, SWITCH TO TURRET MODE, KEEP THE MINERAL SCANNER ACTIVE, AND SEND .MINE SPLAT. DRIVE THE FULL VISIBLE CIRCUIT UNTIL SRVSURVEY CLOSES THE TRACE, THEN USE THE SQUARE RIG-POSITION SUGGESTIONS TO LINE UP EACH DEPLOYMENT. THE COMPACT RADAR ZOOMS AUTOMATICALLY NEAR THE DEPOSIT AND RECOMMENDATIONS. SEND .MINE SPLAT CANCEL TO DISCARD AN UNFINISHED TRACE. >>>!"
     },
     {
       "source": "Center the Rhino on the edge (HUD colors vary).",
       "translation": "* CENTER THE RHINO ON THE EDGE (HUD COLORS VARY). >>>!"
+    },
+    {
+      "source": "Centered view calibrated. Use the position editor to adjust each panel's angle.",
+      "translation": "* CENTERED VIEW CALIBRATED. USE THE POSITION EDITOR TO ADJUST EACH PANEL'S ANGLE. >>>!"
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -260501,6 +261645,10 @@
       "translation": "* CHECKBOXCHECKGLYPHFOREGROUNDINDETERMINATEPRESSED >>>!"
     },
     {
+      "source": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+      "translation": "* CHECKED AT SRVSURVEY LAUNCH. UPDATED PROFILES TAKE EFFECT THE NEXT TIME ELITE STARTS. >>>!"
+    },
+    {
       "source": "Checking Google Drive backup history...",
       "translation": "* CHECKING GOOGLE DRIVE BACKUP HISTORY... >>>!"
     },
@@ -260527,6 +261675,10 @@
     {
       "source": "Checking sell-system eligibility…",
       "translation": "* CHECKING SELL-SYSTEM ELIGIBILITY… >>>!"
+    },
+    {
+      "source": "Checking the published camera profile...",
+      "translation": "* CHECKING THE PUBLISHED CAMERA PROFILE... >>>!"
     },
     {
       "source": "Checking whether another SrvSurvey instance must close before the update.",
@@ -261297,8 +262449,32 @@
       "translation": "* COCKPIT OFFSET: {0} >>>!"
     },
     {
+      "source": "Cockpit panel angle",
+      "translation": "* COCKPIT PANEL ANGLE >>>!"
+    },
+    {
+      "source": "Cockpit panel angles or depth are outside the supported range.",
+      "translation": "* COCKPIT PANEL ANGLES OR DEPTH ARE OUTSIDE THE SUPPORTED RANGE. >>>!"
+    },
+    {
+      "source": "Cockpit panels",
+      "translation": "* COCKPIT PANELS >>>!"
+    },
+    {
+      "source": "Cockpit panels are off.",
+      "translation": "* COCKPIT PANELS ARE OFF. >>>!"
+    },
+    {
+      "source": "Cockpit panels need a supported shared desktop overlay host.",
+      "translation": "* COCKPIT PANELS NEED A SUPPORTED SHARED DESKTOP OVERLAY HOST. >>>!"
+    },
+    {
       "source": "Cockpit view visibility",
       "translation": "* COCKPIT VIEW VISIBILITY >>>!"
+    },
+    {
+      "source": "CockpitPanelsPrototype",
+      "translation": "* COCKPITPANELSPROTOTYPE >>>!"
     },
     {
       "source": "Codex",
@@ -262807,6 +263983,10 @@
     {
       "source": "Could not allocate the FSS capture buffer.",
       "translation": "* COULD NOT ALLOCATE THE FSS CAPTURE BUFFER. >>>!"
+    },
+    {
+      "source": "Could not check GitHub. Camera profile v{0} remains available.",
+      "translation": "* COULD NOT CHECK GITHUB. CAMERA PROFILE V{0} REMAINS AVAILABLE. >>>!"
     },
     {
       "source": "Could not choose an export folder: {0}",
@@ -264601,6 +265781,10 @@
       "translation": "* DOWNLOAD, VERIFY, AND INSTALL >>>!"
     },
     {
+      "source": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+      "translation": "* DOWNLOADED CAMERA PROFILE V{0}. ELITE CHECKS IT ON ITS NEXT LAUNCH. >>>!"
+    },
+    {
       "source": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
       "translation": "* DOWNLOADED CATALOGS ARE BOUNDED, VALIDATED, CHECKSUMMED, STAGED, AND ACTIVATED WITH HEALTH CONFIRMATION AND ROLLBACK. >>>!"
     },
@@ -264637,6 +265821,10 @@
       "translation": "* DRAFT POINTS ARE PREVIEWED ON THE ACTIVE SETTLEMENT MAP. NOTHING CHANGES ON DISK UNTIL YOU CHOOSE AN EXPORT DESTINATION. >>>!"
     },
     {
+      "source": "Drag center to tilt. Drag rim to roll.",
+      "translation": "* DRAG CENTER TO TILT. DRAG RIM TO ROLL. >>>!"
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "* DRAG DOTS ONTO CIRCLE CENTRES. DRAG EMPTY SPACE TO MOVE; LOWER-RIGHT CORNER TO RESIZE. {0} >>>!"
     },
@@ -264647,6 +265835,10 @@
     {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "* DRAG THE BORDERED PREVIEWS TO THE DESIRED MONITORS AND POSITIONS. PREVIEW CONTENT COMES FROM A FALSE GAME STATE SHAPED LIKE REAL OVERLAY DATA. >>>!"
+    },
+    {
+      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+      "translation": "* DRAG THE CENTER TO TILT; DRAG THE RIM TO ROLL. ARROW KEYS TILT, CONTROL PLUS LEFT OR RIGHT ROLLS; SHIFT CHANGES BY FIVE DEGREES. >>>!"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -265905,6 +267097,10 @@
       "translation": "* EXPEDITION HISTORY, STATISTICS, AND REPORTS >>>!"
     },
     {
+      "source": "Experimental",
+      "translation": "* EXPERIMENTAL >>>!"
+    },
+    {
       "source": "Experimental EDVR controller input",
       "translation": "* EXPERIMENTAL EDVR CONTROLLER INPUT >>>!"
     },
@@ -267149,6 +268345,10 @@
       "translation": "* FOLDERS SAVED. RESTART SRVSURVEY TO SCAN THEM. >>>!"
     },
     {
+      "source": "Follow Elite's cockpit camera on my monitor",
+      "translation": "* FOLLOW ELITE'S COCKPIT CAMERA ON MY MONITOR >>>!"
+    },
+    {
       "source": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
       "translation": "* FOLLOW SHIP FOR SHIP GUIDANCE. AFTER DISEMBARKING, FOLLOW THE RHINO CHEVRON BACK TO THE PARKED VEHICLE. >>>!"
     },
@@ -268229,6 +269429,10 @@
       "translation": "* GREAT ANNIHILATOR >>>!"
     },
     {
+      "source": "Greater distance makes this panel smaller, as it would in VR.",
+      "translation": "* GREATER DISTANCE MAKES THIS PANEL SMALLER, AS IT WOULD IN VR. >>>!"
+    },
+    {
       "source": "Green",
       "translation": "* GREEN >>>!"
     },
@@ -268827,6 +270031,10 @@
     {
       "source": "Headings must be -1 for unknown or a whole number from 0 through 359.",
       "translation": "* HEADINGS MUST BE -1 FOR UNKNOWN OR A WHOLE NUMBER FROM 0 THROUGH 359. >>>!"
+    },
+    {
+      "source": "Headset overlays are active; desktop cockpit tracking is paused.",
+      "translation": "* HEADSET OVERLAYS ARE ACTIVE; DESKTOP COCKPIT TRACKING IS PAUSED. >>>!"
     },
     {
       "source": "Health unavailable",
@@ -271315,6 +272523,14 @@
     {
       "source": "Live bearing and descent guidance",
       "translation": "* LIVE BEARING AND DESCENT GUIDANCE >>>!"
+    },
+    {
+      "source": "Live camera connected. Center freelook, then select Calibrate centered view.",
+      "translation": "* LIVE CAMERA CONNECTED. CENTER FREELOOK, THEN SELECT CALIBRATE CENTERED VIEW. >>>!"
+    },
+    {
+      "source": "Live cockpit camera connected. Panels follow normal freelook.",
+      "translation": "* LIVE COCKPIT CAMERA CONNECTED. PANELS FOLLOW NORMAL FREELOOK. >>>!"
     },
     {
       "source": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -276629,6 +277845,18 @@
       "translation": "* PANEL AVAILABILITY CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
     },
     {
+      "source": "Panel distance",
+      "translation": "* PANEL DISTANCE >>>!"
+    },
+    {
+      "source": "Panel rotation",
+      "translation": "* PANEL ROTATION >>>!"
+    },
+    {
+      "source": "Panels",
+      "translation": "* PANELS >>>!"
+    },
+    {
       "source": "Panther Clipper Mk II",
       "translation": "* PANTHER CLIPPER MK II >>>!"
     },
@@ -276807,6 +278035,10 @@
     {
       "source": "Pitch (degrees)",
       "translation": "* PITCH (DEGREES) >>>!"
+    },
+    {
+      "source": "Pitch (°)",
+      "translation": "* PITCH (°) >>>!"
     },
     {
       "source": "Place in front of me",
@@ -280293,6 +281525,10 @@
       "translation": "* RESET VR ORIENTATION CAPTURES THE CURRENT HEADSET YAW ON STEAMVR, OR THE HEADSET POSE ON VDXR, AS THE OVERLAY ORIGIN WITHOUT CHANGING SAVED PANEL PLACEMENT. >>>!"
     },
     {
+      "source": "Reset angle and depth",
+      "translation": "* RESET ANGLE AND DEPTH >>>!"
+    },
+    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "* RESET CANCELLED; TOTALS WERE NOT CHANGED. >>>!"
     },
@@ -280399,6 +281635,10 @@
     {
       "source": "Restart SrvSurvey to apply the selected language.",
       "translation": "* RESTART SRVSURVEY TO APPLY THE SELECTED LANGUAGE. >>>!"
+    },
+    {
+      "source": "Restart SrvSurvey to enable the shared cockpit display.",
+      "translation": "* RESTART SRVSURVEY TO ENABLE THE SHARED COCKPIT DISPLAY. >>>!"
     },
     {
       "source": "Restart SrvSurvey to load the migrated profile.",
@@ -280969,6 +282209,10 @@
       "translation": "* ROLL (DEGREES) >>>!"
     },
     {
+      "source": "Roll (°)",
+      "translation": "* ROLL (°) >>>!"
+    },
+    {
       "source": "Rollback backup: {0}",
       "translation": "* ROLLBACK BACKUP: {0} >>>!"
     },
@@ -281451,6 +282695,10 @@
     {
       "source": "SRV position",
       "translation": "* SRV POSITION >>>!"
+    },
+    {
+      "source": "SRVCAM01",
+      "translation": "* SRVCAM01 >>>!"
     },
     {
       "source": "SRVDestroyed",
@@ -281951,6 +283199,10 @@
     {
       "source": "Saved overlay theme state '{0}'.",
       "translation": "* SAVED OVERLAY THEME STATE '{0}'. >>>!"
+    },
+    {
+      "source": "Saved panel angle and calibration changes.",
+      "translation": "* SAVED PANEL ANGLE AND CALIBRATION CHANGES. >>>!"
     },
     {
       "source": "Saved pending live overlay positions.",
@@ -287909,6 +289161,10 @@
       "translation": "* THE LOCAL AUTHORING DRAFT WAS DISCARDED. NO FILE WAS CHANGED. >>>!"
     },
     {
+      "source": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+      "translation": "* THE LOCAL CAMERA CONNECTION IS UNAVAILABLE ({0}). DESKTOP POSITIONS REMAIN ACTIVE. >>>!"
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "* THE LOCAL FLORA PATH IS NOT ABSOLUTE. CACHED AND REMOTE CODEX IMAGES REMAIN AVAILABLE. >>>!"
     },
@@ -288061,8 +289317,16 @@
       "translation": "* THE OPERATION DID NOT COMPLETE. >>>!"
     },
     {
+      "source": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+      "translation": "* THE OPT-IN COCKPIT PANEL PROTOTYPE USES A SHARED DESKTOP SURFACE FOR PERSPECTIVE PROJECTION. >>>!"
+    },
+    {
       "source": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
       "translation": "* THE OPTIONAL CARGO-FULL REMINDER WAITS UNTIL CARGO HAS BEEN FULL AND COLLECTION IDLE FOR ONE MINUTE. >>>!"
+    },
+    {
+      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+      "translation": "* THE ORB PREVIEWS THIS PANEL'S PERSPECTIVE. SAVE OR CANCEL WITH THE EDITOR TOOLBAR; HEADSET CALIBRATION IS SEPARATE. >>>!"
     },
     {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -288295,6 +289559,18 @@
     {
       "source": "The project workspace is busy. Try refreshing again when it finishes.",
       "translation": "* THE PROJECT WORKSPACE IS BUSY. TRY REFRESHING AGAIN WHEN IT FINISHES. >>>!"
+    },
+    {
+      "source": "The published camera profile changed without a version bump. The current profile was retained.",
+      "translation": "* THE PUBLISHED CAMERA PROFILE CHANGED WITHOUT A VERSION BUMP. THE CURRENT PROFILE WAS RETAINED. >>>!"
+    },
+    {
+      "source": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+      "translation": "* THE PUBLISHED CAMERA PROFILE USES AN UNSUPPORTED PROTOCOL. THE CURRENT PROFILE WAS RETAINED. >>>!"
+    },
+    {
+      "source": "The published camera profile was invalid. The current profile was retained.",
+      "translation": "* THE PUBLISHED CAMERA PROFILE WAS INVALID. THE CURRENT PROFILE WAS RETAINED. >>>!"
     },
     {
       "source": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -291669,6 +292945,14 @@
       "translation": "* WAITING FOR THE CURRENT SYSTEM. >>>!"
     },
     {
+      "source": "Waiting for the live cockpit camera bridge.",
+      "translation": "* WAITING FOR THE LIVE COCKPIT CAMERA BRIDGE. >>>!"
+    },
+    {
+      "source": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+      "translation": "* WAITING FOR THE LIVE COCKPIT CAMERA BRIDGE. DESKTOP POSITIONS REMAIN ACTIVE. >>>!"
+    },
+    {
       "source": "Waiting for the selected VR session",
       "translation": "* WAITING FOR THE SELECTED VR SESSION >>>!"
     },
@@ -292295,6 +293579,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "* YAW (DEGREES) >>>!"
+    },
+    {
+      "source": "Yaw (°)",
+      "translation": "* YAW (°) >>>!"
     },
     {
       "source": "Years",

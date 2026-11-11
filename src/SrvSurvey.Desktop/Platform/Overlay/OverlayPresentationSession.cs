@@ -1,10 +1,11 @@
+using System.Numerics;
 using System.Runtime.ExceptionServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-public sealed class OverlayPresentationSession : IDisposable
+public sealed class OverlayPresentationSession : IDisposable, ICockpitProjectionHost
 {
     private readonly CombinedOverlayPresentationController? combinedController;
     private readonly OverlayPresentationSessionDependencies hostDependencies;
@@ -27,6 +28,15 @@ public sealed class OverlayPresentationSession : IDisposable
     }
 
     public OverlayPresentationDecision Decision { get; }
+
+    bool ICockpitProjectionHost.SupportsCockpitPanels => combinedController is not null;
+
+    /// <summary>Updates projective panel transforms on the existing shared host without taking desktop input.</summary>
+    void ICockpitProjectionHost.SetCockpitProjection(
+        Matrix4x4? cameraChange,
+        Func<string, CockpitPanelPose>? poseProvider,
+        CockpitProjectionLens? lens
+    ) => combinedController?.SetCockpitProjection(cameraChange, poseProvider, lens);
 
     internal LegacyOverlayLayout OverlayLayout => hostDependencies.OverlayLayout;
 
@@ -53,7 +63,8 @@ public sealed class OverlayPresentationSession : IDisposable
         LegacyOverlayLayout overlayLayout,
         Func<bool> keepWhenGameLosesFocus,
         Action<OverlayHostDiagnostic>? diagnosticSink,
-        Func<IGameWindowTracker>? gameWindowTrackerFactory = null
+        Func<IGameWindowTracker>? gameWindowTrackerFactory = null,
+        bool cockpitPanels = false
     )
     {
         ArgumentNullException.ThrowIfNull(overlayLayout);
@@ -61,6 +72,13 @@ public sealed class OverlayPresentationSession : IDisposable
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
         Func<IGameWindowTracker> trackerFactory = gameWindowTrackerFactory ?? GameWindowTracker.CreateCurrent;
         OverlayPresentationDecision decision = OverlayPresentationModeSelector.DetectCurrent(capabilities);
+        if (cockpitPanels)
+        {
+            decision = new OverlayPresentationDecision(
+                OverlayPresentationMode.CombinedWindow,
+                "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection."
+            );
+        }
         if (decision.Mode != OverlayPresentationMode.CombinedWindow)
         {
             gameWindowTracker?.Dispose();

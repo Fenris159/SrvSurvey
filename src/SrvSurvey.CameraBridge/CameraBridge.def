@@ -1,0 +1,4 @@
+LIBRARY SrvSurveyCameraBridge
+EXPORTS
+    D3D11CreateDevice
+    D3D11CreateDeviceAndSwapChain

@@ -1,4 +1,5 @@
 {
+  "PublishedCockpitCaptureProfile": "https://raw.githubusercontent.com/Fenris159/SrvSurvey/refs/heads/SrvSurvey-Avalonia/src/SrvSurvey.CameraBridge/Profiles/EliteOdyssey-RigidCockpit.ini",
   "PublishedCodexReference": "https://raw.githubusercontent.com/njthomson/SrvSurvey/refs/heads/main/docs/codexRef.json",
   "PublishedRegionalCodexCandidatesCsv": "https://docs.google.com/spreadsheets/d/1TpPZUFd61KUQWy1sV8VhScZiVbRWJ435wTN8xjN0Qv0/gviz/tq?tqx=out:csv&sheet=Individual+Items",
   "PublishedKnownSystemAddresses": "https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/game/Boxel.Names.txt",

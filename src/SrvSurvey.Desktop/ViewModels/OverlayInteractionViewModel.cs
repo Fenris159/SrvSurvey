@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDisposable
 {
+    private CockpitOverlayViewModel? cockpitPanels;
     private readonly IOverlayPlatformService? platform;
     private readonly IGameWindowTracker? gameWindowTracker;
     private readonly LegacyOverlayLayoutStore? layoutStore;
@@ -144,6 +145,38 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>Shares the optional cockpit preferences without introducing nullable paths in the editor's visibility binding.</summary>
+    public CockpitOverlayViewModel? CockpitPanels
+    {
+        get => cockpitPanels;
+        set
+        {
+            if (ReferenceEquals(cockpitPanels, value))
+            {
+                return;
+            }
+            cockpitPanels?.PropertyChanged -= OnCockpitPreferenceChanged;
+            cockpitPanels = value;
+            if (cockpitPanels is not null && !disposed)
+            {
+                cockpitPanels.PropertyChanged += OnCockpitPreferenceChanged;
+            }
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsCockpitAngleEditingEnabled));
+        }
+    }
+
+    public bool IsCockpitAngleEditingEnabled => cockpitPanels?.Enabled == true;
+
+    private void OnCockpitPreferenceChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CockpitOverlayViewModel.Enabled))
+        {
+            OnPropertyChanged(nameof(IsCockpitAngleEditingEnabled));
+        }
+    }
+
     public MiningDetectionViewModel? MiningDetection { get; set; }
 
     /// <summary>Supplies live colonization preferences while previews retain their isolated sample cargo.</summary>
@@ -497,6 +530,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         LegacyOverlayPlacement placement = editSession.GetPlacement(plotterName);
         updatingSelectedOverlaySettings = true;
         selectedOverlaySettingsPlotterName = plotterName;
+        CockpitPanels?.SelectPanel(plotterName);
         useGlobalOverlayOpacity = placement.Opacity is null;
         selectedOverlayOpacityPercent = editSession.GetOpacity(plotterName) * 100d;
         useGlobalOverlayScale = placement.ScaleIndex is null;
@@ -613,6 +647,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         var session = new OverlayPositionEditSession(activeLayout);
         MiningDetection?.BeginEdit();
+        CockpitPanels?.BeginEdit();
         editSession = session;
         globalOpacityPercent = session.DefaultOpacity * 100d;
         OnPropertyChanged(nameof(GlobalOpacityPercent));
@@ -691,7 +726,12 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             editorHost?.PrepareSave(editSession);
             IReadOnlyDictionary<string, LegacyOverlayPlacement> changes = editSession.Changes;
             bool saveDefaultOpacity = editSession.HasDefaultOpacityChange;
-            if (changes.Count == 0 && !saveDefaultOpacity && MiningDetection?.HasCalibrationChanges != true)
+            if (
+                changes.Count == 0
+                && !saveDefaultOpacity
+                && MiningDetection?.HasCalibrationChanges != true
+                && CockpitPanels?.HasChanges != true
+            )
             {
                 EndSession(closeHost: true, restoreRuntimeWindows: true);
                 StatusMessage = "Overlay editing closed; no positions or opacity values changed.";
@@ -702,9 +742,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             if (changes.Count == 0 && !saveDefaultOpacity)
             {
                 // The no-change guard above leaves this path only for a pending calibration.
-                MiningDetection!.SaveEdit();
+                MiningDetection?.SaveEdit();
+                CockpitPanels?.SaveEdit();
                 EndSession(closeHost: true, restoreRuntimeWindows: true);
-                StatusMessage = "Saved mining HUD calibration.";
+                StatusMessage = "Saved panel angle and calibration changes.";
                 return;
             }
             LegacyOverlayLayoutSaveResult result = layoutStore.SaveChanges(editSession);
@@ -721,6 +762,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             try
             {
                 MiningDetection?.SaveEdit();
+                CockpitPanels?.SaveEdit();
             }
             catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
             {
@@ -1197,6 +1239,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         disposed = true;
+        cockpitPanels?.PropertyChanged -= OnCockpitPreferenceChanged;
         if (editorControlsSaveTimer is not null)
         {
             bool savePending = editorControlsSaveTimer.IsEnabled;
@@ -1320,6 +1363,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private void EndSession(bool closeHost, bool restoreRuntimeWindows)
     {
         MiningDetection?.EndEdit();
+        CockpitPanels?.CancelEdit();
         IsCategoryMenuOpen = false;
         CloseOverlaySettings();
         editSession = null;

@@ -1761,6 +1761,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "A current cockpit camera sample is needed before calibration.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
+  },
+  {
     "Text": "A current ship and surface position are required to calibrate its cockpit offset.",
     "IsFormat": false,
     "SourceKinds": [
@@ -4613,6 +4621,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Anchor panels in the cockpit so they move with normal freelook. Requires the optional camera bridge. Desktop positions are your starting layout; adjust each panel\u0027s angle in the position editor.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Ancient Ruins ({0})",
     "IsFormat": true,
     "SourceKinds": [
@@ -4731,6 +4747,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
+  },
+  {
+    "Text": "Another SrvSurvey instance is updating the camera profile.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
   },
   {
     "Text": "Another update operation is already active.",
@@ -9775,6 +9799,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "Calibrate centered view",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Calibrate panels in the headset",
     "IsFormat": false,
     "SourceKinds": [
@@ -9837,6 +9869,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Camera profile check canceled; the current profile was retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
+    "Text": "Camera profile check failed; the current profile was retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
+    "Text": "Camera profile v{0} is current. Checked at SrvSurvey launch.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
+    "Text": "Camera profiles are checked on launch while cockpit mode is enabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
   },
   {
     "Text": "Can fulfill all selected needs",
@@ -10894,6 +10958,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10908,6 +10980,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Centered view calibrated. Use the position editor to adjust each panel\u0027s angle.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
   },
   {
     "Text": "Century Gothic, Segoe UI, sans-serif",
@@ -11150,6 +11230,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
   },
   {
+    "Text": "Checked at SrvSurvey launch. Updated profiles take effect the next time Elite starts.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Checking Google Drive backup history...",
     "IsFormat": false,
     "SourceKinds": [
@@ -11204,6 +11292,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Checking the published camera profile...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
   },
   {
     "Text": "Checking whether another SrvSurvey instance must close before the update.",
@@ -12744,12 +12840,60 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Cockpit panel angle",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
+  },
+  {
+    "Text": "Cockpit panel angles or depth are outside the supported range.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CockpitOverlaySettingsStore.cs"
+  },
+  {
+    "Text": "Cockpit panels",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Cockpit panels are off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
+    "Text": "Cockpit panels need a supported shared desktop overlay host.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
+  },
+  {
     "Text": "Cockpit view visibility",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "CockpitPanelsPrototype",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CockpitOverlaySettingsStore.cs"
   },
   {
     "Text": "Codex",
@@ -15782,6 +15926,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Could not check GitHub. Camera profile v{0} remains available.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
   },
   {
     "Text": "Could not choose an export folder: {0}",
@@ -19383,6 +19535,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "Downloaded camera profile v{0}. Elite checks it on its next launch.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
     "Text": "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19455,6 +19615,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Drag center to tilt. Drag rim to roll.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
     "Text": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -19477,6 +19645,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
     "Text": "Drag to change width. Height follows content.",
@@ -22001,6 +22177,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Experimental",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Experimental EDVR controller input",
     "IsFormat": false,
     "SourceKinds": [
@@ -24497,6 +24681,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalSettingsViewModel.cs"
   },
   {
+    "Text": "Follow Elite\u0027s cockpit camera on my monitor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26661,6 +26853,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Greater distance makes this panel smaller, as it would in VR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
     "Text": "Green",
     "IsFormat": false,
     "SourceKinds": [
@@ -27864,6 +28064,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
+  },
+  {
+    "Text": "Headset overlays are active; desktop cockpit tracking is paused.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
   },
   {
     "Text": "Health unavailable",
@@ -32864,6 +33072,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/GroundTargetOverlayPresentation.axaml"
+  },
+  {
+    "Text": "Live camera connected. Center freelook, then select Calibrate centered view.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Live cockpit camera connected. Panels follow normal freelook.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
   },
   {
     "Text": "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -43533,6 +43757,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPanelVisibilityViewModel.cs"
   },
   {
+    "Text": "Panel distance",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
+    "Text": "Panel rotation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
+    "Text": "Panels",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CockpitOverlaySettingsStore.cs"
+  },
+  {
     "Text": "Panther Clipper Mk II",
     "IsFormat": false,
     "SourceKinds": [
@@ -43892,6 +44140,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Pitch (\u00B0)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
     "Text": "Place in front of me",
@@ -50879,6 +51135,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Reset angle and depth",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
     "Text": "Reset cancelled; totals were not changed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51093,6 +51357,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/LocalizationViewModel.cs"
+  },
+  {
+    "Text": "Restart SrvSurvey to enable the shared cockpit display.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
     "Text": "Restart SrvSurvey to load the migrated profile.",
@@ -52235,6 +52507,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
+    "Text": "Roll (\u00B0)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
     "Text": "Rollback backup: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -53207,6 +53487,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "SRVCAM01",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitCameraClient.cs"
   },
   {
     "Text": "SRVDestroyed",
@@ -54212,6 +54500,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "Saved panel angle and calibration changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Saved pending live overlay positions.",
@@ -66158,6 +66454,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "The local camera connection is unavailable ({0}). Desktop positions remain active.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
+  },
+  {
     "Text": "The local flora path is not absolute. Cached and remote Codex images remain available.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66462,12 +66766,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "The opt-in cockpit panel prototype uses a shared desktop surface for perspective projection.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationSession.cs"
+  },
+  {
     "Text": "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The orb previews this panel\u0027s perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
     "Text": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
@@ -66932,6 +67252,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.Shopping.cs"
+  },
+  {
+    "Text": "The published camera profile changed without a version bump. The current profile was retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
+    "Text": "The published camera profile uses an unsupported protocol. The current profile was retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
+    "Text": "The published camera profile was invalid. The current profile was retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
   },
   {
     "Text": "The radar is always present while this panel is visible. Active and analyzed scan states describe known organisms; distant signals are not guaranteed accessible colonies.",
@@ -73689,6 +74033,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
+    "Text": "Waiting for the live cockpit camera bridge.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CockpitOverlayViewModel.cs"
+  },
+  {
+    "Text": "Waiting for the live cockpit camera bridge. Desktop positions remain active.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/CockpitOverlayCoordinator.cs"
+  },
+  {
     "Text": "Waiting for the selected VR session",
     "IsFormat": false,
     "SourceKinds": [
@@ -74946,6 +75306,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Yaw (\u00B0)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
     "Text": "Years",

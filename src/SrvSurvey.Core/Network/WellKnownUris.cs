@@ -13,6 +13,8 @@ public static class WellKnownUris
 
     private static readonly Dictionary<string, string> Values = Load();
 
+    public static Uri PublishedCockpitCaptureProfile => RequireUri("PublishedCockpitCaptureProfile");
+
     public static Uri PublishedCodexReference => RequireUri("PublishedCodexReference");
     public static Uri PublishedRegionalCodexCandidatesCsv => RequireUri("PublishedRegionalCodexCandidatesCsv");
     public static Uri PublishedKnownSystemAddresses => RequireUri("PublishedKnownSystemAddresses");
