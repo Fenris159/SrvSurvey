@@ -17,7 +17,7 @@ public sealed class SystemStatusRingPresentationTests
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
-    public void LiveAndEditorRenderConcentricBordersAndFollowGeneralBrushChanges(bool editor)
+    public void LiveAndEditorRenderOnePixelRingGapsAndFollowGeneralBrushChanges(bool editor)
     {
         Application application = Assert.IsAssignableFrom<Application>(Application.Current);
         var themeService = new RavenThemeService(
@@ -65,11 +65,11 @@ public sealed class SystemStatusRingPresentationTests
             Border outer = Assert.Single(triple, border => border.Classes.Contains("ring-c"));
             Border middle = Assert.Single(triple, border => border.Classes.Contains("ring-b"));
             Border inner = Assert.Single(triple, border => border.Classes.Contains("ring-a"));
-            Assert.Equal(new Point(1, 1), middle.TranslatePoint(default, outer));
-            Assert.Equal(new Point(2, 2), inner.TranslatePoint(default, outer));
-            Assert.Equal(outer.Bounds.Width - 4, inner.Bounds.Width);
-            Assert.Equal(new CornerRadius(6), outer.CornerRadius);
-            Assert.Equal(new CornerRadius(5), middle.CornerRadius);
+            Assert.Equal(new Point(2, 2), middle.TranslatePoint(default, outer));
+            Assert.Equal(new Point(4, 4), inner.TranslatePoint(default, outer));
+            Assert.Equal(outer.Bounds.Width - 8, inner.Bounds.Width);
+            Assert.Equal(new CornerRadius(8), outer.CornerRadius);
+            Assert.Equal(new CornerRadius(6), middle.CornerRadius);
             double fullWidth = outer.Bounds.Width;
             TextBlock destination = Assert.Single(
                 window.GetVisualDescendants().OfType<TextBlock>(),
@@ -86,10 +86,10 @@ public sealed class SystemStatusRingPresentationTests
             using WriteableBitmap? updated = window.CaptureRenderedFrame();
             Assert.Equal(Colors.Transparent, Assert.IsAssignableFrom<ISolidColorBrush>(inner.BorderBrush).Color);
             Assert.Equal(new Thickness(0), inner.BorderThickness);
-            Assert.Equal(new Point(1, 1), middle.TranslatePoint(default, outer));
-            Assert.Equal(new Point(2, 2), inner.TranslatePoint(default, outer));
-            Assert.Equal(fullWidth - 2, outer.Bounds.Width);
-            Assert.Equal(new CornerRadius(5), outer.CornerRadius);
+            Assert.Equal(new Point(2, 2), middle.TranslatePoint(default, outer));
+            Assert.Equal(new Point(3, 3), inner.TranslatePoint(default, outer));
+            Assert.Equal(fullWidth - 4, outer.Bounds.Width);
+            Assert.Equal(new CornerRadius(6), outer.CornerRadius);
             Assert.Equal(new CornerRadius(4), middle.CornerRadius);
             SaveRender(window, editor ? "system-status-editor-ring-a-mapped" : "system-status-live-ring-a-mapped");
 

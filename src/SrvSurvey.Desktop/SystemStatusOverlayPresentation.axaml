@@ -29,17 +29,20 @@
     <Style Selector="Border.ring-c.unscanned">
       <Setter Property="BorderBrush" Value="{DynamicResource RavenSuccessDimBrush}" />
     </Style>
-    <Style Selector="Border.ring-b.inner-a">
-      <Setter Property="CornerRadius" Value="5" />
-    </Style>
-    <Style Selector="Border.ring-c.inner-a">
-      <Setter Property="CornerRadius" Value="5" />
-    </Style>
-    <Style Selector="Border.ring-c.inner-b">
-      <Setter Property="CornerRadius" Value="5" />
-    </Style>
-    <Style Selector="Border.ring-c.inner-a.inner-b">
+    <Style Selector="Border.ring-b.slot.inner-a">
+      <Setter Property="Padding" Value="1" />
       <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Border.ring-c.slot.inner-a">
+      <Setter Property="Padding" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Border.ring-c.slot.inner-b">
+      <Setter Property="Padding" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Border.ring-c.slot.inner-a.inner-b">
+      <Setter Property="CornerRadius" Value="8" />
     </Style>
   </UserControl.Styles>
   <!-- Content-sized live/editor presentation; the editor folder tab is host

@@ -37,12 +37,13 @@ improves shared journal data quality while preserving each provider's format.
 
 ### System status overlay panel
 
-- **Group rings with their body:** Show one body tag with nested, touching
-  borders for its unscanned rings instead of separate ring-suffix tags. Count
-  each body once and retain its tag until the body and included rings are mapped.
+- **Group rings with their body:** Show one body tag with nested borders
+  separated by 1 px gaps for its unscanned rings instead of separate ring-suffix
+  tags. Count each body once and retain its tag until the body and included rings
+  are mapped.
 - **Use configured theme colors:** Inner-to-outer borders identify rings A, B,
   and C using General Warning, General Success, and General Success (dim).
-  Each border disappears after its ring is DSS-scanned without leaving a gap.
+  Each border and its adjoining spacing disappear after its ring is DSS-scanned.
 - **Keep existing controls and context:** Respect Skip DSS of rings and body
   filters, preserve navigation destination highlighting and the separate
   biological-body list, and use the same presentation in the overlay editor.
