@@ -117,10 +117,12 @@ internal static partial class ProfileSyncPolicy
     /// <summary>Recognizes an isolated commander's portable preference document.</summary>
     private static bool IsUiDocument(string[] parts) => IsUiLocation(parts) && parts[^1] == "cross-platform-ui.json";
 
+    /// <summary>Allows shared preferences and isolated Frontier-ID Commander configuration paths.</summary>
     private static bool IsUiLocation(string[] parts) =>
         parts.Length == 1
         || (parts.Length == 3 && parts[0] == CommanderDirectoryName && FrontierId().IsMatch(parts[1]));
 
+    /// <summary>Recognizes saved plans, shopping, and local project sidecars in approved preference locations.</summary>
     private static bool IsColonizationDocument(string[] parts) =>
         IsUiLocation(parts)
         && parts[^1]
@@ -128,6 +130,7 @@ internal static partial class ProfileSyncPolicy
                 or "cross-platform-ui.json.plans.json"
                 or "cross-platform-ui.json.local-projects.json";
 
+    /// <summary>Recognizes Commander and local-development quest files under the approved quest directory.</summary>
     private static bool IsQuestFile(string[] parts) =>
         parts.Length == 2
         && parts[0] == "quests"
@@ -144,12 +147,14 @@ internal static partial class ProfileSyncPolicy
         return parts.Length > start + 1 && IsVrDirectory(parts.AsSpan(start, parts.Length - start - 1));
     }
 
+    /// <summary>Recognizes the overlay directory within an isolated Frontier-ID Commander configuration.</summary>
     private static bool IsCommanderOverlayPath(string[] parts) =>
         parts.Length >= 3
         && parts[0] == CommanderDirectoryName
         && FrontierId().IsMatch(parts[1])
         && parts[2] == "overlays";
 
+    /// <summary>Limits calibration directories to VR and its VDXR subdirectory.</summary>
     private static bool IsVrDirectory(ReadOnlySpan<string> parts) =>
         parts.Length > 0 && parts[0] == "vr" && (parts.Length == 1 || (parts.Length == 2 && parts[1] == "vdxr"));
 
@@ -284,6 +289,7 @@ internal static partial class ProfileSyncPolicy
         return ClassifyDataValue(relative, file, fields);
     }
 
+    /// <summary>Classifies data settings while separating hardware and path preferences from portable progress.</summary>
     private static bool? ClassifyDataValue(string relative, string file, string[] fields)
     {
         if (file == "settings.json")

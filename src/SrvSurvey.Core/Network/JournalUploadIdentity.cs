@@ -65,6 +65,7 @@ internal static class JournalUploadIdentity
     public static string? CaptureObservation(string eventName, string json, string scope = "") =>
         ObservationEvents.Contains(eventName) ? CaptureContent(JToken.Parse(json), scope) : null;
 
+    /// <summary>Sorts JSON object properties recursively while retaining array order and observed scalar values.</summary>
     private static void WriteCanonical(JsonWriter writer, JToken value)
     {
         if (value is JObject obj)

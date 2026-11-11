@@ -211,6 +211,7 @@ internal static class OverlayEditorPreviewCatalog
         return new SystemSurveyOverlayViewModel(survey, OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
     }
 
+    /// <summary>Builds editor preview data using the same body and ring readiness model as live System status.</summary>
     private static SystemSurveyEditorPreviewState BuildSystemSurveyEditorState(string plotterName, string previewState)
     {
         BiologyRewardThresholds thresholds = Thresholds;

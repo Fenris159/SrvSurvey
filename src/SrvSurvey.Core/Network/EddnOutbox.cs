@@ -375,6 +375,7 @@ internal sealed class EddnOutbox : IDisposable
         return true;
     }
 
+    /// <summary>Checks durable receipts and pending work for duplicate source records or eligible observation content.</summary>
     private bool IsAlreadyCaptured(EddnQueuedMessage message) =>
         (
             message.replayProtected
@@ -1019,6 +1020,7 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
+    /// <summary>Records source completion separately from provider-confirmed content acceptance.</summary>
     private List<Guid> RegisterCompletedReceipts(EddnQueuedMessage item, bool contentAccepted)
     {
         var added = new List<Guid>();

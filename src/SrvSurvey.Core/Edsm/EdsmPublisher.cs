@@ -962,6 +962,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         return CreateSendResult(accepted.Count, warnings);
     }
 
+    /// <summary>Accepts per-event successes, retries unknown catalog items, and records definitive EDSM rejections.</summary>
     private static (
         List<EdsmQueuedEvent> Accepted,
         List<EdsmQueuedEvent> Retryable,

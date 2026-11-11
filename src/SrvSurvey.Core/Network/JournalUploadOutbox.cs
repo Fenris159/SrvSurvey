@@ -263,6 +263,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         }
     }
 
+    /// <summary>Rejects duplicate source identities and eligible content already pending, completed, or in this batch.</summary>
     private bool CanCapture(T value, HashSet<string> batchIdentities, HashSet<string> batchContent)
     {
         string id = identity(value);
@@ -536,6 +537,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         NotBefore = delta.NotBefore;
     }
 
+    /// <summary>Maintains pending-content reference counts and removes entries when their last payload leaves the queue.</summary>
     private void TrackContent(T value, int change)
     {
         string? content = contentIdentity?.Invoke(value);

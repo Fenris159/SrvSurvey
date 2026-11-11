@@ -2714,6 +2714,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         );
     }
 
+    /// <summary>Groups each body's remaining DSS work and unscanned rings into one candidate with destination highlighting.</summary>
     private IEnumerable<SurveyBodyReferenceViewModel> CreateDssCandidates(string? destination)
     {
         var completedBodyNames = snapshot
@@ -2740,6 +2741,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Keeps a ring outstanding until its DSS record exists, respecting the Skip rings preference.</summary>
     private bool IsRingUnscanned(SystemScanBodySnapshot body, HashSet<string> completedBodyNames, int index)
     {
         if (SkipRingsForDss || index >= body.Rings.Count)

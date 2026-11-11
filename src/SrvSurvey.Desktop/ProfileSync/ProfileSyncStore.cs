@@ -787,9 +787,14 @@ internal sealed class ProfileSyncStore
     private static SyncValue CoalesceShoppingSearch(string root, IReadOnlyList<KeyValuePair<string, SyncValue>> entries)
     {
         SyncValue? parent = entries.FirstOrDefault(entry => entry.Key == root).Value;
-        bool wholeValue = parent is { Deleted: false, Value: not null };
-        bool deleted = parent is null || parent.Deleted;
-        JsonNode? content = deleted ? null : parent?.Value?.DeepClone();
+        bool deleted = true;
+        JsonNode? content = null;
+        if (parent is { Deleted: false })
+        {
+            deleted = false;
+            content = parent.Value?.DeepClone();
+        }
+        bool wholeValue = content is not null;
         foreach ((string key, SyncValue change) in entries.Where(entry => entry.Key != root && !entry.Value.Deleted))
         {
             string pointer = key[root.Length..];

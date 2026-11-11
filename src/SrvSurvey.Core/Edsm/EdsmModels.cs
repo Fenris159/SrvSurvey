@@ -197,6 +197,7 @@ internal sealed class EdsmJournalContext
         }
     }
 
+    /// <summary>Adds matching system and station context while retaining the event's captured ship identity.</summary>
     internal JObject AddTransientFields(JObject entry)
     {
         var augmented = (JObject)entry.DeepClone();
@@ -220,6 +221,7 @@ internal sealed class EdsmJournalContext
         return augmented;
     }
 
+    /// <summary>Checks the event's available system identifiers before shared location metadata can be borrowed.</summary>
     private bool MatchesSystem(JObject entry)
     {
         long? address = ReadInt64(entry, nameof(SystemAddress));
@@ -231,6 +233,7 @@ internal sealed class EdsmJournalContext
         return (address is null || address == SystemAddress) && (name is null || name == SystemName);
     }
 
+    /// <summary>Updates journal location and clears coordinates and station metadata when the system identity changes.</summary>
     private void ApplySystem(JObject entry)
     {
         long? address = ReadInt64(entry, nameof(SystemAddress));

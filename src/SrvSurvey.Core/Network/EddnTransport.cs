@@ -26,6 +26,7 @@ internal sealed class EddnTransport
         validateEndpoint(this.endpoint);
     }
 
+    /// <summary>Captures the upload header, payload, queue timing, and normalized schema for durable publication.</summary>
     internal static EddnQueuedMessage prepare(
         JObject message,
         string schemaRef,

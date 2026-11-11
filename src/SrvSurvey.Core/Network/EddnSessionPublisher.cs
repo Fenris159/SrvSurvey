@@ -389,6 +389,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         return false;
     }
 
+    /// <summary>Captures session and body evidence under the session lock without borrowing stale Status after a jump.</summary>
     private CapturedEventState? CaptureEventState(string eventName, JObject raw, EddnApplyRequest request)
     {
         lock (sync)
@@ -984,6 +985,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         odyssey = raw.Value<bool?>("Odyssey");
     }
 
+    /// <summary>Tracks journal-confirmed bodies and clears body evidence when leaving a body or changing systems.</summary>
     private void UpdateBodyContextLocked(JObject raw)
     {
         string? eventName = raw.Value<string>(EventProperty);

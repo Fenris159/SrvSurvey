@@ -3007,6 +3007,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return result;
     }
 
+    /// <summary>Switches Commander services and restores saved state while retaining exploration bootstrap provenance.</summary>
     private async Task<bool> EnsureCommanderProfileAsync()
     {
         if (string.IsNullOrWhiteSpace(journalState.FrontierId))

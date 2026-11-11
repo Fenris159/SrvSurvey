@@ -1272,6 +1272,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         return changed;
     }
 
+    /// <summary>Replays survey events while preserving existing totals and rebuilding exploration totals missing after restore.</summary>
     private void ApplyExplorationAndExobiologyJournalEvents(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         bool skipPersistedBootstrapEvents,

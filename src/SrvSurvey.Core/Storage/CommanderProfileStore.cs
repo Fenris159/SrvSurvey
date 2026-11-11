@@ -49,6 +49,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         return Path.Combine(ProfileDirectory, $"{frontierId}-{mode}.json");
     }
 
+    /// <summary>Loads Commander state and distinguishes missing exploration totals from explicit saved zero values.</summary>
     public async Task<CommanderProfileLoadResult> LoadAsync(
         string frontierId,
         bool isOdyssey,

@@ -225,6 +225,7 @@ internal static class EddnMessageSanitizer
         return new EddnLocationContext(systemName, systemAddress.Value, position.Values<double>().ToArray());
     }
 
+    /// <summary>Selects and validates an allowed journal schema while excluding temporary Operations stations.</summary>
     internal static bool tryBuildJournal(
         JObject raw,
         EddnMessageContext context,
@@ -388,6 +389,7 @@ internal static class EddnMessageSanitizer
             && string.Equals(context.statusBodyName, context.trackedBodyName, StringComparison.Ordinal);
     }
 
+    /// <summary>Adds a known Status body name only when it does not conflict with the event's body identity.</summary>
     private static void TryFillCodexBodyName(JObject message, EddnMessageContext context, bool bodyNamesAgree)
     {
         if (
@@ -471,6 +473,7 @@ internal static class EddnMessageSanitizer
             ? timestamp
             : null;
 
+    /// <summary>Copies finite surface coordinates only from Status with a matching event timestamp.</summary>
     private static void AddSurfaceCoordinates(JObject message, EliteStatus? status, DateTimeOffset? eventTimestamp)
     {
         if (
@@ -744,6 +747,7 @@ internal static class EddnMessageSanitizer
         return true;
     }
 
+    /// <summary>Builds supported companion reports using the schema appropriate to the available catalog detail.</summary>
     internal static bool tryBuildCompanion(
         JObject companion,
         EddnMessageContext context,
@@ -1026,6 +1030,7 @@ internal static class EddnMessageSanitizer
         return message;
     }
 
+    /// <summary>Uses detailed module identities and prices when complete, falling back to the supported legacy list.</summary>
     private static JObject buildOutfitting(JObject source, EddnMessageContext context, out bool detailedModules)
     {
         var modules = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -1229,6 +1234,7 @@ internal static class EddnMessageSanitizer
         return !string.IsNullOrWhiteSpace(eventName) && eventName.Equals(location.systemName, StringComparison.Ordinal);
     }
 
+    /// <summary>Rejects reports missing the fields required by their selected journal event schema.</summary>
     private static bool hasRequiredFields(JObject message, string eventName, out string reason)
     {
         string[] required = eventName switch
