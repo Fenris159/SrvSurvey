@@ -14,7 +14,7 @@ public sealed class WorkspaceContinuitySettingsStoreTests
         var store = new WorkspaceContinuitySettingsStore(root.Paths.UiSettingsPath);
         Assert.Equal(new WorkspaceContinuityPreferences(), store.Load());
         root.Write("config", "cross-platform-ui.json", "{\"Theme\":\"gold\"}");
-        var selections = new WorkspaceContinuityPreferences("surface-mining", 4, 3, 2, 1);
+        var selections = new WorkspaceContinuityPreferences("surface-mining", 4, 3, 2, 1, 1, 2, 4);
         store.Save(selections);
         Assert.Equal(selections, store.Load());
         Assert.Equal("gold", JsonNode.Parse(File.ReadAllText(root.Paths.UiSettingsPath))!["Theme"]!.GetValue<string>());
@@ -30,7 +30,7 @@ public sealed class WorkspaceContinuitySettingsStoreTests
         root.Write(
             "config",
             "cross-platform-ui.json",
-            $"{{\"Workspace\":{{\"Navigation\":15,\"MiningTab\":{index},\"SurfaceMiningTab\":{index},\"GuardianTab\":{index},\"FleetCarrierTab\":{index}}}}}"
+            $"{{\"Workspace\":{{\"Navigation\":15,\"MiningTab\":{index},\"SurfaceMiningTab\":{index},\"GuardianTab\":{index},\"FleetCarrierTab\":{index},\"ExplorationTab\":{index},\"ColonizationTab\":{index},\"DiagnosticsTab\":{index}}}}}"
         );
         Assert.Equal(
             new WorkspaceContinuityPreferences(),

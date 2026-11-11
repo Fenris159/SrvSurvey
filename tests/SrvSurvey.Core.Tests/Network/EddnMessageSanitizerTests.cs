@@ -38,7 +38,7 @@ public sealed class EddnMessageBuilderTests
     }
 
     [Fact]
-    public void CodexBodyContextRequiresStatusAndTrackedBodyAgreement()
+    public void CodexBodyIdRequiresStatusAndTrackedBodyAgreementWhileKeepingTheKnownName()
     {
         var raw = JObject.Parse(
             """
@@ -54,7 +54,7 @@ public sealed class EddnMessageBuilderTests
         );
 
         Assert.True(built, reason);
-        Assert.Null(prepared!.message["BodyName"]);
+        Assert.Equal("Test A 2", prepared!.message.Value<string>("BodyName"));
         Assert.Null(prepared.message["BodyID"]);
     }
 

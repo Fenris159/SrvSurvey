@@ -17,11 +17,13 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
     private readonly string folder;
     private readonly Func<T, string> identity;
     private readonly Func<T, bool> validate;
+    private readonly Func<T, string?>? contentIdentity;
     private readonly Action<string> log;
     private readonly Lock sync = new();
     private readonly Dictionary<string, T> pending = new(StringComparer.Ordinal);
     private readonly HashSet<string> seen = new(StringComparer.Ordinal);
     private readonly Queue<string> receipts = new();
+    private readonly Dictionary<string, int> pendingContent = new(StringComparer.Ordinal);
     private FileStream? lease;
     private string? owner;
     private string? path;
@@ -35,7 +37,8 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         string provider,
         Func<T, string> identity,
         Func<T, bool> validate,
-        Action<string> log
+        Action<string> log,
+        Func<T, string?>? contentIdentity = null
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
@@ -51,6 +54,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         this.identity = identity;
         this.validate = validate;
         this.log = log;
+        this.contentIdentity = contentIdentity;
         consentEpoch = string.Empty;
         try
         {
@@ -242,11 +246,10 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         lock (sync)
         {
             EnsureOwner();
+            var batchIdentities = new HashSet<string>(StringComparer.Ordinal);
+            var batchContent = new HashSet<string>(StringComparer.Ordinal);
             T[] added = values
-                .Where(value =>
-                    validate(value) && !seen.Contains(identity(value)) && !pending.ContainsKey(identity(value))
-                )
-                .DistinctBy(identity, StringComparer.Ordinal)
+                .Where(value => validate(value) && CanCapture(value, batchIdentities, batchContent))
                 .ToArray();
             if (pending.Count + added.Length > maximumPending)
             {
@@ -260,8 +263,21 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         }
     }
 
+    /// <summary>Rejects duplicate source identities and eligible content already pending, completed, or in this batch.</summary>
+    private bool CanCapture(T value, HashSet<string> batchIdentities, HashSet<string> batchContent)
+    {
+        string id = identity(value);
+        if (seen.Contains(id) || pending.ContainsKey(id) || !batchIdentities.Add(id))
+        {
+            return false;
+        }
+        string? content = contentIdentity?.Invoke(value);
+        return content is null
+            || (!seen.Contains(content) && !pendingContent.ContainsKey(content) && batchContent.Add(content));
+    }
+
     /// <summary>Durably records final outcomes before removing their pending payloads.</summary>
-    public void Complete(IEnumerable<string> identities)
+    public void Complete(IEnumerable<string> identities, bool contentAccepted = false)
     {
         lock (sync)
         {
@@ -269,7 +285,12 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
             string[] completed = identities.Where(pending.ContainsKey).Distinct(StringComparer.Ordinal).ToArray();
             if (completed.Length != 0)
             {
-                var change = new Delta([], completed, [], NotBefore, false);
+                string[] contents = (contentAccepted ? completed : [])
+                    .Select(id => contentIdentity?.Invoke(pending[id]))
+                    .OfType<string>()
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray();
+                var change = new Delta([], completed, contents, NotBefore, false);
                 try
                 {
                     Append(change);
@@ -491,6 +512,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
             pending.Clear();
             seen.Clear();
             receipts.Clear();
+            pendingContent.Clear();
         }
         foreach (string receipt in delta.Receipts)
         {
@@ -499,17 +521,39 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         foreach (T value in delta.Added)
         {
             string id = identity(value);
-            if (!seen.Contains(id))
+            if (!seen.Contains(id) && pending.TryAdd(id, value))
             {
-                pending.TryAdd(id, value);
+                TrackContent(value, 1);
             }
         }
         foreach (string completed in delta.Completed)
         {
-            pending.Remove(completed);
+            if (pending.Remove(completed, out T? value))
+            {
+                TrackContent(value, -1);
+            }
             Remember(completed);
         }
         NotBefore = delta.NotBefore;
+    }
+
+    /// <summary>Maintains pending-content reference counts and removes entries when their last payload leaves the queue.</summary>
+    private void TrackContent(T value, int change)
+    {
+        string? content = contentIdentity?.Invoke(value);
+        if (content is null)
+        {
+            return;
+        }
+        int count = pendingContent.GetValueOrDefault(content) + change;
+        if (count <= 0)
+        {
+            pendingContent.Remove(content);
+        }
+        else
+        {
+            pendingContent[content] = count;
+        }
     }
 
     /// <summary>Bounds acknowledged-record history independently of the pending payload dictionary.</summary>
@@ -584,6 +628,7 @@ internal sealed class JournalUploadOutbox<T> : IDisposable
         pending.Clear();
         seen.Clear();
         receipts.Clear();
+        pendingContent.Clear();
         NotBefore = null;
         checkpointPending = false;
     }

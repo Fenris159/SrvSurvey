@@ -26,7 +26,13 @@ internal sealed class EddnTransport
         validateEndpoint(this.endpoint);
     }
 
-    internal static EddnQueuedMessage prepare(JObject message, string schemaRef, UploadPayloadHeader header)
+    /// <summary>Captures the upload header, payload, queue timing, and normalized schema for durable publication.</summary>
+    internal static EddnQueuedMessage prepare(
+        JObject message,
+        string schemaRef,
+        UploadPayloadHeader header,
+        DateTimeOffset? capturedAt = null
+    )
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
@@ -34,11 +40,12 @@ internal sealed class EddnTransport
 
         schemaRef = NormalizeSchemaReference(schemaRef);
 
+        DateTimeOffset created = capturedAt ?? DateTimeOffset.UtcNow;
         return new EddnQueuedMessage
         {
             id = Guid.NewGuid(),
-            created = DateTimeOffset.UtcNow,
-            nextAttempt = DateTimeOffset.UtcNow,
+            created = created,
+            nextAttempt = created,
             useTestSchemas = TestSchemasEnabled,
             schemaRef = schemaRef,
             header = header.clone(),
@@ -204,6 +211,9 @@ internal sealed class EddnQueuedMessage
 
     /// <summary>Marks source-derived identifiers eligible for durable replay suppression.</summary>
     public bool replayProtected;
+
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public Guid? contentIdentity;
     public DateTimeOffset created;
     public DateTimeOffset nextAttempt;
     public int attempts;

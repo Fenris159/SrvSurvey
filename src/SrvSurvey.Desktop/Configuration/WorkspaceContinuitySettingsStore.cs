@@ -8,7 +8,10 @@ internal sealed record WorkspaceContinuityPreferences(
     int MiningTab = 0,
     int SurfaceMiningTab = 0,
     int GuardianTab = 0,
-    int FleetCarrierTab = 0
+    int FleetCarrierTab = 0,
+    int ExplorationTab = 0,
+    int ColonizationTab = 0,
+    int DiagnosticsTab = 0
 );
 
 /// <summary>Stores workspace navigation independently of machine-dependent window placement.</summary>
@@ -27,7 +30,10 @@ internal sealed class WorkspaceContinuitySettingsStore(string path)
             ReadIndex(workspace, "MiningTab", 7),
             ReadIndex(workspace, "SurfaceMiningTab", 5),
             ReadIndex(workspace, "GuardianTab", 8),
-            ReadIndex(workspace, "FleetCarrierTab", 2)
+            ReadIndex(workspace, "FleetCarrierTab", 2),
+            ReadIndex(workspace, "ExplorationTab", 1),
+            ReadIndex(workspace, "ColonizationTab", 4),
+            ReadIndex(workspace, "DiagnosticsTab", 5)
         );
     }
 
@@ -41,6 +47,9 @@ internal sealed class WorkspaceContinuitySettingsStore(string path)
                 ["SurfaceMiningTab"] = preferences.SurfaceMiningTab,
                 ["GuardianTab"] = preferences.GuardianTab,
                 ["FleetCarrierTab"] = preferences.FleetCarrierTab,
+                ["ExplorationTab"] = preferences.ExplorationTab,
+                ["ColonizationTab"] = preferences.ColonizationTab,
+                ["DiagnosticsTab"] = preferences.DiagnosticsTab,
             }
         );
 

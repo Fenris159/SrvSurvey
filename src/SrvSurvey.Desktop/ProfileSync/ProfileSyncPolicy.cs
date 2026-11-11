@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using SrvSurvey.Core.ProfileSync;
 
 namespace SrvSurvey.Desktop.ProfileSync;
 
@@ -7,61 +8,19 @@ namespace SrvSurvey.Desktop.ProfileSync;
 internal static partial class ProfileSyncPolicy
 {
     private const string ScreenshotsProperty = "Screenshots";
+    private const string CommanderDirectoryName = "commanders";
     private static readonly string[] ScreenshotFields = [ScreenshotsProperty, "screenshots"];
-    private static readonly HashSet<string> UiSections = new(StringComparer.Ordinal)
+    private static readonly HashSet<string> CommanderFields = new(StringComparer.Ordinal)
     {
-        "Version",
-        "Theme",
-        "Localization",
-        "OverlayBehavior",
-        "OverlayPanelVisibility",
-        "OverlayVehicleAllowLists",
-        "DesktopBehavior",
-        "Input",
-        "OverlayScale",
-        "OverlayEditorControls",
-        "SystemSurvey",
-        "JumpInfo",
-        "BiologyPredictions",
-        "BiologyRewards",
-        "BoxelSurveyStats",
-        "Combat",
-        "Travel",
-        "FiregroupsOverlay",
-        "FirstFootfallInference",
-        "GalaxyMap",
-        "GuardianGestures",
-        "GuardianOverlays",
-        "HumanSite",
-        "MineMap",
-        "MiningOverlays",
-        "CarrierNextJump",
-        "SquadronCarrierNextJump",
-        "Notifications",
-        "PulseOverlay",
-        "Quests",
-        "Screenshots",
-        "StationInfo",
-        "Streaming",
-        "SurfaceMining",
-        "SystemNicknames",
-        "VirtualReality",
-        "WaylandCapture",
-        "CodexImages",
-        "Colonization",
-        "ReleaseUpdates",
-        "Workspace",
-        "MiningReferenceCommodities",
-        "NetworkPrivacy",
-    };
-    private static readonly HashSet<string> MachineSections = new(StringComparer.Ordinal)
-    {
-        "NetworkPrivacy",
-        "WaylandCapture",
-        "VirtualReality",
-        "FirstFootfallInference",
-        "OverlayScale",
-        "OverlayEditorControls",
+        "commander",
+        "autoResetExplorationValue",
+        "activeJourney",
+        "boxelSearch",
+        "sphereLimit",
+        "decodeTheRuinsMissionActive",
+        "decodeTheLogsMissionActive",
+        "decodeTheRuins",
+        "decodeTheLogs",
     };
     private static readonly HashSet<string> MachineFields = new(StringComparer.Ordinal)
     {
@@ -93,6 +52,7 @@ internal static partial class ProfileSyncPolicy
         "firegroups",
         "boxelSurveyStats",
         "mining-search-cache",
+        "emptyBoxels",
     };
     private static readonly HashSet<string> OverlayFiles = new(StringComparer.Ordinal)
     {
@@ -125,16 +85,18 @@ internal static partial class ProfileSyncPolicy
         }
         if (area == "config")
         {
-            return relative == "cross-platform-ui.json" || IsCommanderUiFile(parts);
+            return IsUiDocument(parts) || IsColonizationDocument(parts);
         }
         if (area != "data" || parts.Any(part => part is ".trash" or "attachments" or "legacy"))
         {
             return false;
         }
         return IsRootDataFile(parts, relative)
+            || IsVrCalibrationFile(relative)
+            || IsQuestFile(parts)
             || (
                 parts.Length == 4
-                && parts[0] == "commanders"
+                && parts[0] == CommanderDirectoryName
                 && FrontierId().IsMatch(parts[1])
                 && parts[2] == "overlays"
                 && OverlayFiles.Contains(parts[3])
@@ -149,14 +111,52 @@ internal static partial class ProfileSyncPolicy
             relative is "bookmarks.json" or "surface-mining-survey-progress.json"
             || OverlayFiles.Contains(relative)
             || CodexFile().IsMatch(relative)
+            || CommanderFile().IsMatch(relative)
         );
 
     /// <summary>Recognizes an isolated commander's portable preference document.</summary>
-    private static bool IsCommanderUiFile(string[] parts) =>
-        parts.Length == 3
-        && parts[0] == "commanders"
+    private static bool IsUiDocument(string[] parts) => IsUiLocation(parts) && parts[^1] == "cross-platform-ui.json";
+
+    /// <summary>Allows shared preferences and isolated Frontier-ID Commander configuration paths.</summary>
+    private static bool IsUiLocation(string[] parts) =>
+        parts.Length == 1
+        || (parts.Length == 3 && parts[0] == CommanderDirectoryName && FrontierId().IsMatch(parts[1]));
+
+    /// <summary>Recognizes saved plans, shopping, and local project sidecars in approved preference locations.</summary>
+    private static bool IsColonizationDocument(string[] parts) =>
+        IsUiLocation(parts)
+        && parts[^1]
+            is "cross-platform-ui.json.shopping.json"
+                or "cross-platform-ui.json.plans.json"
+                or "cross-platform-ui.json.local-projects.json";
+
+    /// <summary>Recognizes Commander and local-development quest files under the approved quest directory.</summary>
+    private static bool IsQuestFile(string[] parts) =>
+        parts.Length == 2
+        && parts[0] == "quests"
+        && (
+            FrontierId().IsMatch(Path.GetFileNameWithoutExtension(parts[1]))
+            || parts[1].StartsWith("dev-", StringComparison.Ordinal)
+        );
+
+    /// <summary>Recognizes only live VR calibration files, excluding recovery copies and unrelated subdirectories.</summary>
+    internal static bool IsVrCalibrationFile(string relative)
+    {
+        string[] parts = relative.Split('/');
+        int start = IsCommanderOverlayPath(parts) ? 3 : 0;
+        return parts.Length > start + 1 && IsVrDirectory(parts.AsSpan(start, parts.Length - start - 1));
+    }
+
+    /// <summary>Recognizes the overlay directory within an isolated Frontier-ID Commander configuration.</summary>
+    private static bool IsCommanderOverlayPath(string[] parts) =>
+        parts.Length >= 3
+        && parts[0] == CommanderDirectoryName
         && FrontierId().IsMatch(parts[1])
-        && parts[2] == "cross-platform-ui.json";
+        && parts[2] == "overlays";
+
+    /// <summary>Limits calibration directories to VR and its VDXR subdirectory.</summary>
+    private static bool IsVrDirectory(ReadOnlySpan<string> parts) =>
+        parts.Length > 0 && parts[0] == "vr" && (parts.Length == 1 || (parts.Length == 2 && parts[1] == "vdxr"));
 
     /// <summary>Recognizes the last-used filter keys required to restore saved search presentations.</summary>
     internal static bool IsSearchSelection(string relative) =>
@@ -173,7 +173,7 @@ internal static partial class ProfileSyncPolicy
             return false;
         }
 
-        if (parts[0] == "commanders")
+        if (parts[0] == CommanderDirectoryName)
         {
             if (parts.Length == 1)
             {
@@ -183,10 +183,20 @@ internal static partial class ProfileSyncPolicy
             {
                 return false;
             }
-            return parts.Length == 2 || (area == "data" && parts.Length == 3 && parts[2] == "overlays");
+            return parts.Length == 2
+                || (
+                    area == "data"
+                    && IsCommanderOverlayPath(parts)
+                    && (parts.Length == 3 || IsVrDirectory(parts.AsSpan(3)))
+                );
         }
 
-        return area == "data" && DataDirectories.Contains(parts[0]);
+        return area == "data"
+            && (
+                DataDirectories.Contains(parts[0])
+                || (parts[0] == "quests" && parts.Length == 1)
+                || IsVrDirectory(parts)
+            );
     }
 
     /// <summary>Removes machine-specific attachment references inside atomic bookmark and history arrays.</summary>
@@ -266,8 +276,22 @@ internal static partial class ProfileSyncPolicy
         string file = relative.Split('/')[^1];
         if (area == "config")
         {
-            return ClassifyUiValue(fields);
+            return IsColonizationDocument(relative.Split('/')) ? false : ClassifyUiValue(fields);
         }
+        if (CommanderFile().IsMatch(relative))
+        {
+            return fields.Length > 0 && CommanderFields.Contains(fields[0]) ? false : null;
+        }
+        if (IsVrCalibrationFile(relative))
+        {
+            return true;
+        }
+        return ClassifyDataValue(relative, file, fields);
+    }
+
+    /// <summary>Classifies data settings while separating hardware and path preferences from portable progress.</summary>
+    private static bool? ClassifyDataValue(string relative, string file, string[] fields)
+    {
         if (file == "settings.json")
         {
             if (
@@ -302,10 +326,31 @@ internal static partial class ProfileSyncPolicy
             );
     }
 
+    /// <summary>Prunes mixed commander documents before flattening so credentials and large live histories are never cataloged.</summary>
+    internal static void PrepareCapture(string area, string relative, JsonNode? node)
+    {
+        if (area == "data" && CommanderFile().IsMatch(relative) && node is JsonObject commander)
+        {
+            foreach (
+                string field in commander
+                    .Select(pair => pair.Key)
+                    .Where(field => !CommanderFields.Contains(field))
+                    .ToArray()
+            )
+            {
+                commander.Remove(field);
+            }
+        }
+    }
+
     /// <summary>Allows portable UI preferences while keeping credentials and API operation queues out of all snapshots.</summary>
     private static bool? ClassifyUiValue(string[] fields)
     {
-        if (fields.Length == 0 || !UiSections.Contains(fields[0]))
+        if (
+            fields.Length == 0
+            || !ProfileSyncSettingsCatalog.Sections.TryGetValue(fields[0], out ProfileBackupScope scope)
+            || scope == ProfileBackupScope.Excluded
+        )
         {
             return null;
         }
@@ -315,19 +360,68 @@ internal static partial class ProfileSyncPolicy
             && (
                 fields.Length < 2
                 || fields[1]
-                    is not ("Enabled" or "Overlay" or "FleetCarrierCargoSyncEnabled" or "ShipCargoPublishingEnabled")
+                    is not (
+                        "Enabled"
+                        or "Overlay"
+                        or "FleetCarrierCargoSyncEnabled"
+                        or "ShipCargoPublishingEnabled"
+                        or "PlanningCarriers"
+                        or "PlanningCarrierSelections"
+                        or "PlanningCarrierSelectionRevisions"
+                        or "ProjectFocus"
+                        or "HiddenPlannedProjects"
+                    )
             )
         )
         {
             return null;
         }
 
-        return MachineSections.Contains(fields[0]) || fields.Any(MachineFields.Contains);
+        return scope == ProfileBackupScope.Machine || fields.Any(MachineFields.Contains);
     }
 
     /// <summary>Formats a file and JSON pointer as an unambiguous sync key.</summary>
     internal static string Key(string area, string relative, string pointer) =>
         $"{area}/{Uri.EscapeDataString(relative)}#{pointer}";
+
+    /// <summary>Moves legacy screenshot preferences out of portable history without overriding an existing machine value.</summary>
+    internal static ProfileSnapshot MigrateScreenshotSettings(ProfileSnapshot snapshot)
+    {
+        string[] legacyKeys = snapshot.Portable.Keys.Where(IsScreenshotPreferenceKey).ToArray();
+        if (legacyKeys.Length == 0)
+        {
+            return snapshot;
+        }
+
+        var portable = new Dictionary<string, SyncValue>(snapshot.Portable, StringComparer.Ordinal);
+        var machine = new Dictionary<string, JsonNode?>(snapshot.Machine, StringComparer.Ordinal);
+        foreach (string key in legacyKeys)
+        {
+            _ = ParseKey(key, machine: true);
+            SyncValue legacy = portable[key];
+            if (!legacy.Deleted && !machine.ContainsKey(key))
+            {
+                machine[key] = legacy.Value?.DeepClone();
+            }
+            portable.Remove(key);
+        }
+
+        return snapshot with
+        {
+            Portable = portable,
+            Machine = machine,
+        };
+    }
+
+    /// <summary>Limits compatibility handling to screenshot preferences inside allowed UI configuration documents.</summary>
+    private static bool IsScreenshotPreferenceKey(string key)
+    {
+        int separator = key.IndexOf('/');
+        string pointer = key[(key.IndexOf('#') + 1)..];
+        return separator > 0
+            && key[..separator] == "config"
+            && (pointer == "/Screenshots" || pointer.StartsWith("/Screenshots/", StringComparison.Ordinal));
+    }
 
     /// <summary>Validates keys from untrusted backups using the same policy as locally captured files.</summary>
     internal static (string Area, string Relative, string Pointer) ParseKey(string key, bool machine)
@@ -362,14 +456,28 @@ internal static partial class ProfileSyncPolicy
     internal static string Unescape(string value) =>
         value.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
 
-    /// <summary>Flattens JSON objects to independent settings while treating arrays as complete collections and omitting empty containers.</summary>
-    internal static IEnumerable<(string Pointer, JsonNode? Value)> Flatten(JsonNode? node, string pointer = "")
+    /// <summary>Flattens settings while keeping collections and nullable shopping searches atomic across successive backups.</summary>
+    internal static IEnumerable<(string Pointer, JsonNode? Value)> Flatten(
+        JsonNode? node,
+        string pointer = "",
+        bool atomicShoppingSearch = false
+    )
     {
-        if (node is JsonObject obj)
+        bool wholeSearch =
+            atomicShoppingSearch
+            && pointer.Split('/').Length == 3
+            && pointer.EndsWith("/Search", StringComparison.Ordinal);
+        if (node is JsonObject obj && !wholeSearch)
         {
             foreach ((string name, JsonNode? value) in obj)
             {
-                foreach ((string Pointer, JsonNode? Value) leaf in Flatten(value, pointer + "/" + Escape(name)))
+                foreach (
+                    (string Pointer, JsonNode? Value) leaf in Flatten(
+                        value,
+                        pointer + "/" + Escape(name),
+                        atomicShoppingSearch
+                    )
+                )
                 {
                     yield return leaf;
                 }
@@ -388,4 +496,7 @@ internal static partial class ProfileSyncPolicy
     /// <summary>Includes collected codex records, excluding live journal and API state files.</summary>
     [GeneratedRegex("^F[0-9]+-codex(-[0-9]+)?\\.json$", RegexOptions.CultureInvariant)]
     private static partial Regex CodexFile();
+
+    [GeneratedRegex("^F[0-9]+-(live|legacy)\\.json$", RegexOptions.CultureInvariant)]
+    private static partial Regex CommanderFile();
 }

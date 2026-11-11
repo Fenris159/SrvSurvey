@@ -29,7 +29,7 @@
                        FontWeight="SemiBold"
                        Text="What SrvSurvey sends" />
             <TextBlock TextWrapping="Wrap"
-                       Text="Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded." />
+                       Text="Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded." />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="Localized and Commander-specific fields prohibited by EDDN schemas are removed before a message is stored. Companion files are checked against the triggering live journal event before queueing." />

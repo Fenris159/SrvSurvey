@@ -13229,6 +13229,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "ColonizationTab",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WorkspaceContinuitySettingsStore.cs"
+  },
+  {
     "Text": "Color",
     "IsFormat": false,
     "SourceKinds": [
@@ -18459,6 +18467,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "DiagnosticsTab",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WorkspaceContinuitySettingsStore.cs"
+  },
+  {
     "Text": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body\u0027s reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
     "IsFormat": false,
     "SourceKinds": [
@@ -22183,6 +22199,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
+    "Text": "ExplorationTab",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/WorkspaceContinuitySettingsStore.cs"
   },
   {
     "Text": "Explore child boxels",
@@ -61445,7 +61469,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
+    "Text": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -64612,6 +64636,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
+  },
+  {
+    "Text": "The backup contains conflicting whole and legacy shopping search values.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
     "Text": "The backup contains data outside its permitted scope.",
@@ -76557,6 +76589,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeysymNames.cs"
   },
   {
+    "Text": "commander",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
+  },
+  {
     "Text": "commander journal publication upload credential api key flight log",
     "IsFormat": false,
     "SourceKinds": [
@@ -76979,6 +77019,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
+  },
+  {
+    "Text": "dev-",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
   },
   {
     "Text": "development",
@@ -80581,6 +80629,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
+    "Text": "screenshot settings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "screenshots",
     "IsFormat": false,
     "SourceKinds": [
@@ -80763,6 +80819,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "shopping-history:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
     "Text": "short-tags",
@@ -84566,6 +84630,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
   },
   {
+    "Text": "{0}#/{1}/Search",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "{0}% complete",
     "IsFormat": true,
     "SourceKinds": [
@@ -84828,14 +84900,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "{0}r{1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
     "Text": "{0}x",

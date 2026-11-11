@@ -19,6 +19,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private static readonly HashSet<string> JournalEvents = new(StringComparer.Ordinal)
     {
         "CodexEntry",
+        "ScanOrganic",
         "ApproachSettlement",
         "DockingGranted",
         "DockingDenied",
@@ -51,7 +52,9 @@ internal sealed class EddnSessionPublisher : IDisposable
     private readonly HashSet<Task> companionTasks = [];
     private EddnSignalBatchContext? pendingSignalContext;
     private EddnLocationContext? location;
+    private DateTimeOffset? systemEnteredAt;
     private string? statusBodyName;
+    private EliteStatus? currentStatus;
     private string? trackedBodyName;
     private int? trackedBodyId;
     private string? trackedBodyType;
@@ -352,7 +355,10 @@ internal sealed class EddnSessionPublisher : IDisposable
             return ProcessCompanionEvent(eventName, raw, request, captured, ingestionGeneration, warnings);
         }
 
-        if (JournalEvents.Contains(eventName))
+        if (
+            JournalEvents.Contains(eventName)
+            && !(eventName == "ScanOrganic" && raw.Value<string>("ScanType") == "Analyse")
+        )
         {
             PublishJournalEvent(eventName, raw, captured, ingestionGeneration, published, warnings);
         }
@@ -383,6 +389,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         return false;
     }
 
+    /// <summary>Captures session and body evidence under the session lock without borrowing stale Status after a jump.</summary>
     private CapturedEventState? CaptureEventState(string eventName, JObject raw, EddnApplyRequest request)
     {
         lock (sync)
@@ -393,23 +400,37 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
 
             SignalBatch? signalBatch = eventName == "FSSSignalDiscovered" ? null : TakeSignalBatchLocked();
+            DateTimeOffset? eventTimestamp = EddnMessageSanitizer.GetEventTimestamp(raw);
             EddnLocationContext? eventLocation = EddnMessageSanitizer.getLocation(raw);
             if (eventLocation is not null)
             {
+                if (
+                    location?.systemAddress != eventLocation.systemAddress
+                    || location.systemName != eventLocation.systemName
+                )
+                {
+                    systemEnteredAt = eventTimestamp;
+                }
                 location = eventLocation;
                 ClearTrackedBodyLocked();
             }
 
-            statusBodyName =
-                request.AllowSharedData && !string.IsNullOrWhiteSpace(request.Status?.BodyName)
-                    ? request.Status.BodyName
-                    : null;
+            currentStatus = request.AllowSharedData ? request.Status : null;
             UpdateBodyContextLocked(raw);
+            statusBodyName = IsStatusBodyCurrent(eventTimestamp) ? currentStatus?.BodyName : null;
             UpdateExpansionFlagsLocked(raw);
             UpdateCrewMembershipLocked(eventName);
             return new CapturedEventState(signalBatch, CreateContextLocked(), isCrewMember, sessionGeneration);
         }
     }
+
+    /// <summary>Accepts a Status name only with current tracked-body evidence or a matching post-arrival event time.</summary>
+    private bool IsStatusBodyCurrent(DateTimeOffset? eventTimestamp) =>
+        currentStatus is { } status
+        && (
+            (!string.IsNullOrWhiteSpace(trackedBodyName) && trackedBodyName == status.BodyName)
+            || (status.Timestamp == eventTimestamp && status.Timestamp > systemEnteredAt)
+        );
 
     /// <summary>Applies companion-file context before emitting its eligible EDDN projections.</summary>
     private bool ProcessCompanionEvent(
@@ -964,10 +985,11 @@ internal sealed class EddnSessionPublisher : IDisposable
         odyssey = raw.Value<bool?>("Odyssey");
     }
 
+    /// <summary>Tracks journal-confirmed bodies and clears body evidence when leaving a body or changing systems.</summary>
     private void UpdateBodyContextLocked(JObject raw)
     {
         string? eventName = raw.Value<string>(EventProperty);
-        if (eventName is "FSDJump" or "CarrierJump" or "StartJump")
+        if (eventName is "FSDJump" or "CarrierJump" or "StartJump" or "LeaveBody")
         {
             ClearTrackedBodyLocked();
             return;
@@ -1002,7 +1024,8 @@ internal sealed class EddnSessionPublisher : IDisposable
             statusBodyName,
             trackedBodyName,
             trackedBodyId,
-            trackedBodyType
+            trackedBodyType,
+            currentStatus
         );
     }
 

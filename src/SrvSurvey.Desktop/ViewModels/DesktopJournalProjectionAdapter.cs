@@ -1272,6 +1272,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         return changed;
     }
 
+    /// <summary>Replays survey events while preserving existing totals and rebuilding exploration totals missing after restore.</summary>
     private void ApplyExplorationAndExobiologyJournalEvents(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         bool skipPersistedBootstrapEvents,
@@ -1280,7 +1281,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     {
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            if (!skipPersistedBootstrapEvents || journalEvent.EventName is "Fileheader" or "LoadGame")
+            if (
+                !skipPersistedBootstrapEvents
+                || !state.ProfileHasExplorationTotals
+                || journalEvent.EventName is "Fileheader" or "LoadGame"
+            )
             {
                 state.Exploration.Apply(journalEvent);
             }

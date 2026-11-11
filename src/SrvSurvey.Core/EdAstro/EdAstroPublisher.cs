@@ -85,7 +85,14 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
                 "edastro",
                 entry => entry.Identity,
                 ValidateStoredEvent,
-                this.log
+                this.log,
+                item =>
+                    Newtonsoft.Json.Linq.JToken.Parse(item.Json).Value<string>("event") is "ScanOrganic" or "CodexEntry"
+                        ? JournalUploadIdentity.CaptureContent(
+                            Newtonsoft.Json.Linq.JToken.Parse(item.Json),
+                            item.Odyssey.ToString()
+                        )
+                        : null
             );
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         nextSummaryAt = this.utcNow() + LogInterval;
@@ -586,6 +593,7 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             nextRequestAt = utcNow() + TimeSpan.FromMinutes(15);
             return;
         }
+        // Status 200 confirms at least one accepted item, not every observation in the batch.
         outbox?.Complete(batch.Select(item => item.Identity));
         queue.RemoveRange(0, batch.Length);
         completedCount += apiStatus == 200 ? batch.Length : 0;

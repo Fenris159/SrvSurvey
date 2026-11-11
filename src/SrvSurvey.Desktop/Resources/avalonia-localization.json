@@ -6597,6 +6597,10 @@
       "translation": "Kolonisation.WishList"
     },
     {
+      "source": "ColonizationTab",
+      "translation": "KolonisationTab"
+    },
+    {
       "source": "Color",
       "translation": "Farbe"
     },
@@ -9201,6 +9205,10 @@
       "translation": "Diagnose, Einstellungen, Design und Anleitungen bleiben im Dienstprogrammbereich. Die kleine Schaltfläche „Overlay-Einstellungen“ neben den unterstützten Aktivitäten öffnet nur die Overlay-Steuerelemente dieser Aktivität."
     },
     {
+      "source": "DiagnosticsTab",
+      "translation": "Registerkarte „Diagnose“."
+    },
+    {
       "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
       "translation": "Die diagonale Schraffur markiert einen Organismenkandidaten, der nur durch die biologischen Vorhersagedaten bereitgestellt wird, ohne Journal-, Canonn- oder Spansh-Beweise. Solide Vorhersagesegmente zeigen das zuverlässige untere Band; Das dunklere mögliche Segment zeigt, wie hoch die Belohnungsspanne reichen kann. Jedes Segment behält seinen alten festen Umriss. Der gepunktete Gruppenrahmen umfasst die vom Körper gemeldete biologische Signalzahl; Zusätzliche PIPs außerhalb davon sind alternative Gattungskandidaten, keine additiven Belohnungen."
     },
@@ -11055,6 +11063,10 @@
     {
       "source": "ExplorationPois.AutoShow",
       "translation": "ExplorationPois.AutoShow"
+    },
+    {
+      "source": "ExplorationTab",
+      "translation": "ExplorationTab"
     },
     {
       "source": "Explore child boxels",
@@ -30617,8 +30629,8 @@
       "translation": "Unterstützte Live-Journal-Ereignisse können Flugverlauf, Standort, Credits, Schiffe und Ladungen, Fracht, Materialien, Rucksack- und Schließfachinventar, Missionen, Technik, Community-Ziele, Statistiken, sozialen Status und Entdeckungen aktualisieren EDSM."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Unterstützte neue Journalereignisse und validierte Markt-, Ausrüstungs-, Werft-, Flottenträgermaterialien- und NavRoute-Begleitdateidaten. Der Verlauf des Startup-Tagebuchs und die Multicrew-Aktivitäten werden nicht hochgeladen."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Unterstützte neue Journalereignisse, einschließlich organischer Protokoll- und Probenscans mit verifizierten Körperkoordinaten und validierten Markt-, Ausrüstungs-, Werft-, Flottenträgermaterialien- und NavRoute-Begleitdateidaten. Die Ausstattung beinhaltet die Modulpreise, sofern verfügbar. Der Verlauf des Startup-Tagebuchs und die Multicrew-Aktivitäten werden nicht hochgeladen."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -32195,6 +32207,10 @@
     {
       "source": "The backup contains an invalid data key.",
       "translation": "Die Sicherung enthält einen ungültigen Datenschlüssel."
+    },
+    {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "Die Sicherung enthält widersprüchliche Gesamt- und Legacy-Einkaufssuchwerte."
     },
     {
       "source": "The backup contains data outside its permitted scope.",
@@ -38161,6 +38177,10 @@
       "translation": "Komma"
     },
     {
+      "source": "commander",
+      "translation": "Kommandant"
+    },
+    {
       "source": "commander journal publication upload credential api key flight log",
       "translation": "Commander Journal Veröffentlichung Anmeldeinformationen API-Schlüssel hochladen Flugprotokoll"
     },
@@ -38371,6 +38391,10 @@
     {
       "source": "detail",
       "translation": "Detail"
+    },
+    {
+      "source": "dev-",
+      "translation": "Entwickler"
     },
     {
       "source": "development",
@@ -40173,6 +40197,10 @@
       "translation": "Bildschirm"
     },
     {
+      "source": "screenshot settings",
+      "translation": "Screenshot-Einstellungen"
+    },
+    {
       "source": "screenshots",
       "translation": "Screenshots"
     },
@@ -40263,6 +40291,10 @@
     {
       "source": "shipname",
       "translation": "Schiffsname"
+    },
+    {
+      "source": "shopping-history:",
+      "translation": "Einkaufsgeschichte:"
     },
     {
       "source": "short-tags",
@@ -42165,6 +42197,10 @@
       "translation": "{0}\"{1}\" %u"
     },
     {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Suche"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% abgeschlossen"
     },
@@ -42295,10 +42331,6 @@
     {
       "source": "{0}min",
       "translation": "{0}min"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -49055,6 +49087,10 @@
       "translation": "Colonización.Lista de deseos"
     },
     {
+      "source": "ColonizationTab",
+      "translation": "Ficha Colonización"
+    },
+    {
       "source": "Color",
       "translation": "color"
     },
@@ -51659,6 +51695,10 @@
       "translation": "Diagnóstico, Configuración, Tema y Guías permanecen en el área de utilidades. El pequeño botón de configuración de superposición al lado de las actividades admitidas abre solo los controles superpuestos de esa actividad."
     },
     {
+      "source": "DiagnosticsTab",
+      "translation": "Ficha Diagnóstico"
+    },
+    {
       "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
       "translation": "La rayado diagonal marca un organismo candidato proporcionado únicamente por los datos de predicción biológica, sin evidencia de diario Canonn o Spansh. Los segmentos de predicción sólidos muestran la banda inferior confiable; el segmento más oscuro posible muestra hasta qué punto puede extenderse el rango de recompensa. Cada segmento conserva su sólido esquema heredado. El marco del grupo de puntos abarca el recuento de señales biológicas reportadas por el cuerpo; Los PIP adicionales fuera de él son candidatos de género alternativos, no recompensas aditivas."
     },
@@ -53513,6 +53553,10 @@
     {
       "source": "ExplorationPois.AutoShow",
       "translation": "ExploraciónPois.AutoShow"
+    },
+    {
+      "source": "ExplorationTab",
+      "translation": "Ficha Exploración"
     },
     {
       "source": "Explore child boxels",
@@ -73075,8 +73119,8 @@
       "translation": "Los eventos de diario en vivo admitidos pueden actualizar EDSM el historial de vuelos, la ubicación, los créditos, los barcos y el equipamiento, la carga, los materiales, el inventario de mochilas y casilleros, las misiones, la ingeniería, los objetivos de la comunidad, las estadísticas, el estatus social y los descubrimientos."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Admitió nuevos eventos de revistas y datos validados de archivos complementarios de mercado, equipamiento, astilleros, flotas y archivos complementarios de NavRoute. El historial del diario de inicio y la actividad multitripulación no se cargan."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Se admitieron nuevos eventos de revistas, incluidos escaneos orgánicos de registros y muestras con coordenadas corporales verificadas y datos validados de archivos complementarios de mercado, equipamiento, astilleros, flotas y archivos complementarios de NavRoute. El equipamiento incluye los precios de los módulos cuando estén disponibles. El historial del diario de inicio y la actividad multitripulación no se cargan."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -74653,6 +74697,10 @@
     {
       "source": "The backup contains an invalid data key.",
       "translation": "La copia de seguridad contiene una clave de datos no válida."
+    },
+    {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "La copia de seguridad contiene valores de búsqueda de compras heredados y completos en conflicto."
     },
     {
       "source": "The backup contains data outside its permitted scope.",
@@ -80619,6 +80667,10 @@
       "translation": "coma"
     },
     {
+      "source": "commander",
+      "translation": "comandante"
+    },
+    {
       "source": "commander journal publication upload credential api key flight log",
       "translation": "publicación del diario del comandante carga de credenciales clave de API registro de vuelo"
     },
@@ -80829,6 +80881,10 @@
     {
       "source": "detail",
       "translation": "detalle"
+    },
+    {
+      "source": "dev-",
+      "translation": "desarrollador"
     },
     {
       "source": "development",
@@ -82631,6 +82687,10 @@
       "translation": "pantalla"
     },
     {
+      "source": "screenshot settings",
+      "translation": "configuración de captura de pantalla"
+    },
+    {
       "source": "screenshots",
       "translation": "capturas de pantalla"
     },
@@ -82721,6 +82781,10 @@
     {
       "source": "shipname",
       "translation": "nombre del barco"
+    },
+    {
+      "source": "shopping-history:",
+      "translation": "historial-de-compras:"
     },
     {
       "source": "short-tags",
@@ -84623,6 +84687,10 @@
       "translation": "{0}\"{1}\" %u"
     },
     {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Buscar"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% completado"
     },
@@ -84753,10 +84821,6 @@
     {
       "source": "{0}min",
       "translation": "{0}min"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -91513,6 +91577,10 @@
       "translation": "Colonisation.WishList"
     },
     {
+      "source": "ColonizationTab",
+      "translation": "Onglet Colonisation"
+    },
+    {
       "source": "Color",
       "translation": "couleur"
     },
@@ -94117,6 +94185,10 @@
       "translation": "Les diagnostics, les paramètres, le thème et les guides restent dans la zone des utilitaires. Le petit bouton des paramètres de superposition à côté des activités prises en charge ouvre uniquement les contrôles de superposition de cette activité."
     },
     {
+      "source": "DiagnosticsTab",
+      "translation": "Onglet Diagnostics"
+    },
+    {
       "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
       "translation": "Les hachures diagonales marquent un organisme candidat fourni uniquement par les données de prédiction biologique, sans preuve de journal Canonn ou Spansh. Les segments de prédiction solides montrent la bande inférieure fiable ; le segment le plus sombre possible montre jusqu'où la plage de récompense peut s'étendre. Chaque segment conserve sa silhouette solide héritée. Le cadre de groupe en pointillés couvre le nombre de signaux biologiques signalés par le corps ; les PIP supplémentaires en dehors de celui-ci sont des candidats de genre alternatifs, et non des récompenses additives."
     },
@@ -95971,6 +96043,10 @@
     {
       "source": "ExplorationPois.AutoShow",
       "translation": "ExplorationPois.AutoShow"
+    },
+    {
+      "source": "ExplorationTab",
+      "translation": "Onglet Exploration"
     },
     {
       "source": "Explore child boxels",
@@ -115533,8 +115609,8 @@
       "translation": "Les événements du journal en direct pris en charge peuvent mettre à jour EDSM l'historique des vols, l'emplacement, les crédits, les navires et les chargements, la cargaison, les matériaux, l'inventaire des sacs à dos et des casiers, les missions, l'ingénierie, les objectifs communautaires, les statistiques, le statut social et les découvertes."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Prise en charge de nouveaux événements de journal et validation des données du marché, des pourvoiries, du chantier naval, des matériaux de transport de flotte et des fichiers compagnons NavRoute. L’historique du journal de démarrage et l’activité multi-équipage ne sont pas téléchargés."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Prise en charge de nouveaux événements de journal, y compris des analyses organiques de journaux et d'échantillons avec des coordonnées corporelles vérifiées et des données validées sur le marché, les pourvoiries, le chantier naval, les matériaux de transport de flotte et les fichiers compagnons NavRoute. La pourvoirie comprend les prix des modules lorsqu'ils sont disponibles. L’historique du journal de démarrage et l’activité multi-équipage ne sont pas téléchargés."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -117111,6 +117187,10 @@
     {
       "source": "The backup contains an invalid data key.",
       "translation": "La sauvegarde contient une clé de données non valide."
+    },
+    {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "La sauvegarde contient des valeurs de recherche d'achats complètes et héritées contradictoires."
     },
     {
       "source": "The backup contains data outside its permitted scope.",
@@ -123077,6 +123157,10 @@
       "translation": "virgule"
     },
     {
+      "source": "commander",
+      "translation": "commandant"
+    },
+    {
       "source": "commander journal publication upload credential api key flight log",
       "translation": "publication du journal du commandant télécharger les informations d'identification clé API journal de vol"
     },
@@ -123287,6 +123371,10 @@
     {
       "source": "detail",
       "translation": "détail"
+    },
+    {
+      "source": "dev-",
+      "translation": "développement-"
     },
     {
       "source": "development",
@@ -125089,6 +125177,10 @@
       "translation": "écran"
     },
     {
+      "source": "screenshot settings",
+      "translation": "paramètres de capture d'écran"
+    },
+    {
       "source": "screenshots",
       "translation": "captures d'écran"
     },
@@ -125179,6 +125271,10 @@
     {
       "source": "shipname",
       "translation": "nom du navire"
+    },
+    {
+      "source": "shopping-history:",
+      "translation": "historique d'achat :"
     },
     {
       "source": "short-tags",
@@ -127081,6 +127177,10 @@
       "translation": "{0}\"{1}\" %u"
     },
     {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Recherche"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% terminé"
     },
@@ -127211,10 +127311,6 @@
     {
       "source": "{0}min",
       "translation": "{0}min"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -133971,6 +134067,10 @@
       "translation": "Colonização.WishList"
     },
     {
+      "source": "ColonizationTab",
+      "translation": "Aba Colonização"
+    },
+    {
       "source": "Color",
       "translation": "cor"
     },
@@ -136575,6 +136675,10 @@
       "translation": "Diagnósticos, Configurações, Tema e Guias permanecem na área de utilidades. O pequeno botão de configurações de sobreposição ao lado das atividades suportadas abre apenas os controles de sobreposição dessa atividade."
     },
     {
+      "source": "DiagnosticsTab",
+      "translation": "Guia Diagnóstico"
+    },
+    {
       "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
       "translation": "A eclosão diagonal marca um candidato a organismo fornecido apenas pelos dados de previsão biológica, sem evidência de diário, Canonn ou Spansh. Segmentos de previsão sólidos mostram a banda inferior confiável; o segmento mais escuro possível mostra até que ponto a faixa de recompensa pode se estender. Cada segmento mantém seu contorno sólido legado. O quadro de grupo pontilhado abrange a contagem de sinais biológicos relatados pelo corpo; PIPs adicionais fora dele são candidatos a gêneros alternativos, e não recompensas aditivas."
     },
@@ -138429,6 +138533,10 @@
     {
       "source": "ExplorationPois.AutoShow",
       "translation": "ExploraçãoPois.AutoShow"
+    },
+    {
+      "source": "ExplorationTab",
+      "translation": "Guia Exploração"
     },
     {
       "source": "Explore child boxels",
@@ -157991,8 +158099,8 @@
       "translation": "Os eventos de diário ao vivo suportados podem atualizar EDSM histórico de voo, localização, créditos, navios e carregamentos, carga, materiais, inventário de mochilas e armários, missões, engenharia, objetivos da comunidade, estatísticas, status social e descobertas."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Apoiou novos eventos de diário e dados validados de mercado, equipamento, estaleiro, materiais de transporte de frota e dados de arquivo complementar NavRoute. O histórico do diário de inicialização e a atividade multitripulação não são carregados."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Apoiou novos eventos de diário, incluindo varreduras orgânicas de registros e amostras com coordenadas corporais verificadas e dados validados de mercado, equipamento, estaleiro, materiais de transportador de frota e dados de arquivo complementar NavRoute. O equipamento inclui preços de módulos, quando disponíveis. O histórico do diário de inicialização e a atividade multitripulação não são carregados."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -159569,6 +159677,10 @@
     {
       "source": "The backup contains an invalid data key.",
       "translation": "O backup contém uma chave de dados inválida."
+    },
+    {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "O backup contém valores de pesquisa de compras inteiros e legados conflitantes."
     },
     {
       "source": "The backup contains data outside its permitted scope.",
@@ -165535,6 +165647,10 @@
       "translation": "vírgula"
     },
     {
+      "source": "commander",
+      "translation": "comandante"
+    },
+    {
       "source": "commander journal publication upload credential api key flight log",
       "translation": "publicação do diário do comandante carregar credencial registro de voo da chave da API"
     },
@@ -165745,6 +165861,10 @@
     {
       "source": "detail",
       "translation": "detalhe"
+    },
+    {
+      "source": "dev-",
+      "translation": "dev-"
     },
     {
       "source": "development",
@@ -167547,6 +167667,10 @@
       "translation": "tela"
     },
     {
+      "source": "screenshot settings",
+      "translation": "configurações de captura de tela"
+    },
+    {
       "source": "screenshots",
       "translation": "capturas de tela"
     },
@@ -167637,6 +167761,10 @@
     {
       "source": "shipname",
       "translation": "nome do navio"
+    },
+    {
+      "source": "shopping-history:",
+      "translation": "histórico de compras:"
     },
     {
       "source": "short-tags",
@@ -169539,6 +169667,10 @@
       "translation": "{0}\"{1}\" %u"
     },
     {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Pesquisa"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% concluído"
     },
@@ -169669,10 +169801,6 @@
     {
       "source": "{0}min",
       "translation": "{0}min"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -176429,6 +176557,10 @@
       "translation": "Колонизация.Список желаний"
     },
     {
+      "source": "ColonizationTab",
+      "translation": "Вкладка «Колонизация»"
+    },
+    {
       "source": "Color",
       "translation": "цвет"
     },
@@ -179033,6 +179165,10 @@
       "translation": "Диагностика, настройки, темы и руководства остаются в области утилит. Небольшая кнопка настроек наложения рядом с поддерживаемыми действиями открывает только элементы управления наложением этого действия."
     },
     {
+      "source": "DiagnosticsTab",
+      "translation": "Вкладка «Диагностика»"
+    },
+    {
       "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
       "translation": "Диагональная штриховка отмечает организм-кандидат, предоставленный только на основе данных биологического прогноза, без журнальных доказательств Canonn или Spansh. Сплошные сегменты прогноза показывают надежную нижнюю полосу; более темный возможный сегмент показывает, насколько высоко может простираться диапазон вознаграждения. Каждый сегмент сохраняет свой устаревший сплошной контур. Пунктирная групповая рамка охватывает количество биологических сигналов, сообщаемых организмом; дополнительные PIP за его пределами являются альтернативными кандидатами на род, а не аддитивными вознаграждениями."
     },
@@ -180887,6 +181023,10 @@
     {
       "source": "ExplorationPois.AutoShow",
       "translation": "ИсследованиеPois.AutoShow"
+    },
+    {
+      "source": "ExplorationTab",
+      "translation": "Вкладка «Исследование»"
     },
     {
       "source": "Explore child boxels",
@@ -200449,8 +200589,8 @@
       "translation": "Поддерживаемые события живого журнала могут обновлять EDSM историю полетов, местоположение, кредиты, корабли и снаряжение, груз, материалы, инвентарь рюкзака и шкафчика, миссии, инженерное дело, цели сообщества, статистику, социальный статус и открытия."
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "Поддерживаются новые события журнала и проверенные данные о рынке, оснащении, верфи, материалах для авианосцев и сопутствующих файлах NavRoute. История журнала запуска и деятельность многочленного экипажа не загружаются."
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "Поддерживаются новые события журнала, включая органическое сканирование журналов и образцов с проверенными координатами тела, а также проверенные данные о рынке, оборудовании, верфи, материалах для авианосцев и сопутствующих файлах NavRoute. Оснащение включает в себя цены на модули, если таковые имеются. История журнала запуска и деятельность многочленного экипажа не загружаются."
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -202027,6 +202167,10 @@
     {
       "source": "The backup contains an invalid data key.",
       "translation": "Резервная копия содержит неверный ключ данных."
+    },
+    {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "Резервная копия содержит конфликтующие целые и устаревшие значения поиска покупок."
     },
     {
       "source": "The backup contains data outside its permitted scope.",
@@ -207993,6 +208137,10 @@
       "translation": "запятая"
     },
     {
+      "source": "commander",
+      "translation": "командир"
+    },
+    {
       "source": "commander journal publication upload credential api key flight log",
       "translation": "публикация в журнале командира загрузка учетных данных ключ API журнал полетов"
     },
@@ -208203,6 +208351,10 @@
     {
       "source": "detail",
       "translation": "деталь"
+    },
+    {
+      "source": "dev-",
+      "translation": "Дев-"
     },
     {
       "source": "development",
@@ -210005,6 +210157,10 @@
       "translation": "экран"
     },
     {
+      "source": "screenshot settings",
+      "translation": "настройки скриншота"
+    },
+    {
       "source": "screenshots",
       "translation": "скриншоты"
     },
@@ -210095,6 +210251,10 @@
     {
       "source": "shipname",
       "translation": "название корабля"
+    },
+    {
+      "source": "shopping-history:",
+      "translation": "история покупок:"
     },
     {
       "source": "short-tags",
@@ -211997,6 +212157,10 @@
       "translation": "{0}\"{1}\" %u"
     },
     {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Поиск"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% выполнено"
     },
@@ -212127,10 +212291,6 @@
     {
       "source": "{0}min",
       "translation": "{0}мин"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -218887,6 +219047,10 @@
       "translation": "殖民.愿望清单"
     },
     {
+      "source": "ColonizationTab",
+      "translation": "殖民标签"
+    },
+    {
       "source": "Color",
       "translation": "颜色"
     },
@@ -221491,6 +221655,10 @@
       "translation": "诊断、设置、主题和指南保留在实用程序区域中。支持的活动旁边的小覆盖设置按钮仅打开该活动的覆盖控件。"
     },
     {
+      "source": "DiagnosticsTab",
+      "translation": "诊断选项卡"
+    },
+    {
       "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
       "translation": "对角线阴影标记仅由生物学预测数据提供的候选生物体，没有期刊Canonn或Spansh证据。可靠的预测段显示了可靠的下限；较暗的可能部分显示奖励范围可能扩大到多高。每个部分都保留了其传统的实体轮廓。虚线组框涵盖了身体报告的生物信号计数；它之外的其他 PIP 是替代属候选者，而不是附加奖励。"
     },
@@ -223345,6 +223513,10 @@
     {
       "source": "ExplorationPois.AutoShow",
       "translation": "ExplorationPois.AutoShow"
+    },
+    {
+      "source": "ExplorationTab",
+      "translation": "探索选项卡"
     },
     {
       "source": "Explore child boxels",
@@ -242907,8 +243079,8 @@
       "translation": "支持的实时日志事件可以更新 EDSM 飞行历史记录、位置、积分、船舶和装载、货物、材料、背包和储物柜库存、任务、工程、社区目标、统计数据、社会地位和发现。"
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "支持新的期刊活动并验证市场、舾装、造船厂、舰队运输材料和 NavRoute 配套文件数据。不会上传启动日志历史记录和多人活动。"
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "支持新的日志事件，包括经过验证的身体坐标的有机日志和样本扫描，以及经过验证的市场、舾装、造船厂、舰队航母材料和 NavRoute 配套文件数据。装备包括可用的模块价格。不会上传启动日志历史记录和多人活动。"
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -244485,6 +244657,10 @@
     {
       "source": "The backup contains an invalid data key.",
       "translation": "备份包含无效的数据密钥。"
+    },
+    {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "备份包含冲突的整体购物搜索值和旧购物搜索值。"
     },
     {
       "source": "The backup contains data outside its permitted scope.",
@@ -250451,6 +250627,10 @@
       "translation": "逗号"
     },
     {
+      "source": "commander",
+      "translation": "指挥官"
+    },
+    {
       "source": "commander journal publication upload credential api key flight log",
       "translation": "指挥官日志出版物上传凭证 API 密钥飞行日志"
     },
@@ -250661,6 +250841,10 @@
     {
       "source": "detail",
       "translation": "细节"
+    },
+    {
+      "source": "dev-",
+      "translation": "开发-"
     },
     {
       "source": "development",
@@ -252463,6 +252647,10 @@
       "translation": "屏幕"
     },
     {
+      "source": "screenshot settings",
+      "translation": "截图设置"
+    },
+    {
       "source": "screenshots",
       "translation": "截图"
     },
@@ -252553,6 +252741,10 @@
     {
       "source": "shipname",
       "translation": "船名"
+    },
+    {
+      "source": "shopping-history:",
+      "translation": "购物历史："
     },
     {
       "source": "short-tags",
@@ -254455,6 +254647,10 @@
       "translation": "{0}\"{1}\"%u"
     },
     {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/搜索"
+    },
+    {
       "source": "{0}% complete",
       "translation": "{0}% 完成"
     },
@@ -254585,10 +254781,6 @@
     {
       "source": "{0}min",
       "translation": "{0}min"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "{0}r{1}"
     },
     {
       "source": "{0}x",
@@ -261345,6 +261537,10 @@
       "translation": "* COLONIZATION.WISHLIST >>>!"
     },
     {
+      "source": "ColonizationTab",
+      "translation": "* COLONIZATIONTAB >>>!"
+    },
+    {
       "source": "Color",
       "translation": "* COLOR >>>!"
     },
@@ -263949,6 +264145,10 @@
       "translation": "* DIAGNOSTICS, SETTINGS, THEME, AND GUIDES REMAIN IN THE UTILITY AREA. THE SMALL OVERLAY-SETTINGS BUTTON BESIDE SUPPORTED ACTIVITIES OPENS ONLY THAT ACTIVITY'S OVERLAY CONTROLS. >>>!"
     },
     {
+      "source": "DiagnosticsTab",
+      "translation": "* DIAGNOSTICSTAB >>>!"
+    },
+    {
       "source": "Diagonal hatching marks an organism candidate supplied only by the biology prediction data, without journal, Canonn, or Spansh evidence. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
       "translation": "* DIAGONAL HATCHING MARKS AN ORGANISM CANDIDATE SUPPLIED ONLY BY THE BIOLOGY PREDICTION DATA, WITHOUT JOURNAL, CANONN, OR SPANSH EVIDENCE. SOLID PREDICTION SEGMENTS SHOW THE DEPENDABLE LOWER BAND; THE DARKER POSSIBLE SEGMENT SHOWS HOW HIGH THE REWARD RANGE MAY EXTEND. EACH SEGMENT RETAINS ITS LEGACY SOLID OUTLINE. THE DOTTED GROUP FRAME SPANS THE BODY'S REPORTED BIOLOGICAL SIGNAL COUNT; ADDITIONAL PIPS OUTSIDE IT ARE ALTERNATIVE GENUS CANDIDATES, NOT ADDITIVE REWARDS. >>>!"
     },
@@ -265803,6 +266003,10 @@
     {
       "source": "ExplorationPois.AutoShow",
       "translation": "* EXPLORATIONPOIS.AUTOSHOW >>>!"
+    },
+    {
+      "source": "ExplorationTab",
+      "translation": "* EXPLORATIONTAB >>>!"
     },
     {
       "source": "Explore child boxels",
@@ -285365,8 +285569,8 @@
       "translation": "* SUPPORTED LIVE JOURNAL EVENTS CAN UPDATE EDSM FLIGHT HISTORY, LOCATION, CREDITS, SHIPS AND LOADOUTS, CARGO, MATERIALS, BACKPACK AND LOCKER INVENTORY, MISSIONS, ENGINEERING, COMMUNITY GOALS, STATISTICS, SOCIAL STATUS, AND DISCOVERIES. >>>!"
     },
     {
-      "source": "Supported new journal events and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Startup journal history and multicrew activity are not uploaded.",
-      "translation": "* SUPPORTED NEW JOURNAL EVENTS AND VALIDATED MARKET, OUTFITTING, SHIPYARD, FLEET CARRIER MATERIALS, AND NAVROUTE COMPANION-FILE DATA. STARTUP JOURNAL HISTORY AND MULTICREW ACTIVITY ARE NOT UPLOADED. >>>!"
+      "source": "Supported new journal events, including organic Log and Sample scans with verified body coordinates, and validated Market, Outfitting, Shipyard, Fleet Carrier Materials, and NavRoute companion-file data. Outfitting includes module prices when available. Startup journal history and multicrew activity are not uploaded.",
+      "translation": "* SUPPORTED NEW JOURNAL EVENTS, INCLUDING ORGANIC LOG AND SAMPLE SCANS WITH VERIFIED BODY COORDINATES, AND VALIDATED MARKET, OUTFITTING, SHIPYARD, FLEET CARRIER MATERIALS, AND NAVROUTE COMPANION-FILE DATA. OUTFITTING INCLUDES MODULE PRICES WHEN AVAILABLE. STARTUP JOURNAL HISTORY AND MULTICREW ACTIVITY ARE NOT UPLOADED. >>>!"
     },
     {
       "source": "Supported on Windows 10 or newer. This free wireless route requires the PC to run Steam and SteamVR on the same local network.",
@@ -286943,6 +287147,10 @@
     {
       "source": "The backup contains an invalid data key.",
       "translation": "* THE BACKUP CONTAINS AN INVALID DATA KEY. >>>!"
+    },
+    {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "* THE BACKUP CONTAINS CONFLICTING WHOLE AND LEGACY SHOPPING SEARCH VALUES. >>>!"
     },
     {
       "source": "The backup contains data outside its permitted scope.",
@@ -292909,6 +293117,10 @@
       "translation": "* COMMA >>>!"
     },
     {
+      "source": "commander",
+      "translation": "* COMMANDER >>>!"
+    },
+    {
       "source": "commander journal publication upload credential api key flight log",
       "translation": "* COMMANDER JOURNAL PUBLICATION UPLOAD CREDENTIAL API KEY FLIGHT LOG >>>!"
     },
@@ -293119,6 +293331,10 @@
     {
       "source": "detail",
       "translation": "* DETAIL >>>!"
+    },
+    {
+      "source": "dev-",
+      "translation": "* DEV- >>>!"
     },
     {
       "source": "development",
@@ -294921,6 +295137,10 @@
       "translation": "* SCREEN >>>!"
     },
     {
+      "source": "screenshot settings",
+      "translation": "* SCREENSHOT SETTINGS >>>!"
+    },
+    {
       "source": "screenshots",
       "translation": "* SCREENSHOTS >>>!"
     },
@@ -295011,6 +295231,10 @@
     {
       "source": "shipname",
       "translation": "* SHIPNAME >>>!"
+    },
+    {
+      "source": "shopping-history:",
+      "translation": "* SHOPPING-HISTORY: >>>!"
     },
     {
       "source": "short-tags",
@@ -296913,6 +297137,10 @@
       "translation": "* {0}\"{1}\" %U >>>!"
     },
     {
+      "source": "{0}#/{1}/Search",
+      "translation": "* {0}#/{1}/SEARCH >>>!"
+    },
+    {
       "source": "{0}% complete",
       "translation": "* {0}% COMPLETE >>>!"
     },
@@ -297043,10 +297271,6 @@
     {
       "source": "{0}min",
       "translation": "* {0}MIN >>>!"
-    },
-    {
-      "source": "{0}r{1}",
-      "translation": "* {0}R{1} >>>!"
     },
     {
       "source": "{0}x",

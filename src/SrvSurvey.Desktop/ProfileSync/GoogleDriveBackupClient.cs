@@ -216,7 +216,9 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
 
     /// <summary>Downloads and bounds-checks a backup before parsing it.</summary>
     public async Task<ProfileSnapshot> DownloadAsync(string id, CancellationToken cancellationToken) =>
-        ProfileSnapshot.Parse(await DownloadBytesAsync(id, cancellationToken).ConfigureAwait(false));
+        ProfileSyncStore.ValidateScope(
+            ProfileSnapshot.Parse(await DownloadBytesAsync(id, cancellationToken).ConfigureAwait(false))
+        );
 
     /// <summary>Preserves the exact cloud file after size and format validation.</summary>
     public async Task<byte[]> DownloadBytesAsync(string id, CancellationToken cancellationToken)
@@ -282,6 +284,7 @@ internal sealed class GoogleDriveBackupClient : IGoogleDriveBackupClient
     /// <summary>Appends an immutable snapshot and retains ten successful backups per machine.</summary>
     public async Task UploadAsync(ProfileSnapshot snapshot, CancellationToken cancellationToken)
     {
+        snapshot = ProfileSyncStore.ValidateScope(snapshot);
         byte[] bytes = snapshot.Serialize();
         _ = ProfileSnapshot.Parse(bytes);
         string name = $"srvsurvey-profile-v1-{snapshot.DeviceId}-{Guid.NewGuid():N}.json";

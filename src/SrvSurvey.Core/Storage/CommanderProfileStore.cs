@@ -17,6 +17,22 @@ namespace SrvSurvey.Core.Storage;
 public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearchProfileStore
 {
     private const string ExplorationRewardsBySystemProperty = "explRewardsBySystem";
+    private const string ExplorationRewardsProperty = "explRewards";
+    private const string DistanceTravelledProperty = "distanceTravelled";
+    private const string JumpCountProperty = "countJumps";
+    private const string ScanCountProperty = "countScans";
+    private const string DssCountProperty = "countDSS";
+    private const string LandedCountProperty = "countLanded";
+    private static readonly HashSet<string> ExplorationFields = new(StringComparer.Ordinal)
+    {
+        ExplorationRewardsBySystemProperty,
+        ExplorationRewardsProperty,
+        DistanceTravelledProperty,
+        JumpCountProperty,
+        ScanCountProperty,
+        DssCountProperty,
+        LandedCountProperty,
+    };
     private const string ActiveProperty = "active";
     private const string ActiveJourneyPropertyName = "activeJourney";
     private const string RadiusProperty = "radius";
@@ -33,6 +49,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         return Path.Combine(ProfileDirectory, $"{frontierId}-{mode}.json");
     }
 
+    /// <summary>Loads Commander state and distinguishes missing exploration totals from explicit saved zero values.</summary>
     public async Task<CommanderProfileLoadResult> LoadAsync(
         string frontierId,
         bool isOdyssey,
@@ -72,12 +89,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             GetString(root, "commander"),
             GetBoolean(root, "isOdyssey") ?? isOdyssey,
             new ExplorationSnapshot(
-                GetInt64(root, "explRewards") ?? 0,
-                GetDouble(root, "distanceTravelled") ?? 0,
-                GetInt32(root, "countJumps") ?? 0,
-                GetInt32(root, "countScans") ?? 0,
-                GetInt32(root, "countDSS") ?? 0,
-                GetInt32(root, "countLanded") ?? 0,
+                GetInt64(root, ExplorationRewardsProperty) ?? 0,
+                GetDouble(root, DistanceTravelledProperty) ?? 0,
+                GetInt32(root, JumpCountProperty) ?? 0,
+                GetInt32(root, ScanCountProperty) ?? 0,
+                GetInt32(root, DssCountProperty) ?? 0,
+                GetInt32(root, LandedCountProperty) ?? 0,
                 ReadExplorationRewardsBySystem(root)
             ),
             ReadExobiology(root),
@@ -92,7 +109,10 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             GetString(root, "edsmApiKey"),
             GetBoolean(root, "autoResetExplorationValue") ?? false
         );
-        return new CommanderProfileLoadResult(path, true, data, null);
+        return new CommanderProfileLoadResult(path, true, data, null)
+        {
+            HasExplorationTotals = root.Any(field => ExplorationFields.Contains(field.Key)),
+        };
     }
 
     public async Task SaveExplorationAsync(
@@ -110,12 +130,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 isOdyssey,
                 root =>
                 {
-                    root["explRewards"] = exploration.EstimatedRewards;
-                    root["distanceTravelled"] = exploration.DistanceTravelled;
-                    root["countJumps"] = exploration.JumpCount;
-                    root["countScans"] = exploration.ScanCount;
-                    root["countDSS"] = exploration.DetailedSurfaceScanCount;
-                    root["countLanded"] = exploration.LandedBodyCount;
+                    root[ExplorationRewardsProperty] = exploration.EstimatedRewards;
+                    root[DistanceTravelledProperty] = exploration.DistanceTravelled;
+                    root[JumpCountProperty] = exploration.JumpCount;
+                    root[ScanCountProperty] = exploration.ScanCount;
+                    root[DssCountProperty] = exploration.DetailedSurfaceScanCount;
+                    root[LandedCountProperty] = exploration.LandedBodyCount;
                     WriteExplorationRewardsBySystem(root, exploration);
                 },
                 cancellationToken
@@ -1022,4 +1042,7 @@ public sealed record CommanderProfileData(
 public sealed record CommanderProfileLoadResult(string Path, bool Exists, CommanderProfileData? Data, string? Error)
 {
     public bool IsSuccess => Data is not null;
+
+    /// <summary>Distinguishes saved exploration progress, including zero totals, from a preferences-only restore.</summary>
+    public bool HasExplorationTotals { get; init; }
 }

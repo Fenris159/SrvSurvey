@@ -25,6 +25,68 @@ public sealed partial class SystemSurveyViewModelTests : IDisposable
         Assert.Same(BiologySurveyViewModel.Empty, viewModel.BiologySurveyDisplay);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DssGroupsOutstandingRingsUnderTheirBodyUntilItsWorkIsComplete(bool bodyMappedFirst)
+    {
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        viewModel.HighlightDssCandidates = false;
+        viewModel.SkipRingsForDss = false;
+        viewModel.ApplyUpdate([Parse(RingedBodyScan)], new EliteStatus());
+        if (bodyMappedFirst)
+        {
+            viewModel.ApplyUpdate([DssComplete("Test 1", 1)], null);
+        }
+
+        SurveyBodyReferenceViewModel body = Assert.Single(viewModel.DssBodies);
+        Assert.Equal("1", body.Name);
+        Assert.Equal((true, true, true), (body.HasUnscannedRingA, body.HasUnscannedRingB, body.HasUnscannedRingC));
+
+        viewModel.ApplyUpdate([DssComplete("Test 1 A Ring", 2)], null);
+        body = Assert.Single(viewModel.DssBodies);
+        Assert.Equal((false, true, true), (body.HasUnscannedRingA, body.HasUnscannedRingB, body.HasUnscannedRingC));
+
+        viewModel.SkipRingsForDss = true;
+        Assert.Equal(bodyMappedFirst ? 0 : 1, viewModel.DssBodies.Count);
+        if (!bodyMappedFirst)
+        {
+            body = Assert.Single(viewModel.DssBodies);
+            Assert.Equal(
+                (false, false, false),
+                (body.HasUnscannedRingA, body.HasUnscannedRingB, body.HasUnscannedRingC)
+            );
+        }
+
+        viewModel.SkipRingsForDss = false;
+        body = Assert.Single(viewModel.DssBodies);
+        Assert.Equal((false, true, true), (body.HasUnscannedRingA, body.HasUnscannedRingB, body.HasUnscannedRingC));
+        viewModel.ApplyUpdate([DssComplete("Test 1 B Ring", 3), DssComplete("Test 1 C Ring", 4)], null);
+        Assert.Equal(bodyMappedFirst ? 0 : 1, viewModel.DssBodies.Count);
+        if (!bodyMappedFirst)
+        {
+            body = Assert.Single(viewModel.DssBodies);
+            Assert.Equal(
+                (false, false, false),
+                (body.HasUnscannedRingA, body.HasUnscannedRingB, body.HasUnscannedRingC)
+            );
+            viewModel.ApplyUpdate([DssComplete("Test 1", 1)], null);
+        }
+
+        Assert.Empty(viewModel.DssBodies);
+    }
+
+    private static JournalEventEnvelope DssComplete(string name, int id) =>
+        Parse($$"""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"{{name}}","BodyID":{{id}}}""");
+
+    private const string RingedBodyScan = """
+        {"event":"Scan","ScanType":"Detailed","SystemAddress":42,"StarSystem":"Test",
+         "BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","Landable":true,
+         "Rings":[{"Name":"Test 1 A Ring","RingClass":"eRingClass_Rocky","InnerRad":100,"OuterRad":200},
+                  {"Name":"Test 1 B Ring","RingClass":"eRingClass_Icy","InnerRad":300,"OuterRad":400},
+                  {"Name":"Test 1 C Ring","RingClass":"eRingClass_Icy","InnerRad":500,"OuterRad":600}]}
+        """;
+
     [Fact]
     public void EmptyBodyInformationProvidesAStableNonNullBindingTarget()
     {
@@ -513,7 +575,9 @@ public sealed partial class SystemSurveyViewModelTests : IDisposable
 
         Assert.True(viewModel.MergeKnownSystemData(known));
 
-        Assert.Equal(["1rB", "1"], viewModel.DssBodies.Select(body => body.Name));
+        SurveyBodyReferenceViewModel body = Assert.Single(viewModel.DssBodies);
+        Assert.Equal("1", body.Name);
+        Assert.Equal((false, true, false), (body.HasUnscannedRingA, body.HasUnscannedRingB, body.HasUnscannedRingC));
     }
 
     [Fact]

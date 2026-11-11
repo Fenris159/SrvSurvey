@@ -104,7 +104,13 @@ public sealed class EdsmPublisher : IEdsmPublisher
                     && JournalEventEnvelope.TryParse(item.RawJson, out _, out _)
                     && !string.IsNullOrWhiteSpace(item.GameVersion)
                     && !string.IsNullOrWhiteSpace(item.GameBuild),
-                this.log
+                this.log,
+                item =>
+                    JournalUploadIdentity.CaptureObservation(
+                        item.EventName,
+                        item.RawJson,
+                        item.GameVersion + "\n" + item.GameBuild
+                    )
             );
         successfulUploads = new UploadSuccessLogAggregator(() => this.timeProvider.GetUtcNow());
         if (httpClient is null)
@@ -459,7 +465,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
         EdsmQueuedEvent[] batch,
         long generation,
         EdsmCredentials credentials,
-        List<string> warnings
+        List<string> warnings,
+        HashSet<string> acknowledgedContent
     )
     {
         if (outbox is null || !IsPublicationAuthorized(generation, credentials))
@@ -470,11 +477,12 @@ public sealed class EdsmPublisher : IEdsmPublisher
         {
             lock (stateSync)
             {
-                outbox.Complete(
-                    batch
-                        .Select(item => item.UploadIdentity)
-                        .Except(pending.Select(item => item.UploadIdentity), StringComparer.Ordinal)
-                );
+                string[] finished = batch
+                    .Select(item => item.UploadIdentity)
+                    .Except(pending.Select(item => item.UploadIdentity), StringComparer.Ordinal)
+                    .ToArray();
+                outbox.Complete(finished.Where(acknowledgedContent.Contains), contentAccepted: true);
+                outbox.Complete(finished.Where(id => !acknowledgedContent.Contains(id)));
                 outbox.DeferUntil(nextSendAt is { } next && next > outbox.NotBefore ? next : outbox.NotBefore);
             }
         }
@@ -682,6 +690,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
 
         EdsmQueuedEvent[] capturedBatch = batch.ToArray();
+        var acknowledgedContent = new HashSet<string>(StringComparer.Ordinal);
         try
         {
             outbox?.DeferUntil(timeProvider.GetUtcNow() + SendInterval);
@@ -717,7 +726,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
             using HttpResponseMessage response = await httpClient
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
-            return await InterpretResponseAsync(response, batch, warnings, cancellationToken).ConfigureAwait(false);
+            return await InterpretResponseAsync(response, batch, warnings, acknowledgedContent, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -747,7 +757,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
         finally
         {
-            CheckpointBatch(capturedBatch, generation, credentials, warnings);
+            CheckpointBatch(capturedBatch, generation, credentials, warnings, acknowledgedContent);
             lock (stateSync)
             {
                 activeBatchCount = 0;
@@ -840,6 +850,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         HttpResponseMessage response,
         List<EdsmQueuedEvent> batch,
         List<string> warnings,
+        HashSet<string> acknowledgedContent,
         CancellationToken cancellationToken
     )
     {
@@ -870,7 +881,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 cancellationToken
             )
             .ConfigureAwait(false);
-        return ProcessResponseBody(body, batch, warnings, rateLimitDelay);
+        return ProcessResponseBody(body, batch, warnings, rateLimitDelay, acknowledgedContent);
     }
 
     /// <summary>Applies EDSM result codes without treating deferred or uncertain events as acknowledged.</summary>
@@ -878,7 +889,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
         string body,
         List<EdsmQueuedEvent> batch,
         List<string> warnings,
-        TimeSpan? rateLimitDelay
+        TimeSpan? rateLimitDelay,
+        HashSet<string> acknowledgedContent
     )
     {
         if (string.IsNullOrWhiteSpace(body))
@@ -901,6 +913,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
         if (topClass == 5)
         {
+            acknowledgedContent.UnionWith(batch.Select(item => item.UploadIdentity));
             warnings.Add(
                 $"EDSM saved {batch.Count} event(s) for later processing (API status {topStatus}: {topMessage})."
             );
@@ -922,10 +935,9 @@ public sealed class EdsmPublisher : IEdsmPublisher
             throw new InvalidDataException("EDSM returned an incomplete per-event response.");
         }
 
-        (int accepted, List<EdsmQueuedEvent>? retryable, List<string>? failures) = ProcessEventResponses(
-            responseEvents,
-            batch
-        );
+        (List<EdsmQueuedEvent> accepted, List<EdsmQueuedEvent> retryable, List<string> failures) =
+            ProcessEventResponses(responseEvents, batch);
+        acknowledgedContent.UnionWith(accepted.Select(item => item.UploadIdentity));
 
         const int maximumReportedFailures = 10;
         warnings.AddRange(failures.Take(maximumReportedFailures));
@@ -947,15 +959,17 @@ public sealed class EdsmPublisher : IEdsmPublisher
             ScheduleNextAttempt(transientFailure: false, rateLimitDelay);
         }
 
-        return CreateSendResult(accepted, warnings);
+        return CreateSendResult(accepted.Count, warnings);
     }
 
-    private static (int Accepted, List<EdsmQueuedEvent> Retryable, List<string> Failures) ProcessEventResponses(
-        JArray responseEvents,
-        List<EdsmQueuedEvent> batch
-    )
+    /// <summary>Accepts per-event successes, retries unknown catalog items, and records definitive EDSM rejections.</summary>
+    private static (
+        List<EdsmQueuedEvent> Accepted,
+        List<EdsmQueuedEvent> Retryable,
+        List<string> Failures
+    ) ProcessEventResponses(JArray responseEvents, List<EdsmQueuedEvent> batch)
     {
-        int accepted = 0;
+        var accepted = new List<EdsmQueuedEvent>();
         var retryable = new List<EdsmQueuedEvent>();
         var failures = new List<string>();
         for (int index = 0; index < responseEvents.Count; index++)
@@ -966,9 +980,9 @@ public sealed class EdsmPublisher : IEdsmPublisher
             }
 
             int statusClass = status / 100;
-            if (statusClass is 1 or 5)
+            if (statusClass == 1)
             {
-                accepted++;
+                accepted.Add(batch[index]);
             }
             else if (status == 402)
             {

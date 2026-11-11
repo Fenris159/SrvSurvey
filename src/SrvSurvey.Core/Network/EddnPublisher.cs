@@ -57,6 +57,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
     private readonly Task outboxWriterTask;
     private readonly Action<string> log;
     private readonly string softwareVersion;
+    private readonly Func<DateTimeOffset> utcNow;
     private EddnSessionPublisher? session;
     private EddnSessionKey? sessionKey;
     private bool sharingEnabled;
@@ -102,6 +103,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.softwareVersion = softwareVersion.Trim();
+        this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         this.log = log ?? (_ => { });
         var transport = new EddnTransport(client, endpoint, $"SrvSurvey/{this.softwareVersion}");
         outbox = new EddnOutbox(storage, transport, WriteLog, utcNow, automaticProcessing);
@@ -285,7 +287,17 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             acceptedConsentGeneration = consentGeneration;
         }
 
-        EddnQueuedMessage item = EddnTransport.prepare(prepared.message, prepared.schemaRef, header);
+        EddnQueuedMessage item = EddnTransport.prepare(prepared.message, prepared.schemaRef, header, utcNow());
+        item.contentIdentity = JournalUploadIdentity.CaptureContentId(
+            prepared.message,
+            header.uploaderID.ToUpperInvariant()
+                + "\n"
+                + header.gameversion
+                + "\n"
+                + header.gamebuild
+                + "\n"
+                + item.schemaRef
+        );
         if (prepared.SourceRecordIdentity is not null)
         {
             byte[] digest = SHA256.HashData(

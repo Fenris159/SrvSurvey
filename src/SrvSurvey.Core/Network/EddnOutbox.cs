@@ -338,10 +338,7 @@ internal sealed class EddnOutbox : IDisposable
                 return false;
             }
 
-            if (
-                message.replayProtected
-                && (completedRecordIds.Contains(message.id) || pending.Any(item => item.id == message.id))
-            )
+            if (IsAlreadyCaptured(message))
             {
                 return true;
             }
@@ -377,6 +374,17 @@ internal sealed class EddnOutbox : IDisposable
 
         return true;
     }
+
+    /// <summary>Checks durable receipts and pending work for duplicate source records or eligible observation content.</summary>
+    private bool IsAlreadyCaptured(EddnQueuedMessage message) =>
+        (
+            message.replayProtected
+            && (completedRecordIds.Contains(message.id) || pending.Any(item => item.id == message.id))
+        )
+        || (
+            message.contentIdentity is { } content
+            && (completedRecordIds.Contains(content) || pending.Any(item => item.contentIdentity == content))
+        );
 
     /// <summary>Attaches privacy and restores files truncated by the legacy recovery limits before selecting eligible work.</summary>
     internal void SetUploadPrivacy(JournalUploadPrivacy policy)
@@ -607,7 +615,7 @@ internal sealed class EddnOutbox : IDisposable
         List<string> reloadLogs
     )
     {
-        string? persistenceLog = RememberCompletedRecord(next);
+        string? persistenceLog = RememberCompletedRecord(next, result?.isSuccess == true);
         pending.RemoveAll(item => item.id == next.id);
         persistenceLog ??= deleteMessage(next);
         if (pending.Count == 0)
@@ -899,7 +907,10 @@ internal sealed class EddnOutbox : IDisposable
         {
             throw new InvalidDataException("the queue contained an invalid or duplicate entry");
         }
-        if (item.replayProtected && completedRecordIds.Contains(item.id))
+        if (
+            (item.replayProtected && completedRecordIds.Contains(item.id))
+            || (item.contentIdentity is { } content && completedRecordIds.Contains(content))
+        )
         {
             File.Delete(path);
             return null;
@@ -1009,14 +1020,33 @@ internal sealed class EddnOutbox : IDisposable
         }
     }
 
-    /// <summary>Flushes a final outcome before removing its message and bounds acknowledged journal history.</summary>
-    private string? RememberCompletedRecord(EddnQueuedMessage item)
+    /// <summary>Records source completion separately from provider-confirmed content acceptance.</summary>
+    private List<Guid> RegisterCompletedReceipts(EddnQueuedMessage item, bool contentAccepted)
     {
-        if (!item.replayProtected || !completedRecordIds.Add(item.id))
+        var added = new List<Guid>();
+        if (item.replayProtected && completedRecordIds.Add(item.id))
+        {
+            added.Add(item.id);
+        }
+        if (contentAccepted && item.contentIdentity is { } content && completedRecordIds.Add(content))
+        {
+            added.Add(content);
+        }
+        return added;
+    }
+
+    /// <summary>Flushes a final outcome before removing its message and bounds acknowledged journal history.</summary>
+    private string? RememberCompletedRecord(EddnQueuedMessage item, bool contentAccepted)
+    {
+        List<Guid> added = RegisterCompletedReceipts(item, contentAccepted);
+        if (added.Count == 0)
         {
             return null;
         }
-        completedRecordOrder.Enqueue(item.id);
+        foreach (Guid receipt in added)
+        {
+            completedRecordOrder.Enqueue(receipt);
+        }
         while (completedRecordOrder.Count > MaximumReceipts)
         {
             completedRecordIds.Remove(completedRecordOrder.Dequeue());
@@ -1050,7 +1080,10 @@ internal sealed class EddnOutbox : IDisposable
                     long committed = file.Length / 16 * 16;
                     file.SetLength(committed);
                     file.Position = committed;
-                    file.Write(item.id.ToByteArray());
+                    foreach (Guid receipt in added)
+                    {
+                        file.Write(receipt.ToByteArray());
+                    }
                 }
                 file.Flush(true);
             }

@@ -211,6 +211,7 @@ internal static class OverlayEditorPreviewCatalog
         return new SystemSurveyOverlayViewModel(survey, OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
     }
 
+    /// <summary>Builds editor preview data using the same body and ring readiness model as live System status.</summary>
     private static SystemSurveyEditorPreviewState BuildSystemSurveyEditorState(string plotterName, string previewState)
     {
         BiologyRewardThresholds thresholds = Thresholds;
@@ -241,9 +242,18 @@ internal static class OverlayEditorPreviewCatalog
             FssBodies: CreateFssBodies(),
             DssBodies:
             [
-                new SurveyBodyReferenceViewModel("B 1", false, false),
-                new SurveyBodyReferenceViewModel("B 2 a", true, false),
-                new SurveyBodyReferenceViewModel("C 3", false, false),
+                new SurveyBodyReferenceViewModel("B 1", false, false) { HasUnscannedRingA = true },
+                new SurveyBodyReferenceViewModel("B 2 a", true, false)
+                {
+                    HasUnscannedRingA = true,
+                    HasUnscannedRingB = true,
+                },
+                new SurveyBodyReferenceViewModel("C 3", false, false)
+                {
+                    HasUnscannedRingA = true,
+                    HasUnscannedRingB = true,
+                    HasUnscannedRingC = true,
+                },
             ],
             BiologicalBodies:
             [

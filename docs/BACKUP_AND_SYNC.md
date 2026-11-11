@@ -22,10 +22,11 @@ Offline work remains local. A failed upload retains a local recovery snapshot an
 | Data | Handling |
 |---|---|
 | Themes, colors, typography, portable overlay visibility/behavior, cockpit-view options, shortcuts | Synchronized |
-| Last selected workspace and Mining, Surface Mining, Guardian and Fleet Carrier tabs | Synchronized |
-| Saved mining search filters/results, routes, navigation and mining bookmarks, Firegroups data, system/Guardian surveys, journeys, Codex records, saved Boxel searches | Synchronized |
-| Monitor choice, window/overlay positions and sizes, capture calibration, Wayland options, keyboard source, controller device, VR settings, sharing consent, local folders/voice choices | Backed up separately; restored only on the originating machine and operating system |
-| OAuth tokens, integration credentials, journals, live Commander state, queued API submissions, screenshot attachments, provider caches and logs | Excluded |
+| Last selected workspace and Mining, Surface Mining, Guardian, Fleet Carrier, Exploration, Colonization and Diagnostics tabs | Synchronized |
+| Saved mining search filters/results, routes, navigation and mining bookmarks, Firegroups data, system/Guardian surveys, journeys, Codex records, saved and active Boxel searches, empty-boxel records, local quest development data | Synchronized |
+| Colonization plans, shopping/wish lists, checked carriers, project focus, hidden plans and retained project scope; Exploration POI and auto-reset preferences | Synchronized |
+| Monitor choice, window/overlay positions and sizes, capture calibration, VR mode/VDXR overrides, Wayland options, keyboard source, controller device, preferred startup Commander, journal-folder configuration, sharing consent, screenshot configuration, local folders/voice choices | Backed up separately; restored only on the originating machine and operating system |
+| OAuth tokens, integration credentials, raw journals, live cargo/mission snapshots, exploration totals/history indexes, queued API submissions, screenshot attachments, rebuildable provider caches and logs | Excluded |
 
 Machine identities use a persisted installation ID associated with a hash of the OS machine identifier. Backups include that hash so the same computer can recover its hardware settings after an application reinstall, even when its local sync identity was lost. Raw OS identifiers are not sent to Google. Copying the settings folder to a different OS machine identifier creates a new identity rather than taking over the original machine's settings. Syncing Windows and Linux never restores the other platform's machine section. Reinstalling the OS may change that identifier and prevent hardware restoration. Without an OS identifier, only the originating installation can restore hardware settings. Portable data remains restorable on any computer.
 
@@ -41,11 +42,46 @@ The startup guard has a 45-second acquisition limit and honors cancellation. If 
 
 When Google explicitly reports expired or revoked authorization, SrvSurvey asks you to **Disconnect**, then **Link Google Drive** again. Failed refreshes preserve shared authorization, including a newer login saved by another Commander instance. Successful linking clears cached cloud history and selection before enabling account actions. A rejected publisher client setup produces a separate message rather than asking users to repeatedly re-link. Error descriptions and authorization tokens are excluded from diagnostics.
 
-Screenshot processing choices (including Steam processing, labels and original-file
-removal) are portable preferences. BMP sources, manually selected Steam screenshot
-folders, and the Journey PNG destination stay local to each computer. Those paths
-are restored only when explicitly restoring hardware settings from that same
-machine’s backup. This applies to both installation and Commander-specific settings.
+All screenshot configuration stays specific to each computer: enable switches,
+Steam processing, labels, original-file removal, source folders, and the Journey
+PNG destination. It is backed up in the machine section and restored only when
+explicitly restoring hardware settings from that same machine and operating
+system. Restoring portable data on another computer leaves its screenshot setup
+unchanged. This applies to both installation and Commander-specific settings.
+Screenshot image files and conversion queues are excluded from backups.
+
+Older backups that stored screenshot preferences in the portable section are
+upgraded when read. These settings become machine-specific; existing machine
+values take precedence. Obsolete portable deletion records are discarded so they
+cannot block subsequent backups. Other backup scope restrictions remain enforced.
+For restores staged by an older version, screenshot options that were portable
+are skipped. Re-select the backup to include them in an explicit same-machine
+restore.
+
+Commander profile documents mix user choices with credentials and live game
+state. Backups select only the Commander display name, Exploration auto-reset
+preference, active Journey reference, Boxel/sphere configuration and progress,
+and Ram Tah log progress. Integration keys and live exploration-value counters
+stay local. Colonization's API recovery queues and refresh catalogs are also
+excluded; shopping snapshots retain the prices and allocations needed to reopen
+the saved workspace. Each nullable shopping search is captured as one unit so
+clearing and reopening project tags preserves the latest search and wishlist
+across successive backups. Older flattened search records in existing sync baselines,
+imported backups, and staged restores are normalized before use. The upgrade preserves
+independent field-change history, including resolved edits after legacy null markers,
+and leaves the original snapshot unchanged. Contradictory whole-object and live-field
+values or normalized backups exceeding the 128 MiB limit are rejected before local
+files change. Each legacy path is hashed once to keep normalization work proportional
+to the input rather than the product of path length and device count.
+Local quest recovery archives are not backed up again.
+
+On a new computer, a preferences-only Commander profile does not count as saved
+exploration totals. The available journal bootstrap rebuilds missing exploration
+counters while preserving restored preferences and other saved progress. Totals
+already saved locally, including deliberate zero totals, are not replayed.
+
+Keep every linked computer updated before synchronizing backups with these
+additional settings. Older releases do not recognize all of the new sections.
 
 ## Recovery and history
 
@@ -73,5 +109,13 @@ The publisher must create a Google Cloud OAuth client before distributing Google
 Changing the Google project/client can change the application-data namespace, so preserve the published client for continuity. The HTTP integration uses resumable uploads for both small and larger backups, as recommended for larger transfers by [Google's upload documentation](https://developers.google.com/workspace/drive/api/guides/manage-uploads).
 
 ## Validation scope
+
+`ProfileSyncSettingsCatalog` declares a portable, machine-only, or excluded
+decision for every settings store. Exclusions carry an explicit reason. The
+inventory test discovers settings stores and consumers of the shared settings
+document API, and fails when a new store lacks a declaration. New sections belong
+in that catalog; additional files still require an explicit file policy and a
+restore behavior test. Safe Commander fields are listed separately so adding a
+preference cannot inadvertently include credentials or journal-derived history.
 
 Automated tests use isolated profile folders, an HTTP test handler and a real loopback OAuth callback. They cover consent/state/PKCE handling, cancellation, token renewal, download bounds, upload metadata/history, conflicts, deletion, older backup restoration, hardware isolation, malformed backups, and multiple running profile readers. Live Google account linking and cross-platform desktop testing require the publisher client and remain separate acceptance checks.

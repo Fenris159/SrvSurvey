@@ -40,6 +40,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDisposable, IAsyncDisposable
 {
+    internal static string PublicationSoftwareVersion { get; } =
+        ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly).ToString();
     private const string OverviewNavigationKey = "overview";
 
     private static readonly TimeSpan DefaultSystemBodyDataRetryDelay = TimeSpan.FromSeconds(30);
@@ -517,7 +519,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.inaraPublisher =
                 resolvedInaraPublisher
                 ?? new InaraPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     httpClient: externalNetworkClient,
                     log: message => resolvedApplicationLogService?.Append(message),
                     acceptedEventLog: new InaraAcceptedEventLog(
@@ -533,7 +535,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.edsmPublisher =
                 resolvedEdsmPublisher
                 ?? new EdsmPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     httpClient: externalNetworkClient,
                     log: message => resolvedApplicationLogService?.Append(message),
                     outboxDirectory: JournalUploadStorageDirectory
@@ -545,7 +547,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.eddnPublisher =
                 resolvedEddnPublisher
                 ?? new EddnCommanderPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     Path.Combine(AppDataPaths.JournalUploadDirectory, "eddn"),
                     Path.Combine(AppDataPaths.DataDirectory, "eddn-outbox-v1.json"),
                     client: externalNetworkClient,
@@ -559,7 +561,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.edAstroPublisher =
                 resolvedEdAstroPublisher
                 ?? new EdAstroPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     client: externalNetworkClient,
                     log: message => resolvedApplicationLogService?.Append(message),
                     outboxDirectory: JournalUploadStorageDirectory
@@ -572,7 +574,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             this.voxStellarPublisher =
                 resolvedVoxStellarPublisher
                 ?? new VoxStellarPublisher(
-                    (typeof(MainWindowViewModel).Assembly.GetName().Version ?? new Version(0, 0)).ToString(),
+                    PublicationSoftwareVersion,
                     IsDiagnosticReplay ? string.Empty : VoxStellarSharedKeyProvider.GetSharedKey(),
                     new VoxStellarPublisherOptions
                     {
@@ -1533,6 +1535,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         MiningWorkspace.SelectedTab = preferences.MiningTab;
         MineMap.SelectedTab = preferences.SurfaceMiningTab;
         Guardian.SelectedWorkspaceTabIndex = preferences.GuardianTab;
+        SelectedExplorationTabIndex = preferences.ExplorationTab;
+        Colonization.SelectedWorkspaceTabIndex = preferences.ColonizationTab;
+        SelectedDiagnosticsTabIndex = preferences.DiagnosticsTab;
         ICommand carrierTab = preferences.FleetCarrierTab switch
         {
             1 => FleetCarrierWorkspace.SelectSquadronTabCommand,
@@ -1552,7 +1557,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 MiningWorkspace.SelectedTab,
                 MineMap.SelectedTab,
                 Guardian.SelectedWorkspaceTabIndex,
-                (int)FleetCarrierWorkspace.SelectedTab
+                (int)FleetCarrierWorkspace.SelectedTab,
+                SelectedExplorationTabIndex,
+                Colonization.SelectedWorkspaceTabIndex,
+                SelectedDiagnosticsTabIndex
             )
         );
 
@@ -2999,6 +3007,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return result;
     }
 
+    /// <summary>Switches Commander services and restores saved state while retaining exploration bootstrap provenance.</summary>
     private async Task<bool> EnsureCommanderProfileAsync()
     {
         if (string.IsNullOrWhiteSpace(journalState.FrontierId))
@@ -3022,6 +3031,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             CancellationToken.None
         );
         projectionState.ProfileRestoredFromDisk = result.Data is not null && result.Exists;
+        projectionState.ProfileHasExplorationTotals = result.HasExplorationTotals;
         loadedSystemHistoryKey = null;
         loadedSystemBodyDataKey = null;
         ResetSystemBodyDataRetryContext();

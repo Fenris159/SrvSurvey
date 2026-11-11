@@ -2714,6 +2714,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         );
     }
 
+    /// <summary>Groups each body's remaining DSS work and unscanned rings into one candidate with destination highlighting.</summary>
     private IEnumerable<SurveyBodyReferenceViewModel> CreateDssCandidates(string? destination)
     {
         var completedBodyNames = snapshot
@@ -2722,38 +2723,33 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             .ToHashSet(StringComparer.Ordinal);
         foreach (SystemScanBodySnapshot? body in snapshot.Bodies.OrderBy(body => body.BodyId))
         {
-            if (body.IsDssComplete || !body.IsMappable)
+            if (!body.IsMappable)
             {
                 continue;
             }
 
-            foreach (string candidate in CreateRingDssCandidates(body, completedBodyNames))
+            SurveyBodyReferenceViewModel candidate = CreateBodyReference(body.ShortName, destination, body.BodyId) with
             {
-                yield return CreateBodyReference(candidate, destination, null);
-            }
-
-            if (!ShouldSkipBodyDssCandidate(body))
+                HasUnscannedRingA = IsRingUnscanned(body, completedBodyNames, 0),
+                HasUnscannedRingB = IsRingUnscanned(body, completedBodyNames, 1),
+                HasUnscannedRingC = IsRingUnscanned(body, completedBodyNames, 2),
+            };
+            if (candidate.HasUnscannedRings || !body.IsDssComplete && !ShouldSkipBodyDssCandidate(body))
             {
-                yield return CreateBodyReference(body.ShortName, destination, body.BodyId);
+                yield return candidate;
             }
         }
     }
 
-    private IEnumerable<string> CreateRingDssCandidates(SystemScanBodySnapshot body, HashSet<string> completedBodyNames)
+    /// <summary>Keeps a ring outstanding until its DSS record exists, respecting the Skip rings preference.</summary>
+    private bool IsRingUnscanned(SystemScanBodySnapshot body, HashSet<string> completedBodyNames, int index)
     {
-        if (SkipRingsForDss)
+        if (SkipRingsForDss || index >= body.Rings.Count)
         {
-            yield break;
+            return false;
         }
 
-        for (int index = 0; index < body.Rings.Count; index++)
-        {
-            SystemRingSnapshot ring = body.Rings[index];
-            if (!completedBodyNames.Contains(ring.Name))
-            {
-                yield return body.ShortName + "r" + (char)('A' + index);
-            }
-        }
+        return !completedBodyNames.Contains(body.Rings[index].Name);
     }
 
     private bool ShouldSkipBodyDssCandidate(SystemScanBodySnapshot body) =>
@@ -3256,4 +3252,13 @@ public sealed record FssBodyRowViewModel(
     public string GeologicalSignalsText => GeologicalSignalCount == 1 ? "1 GEO" : $"{GeologicalSignalCount:N0} GEO";
 }
 
-public sealed record SurveyBodyReferenceViewModel(string Name, bool IsDestination, bool IsLocalGroup);
+public sealed record SurveyBodyReferenceViewModel(string Name, bool IsDestination, bool IsLocalGroup)
+{
+    public bool HasUnscannedRingA { get; init; }
+
+    public bool HasUnscannedRingB { get; init; }
+
+    public bool HasUnscannedRingC { get; init; }
+
+    public bool HasUnscannedRings => HasUnscannedRingA || HasUnscannedRingB || HasUnscannedRingC;
+}

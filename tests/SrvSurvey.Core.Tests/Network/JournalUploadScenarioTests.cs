@@ -504,6 +504,7 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
         public bool FailResponseBody { get; init; }
         public Func<CancellationToken, Task>? BeforePost { get; init; }
         public string EdAstroEvents { get; init; } = "[\"Docked\"]";
+        public int EdsmEventStatus { get; init; } = 100;
 
         /// <summary>Captures actual provider request bodies for independent wire-contract assertions.</summary>
         public List<string> Posts { get; } = [];
@@ -559,7 +560,7 @@ public sealed partial class JournalUploadScenarioTests : IDisposable
                         + string.Join(',', Enumerable.Repeat("{\"eventStatus\":200}", count))
                         + "]}"
                     : "{\"msgnum\":100,\"events\":["
-                        + string.Join(',', Enumerable.Repeat("{\"msgnum\":100}", count))
+                        + string.Join(',', Enumerable.Repeat($"{{\"msgnum\":{EdsmEventStatus}}}", count))
                         + "]}";
             return new(status) { Content = new StringContent(response) };
         }
