@@ -1,4 +1,4 @@
-#requires -Version 7.0
+#requires -Version 7.2
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $installer = Join-Path $PSScriptRoot '..' 'Install-CameraBridge.ps1'
@@ -6,6 +6,8 @@ $fixtures = [Collections.Generic.List[string]]::new()
 $global:CameraInstallerTestProcesses = @()
 $global:CameraInstallerConflictPath = $null
 $global:CameraInstallerConflictReads = 0
+$global:CameraInstallerEditConfig = $false
+$global:CameraInstallerEditAt = 3
 
 # Process and filesystem boundaries are replaced only in this test process.
 # Production has no skip/force-process-check option.
@@ -15,7 +17,11 @@ function global:Get-Item {
     param([string] $LiteralPath, [switch] $Force)
     if ($global:CameraInstallerConflictPath -and $LiteralPath -ceq $global:CameraInstallerConflictPath) {
         $global:CameraInstallerConflictReads++
-        if ($global:CameraInstallerConflictReads -eq 2) {
+        if ($global:CameraInstallerEditConfig -and $global:CameraInstallerConflictReads -eq $global:CameraInstallerEditAt) {
+            $reference = if ($global:CameraInstallerEditAt -eq 2) { "proxy_d3d11=SrvSurveyCameraBridge.dll`r`n" } else { '' }
+            [IO.File]::AppendAllText($LiteralPath, "`r`n; external edit preserved`r`n$reference")
+        }
+        elseif (-not $global:CameraInstallerEditConfig -and $global:CameraInstallerConflictReads -eq 2) {
             [IO.File]::WriteAllText((Join-Path ([IO.Path]::GetDirectoryName($LiteralPath)) '.srvsurvey-camera-bridge-install.json'), 'foreign-file')
         }
     }
@@ -164,6 +170,36 @@ try {
     Require ((& $installer -GameDirectory $fixture.Game -Uninstall).State -eq 'Uninstalled') 'Legacy two-file installation could not be removed.'
     Require (Equal-Bytes ([IO.File]::ReadAllBytes($fixture.Config)) $simple) 'Legacy uninstall did not restore exact original configuration.'
 
+    $fixture = New-Fixture $simple
+    $selected = Join-Path $fixture.Package 'experimental.ini'
+    [IO.File]::WriteAllText($selected, "[Capture]`nValidated=1`n")
+    $processDirectory = [Environment]::CurrentDirectory
+    Push-Location $fixture.Package
+    try {
+        [Environment]::CurrentDirectory = $fixture.Root
+        $null = & $installer -GameDirectory '../game' -BridgeDirectory '.' -CaptureProfile './experimental.ini'
+        Require (Equal-Bytes ([IO.File]::ReadAllBytes((Join-Path $fixture.Game 'SrvSurveyCameraBridge.ini'))) ([IO.File]::ReadAllBytes($selected))) 'Relative profile did not resolve against the PowerShell location.'
+        $null = & $installer -GameDirectory '../game' -Uninstall
+    }
+    finally { [Environment]::CurrentDirectory = $processDirectory; Pop-Location }
+
+    foreach ($editAt in @(2, 3)) {
+        $global:CameraInstallerEditAt = $editAt
+        $fixture = New-Fixture $simple
+        $global:CameraInstallerConflictPath = $fixture.Config
+        $global:CameraInstallerConflictReads = 0
+        $global:CameraInstallerEditConfig = $true
+        try {
+            Expect-Failure { & $installer -GameDirectory $fixture.Game -BridgeDirectory $fixture.Package } 'backup preserved'
+        }
+        finally { $global:CameraInstallerConflictPath = $null; $global:CameraInstallerEditConfig = $false }
+        Require ([IO.File]::ReadAllText($fixture.Config).Contains('external edit preserved')) 'An external configuration edit was overwritten.'
+        Require ([IO.File]::ReadAllText($fixture.Config).Contains('proxy_d3d11=SrvSurveyCameraBridge.dll')) 'The reproduction did not retain the bridge reference.'
+        foreach ($name in @('SrvSurveyCameraBridge.dll', 'SrvSurveyCameraBridge.ini', 'SrvSurveyCameraBridge.paths.ini', '.srvsurvey-camera-bridge-install.json')) {
+            Require ([IO.File]::Exists((Join-Path $fixture.Game $name))) "Rollback removed referenced or recovery file: $name"
+        }
+    }
+
     Write-Output 'Camera installer: encoding round-trips, idempotence, ownership/refusal, running-game guard, rollback and explicit profile selection passed.'
 }
 finally {
@@ -171,5 +207,5 @@ finally {
     $global:CameraInstallerConflictPath = $null
     foreach ($root in $fixtures) { if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force } }
     Remove-Item Function:\Get-Process, Function:\Get-Item
-    Remove-Variable CameraInstallerTestProcesses, CameraInstallerConflictPath, CameraInstallerConflictReads -Scope Global
+    Remove-Variable CameraInstallerTestProcesses, CameraInstallerConflictPath, CameraInstallerConflictReads, CameraInstallerEditConfig, CameraInstallerEditAt -Scope Global
 }

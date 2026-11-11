@@ -6,6 +6,8 @@
 #include "../CameraProtocol.h"
 #include "../CockpitReference.h"
 #include "CapturedReferenceFixtures.h"
+#include <atomic>
+#include <thread>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -34,7 +36,10 @@ LONG CALLBACK DescribeException(PEXCEPTION_POINTERS info)
 void Require(bool condition, const char *message)
 {
     if (!condition)
+    {
+        std::cerr << "FAIL: " << message << std::endl;
         throw std::runtime_error(message);
+    }
 }
 void Check(HRESULT result, const char *message)
 {
@@ -61,6 +66,47 @@ template <typename T> struct Com
     T **Out() { return &value; }
     void Reset() { if (value) { value->Release(); value = nullptr; } }
 };
+// Delay the external COM boundary after Release0 but before the observer sees
+// its return. This deterministically drives the real reacquisition race.
+using NativeRelease = ULONG(STDMETHODCALLTYPE *)(ID3D11DeviceContext *);
+NativeRelease boundaryRelease = nullptr;
+HANDLE releaseReached = nullptr, releaseContinue = nullptr;
+std::atomic<bool> delayRelease{false};
+ULONG STDMETHODCALLTYPE DelayedRelease(ID3D11DeviceContext *context)
+{
+    ULONG references = boundaryRelease(context);
+    if (references == 0 && delayRelease.exchange(false))
+    {
+        SetEvent(releaseReached);
+        (void)WaitForSingleObject(releaseContinue, 5000);
+    }
+    return references;
+}
+
+void InstallReleaseBoundary()
+{
+    wchar_t system[MAX_PATH]{};
+    Require(GetSystemDirectoryW(system, MAX_PATH) > 0, "Cannot locate the native D3D11 library");
+    HMODULE native = LoadLibraryW((std::wstring(system) + L"\\d3d11.dll").c_str());
+    Require(native != nullptr, "Cannot load the native D3D11 library");
+    auto create = std::bit_cast<PFN_D3D11_CREATE_DEVICE>(GetProcAddress(native, "D3D11CreateDevice"));
+    Require(create != nullptr, "Cannot create the COM boundary fixture");
+    Com<ID3D11Device> device;
+    Com<ID3D11DeviceContext> context;
+    Check(create(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION,
+                 device.Out(), nullptr, context.Out()), "Cannot create the COM boundary device");
+    void **table = *reinterpret_cast<void ***>(context.value);
+    boundaryRelease = std::bit_cast<NativeRelease>(table[2]);
+    releaseReached = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    releaseContinue = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    Require(releaseReached && releaseContinue, "Cannot create release/reacquisition barriers");
+    DWORD previous = 0, ignored = 0;
+    Require(VirtualProtect(table + 2, sizeof(void *), PAGE_EXECUTE_READWRITE, &previous) != 0,
+            "Cannot instrument the COM boundary");
+    InterlockedExchangePointer(table + 2, std::bit_cast<void *>(&DelayedRelease));
+    (void)VirtualProtect(table + 2, sizeof(void *), previous, &ignored);
+}
+
 uint32_t Read32(const uint8_t *bytes)
 {
     uint32_t value = 0;
@@ -252,6 +298,7 @@ uint64_t ReceiveFrame(Scene &scene, Probe &probe)
             return sequence;
         Sleep(10);
     }
+    std::cerr << "FAIL: No verified live camera packet within seven seconds" << std::endl;
     throw std::runtime_error("No verified live camera packet within seven seconds");
 }
 } // namespace
@@ -261,14 +308,18 @@ int wmain(int argc, wchar_t **argv)
     try
     {
         AddVectoredExceptionHandler(1, DescribeException);
-        Require(argc >= 2 && argc <= 6, "Pass the built DLL path, optionally --present-test, --without-observer, --mapped-window or --catalog-layout");
+        Require(argc >= 2 && argc <= 9, "Pass the built DLL path, optionally --present-test, --without-observer, --mapped-window --catalog-layout, --omit-device-output, --swapchain-only or --concurrent-reacquire");
         bool presentTest = false, observerDisabled = false, mappedWindow = false, catalogLayout = false;
+        bool omitDevice = false, swapchainOnly = false, concurrentReacquire = false;
         for (int index = 2; index < argc; ++index)
         {
             if (std::wcscmp(argv[index], L"--present-test") == 0) presentTest = true;
             else if (std::wcscmp(argv[index], L"--without-observer") == 0) observerDisabled = true;
             else if (std::wcscmp(argv[index], L"--mapped-window") == 0) mappedWindow = true;
             else if (std::wcscmp(argv[index], L"--catalog-layout") == 0) catalogLayout = true;
+            else if (std::wcscmp(argv[index], L"--omit-device-output") == 0) omitDevice = true;
+            else if (std::wcscmp(argv[index], L"--swapchain-only") == 0) swapchainOnly = true;
+            else if (std::wcscmp(argv[index], L"--concurrent-reacquire") == 0) concurrentReacquire = true;
             else throw std::runtime_error("Unknown harness option");
         }
         HMODULE compiler = LoadLibraryW(L"d3dcompiler_47.dll");
@@ -329,6 +380,8 @@ int wmain(int argc, wchar_t **argv)
                 Require(WritePrivateProfileStringW(L"Layout", key, value, cachedIni.c_str()) != 0,
                         "Cannot write a declarative harness layout");
         }
+        if (concurrentReacquire)
+            InstallReleaseBoundary();
         HMODULE bridge = LoadLibraryW(dll.c_str());
         Require(bridge != nullptr, "Cannot load the built bridge DLL");
         auto create = std::bit_cast<PFN_D3D11_CREATE_DEVICE>(GetProcAddress(bridge, "D3D11CreateDevice"));
@@ -337,12 +390,6 @@ int wmain(int argc, wchar_t **argv)
         scene.catalogLayout = catalogLayout;
         scene.presentFlags = presentTest ? DXGI_PRESENT_TEST : 0;
         D3D_FEATURE_LEVEL level{};
-        std::cerr << "Phase: create real device without context output" << std::endl;
-        Check(create(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, scene.device.Out(), &level,
-                     nullptr), "Real D3D11 device-only creation failed");
-        scene.device->GetImmediateContext(scene.context.Out());
-        std::cerr << "Phase: immediate context acquired" << std::endl;
-        Require(scene.context.value != nullptr, "GetImmediateContext after omitted creation output failed");
         WNDCLASSW windowClass{};
         windowClass.lpfnWndProc = DefWindowProcW;
         windowClass.hInstance = GetModuleHandleW(nullptr);
@@ -358,12 +405,6 @@ int wmain(int argc, wchar_t **argv)
             ShowWindow(window, SW_SHOWNOACTIVATE);
             UpdateWindow(window);
         }
-        Com<IDXGIDevice> dxgi;
-        Com<IDXGIAdapter> adapter;
-        Com<IDXGIFactory> factory;
-        Check(scene.device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void **>(dxgi.Out())), "DXGI device unavailable");
-        Check(dxgi->GetAdapter(adapter.Out()), "DXGI adapter unavailable");
-        Check(adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void **>(factory.Out())), "DXGI factory unavailable");
         DXGI_SWAP_CHAIN_DESC description{};
         description.BufferDesc = {640, 480, {60, 1}, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
                                   DXGI_MODE_SCALING_UNSPECIFIED};
@@ -373,8 +414,38 @@ int wmain(int argc, wchar_t **argv)
         description.OutputWindow = window;
         description.Windowed = TRUE;
         description.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+        if (swapchainOnly)
+        {
+            auto createSwap = std::bit_cast<PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN>(GetProcAddress(bridge, "D3D11CreateDeviceAndSwapChain"));
+            Require(createSwap != nullptr, "Bridge swap-chain creation export unavailable");
+            Check(createSwap(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION,
+                             &description, scene.swap.Out(), nullptr, &level, nullptr), "Swap-chain-only creation failed");
+            Check(scene.swap->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void **>(scene.device.Out())),
+                  "Cannot recover the omitted device from the swap chain");
+            scene.device->GetImmediateContext(scene.context.Out());
+        }
+        else if (omitDevice)
+        {
+            Check(create(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION,
+                         nullptr, &level, scene.context.Out()), "Context-only creation failed");
+            scene.context->GetDevice(scene.device.Out());
+        }
+        else
+        {
+            Check(create(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION,
+                         scene.device.Out(), &level, nullptr), "Device-only creation failed");
+            scene.device->GetImmediateContext(scene.context.Out());
+        }
+        Require(scene.device.value && scene.context.value, "Omitted output recovery failed");
+        Com<IDXGIDevice> dxgi;
+        Com<IDXGIAdapter> adapter;
+        Com<IDXGIFactory> factory;
+        Check(scene.device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void **>(dxgi.Out())), "DXGI device unavailable");
+        Check(dxgi->GetAdapter(adapter.Out()), "DXGI adapter unavailable");
+        Check(adapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void **>(factory.Out())), "DXGI factory unavailable");
         std::cerr << "Phase: create real DXGI swap chain" << std::endl;
-        Check(factory->CreateSwapChain(scene.device.value, &description, scene.swap.Out()), "Real DXGI swap-chain creation failed");
+        if (!scene.swap.value)
+            Check(factory->CreateSwapChain(scene.device.value, &description, scene.swap.Out()), "Real DXGI swap-chain creation failed");
         std::cerr << "Phase: create real shaders and GPU resources" << std::endl;
         Com<ID3D11Texture2D> backBuffer;
         Check(scene.swap->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(backBuffer.Out())), "Swap-chain backbuffer unavailable");
@@ -428,15 +499,35 @@ int wmain(int argc, wchar_t **argv)
         uint64_t first = ReceiveFrame(scene, probe);
         std::cout << "PASS: actual DLL, device-only creation, factory swap-chain hook and coherent live GPU/UDP frame" << std::endl;
         std::cerr << "Phase: release external context reference" << std::endl;
-        ULONG remaining = scene.context.value->Release();
-        scene.context.value = nullptr;
-        Require(remaining == 0, "The runtime did not expose the external-refcount-zero context lifetime edge");
-        scene.device->GetImmediateContext(scene.context.Out());
-        Require(scene.context.value != nullptr, "Context reacquisition failed");
+        ULONG remaining = 0;
+        if (concurrentReacquire)
+        {
+            ID3D11DeviceContext *old = std::exchange(scene.context.value, nullptr);
+            delayRelease = true;
+            std::thread release([&] { remaining = old->Release(); });
+            bool reached = WaitForSingleObject(releaseReached, 5000) == WAIT_OBJECT_0;
+            if (reached)
+                scene.device->GetImmediateContext(scene.context.Out());
+            SetEvent(releaseContinue);
+            release.join();
+            Require(reached && remaining == 0 && scene.context.value, "Concurrent Release0 barrier was not reached");
+        }
+        else
+        {
+            remaining = scene.context.value->Release();
+            scene.context.value = nullptr;
+            Require(remaining == 0, "The runtime did not expose the external-refcount-zero context lifetime edge");
+            scene.device->GetImmediateContext(scene.context.Out());
+            Require(scene.context.value != nullptr, "Context reacquisition failed");
+        }
         scene.Bind();
         probe.nonce.fill(0x76);
         probe.lastSent = 0;
         Require(ReceiveFrame(scene, probe) > first, "Reacquired context did not resume with a newer live frame");
+        if (concurrentReacquire)
+            std::cout << "PASS: concurrent Release0 cannot erase reacquired observation" << std::endl;
+        if (omitDevice || swapchainOnly)
+            std::cout << "PASS: omitted device output retains live camera observation" << std::endl;
         std::cout << "PASS: external Release0 followed by GetImmediateContext resumes live capture" << std::endl;
         uint64_t stopped = GetTickCount64();
         while (GetTickCount64() - stopped < ClientLeaseMilliseconds + 500)

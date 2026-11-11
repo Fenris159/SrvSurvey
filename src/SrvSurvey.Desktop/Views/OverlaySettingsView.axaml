@@ -191,7 +191,7 @@
                           Command="{Binding CockpitPanels.CalibrateCommand}"
                           ToolTip.Tip="Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships." />
                   <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
-                             Text="Center freelook before calibrating. Panels return to their desktop positions if the live camera connection stops." />
+                             Text="Center freelook before calibrating. Desktop positions are restored if the live camera connection stops." />
                 </StackPanel>
               </StackPanel>
             </Border>

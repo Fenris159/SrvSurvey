@@ -108,26 +108,14 @@ public sealed class CockpitCaptureProfileUpdater
             CockpitCaptureProfile current = LoadCurrent();
             if (candidate.ProfileVersion < current.ProfileVersion || candidate.Serialize() == current.Serialize())
             {
+                MaterializeCurrent(current);
                 return new(current.ProfileVersion, CockpitCaptureProfileRefreshState.Current);
             }
             if (candidate.ProfileVersion == current.ProfileVersion)
             {
                 return new(current.ProfileVersion, CockpitCaptureProfileRefreshState.VersionConflict);
             }
-            string directory = Path.GetDirectoryName(CachePath)!;
-            Directory.CreateDirectory(directory);
-            string temporary = Path.Combine(directory, $".profile-{Guid.NewGuid():N}.tmp");
-            try
-            {
-                File.WriteAllText(temporary, candidate.Serialize(), Utf8);
-                // Preserve one predecessor with a compatible packet protocol without moving the active file away from readers.
-                File.WriteAllText(CachePath + ".previous", current.Serialize(), Utf8);
-                File.Move(temporary, CachePath, overwrite: true);
-            }
-            finally
-            {
-                File.Delete(temporary);
-            }
+            WriteProfile(candidate, current);
             return new(candidate.ProfileVersion, CockpitCaptureProfileRefreshState.Updated);
         }
         finally
@@ -142,25 +130,74 @@ public sealed class CockpitCaptureProfileUpdater
     private CockpitCaptureProfileRefreshResult Result(CockpitCaptureProfileRefreshState state) =>
         new(LoadCurrent().ProfileVersion, state);
 
+    /// <summary>Uses both on-disk candidates to prevent a corrupt active cache from lowering the revision floor.</summary>
     private CockpitCaptureProfile LoadCurrent()
     {
-        CockpitCaptureProfile bundled = CockpitCaptureProfile.Embedded;
+        CockpitCaptureProfile current = CockpitCaptureProfile.Embedded;
+        foreach (string path in new[] { CachePath + ".previous", CachePath })
+        {
+            if (ReadCompatible(path) is { } candidate && candidate.ProfileVersion > current.ProfileVersion)
+            {
+                current = candidate;
+            }
+        }
+        return current;
+    }
+
+    /// <summary>Makes the app's embedded or recovered revision readable by independently installed bridge DLLs.</summary>
+    private void MaterializeCurrent(CockpitCaptureProfile current)
+    {
+        CockpitCaptureProfile? cached = ReadCompatible(CachePath);
+        if (cached?.Serialize() == current.Serialize())
+        {
+            return;
+        }
+        CockpitCaptureProfile? previous = ReadCompatible(CachePath + ".previous");
+        WriteProfile(
+            current,
+            cached is not null && cached.ProfileVersion > (previous?.ProfileVersion ?? 0) ? cached : null
+        );
+    }
+
+    /// <summary>Preserves the predecessor before atomically replacing a complete bridge-readable active profile.</summary>
+    private void WriteProfile(CockpitCaptureProfile candidate, CockpitCaptureProfile? previous)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
+        if (previous is not null)
+        {
+            WriteAtomic(CachePath + ".previous", previous.Serialize());
+        }
+        WriteAtomic(CachePath, candidate.Serialize());
+    }
+
+    private static void WriteAtomic(string path, string text)
+    {
+        string temporary = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
-            if (
-                new FileInfo(CachePath) is { Exists: true, Length: <= CockpitCaptureProfile.MaximumBytes }
-                && CockpitCaptureProfile.Parse(File.ReadAllText(CachePath, Utf8)) is { IsCompatible: true } cached
-                && cached.ProfileVersion > bundled.ProfileVersion
-            )
-            {
-                return cached;
-            }
+            File.WriteAllText(temporary, text, Utf8);
+            File.Move(temporary, path, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporary);
+        }
+    }
+
+    private static CockpitCaptureProfile? ReadCompatible(string path)
+    {
+        try
+        {
+            return
+                new FileInfo(path) is { Exists: true, Length: <= CockpitCaptureProfile.MaximumBytes }
+                && CockpitCaptureProfile.Parse(File.ReadAllText(path, Utf8)) is { IsCompatible: true } cached
+                ? cached
+                : null;
         }
         catch (Exception exception)
             when (exception is IOException or UnauthorizedAccessException or DecoderFallbackException)
         {
-            // The bridge also falls back to its bundled profile when a machine-local cache cannot be read.
+            return null;
         }
-        return bundled;
     }
 }

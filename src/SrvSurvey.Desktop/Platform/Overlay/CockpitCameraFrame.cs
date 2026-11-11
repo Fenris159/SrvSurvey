@@ -10,6 +10,15 @@ public sealed record CockpitCameraFrame(ulong Sequence, long UnixMilliseconds, u
     public const int PacketLength = 136;
     public const int NonceLength = 32;
 
+    /// <summary>Applies the same capture-time deadline to newly received and cached samples.</summary>
+    public bool IsCurrent(DateTimeOffset now) => IsCurrent(UnixMilliseconds, now);
+
+    private static bool IsCurrent(long timestamp, DateTimeOffset now)
+    {
+        long current = now.ToUnixTimeMilliseconds();
+        return timestamp > current - 250 && timestamp <= current + 100;
+    }
+
     /// <summary>Accepts only complete, authenticated, current protocol packets with a usable cockpit reference.</summary>
     public static CockpitCameraFrame? Parse(ReadOnlySpan<byte> packet, ReadOnlySpan<byte> nonce, DateTimeOffset now)
     {
@@ -26,8 +35,7 @@ public sealed record CockpitCameraFrame(ulong Sequence, long UnixMilliseconds, u
             return null;
         }
         long timestamp = BinaryPrimitives.ReadInt64LittleEndian(packet[24..]);
-        long current = now.ToUnixTimeMilliseconds();
-        if (timestamp <= current - 250 || timestamp > current + 100)
+        if (!IsCurrent(timestamp, now))
         {
             return null;
         }

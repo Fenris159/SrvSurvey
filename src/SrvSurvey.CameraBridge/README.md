@@ -27,7 +27,7 @@ changes, older versions, malformed content and unsupported packet protocols
 retain the current cache. A failed network check retains the cache. One
 predecessor is saved as `profile.ini.previous`; the active cache is replaced
 atomically under a cross-instance lock. At graphics startup the bridge chooses
-the newest usable profile from the installed baseline, predecessor and cache.
+the newest usable profile from the installed baseline, retained reader snapshot, predecessor and cache.
 It cannot enable an inactive installation.
 
 The machine-local cache is `cockpit-camera/profile.ini` below SrvSurvey's cache
@@ -46,6 +46,8 @@ locator or installer receipt, so rollback ownership checks remain valid.
 The bridge reads the installed and cached profiles once during graphics startup.
 It uses a newer compatible cache only when the installed experimental profile is
 already enabled. A missing or rejected cache falls back to that installed profile.
+The bridge keeps its last decoder-supported source in `profile.ini.reader-<reader version>`, independently of the app's one-step download history. Successive catalogs that need a newer DLL therefore cannot discard the current reader's fallback. Each reader owns its own retained file.
+
 Restart Elite to load a newly downloaded profile; restarting SrvSurvey alone does
 not reload the game's bridge. Global overlay settings show the refresh result
 separately from live camera/calibration status.
@@ -93,13 +95,15 @@ On Windows use a normal x64 CMake/MSVC build. Compiler warnings fail the native 
 
 Build with `-DCAMERA_BRIDGE_INTEGRATION_TESTS=ON`, then run `CameraBridgeWindowsIntegration.exe` with the full path to the built DLL. The harness creates its own temporary DLL/profile, a non-activating window, actual D3D11/DXGI resources and a loopback receiver. It supplies captured fixture data to real staged GPU readbacks; it does not mock COM objects or touch a game installation.
 
+`--concurrent-reacquire` delays the external COM Release boundary while another thread reacquires the same context. `--omit-device-output` and `--swapchain-only` exercise valid omitted API outputs. These modes are isolated harness tests and never attach to Elite.
+
 `--present-test` exercises the actual Present hook while avoiding monitor-timing work on a headless display. `--catalog-layout` selects PS identity and bindings, relocated record/camera offsets, a changed stride and a partial SRV; the expected camera packet is unchanged. `--mapped-window` is intended only for an isolated test display such as Xvfb; the default window stays hidden. `--without-observer` runs a differential control with native observation disabled.
 
 Controlled runs in a new private Wine prefix passed the live packet, external-reference-zero/reacquisition and lease-expiry checks. A normal Present in that fresh/headless environment encounters a DXGI zero-refresh division; Present(TEST) avoids it. Both observed and unhooked control runs encounter an X11 I/O failure during DXGI teardown, including a bounded retry inside the actual Steam runtime. The harness therefore does **not** currently report a clean end-to-end exit in this environment. This baseline limitation must not be described as a green native integration run or as proof that the actual game chain is tested.
 
 ## Reversible installation
 
-Exit Elite first. From the generated bridge package, run PowerShell 7:
+Exit Elite first. From the generated bridge package, run PowerShell 7.2 or newer:
 
 ```powershell
 ./Install-CameraBridge.ps1 -GameDirectory '<Elite Odyssey executable directory>' `
@@ -119,7 +123,7 @@ A different existing proxy, unowned bridge files, ambiguous sections/options or 
 
 Before changing configuration it saves the exact original `d3dx.ini` and SHA256-backed installation manifest in a timestamped `SrvSurveyCameraBridge.backup-*` directory. UTF8/UTF16 BOMs and existing line endings are preserved; legacy single-byte comments round-trip without changing their bytes. Unrelated options and comments stay intact. Failed installations roll back files they can still identify as their own; backups remain available.
 
-Restart Elite after installation, then enable the opt-in cockpit mode in SrvSurvey. The bridge itself verifies the executing shader's full-bytecode identity before observing a draw. Missing or rejected source data produces no pose packet; the app can keep its normal fixed overlay placement.
+Enable cockpit mode in SrvSurvey, restart SrvSurvey, and let its launch-time catalog check finish before starting Elite. The bridge itself verifies the executing shader's full-bytecode identity before observing a draw. Missing or rejected source data produces no pose packet; the app can keep its normal fixed overlay placement.
 
 To uninstall, exit Elite and run:
 
@@ -226,7 +230,7 @@ Lease expiry releases staging resources at the next matching draw. Releasing a c
 
 ## Verification and remaining limits
 
-- Twenty-four portable C++ behavior checks cover the packet, validation, profile-cache compatibility, lifetime lease, sample order, relocated typed/transposed layouts, quaternion formats, bounded partial views and actual captured rigid-reference outcomes. Deliberately breaking the protected behaviors makes the checks fail.
+- Twenty-five portable C++ behavior checks cover the packet, validation, profile-cache compatibility, lifetime lease, sample order, relocated typed/transposed layouts, quaternion formats, bounded partial views and actual captured rigid-reference outcomes. Deliberately breaking the protected behaviors makes the checks fail.
 - `CameraProfileFilesTests.exe` exercises the production Windows INI loader against a canonical cached profile, Unicode cache path, declarative bindings/offsets, future-layout fallback and missing locator. It requires no graphics device or game installation.
 - The sparse fixture header retains only first 32 bytes of relevant captured records and camera rows, with original whole-buffer SHA256 provenance. No multi-megabyte journal or graphics dumps are checked in.
 - Installer fixtures cover exact encoding/line-ending round trips, idempotence, unowned proxy/files, modified installation refusal, running-game refusal, failure rollback and explicit experimental profile selection.

@@ -41,7 +41,8 @@ capture catalogs.
 - **Allow future bridge-only upgrades:** The application preserves future
   declarative layout fields. The bridge validates reader compatibility and
   resource bounds, and falls back to a compatible predecessor or installed
-  profile when a catalog is unsupported. New capture algorithms may require
+  profile when a catalog is unsupported. Each reader retains its supported source
+  across successive future-layout updates. New capture algorithms may require
   a replacement DLL; communication-protocol changes may also require an app update.
 - **Retain working configuration:** Failed checks, malformed content,
   downgrades, and changed content without a revision bump do not replace the

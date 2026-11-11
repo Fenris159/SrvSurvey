@@ -20,6 +20,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
     private readonly OverlayDispatcherTimer timer;
     private CombinedOverlayWindow? host;
     private PixelRect hostBounds;
+    private PixelRect gameViewportBounds;
     private OverlayPreparationResult? hostPreparation;
     private PixelRect[] appliedInputRegions = [];
     private OverlayInteractionResult? appliedInputResult;
@@ -305,7 +306,8 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return;
         }
 
-        hostBounds = gameWindow.OverlayCanvasBounds ?? gameWindow.ClientBounds;
+        gameViewportBounds = gameWindow.ClientBounds;
+        hostBounds = gameWindow.OverlayCanvasBounds ?? gameViewportBounds;
         window.Position = hostBounds.Position;
         window.Width = hostBounds.Width / screen.Scaling;
         window.Height = hostBounds.Height / screen.Scaling;
@@ -371,13 +373,16 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         if (cockpitCameraChange is { } camera && cockpitPoseProvider is { } poses && interactiveWindows.Count == 0)
         {
             Size size = GetLogicalSize(entry);
+            double viewportLeft = (gameViewportBounds.X - hostBounds.X) / host.RenderScaling;
+            double viewportTop = (gameViewportBounds.Y - hostBounds.Y) / host.RenderScaling;
             Matrix? perspective = CockpitPanelProjection.Create(
-                new Rect(projection.Left, projection.Top, size.Width, size.Height),
-                new Size(hostBounds.Width / host.RenderScaling, hostBounds.Height / host.RenderScaling),
+                new Rect(projection.Left - viewportLeft, projection.Top - viewportTop, size.Width, size.Height),
+                new Size(gameViewportBounds.Width / host.RenderScaling, gameViewportBounds.Height / host.RenderScaling),
                 poses(entry.PlotterName),
                 camera,
                 cockpitLens
             );
+            perspective = perspective * Matrix.CreateTranslation(viewportLeft, viewportTop);
             presenter.IsVisible = perspective is not null && shouldPresent;
             presenter.IsHitTestVisible = false;
             presenter.RenderTransformOrigin = RelativePoint.TopLeft;

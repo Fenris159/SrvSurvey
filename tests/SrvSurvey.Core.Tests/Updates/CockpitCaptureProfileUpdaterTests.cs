@@ -303,6 +303,38 @@ public sealed class CockpitCaptureProfileUpdaterTests : IDisposable
         Assert.Empty(Directory.GetFileSystemEntries(updater.CachePath));
     }
 
+    [Fact]
+    public async Task EmbeddedCurrentRevisionIsMaterializedForAnIndependentlyInstalledBridge()
+    {
+        string embedded = CockpitCaptureProfile.Embedded.Serialize();
+        using HttpClient client = Client(embedded);
+        CockpitCaptureProfileUpdater updater = CreateUpdater(client);
+        Assert.Equal(
+            new CockpitCaptureProfileRefreshResult(
+                CockpitCaptureProfile.Embedded.ProfileVersion,
+                CockpitCaptureProfileRefreshState.Current
+            ),
+            await updater.RefreshAsync()
+        );
+        Assert.True(File.Exists(updater.CachePath));
+        Assert.Equal(embedded, await File.ReadAllTextAsync(updater.CachePath));
+    }
+
+    [Fact]
+    public async Task AValidPredecessorPreventsDowngradeWhenTheActiveCacheIsCorrupt()
+    {
+        using HttpClient client = Client(Profile(NextVersion + 2));
+        CockpitCaptureProfileUpdater updater = CreateUpdater(client);
+        Seed(updater, "corrupt active catalog");
+        await File.WriteAllTextAsync(updater.CachePath + ".previous", Profile(NextVersion + 3));
+        Assert.Equal(
+            new CockpitCaptureProfileRefreshResult(NextVersion + 3, CockpitCaptureProfileRefreshState.Current),
+            await updater.RefreshAsync()
+        );
+        Assert.Equal(Profile(NextVersion + 3), await File.ReadAllTextAsync(updater.CachePath));
+        Assert.Equal(Profile(NextVersion + 3), await File.ReadAllTextAsync(updater.CachePath + ".previous"));
+    }
+
     private CockpitCaptureProfileUpdater CreateUpdater(HttpClient client) =>
         new(
             directory,

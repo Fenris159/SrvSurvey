@@ -135,6 +135,22 @@ public sealed class CockpitOverlayCoordinatorTests : IDisposable
         Assert.Equal("A current cockpit camera sample is needed before calibration.", model.StatusMessage);
     }
 
+    [Fact]
+    public void DelayedPacketsExpireAtTheCaptureDeadlineInsteadOfReceivingAnotherLease()
+    {
+        var clock = new CameraClock();
+        var transport = new CameraTransport();
+        using var client = new CockpitCameraClient(transport, clock);
+        Assert.Null(client.Poll());
+        transport.Enqueue(Lens, 1, 1, clock);
+        clock.Elapsed = 200;
+        Assert.Equal(1UL, Assert.IsType<CockpitCameraFrame>(client.Poll()).Sequence);
+        clock.Elapsed = 249;
+        Assert.Equal(1UL, Assert.IsType<CockpitCameraFrame>(client.Poll()).Sequence);
+        clock.Elapsed = 250;
+        Assert.Null(client.Poll());
+    }
+
     private CockpitOverlayViewModel CreateModel(bool enabled)
     {
         var store = new CockpitOverlaySettingsStore(Path.Combine(directory, "settings.json"));

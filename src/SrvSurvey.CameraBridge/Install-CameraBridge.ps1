@@ -1,4 +1,4 @@
-#requires -Version 7.0
+#requires -Version 7.2
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
@@ -24,7 +24,7 @@ function Get-CameraFileBytes([string] $Path) {
     if ($item.PSIsContainer -or $null -ne $item.LinkTarget) {
         throw "Expected an ordinary file, not a directory or symbolic link: $Path"
     }
-    ,([IO.File]::ReadAllBytes($Path))
+    ,([IO.File]::ReadAllBytes($item.FullName))
 }
 
 function Get-CameraProfileCachePath {
@@ -317,17 +317,34 @@ try {
     }
     catch {
         $failure = $_.Exception.Message
-        if ($configReplaced -and (Get-CameraHash (Get-CameraFileBytes $configPath)) -eq $manifest.InstalledConfigSha256) {
-            Write-CameraAtomic $configPath $original $true
-        }
-        foreach ($name in $created) {
-            $path = Join-Path $gamePath $name
-            if ([IO.File]::Exists($path) -and (Get-CameraHash (Get-CameraFileBytes $path)) -eq (Get-CameraHash $sourceFiles[$name])) {
-                [IO.File]::Delete($path)
+        $mayRemoveFiles = $false
+        try {
+            $currentHash = Get-CameraHash (Get-CameraFileBytes $configPath)
+            if ($currentHash -eq $manifest.OriginalConfigSha256) { $mayRemoveFiles = $true }
+            elseif ($configReplaced -and $currentHash -eq $manifest.InstalledConfigSha256) {
+                Write-CameraAtomic $configPath $original $true
+                $mayRemoveFiles = $true
             }
         }
-        if ([IO.File]::Exists($manifestPath) -and (Get-CameraHash (Get-CameraFileBytes $manifestPath)) -eq (Get-CameraHash $manifestBytes)) {
-            [IO.File]::Delete($manifestPath)
+        catch { $mayRemoveFiles = $false }
+        # A changed/unreadable configuration may still reference this DLL. Keep
+        # its owned files and receipt when restoring that configuration is unsafe.
+        if ($mayRemoveFiles) {
+            foreach ($name in $created) {
+                $path = Join-Path $gamePath $name
+                if ([IO.File]::Exists($path) -and (Get-CameraHash (Get-CameraFileBytes $path)) -eq (Get-CameraHash $sourceFiles[$name])) {
+                    [IO.File]::Delete($path)
+                }
+            }
+            if ([IO.File]::Exists($manifestPath) -and (Get-CameraHash (Get-CameraFileBytes $manifestPath)) -eq (Get-CameraHash $manifestBytes)) {
+                [IO.File]::Delete($manifestPath)
+            }
+        }
+        elseif (-not [IO.File]::Exists($manifestPath) -and $created.Count -eq $files.Count) {
+            # An external edit may race before our config replacement. Retain an
+            # ownership receipt as well as the backup without replacing foreign files.
+            try { Write-CameraAtomic $manifestPath $manifestBytes $false }
+            catch { Write-Warning 'The active receipt could not be written; retained files are documented in the original backup.' }
         }
         throw "Installation could not complete: $failure. Original configuration backup preserved: $backupPath"
     }

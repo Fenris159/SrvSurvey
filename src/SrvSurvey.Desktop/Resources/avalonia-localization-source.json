@@ -10958,6 +10958,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
+    "Text": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
     "IsFormat": false,
     "SourceKinds": [

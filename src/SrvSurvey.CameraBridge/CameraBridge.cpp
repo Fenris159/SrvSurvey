@@ -122,7 +122,7 @@ struct ContextState
     std::mutex mutex;
     std::array<Readback, 3> ring;
     ContextHooks originals;
-    uint64_t lastFrame = UINT64_MAX, lastSubmit = 0;
+    uint64_t lastFrame = UINT64_MAX, lastSubmit = 0, acquisition = 0;
     std::atomic<bool> disabled{false};
 
     void Clear()
@@ -152,6 +152,7 @@ class Runtime
     std::unordered_map<ID3D11DeviceContext *, std::shared_ptr<ContextState>> contexts;
     std::atomic<uint64_t> frame{0};
     std::atomic<bool> hasPresent{false};
+    uint64_t nextAcquisition = 0;
     std::atomic<uint64_t> nextSubmission{0}, publishedSubmission{0};
 
     void OpenTransport()
@@ -193,9 +194,10 @@ class Runtime
         discardQueuedRequests_ = true;
     }
 
-    LeaseSnapshot PollLease(uint64_t now)
+    LeaseSnapshot PollLease()
     {
         std::lock_guard guard(mutex);
+        uint64_t now = GetTickCount64();
         if (socket_ != INVALID_SOCKET && now - lastPoll_ >= 5)
         {
             // A paused/minimized game can leave old heartbeats queued in the
@@ -239,9 +241,10 @@ class Runtime
         return {lease_.IsActive(now), lease_.generation};
     }
 
-    void Publish(const CompletedSample &sample, uint64_t now)
+    void Publish(const CompletedSample &sample)
     {
         std::lock_guard guard(mutex);
+        uint64_t now = GetTickCount64();
         if (socket_ == INVALID_SOCKET || !lease_.IsActive(now) || sample.generation != lease_.generation ||
             sample.submission <= publishedSubmission.load())
             return;
@@ -362,7 +365,7 @@ void DrainReadbacks(ID3D11DeviceContext *context, ContextState &state, LeaseSnap
     auto newest = NewestCompletedSample(std::span(completed).first(count), lease.generation, now,
                                         runtime.publishedSubmission.load());
     if (newest)
-        runtime.Publish(completed[*newest], now);
+        runtime.Publish(completed[*newest]);
 }
 
 bool PrepareReadback(ID3D11DeviceContext *context, Readback &entry, uint32_t byteWidth, uint32_t cameraBytes)
@@ -458,8 +461,8 @@ void Capture(ID3D11DeviceContext *context, const DrawSignature &signature)
     std::unique_lock guard(state->mutex, std::try_to_lock);
     if (!guard || state->disabled)
         return;
+    LeaseSnapshot lease = runtime.PollLease();
     uint64_t now = GetTickCount64();
-    LeaseSnapshot lease = runtime.PollLease(now);
     if (!lease.active)
     {
         state->Clear();
@@ -602,21 +605,35 @@ void STDMETHODCALLTYPE HookDrawInstanced(ID3D11DeviceContext *context, UINT vert
 
 ULONG STDMETHODCALLTYPE HookContextRelease(ID3D11DeviceContext *context)
 {
-    ULONG references = OriginalContextHooks(context).release(context);
+    Runtime &runtime = State();
+    ContextHooks originals = OriginalContextHooks(context);
+    std::shared_ptr<ContextState> observed;
+    uint64_t acquisition = 0;
+    {
+        std::lock_guard guard(runtime.mutex);
+        auto found = runtime.contexts.find(context);
+        if (found != runtime.contexts.end())
+        {
+            observed = found->second;
+            acquisition = observed->acquisition;
+        }
+    }
+    ULONG references = originals.release(context);
     if (references == 0)
     {
-        Runtime &runtime = State();
         std::shared_ptr<ContextState> released;
         {
             std::lock_guard guard(runtime.mutex);
             auto found = runtime.contexts.find(context);
-            if (found != runtime.contexts.end())
+            // A runtime may privately retain the context after external Release0.
+            // A new acquisition owns observation even when it races this cleanup.
+            if (found != runtime.contexts.end() && found->second == observed && observed->acquisition == acquisition)
             {
                 released = std::move(found->second);
                 runtime.contexts.erase(found);
+                if (runtime.contexts.empty())
+                    runtime.CloseTransport();
             }
-            if (runtime.contexts.empty())
-                runtime.CloseTransport();
         }
     }
     return references;
@@ -647,6 +664,7 @@ void ObserveContext(ID3D11DeviceContext *context)
         state->originals = runtime.contextHooks.at(table);
         runtime.contexts.emplace(context, std::move(state));
     }
+    runtime.contexts.at(context)->acquisition = ++runtime.nextAcquisition;
     runtime.OpenTransport();
 }
 
@@ -841,6 +859,15 @@ void ObserveFactory(ID3D11Device *device)
 
 void ObserveDevice(ID3D11Device *device, ID3D11DeviceContext *context, IDXGISwapChain *swapChain)
 {
+    ID3D11Device *recovered = nullptr;
+    if (!device && context)
+        context->GetDevice(&recovered);
+    if (!device && !recovered && swapChain)
+        (void)swapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<void **>(&recovered));
+    auto releaseDevice = [](ID3D11Device *value) { if (value) value->Release(); };
+    std::unique_ptr<ID3D11Device, decltype(releaseDevice)> recovery(recovered, releaseDevice);
+    if (!device)
+        device = recovered;
     if (!device)
         return;
     Runtime &runtime = State();
@@ -884,8 +911,7 @@ HMODULE RealD3D11()
         UINT length = GetSystemDirectoryW(path, MAX_PATH);
         if (!length || length + 11 >= MAX_PATH)
             return static_cast<HMODULE>(nullptr);
-        std::wcscat(path, L"\\d3d11.dll");
-        return LoadLibraryExW(path, nullptr, 0);
+        return LoadLibraryExW((std::wstring(path) + L"\\d3d11.dll").c_str(), nullptr, 0);
     }();
     return real;
 }

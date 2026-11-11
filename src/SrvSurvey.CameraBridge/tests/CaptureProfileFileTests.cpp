@@ -47,6 +47,7 @@ struct Fixture
         DeleteFileW(bootstrap.c_str());
         DeleteFileW(cache.c_str());
         DeleteFileW((cache + L".previous").c_str());
+        DeleteFileW((cache + L".reader-2").c_str());
         DeleteFileW(locator.c_str());
         RemoveDirectoryW(directory.c_str());
     }
@@ -74,6 +75,8 @@ int wmain(int argc, wchar_t **argv)
         Require(loaded.IsUsable() && loaded.profileVersion == 2 && loaded.shaderHash == 0x0123456789abcdefULL,
                 "The Windows INI loader did not select the UTF8 cache through a Unicode path");
 
+        // Isolate installed-profile fallback with no retained reader snapshot.
+        DeleteFileW((fixture.cache + L".reader-2").c_str());
         WriteAscii(fixture.cache,
                    "[Capture]\nProfileVersion=3\nProtocolVersion=2\nValidated=1\n"
                    "VertexShaderHash=0123456789abcdef\nRigidLayoutVersion=1\nDrawKind=3\n");
@@ -104,6 +107,17 @@ int wmain(int argc, wchar_t **argv)
         loaded = LoadInstalledCaptureProfile(fixture.directory);
         Require(loaded.IsUsable() && loaded.profileVersion == 4 && loaded.layout.recordStride == 512,
                 "An unsupported future catalog did not fall back to its compatible predecessor");
+        WriteAscii((fixture.cache + L".previous"),
+                   "[Capture]\nProfileVersion=5\nProtocolVersion=1\nValidated=1\n"
+                   "VertexShaderHash=1111111111111111\nRigidLayoutVersion=2\nDrawKind=3\n"
+                   "[Layout]\nSchemaVersion=1\nRequiredBridgeVersion=99\nFuturePacking=1\n");
+        WriteAscii(fixture.cache,
+                   "[Capture]\nProfileVersion=6\nProtocolVersion=1\nValidated=1\n"
+                   "VertexShaderHash=2222222222222222\nRigidLayoutVersion=2\nDrawKind=3\n"
+                   "[Layout]\nSchemaVersion=1\nRequiredBridgeVersion=100\nFuturePacking=1\n");
+        loaded = LoadInstalledCaptureProfile(fixture.directory);
+        Require(loaded.IsUsable() && loaded.profileVersion == 4 && loaded.layout.recordStride == 512,
+                "Successive unsupported catalogs discarded the last decoder-usable profile");
         DeleteFileW(fixture.locator.c_str());
         Require(LoadInstalledCaptureProfile(fixture.directory).shaderHash == 0x69cbbf4aae46746fULL,
                 "A missing cache locator prevented the installed profile from loading");

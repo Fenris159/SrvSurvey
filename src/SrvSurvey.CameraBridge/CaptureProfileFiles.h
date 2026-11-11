@@ -58,6 +58,22 @@ inline CaptureProfile ReadCaptureProfileFile(const wchar_t *path)
     }
     return profile;
 }
+// The DLL alone knows decoder compatibility. Keep a reader-specific snapshot
+// independently of the app's one-step download history so future catalogs
+// cannot displace this reader's last supported source.
+inline void RememberReaderProfile(const std::wstring &source, const std::wstring &destination, const CaptureProfile &profile)
+{
+    if (ReadCaptureProfileFile(destination.c_str()) == profile)
+        return;
+    std::wstring temporary = destination + L"." + std::to_wstring(GetCurrentProcessId()) + L"." +
+                             std::to_wstring(GetTickCount64()) + L".tmp";
+    if (!CopyFileW(source.c_str(), temporary.c_str(), TRUE))
+        return;
+    CaptureProfile copied = ReadCaptureProfileFile(temporary.c_str());
+    if (copied.IsUsable() && copied == profile)
+        (void)MoveFileExW(temporary.c_str(), destination.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
+    (void)DeleteFileW(temporary.c_str());
+}
 } // namespace detail
 
 // The installed files stay immutable. A newer compatible machine-local cache
@@ -72,7 +88,20 @@ inline CaptureProfile LoadInstalledCaptureProfile(const std::wstring &directory)
                                            (directory + L"\\SrvSurveyCameraBridge.paths.ini").c_str());
     if (length == 0 || length >= 32767)
         return bundled;
-    CaptureProfile predecessor = detail::ReadCaptureProfileFile((std::wstring(cachedPath) + L".previous").c_str());
-    return ChooseCaptureProfile(ChooseCaptureProfile(bundled, predecessor), detail::ReadCaptureProfileFile(cachedPath));
+    std::wstring cache(cachedPath);
+    std::wstring readerPath = cache + L".reader-" + std::to_wstring(BridgeReaderVersion);
+    CaptureProfile selected = bundled;
+    std::wstring selectedPath = directory + L"\\SrvSurveyCameraBridge.ini";
+    for (const std::wstring &path : {cache + L".previous", readerPath, cache})
+    {
+        CaptureProfile candidate = detail::ReadCaptureProfileFile(path.c_str());
+        if (candidate.IsUsable() && candidate.profileVersion > selected.profileVersion)
+        {
+            selected = candidate;
+            selectedPath = path;
+        }
+    }
+    detail::RememberReaderProfile(selectedPath, readerPath, selected);
+    return selected;
 }
 } // namespace srvsurvey::camera

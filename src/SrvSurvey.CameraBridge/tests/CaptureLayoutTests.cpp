@@ -83,7 +83,7 @@ void RelocatedTypedTransposedLayoutPreservesTheExpectedProjection()
     RelocatedFrame frame;
     ExpectProjection(frame, {2, 0, 0, 0, 0, 3, 0, -4.5f, 0, 0, 0, 0.05f, 0, 0, 1, -0.125f});
     frame.layout.axesSource = 1;
-    std::fill(frame.constants.begin() + 320, frame.constants.begin() + 424, 0);
+    std::fill(frame.constants.begin() + 320, frame.constants.begin() + 424, uint8_t{0});
     ExpectProjection(frame, {2, 0, 0, 0, 0, 3, 0, -4.5f, 0, 0, 0, 0.05f, 0, 0, 1, -0.125f});
 }
 
@@ -92,6 +92,19 @@ void WorldProjectionDoesNotSubtractTheOriginTwice()
     RelocatedFrame frame;
     frame.layout.projectionIncludesOrigin = 1;
     Put(frame.constants, 512 + 3 * 8, -20, 2);
+    Put(frame.constants, 512 + 7 * 8, -64.5, 2);
+    Put(frame.constants, 512 + 15 * 8, -30.125, 2);
+    ExpectProjection(frame, {2, 0, 0, 0, 0, 3, 0, -4.5f, 0, 0, 0, 0.05f, 0, 0, 1, -0.125f});
+}
+
+void LargeWorldCoordinatesCancelBeforeProjectionNarrowsToTheWireFormat()
+{
+    RelocatedFrame frame;
+    frame.layout.projectionIncludesOrigin = 1;
+    for (size_t index = 0; index < 8; ++index)
+        Put(frame.instances, 32 + index * 512 + 64, 100000000.25, 2);
+    Put(frame.constants, 256, 100000000.25, 2);
+    Put(frame.constants, 512 + 3 * 8, -200000000.5, 2);
     Put(frame.constants, 512 + 7 * 8, -64.5, 2);
     Put(frame.constants, 512 + 15 * 8, -30.125, 2);
     ExpectProjection(frame, {2, 0, 0, 0, 0, 3, 0, -4.5f, 0, 0, 0, 0.05f, 0, 0, 1, -0.125f});
@@ -196,11 +209,12 @@ int main()
     {
         RelocatedTypedTransposedLayoutPreservesTheExpectedProjection();
         WorldProjectionDoesNotSubtractTheOriginTwice();
+        LargeWorldCoordinatesCancelBeforeProjectionNarrowsToTheWireFormat();
         QuaternionFormatsAndConjugationKeepTheConfiguredOrientation();
         UnitScalesAndSelectionThresholdsApplyToTheDecodedData();
         UnsafeOrUnknownLayoutsNeverDecode();
         ResourceViewsAreBoundedAndMayStartInsideABuffer();
-        std::cout << "Capture layout: six behavior checks passed\n";
+        std::cout << "Capture layout: seven behavior checks passed\n";
         return 0;
     }
     catch (const std::exception &exception)

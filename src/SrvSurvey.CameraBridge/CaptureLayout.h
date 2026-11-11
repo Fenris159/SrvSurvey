@@ -34,6 +34,8 @@ struct CaptureLayout
     double nearRadius = 3, positionTolerance = 0.001, angleToleranceDegrees = 0.25;
     double quaternionTolerance = 0.001, cameraTolerance = 0.001, dominanceRatio = 2;
 
+    bool operator==(const CaptureLayout &) const = default;
+
     static uint32_t ScalarBytes(uint32_t format) { return format == 1 ? 4 : format == 2 ? 8 : 0; }
     uint32_t RotationBytes() const
     {

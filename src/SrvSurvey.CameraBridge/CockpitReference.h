@@ -76,7 +76,7 @@ inline bool SameRoot(const Candidate &a, const Candidate &b, const CaptureLayout
            std::abs(Dot(a.rotation, b.rotation)) >= cosine;
 }
 
-inline bool CameraIsUsable(std::span<const uint8_t> bytes, Matrix &projection, Point &origin, const CaptureLayout &layout)
+inline bool CameraIsUsable(std::span<const uint8_t> bytes, std::array<double, 16> &projection, Point &origin, const CaptureLayout &layout)
 {
     if (bytes.size() != layout.cameraBytes)
         return false;
@@ -95,7 +95,7 @@ inline bool CameraIsUsable(std::span<const uint8_t> bytes, Matrix &projection, P
                                       layout.projectionFormat);
             if (!std::isfinite(value) || std::abs(value) > 1e9)
                 return false;
-            projection[row * 4 + column] = static_cast<float>(value);
+            projection[row * 4 + column] = value;
         }
     if (!layout.projectionIncludesOrigin && (std::abs(projection[12]) > layout.cameraTolerance ||
         std::abs(projection[13]) > layout.cameraTolerance || std::abs(projection[15]) > layout.cameraTolerance))
@@ -146,10 +146,10 @@ inline bool CameraIsUsable(std::span<const uint8_t> bytes, Matrix &projection, P
     // depth convention so source depth changes do not require an app rebuild.
     for (size_t axis = 0; axis < 3; ++axis)
         projection[axis * 4 + 2] = 0;
-    projection[14] = static_cast<float>(layout.canonicalNearDepth);
+    projection[14] = layout.canonicalNearDepth;
     if (layout.projectionIncludesOrigin)
         for (size_t column : {size_t(0), size_t(1), size_t(3)})
-            projection[12 + column] *= static_cast<float>(layout.cameraPositionScale);
+            projection[12 + column] *= layout.cameraPositionScale;
     return true;
 }
 } // namespace detail
@@ -163,7 +163,7 @@ inline std::optional<RigidReference> FindCockpitReference(
     if (!layout.IsUsable() || structured.size() > layout.maximumBufferBytes || structured.size() <= layout.recordDataOffset ||
         (structured.size() - layout.recordDataOffset) % layout.recordStride != 0)
         return std::nullopt;
-    Matrix cameraProjection{};
+    std::array<double, 16> cameraProjection{};
     Point camera{};
     if (!CameraIsUsable(constants, cameraProjection, camera, layout))
         return std::nullopt;
@@ -273,7 +273,7 @@ inline std::optional<RigidReference> FindCockpitReference(
             double value = 0;
             for (size_t inner = 0; inner < 4; ++inner)
                 value += double(cameraProjection[inner * 4 + row]) * transform[inner][column];
-            result.projection[row * 4 + column] = static_cast<float>(value);
+            result.projection[row * 4 + column] = value;
         }
     if (!IsUsableProjection(result.projection))
         return std::nullopt;

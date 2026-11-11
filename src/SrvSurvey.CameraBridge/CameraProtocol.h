@@ -122,6 +122,7 @@ struct CaptureProfile
     uint32_t profileVersion = 1, protocolVersion = 1;
     bool layoutDeclared = false;
     CaptureLayout layout{};
+    bool operator==(const CaptureProfile &) const = default;
 
     bool IsUsable() const
     {

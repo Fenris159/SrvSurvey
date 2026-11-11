@@ -5465,6 +5465,10 @@
       "translation": "Cavas"
     },
     {
+      "source": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+      "translation": "Zentrieren Sie den Freelook vor der Kalibrierung. Desktop-Positionen werden wiederhergestellt, wenn die Live-Kameraverbindung unterbrochen wird."
+    },
+    {
       "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
       "translation": "Zentrieren Sie den freien Blick auf das normale Cockpit und nehmen Sie dann die neutrale Ansicht auf. Nach einem Schiffswechsel wiederholen."
     },
@@ -48137,6 +48141,10 @@
     {
       "source": "Cavas",
       "translation": "cavas"
+    },
+    {
+      "source": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+      "translation": "Centrar la mirada libre antes de calibrar. Las posiciones del escritorio se restauran si se detiene la conexión de la cámara en vivo."
     },
     {
       "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
@@ -90813,6 +90821,10 @@
       "translation": "Cavas"
     },
     {
+      "source": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+      "translation": "Centrez le freelook avant de calibrer. Les positions du bureau sont restaurées si la connexion de la caméra en direct s'arrête."
+    },
+    {
       "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
       "translation": "Centrez le look libre du cockpit normal, puis capturez la vue neutre. Répétez après avoir changé de navire."
     },
@@ -133485,6 +133497,10 @@
     {
       "source": "Cavas",
       "translation": "cavas"
+    },
+    {
+      "source": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+      "translation": "Centralize o freelook antes de calibrar. As posições da área de trabalho serão restauradas se a conexão da câmera ao vivo for interrompida."
     },
     {
       "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
@@ -176161,6 +176177,10 @@
       "translation": "Кавас"
     },
     {
+      "source": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+      "translation": "Центрируйте свободный обзор перед калибровкой. Положения рабочего стола восстанавливаются, если соединение с камерой в реальном времени прекращается."
+    },
+    {
       "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
       "translation": "Отцентрируйте нормальный вид из кабины, затем сделайте нейтральный вид. Повторите после смены кораблей."
     },
@@ -218835,6 +218855,10 @@
       "translation": "卡瓦斯"
     },
     {
+      "source": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+      "translation": "校准前居中自由观察。如果实时摄像头连接停止，桌面位置将恢复。"
+    },
+    {
       "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",
       "translation": "将正常驾驶舱自由观察置于中心，然后捕捉中性视图。更换船只后重复此操作。"
     },
@@ -261507,6 +261531,10 @@
     {
       "source": "Cavas",
       "translation": "* CAVAS >>>!"
+    },
+    {
+      "source": "Center freelook before calibrating. Desktop positions are restored if the live camera connection stops.",
+      "translation": "* CENTER FREELOOK BEFORE CALIBRATING. DESKTOP POSITIONS ARE RESTORED IF THE LIVE CAMERA CONNECTION STOPS. >>>!"
     },
     {
       "source": "Center normal cockpit freelook, then capture the neutral view. Repeat after changing ships.",

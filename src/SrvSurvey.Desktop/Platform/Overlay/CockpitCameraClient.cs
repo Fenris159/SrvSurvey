@@ -45,8 +45,12 @@ public sealed class CockpitCameraClient : IDisposable
         {
             // An absent/restarting optional bridge must leave the normal overlay and journal runtimes running.
         }
-        return lastReceived is { } received && clock.GetElapsedTime(received) < TimeSpan.FromMilliseconds(250)
-            ? latest
+        return
+            latest is { } frame
+            && frame.IsCurrent(clock.GetUtcNow())
+            && lastReceived is { } received
+            && clock.GetElapsedTime(received) < TimeSpan.FromMilliseconds(250)
+            ? frame
             : null;
     }
 
@@ -58,7 +62,10 @@ public sealed class CockpitCameraClient : IDisposable
             int length = transport.Receive(packet);
             var frame = CockpitCameraFrame.Parse(packet[..length], nonce, clock.GetUtcNow());
             bool expired =
-                lastReceived is null || clock.GetElapsedTime(lastReceived.Value) >= TimeSpan.FromMilliseconds(250);
+                latest is null
+                || !latest.IsCurrent(clock.GetUtcNow())
+                || lastReceived is null
+                || clock.GetElapsedTime(lastReceived.Value) >= TimeSpan.FromMilliseconds(250);
             if (frame is not null && (expired || latest is null || frame.Sequence > latest.Sequence))
             {
                 latest = frame;

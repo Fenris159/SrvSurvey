@@ -10,6 +10,7 @@ using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
+using Matrix4x4 = System.Numerics.Matrix4x4;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -1190,6 +1191,48 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Empty(registry.Snapshot());
         timer.Pulse();
         Assert.Single(platform.PreShowWindows);
+    }
+
+    [AvaloniaFact]
+    public void CockpitProjectionUsesTheGameViewportInsideALargerGamescopeCanvas()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var snapshot = new GameWindowSnapshot(1, 42, new PixelRect(200, 100, 800, 600), true, true)
+        {
+            OverlayCanvasBounds = new PixelRect(0, 0, 1200, 800),
+        };
+        var content = new Border();
+        var source = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = content,
+        };
+        registry.Register(source, "PlotJumpInfo");
+        using var controller = new CombinedOverlayPresentationController(
+            platform,
+            new FakeGameWindowTracker(snapshot),
+            registry
+        );
+        try
+        {
+            source.Show();
+            source.Position = new PixelPoint(550, 350);
+            Assert.True(controller.PreparePassiveWindow(source).IsPrepared);
+            CombinedOverlayWindow host = Assert.IsType<CombinedOverlayWindow>(TopLevel.GetTopLevel(content));
+            Matrix4x4 camera = Matrix4x4.Identity;
+            camera.M41 = 0.5f;
+            controller.SetCockpitProjection(camera, _ => new CockpitPanelPose());
+            using WriteableBitmap? frame = host.CaptureRenderedFrame();
+            Point center = Assert.IsType<Point>(content.TranslatePoint(new Point(50, 50), host));
+            Assert.InRange(center.X, 799.99, 800.01);
+            Assert.InRange(center.Y, 399.99, 400.01);
+        }
+        finally
+        {
+            source.Close();
+        }
     }
 
     public void Dispose()
