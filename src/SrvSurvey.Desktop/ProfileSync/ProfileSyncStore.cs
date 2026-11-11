@@ -20,6 +20,7 @@ internal sealed class ProfileSyncStore
 {
     private const string BaselineFileName = "baseline.json";
     private const string ConfigArea = "config";
+    private const string ShoppingHistoryClockPrefix = "shopping-history:";
     private static readonly JsonDocumentOptions JsonOptions = new()
     {
         CommentHandling = JsonCommentHandling.Skip,
@@ -724,7 +725,7 @@ internal sealed class ProfileSyncStore
             ? JsonValue.Create(Encoding.UTF8.GetString(bytes))
             : JsonNode.Parse(bytes, documentOptions: JsonOptions);
 
-    /// <summary>Upgrades legacy screenshot settings and rejects forbidden file or setting keys before use.</summary>
+    /// <summary>Rejects forbidden keys and upgrades legacy screenshot scope and nullable shopping history before use.</summary>
     internal static ProfileSnapshot ValidateScope(ProfileSnapshot snapshot)
     {
         snapshot = ProfileSyncPolicy.MigrateScreenshotSettings(snapshot);
@@ -738,7 +739,116 @@ internal sealed class ProfileSyncStore
         {
             _ = ProfileSyncPolicy.ParseKey(key, machine: true);
         }
-        return snapshot;
+        return NormalizeShoppingSearchHistory(snapshot);
+    }
+
+    /// <summary>Collapses old leaf records before capture, merge, or restore can mix them with atomic Search values.</summary>
+    private static ProfileSnapshot NormalizeShoppingSearchHistory(ProfileSnapshot snapshot)
+    {
+        IGrouping<string, KeyValuePair<string, SyncValue>>[] groups = snapshot
+            .Portable.GroupBy(entry => ShoppingSearchRoot(entry.Key) ?? string.Empty, StringComparer.Ordinal)
+            .Where(group => group.Key.Length > 0 && group.Any(entry => entry.Key != group.Key))
+            .ToArray();
+        if (groups.Length == 0)
+        {
+            return snapshot;
+        }
+        var portable = new Dictionary<string, SyncValue>(snapshot.Portable, StringComparer.Ordinal);
+        foreach (IGrouping<string, KeyValuePair<string, SyncValue>> group in groups)
+        {
+            KeyValuePair<string, SyncValue>[] entries = group.ToArray();
+            SyncValue normalized = CoalesceShoppingSearch(group.Key, entries);
+            foreach (KeyValuePair<string, SyncValue> entry in entries)
+            {
+                portable.Remove(entry.Key);
+            }
+            portable[group.Key] = normalized;
+        }
+        return snapshot with { Portable = portable };
+    }
+
+    /// <summary>Recognizes only Search subtrees in already validated shared or Commander shopping sidecars.</summary>
+    private static string? ShoppingSearchRoot(string key)
+    {
+        if (!key.StartsWith(ConfigArea + "/", StringComparison.Ordinal))
+        {
+            return null;
+        }
+        (string _, string relative, string pointer) = ProfileSyncPolicy.ParseKey(key, machine: false);
+        string[] parts = pointer.Split('/');
+        if (!relative.EndsWith(".shopping.json", StringComparison.Ordinal) || parts.Length < 3 || parts[2] != "Search")
+        {
+            return null;
+        }
+        return key[..key.IndexOf('#')] + "#/" + parts[1] + "/Search";
+    }
+
+    /// <summary>Preserves explicit whole values or reconstructs live legacy leaves, retaining every observed change counter.</summary>
+    private static SyncValue CoalesceShoppingSearch(string root, IReadOnlyList<KeyValuePair<string, SyncValue>> entries)
+    {
+        SyncValue? parent = entries.FirstOrDefault(entry => entry.Key == root).Value;
+        bool wholeValue = parent is { Deleted: false };
+        JsonNode? content = wholeValue ? parent?.Value?.DeepClone() : null;
+        bool deleted = !wholeValue;
+        foreach ((string key, SyncValue change) in entries.Where(entry => entry.Key != root && !entry.Value.Deleted))
+        {
+            string pointer = key[root.Length..];
+            if (wholeValue)
+            {
+                if (
+                    !TryReadPointer(content, pointer, out JsonNode? existing)
+                    || !JsonNode.DeepEquals(existing, change.Value)
+                )
+                {
+                    throw new InvalidDataException(
+                        "The backup contains conflicting whole and legacy shopping search values."
+                    );
+                }
+            }
+            else
+            {
+                content = SetPointer(content, pointer, change.Value, deleted: false);
+                deleted = false;
+            }
+        }
+        return new(content, deleted, MergeShoppingHistoryClock(entries));
+    }
+
+    /// <summary>Retains leaf-specific causal counters so independently edited legacy fields cannot appear identical.</summary>
+    private static Dictionary<string, long> MergeShoppingHistoryClock(
+        IReadOnlyList<KeyValuePair<string, SyncValue>> entries
+    )
+    {
+        var clock = new Dictionary<string, long>(StringComparer.Ordinal);
+        foreach ((string key, SyncValue change) in entries)
+        {
+            foreach ((string device, long counter) in change.Clock)
+            {
+                clock[device] = Math.Max(clock.GetValueOrDefault(device), counter);
+                if (!device.StartsWith(ShoppingHistoryClockPrefix, StringComparison.Ordinal))
+                {
+                    string historyKey =
+                        ShoppingHistoryClockPrefix
+                        + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key + "\n" + device)));
+                    clock[historyKey] = Math.Max(clock.GetValueOrDefault(historyKey), counter);
+                }
+            }
+        }
+        return clock;
+    }
+
+    /// <summary>Distinguishes an absent legacy field from an explicitly null whole-search property.</summary>
+    private static bool TryReadPointer(JsonNode? root, string pointer, out JsonNode? value)
+    {
+        value = root;
+        foreach (string part in pointer.Split('/').Skip(1).Select(ProfileSyncPolicy.Unescape))
+        {
+            if (value is not JsonObject obj || !obj.TryGetPropertyValue(part, out value))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>Replaces a file through a unique temporary file on the same filesystem.</summary>

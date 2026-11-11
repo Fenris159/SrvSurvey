@@ -66,7 +66,11 @@ stay local. Colonization's API recovery queues and refresh catalogs are also
 excluded; shopping snapshots retain the prices and allocations needed to reopen
 the saved workspace. Each nullable shopping search is captured as one unit so
 clearing and reopening project tags preserves the latest search and wishlist
-across successive backups. Local quest recovery archives are not backed up again.
+across successive backups. Older flattened search records in existing sync baselines,
+imported backups, and staged restores are normalized before use. The upgrade preserves
+independent field-change history and leaves the original snapshot unchanged; conflicting
+whole-search and live field values are rejected before local files change.
+Local quest recovery archives are not backed up again.
 
 On a new computer, a preferences-only Commander profile does not count as saved
 exploration totals. The available journal bootstrap rebuilds missing exploration

@@ -64638,6 +64638,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncPolicy.cs"
   },
   {
+    "Text": "The backup contains conflicting whole and legacy shopping search values.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "The backup contains data outside its permitted scope.",
     "IsFormat": false,
     "SourceKinds": [
@@ -80813,6 +80821,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "shopping-history:",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
+  },
+  {
     "Text": "short-tags",
     "IsFormat": false,
     "SourceKinds": [
@@ -84612,6 +84628,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxDesktopEntryRegistration.cs"
+  },
+  {
+    "Text": "{0}#/{1}/Search",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
     "Text": "{0}% complete",

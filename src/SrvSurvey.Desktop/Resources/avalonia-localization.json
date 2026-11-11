@@ -32209,6 +32209,10 @@
       "translation": "Die Sicherung enthält einen ungültigen Datenschlüssel."
     },
     {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "Die Sicherung enthält widersprüchliche Gesamt- und Legacy-Einkaufssuchwerte."
+    },
+    {
       "source": "The backup contains data outside its permitted scope.",
       "translation": "Die Sicherung enthält Daten außerhalb des zulässigen Umfangs."
     },
@@ -40289,6 +40293,10 @@
       "translation": "Schiffsname"
     },
     {
+      "source": "shopping-history:",
+      "translation": "Einkaufsgeschichte:"
+    },
+    {
       "source": "short-tags",
       "translation": "Kurz-Tags"
     },
@@ -42187,6 +42195,10 @@
     {
       "source": "{0}\"{1}\" %u",
       "translation": "{0}\"{1}\" %u"
+    },
+    {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Suche"
     },
     {
       "source": "{0}% complete",
@@ -74687,6 +74699,10 @@
       "translation": "La copia de seguridad contiene una clave de datos no válida."
     },
     {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "La copia de seguridad contiene valores de búsqueda de compras heredados y completos en conflicto."
+    },
+    {
       "source": "The backup contains data outside its permitted scope.",
       "translation": "La copia de seguridad contiene datos fuera de su alcance permitido."
     },
@@ -82767,6 +82783,10 @@
       "translation": "nombre del barco"
     },
     {
+      "source": "shopping-history:",
+      "translation": "historial-de-compras:"
+    },
+    {
       "source": "short-tags",
       "translation": "etiquetas cortas"
     },
@@ -84665,6 +84685,10 @@
     {
       "source": "{0}\"{1}\" %u",
       "translation": "{0}\"{1}\" %u"
+    },
+    {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Buscar"
     },
     {
       "source": "{0}% complete",
@@ -117165,6 +117189,10 @@
       "translation": "La sauvegarde contient une clé de données non valide."
     },
     {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "La sauvegarde contient des valeurs de recherche d'achats complètes et héritées contradictoires."
+    },
+    {
       "source": "The backup contains data outside its permitted scope.",
       "translation": "La sauvegarde contient des données en dehors de sa portée autorisée."
     },
@@ -125245,6 +125273,10 @@
       "translation": "nom du navire"
     },
     {
+      "source": "shopping-history:",
+      "translation": "historique d'achat :"
+    },
+    {
       "source": "short-tags",
       "translation": "balises courtes"
     },
@@ -127143,6 +127175,10 @@
     {
       "source": "{0}\"{1}\" %u",
       "translation": "{0}\"{1}\" %u"
+    },
+    {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Recherche"
     },
     {
       "source": "{0}% complete",
@@ -159643,6 +159679,10 @@
       "translation": "O backup contém uma chave de dados inválida."
     },
     {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "O backup contém valores de pesquisa de compras inteiros e legados conflitantes."
+    },
+    {
       "source": "The backup contains data outside its permitted scope.",
       "translation": "O backup contém dados fora do escopo permitido."
     },
@@ -167723,6 +167763,10 @@
       "translation": "nome do navio"
     },
     {
+      "source": "shopping-history:",
+      "translation": "histórico de compras:"
+    },
+    {
       "source": "short-tags",
       "translation": "tags curtas"
     },
@@ -169621,6 +169665,10 @@
     {
       "source": "{0}\"{1}\" %u",
       "translation": "{0}\"{1}\" %u"
+    },
+    {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Pesquisa"
     },
     {
       "source": "{0}% complete",
@@ -202121,6 +202169,10 @@
       "translation": "Резервная копия содержит неверный ключ данных."
     },
     {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "Резервная копия содержит конфликтующие целые и устаревшие значения поиска покупок."
+    },
+    {
       "source": "The backup contains data outside its permitted scope.",
       "translation": "Резервная копия содержит данные, выходящие за пределы разрешенного объема."
     },
@@ -210201,6 +210253,10 @@
       "translation": "название корабля"
     },
     {
+      "source": "shopping-history:",
+      "translation": "история покупок:"
+    },
+    {
       "source": "short-tags",
       "translation": "короткие теги"
     },
@@ -212099,6 +212155,10 @@
     {
       "source": "{0}\"{1}\" %u",
       "translation": "{0}\"{1}\" %u"
+    },
+    {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/Поиск"
     },
     {
       "source": "{0}% complete",
@@ -244599,6 +244659,10 @@
       "translation": "备份包含无效的数据密钥。"
     },
     {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "备份包含冲突的整体购物搜索值和旧购物搜索值。"
+    },
+    {
       "source": "The backup contains data outside its permitted scope.",
       "translation": "备份包含超出其允许范围的数据。"
     },
@@ -252679,6 +252743,10 @@
       "translation": "船名"
     },
     {
+      "source": "shopping-history:",
+      "translation": "购物历史："
+    },
+    {
       "source": "short-tags",
       "translation": "短标签"
     },
@@ -254577,6 +254645,10 @@
     {
       "source": "{0}\"{1}\" %u",
       "translation": "{0}\"{1}\"%u"
+    },
+    {
+      "source": "{0}#/{1}/Search",
+      "translation": "{0}#/{1}/搜索"
     },
     {
       "source": "{0}% complete",
@@ -287077,6 +287149,10 @@
       "translation": "* THE BACKUP CONTAINS AN INVALID DATA KEY. >>>!"
     },
     {
+      "source": "The backup contains conflicting whole and legacy shopping search values.",
+      "translation": "* THE BACKUP CONTAINS CONFLICTING WHOLE AND LEGACY SHOPPING SEARCH VALUES. >>>!"
+    },
+    {
       "source": "The backup contains data outside its permitted scope.",
       "translation": "* THE BACKUP CONTAINS DATA OUTSIDE ITS PERMITTED SCOPE. >>>!"
     },
@@ -295157,6 +295233,10 @@
       "translation": "* SHIPNAME >>>!"
     },
     {
+      "source": "shopping-history:",
+      "translation": "* SHOPPING-HISTORY: >>>!"
+    },
+    {
       "source": "short-tags",
       "translation": "* SHORT-TAGS >>>!"
     },
@@ -297055,6 +297135,10 @@
     {
       "source": "{0}\"{1}\" %u",
       "translation": "* {0}\"{1}\" %U >>>!"
+    },
+    {
+      "source": "{0}#/{1}/Search",
+      "translation": "* {0}#/{1}/SEARCH >>>!"
     },
     {
       "source": "{0}% complete",
