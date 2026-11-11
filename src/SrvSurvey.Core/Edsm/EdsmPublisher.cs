@@ -979,7 +979,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             }
 
             int statusClass = status / 100;
-            if (statusClass is 1 or 5)
+            if (statusClass == 1)
             {
                 accepted.Add(batch[index]);
             }

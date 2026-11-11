@@ -1280,7 +1280,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     {
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            if (!skipPersistedBootstrapEvents || journalEvent.EventName is "Fileheader" or "LoadGame")
+            if (
+                !skipPersistedBootstrapEvents
+                || !state.ProfileHasExplorationTotals
+                || journalEvent.EventName is "Fileheader" or "LoadGame"
+            )
             {
                 state.Exploration.Apply(journalEvent);
             }

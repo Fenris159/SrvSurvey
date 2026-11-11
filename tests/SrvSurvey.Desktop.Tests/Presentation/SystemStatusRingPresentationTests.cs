@@ -19,7 +19,7 @@ public sealed class SystemStatusRingPresentationTests
     [InlineData(true)]
     public void LiveAndEditorRenderOnePixelRingGapsAndFollowGeneralBrushChanges(bool editor)
     {
-        Application application = Assert.IsAssignableFrom<Application>(Application.Current);
+        Application application = Assert.IsType<Application>(Application.Current, exactMatch: false);
         var themeService = new RavenThemeService(
             application,
             new ThemePreferenceStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "theme.json"))
@@ -78,13 +78,16 @@ public sealed class SystemStatusRingPresentationTests
             Assert.Equal(FontWeight.Bold, destination.FontWeight);
             Assert.Equal(
                 Color.Parse("#FFFF00"),
-                Assert.IsAssignableFrom<ISolidColorBrush>(destination.Foreground).Color
+                Assert.IsType<ISolidColorBrush>(destination.Foreground, exactMatch: false).Color
             );
             SaveRender(window, editor ? "system-status-editor" : "system-status-live");
 
             outer.DataContext = ((SurveyBodyReferenceViewModel)outer.DataContext!) with { HasUnscannedRingA = false };
             using WriteableBitmap? updated = window.CaptureRenderedFrame();
-            Assert.Equal(Colors.Transparent, Assert.IsAssignableFrom<ISolidColorBrush>(inner.BorderBrush).Color);
+            Assert.Equal(
+                Colors.Transparent,
+                Assert.IsType<ISolidColorBrush>(inner.BorderBrush, exactMatch: false).Color
+            );
             Assert.Equal(new Thickness(0), inner.BorderThickness);
             Assert.Equal(new Point(2, 2), middle.TranslatePoint(default, outer));
             Assert.Equal(new Point(3, 3), inner.TranslatePoint(default, outer));
@@ -123,7 +126,10 @@ public sealed class SystemStatusRingPresentationTests
             {
                 expected = success;
             }
-            Assert.Equal(Color.Parse(expected), Assert.IsAssignableFrom<ISolidColorBrush>(border.BorderBrush).Color);
+            Assert.Equal(
+                Color.Parse(expected),
+                Assert.IsType<ISolidColorBrush>(border.BorderBrush, exactMatch: false).Color
+            );
         }
     }
 

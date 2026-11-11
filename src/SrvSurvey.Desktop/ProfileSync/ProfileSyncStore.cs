@@ -19,6 +19,7 @@ internal sealed record ProfileSyncDevice(string Id, string Name, string Platform
 internal sealed class ProfileSyncStore
 {
     private const string BaselineFileName = "baseline.json";
+    private const string ConfigArea = "config";
     private static readonly JsonDocumentOptions JsonOptions = new()
     {
         CommentHandling = JsonCommentHandling.Skip,
@@ -220,7 +221,13 @@ internal sealed class ProfileSyncStore
         }
         ProfileSyncPolicy.PrepareCapture(area, relative, node);
         ProfileSyncPolicy.RemoveLocalReferencesFromArrays(node);
-        foreach ((string pointer, JsonNode? value) in ProfileSyncPolicy.Flatten(node))
+        foreach (
+            (string pointer, JsonNode? value) in ProfileSyncPolicy.Flatten(
+                node,
+                atomicShoppingSearch: area == ConfigArea
+                    && relative.EndsWith(".shopping.json", StringComparison.Ordinal)
+            )
+        )
         {
             bool? local = ProfileSyncPolicy.IsMachineValue(area, relative, pointer);
             if (local is null)
@@ -635,7 +642,7 @@ internal sealed class ProfileSyncStore
                             StringComparison.Ordinal
                         );
                         return new RestoreFile(
-                            config ? "config" : "data",
+                            config ? ConfigArea : "data",
                             Path.GetRelativePath(config ? paths.ConfigDirectory : paths.DataDirectory, file)
                                 .Replace('\\', '/'),
                             originals[file] is not null
@@ -822,7 +829,7 @@ internal sealed class ProfileSyncStore
     /// <summary>Resolves paths only beneath the configured roots and refuses symbolic links.</summary>
     private string ResolveTarget(string area, string relative)
     {
-        string root = area == "config" ? paths.ConfigDirectory : paths.DataDirectory;
+        string root = area == ConfigArea ? paths.ConfigDirectory : paths.DataDirectory;
         string file = Path.GetFullPath(Path.Combine(root, relative));
         if (Directory.Exists(file))
         {
@@ -846,7 +853,7 @@ internal sealed class ProfileSyncStore
 
     /// <summary>Returns profile roots without following external caches or journal paths.</summary>
     private IEnumerable<(string Area, string Root)> Roots() =>
-        [("config", paths.ConfigDirectory), ("data", paths.DataDirectory)];
+        [(ConfigArea, paths.ConfigDirectory), ("data", paths.DataDirectory)];
 
     /// <summary>Walks only real directories so a linked journal or cache cannot enter a backup.</summary>
     private static IEnumerable<string> EnumerateSafeFiles(string root, string area, string relative = "")

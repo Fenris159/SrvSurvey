@@ -3030,6 +3030,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             CancellationToken.None
         );
         projectionState.ProfileRestoredFromDisk = result.Data is not null && result.Exists;
+        projectionState.ProfileHasExplorationTotals = result.HasExplorationTotals;
         loadedSystemHistoryKey = null;
         loadedSystemBodyDataKey = null;
         ResetSystemBodyDataRetryContext();

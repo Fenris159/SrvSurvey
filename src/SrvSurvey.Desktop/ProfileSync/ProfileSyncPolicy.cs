@@ -450,14 +450,28 @@ internal static partial class ProfileSyncPolicy
     internal static string Unescape(string value) =>
         value.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
 
-    /// <summary>Flattens JSON objects to independent settings while treating arrays as complete collections and omitting empty containers.</summary>
-    internal static IEnumerable<(string Pointer, JsonNode? Value)> Flatten(JsonNode? node, string pointer = "")
+    /// <summary>Flattens settings while keeping collections and nullable shopping searches atomic across successive backups.</summary>
+    internal static IEnumerable<(string Pointer, JsonNode? Value)> Flatten(
+        JsonNode? node,
+        string pointer = "",
+        bool atomicShoppingSearch = false
+    )
     {
-        if (node is JsonObject obj)
+        bool wholeSearch =
+            atomicShoppingSearch
+            && pointer.Split('/').Length == 3
+            && pointer.EndsWith("/Search", StringComparison.Ordinal);
+        if (node is JsonObject obj && !wholeSearch)
         {
             foreach ((string name, JsonNode? value) in obj)
             {
-                foreach ((string Pointer, JsonNode? Value) leaf in Flatten(value, pointer + "/" + Escape(name)))
+                foreach (
+                    (string Pointer, JsonNode? Value) leaf in Flatten(
+                        value,
+                        pointer + "/" + Escape(name),
+                        atomicShoppingSearch
+                    )
+                )
                 {
                     yield return leaf;
                 }

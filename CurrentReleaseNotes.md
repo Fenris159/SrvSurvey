@@ -50,17 +50,20 @@ improves shared journal data quality while preserving each provider's format.
 
 ### Shared journal data quality
 
-- **Avoid duplicate survey reports:** EDDN, EDSM, EDAstro, and VoxStellar retain
+- **Avoid duplicate survey reports:** EDDN, EDSM, and VoxStellar retain
   bounded content receipts for eligible observations across restarts. New
   timestamps, changed observations, and different Commanders remain distinct.
   Personal transactions and EDAstro docking records retain their source identity.
-  Rejected reports do not become successful content receipts.
+  EDAstro suppresses duplicate pending survey reports; its aggregate response
+  cannot confirm each item. Rejected reports do not become successful content
+  receipts, including EDSM per-event processing failures.
 - **Keep location context accurate:** Clear EDDN's tracked body after leaving it,
   retain known Codex body names without inventing body IDs, and prevent EDSM
   events from inheriting conflicting system, station, or coordinate metadata.
 - **Expand supported EDDN contributions:** Send organic Log/Sample scans with
-  verified surface coordinates and detailed outfitting catalogs with module IDs
-  and prices when available. Keep live Fleet Carrier Materials sharing; no
+  coordinates only from a matching event-time Status snapshot, and detailed
+  outfitting catalogs with module IDs and prices when available. Keep live
+  Fleet Carrier Materials sharing; no
   FCMaterials CAPI collection is added.
 - **Respect provider rules:** Exclude temporary Operations stations from EDDN,
   honor each other service's accepted event types, and identify new uploads with
@@ -69,6 +72,13 @@ improves shared journal data quality while preserving each provider's format.
 
 ### Backup compatibility and safeguards
 
+- **Preserve reopened shopping searches:** Keep each saved search together when
+  project tags are cleared and a search is reopened across successive backups,
+  retaining its latest carrier choices and wishlist.
+- **Recover missing exploration totals:** A preferences-only Commander restore
+  allows the available journal bootstrap to rebuild missing exploration counters.
+  Existing local totals, including saved zero totals, keep their replay guard;
+  other restored progress stays protected.
 - **Handle older screenshot backups:** Move legacy portable screenshot settings
   into their original machine section when reading backups. Existing machine
   values take precedence. Restores staged by an older release skip formerly

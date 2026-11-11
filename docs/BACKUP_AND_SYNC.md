@@ -64,7 +64,14 @@ preference, active Journey reference, Boxel/sphere configuration and progress,
 and Ram Tah log progress. Integration keys and live exploration-value counters
 stay local. Colonization's API recovery queues and refresh catalogs are also
 excluded; shopping snapshots retain the prices and allocations needed to reopen
-the saved workspace. Local quest recovery archives are not backed up again.
+the saved workspace. Each nullable shopping search is captured as one unit so
+clearing and reopening project tags preserves the latest search and wishlist
+across successive backups. Local quest recovery archives are not backed up again.
+
+On a new computer, a preferences-only Commander profile does not count as saved
+exploration totals. The available journal bootstrap rebuilds missing exploration
+counters while preserving restored preferences and other saved progress. Totals
+already saved locally, including deliberate zero totals, are not replayed.
 
 Keep every linked computer updated before synchronizing backups with these
 additional settings. Older releases do not recognize all of the new sections.

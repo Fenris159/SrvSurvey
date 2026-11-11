@@ -80,6 +80,7 @@ public sealed class EddnValidationRegressionTests
         JObject raw = Organic(scanType);
         var status = new EliteStatus
         {
+            Timestamp = new DateTimeOffset(2026, 11, 10, 12, 0, 0, TimeSpan.Zero),
             BodyName = "Test A 1",
             Latitude = 12.5,
             Longitude = -43.25,

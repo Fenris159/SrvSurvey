@@ -48,5 +48,7 @@ internal sealed class JournalProjectionState
 
     internal bool ProfileRestoredFromDisk { get; set; }
 
+    internal bool ProfileHasExplorationTotals { get; set; }
+
     internal bool ProfileIsOdyssey { get; set; } = true;
 }

@@ -137,6 +137,7 @@ public sealed class EddnPublicationQualityTests : IDisposable
             request,
             new EliteStatus
             {
+                Timestamp = new DateTimeOffset(2026, 11, 10, 12, 0, 2, TimeSpan.Zero),
                 BodyName = "Test A 1",
                 Latitude = 12.5,
                 Longitude = -43.25,
@@ -151,6 +152,89 @@ public sealed class EddnPublicationQualityTests : IDisposable
         Assert.Equal("Log", payload["message"]!.Value<string>("ScanType"));
         Assert.Equal(12.5, payload["message"]!.Value<double>("Latitude"));
         Assert.Equal(-43.25, payload["message"]!.Value<double>("Longitude"));
+    }
+
+    [Theory]
+    [InlineData(false, null)]
+    [InlineData(true, "Test B 1")]
+    public async Task CodexAfterAJumpUsesOnlyStatusFromTheNewSystemTime(bool freshStatus, string? expectedBody)
+    {
+        using EddnPublisher publisher = Create();
+        await Bootstrap(publisher);
+        EddnApplyRequest request = Request(
+            true,
+            [
+                Event(
+                    """{"event":"FSDJump","timestamp":"2026-11-10T12:00:03Z","StarSystem":"Test B","SystemAddress":456,"StarPos":[7,8,9]}"""
+                ),
+                Event(
+                    """{"event":"CodexEntry","timestamp":"2026-11-10T12:00:04Z","System":"Test B","SystemAddress":456,"EntryID":10,"Name":"$Codex_Entry_Name;","Region":"$Codex_RegionName_18;","Category":"$Codex_Category_Biology;","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""
+                ),
+            ]
+        );
+        await publisher.ApplyAsync(
+            WithStatus(
+                request,
+                new EliteStatus
+                {
+                    Timestamp = new DateTimeOffset(2026, 11, 10, 12, 0, freshStatus ? 4 : 1, TimeSpan.Zero),
+                    BodyName = freshStatus ? "Test B 1" : "Test A 1",
+                    Flags = StatusFlags.HasLatLong,
+                    Latitude = 1,
+                    Longitude = 2,
+                }
+            )
+        );
+        await publisher.ProcessPendingAsync();
+        JObject codex = Assert.Single(
+            payloads.Select(payload => (JObject)payload["message"]!),
+            message => message.Value<string>("event") == "CodexEntry"
+        );
+        Assert.Equal("Test B", codex.Value<string>("System"));
+        Assert.Equal(expectedBody, codex.Value<string>("BodyName"));
+        Assert.Null(codex["BodyID"]);
+    }
+
+    [Fact]
+    public async Task DelayedOrganicBatchKeepsEarlierSamplesFreeOfLaterCoordinates()
+    {
+        using EddnPublisher publisher = Create();
+        await Bootstrap(publisher);
+        EddnApplyRequest request = Request(
+            true,
+            [
+                Event("""{"event":"ApproachBody","timestamp":"2026-11-10T12:00:01Z","Body":"Test A 1","BodyID":4}"""),
+                Event(
+                    """{"event":"ScanOrganic","timestamp":"2026-11-10T12:00:02Z","ScanType":"Log","Genus":"$Genus_Name;","Species":"$Species_Name;","SystemAddress":123,"Body":4}"""
+                ),
+                Event(
+                    """{"event":"ScanOrganic","timestamp":"2026-11-10T12:00:05Z","ScanType":"Sample","Genus":"$Genus_Name;","Species":"$Species_Name;","SystemAddress":123,"Body":4}"""
+                ),
+            ]
+        );
+        await publisher.ApplyAsync(
+            WithStatus(
+                request,
+                new EliteStatus
+                {
+                    Timestamp = new DateTimeOffset(2026, 11, 10, 12, 0, 5, TimeSpan.Zero),
+                    BodyName = "Test A 1",
+                    Latitude = 25,
+                    Longitude = -30,
+                    Flags = StatusFlags.HasLatLong,
+                }
+            )
+        );
+        await publisher.ProcessPendingAsync();
+        Assert.Equal(2, payloads.Count);
+        JToken first = payloads[0]["message"]!;
+        JToken last = payloads[1]["message"]!;
+        Assert.Equal("Log", first.Value<string>("ScanType"));
+        Assert.Null(first["Latitude"]);
+        Assert.Null(first["Longitude"]);
+        Assert.Equal("Sample", last.Value<string>("ScanType"));
+        Assert.Equal(25, last.Value<double>("Latitude"));
+        Assert.Equal(-30, last.Value<double>("Longitude"));
     }
 
     private static EddnApplyRequest WithStatus(EddnApplyRequest request, EliteStatus status) =>

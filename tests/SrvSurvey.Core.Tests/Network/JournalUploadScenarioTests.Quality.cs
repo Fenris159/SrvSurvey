@@ -7,10 +7,13 @@ namespace SrvSurvey.Core.Tests.Network;
 public sealed partial class JournalUploadScenarioTests
 {
     [Theory]
-    [InlineData("EDSM")]
-    [InlineData("EDAstro")]
-    [InlineData("VoxStellar")]
-    public async Task IdenticalObservationsAcrossNewRecordsAndRestartAreUploadedOnce(string provider)
+    [InlineData("EDSM", true)]
+    [InlineData("EDAstro", false)]
+    [InlineData("VoxStellar", true)]
+    public async Task IdenticalObservationsFollowEachProvidersContentAcknowledgement(
+        string provider,
+        bool confirmedContent
+    )
     {
         Directory.CreateDirectory(directory);
         string journal = Path.Combine(directory, "Journal.2026-10-12T120000.01.log");
@@ -43,7 +46,14 @@ public sealed partial class JournalUploadScenarioTests
         {
             await Run(provider, client, restarted, duplicate);
         }
-        Assert.Empty(second.Posts);
+        if (confirmedContent)
+        {
+            Assert.Empty(second.Posts);
+        }
+        else
+        {
+            Assert.Equal(1, ObservationCount(provider, Assert.Single(second.Posts)));
+        }
 
         clock.Now += TimeSpan.FromHours(1);
         await File.AppendAllTextAsync(journal, observation.Replace("12:00:01", "12:00:02", StringComparison.Ordinal));

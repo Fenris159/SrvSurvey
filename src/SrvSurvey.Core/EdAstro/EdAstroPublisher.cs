@@ -593,7 +593,8 @@ public sealed class EdAstroPublisher : IEdAstroPublisher
             nextRequestAt = utcNow() + TimeSpan.FromMinutes(15);
             return;
         }
-        outbox?.Complete(batch.Select(item => item.Identity), contentAccepted: apiStatus == 200);
+        // Status 200 confirms at least one accepted item, not every observation in the batch.
+        outbox?.Complete(batch.Select(item => item.Identity));
         queue.RemoveRange(0, batch.Length);
         completedCount += apiStatus == 200 ? batch.Length : 0;
         failureCount = 0;

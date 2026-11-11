@@ -74,13 +74,17 @@ restarts.
 - Source-record receipts remain authoritative for replay and personal
   transactions. EDDN additionally stores a bounded content fingerprint beside
   the source identity. EDSM applies content suppression only to galaxy and
-  travel observations; EDAstro applies it to organic/Codex survey observations,
+  travel observations; EDAstro collapses duplicate pending organic/Codex observations,
   preserving distinct docking and carrier-operation records. VoxStellar applies
   it to its existing observational feed. Inara's personal commands retain
   source-based identity.
 - Accepted-content receipts are committed only when the provider acknowledges
   the data. Rejections and policy discards retire source records without blocking
-  a later valid submission from new evidence.
+  a later valid submission from new evidence. EDSM per-event 5xx processing
+  failures do not count as accepted content; its top-level 5xx accepted-for-later
+  response retains its separate meaning. EDAstro's aggregate 200 response proves
+  only that at least one item was accepted, so its completed batches retain
+  source receipts without claiming individual content acceptance.
 - Fingerprints canonicalize object-key order while retaining arrays, values and
   event timestamps. A new timestamp, commander, game context or changed payload
   remains a distinct observation. No freshness cutoff is added for Stealth Mode.
@@ -92,9 +96,13 @@ restarts.
   publication is considered. Personal journal APIs retain their own event rules.
 - `LeaveBody` clears EDDN's tracked body. A verified Status body name can be
   supplied without an unverified body ID; explicit journal identity remains
-  authoritative.
+  authoritative. A Status name must agree with current tracked-body evidence or
+  match the event time after entering the current system. Cached Status from
+  before a jump cannot supply a fallback name in the destination system.
 - `ScanOrganic` uses `scanorganic/1` for `Log` and `Sample`, renaming `Body` to
-  `BodyID` and including coordinates only with matching body context. `Analyse`
+  `BodyID` and including coordinates only with matching body context and an
+  equal Status/event timestamp. Delayed observations keep their optional
+  coordinates absent instead of borrowing a later sample's location. `Analyse`
   is excluded by that schema; the other providers retain their accepted journal
   formats and event policies.
 - Complete outfitting catalogs use `outfitting/3`, including `id`, `Name`,

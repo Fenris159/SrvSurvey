@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Journal;
@@ -452,17 +453,29 @@ internal static class EddnMessageSanitizer
         if (matchingBody)
         {
             message[BodyNameProperty] ??= context.statusBodyName;
-            AddSurfaceCoordinates(message, context.status);
+            AddSurfaceCoordinates(message, context.status, GetEventTimestamp(raw));
         }
         addFlags(message, context);
         reason = string.Empty;
         return true;
     }
 
-    private static void AddSurfaceCoordinates(JObject message, EliteStatus? status)
+    /// <summary>Reads game time without substituting the uploader's wall clock.</summary>
+    internal static DateTimeOffset? GetEventTimestamp(JObject source) =>
+        DateTimeOffset.TryParse(
+            source.Value<string>(TimestampKey),
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal,
+            out DateTimeOffset timestamp
+        )
+            ? timestamp
+            : null;
+
+    private static void AddSurfaceCoordinates(JObject message, EliteStatus? status, DateTimeOffset? eventTimestamp)
     {
         if (
             status is { Latitude: { } latitude, Longitude: { } longitude }
+            && status.Timestamp == eventTimestamp
             && (status.Flags & StatusFlags.HasLatLong) != 0
             && double.IsFinite(latitude)
             && latitude is >= -90 and <= 90

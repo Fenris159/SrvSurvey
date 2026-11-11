@@ -52,6 +52,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private readonly HashSet<Task> companionTasks = [];
     private EddnSignalBatchContext? pendingSignalContext;
     private EddnLocationContext? location;
+    private DateTimeOffset? systemEnteredAt;
     private string? statusBodyName;
     private EliteStatus? currentStatus;
     private string? trackedBodyName;
@@ -398,21 +399,37 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
 
             SignalBatch? signalBatch = eventName == "FSSSignalDiscovered" ? null : TakeSignalBatchLocked();
+            DateTimeOffset? eventTimestamp = EddnMessageSanitizer.GetEventTimestamp(raw);
             EddnLocationContext? eventLocation = EddnMessageSanitizer.getLocation(raw);
             if (eventLocation is not null)
             {
+                if (
+                    location?.systemAddress != eventLocation.systemAddress
+                    || location.systemName != eventLocation.systemName
+                )
+                {
+                    systemEnteredAt = eventTimestamp;
+                }
                 location = eventLocation;
                 ClearTrackedBodyLocked();
             }
 
             currentStatus = request.AllowSharedData ? request.Status : null;
-            statusBodyName = currentStatus?.BodyName;
             UpdateBodyContextLocked(raw);
+            statusBodyName = IsStatusBodyCurrent(eventTimestamp) ? currentStatus?.BodyName : null;
             UpdateExpansionFlagsLocked(raw);
             UpdateCrewMembershipLocked(eventName);
             return new CapturedEventState(signalBatch, CreateContextLocked(), isCrewMember, sessionGeneration);
         }
     }
+
+    /// <summary>Accepts a Status name only with current tracked-body evidence or a matching post-arrival event time.</summary>
+    private bool IsStatusBodyCurrent(DateTimeOffset? eventTimestamp) =>
+        currentStatus is { } status
+        && (
+            (!string.IsNullOrWhiteSpace(trackedBodyName) && trackedBodyName == status.BodyName)
+            || (status.Timestamp == eventTimestamp && status.Timestamp > systemEnteredAt)
+        );
 
     /// <summary>Applies companion-file context before emitting its eligible EDDN projections.</summary>
     private bool ProcessCompanionEvent(
