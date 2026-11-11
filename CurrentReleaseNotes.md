@@ -76,7 +76,9 @@ improves shared journal data quality while preserving each provider's format.
   project tags are cleared and a search is reopened across successive backups,
   retaining its latest carrier choices and wishlist. Upgrade older flattened
   search backups and sync baselines before capture or restore, preserving their
-  field-change history and rejecting contradictory records before changing files.
+  field-change history and resolved wishlist choices. Reject contradictory object
+  records or oversized upgraded backups before changing files, and avoid repeated
+  work on long legacy paths.
 - **Recover missing exploration totals:** A preferences-only Commander restore
   allows the available journal bootstrap to rebuild missing exploration counters.
   Existing local totals, including saved zero totals, keep their replay guard;

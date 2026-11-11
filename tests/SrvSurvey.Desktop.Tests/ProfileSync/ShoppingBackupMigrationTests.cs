@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.ProfileSync;
 using SrvSurvey.Desktop.ProfileSync;
@@ -94,6 +95,55 @@ public sealed class ShoppingBackupMigrationTests
 
         AssertSearch(target);
         Assert.Equal(original, mixed.Serialize());
+    }
+
+    [Fact]
+    public void ResolvedLegacyNullParentAndLiveWishlistCanBeStagedAndRestored()
+    {
+        using var source = new ProfileSyncTestRoot();
+        using var target = new ProfileSyncTestRoot();
+        ProfileSnapshot resolved = LegacySnapshot(source, "cleared", parentFirst: true);
+        resolved.Portable[SearchKey + "/WishList"] = new(
+            JsonNode.Parse("""[{"Commodity":"titanium","Quantity":12}]"""),
+            false,
+            new() { [source.Store.Device.Id] = 4, [OtherMachine] = 3 }
+        );
+
+        target.Store.StageExplicitRestore(resolved, restoreMachine: false);
+        Assert.True(target.Store.ApplyPending());
+
+        JsonNode saved = JsonNode.Parse(File.ReadAllText(target.Path("config", FileName)))!;
+        Assert.Equal(12, saved["PILOT"]!["Search"]!["WishList"]![0]!["Quantity"]!.GetValue<int>());
+        Assert.Null(saved["PILOT"]!["Search"]!["SelectedCarrierMarketIds"]);
+    }
+
+    [Fact]
+    public void OversizedNormalizedHistoryCannotReplaceAnExistingBaseline()
+    {
+        using var source = new ProfileSyncTestRoot();
+        ProfileSnapshot initial = source.Store.Capture();
+        source.Store.SaveBaseline(initial);
+        string baselinePath = Path.Combine(source.Store.StateDirectory, "baseline.json");
+        byte[] baseline = File.ReadAllBytes(baselinePath);
+        var devices = Enumerable
+            .Range(0, 16)
+            .ToDictionary(i => "device-" + i.ToString("D57", CultureInfo.InvariantCulture), _ => 1L);
+        var deleted = new SyncValue(null, true, devices);
+        var values = Enumerable
+            .Range(0, ProfileSnapshot.MaximumValues)
+            .ToDictionary(
+                i => SearchKey + "/field" + i.ToString("D6", CultureInfo.InvariantCulture),
+                _ => deleted,
+                StringComparer.Ordinal
+            );
+        byte[] original = (initial with { Portable = values }).Serialize();
+        Assert.InRange(original.Length, 1, ProfileSnapshot.MaximumBytes);
+        var accepted = ProfileSnapshot.Parse(original);
+
+        Assert.Throws<InvalidDataException>(() => source.Store.SaveBaseline(accepted));
+
+        Assert.Equal(baseline, File.ReadAllBytes(baselinePath));
+        Assert.Equal(initial.Serialize(), source.Store.LoadBaseline()!.Serialize());
     }
 
     private static ProfileSnapshot LegacySnapshot(ProfileSyncTestRoot source, string shape, bool parentFirst)

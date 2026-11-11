@@ -742,7 +742,7 @@ internal sealed class ProfileSyncStore
         return NormalizeShoppingSearchHistory(snapshot);
     }
 
-    /// <summary>Collapses old leaf records before capture, merge, or restore can mix them with atomic Search values.</summary>
+    /// <summary>Collapses old leaf records and validates the resulting size before capture, merge, or restore.</summary>
     private static ProfileSnapshot NormalizeShoppingSearchHistory(ProfileSnapshot snapshot)
     {
         IGrouping<string, KeyValuePair<string, SyncValue>>[] groups = snapshot
@@ -764,7 +764,7 @@ internal sealed class ProfileSyncStore
             }
             portable[group.Key] = normalized;
         }
-        return snapshot with { Portable = portable };
+        return ProfileSnapshot.Parse((snapshot with { Portable = portable }).Serialize());
     }
 
     /// <summary>Recognizes only Search subtrees in already validated shared or Commander shopping sidecars.</summary>
@@ -783,13 +783,13 @@ internal sealed class ProfileSyncStore
         return key[..key.IndexOf('#')] + "#/" + parts[1] + "/Search";
     }
 
-    /// <summary>Preserves explicit whole values or reconstructs live legacy leaves, retaining every observed change counter.</summary>
+    /// <summary>Reconstructs live legacy leaves after deletion or null markers while preserving explicit object values.</summary>
     private static SyncValue CoalesceShoppingSearch(string root, IReadOnlyList<KeyValuePair<string, SyncValue>> entries)
     {
         SyncValue? parent = entries.FirstOrDefault(entry => entry.Key == root).Value;
-        bool wholeValue = parent is { Deleted: false };
-        JsonNode? content = wholeValue ? parent?.Value?.DeepClone() : null;
-        bool deleted = !wholeValue;
+        bool wholeValue = parent is { Deleted: false, Value: not null };
+        bool deleted = parent is null || parent.Deleted;
+        JsonNode? content = deleted ? null : parent?.Value?.DeepClone();
         foreach ((string key, SyncValue change) in entries.Where(entry => entry.Key != root && !entry.Value.Deleted))
         {
             string pointer = key[root.Length..];
@@ -814,7 +814,7 @@ internal sealed class ProfileSyncStore
         return new(content, deleted, MergeShoppingHistoryClock(entries));
     }
 
-    /// <summary>Retains leaf-specific causal counters so independently edited legacy fields cannot appear identical.</summary>
+    /// <summary>Retains leaf-specific causal counters, hashing each path once regardless of device count.</summary>
     private static Dictionary<string, long> MergeShoppingHistoryClock(
         IReadOnlyList<KeyValuePair<string, SyncValue>> entries
     )
@@ -822,6 +822,7 @@ internal sealed class ProfileSyncStore
         var clock = new Dictionary<string, long>(StringComparer.Ordinal);
         foreach ((string key, SyncValue change) in entries)
         {
+            string pathHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key)));
             foreach ((string device, long counter) in change.Clock)
             {
                 clock[device] = Math.Max(clock.GetValueOrDefault(device), counter);
@@ -829,7 +830,7 @@ internal sealed class ProfileSyncStore
                 {
                     string historyKey =
                         ShoppingHistoryClockPrefix
-                        + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key + "\n" + device)));
+                        + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(pathHash + "\n" + device)));
                     clock[historyKey] = Math.Max(clock.GetValueOrDefault(historyKey), counter);
                 }
             }

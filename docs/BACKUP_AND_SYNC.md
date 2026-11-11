@@ -68,8 +68,11 @@ the saved workspace. Each nullable shopping search is captured as one unit so
 clearing and reopening project tags preserves the latest search and wishlist
 across successive backups. Older flattened search records in existing sync baselines,
 imported backups, and staged restores are normalized before use. The upgrade preserves
-independent field-change history and leaves the original snapshot unchanged; conflicting
-whole-search and live field values are rejected before local files change.
+independent field-change history, including resolved edits after legacy null markers,
+and leaves the original snapshot unchanged. Contradictory whole-object and live-field
+values or normalized backups exceeding the 128 MiB limit are rejected before local
+files change. Each legacy path is hashed once to keep normalization work proportional
+to the input rather than the product of path length and device count.
 Local quest recovery archives are not backed up again.
 
 On a new computer, a preferences-only Commander profile does not count as saved
