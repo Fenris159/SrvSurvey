@@ -72,14 +72,21 @@ using NativeRelease = ULONG(STDMETHODCALLTYPE *)(ID3D11DeviceContext *);
 NativeRelease boundaryRelease = nullptr;
 HANDLE releaseReached = nullptr, releaseContinue = nullptr;
 std::atomic<bool> delayRelease{false};
+std::atomic<DWORD> releaseWaitResult{WAIT_FAILED};
+bool delayBeforeRelease = false;
+void PauseRelease()
+{
+    SetEvent(releaseReached);
+    releaseWaitResult = WaitForSingleObject(releaseContinue, 5000);
+}
 ULONG STDMETHODCALLTYPE DelayedRelease(ID3D11DeviceContext *context)
 {
+    bool pause = delayRelease.exchange(false);
+    if (pause && delayBeforeRelease)
+        PauseRelease();
     ULONG references = boundaryRelease(context);
-    if (references == 0 && delayRelease.exchange(false))
-    {
-        SetEvent(releaseReached);
-        (void)WaitForSingleObject(releaseContinue, 5000);
-    }
+    if (pause && !delayBeforeRelease && references == 0)
+        PauseRelease();
     return references;
 }
 
@@ -308,9 +315,9 @@ int wmain(int argc, wchar_t **argv)
     try
     {
         AddVectoredExceptionHandler(1, DescribeException);
-        Require(argc >= 2 && argc <= 9, "Pass the built DLL path, optionally --present-test, --without-observer, --mapped-window --catalog-layout, --omit-device-output, --swapchain-only or --concurrent-reacquire");
+        Require(argc >= 2 && argc <= 10, "Pass the built DLL path, optionally --present-test, --without-observer, --mapped-window --catalog-layout, --omit-device-output, --swapchain-only --concurrent-reacquire or --transient-reacquire");
         bool presentTest = false, observerDisabled = false, mappedWindow = false, catalogLayout = false;
-        bool omitDevice = false, swapchainOnly = false, concurrentReacquire = false;
+        bool omitDevice = false, swapchainOnly = false, concurrentReacquire = false, transientReacquire = false;
         for (int index = 2; index < argc; ++index)
         {
             if (std::wcscmp(argv[index], L"--present-test") == 0) presentTest = true;
@@ -320,6 +327,7 @@ int wmain(int argc, wchar_t **argv)
             else if (std::wcscmp(argv[index], L"--omit-device-output") == 0) omitDevice = true;
             else if (std::wcscmp(argv[index], L"--swapchain-only") == 0) swapchainOnly = true;
             else if (std::wcscmp(argv[index], L"--concurrent-reacquire") == 0) concurrentReacquire = true;
+            else if (std::wcscmp(argv[index], L"--transient-reacquire") == 0) transientReacquire = true;
             else throw std::runtime_error("Unknown harness option");
         }
         HMODULE compiler = LoadLibraryW(L"d3dcompiler_47.dll");
@@ -380,7 +388,7 @@ int wmain(int argc, wchar_t **argv)
                 Require(WritePrivateProfileStringW(L"Layout", key, value, cachedIni.c_str()) != 0,
                         "Cannot write a declarative harness layout");
         }
-        if (concurrentReacquire)
+        if (concurrentReacquire || transientReacquire)
             InstallReleaseBoundary();
         HMODULE bridge = LoadLibraryW(dll.c_str());
         Require(bridge != nullptr, "Cannot load the built bridge DLL");
@@ -510,7 +518,8 @@ int wmain(int argc, wchar_t **argv)
                 scene.device->GetImmediateContext(scene.context.Out());
             SetEvent(releaseContinue);
             release.join();
-            Require(reached && remaining == 0 && scene.context.value, "Concurrent Release0 barrier was not reached");
+            Require(reached && releaseWaitResult == WAIT_OBJECT_0 && remaining == 0 && scene.context.value,
+                    "Concurrent Release0 barrier timed out or was not reached");
         }
         else
         {
@@ -547,7 +556,42 @@ int wmain(int argc, wchar_t **argv)
         std::cerr << "Phase: clear context state" << std::endl;
         scene.context->ClearState();
         std::cerr << "Phase: release context" << std::endl;
-        scene.context.Reset();
+        if (transientReacquire)
+        {
+            ID3D11DeviceContext *old = std::exchange(scene.context.value, nullptr);
+            delayBeforeRelease = true;
+            delayRelease = true;
+            std::thread release([&] { remaining = old->Release(); });
+            bool reached = WaitForSingleObject(releaseReached, 5000) == WAIT_OBJECT_0;
+            ULONG transientRemaining = 0;
+            if (reached)
+            {
+                ID3D11DeviceContext *transient = nullptr;
+                scene.device->GetImmediateContext(&transient);
+                if (transient)
+                    transientRemaining = transient->Release();
+            }
+            SetEvent(releaseContinue);
+            release.join();
+            Require(reached && releaseWaitResult == WAIT_OBJECT_0 && transientRemaining == 1 && remaining == 0,
+                    "Transient reacquisition barrier timed out or did not reach final Release0");
+            SOCKET releasedPort = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            Require(releasedPort != INVALID_SOCKET, "Cannot check released observation transport");
+            BOOL exclusive = TRUE;
+            int exclusiveResult = setsockopt(releasedPort, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+                                            reinterpret_cast<const char *>(&exclusive), sizeof(exclusive));
+            sockaddr_in address{};
+            address.sin_family = AF_INET;
+            address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+            address.sin_port = htons(47765);
+            int bound = bind(releasedPort, reinterpret_cast<sockaddr *>(&address), sizeof(address));
+            closesocket(releasedPort);
+            Require(exclusiveResult == 0 && bound == 0,
+                    "Final Release0 after transient reacquisition retained the observation transport");
+            std::cout << "PASS: final Release0 after transient reacquisition releases observation transport" << std::endl;
+        }
+        else
+            scene.context.Reset();
         std::cerr << "Phase: release shader-resource view and buffers" << std::endl;
         scene.instancesView.Reset();
         scene.instances.Reset();

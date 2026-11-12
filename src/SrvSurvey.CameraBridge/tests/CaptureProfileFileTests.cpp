@@ -98,6 +98,7 @@ int wmain(int argc, wchar_t **argv)
                 loaded.layout.positionOffset == 64 && loaded.layout.positionFormat == 2 && loaded.layout.rotationOrder == 1 &&
                 loaded.layout.cameraBytes == 8192 && loaded.layout.projectionOffset == 512 && loaded.layout.projectionTranspose == 1,
                 "The Windows INI loader did not apply the declarative buffer layout");
+        CaptureProfile selected = loaded;
         Require(CopyFileW(fixture.cache.c_str(), (fixture.cache + L".previous").c_str(), FALSE) != 0,
                 "Cannot seed the previous compatible catalog");
         WriteAscii(fixture.cache,
@@ -118,6 +119,23 @@ int wmain(int argc, wchar_t **argv)
         loaded = LoadInstalledCaptureProfile(fixture.directory);
         Require(loaded.IsUsable() && loaded.profileVersion == 4 && loaded.layout.recordStride == 512,
                 "Successive unsupported catalogs discarded the last decoder-usable profile");
+        // Selection owns its contents even if the source is replaced before retention.
+        std::wstring retained = fixture.cache + L".reader-2";
+        DeleteFileW(retained.c_str());
+        Require(RetainSupportedProfile(retained, selected) == selected,
+                "Replacing a mutable source discarded the selected compatible snapshot");
+        loaded = LoadInstalledCaptureProfile(fixture.directory);
+        Require(loaded == selected, "The retained selected layout did not survive unsupported source replacements");
+
+        // A delayed writer cannot downgrade a revision already retained by another writer.
+        CaptureProfile newer = selected, delayed = selected;
+        newer.profileVersion = 9;
+        delayed.profileVersion = 8;
+        Require(RetainSupportedProfile(retained, newer) == newer, "Cannot retain the newer compatible revision");
+        Require(RetainSupportedProfile(retained, delayed) == newer,
+                "A delayed older writer downgraded the retained catalog revision");
+        Require(LoadInstalledCaptureProfile(fixture.directory) == newer,
+                "A stale writer changed the profile subsequently loaded by the bridge");
         DeleteFileW(fixture.locator.c_str());
         Require(LoadInstalledCaptureProfile(fixture.directory).shaderHash == 0x69cbbf4aae46746fULL,
                 "A missing cache locator prevented the installed profile from loading");

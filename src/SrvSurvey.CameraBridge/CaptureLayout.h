@@ -107,28 +107,57 @@ inline std::string LayoutLower(std::string_view value)
     return result;
 }
 
+struct IntegerField { const char *name; uint32_t CaptureLayout::*member; };
+inline constexpr IntegerField LayoutIntegers[]{
+    {"schemaversion", &CaptureLayout::schemaVersion}, {"requiredbridgeversion", &CaptureLayout::requiredBridgeVersion},
+    {"recordslot", &CaptureLayout::recordSlot}, {"cameraslot", &CaptureLayout::cameraSlot},
+    {"bufferelementstride", &CaptureLayout::bufferElementStride}, {"recordstride", &CaptureLayout::recordStride},
+    {"recorddataoffset", &CaptureLayout::recordDataOffset}, {"camerabytes", &CaptureLayout::cameraBytes},
+    {"maximumbufferbytes", &CaptureLayout::maximumBufferBytes}, {"positionoffset", &CaptureLayout::positionOffset},
+    {"rotationoffset", &CaptureLayout::rotationOffset}, {"rotationconjugate", &CaptureLayout::rotationConjugate},
+    {"projectionoffset", &CaptureLayout::projectionOffset}, {"projectiontranspose", &CaptureLayout::projectionTranspose},
+    {"projectionincludesorigin", &CaptureLayout::projectionIncludesOrigin},
+    {"camerapositionoffset", &CaptureLayout::cameraPositionOffset}, {"axesoffset", &CaptureLayout::axesOffset},
+    {"axesstride", &CaptureLayout::axesStride}, {"axestranspose", &CaptureLayout::axesTranspose},
+    {"minimummembers", &CaptureLayout::minimumMembers}, {"maximumnearrecords", &CaptureLayout::maximumNearRecords},
+    {"minimumviewportwidth", &CaptureLayout::minimumViewportWidth},
+    {"minimumviewportheight", &CaptureLayout::minimumViewportHeight},
+    {"viewportmatchestarget", &CaptureLayout::viewportMatchesTarget}};
+
+struct RealField { const char *name; double CaptureLayout::*member; };
+inline constexpr RealField LayoutReals[]{
+    {"positionscale", &CaptureLayout::positionScale}, {"camerapositionscale", &CaptureLayout::cameraPositionScale},
+    {"canonicalneardepth", &CaptureLayout::canonicalNearDepth}, {"nearradius", &CaptureLayout::nearRadius},
+    {"positiontolerance", &CaptureLayout::positionTolerance}, {"angletolerancedegrees", &CaptureLayout::angleToleranceDegrees},
+    {"quaterniontolerance", &CaptureLayout::quaternionTolerance}, {"cameratolerance", &CaptureLayout::cameraTolerance},
+    {"dominanceratio", &CaptureLayout::dominanceRatio}};
+
+struct Choice { const char *key; const char *value; uint32_t CaptureLayout::*member; uint32_t number; };
+inline constexpr Choice LayoutChoices[]{
+    {"shaderstage", "vs", &CaptureLayout::shaderStage, 0}, {"shaderstage", "ps", &CaptureLayout::shaderStage, 1},
+    {"recordstage", "vs", &CaptureLayout::recordStage, 0}, {"recordstage", "ps", &CaptureLayout::recordStage, 1},
+    {"recordstage", "gs", &CaptureLayout::recordStage, 2}, {"recordstage", "hs", &CaptureLayout::recordStage, 3},
+    {"recordstage", "ds", &CaptureLayout::recordStage, 4}, {"recordstage", "cs", &CaptureLayout::recordStage, 5},
+    {"camerastage", "vs", &CaptureLayout::cameraStage, 0}, {"camerastage", "ps", &CaptureLayout::cameraStage, 1},
+    {"camerastage", "gs", &CaptureLayout::cameraStage, 2}, {"camerastage", "hs", &CaptureLayout::cameraStage, 3},
+    {"camerastage", "ds", &CaptureLayout::cameraStage, 4}, {"camerastage", "cs", &CaptureLayout::cameraStage, 5},
+    {"bufferkind", "structured", &CaptureLayout::bufferKind, 0}, {"bufferkind", "raw", &CaptureLayout::bufferKind, 1},
+    {"positionformat", "float32", &CaptureLayout::positionFormat, 1}, {"positionformat", "float64", &CaptureLayout::positionFormat, 2},
+    {"camerapositionformat", "float32", &CaptureLayout::cameraPositionFormat, 1}, {"camerapositionformat", "float64", &CaptureLayout::cameraPositionFormat, 2},
+    {"projectionformat", "float32", &CaptureLayout::projectionFormat, 1}, {"projectionformat", "float64", &CaptureLayout::projectionFormat, 2},
+    {"axesformat", "float32", &CaptureLayout::axesFormat, 1}, {"axesformat", "float64", &CaptureLayout::axesFormat, 2},
+    {"rotationformat", "unorm16", &CaptureLayout::rotationFormat, 1}, {"rotationformat", "snorm16", &CaptureLayout::rotationFormat, 2},
+    {"rotationformat", "float32", &CaptureLayout::rotationFormat, 3}, {"rotationformat", "float64", &CaptureLayout::rotationFormat, 4},
+    {"rotationorder", "xyzw", &CaptureLayout::rotationOrder, 0}, {"rotationorder", "wxyz", &CaptureLayout::rotationOrder, 1},
+    {"axessource", "buffer", &CaptureLayout::axesSource, 0}, {"axessource", "projection", &CaptureLayout::axesSource, 1}};
+
 // Unknown fields are rejected by this DLL. The app preserves data-only fields
 // for newer DLL readers; it does not need to understand their decoding rules.
 inline bool ApplyLayoutField(CaptureLayout &layout, std::string_view name, std::string_view text)
 {
     const std::string key = LayoutLower(name), value = LayoutLower(text);
-    struct IntegerField { const char *name; uint32_t CaptureLayout::*member; };
-    static constexpr IntegerField integers[]{
-        {"schemaversion", &CaptureLayout::schemaVersion}, {"requiredbridgeversion", &CaptureLayout::requiredBridgeVersion},
-        {"recordslot", &CaptureLayout::recordSlot}, {"cameraslot", &CaptureLayout::cameraSlot},
-        {"bufferelementstride", &CaptureLayout::bufferElementStride}, {"recordstride", &CaptureLayout::recordStride},
-        {"recorddataoffset", &CaptureLayout::recordDataOffset}, {"camerabytes", &CaptureLayout::cameraBytes},
-        {"maximumbufferbytes", &CaptureLayout::maximumBufferBytes}, {"positionoffset", &CaptureLayout::positionOffset},
-        {"rotationoffset", &CaptureLayout::rotationOffset}, {"rotationconjugate", &CaptureLayout::rotationConjugate},
-        {"projectionoffset", &CaptureLayout::projectionOffset}, {"projectiontranspose", &CaptureLayout::projectionTranspose},
-        {"projectionincludesorigin", &CaptureLayout::projectionIncludesOrigin},
-        {"camerapositionoffset", &CaptureLayout::cameraPositionOffset}, {"axesoffset", &CaptureLayout::axesOffset},
-        {"axesstride", &CaptureLayout::axesStride}, {"axestranspose", &CaptureLayout::axesTranspose},
-        {"minimummembers", &CaptureLayout::minimumMembers}, {"maximumnearrecords", &CaptureLayout::maximumNearRecords},
-        {"minimumviewportwidth", &CaptureLayout::minimumViewportWidth},
-        {"minimumviewportheight", &CaptureLayout::minimumViewportHeight},
-        {"viewportmatchestarget", &CaptureLayout::viewportMatchesTarget}};
-    for (const auto &field : integers)
+
+    for (const auto &field : LayoutIntegers)
         if (key == field.name)
         {
             uint32_t number = 0;
@@ -138,14 +167,8 @@ inline bool ApplyLayoutField(CaptureLayout &layout, std::string_view name, std::
             layout.*field.member = number;
             return true;
         }
-    struct RealField { const char *name; double CaptureLayout::*member; };
-    static constexpr RealField reals[]{
-        {"positionscale", &CaptureLayout::positionScale}, {"camerapositionscale", &CaptureLayout::cameraPositionScale},
-        {"canonicalneardepth", &CaptureLayout::canonicalNearDepth}, {"nearradius", &CaptureLayout::nearRadius},
-        {"positiontolerance", &CaptureLayout::positionTolerance}, {"angletolerancedegrees", &CaptureLayout::angleToleranceDegrees},
-        {"quaterniontolerance", &CaptureLayout::quaternionTolerance}, {"cameratolerance", &CaptureLayout::cameraTolerance},
-        {"dominanceratio", &CaptureLayout::dominanceRatio}};
-    for (const auto &field : reals)
+
+    for (const auto &field : LayoutReals)
         if (key == field.name)
         {
             double number = 0;
@@ -155,25 +178,8 @@ inline bool ApplyLayoutField(CaptureLayout &layout, std::string_view name, std::
             layout.*field.member = number;
             return true;
         }
-    struct Choice { const char *key; const char *value; uint32_t CaptureLayout::*member; uint32_t number; };
-    static constexpr Choice choices[]{
-        {"shaderstage", "vs", &CaptureLayout::shaderStage, 0}, {"shaderstage", "ps", &CaptureLayout::shaderStage, 1},
-        {"recordstage", "vs", &CaptureLayout::recordStage, 0}, {"recordstage", "ps", &CaptureLayout::recordStage, 1},
-        {"recordstage", "gs", &CaptureLayout::recordStage, 2}, {"recordstage", "hs", &CaptureLayout::recordStage, 3},
-        {"recordstage", "ds", &CaptureLayout::recordStage, 4}, {"recordstage", "cs", &CaptureLayout::recordStage, 5},
-        {"camerastage", "vs", &CaptureLayout::cameraStage, 0}, {"camerastage", "ps", &CaptureLayout::cameraStage, 1},
-        {"camerastage", "gs", &CaptureLayout::cameraStage, 2}, {"camerastage", "hs", &CaptureLayout::cameraStage, 3},
-        {"camerastage", "ds", &CaptureLayout::cameraStage, 4}, {"camerastage", "cs", &CaptureLayout::cameraStage, 5},
-        {"bufferkind", "structured", &CaptureLayout::bufferKind, 0}, {"bufferkind", "raw", &CaptureLayout::bufferKind, 1},
-        {"positionformat", "float32", &CaptureLayout::positionFormat, 1}, {"positionformat", "float64", &CaptureLayout::positionFormat, 2},
-        {"camerapositionformat", "float32", &CaptureLayout::cameraPositionFormat, 1}, {"camerapositionformat", "float64", &CaptureLayout::cameraPositionFormat, 2},
-        {"projectionformat", "float32", &CaptureLayout::projectionFormat, 1}, {"projectionformat", "float64", &CaptureLayout::projectionFormat, 2},
-        {"axesformat", "float32", &CaptureLayout::axesFormat, 1}, {"axesformat", "float64", &CaptureLayout::axesFormat, 2},
-        {"rotationformat", "unorm16", &CaptureLayout::rotationFormat, 1}, {"rotationformat", "snorm16", &CaptureLayout::rotationFormat, 2},
-        {"rotationformat", "float32", &CaptureLayout::rotationFormat, 3}, {"rotationformat", "float64", &CaptureLayout::rotationFormat, 4},
-        {"rotationorder", "xyzw", &CaptureLayout::rotationOrder, 0}, {"rotationorder", "wxyz", &CaptureLayout::rotationOrder, 1},
-        {"axessource", "buffer", &CaptureLayout::axesSource, 0}, {"axessource", "projection", &CaptureLayout::axesSource, 1}};
-    for (const auto &choice : choices)
+
+    for (const auto &choice : LayoutChoices)
         if (key == choice.key && value == choice.value)
         {
             layout.*choice.member = choice.number;

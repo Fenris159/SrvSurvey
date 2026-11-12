@@ -29,7 +29,9 @@ public sealed class CockpitPanelAnglePresentationTests
             application,
             new ThemePreferenceStore(Path.Combine(directory, "theme.json"))
         );
-        Color originalFill = Assert.IsAssignableFrom<ISolidColorBrush>(application.Resources["RavenWindowBrush"]).Color;
+        Color originalFill = Assert
+            .IsType<ISolidColorBrush>(application.Resources["RavenWindowBrush"], exactMatch: false)
+            .Color;
         string previousTheme = RavenThemeCatalog
             .All.Single(palette => Color.Parse(palette.WindowColor) == originalFill)
             .Key;

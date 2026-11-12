@@ -122,7 +122,7 @@ struct ContextState
     std::mutex mutex;
     std::array<Readback, 3> ring;
     ContextHooks originals;
-    uint64_t lastFrame = UINT64_MAX, lastSubmit = 0, acquisition = 0;
+    uint64_t lastFrame = UINT64_MAX, lastSubmit = 0;
     std::atomic<bool> disabled{false};
 
     void Clear()
@@ -152,7 +152,6 @@ class Runtime
     std::unordered_map<ID3D11DeviceContext *, std::shared_ptr<ContextState>> contexts;
     std::atomic<uint64_t> frame{0};
     std::atomic<bool> hasPresent{false};
-    uint64_t nextAcquisition = 0;
     std::atomic<uint64_t> nextSubmission{0}, publishedSubmission{0};
 
     void OpenTransport()
@@ -444,6 +443,8 @@ ID3D11DeviceChild *CurrentShader(ID3D11DeviceContext *context, const CaptureLayo
     return shader;
 }
 
+void ObserveContext(ID3D11DeviceContext *context);
+
 void Capture(ID3D11DeviceContext *context, const DrawSignature &signature)
 {
     Runtime &runtime = State();
@@ -452,6 +453,17 @@ void Capture(ID3D11DeviceContext *context, const DrawSignature &signature)
         return;
     std::shared_ptr<ContextState> state;
     {
+        std::lock_guard guard(runtime.mutex);
+        auto found = runtime.contexts.find(context);
+        if (found != runtime.contexts.end())
+            state = found->second;
+    }
+    if (!state)
+    {
+        // External Release0 can race a privately retained context's reacquisition.
+        // Drawing proves the caller owns a live context, so observation recovers
+        // here even if that earlier release retired the old bookkeeping session.
+        ObserveContext(context);
         std::lock_guard guard(runtime.mutex);
         auto found = runtime.contexts.find(context);
         if (found == runtime.contexts.end())
@@ -608,14 +620,12 @@ ULONG STDMETHODCALLTYPE HookContextRelease(ID3D11DeviceContext *context)
     Runtime &runtime = State();
     ContextHooks originals = OriginalContextHooks(context);
     std::shared_ptr<ContextState> observed;
-    uint64_t acquisition = 0;
     {
         std::lock_guard guard(runtime.mutex);
         auto found = runtime.contexts.find(context);
         if (found != runtime.contexts.end())
         {
             observed = found->second;
-            acquisition = observed->acquisition;
         }
     }
     ULONG references = originals.release(context);
@@ -625,9 +635,10 @@ ULONG STDMETHODCALLTYPE HookContextRelease(ID3D11DeviceContext *context)
         {
             std::lock_guard guard(runtime.mutex);
             auto found = runtime.contexts.find(context);
-            // A runtime may privately retain the context after external Release0.
-            // A new acquisition owns observation even when it races this cleanup.
-            if (found != runtime.contexts.end() && found->second == observed && observed->acquisition == acquisition)
+            // Retire the actual final external release, even when an intervening
+            // acquisition was already released. A still-live draw can register a
+            // fresh observation after this retirement without another Get call.
+            if (found != runtime.contexts.end() && found->second == observed)
             {
                 released = std::move(found->second);
                 runtime.contexts.erase(found);
@@ -641,7 +652,7 @@ ULONG STDMETHODCALLTYPE HookContextRelease(ID3D11DeviceContext *context)
 
 void ObserveContext(ID3D11DeviceContext *context)
 {
-    if (!context)
+    if (!context || context->GetType() != D3D11_DEVICE_CONTEXT_IMMEDIATE)
         return;
     Runtime &runtime = State();
     std::lock_guard guard(runtime.mutex);
@@ -664,7 +675,6 @@ void ObserveContext(ID3D11DeviceContext *context)
         state->originals = runtime.contextHooks.at(table);
         runtime.contexts.emplace(context, std::move(state));
     }
-    runtime.contexts.at(context)->acquisition = ++runtime.nextAcquisition;
     runtime.OpenTransport();
 }
 

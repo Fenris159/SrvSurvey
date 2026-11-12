@@ -46,7 +46,7 @@ locator or installer receipt, so rollback ownership checks remain valid.
 The bridge reads the installed and cached profiles once during graphics startup.
 It uses a newer compatible cache only when the installed experimental profile is
 already enabled. A missing or rejected cache falls back to that installed profile.
-The bridge keeps its last decoder-supported source in `profile.ini.reader-<reader version>`, independently of the app's one-step download history. Successive catalogs that need a newer DLL therefore cannot discard the current reader's fallback. Each reader owns its own retained file.
+The bridge keeps its last decoder-supported source in `profile.ini.reader-<reader version>`, independently of the app's one-step download history. Successive catalogs that need a newer DLL therefore cannot discard the current reader's fallback. Each reader owns its own retained file. Retention serializes the selected value, coordinates writers with a filesystem sharing lock, and rechecks the revision before replacing the snapshot. If retention cannot complete within a bounded startup wait, the reader uses its already retained or installed fallback.
 
 Restart Elite to load a newly downloaded profile; restarting SrvSurvey alone does
 not reload the game's bridge. Global overlay settings show the refresh result
@@ -95,7 +95,7 @@ On Windows use a normal x64 CMake/MSVC build. Compiler warnings fail the native 
 
 Build with `-DCAMERA_BRIDGE_INTEGRATION_TESTS=ON`, then run `CameraBridgeWindowsIntegration.exe` with the full path to the built DLL. The harness creates its own temporary DLL/profile, a non-activating window, actual D3D11/DXGI resources and a loopback receiver. It supplies captured fixture data to real staged GPU readbacks; it does not mock COM objects or touch a game installation.
 
-`--concurrent-reacquire` delays the external COM Release boundary while another thread reacquires the same context. `--omit-device-output` and `--swapchain-only` exercise valid omitted API outputs. These modes are isolated harness tests and never attach to Elite.
+`--transient-reacquire` verifies that an acquisition released before the actual final release does not leak the observation transport. Both race modes require their barriers to complete without timeout. `--concurrent-reacquire` delays the external COM Release boundary while another thread reacquires the same context. `--omit-device-output` and `--swapchain-only` exercise valid omitted API outputs. These modes are isolated harness tests and never attach to Elite.
 
 `--present-test` exercises the actual Present hook while avoiding monitor-timing work on a headless display. `--catalog-layout` selects PS identity and bindings, relocated record/camera offsets, a changed stride and a partial SRV; the expected camera packet is unchanged. `--mapped-window` is intended only for an isolated test display such as Xvfb; the default window stays hidden. `--without-observer` runs a differential control with native observation disabled.
 
@@ -226,7 +226,7 @@ The bridge observes swap chains supplied with device creation, and the device ad
 
 Readbacks older than 250 ms or belonging to an earlier app session are dropped. Global monotonic submission identities and newest-completion selection prevent delayed ring slots from rewinding an emitted pose. After a pause of two seconds, queued old heartbeats are discarded before accepting a fresh request.
 
-Lease expiry releases staging resources at the next matching draw. Releasing a context's last external reference also releases that observation session. Because devices can retain private context ownership, `GetImmediateContext` reacquisition registers a fresh session, including when device creation omitted the immediate-context output. Process shutdown relies on OS cleanup rather than COM/WinSock calls under the DLL loader lock.
+Lease expiry releases staging resources at the next matching draw. Releasing a context's last external reference also releases that observation session. Because devices can retain private context ownership, `GetImmediateContext` reacquisition registers observation, and a live draw recovers it if a concurrent final-release callback retired an earlier session. This also works when device creation omitted the immediate-context output. Process shutdown relies on OS cleanup rather than COM/WinSock calls under the DLL loader lock.
 
 ## Verification and remaining limits
 
