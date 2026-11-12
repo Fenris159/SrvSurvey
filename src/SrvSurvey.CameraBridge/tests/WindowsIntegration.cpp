@@ -49,6 +49,23 @@ void Check(HRESULT result, const char *message)
         throw std::runtime_error(message);
     }
 }
+void RequireTransportReleased()
+{
+    SOCKET releasedPort = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    Require(releasedPort != INVALID_SOCKET, "Cannot check released observation transport");
+    BOOL exclusive = TRUE;
+    int exclusiveResult = setsockopt(releasedPort, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+                    reinterpret_cast<const char *>(&exclusive), sizeof(exclusive));
+    sockaddr_in address{};
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    address.sin_port = htons(47765);
+    int bound = bind(releasedPort, reinterpret_cast<sockaddr *>(&address), sizeof(address));
+    closesocket(releasedPort);
+    Require(exclusiveResult == 0 && bound == 0,
+            "Final Release0 retained the observation transport");
+}
+
 template <typename T> struct Com
 {
     T *value = nullptr;
@@ -66,27 +83,40 @@ template <typename T> struct Com
     T **Out() { return &value; }
     void Reset() { if (value) { value->Release(); value = nullptr; } }
 };
-// Delay the external COM boundary after Release0 but before the observer sees
-// its return. This deterministically drives the real reacquisition race.
+// Delay either side of the external COM Release boundary. Independent barriers
+// deterministically drive reacquisition and overlapping final releases.
 using NativeRelease = ULONG(STDMETHODCALLTYPE *)(ID3D11DeviceContext *);
 NativeRelease boundaryRelease = nullptr;
-HANDLE releaseReached = nullptr, releaseContinue = nullptr;
-std::atomic<bool> delayRelease{false};
-std::atomic<DWORD> releaseWaitResult{WAIT_FAILED};
-bool delayBeforeRelease = false;
-void PauseRelease()
+struct ReleaseBarrier
 {
-    SetEvent(releaseReached);
-    releaseWaitResult = WaitForSingleObject(releaseContinue, 5000);
+    HANDLE reached = nullptr, proceed = nullptr;
+    std::atomic<DWORD> result{WAIT_FAILED};
+    bool before = false;
+};
+ReleaseBarrier releaseBarriers[2];
+std::atomic<int> armedBarrier{-1};
+void ArmReleaseBarrier(int index, bool before)
+{
+    ReleaseBarrier &barrier = releaseBarriers[index];
+    Require(ResetEvent(barrier.reached) && ResetEvent(barrier.proceed), "Cannot reset release barriers");
+    barrier.result = WAIT_FAILED;
+    barrier.before = before;
+    armedBarrier = index;
+}
+void PauseRelease(ReleaseBarrier &barrier)
+{
+    SetEvent(barrier.reached);
+    barrier.result = WaitForSingleObject(barrier.proceed, 5000);
 }
 ULONG STDMETHODCALLTYPE DelayedRelease(ID3D11DeviceContext *context)
 {
-    bool pause = delayRelease.exchange(false);
-    if (pause && delayBeforeRelease)
-        PauseRelease();
+    int index = armedBarrier.exchange(-1);
+    ReleaseBarrier *barrier = index >= 0 ? &releaseBarriers[index] : nullptr;
+    if (barrier && barrier->before)
+        PauseRelease(*barrier);
     ULONG references = boundaryRelease(context);
-    if (pause && !delayBeforeRelease && references == 0)
-        PauseRelease();
+    if (barrier && !barrier->before && references == 0)
+        PauseRelease(*barrier);
     return references;
 }
 
@@ -104,9 +134,12 @@ void InstallReleaseBoundary()
                  device.Out(), nullptr, context.Out()), "Cannot create the COM boundary device");
     void **table = *reinterpret_cast<void ***>(context.value);
     boundaryRelease = std::bit_cast<NativeRelease>(table[2]);
-    releaseReached = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    releaseContinue = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    Require(releaseReached && releaseContinue, "Cannot create release/reacquisition barriers");
+    for (ReleaseBarrier &barrier : releaseBarriers)
+    {
+        barrier.reached = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+        barrier.proceed = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+        Require(barrier.reached && barrier.proceed, "Cannot create release/reacquisition barriers");
+    }
     DWORD previous = 0, ignored = 0;
     Require(VirtualProtect(table + 2, sizeof(void *), PAGE_EXECUTE_READWRITE, &previous) != 0,
             "Cannot instrument the COM boundary");
@@ -315,9 +348,9 @@ int wmain(int argc, wchar_t **argv)
     try
     {
         AddVectoredExceptionHandler(1, DescribeException);
-        Require(argc >= 2 && argc <= 10, "Pass the built DLL path, optionally --present-test, --without-observer, --mapped-window --catalog-layout, --omit-device-output, --swapchain-only --concurrent-reacquire or --transient-reacquire");
+        Require(argc >= 2 && argc <= 11, "Pass the built DLL path, optionally --present-test, --without-observer, --mapped-window --catalog-layout, --omit-device-output, --swapchain-only --concurrent-reacquire --transient-reacquire or --overlapping-release");
         bool presentTest = false, observerDisabled = false, mappedWindow = false, catalogLayout = false;
-        bool omitDevice = false, swapchainOnly = false, concurrentReacquire = false, transientReacquire = false;
+        bool omitDevice = false, swapchainOnly = false, concurrentReacquire = false, transientReacquire = false, overlappingRelease = false;
         for (int index = 2; index < argc; ++index)
         {
             if (std::wcscmp(argv[index], L"--present-test") == 0) presentTest = true;
@@ -328,8 +361,12 @@ int wmain(int argc, wchar_t **argv)
             else if (std::wcscmp(argv[index], L"--swapchain-only") == 0) swapchainOnly = true;
             else if (std::wcscmp(argv[index], L"--concurrent-reacquire") == 0) concurrentReacquire = true;
             else if (std::wcscmp(argv[index], L"--transient-reacquire") == 0) transientReacquire = true;
+            else if (std::wcscmp(argv[index], L"--overlapping-release") == 0) overlappingRelease = true;
             else throw std::runtime_error("Unknown harness option");
         }
+        Require(static_cast<int>(concurrentReacquire) + static_cast<int>(transientReacquire) +
+                    static_cast<int>(overlappingRelease) <= 1,
+                "Choose only one release-race scenario per harness run");
         HMODULE compiler = LoadLibraryW(L"d3dcompiler_47.dll");
         Require(compiler != nullptr, "d3dcompiler_47.dll is unavailable");
         auto compile = std::bit_cast<pD3DCompile>(GetProcAddress(compiler, "D3DCompile"));
@@ -388,7 +425,7 @@ int wmain(int argc, wchar_t **argv)
                 Require(WritePrivateProfileStringW(L"Layout", key, value, cachedIni.c_str()) != 0,
                         "Cannot write a declarative harness layout");
         }
-        if (concurrentReacquire || transientReacquire)
+        if (concurrentReacquire || transientReacquire || overlappingRelease)
             InstallReleaseBoundary();
         HMODULE bridge = LoadLibraryW(dll.c_str());
         Require(bridge != nullptr, "Cannot load the built bridge DLL");
@@ -511,14 +548,14 @@ int wmain(int argc, wchar_t **argv)
         if (concurrentReacquire)
         {
             ID3D11DeviceContext *old = std::exchange(scene.context.value, nullptr);
-            delayRelease = true;
+            ArmReleaseBarrier(0, false);
             std::thread release([&] { remaining = old->Release(); });
-            bool reached = WaitForSingleObject(releaseReached, 5000) == WAIT_OBJECT_0;
+            bool reached = WaitForSingleObject(releaseBarriers[0].reached, 5000) == WAIT_OBJECT_0;
             if (reached)
                 scene.device->GetImmediateContext(scene.context.Out());
-            SetEvent(releaseContinue);
+            SetEvent(releaseBarriers[0].proceed);
             release.join();
-            Require(reached && releaseWaitResult == WAIT_OBJECT_0 && remaining == 0 && scene.context.value,
+            Require(reached && releaseBarriers[0].result == WAIT_OBJECT_0 && remaining == 0 && scene.context.value,
                     "Concurrent Release0 barrier timed out or was not reached");
         }
         else
@@ -559,10 +596,9 @@ int wmain(int argc, wchar_t **argv)
         if (transientReacquire)
         {
             ID3D11DeviceContext *old = std::exchange(scene.context.value, nullptr);
-            delayBeforeRelease = true;
-            delayRelease = true;
+            ArmReleaseBarrier(0, true);
             std::thread release([&] { remaining = old->Release(); });
-            bool reached = WaitForSingleObject(releaseReached, 5000) == WAIT_OBJECT_0;
+            bool reached = WaitForSingleObject(releaseBarriers[0].reached, 5000) == WAIT_OBJECT_0;
             ULONG transientRemaining = 0;
             if (reached)
             {
@@ -571,24 +607,51 @@ int wmain(int argc, wchar_t **argv)
                 if (transient)
                     transientRemaining = transient->Release();
             }
-            SetEvent(releaseContinue);
+            SetEvent(releaseBarriers[0].proceed);
             release.join();
-            Require(reached && releaseWaitResult == WAIT_OBJECT_0 && transientRemaining == 1 && remaining == 0,
+            Require(reached && releaseBarriers[0].result == WAIT_OBJECT_0 && transientRemaining == 1 && remaining == 0,
                     "Transient reacquisition barrier timed out or did not reach final Release0");
-            SOCKET releasedPort = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-            Require(releasedPort != INVALID_SOCKET, "Cannot check released observation transport");
-            BOOL exclusive = TRUE;
-            int exclusiveResult = setsockopt(releasedPort, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
-                                            reinterpret_cast<const char *>(&exclusive), sizeof(exclusive));
-            sockaddr_in address{};
-            address.sin_family = AF_INET;
-            address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-            address.sin_port = htons(47765);
-            int bound = bind(releasedPort, reinterpret_cast<sockaddr *>(&address), sizeof(address));
-            closesocket(releasedPort);
-            Require(exclusiveResult == 0 && bound == 0,
-                    "Final Release0 after transient reacquisition retained the observation transport");
+            RequireTransportReleased();
             std::cout << "PASS: final Release0 after transient reacquisition releases observation transport" << std::endl;
+        }
+        else if (overlappingRelease)
+        {
+            ID3D11DeviceContext *old = std::exchange(scene.context.value, nullptr);
+            ArmReleaseBarrier(0, false);
+            std::thread firstRelease([&] { remaining = old->Release(); });
+            bool reachedFirst = WaitForSingleObject(releaseBarriers[0].reached, 5000) == WAIT_OBJECT_0;
+            std::thread finalRelease;
+            ULONG finalRemaining = 1, transientRemaining = 0;
+            bool reachedFinal = false;
+            if (reachedFirst)
+            {
+                ID3D11DeviceContext *next = nullptr;
+                scene.device->GetImmediateContext(&next);
+                if (next)
+                {
+                    ArmReleaseBarrier(1, true);
+                    finalRelease = std::thread([&, next] { finalRemaining = next->Release(); });
+                    reachedFinal = WaitForSingleObject(releaseBarriers[1].reached, 5000) == WAIT_OBJECT_0;
+                }
+            }
+            SetEvent(releaseBarriers[0].proceed);
+            firstRelease.join();
+            if (reachedFinal)
+            {
+                ID3D11DeviceContext *transient = nullptr;
+                scene.device->GetImmediateContext(&transient);
+                if (transient)
+                    transientRemaining = transient->Release();
+            }
+            SetEvent(releaseBarriers[1].proceed);
+            if (finalRelease.joinable())
+                finalRelease.join();
+            Require(reachedFirst && reachedFinal && releaseBarriers[0].result == WAIT_OBJECT_0 &&
+                        releaseBarriers[1].result == WAIT_OBJECT_0 && remaining == 0 && finalRemaining == 0 &&
+                        transientRemaining == 1,
+                    "Overlapping release barriers timed out or did not reach final Release0");
+            RequireTransportReleased();
+            std::cout << "PASS: overlapping final-release callbacks release observation transport" << std::endl;
         }
         else
             scene.context.Reset();

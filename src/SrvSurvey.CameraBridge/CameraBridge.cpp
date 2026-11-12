@@ -619,15 +619,6 @@ ULONG STDMETHODCALLTYPE HookContextRelease(ID3D11DeviceContext *context)
 {
     Runtime &runtime = State();
     ContextHooks originals = OriginalContextHooks(context);
-    std::shared_ptr<ContextState> observed;
-    {
-        std::lock_guard guard(runtime.mutex);
-        auto found = runtime.contexts.find(context);
-        if (found != runtime.contexts.end())
-        {
-            observed = found->second;
-        }
-    }
     ULONG references = originals.release(context);
     if (references == 0)
     {
@@ -635,10 +626,10 @@ ULONG STDMETHODCALLTYPE HookContextRelease(ID3D11DeviceContext *context)
         {
             std::lock_guard guard(runtime.mutex);
             auto found = runtime.contexts.find(context);
-            // Retire the actual final external release, even when an intervening
-            // acquisition was already released. A still-live draw can register a
-            // fresh observation after this retirement without another Get call.
-            if (found != runtime.contexts.end() && found->second == observed)
+            // Any final-release callback retires the current observation, even
+            // if overlapping callbacks replaced it while COM was running. A
+            // still-live caller's next draw can register observation again.
+            if (found != runtime.contexts.end())
             {
                 released = std::move(found->second);
                 runtime.contexts.erase(found);
