@@ -61,12 +61,16 @@ public sealed class CockpitCameraClient : IDisposable
         {
             int length = transport.Receive(packet);
             var frame = CockpitCameraFrame.Parse(packet[..length], nonce, clock.GetUtcNow());
-            bool expired =
-                latest is null
-                || !latest.IsCurrent(clock.GetUtcNow())
-                || lastReceived is null
-                || clock.GetElapsedTime(lastReceived.Value) >= TimeSpan.FromMilliseconds(250);
-            if (frame is not null && (expired || latest is null || frame.Sequence > latest.Sequence))
+            if (
+                frame is not null
+                && (
+                    latest is not { } previous
+                    || !previous.IsCurrent(clock.GetUtcNow())
+                    || lastReceived is not { } received
+                    || clock.GetElapsedTime(received) >= TimeSpan.FromMilliseconds(250)
+                    || frame.Sequence > previous.Sequence
+                )
+            )
             {
                 latest = frame;
                 lastReceived = clock.GetTimestamp();
