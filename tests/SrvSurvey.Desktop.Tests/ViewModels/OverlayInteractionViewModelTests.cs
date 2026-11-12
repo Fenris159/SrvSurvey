@@ -76,6 +76,114 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Contains("calibration", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnchangedCockpitAnglesDoNotRequireWritableSettings(bool savePositions)
+    {
+        string cockpitPath = Path.Combine(temporaryDirectory, "cockpit.json");
+        var cockpit = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(cockpitPath));
+        var miningStore = new SurfaceMiningSettingsStore(Path.Combine(temporaryDirectory, "mining.json"));
+        var detection = new MiningDetectionViewModel(miningStore);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var model = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+            MiningDetection = detection,
+        };
+        Assert.True(model.Begin());
+        detection.UpdateCalibration(detection.Settings with { X = .3 });
+        Directory.CreateDirectory(cockpitPath);
+        if (savePositions)
+        {
+            host.Move(
+                "PlotJumpInfo",
+                new PixelPoint(420, 310),
+                new PixelSize(300, 100),
+                new PixelRect(100, 200, 1200, 800)
+            );
+        }
+        model.Save();
+        Assert.False(model.IsEditing);
+        Assert.Equal(.3, miningStore.LoadDetection().X);
+        Assert.True(Directory.Exists(cockpitPath));
+        Assert.Equal(savePositions, File.Exists(Path.Combine(temporaryDirectory, "plotters.json")));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FailedCockpitSaveIdentifiesCommittedChangesAndRetainsOnlyItsDraft(bool savePositions)
+    {
+        string cockpitPath = Path.Combine(temporaryDirectory, "cockpit.json");
+        var cockpitStore = new CockpitOverlaySettingsStore(cockpitPath);
+        var cockpit = new CockpitOverlayViewModel(cockpitStore);
+        var miningStore = new SurfaceMiningSettingsStore(Path.Combine(temporaryDirectory, "mining.json"));
+        var detection = new MiningDetectionViewModel(miningStore);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var model = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+            MiningDetection = detection,
+        };
+        Assert.True(model.Begin());
+        detection.UpdateCalibration(detection.Settings with { X = .3 });
+        cockpit.SelectPanel("PlotJumpInfo");
+        cockpit.Yaw = 15;
+        Directory.CreateDirectory(cockpitPath);
+        if (savePositions)
+        {
+            host.Move(
+                "PlotJumpInfo",
+                new PixelPoint(420, 310),
+                new PixelSize(300, 100),
+                new PixelRect(100, 200, 1200, 800)
+            );
+        }
+        model.Save();
+        Assert.True(model.IsEditing);
+        Assert.True(cockpit.HasChanges);
+        Assert.False(detection.HasCalibrationChanges);
+        Assert.Equal(.3, miningStore.LoadDetection().X);
+        Assert.Contains("cockpit panel angles could not be saved", model.StatusMessage, StringComparison.Ordinal);
+        Assert.Contains(
+            savePositions ? "Overlay positions saved." : "Overlay positions were unchanged.",
+            model.StatusMessage,
+            StringComparison.Ordinal
+        );
+        Assert.Contains("Mining HUD calibration saved.", model.StatusMessage, StringComparison.Ordinal);
+        Assert.Equal(savePositions, File.Exists(Path.Combine(temporaryDirectory, "plotters.json")));
+        if (savePositions)
+        {
+            Directory.Delete(cockpitPath);
+            model.Save();
+            Assert.False(model.IsEditing);
+            Assert.Equal(15, cockpitStore.Load().Panels["PlotJumpInfo"].Yaw);
+        }
+        else
+        {
+            model.Cancel();
+            Assert.Equal(0, cockpit.Resolve("PlotJumpInfo").Yaw);
+            Assert.Equal(.3, miningStore.LoadDetection().X);
+        }
+    }
+
     [Fact]
     public void ModeCanArmWithoutEliteAndShowsTheSelectedCategory()
     {

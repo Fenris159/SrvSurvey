@@ -741,11 +741,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             bool saveMiningCalibration = MiningDetection?.HasCalibrationChanges == true;
             if (changes.Count == 0 && !saveDefaultOpacity)
             {
-                // The no-change guard above leaves this path only for a pending calibration.
-                MiningDetection?.SaveEdit();
-                CockpitPanels?.SaveEdit();
-                EndSession(closeHost: true, restoreRuntimeWindows: true);
-                StatusMessage = "Saved panel angle and calibration changes.";
+                SaveSettingsWithoutLayoutChanges();
                 return;
             }
             LegacyOverlayLayoutSaveResult result = layoutStore.SaveChanges(editSession);
@@ -759,18 +755,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             ApplySavedLayoutToRuntimeWindows();
             editSession = new OverlayPositionEditSession(activeLayout);
             editorHost?.RefreshPreviewPositions(editSession);
-            try
+            if (!TrySaveEditorCalibrations(positionsSaved: true))
             {
-                MiningDetection?.SaveEdit();
-                CockpitPanels?.SaveEdit();
-            }
-            catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
-            {
-                StatusMessage =
-                    "Overlay positions saved; mining HUD calibration could not be saved: "
-                    + exception.Message
-                    + " Retry Save to save calibration.";
-                layoutStore.ReportFailure("Calibration failed after layout commit", exception);
                 return;
             }
 
@@ -785,6 +771,45 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         {
             StatusMessage = "Overlay positions and appearance were not saved: " + exception.Message;
             layoutStore.ReportFailure("Position editor save failed; draft retained", exception);
+        }
+    }
+
+    /// <summary>Closes a settings-only edit only after all its changed calibration preferences have committed.</summary>
+    private void SaveSettingsWithoutLayoutChanges()
+    {
+        if (TrySaveEditorCalibrations(positionsSaved: false))
+        {
+            EndSession(closeHost: true, restoreRuntimeWindows: true);
+            StatusMessage = "Saved panel angle and calibration changes.";
+        }
+    }
+
+    /// <summary>Reports which independent settings committed before a failed save, preserving the remaining draft.</summary>
+    private bool TrySaveEditorCalibrations(bool positionsSaved)
+    {
+        bool miningSaved = false;
+        string pending = "mining HUD calibration";
+        try
+        {
+            bool miningChanged = MiningDetection?.HasCalibrationChanges == true;
+            MiningDetection?.SaveEdit();
+            miningSaved = miningChanged;
+            pending = "cockpit panel angles";
+            CockpitPanels?.SaveEdit();
+            return true;
+        }
+        catch (Exception exception) when (LegacyOverlayLayoutStore.IsPersistenceFailure(exception))
+        {
+            string committed = positionsSaved ? "Overlay positions saved." : "Overlay positions were unchanged.";
+            if (miningSaved)
+            {
+                committed += " Mining HUD calibration saved.";
+            }
+            StatusMessage =
+                committed
+                + $" The {pending} could not be saved: {exception.Message} Retry Save to save the remaining changes.";
+            layoutStore?.ReportFailure("Calibration save failed; remaining draft retained", exception);
+            return false;
         }
     }
 

@@ -9831,14 +9831,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Calibration failed after layout commit",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
-  },
-  {
     "Text": "Calibration guide",
     "IsFormat": false,
     "SourceKinds": [
@@ -9853,6 +9845,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningDetectionViewModel.cs"
+  },
+  {
+    "Text": "Calibration save failed; remaining draft retained",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -36284,6 +36284,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Mining HUD calibration saved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
     "Text": "Mining Location Signal 4",
     "IsFormat": false,
     "SourceKinds": [
@@ -42948,8 +42956,16 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
-    "Text": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-    "IsFormat": true,
+    "Text": "Overlay positions saved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Overlay positions were unchanged.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -44151,6 +44167,14 @@
   },
   {
     "Text": "Pitch (\u00B0)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
+    "Text": "Pitch, degrees",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -52516,6 +52540,14 @@
   },
   {
     "Text": "Roll (\u00B0)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
+    "Text": "Roll, degrees",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -75324,6 +75356,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
+    "Text": "Yaw, degrees",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+  },
+  {
     "Text": "Years",
     "IsFormat": false,
     "SourceKinds": [
@@ -76779,6 +76819,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "cockpit panel angles",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "code",
@@ -79579,6 +79627,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
+  },
+  {
+    "Text": "mining HUD calibration",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "mining overview map",
@@ -83268,6 +83324,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationSession.cs"
+  },
+  {
+    "Text": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
     "Text": "{0} Uses the game\u0027s separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",

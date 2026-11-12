@@ -20,6 +20,10 @@ public sealed class CockpitOverlayCoordinatorTests : IDisposable
     public void LiveTrackingRequiresCalibrationFollowsFreelookAndRestoresDesktopOnExpiry()
     {
         CockpitOverlayViewModel model = CreateModel(true);
+        model.BeginEdit();
+        model.SelectPanel("PlotJumpInfo");
+        model.Yaw = 15;
+        model.Depth = 1.5;
         var host = new ProjectionHost();
         var timer = new ManualTimer();
         var transport = new CameraTransport();
@@ -36,11 +40,16 @@ public sealed class CockpitOverlayCoordinatorTests : IDisposable
         Assert.True(model.CanCalibrate);
         Assert.Null(host.Change);
         model.CalibrateCommand.Execute(null);
+        Assert.Equal(new CockpitPanelPose(Yaw: 15, Depth: 1.5), host.PoseProvider!("PlotJumpInfo"));
         AssertCenter(host, 500, 500);
 
         transport.Enqueue(Matrix4x4.CreateRotationY(MathF.PI / 6) * Lens, 2, 291, clock);
         timer.Pulse();
         AssertCenter(host, 788.675, 500);
+        model.Yaw = 20;
+        Assert.Equal(new CockpitPanelPose(Yaw: 20, Depth: 1.5), host.PoseProvider("PlotJumpInfo"));
+        model.CancelEdit();
+        Assert.Equal(new CockpitPanelPose(), host.PoseProvider("PlotJumpInfo"));
         transport.Enqueue(Lens, 3, 439, clock);
         timer.Pulse();
         AssertCenter(host, 500, 500);
@@ -180,6 +189,7 @@ public sealed class CockpitOverlayCoordinatorTests : IDisposable
         public bool SupportsCockpitPanels { get; init; } = true;
         public Matrix4x4? Change { get; private set; }
         public CockpitProjectionLens? CapturedLens { get; private set; }
+        public Func<string, CockpitPanelPose>? PoseProvider { get; private set; }
 
         public void SetCockpitProjection(
             Matrix4x4? cameraChange,
@@ -189,6 +199,7 @@ public sealed class CockpitOverlayCoordinatorTests : IDisposable
         {
             Change = cameraChange;
             CapturedLens = lens;
+            PoseProvider = poseProvider;
         }
     }
 

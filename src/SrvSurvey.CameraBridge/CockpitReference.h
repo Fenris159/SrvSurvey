@@ -232,6 +232,13 @@ inline std::optional<RigidReference> FindCockpitReference(
     }
     if (support < layout.minimumMembers || support < layout.dominanceRatio * runnerUp)
         return std::nullopt;
+    // Sharing a seed is not transitive: opposite sides of its tolerance can
+    // represent different rigid roots. Every selected pair must agree.
+    for (size_t first = 0; first < count; ++first)
+        if (selected[first])
+            for (size_t second = first + 1; second < count; ++second)
+                if (selected[second] && !SameRoot(candidates[first], candidates[second], layout))
+                    return std::nullopt;
     Candidate root{};
     root.index = candidates[seed].index;
     for (size_t index = 0; index < count; ++index)

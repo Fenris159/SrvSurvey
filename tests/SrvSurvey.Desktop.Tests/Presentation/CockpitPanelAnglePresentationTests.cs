@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -66,6 +67,20 @@ public sealed class CockpitPanelAnglePresentationTests
             Assert.Equal(15m, fields[1].Value);
             Assert.Equal(-5m, fields[2].Value);
             Assert.Equal(1.2m, fields[3].Value);
+            string[] names = ["Yaw, degrees", "Pitch, degrees", "Roll, degrees", "Panel distance"];
+            for (int index = 0; index < fields.Length; index++)
+            {
+                AutomationPeer peer = Assert.IsType<NumericUpDownAutomationPeer>(
+                    ControlAutomationPeer.CreatePeerForElement(fields[index])
+                );
+                Assert.Equal(names[index], peer.GetName());
+            }
+            Assert.Equal(
+                "Panel distance",
+                ControlAutomationPeer
+                    .CreatePeerForElement(Assert.Single(view.GetVisualDescendants().OfType<Slider>()))
+                    .GetName()
+            );
             foreach (NumericUpDown field in fields)
             {
                 Point position = field.TranslatePoint(default, view)!.Value;

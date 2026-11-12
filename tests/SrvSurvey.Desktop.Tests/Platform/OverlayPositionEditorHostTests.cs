@@ -21,6 +21,72 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayPositionEditorHostTests : IDisposable
 {
     [AvaloniaFact]
+    public void ExpandedSettingsKeepSaveReachableInsideAShortGameWindow()
+    {
+        var bounds = new PixelRect(0, 0, 900, 540);
+        var platform = new FakeOverlayPlatform();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, new OverlayWindowRegistry());
+        var cockpit = new CockpitOverlayViewModel(
+            new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+        )
+        {
+            Enabled = true,
+        };
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+        Assert.True(model.Begin());
+        try
+        {
+            model.OpenOverlaySettings("PlotJumpInfo");
+            model.IsTypographySettingsOpen = true;
+            OverlayPositionEditorWindow toolbar = Assert.IsType<OverlayPositionEditorWindow>(host.EditorToolbar);
+            Expander angle = Assert.Single(
+                toolbar.GetVisualDescendants().OfType<Expander>(),
+                item => Equals(item.Header, "Cockpit panel angle")
+            );
+            angle.IsExpanded = true;
+            using WriteableBitmap? frame = toolbar.CaptureRenderedFrame();
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? settled = toolbar.CaptureRenderedFrame();
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_COCKPIT_PREVIEW_DIRECTORY");
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                Directory.CreateDirectory(output);
+                settled!.Save(Path.Combine(output, "cockpit-editor-short-screen.png"), PngBitmapEncoderOptions.Default);
+            }
+            Button save = Assert.Single(
+                toolbar.GetVisualDescendants().OfType<Button>(),
+                item => ReferenceEquals(item.Command, model.SaveCommand)
+            );
+            Point point = save.TranslatePoint(default, toolbar)!.Value;
+            Assert.InRange(point.Y + save.Bounds.Height, 1, 516);
+            Assert.InRange(toolbar.Bounds.Height, 116, 516);
+            ScrollViewer scroll = toolbar.FindControl<ScrollViewer>("EditorSettingsScroll")!;
+            Assert.True(scroll.Extent.Height > scroll.Viewport.Height);
+            Border typography = toolbar.FindControl<Border>("TypographySettingsPanel")!;
+            Point left = typography.TranslatePoint(default, scroll)!.Value;
+            Assert.InRange(left.X, 0, scroll.Bounds.Width - typography.Bounds.Width);
+            scroll.Offset = new Vector(0, scroll.Extent.Height);
+            using WriteableBitmap? scrolled = toolbar.CaptureRenderedFrame();
+            Assert.Equal(point, save.TranslatePoint(default, toolbar)!.Value);
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
+    [AvaloniaFact]
     public async Task SphericalSearchPreviewFollowsContentInsteadOfAnOldManualSize()
     {
         const string name = "PlotSphericalSearch";

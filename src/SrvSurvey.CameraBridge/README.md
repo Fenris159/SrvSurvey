@@ -220,7 +220,9 @@ Response, exactly 136 bytes; integers and IEEE754 floats use little endian:
 
 The bridge never silently substitutes a world-camera orientation or simulated pose. Missing profile or source produces no pose packet.
 
-A three-slot staging ring holds paired structured/constant-buffer copies and one completion query per pair. Queries use `D3D11_ASYNC_GETDATA_DONOTFLUSH`; completed staging buffers use `D3D11_MAP_FLAG_DO_NOT_WAIT`. It does not flush, block waiting for GPU readback, or read game memory mapped for writing. At most three 8 MiB resources and three 64 KiB constant buffers are retained; actual captured source sizes use approximately 9.3 MiB total staging memory.
+A three-slot staging ring holds paired record-view/constant-buffer copies and one completion query per pair. Queries use `D3D11_ASYNC_GETDATA_DONOTFLUSH`; completed staging buffers use `D3D11_MAP_FLAG_DO_NOT_WAIT`. It does not flush, block waiting for GPU readback, or read game memory mapped for writing. At most three 8 MiB resources and three 64 KiB constant buffers are retained; actual captured source sizes use approximately 9.3 MiB total staging memory.
+
+Draw hooks keep a thread-local copy of the immutable original vtable functions; their steady path needs no global lookup lock. Selected GPU readbacks copy only the bound record-view range.
 
 The bridge observes swap chains supplied with device creation, and the device adapter's DXGI factory for later `CreateSwapChain`/`CreateSwapChainForHwnd`. `Present` establishes the one-submission-per-frame limit. If no supported swap-chain route is observed, an 8 ms interval bounds capture instead.
 
@@ -230,7 +232,7 @@ Lease expiry releases staging resources at the next matching draw. Releasing a c
 
 ## Verification and remaining limits
 
-- Twenty-five portable C++ behavior checks cover the packet, validation, profile-cache compatibility, lifetime lease, sample order, relocated typed/transposed layouts, quaternion formats, bounded partial views and actual captured rigid-reference outcomes. Deliberately breaking the protected behaviors makes the checks fail.
+- Twenty-six portable C++ behavior checks cover the packet, validation, profile-cache compatibility, lifetime lease, sample order, relocated typed/transposed layouts, quaternion formats, bounded partial views, pairwise rigid-root coherence and actual captured rigid-reference outcomes. Deliberately breaking the protected behaviors makes the checks fail.
 - `CameraProfileFilesTests.exe` exercises the production Windows INI loader against a canonical cached profile, Unicode cache path, declarative bindings/offsets, future-layout fallback and missing locator. It requires no graphics device or game installation.
 - The sparse fixture header retains only first 32 bytes of relevant captured records and camera rows, with original whole-buffer SHA256 provenance. No multi-megabyte journal or graphics dumps are checked in.
 - Installer fixtures cover exact encoding/line-ending round trips, idempotence, unowned proxy/files, modified installation refusal, running-game refusal, failure rollback and explicit experimental profile selection.

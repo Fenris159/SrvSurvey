@@ -25,6 +25,9 @@ capture catalogs.
   pitch, and roll controls. Drag the orb center to tilt and its rim to roll.
 - **Adjust apparent distance:** Move a panel farther away to reduce its apparent
   size. Perspective settings follow the editor's existing save/cancel flow.
+- **Keep editing controls reachable:** Expanded settings scroll on shorter
+  displays while the editor's save and cancel controls stay visible. Angle and
+  distance inputs also have screen-reader labels.
 - **Keep settings on this computer:** Cockpit mode and panel angles are
   machine-specific, use the application's theme resources, and retain existing
   overlay visibility controls.

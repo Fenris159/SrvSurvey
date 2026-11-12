@@ -4905,16 +4905,16 @@
       "translation": "Kalibrieren Sie die sechs Rig-Kreise"
     },
     {
-      "source": "Calibration failed after layout commit",
-      "translation": "Die Kalibrierung ist nach dem Festschreiben des Layouts fehlgeschlagen"
-    },
-    {
       "source": "Calibration guide",
       "translation": "Kalibrierungsanleitung"
     },
     {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Kalibrierungsvorschau – gespeicherte Tracker bleiben unverändert."
+    },
+    {
+      "source": "Calibration save failed; remaining draft retained",
+      "translation": "Speichern der Kalibrierung fehlgeschlagen; verbleibender Entwurf beibehalten"
     },
     {
       "source": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -18077,6 +18077,10 @@
       "translation": "Bergbau > Powerplay findet Bergbau- und Verkaufsmöglichkeiten für „Verstärken“, „Untergraben“ oder „Erwerben“."
     },
     {
+      "source": "Mining HUD calibration saved.",
+      "translation": "Mining-HUD-Kalibrierung gespeichert."
+    },
+    {
       "source": "Mining Location Signal 4",
       "translation": "Bergbaustandortsignal 4"
     },
@@ -21397,8 +21401,12 @@
       "translation": "Overlay-Positionen können erst bearbeitet werden, wenn der bestehende Layoutfehler behoben ist: {0}"
     },
     {
-      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-      "translation": "Overlay-Positionen gespeichert; Mining-HUD-Kalibrierung konnte nicht gespeichert werden: {0} Versuchen Sie erneut, „Speichern“ zu speichern, um die Kalibrierung zu speichern."
+      "source": "Overlay positions saved.",
+      "translation": "Overlay-Positionen gespeichert."
+    },
+    {
+      "source": "Overlay positions were unchanged.",
+      "translation": "Die Overlay-Positionen blieben unverändert."
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -21999,6 +22007,10 @@
     {
       "source": "Pitch (°)",
       "translation": "Neigung (°)"
+    },
+    {
+      "source": "Pitch, degrees",
+      "translation": "Tonhöhe, Grad"
     },
     {
       "source": "Place in front of me",
@@ -26171,6 +26183,10 @@
     {
       "source": "Roll (°)",
       "translation": "Rolle (°)"
+    },
+    {
+      "source": "Roll, degrees",
+      "translation": "Roll, Grad"
     },
     {
       "source": "Rollback backup: {0}",
@@ -37545,6 +37561,10 @@
       "translation": "Gier (°)"
     },
     {
+      "source": "Yaw, degrees",
+      "translation": "Gier, Grad"
+    },
+    {
       "source": "Years",
       "translation": "Jahre"
     },
@@ -38271,6 +38291,10 @@
     {
       "source": "cockpit mode",
       "translation": "Cockpit-Modus"
+    },
+    {
+      "source": "cockpit panel angles",
+      "translation": "Winkel der Cockpitverkleidung"
     },
     {
       "source": "code",
@@ -39671,6 +39695,10 @@
     {
       "source": "mining",
       "translation": "Bergbau"
+    },
+    {
+      "source": "mining HUD calibration",
+      "translation": "Bergbau-HUD-Kalibrierung"
     },
     {
       "source": "mining overview map",
@@ -41515,6 +41543,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Die nativen kombinierten Host-Vorgänge waren nicht verfügbar, daher bleiben separate Fenster aktiv."
+    },
+    {
+      "source": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+      "translation": "{0} Der {1} konnte nicht gespeichert werden: {2} Versuchen Sie „Speichern“ erneut, um die verbleibenden Änderungen zu speichern."
     },
     {
       "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
@@ -47583,16 +47615,16 @@
       "translation": "Calibrar los seis círculos del aparejo."
     },
     {
-      "source": "Calibration failed after layout commit",
-      "translation": "La calibración falló después de confirmar el diseño"
-    },
-    {
       "source": "Calibration guide",
       "translation": "Guía de calibración"
     },
     {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Vista previa de calibración: los rastreadores guardados no se modifican."
+    },
+    {
+      "source": "Calibration save failed; remaining draft retained",
+      "translation": "Error al guardar la calibración; borrador restante retenido"
     },
     {
       "source": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -60755,6 +60787,10 @@
       "translation": "Minería > Powerplay encuentra oportunidades de minería y venta para reforzar, socavar o adquirir."
     },
     {
+      "source": "Mining HUD calibration saved.",
+      "translation": "Se guardó la calibración del HUD de minería."
+    },
+    {
       "source": "Mining Location Signal 4",
       "translation": "Señal de ubicación minera 4"
     },
@@ -64075,8 +64111,12 @@
       "translation": "Las posiciones de superposición no se pueden editar hasta que se corrija el error de diseño existente: {0}"
     },
     {
-      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-      "translation": "Posiciones de superposición guardadas; No se pudo guardar la calibración del HUD de minería: {0} Vuelva a intentar guardar para guardar la calibración."
+      "source": "Overlay positions saved.",
+      "translation": "Posiciones de superposición guardadas."
+    },
+    {
+      "source": "Overlay positions were unchanged.",
+      "translation": "Las posiciones de superposición se mantuvieron sin cambios."
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -64677,6 +64717,10 @@
     {
       "source": "Pitch (°)",
       "translation": "Paso (°)"
+    },
+    {
+      "source": "Pitch, degrees",
+      "translation": "Paso, grados"
     },
     {
       "source": "Place in front of me",
@@ -68849,6 +68893,10 @@
     {
       "source": "Roll (°)",
       "translation": "Rollo (°)"
+    },
+    {
+      "source": "Roll, degrees",
+      "translation": "Rollo, grados"
     },
     {
       "source": "Rollback backup: {0}",
@@ -80223,6 +80271,10 @@
       "translation": "Guiñada (°)"
     },
     {
+      "source": "Yaw, degrees",
+      "translation": "Guiñada, grados"
+    },
+    {
       "source": "Years",
       "translation": "Años"
     },
@@ -80949,6 +81001,10 @@
     {
       "source": "cockpit mode",
       "translation": "modo cabina"
+    },
+    {
+      "source": "cockpit panel angles",
+      "translation": "ángulos del panel de la cabina"
     },
     {
       "source": "code",
@@ -82349,6 +82405,10 @@
     {
       "source": "mining",
       "translation": "minería"
+    },
+    {
+      "source": "mining HUD calibration",
+      "translation": "calibración HUD de minería"
     },
     {
       "source": "mining overview map",
@@ -84193,6 +84253,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Las operaciones nativas de host combinado no estaban disponibles, por lo que las ventanas separadas permanecen activas."
+    },
+    {
+      "source": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+      "translation": "{0} El {1} no se pudo guardar: {2} Vuelva a intentar guardar para guardar los cambios restantes."
     },
     {
       "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
@@ -90261,16 +90325,16 @@
       "translation": "Calibrer les six cercles de forage"
     },
     {
-      "source": "Calibration failed after layout commit",
-      "translation": "L'étalonnage a échoué après la validation de la mise en page"
-    },
-    {
       "source": "Calibration guide",
       "translation": "Guide d'étalonnage"
     },
     {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Aperçu de l'étalonnage : les trackers enregistrés restent inchangés."
+    },
+    {
+      "source": "Calibration save failed; remaining draft retained",
+      "translation": "L'enregistrement de l'étalonnage a échoué ; projet restant retenu"
     },
     {
       "source": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -103433,6 +103497,10 @@
       "translation": "Exploitation minière > Powerplay trouve des opportunités d'exploitation minière et de vente pour renforcer, saper ou acquérir."
     },
     {
+      "source": "Mining HUD calibration saved.",
+      "translation": "Calibrage du HUD minier enregistré."
+    },
+    {
       "source": "Mining Location Signal 4",
       "translation": "Signal de localisation minière 4"
     },
@@ -106753,8 +106821,12 @@
       "translation": "Les positions de superposition ne peuvent pas être modifiées tant que l'erreur de mise en page existante n'est pas corrigée : {0}"
     },
     {
-      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-      "translation": "Positions de superposition enregistrées ; L'étalonnage du HUD minier n'a pas pu être enregistré : {0} Réessayez Enregistrer pour enregistrer l'étalonnage."
+      "source": "Overlay positions saved.",
+      "translation": "Positions de superposition enregistrées."
+    },
+    {
+      "source": "Overlay positions were unchanged.",
+      "translation": "Les positions de superposition sont restées inchangées."
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -107355,6 +107427,10 @@
     {
       "source": "Pitch (°)",
       "translation": "Pas (°)"
+    },
+    {
+      "source": "Pitch, degrees",
+      "translation": "Pas, degrés"
     },
     {
       "source": "Place in front of me",
@@ -111527,6 +111603,10 @@
     {
       "source": "Roll (°)",
       "translation": "Roulement (°)"
+    },
+    {
+      "source": "Roll, degrees",
+      "translation": "Rouleau, degrés"
     },
     {
       "source": "Rollback backup: {0}",
@@ -122901,6 +122981,10 @@
       "translation": "Lacet (°)"
     },
     {
+      "source": "Yaw, degrees",
+      "translation": "Lacet, degrés"
+    },
+    {
       "source": "Years",
       "translation": "Années"
     },
@@ -123627,6 +123711,10 @@
     {
       "source": "cockpit mode",
       "translation": "mode cockpit"
+    },
+    {
+      "source": "cockpit panel angles",
+      "translation": "angles des panneaux de cockpit"
     },
     {
       "source": "code",
@@ -125027,6 +125115,10 @@
     {
       "source": "mining",
       "translation": "exploitation minière"
+    },
+    {
+      "source": "mining HUD calibration",
+      "translation": "étalonnage du HUD minier"
     },
     {
       "source": "mining overview map",
@@ -126871,6 +126963,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Les opérations natives d'hôtes combinés n'étaient pas disponibles, donc des fenêtres distinctes restent actives."
+    },
+    {
+      "source": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+      "translation": "{0} Le {1} n'a pas pu être enregistré : {2} Réessayez d'enregistrer pour enregistrer les modifications restantes."
     },
     {
       "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
@@ -132939,16 +133035,16 @@
       "translation": "Calibre os seis círculos da plataforma"
     },
     {
-      "source": "Calibration failed after layout commit",
-      "translation": "A calibração falhou após a confirmação do layout"
-    },
-    {
       "source": "Calibration guide",
       "translation": "Guia de calibração"
     },
     {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Pré-visualização da calibração – os rastreadores salvos permanecem inalterados."
+    },
+    {
+      "source": "Calibration save failed; remaining draft retained",
+      "translation": "Falha ao salvar calibração; rascunho restante retido"
     },
     {
       "source": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -146111,6 +146207,10 @@
       "translation": "Mineração > Powerplay encontra oportunidades de mineração e venda para Reforçar, Enfraquecer ou Adquirir."
     },
     {
+      "source": "Mining HUD calibration saved.",
+      "translation": "Calibração do HUD de mineração salva."
+    },
+    {
       "source": "Mining Location Signal 4",
       "translation": "Sinal de localização de mineração 4"
     },
@@ -149431,8 +149531,12 @@
       "translation": "As posições de sobreposição não podem ser editadas até que o erro de layout existente seja corrigido: {0}"
     },
     {
-      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-      "translation": "Posições de sobreposição salvas; A calibração do HUD de mineração não pôde ser salva: {0} Tente Salvar novamente para salvar a calibração."
+      "source": "Overlay positions saved.",
+      "translation": "Posições de sobreposição salvas."
+    },
+    {
+      "source": "Overlay positions were unchanged.",
+      "translation": "As posições de sobreposição permaneceram inalteradas."
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -150033,6 +150137,10 @@
     {
       "source": "Pitch (°)",
       "translation": "Passo (°)"
+    },
+    {
+      "source": "Pitch, degrees",
+      "translation": "Passo, graus"
     },
     {
       "source": "Place in front of me",
@@ -154205,6 +154313,10 @@
     {
       "source": "Roll (°)",
       "translation": "Rolar (°)"
+    },
+    {
+      "source": "Roll, degrees",
+      "translation": "Rolar, graus"
     },
     {
       "source": "Rollback backup: {0}",
@@ -165579,6 +165691,10 @@
       "translation": "Guinada (°)"
     },
     {
+      "source": "Yaw, degrees",
+      "translation": "Guinada, graus"
+    },
+    {
       "source": "Years",
       "translation": "Anos"
     },
@@ -166305,6 +166421,10 @@
     {
       "source": "cockpit mode",
       "translation": "modo cabine"
+    },
+    {
+      "source": "cockpit panel angles",
+      "translation": "ângulos do painel da cabine"
     },
     {
       "source": "code",
@@ -167705,6 +167825,10 @@
     {
       "source": "mining",
       "translation": "mineração"
+    },
+    {
+      "source": "mining HUD calibration",
+      "translation": "calibração de HUD de mineração"
     },
     {
       "source": "mining overview map",
@@ -169549,6 +169673,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} As operações nativas de host combinado não estavam disponíveis, portanto janelas separadas permanecem ativas."
+    },
+    {
+      "source": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+      "translation": "{0} O {1} não pôde ser salvo: {2} Tente Salvar novamente para salvar as alterações restantes."
     },
     {
       "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
@@ -175617,16 +175745,16 @@
       "translation": "Калибровка шести кругов буровой установки"
     },
     {
-      "source": "Calibration failed after layout commit",
-      "translation": "Калибровка не удалась после фиксации макета"
-    },
-    {
       "source": "Calibration guide",
       "translation": "Руководство по калибровке"
     },
     {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "Предварительный просмотр калибровки — сохраненные трекеры не изменяются."
+    },
+    {
+      "source": "Calibration save failed; remaining draft retained",
+      "translation": "Не удалось сохранить калибровку; оставшийся проект сохранен"
     },
     {
       "source": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -188789,6 +188917,10 @@
       "translation": "Mining > Powerplay находит возможности добычи и продажи для Reinforce, Undermine или Acquire."
     },
     {
+      "source": "Mining HUD calibration saved.",
+      "translation": "Калибровка HUD для майнинга сохранена."
+    },
+    {
       "source": "Mining Location Signal 4",
       "translation": "Сигнал местоположения добычи полезных ископаемых 4"
     },
@@ -192109,8 +192241,12 @@
       "translation": "Позиции наложения нельзя редактировать, пока не будет исправлена существующая ошибка макета: {0}"
     },
     {
-      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-      "translation": "Позиции наложения сохранены; Не удалось сохранить калибровку HUD для майнинга: {0} Повторите попытку, чтобы сохранить калибровку."
+      "source": "Overlay positions saved.",
+      "translation": "Позиции наложения сохранены."
+    },
+    {
+      "source": "Overlay positions were unchanged.",
+      "translation": "Позиции наложения не изменились."
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -192711,6 +192847,10 @@
     {
       "source": "Pitch (°)",
       "translation": "Угол наклона (°)"
+    },
+    {
+      "source": "Pitch, degrees",
+      "translation": "Шаг, градусы"
     },
     {
       "source": "Place in front of me",
@@ -196883,6 +197023,10 @@
     {
       "source": "Roll (°)",
       "translation": "Крен (°)"
+    },
+    {
+      "source": "Roll, degrees",
+      "translation": "Крен, градусы"
     },
     {
       "source": "Rollback backup: {0}",
@@ -208257,6 +208401,10 @@
       "translation": "Отклонение (°)"
     },
     {
+      "source": "Yaw, degrees",
+      "translation": "Отклонение от курса, градусы"
+    },
+    {
       "source": "Years",
       "translation": "Годы"
     },
@@ -208983,6 +209131,10 @@
     {
       "source": "cockpit mode",
       "translation": "режим кабины"
+    },
+    {
+      "source": "cockpit panel angles",
+      "translation": "углы панели кабины"
     },
     {
       "source": "code",
@@ -210383,6 +210535,10 @@
     {
       "source": "mining",
       "translation": "добыча полезных ископаемых"
+    },
+    {
+      "source": "mining HUD calibration",
+      "translation": "калибровка HUD для майнинга"
     },
     {
       "source": "mining overview map",
@@ -212227,6 +212383,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} Собственные операции с объединенными хостами были недоступны, поэтому отдельные окна остаются активными."
+    },
+    {
+      "source": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+      "translation": "{0} Не удалось сохранить {1}: {2} Повторите попытку сохранения, чтобы сохранить оставшиеся изменения."
     },
     {
       "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
@@ -218295,16 +218455,16 @@
       "translation": "校准六个钻机圆"
     },
     {
-      "source": "Calibration failed after layout commit",
-      "translation": "布局提交后校准失败"
-    },
-    {
       "source": "Calibration guide",
       "translation": "校准指南"
     },
     {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "校准预览 - 保存的跟踪器未更改。"
+    },
+    {
+      "source": "Calibration save failed; remaining draft retained",
+      "translation": "校准保存失败；保留剩余草稿"
     },
     {
       "source": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -231467,6 +231627,10 @@
       "translation": "采矿 > Powerplay 寻找强化、破坏或获取的采矿和销售机会。"
     },
     {
+      "source": "Mining HUD calibration saved.",
+      "translation": "采矿 HUD 校准已保存。"
+    },
+    {
       "source": "Mining Location Signal 4",
       "translation": "采矿位置信号 4"
     },
@@ -234787,8 +234951,12 @@
       "translation": "在纠正现有布局错误之前，无法编辑叠加位置：{0}"
     },
     {
-      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-      "translation": "保存叠加位置；无法保存采矿 HUD 校准：{0} 重试保存以保存校准。"
+      "source": "Overlay positions saved.",
+      "translation": "已保存叠加位置。"
+    },
+    {
+      "source": "Overlay positions were unchanged.",
+      "translation": "叠加位置没有变化。"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -235389,6 +235557,10 @@
     {
       "source": "Pitch (°)",
       "translation": "螺距（°）"
+    },
+    {
+      "source": "Pitch, degrees",
+      "translation": "螺距、度数"
     },
     {
       "source": "Place in front of me",
@@ -239561,6 +239733,10 @@
     {
       "source": "Roll (°)",
       "translation": "滚动（°）"
+    },
+    {
+      "source": "Roll, degrees",
+      "translation": "滚动，度数"
     },
     {
       "source": "Rollback backup: {0}",
@@ -250935,6 +251111,10 @@
       "translation": "偏航角 (°)"
     },
     {
+      "source": "Yaw, degrees",
+      "translation": "偏航，度数"
+    },
+    {
       "source": "Years",
       "translation": "年"
     },
@@ -251661,6 +251841,10 @@
     {
       "source": "cockpit mode",
       "translation": "驾驶舱模式"
+    },
+    {
+      "source": "cockpit panel angles",
+      "translation": "驾驶舱面板角度"
     },
     {
       "source": "code",
@@ -253061,6 +253245,10 @@
     {
       "source": "mining",
       "translation": "采矿"
+    },
+    {
+      "source": "mining HUD calibration",
+      "translation": "采矿HUD校准"
     },
     {
       "source": "mining overview map",
@@ -254905,6 +255093,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "{0} 本机组合主机操作不可用，因此单独的窗口保持活动状态。"
+    },
+    {
+      "source": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+      "translation": "{0} 无法保存 {1}：{2} 重试保存以保存剩余的更改。"
     },
     {
       "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",
@@ -260973,16 +261165,16 @@
       "translation": "* CALIBRATE THE SIX RIG CIRCLES >>>!"
     },
     {
-      "source": "Calibration failed after layout commit",
-      "translation": "* CALIBRATION FAILED AFTER LAYOUT COMMIT >>>!"
-    },
-    {
       "source": "Calibration guide",
       "translation": "* CALIBRATION GUIDE >>>!"
     },
     {
       "source": "Calibration preview — saved trackers are unchanged.",
       "translation": "* CALIBRATION PREVIEW — SAVED TRACKERS ARE UNCHANGED. >>>!"
+    },
+    {
+      "source": "Calibration save failed; remaining draft retained",
+      "translation": "* CALIBRATION SAVE FAILED; REMAINING DRAFT RETAINED >>>!"
     },
     {
       "source": "Calibration scales with the game viewport. Recheck after changing aspect ratio, field of view, HUD geometry, or HUD color. Numbers inside the HUD circles are not read.",
@@ -274145,6 +274337,10 @@
       "translation": "* MINING > POWERPLAY FINDS MINING AND SELLING OPPORTUNITIES FOR REINFORCE, UNDERMINE, OR ACQUIRE. >>>!"
     },
     {
+      "source": "Mining HUD calibration saved.",
+      "translation": "* MINING HUD CALIBRATION SAVED. >>>!"
+    },
+    {
       "source": "Mining Location Signal 4",
       "translation": "* MINING LOCATION SIGNAL 4 >>>!"
     },
@@ -277465,8 +277661,12 @@
       "translation": "* OVERLAY POSITIONS CANNOT BE EDITED UNTIL THE EXISTING LAYOUT ERROR IS CORRECTED: {0} >>>!"
     },
     {
-      "source": "Overlay positions saved; mining HUD calibration could not be saved: {0} Retry Save to save calibration.",
-      "translation": "* OVERLAY POSITIONS SAVED; MINING HUD CALIBRATION COULD NOT BE SAVED: {0} RETRY SAVE TO SAVE CALIBRATION. >>>!"
+      "source": "Overlay positions saved.",
+      "translation": "* OVERLAY POSITIONS SAVED. >>>!"
+    },
+    {
+      "source": "Overlay positions were unchanged.",
+      "translation": "* OVERLAY POSITIONS WERE UNCHANGED. >>>!"
     },
     {
       "source": "Overlay presentation: {0}. {1}",
@@ -278067,6 +278267,10 @@
     {
       "source": "Pitch (°)",
       "translation": "* PITCH (°) >>>!"
+    },
+    {
+      "source": "Pitch, degrees",
+      "translation": "* PITCH, DEGREES >>>!"
     },
     {
       "source": "Place in front of me",
@@ -282239,6 +282443,10 @@
     {
       "source": "Roll (°)",
       "translation": "* ROLL (°) >>>!"
+    },
+    {
+      "source": "Roll, degrees",
+      "translation": "* ROLL, DEGREES >>>!"
     },
     {
       "source": "Rollback backup: {0}",
@@ -293613,6 +293821,10 @@
       "translation": "* YAW (°) >>>!"
     },
     {
+      "source": "Yaw, degrees",
+      "translation": "* YAW, DEGREES >>>!"
+    },
+    {
       "source": "Years",
       "translation": "* YEARS >>>!"
     },
@@ -294339,6 +294551,10 @@
     {
       "source": "cockpit mode",
       "translation": "* COCKPIT MODE >>>!"
+    },
+    {
+      "source": "cockpit panel angles",
+      "translation": "* COCKPIT PANEL ANGLES >>>!"
     },
     {
       "source": "code",
@@ -295739,6 +295955,10 @@
     {
       "source": "mining",
       "translation": "* MINING >>>!"
+    },
+    {
+      "source": "mining HUD calibration",
+      "translation": "* MINING HUD CALIBRATION >>>!"
     },
     {
       "source": "mining overview map",
@@ -297583,6 +297803,10 @@
     {
       "source": "{0} The native combined-host operations were unavailable, so separate windows remain active.",
       "translation": "* {0} THE NATIVE COMBINED-HOST OPERATIONS WERE UNAVAILABLE, SO SEPARATE WINDOWS REMAIN ACTIVE. >>>!"
+    },
+    {
+      "source": "{0} The {1} could not be saved: {2} Retry Save to save the remaining changes.",
+      "translation": "* {0} THE {1} COULD NOT BE SAVED: {2} RETRY SAVE TO SAVE THE REMAINING CHANGES. >>>!"
     },
     {
       "source": "{0} Uses the game's separate X11 display. The overlay monitor helps select a client when desktop geometry is available.",

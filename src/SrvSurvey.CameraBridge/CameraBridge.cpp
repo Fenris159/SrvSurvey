@@ -121,7 +121,6 @@ struct ContextState
 {
     std::mutex mutex;
     std::array<Readback, 3> ring;
-    ContextHooks originals;
     uint64_t lastFrame = UINT64_MAX, lastSubmit = 0;
     std::atomic<bool> disabled{false};
 
@@ -288,13 +287,21 @@ bool ReplaceSlot(void **table, size_t slot, void *function)
 
 ContextHooks OriginalContextHooks(ID3D11DeviceContext *context)
 {
+    // Originals are published before patching and never changed for a table.
+    // A thread-owned copy avoids shared locks/lookups on its steady draw path.
+    thread_local void **cachedTable = nullptr;
+    thread_local ContextHooks cachedOriginals{};
+    void **table = Vtable(context);
+    if (cachedTable == table)
+        return cachedOriginals;
     Runtime &runtime = State();
     std::lock_guard guard(runtime.mutex);
-    auto observed = runtime.contexts.find(context);
-    if (observed != runtime.contexts.end())
-        return observed->second->originals;
-    auto found = runtime.contextHooks.find(Vtable(context));
-    return found == runtime.contextHooks.end() ? ContextHooks{} : found->second;
+    auto found = runtime.contextHooks.find(table);
+    if (found == runtime.contextHooks.end())
+        return {};
+    cachedOriginals = found->second;
+    cachedTable = table;
+    return cachedOriginals;
 }
 
 bool IsMainViewport(ID3D11DeviceContext *context, const CaptureLayout &layout)
@@ -548,14 +555,15 @@ void Capture(ID3D11DeviceContext *context, const DrawSignature &signature)
     {
         if (entry.pending)
             continue;
-        if (!PrepareReadback(context, entry, description.ByteWidth, layout.cameraBytes))
+        if (!PrepareReadback(context, entry, range->bytes, layout.cameraBytes))
             break;
         // Copy the resource before its owning draw. The event query and staging
         // Map below are asynchronous; no Flush, blocking Map or write-map read.
-        context->CopyResource(entry.staging, buffer);
+        D3D11_BOX box{range->offset, 0, 0, range->offset + range->bytes, 1, 1};
+        context->CopySubresourceRegion(entry.staging, 0, 0, 0, 0, buffer, 0, &box);
         context->CopyResource(entry.cameraStaging, cameraBuffer);
         context->End(entry.completed);
-        entry.viewOffset = range->offset;
+        entry.viewOffset = 0;
         entry.viewBytes = range->bytes;
         entry.submittedAt = now;
         entry.generation = lease.generation;
@@ -663,7 +671,6 @@ void ObserveContext(ID3D11DeviceContext *context)
     if (!runtime.contexts.contains(context))
     {
         auto state = std::make_shared<ContextState>();
-        state->originals = runtime.contextHooks.at(table);
         runtime.contexts.emplace(context, std::move(state));
     }
     runtime.OpenTransport();

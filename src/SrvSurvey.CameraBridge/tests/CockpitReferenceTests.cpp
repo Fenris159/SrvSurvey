@@ -1,6 +1,7 @@
 #include "../CockpitReference.h"
 #include "CapturedReferenceFixtures.h"
 #include <iostream>
+#include <cstring>
 #include <stdexcept>
 #include <vector>
 
@@ -120,6 +121,34 @@ void TwoSimilarlySupportedNearbyBodiesAreRejected()
     Require(!FindCockpitReference(frame.instances, frame.constants), "An ambiguous nearby body was reported as the cockpit");
 }
 
+void DistinctRootsCannotMergeThroughACentralSeed()
+{
+    const auto capturedFrame = Load(captured::center);
+    for (bool varyRotation : {false, true})
+    {
+        Frame frame{std::vector<uint8_t>(24 * CockpitRecordStride), capturedFrame.constants};
+        CaptureLayout layout;
+        layout.rotationFormat = 3;
+        layout.rotationOffset = 32;
+        for (size_t index = 0; index < 24; ++index)
+        {
+            size_t offset = index * CockpitRecordStride;
+            std::copy_n(capturedFrame.instances.begin() + 394 * CockpitRecordStride, 32,
+                        frame.instances.begin() + offset);
+            float direction = index < 8 ? 0.0f : index < 16 ? -1.0f : 1.0f;
+            float x = 0;
+            std::memcpy(&x, frame.instances.data() + offset + 16, sizeof(x));
+            Write32(frame.instances, offset + 16, std::bit_cast<uint32_t>(x + (varyRotation ? 0.0f : direction * 0.0009f)));
+            double halfAngle = varyRotation ? direction * 0.225 * 3.141592653589793 / 360 : 0;
+            const float rotation[]{0, static_cast<float>(std::sin(halfAngle)), 0, static_cast<float>(std::cos(halfAngle))};
+            for (size_t axis = 0; axis < 4; ++axis)
+                Write32(frame.instances, offset + 32 + axis * 4, std::bit_cast<uint32_t>(rotation[axis]));
+        }
+        Require(!FindCockpitReference(frame.instances, frame.constants, layout),
+                varyRotation ? "Distinct orientations merged through a central seed" : "Distinct positions merged through a central seed");
+    }
+}
+
 void InsufficientMalformedAndNonPerspectiveSourcesAreRejected()
 {
     auto frame = Load(captured::center);
@@ -148,8 +177,9 @@ int main()
         InstanceTableCompactionDoesNotChangeTheReference();
         EquivalentQuaternionHemispheresDoNotSplitTheBody();
         TwoSimilarlySupportedNearbyBodiesAreRejected();
+        DistinctRootsCannotMergeThroughACentralSeed();
         InsufficientMalformedAndNonPerspectiveSourcesAreRejected();
-        std::cout << "Cockpit reference: seven behavior checks passed\n";
+        std::cout << "Cockpit reference: eight behavior checks passed\n";
         return 0;
     }
     catch (const std::exception &exception)

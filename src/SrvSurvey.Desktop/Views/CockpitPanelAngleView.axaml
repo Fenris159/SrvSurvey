@@ -24,27 +24,27 @@
         <StackPanel Spacing="3">
           <TextBlock Text="Yaw (°)" />
           <NumericUpDown MinWidth="0" Minimum="-85" Maximum="85" Increment="1" FormatString="0"
-                         Value="{Binding Yaw, Mode=TwoWay}" />
+                         Value="{Binding Yaw, Mode=TwoWay}" AutomationProperties.Name="Yaw, degrees" />
         </StackPanel>
         <StackPanel Grid.Column="1" Spacing="3">
           <TextBlock Text="Pitch (°)" />
           <NumericUpDown MinWidth="0" Minimum="-85" Maximum="85" Increment="1" FormatString="0"
-                         Value="{Binding Pitch, Mode=TwoWay}" />
+                         Value="{Binding Pitch, Mode=TwoWay}" AutomationProperties.Name="Pitch, degrees" />
         </StackPanel>
         <StackPanel Grid.Column="2" Spacing="3">
           <TextBlock Text="Roll (°)" />
           <NumericUpDown MinWidth="0" Minimum="-180" Maximum="180" Increment="1" FormatString="0"
-                         Value="{Binding Roll, Mode=TwoWay}" />
+                         Value="{Binding Roll, Mode=TwoWay}" AutomationProperties.Name="Roll, degrees" />
         </StackPanel>
       </Grid>
       <Grid ColumnDefinitions="*,126" ColumnSpacing="12" ToolTip.Tip="Greater distance makes this panel smaller, as it would in VR.">
         <StackPanel Spacing="3">
           <TextBlock Text="Panel distance" />
           <Slider Minimum="0.25" Maximum="5" SmallChange="0.05"
-                  Value="{Binding Depth, Mode=TwoWay}" />
+                  Value="{Binding Depth, Mode=TwoWay}" AutomationProperties.Name="Panel distance" />
         </StackPanel>
         <NumericUpDown MinWidth="0" Grid.Column="1" Minimum="0.25" Maximum="5" Increment="0.05" FormatString="0.00"
-                       Value="{Binding Depth, Mode=TwoWay}" VerticalAlignment="Bottom" />
+                       Value="{Binding Depth, Mode=TwoWay}" AutomationProperties.Name="Panel distance" VerticalAlignment="Bottom" />
       </Grid>
       <Button Classes="secondary" Content="Reset angle and depth" Command="{Binding ResetPanelCommand}" />
       <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"

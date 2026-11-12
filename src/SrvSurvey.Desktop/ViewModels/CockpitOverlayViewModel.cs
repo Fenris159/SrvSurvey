@@ -203,11 +203,10 @@ public sealed class CockpitOverlayViewModel : INotifyPropertyChanged
     /// <summary>Saves the angle transaction only when the existing editor saves its layout.</summary>
     public void SaveEdit()
     {
-        if (originalPanels is null)
+        if (HasChanges)
         {
-            return;
+            settingsStore.Save(preferences);
         }
-        settingsStore.Save(preferences);
         originalPanels = null;
     }
 

@@ -948,6 +948,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             screens
         );
         PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, workingArea);
+        toolbar.MaxHeight = Math.Max(toolbar.MinHeight, (usableBounds.Height - 24) / screen.Scaling);
         double logicalWidth = measuredSize?.Width ?? (toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width);
         double logicalHeight =
             measuredSize?.Height ?? (toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight);
