@@ -273,7 +273,7 @@ inline std::optional<RigidReference> FindCockpitReference(
             double value = 0;
             for (size_t inner = 0; inner < 4; ++inner)
                 value += double(cameraProjection[inner * 4 + row]) * transform[inner][column];
-            result.projection[row * 4 + column] = value;
+            result.projection[row * 4 + column] = static_cast<float>(value);
         }
     if (!IsUsableProjection(result.projection))
         return std::nullopt;
