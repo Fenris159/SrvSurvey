@@ -25,6 +25,48 @@ public static class CockpitPanelProjection
     private const float NearDepth = 0.025f;
     private const float VerticalFocalScale = 1.8358436f;
 
+    /// <summary>Projects editor content through the same viewport, physical rectangle and lens as the live presenter.</summary>
+    internal static Matrix? CreateEditorPreview(
+        Rect physicalPanel,
+        Size contentSize,
+        PixelRect viewport,
+        double viewportScaling,
+        CockpitPanelPose pose,
+        CockpitProjectionLens? lens = null
+    )
+    {
+        if (
+            !double.IsFinite(viewportScaling)
+            || viewportScaling <= 0
+            || contentSize.Width <= 0
+            || contentSize.Height <= 0
+        )
+        {
+            return null;
+        }
+        var panel = new Rect(
+            (physicalPanel.X - viewport.X) / viewportScaling,
+            (physicalPanel.Y - viewport.Y) / viewportScaling,
+            physicalPanel.Width / viewportScaling,
+            physicalPanel.Height / viewportScaling
+        );
+        Matrix? projection = Create(
+            panel,
+            new Size(viewport.Width / viewportScaling, viewport.Height / viewportScaling),
+            pose,
+            Matrix4x4.Identity,
+            lens
+        );
+        double scaleX = panel.Width / contentSize.Width;
+        double scaleY = panel.Height / contentSize.Height;
+        return projection is { } matrix && scaleX > 0 && scaleY > 0
+            ? Matrix.CreateScale(scaleX, scaleY)
+                * matrix
+                * Matrix.CreateTranslation(-panel.X, -panel.Y)
+                * Matrix.CreateScale(1 / scaleX, 1 / scaleY)
+            : null;
+    }
+
     /// <summary>Creates a true projective transform, returning null when a panel crosses behind the camera.</summary>
     public static Matrix? Create(
         Rect panel,

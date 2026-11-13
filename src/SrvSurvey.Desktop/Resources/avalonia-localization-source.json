@@ -5455,6 +5455,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/PanelRotationOrb.cs"
+  },
+  {
     "Text": "Artemis suit",
     "IsFormat": false,
     "SourceKinds": [
@@ -19639,7 +19647,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+    "Text": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -75274,6 +75282,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Yaw {0}\u00B0, pitch {1}\u00B0, roll {2}\u00B0",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/PanelRotationOrb.cs"
   },
   {
     "Text": "Years",

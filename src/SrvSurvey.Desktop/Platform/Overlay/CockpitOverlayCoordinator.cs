@@ -17,7 +17,6 @@ public sealed class CockpitOverlayCoordinator : IDisposable
     private CockpitCameraClient? client;
     private CockpitCameraFrame? currentFrame;
     private Matrix4x4? inverseNeutral;
-    private CockpitProjectionLens? neutralLens;
     private bool disposed;
 
     /// <summary>Observes explicit opt-in; a disabled feature opens no camera socket and schedules no polling.</summary>
@@ -102,7 +101,7 @@ public sealed class CockpitOverlayCoordinator : IDisposable
         viewModel.CanCalibrate = true;
         if (inverseNeutral is { } neutral)
         {
-            presentation.SetCockpitProjection(neutral * frame.Transform, viewModel.Resolve, neutralLens);
+            presentation.SetCockpitProjection(neutral * frame.Transform, viewModel.Resolve, viewModel.CalibratedLens);
             viewModel.StatusMessage = "Live cockpit camera connected. Panels follow normal freelook.";
         }
         else
@@ -124,8 +123,8 @@ public sealed class CockpitOverlayCoordinator : IDisposable
         }
         currentFrame = frame;
         inverseNeutral = inverse;
-        neutralLens = lens;
-        presentation.SetCockpitProjection(Matrix4x4.Identity, viewModel.Resolve, neutralLens);
+        viewModel.CalibratedLens = lens;
+        presentation.SetCockpitProjection(Matrix4x4.Identity, viewModel.Resolve, lens);
         viewModel.StatusMessage = "Centered view calibrated. Use the position editor to adjust each panel's angle.";
     }
 
@@ -134,7 +133,7 @@ public sealed class CockpitOverlayCoordinator : IDisposable
         currentFrame = null;
         viewModel.CanCalibrate = false;
         inverseNeutral = null;
-        neutralLens = null;
+        viewModel.CalibratedLens = null;
         presentation.SetCockpitProjection(null, null);
     }
 

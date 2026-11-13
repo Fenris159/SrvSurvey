@@ -7,6 +7,53 @@ namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
 public sealed class CockpitPanelProjectionTests
 {
     [Fact]
+    public void EditorProjectionUsesTheGameViewportOriginAndCalibratedLensAtHighDpi()
+    {
+        Matrix transform = Assert.IsType<Matrix>(
+            CockpitPanelProjection.CreateEditorPreview(
+                new Rect(4200, 600, 600, 200),
+                new Size(300, 100),
+                new PixelRect(4000, 200, 2000, 2000),
+                2,
+                new CockpitPanelPose(Yaw: 45),
+                new CockpitProjectionLens(1.25f, 2.5f, .1f)
+            )
+        );
+        Point corner = transform.Transform(default);
+        Assert.InRange(corner.X, 95.592482, 95.594482);
+        Assert.InRange(corner.Y, 43.524214, 43.526214);
+        Assert.Null(
+            CockpitPanelProjection.CreateEditorPreview(
+                new Rect(0, 0, 100, 100),
+                new Size(100, 100),
+                new PixelRect(0, 0, 1000, 1000),
+                0,
+                new CockpitPanelPose()
+            )
+        );
+    }
+
+    [Theory]
+    [InlineData(1, 1)]
+    [InlineData(2, 1)]
+    [InlineData(1, 2)]
+    [InlineData(2, 2)]
+    public void EditorProjectionKeepsCoordinateSpacesConsistent(double dpi, double panelScale)
+    {
+        Matrix transform = Assert.IsType<Matrix>(
+            CockpitPanelProjection.CreateEditorPreview(
+                new Rect(100 * dpi, 200 * dpi, 300 * panelScale * dpi, 100 * panelScale * dpi),
+                new Size(300, 100),
+                new PixelRect(0, 0, (int)(1000 * dpi), (int)(1000 * dpi)),
+                dpi,
+                new CockpitPanelPose(Roll: 90)
+            )
+        );
+        AssertPoint(new Point(100, 200), transform.Transform(default));
+        AssertPoint(new Point(200, -100), transform.Transform(new Point(300, 100)));
+    }
+
+    [Fact]
     public void MovingAPanelTwiceAsFarHalvesItsSizeAroundItsSavedCenter()
     {
         Matrix projection = Assert.IsType<Matrix>(

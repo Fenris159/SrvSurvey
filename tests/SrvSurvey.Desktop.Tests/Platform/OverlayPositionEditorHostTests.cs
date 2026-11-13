@@ -57,16 +57,18 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 "Right-click the orb to reset",
                 Assert.IsType<string>(ToolTip.GetTip(Assert.IsType<Border>(handle.Parent)))
             );
-            PixelPoint origin = preview.Position;
+            PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
             OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
             Point center = handle.TranslatePoint(new Point(15, 15), preview)!.Value;
             preview.MouseDown(center, MouseButton.Left, RawInputModifiers.LeftMouseButton);
             preview.MouseMove(center + new Vector(20, -10), RawInputModifiers.LeftMouseButton);
             preview.MouseUp(center + new Vector(20, -10), MouseButton.Left, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? rotated = preview.CaptureRenderedFrame();
             Assert.Equal(new CockpitPanelPose(12, 6), cockpit.Resolve("PlotJumpInfo"));
             Assert.Equal(new CockpitPanelPose(), cockpit.Resolve("PlotFSSInfo"));
-            Assert.Equal(origin, preview.Position);
-            Assert.Equal(metrics, preview.GetPanelMetrics(preview.RenderScaling));
+            Assert.Equal(origin, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            Assert.Equal(metrics.PanelSize, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
             Assert.False(model.IsOverlaySettingsOpen);
             Assert.False(cockpit.Enabled);
             preview.MouseDown(center + new Vector(10, 0), MouseButton.Left, RawInputModifiers.LeftMouseButton);

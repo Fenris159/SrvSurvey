@@ -40,6 +40,7 @@ public sealed class CockpitOverlayCoordinatorTests : IDisposable
         Assert.True(model.CanCalibrate);
         Assert.Null(host.Change);
         model.CalibrateCommand.Execute(null);
+        Assert.Equal(new CockpitProjectionLens(1, 1, .025f), model.CalibratedLens);
         Assert.Equal(new CockpitPanelPose(Yaw: 15, Depth: 1.5), host.PoseProvider!("PlotJumpInfo"));
         AssertCenter(host, 500, 500);
 
@@ -67,6 +68,7 @@ public sealed class CockpitOverlayCoordinatorTests : IDisposable
 
         clock.Elapsed = 250;
         timer.Pulse();
+        Assert.Null(model.CalibratedLens);
         Assert.Null(host.Change);
         Assert.False(model.CanCalibrate);
         model.Enabled = false;

@@ -1,8 +1,11 @@
 using System.Numerics;
 using Avalonia;
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -38,6 +41,7 @@ public sealed class PanelRotationOrb : Control
     private Point previousPoint;
     private bool dragging;
     private bool rolling;
+    public event EventHandler? ResetRequested;
     private double OrbRadius =>
         Math.Max(
             1,
@@ -95,6 +99,32 @@ public sealed class PanelRotationOrb : Control
         get => GetValue(PanelBrushProperty);
         set => SetValue(PanelBrushProperty, value);
     }
+
+    /// <summary>Exposes the focusable orb as an interactive control to assistive technology.</summary>
+    protected override AutomationPeer OnCreateAutomationPeer()
+    {
+        UpdateAccessibleAngles();
+        AutomationProperties.SetHelpText(
+            this,
+            LocalizationCatalog.Translate("Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.")
+        );
+        return new ControlAutomationPeer(this);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == YawProperty || change.Property == PitchProperty || change.Property == RollProperty)
+        {
+            UpdateAccessibleAngles();
+        }
+    }
+
+    private void UpdateAccessibleAngles() =>
+        AutomationProperties.SetItemStatus(
+            this,
+            LocalizationCatalog.Translate($"Yaw {Yaw:0.#}°, pitch {Pitch:0.#}°, roll {Roll:0.#}°")
+        );
 
     /// <summary>Draws a theme-aware orientation sphere, rotation arrows and the panel's projective outline.</summary>
     public override void Render(DrawingContext context)
@@ -220,6 +250,12 @@ public sealed class PanelRotationOrb : Control
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (e.Key == Key.Home)
+        {
+            ResetRequested?.Invoke(this, EventArgs.Empty);
+            e.Handled = true;
+            return;
+        }
         int direction = e.Key is Key.Left or Key.Down ? -1 : 1;
         double step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 5 : 1;
         if (e.Key is Key.Left or Key.Right)

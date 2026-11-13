@@ -18,6 +18,7 @@ public sealed class CockpitOverlayViewModel : INotifyPropertyChanged
     private string statusMessage = "Cockpit panels are off.";
     private bool canCalibrate;
     private bool checkingProfile;
+    private CockpitProjectionLens? calibratedLens;
     private string captureProfileStatus = "Camera profiles are checked on launch while cockpit mode is enabled.";
 
     /// <summary>Loads settings without enabling a camera connection or changing the current desktop presentation.</summary>
@@ -45,6 +46,20 @@ public sealed class CockpitOverlayViewModel : INotifyPropertyChanged
     public event EventHandler? CalibrationRequested;
 
     public bool StartupEnabled { get; }
+
+    /// <summary>Shares the current live calibration with editor previews without persisting camera state.</summary>
+    public CockpitProjectionLens? CalibratedLens
+    {
+        get => calibratedLens;
+        internal set
+        {
+            if (calibratedLens != value)
+            {
+                calibratedLens = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     /// <summary>Persists explicit opt-in; selecting the shared presentation host takes effect after restarting SrvSurvey.</summary>
     public bool Enabled

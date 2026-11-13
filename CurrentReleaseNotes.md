@@ -27,8 +27,13 @@ capture catalogs.
   panel's rotation. The right-click settings menu stays focused on appearance.
 - **Keep size controls together:** Use the existing right-click scale controls
   to change panel size. The orb only changes orientation; arrow keys tilt and
-  Control plus Left/Right rolls. Perspective settings follow the editor's existing save/cancel flow.
+  Control plus Left/Right rolls; Home resets rotation. Accessible angle values update
+  while editing. Perspective settings follow the editor's existing save/cancel flow.
+  Minimum scale can be restored without a layout error.
   Angles can be prepared while cockpit tracking is off, without enabling capture.
+- **Match the live perspective:** Preview projection uses the panel's actual
+  position, display and panel scales, and the calibrated game lens when available.
+  Rotated content can render beyond its original frame within the game viewport.
 - **Keep editing controls reachable:** Expanded settings scroll on shorter
   displays while the editor's save and cancel controls stay visible. Rotation
   handles remain visible and accessible across themes.

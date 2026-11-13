@@ -2725,6 +2725,10 @@
       "translation": "Ankunft in einem Guardian-System"
     },
     {
+      "source": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+      "translation": "Pfeiltasten neigen sich; Kontrolle plus Links- oder Rechtsrollen; Home setzt die Rotation zurück."
+    },
+    {
       "source": "Artemis suit",
       "translation": "Artemis-Anzug"
     },
@@ -9789,8 +9793,8 @@
       "translation": "Ziehen Sie die umrandeten Vorschaubilder auf die gewünschten Monitore und Positionen. Vorschauinhalte stammen aus einem falschen Spielstatus, der wie echte Overlay-Daten aussieht."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
-      "translation": "Ziehen Sie die Mitte der Kugel, um sie zu neigen. Ziehen Sie den Rand, um ihn zu rollen. Klicken Sie mit der rechten Maustaste auf die Kugel, um die Drehung zurückzusetzen. Speichern Sie mit der Editor-Symbolleiste."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Ziehen Sie die Mitte der Kugel, um sie zu neigen. Ziehen Sie den Rand, um ihn zu rollen. Klicken Sie mit der rechten Maustaste auf die Kugel, um die Drehung zurückzusetzen, oder drücken Sie die Home-Taste. Speichern Sie mit der Editor-Symbolleiste."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -37521,6 +37525,10 @@
       "translation": "Gier (Grad)"
     },
     {
+      "source": "Yaw {0}°, pitch {1}°, roll {2}°",
+      "translation": "Gier {0}°, Nicken {1}°, Rollen {2}°"
+    },
+    {
       "source": "Years",
       "translation": "Jahre"
     },
@@ -45391,6 +45399,10 @@
       "translation": "Llegando a un sistema Guardian"
     },
     {
+      "source": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+      "translation": "Inclinación de las teclas de flecha; Control más giros hacia la izquierda o hacia la derecha; Inicio restablece la rotación."
+    },
+    {
       "source": "Artemis suit",
       "translation": "traje de artemisa"
     },
@@ -52455,8 +52467,8 @@
       "translation": "Arrastre las vistas previas con bordes a los monitores y posiciones deseados. El contenido de la vista previa proviene de un estado de juego falso con forma de datos superpuestos reales."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
-      "translation": "Arrastre el centro del orbe para inclinarlo; Arrastre su borde para rodar. Haga clic derecho en el orbe para restablecer la rotación. Guarde con la barra de herramientas del editor."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Arrastre el centro del orbe para inclinarlo; Arrastre su borde para rodar. Haz clic derecho en el orbe para restablecer la rotación o presiona Inicio. Guarde con la barra de herramientas del editor."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -80187,6 +80199,10 @@
       "translation": "Guiñada (grados)"
     },
     {
+      "source": "Yaw {0}°, pitch {1}°, roll {2}°",
+      "translation": "Guiñada {0}°, cabeceo {1}°, balanceo {2}°"
+    },
+    {
       "source": "Years",
       "translation": "Años"
     },
@@ -88057,6 +88073,10 @@
       "translation": "Arriver à un système Guardian"
     },
     {
+      "source": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+      "translation": "Les touches fléchées s'inclinent ; Contrôle plus rouleaux gauche ou droit ; La maison réinitialise la rotation."
+    },
+    {
       "source": "Artemis suit",
       "translation": "Costume Artémis"
     },
@@ -95121,8 +95141,8 @@
       "translation": "Faites glisser les aperçus bordés vers les moniteurs et les positions souhaités. Le contenu de l'aperçu provient d'un faux état de jeu façonné comme de véritables données de superposition."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
-      "translation": "Faites glisser le centre de l'orbe pour l'incliner ; faites glisser son bord pour rouler. Cliquez avec le bouton droit sur l’orbe pour réinitialiser la rotation. Enregistrez avec la barre d'outils de l'éditeur."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Faites glisser le centre de l'orbe pour l'incliner ; faites glisser son bord pour rouler. Cliquez avec le bouton droit sur l’orbe pour réinitialiser la rotation ou appuyez sur Accueil. Enregistrez avec la barre d'outils de l'éditeur."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -122853,6 +122873,10 @@
       "translation": "Lacet (degrés)"
     },
     {
+      "source": "Yaw {0}°, pitch {1}°, roll {2}°",
+      "translation": "Lacet {0}°, tangage {1}°, roulis {2}°"
+    },
+    {
       "source": "Years",
       "translation": "Années"
     },
@@ -130723,6 +130747,10 @@
       "translation": "Chegando a um sistema Guardian"
     },
     {
+      "source": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+      "translation": "Inclinação das teclas de seta; Controle mais rolagens para a esquerda ou para a direita; Início redefine a rotação."
+    },
+    {
       "source": "Artemis suit",
       "translation": "Terno de Ártemis"
     },
@@ -137787,8 +137815,8 @@
       "translation": "Arraste as visualizações com bordas para os monitores e posições desejadas. O conteúdo de visualização vem de um estado de jogo falso em forma de dados de sobreposição reais."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
-      "translation": "Arraste o centro do orbe para inclinar; arraste sua borda para rolar. Clique com o botão direito no orbe para redefinir a rotação. Salve com a barra de ferramentas do editor."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Arraste o centro do orbe para inclinar; arraste sua borda para rolar. Clique com o botão direito no orbe para redefinir a rotação ou pressione Home. Salve com a barra de ferramentas do editor."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -165519,6 +165547,10 @@
       "translation": "Guinada (graus)"
     },
     {
+      "source": "Yaw {0}°, pitch {1}°, roll {2}°",
+      "translation": "Guinada {0}°, inclinação {1}°, rotação {2}°"
+    },
+    {
       "source": "Years",
       "translation": "Anos"
     },
@@ -173389,6 +173421,10 @@
       "translation": "Прибытие в систему Guardian"
     },
     {
+      "source": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+      "translation": "Клавиши со стрелками наклоняются; Контроль плюс броски влево или вправо; Домой сбрасывает вращение."
+    },
+    {
       "source": "Artemis suit",
       "translation": "костюм Артемиды"
     },
@@ -180453,8 +180489,8 @@
       "translation": "Перетащите границы предварительного просмотра на нужные мониторы и в нужные позиции. Содержимое предварительного просмотра создается из ложного состояния игры, имеющего форму реальных данных наложения."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
-      "translation": "Перетащите центр сферы, чтобы наклонить ее; перетащите его край, чтобы катиться. Щелкните правой кнопкой мыши по шару, чтобы сбросить вращение. Сохраните с помощью панели инструментов редактора."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Перетащите центр сферы, чтобы наклонить ее; перетащите его край, чтобы катиться. Щелкните шар правой кнопкой мыши, чтобы сбросить вращение, или нажмите «Домой». Сохраните с помощью панели инструментов редактора."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -208185,6 +208221,10 @@
       "translation": "Отклонение от курса (градусы)"
     },
     {
+      "source": "Yaw {0}°, pitch {1}°, roll {2}°",
+      "translation": "Отклонение от курса {0}°, тангаж {1}°, крен {2}°"
+    },
+    {
       "source": "Years",
       "translation": "Годы"
     },
@@ -216055,6 +216095,10 @@
       "translation": "到达守护者系统"
     },
     {
+      "source": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+      "translation": "方向键倾斜；控制加左或右滚动；主页重置旋转。"
+    },
+    {
       "source": "Artemis suit",
       "translation": "阿尔忒弥斯套装"
     },
@@ -223119,8 +223163,8 @@
       "translation": "将带边框的预览拖动到所需的监视器和位置。预览内容来自形状像真实叠加数据的虚假游戏状态。"
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
-      "translation": "拖动球体中心倾斜；拖动其边缘滚动。右键单击球体可重置旋转。使用编辑器工具栏保存。"
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "拖动球体中心倾斜；拖动其边缘滚动。右键单击球体以重置旋转，或按 Home。使用编辑器工具栏保存。"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -250851,6 +250895,10 @@
       "translation": "偏航（度）"
     },
     {
+      "source": "Yaw {0}°, pitch {1}°, roll {2}°",
+      "translation": "偏航 {0}°、俯仰 {1}°、横滚 {2}°"
+    },
+    {
       "source": "Years",
       "translation": "年"
     },
@@ -258721,6 +258769,10 @@
       "translation": "* ARRIVING AT A GUARDIAN SYSTEM >>>!"
     },
     {
+      "source": "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
+      "translation": "* ARROW KEYS TILT; CONTROL PLUS LEFT OR RIGHT ROLLS; HOME RESETS ROTATION. >>>!"
+    },
+    {
       "source": "Artemis suit",
       "translation": "* ARTEMIS SUIT >>>!"
     },
@@ -265785,8 +265837,8 @@
       "translation": "* DRAG THE BORDERED PREVIEWS TO THE DESIRED MONITORS AND POSITIONS. PREVIEW CONTENT COMES FROM A FALSE GAME STATE SHAPED LIKE REAL OVERLAY DATA. >>>!"
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
-      "translation": "* DRAG THE ORB CENTER TO TILT; DRAG ITS RIM TO ROLL. RIGHT-CLICK THE ORB TO RESET ROTATION. SAVE WITH THE EDITOR TOOLBAR. >>>!"
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "* DRAG THE ORB CENTER TO TILT; DRAG ITS RIM TO ROLL. RIGHT-CLICK THE ORB TO RESET ROTATION, OR PRESS HOME. SAVE WITH THE EDITOR TOOLBAR. >>>!"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -293515,6 +293567,10 @@
     {
       "source": "Yaw (degrees)",
       "translation": "* YAW (DEGREES) >>>!"
+    },
+    {
+      "source": "Yaw {0}°, pitch {1}°, roll {2}°",
+      "translation": "* YAW {0}°, PITCH {1}°, ROLL {2}° >>>!"
     },
     {
       "source": "Years",
