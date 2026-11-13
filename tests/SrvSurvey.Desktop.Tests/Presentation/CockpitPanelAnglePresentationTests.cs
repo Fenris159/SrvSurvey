@@ -211,6 +211,37 @@ public sealed class CockpitPanelAnglePresentationTests
     }
 
     [AvaloniaFact]
+    public void DesktopPreviewRemainsVisibleOutsideTheGameViewportUntilCockpitModeIsEnabled()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-desktop-panel-{Guid.NewGuid():N}", "ui.json");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(path));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            preview.ConfigureSize(new OverlayPanelSize(300, 100));
+            preview.ConfigureCockpitViewport(new PixelRect(0, 0, 1000, 1000), 1);
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PositionPanel(preview, new PixelPoint(-400, 200));
+            Assert.Null(preview.FindControl<Border>("PanelProjectionHost")!.Clip);
+            Assert.Equal(1, preview.RuntimePresentation!.Opacity);
+            model.Enabled = true;
+            Assert.NotNull(preview.FindControl<Border>("PanelProjectionHost")!.Clip);
+            model.Enabled = false;
+            Assert.Null(preview.FindControl<Border>("PanelProjectionHost")!.Clip);
+        }
+        finally
+        {
+            preview.Close();
+            if (Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.Delete(Path.GetDirectoryName(path)!, true);
+            }
+        }
+    }
+
+    [AvaloniaFact]
     public void ZeroScalingCanBeRestoredWithoutInvalidProjectionGeometry()
     {
         string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-zero-panel-{Guid.NewGuid():N}", "ui.json");

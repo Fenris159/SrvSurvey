@@ -34,6 +34,8 @@ capture catalogs.
 - **Match the live perspective:** Preview projection uses the panel's actual
   position, display and panel scales, and the calibrated game lens when available.
   Rotated content can render beyond its original frame within the game viewport.
+  Dragging keeps the grabbed panel point stable as its projected bounds change;
+  ordinary desktop previews remain visible outside the game viewport.
 - **Keep editing controls reachable:** Expanded settings scroll on shorter
   displays while the editor's save and cancel controls stay visible. Rotation
   handles remain visible and accessible across themes.

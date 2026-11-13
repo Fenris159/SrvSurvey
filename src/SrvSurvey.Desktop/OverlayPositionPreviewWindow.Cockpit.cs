@@ -107,6 +107,7 @@ public sealed partial class OverlayPositionPreviewWindow
                 or nameof(CockpitOverlayViewModel.Roll)
                 or nameof(CockpitOverlayViewModel.Depth)
                 or nameof(CockpitOverlayViewModel.CalibratedLens)
+                or nameof(CockpitOverlayViewModel.Enabled)
         )
         {
             RefreshCockpitHandle();
@@ -207,14 +208,15 @@ public sealed partial class OverlayPositionPreviewWindow
             return;
         }
         PixelRect viewport = cockpitViewport ?? new PixelRect(0, 0, viewportWidth ?? 1920, viewportHeight ?? 1080);
-        Rect? visibleViewport = cockpitPanels is null
-            ? null
-            : new Rect(
-                (viewport.X - origin.X) / physicalScale,
-                (viewport.Y - origin.Y) / physicalScale,
-                viewport.Width / physicalScale,
-                viewport.Height / physicalScale
-            );
+        Rect? visibleViewport =
+            cockpitPanels?.Enabled != true
+                ? null
+                : new Rect(
+                    (viewport.X - origin.X) / physicalScale,
+                    (viewport.Y - origin.Y) / physicalScale,
+                    viewport.Width / physicalScale,
+                    viewport.Height / physicalScale
+                );
         PanelProjectionHost.Clip = visibleViewport is { } visible ? new RectangleGeometry(visible) : null;
         Matrix? projection = cockpitPanels is null
             ? Matrix.Identity

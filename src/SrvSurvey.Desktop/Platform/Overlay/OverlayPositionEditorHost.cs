@@ -707,7 +707,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             hostBounds,
             metrics.PanelSize,
             metrics.OriginOffset
-        );
+        ) with
+        {
+            PanelOriginOffset = () => preview.GetPanelMetrics(preview.RenderScaling).OriginOffset,
+        };
     }
 
     private void OnPreviewSettingsRequested(object? sender, OverlayPreviewSettingsRequestedEventArgs eventArgs)
