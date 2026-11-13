@@ -36,6 +36,15 @@ public sealed partial class OverlayPositionPreviewWindow
         CompleteCockpitLayout();
     }
 
+    /// <summary>Keeps a deferred bounds fit anchored to the latest accepted drag position.</summary>
+    internal void AcceptCockpitDragOrigin(PixelPoint origin)
+    {
+        if (pendingCockpitOrigin is not null)
+        {
+            pendingCockpitOrigin = origin;
+        }
+    }
+
     private void InitializeCockpitEditor()
     {
         PanelRotationHandle.PropertyChanged += OnRotationHandleChanged;
@@ -222,7 +231,13 @@ public sealed partial class OverlayPositionPreviewWindow
             panel.RenderTransform = null;
             panel.Opacity = 1;
             PanelProjectionHost.Clip = null;
-            FitCockpitProjection(Matrix.Identity, size, origin, null, ProjectEditorChrome(Matrix.Identity, size));
+            FitCockpitProjection(
+                Matrix.Identity,
+                size,
+                origin,
+                null,
+                ProjectEditorChrome(Matrix.Identity, size, out _)
+            );
             return;
         }
         PixelRect viewport = cockpitViewport ?? new PixelRect(0, 0, viewportWidth ?? 1920, viewportHeight ?? 1080);
@@ -251,12 +266,19 @@ public sealed partial class OverlayPositionPreviewWindow
             cockpitPanels is not null && projection is { } matrix ? new MatrixTransform(matrix) : null;
         panel.Opacity = projection is null ? 0 : 1;
         Matrix chromeProjection = projection ?? Matrix.Identity;
-        Rect chromeBounds = ProjectEditorChrome(chromeProjection, size);
+        Rect chromeBounds = ProjectEditorChrome(chromeProjection, size, out bool chromeVisible);
+        if (!chromeVisible)
+        {
+            // The title and frame extend beyond the content. Keep a readable reset handle
+            // rather than fitting a chrome rectangle that crosses the camera plane.
+            chromeProjection = Matrix.Identity;
+            panel.Opacity = 0;
+        }
         FitCockpitProjection(chromeProjection, size, origin, visibleViewport, chromeBounds);
     }
 
     /// <summary>Projects all editor chrome through the content's plane, retaining flat coordinates for placement.</summary>
-    private Rect ProjectEditorChrome(Matrix projection, Size panelSize)
+    private Rect ProjectEditorChrome(Matrix projection, Size panelSize, out bool visible)
     {
         Point panelOrigin = GetEditorLayoutOrigin(PanelProjectionHost);
         ProjectionReferenceOutline.Width = Math.Max(
@@ -273,8 +295,14 @@ public sealed partial class OverlayPositionPreviewWindow
             + PreviewBody.BorderThickness.Bottom
             + PreviewBody.Padding.Top
             + PreviewBody.Padding.Bottom;
+        Control[] elements = [ProjectionReferenceOutline, EditorFolderTab];
+        visible = elements.All(chrome => IsInFrontOfCamera(projection, GetChromeRectangle(chrome, panelOrigin)));
+        if (!visible)
+        {
+            projection = Matrix.Identity;
+        }
         Rect? chromeBounds = null;
-        foreach (Control chrome in new Control[] { ProjectionReferenceOutline, EditorFolderTab })
+        foreach (Control chrome in elements)
         {
             Vector offset = GetEditorLayoutOrigin(chrome) - panelOrigin;
             chrome.RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Absolute);
@@ -283,11 +311,7 @@ public sealed partial class OverlayPositionPreviewWindow
                     * projection
                     * Matrix.CreateTranslation(-offset.X, -offset.Y)
             );
-            Size chromeSize =
-                chrome == ProjectionReferenceOutline
-                    ? new Size(ProjectionReferenceOutline.Width, ProjectionReferenceOutline.Height)
-                    : chrome.Bounds.Size;
-            Rect bounds = GetProjectedBounds(projection, new Rect(new Point(offset.X, offset.Y), chromeSize));
+            Rect bounds = GetProjectedBounds(projection, GetChromeRectangle(chrome, panelOrigin));
             chromeBounds = chromeBounds?.Union(bounds) ?? bounds;
         }
 
@@ -303,6 +327,17 @@ public sealed partial class OverlayPositionPreviewWindow
         );
         Vector edge = corner - top;
         Vector outward = edge.Length > .001 ? new Vector(edge.Y, -edge.X) / edge.Length : new Vector(1, 0);
+        Point interior = projection.Transform(
+            new Point(
+                outlineOffset.X + ProjectionReferenceOutline.Width / 2,
+                outlineOffset.Y + ProjectionReferenceOutline.Height / 2
+            )
+        );
+        Vector towardInterior = interior - corner;
+        if (outward.X * towardInterior.X + outward.Y * towardInterior.Y > 0)
+        {
+            outward = -outward;
+        }
         var knobSize = new Size(PanelRotationHandleBorder.Width, PanelRotationHandleBorder.Height);
         double clearance = (Math.Abs(outward.X) * knobSize.Width + Math.Abs(outward.Y) * knobSize.Height) / 2 + 8;
         Vector along = edge.Length > .001 ? edge / edge.Length : new Vector(0, 1);
@@ -315,6 +350,29 @@ public sealed partial class OverlayPositionPreviewWindow
             knobOrigin.Y - knobOffset.Y
         );
         return chromeBounds!.Value.Union(new Rect(knobOrigin, knobSize));
+    }
+
+    private Rect GetChromeRectangle(Control chrome, Point panelOrigin)
+    {
+        Vector offset = GetEditorLayoutOrigin(chrome) - panelOrigin;
+        Size size =
+            chrome == ProjectionReferenceOutline
+                ? new Size(ProjectionReferenceOutline.Width, ProjectionReferenceOutline.Height)
+                : chrome.Bounds.Size;
+        return new Rect(new Point(offset.X, offset.Y), size);
+    }
+
+    private static bool IsInFrontOfCamera(Matrix projection, Rect rectangle)
+    {
+        bool InFront(Point point)
+        {
+            double depth = projection.M13 * point.X + projection.M23 * point.Y + projection.M33;
+            return double.IsFinite(depth) && depth > .001;
+        }
+        return InFront(rectangle.TopLeft)
+            && InFront(rectangle.TopRight)
+            && InFront(rectangle.BottomRight)
+            && InFront(rectangle.BottomLeft);
     }
 
     private Point GetEditorLayoutOrigin(Control control)

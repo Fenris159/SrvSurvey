@@ -694,6 +694,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var panelPosition = new PixelPoint(position.X + metrics.OriginOffset.X, position.Y + metrics.OriginOffset.Y);
+        preview.AcceptCockpitDragOrigin(panelPosition);
         PreviewMoved?.Invoke(
             this,
             new OverlayPreviewMovedEventArgs(

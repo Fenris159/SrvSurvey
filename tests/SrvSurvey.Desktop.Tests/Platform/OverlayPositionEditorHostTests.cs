@@ -22,6 +22,90 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayPositionEditorHostTests : IDisposable
 {
     [AvaloniaFact]
+    public void AcceptedDragMovementSurvivesAnEarlierPendingProjectionFit()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout layout = store.Load();
+        layout.SetPlacement(
+            "PlotJumpInfo",
+            new(LegacyHorizontalAnchor.Left, 300, LegacyVerticalAnchor.Top, 300, null, SizeOverride: new(300, 100))
+        );
+        store.Save(layout.Placements);
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var cockpit = new CockpitOverlayViewModel(
+            new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
+        cockpit.SelectPanel("PlotJumpInfo");
+        cockpit.Roll = 30;
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+        Assert.True(model.Begin());
+        try
+        {
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(window =>
+                window.Definition.Name == "PlotJumpInfo"
+            );
+            using WriteableBitmap? initial = preview.CaptureRenderedFrame();
+            preview.FlushCockpitProjection();
+            var clock = new ManualDragClock();
+            OverlayDragOptions options = OverlayDragPolicy.GetOptions(preview);
+            OverlayDragPolicy.SetOptionsFactory(preview, () => options with { ScheduleMove = clock.Schedule });
+            Point start = preview
+                .FindControl<Border>("EditorFolderTab")!
+                .TranslatePoint(new Point(20, 10), preview)!
+                .Value;
+            PixelPoint target = preview.PointToScreen(start + new Vector(40, -20));
+            preview.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            preview.MouseMove(preview.PointToClient(target), RawInputModifiers.LeftMouseButton);
+            cockpit.Roll = 75;
+            clock.Tick();
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(ManagedOverlayWindowDragSession.IsDragging(preview));
+            Assert.Equal(new PixelPoint(340, 280), preview.GetPanelScreenOrigin(preview.RenderScaling));
+            preview.MouseUp(preview.PointToClient(target), MouseButton.Left, RawInputModifiers.None);
+            PixelSize size = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            model.Save();
+            Assert.Equal(new PixelPoint(340, 280), store.Load().GetPosition("PlotJumpInfo", bounds, size));
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
+    private sealed class ManualDragClock : IDisposable
+    {
+        private Action? callback;
+
+        public ManualDragClock Schedule(Action action)
+        {
+            callback = action;
+            return this;
+        }
+
+        public void Tick()
+        {
+            Action action = callback ?? throw new InvalidOperationException("No move was queued.");
+            callback = null;
+            action();
+        }
+
+        public void Dispose() => callback = null;
+    }
+
+    [AvaloniaFact]
     public void DraggingKeepsTheGrabbedPanelPointWhenProjectionPaddingChanges()
     {
         var platform = new FakeOverlayPlatform();

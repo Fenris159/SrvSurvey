@@ -67,7 +67,11 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
                     Stop(releasePointer: true, reason: "native button-up");
                 }
             },
-            callback => DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)
+            options.ScheduleMove
+                ?? (
+                    callback =>
+                        DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)
+                )
         );
     }
 

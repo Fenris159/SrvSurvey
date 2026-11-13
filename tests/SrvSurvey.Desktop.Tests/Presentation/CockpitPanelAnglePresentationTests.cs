@@ -20,6 +20,91 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CockpitPanelAnglePresentationTests
 {
+    [AvaloniaFact]
+    public void OffCenterPanelKeepsItsKnobOutsideWhenProjectionWindingReverses()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-winding-{Guid.NewGuid():N}", "ui.json");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(path));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            preview.ConfigureSize(new OverlayPanelSize(200, 200));
+            preview.ConfigureCockpitViewport(new PixelRect(0, 0, 1920, 1080), 1);
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PositionPanel(preview, new PixelPoint(140, 440));
+            model.SetPanelPose("PlotFSSInfo", new CockpitPanelPose(Yaw: 60));
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            AssertHandleOutsideProjectedCorner(preview);
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CameraPlaneCrossingKeepsAReadableRecoveryFrame()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-camera-plane-{Guid.NewGuid():N}", "ui.json");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(path));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            preview.ConfigureSize(new OverlayPanelSize(300, 450));
+            preview.ConfigureCockpitViewport(new PixelRect(0, 0, 1920, 1080), 1);
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PositionPanel(preview, new PixelPoint(810, 300));
+            model.SetPanelPose("PlotFSSInfo", new CockpitPanelPose(Pitch: -85, Depth: .25));
+            Border tab = preview.FindControl<Border>("EditorFolderTab")!;
+            Point leftTop = tab.TranslatePoint(default, preview)!.Value;
+            Point leftBottom = tab.TranslatePoint(new Point(0, tab.Bounds.Height), preview)!.Value;
+            Assert.InRange(Math.Abs(leftTop.X - leftBottom.X), 0, .01);
+            Assert.Equal(0, preview.RuntimePresentation!.Opacity);
+            model.SetPanelPose("PlotFSSInfo", new CockpitPanelPose());
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(1, preview.RuntimePresentation.Opacity);
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void VisibleRotatedBorderRetainsItsRightClickAppearanceMenu()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-border-menu-{Guid.NewGuid():N}", "ui.json");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(path));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            preview.ConfigureSize(new OverlayPanelSize(300, 100));
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PositionPanel(preview, new PixelPoint(300, 200));
+            model.SetPanelPose("PlotFSSInfo", new CockpitPanelPose(Roll: 90));
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            var requested = new List<string>();
+            preview.SettingsRequested += (_, args) => requested.Add(args.PlotterName);
+            Border outline = preview.FindControl<Border>("ProjectionReferenceOutline")!;
+            Point stroke = outline.TranslatePoint(new Point(1, 1), preview)!.Value;
+            preview.MouseDown(stroke, MouseButton.Right, RawInputModifiers.RightMouseButton);
+            preview.MouseUp(stroke, MouseButton.Right, RawInputModifiers.None);
+            Assert.Equal("PlotFSSInfo", Assert.Single(requested));
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]

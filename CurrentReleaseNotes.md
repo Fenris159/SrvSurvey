@@ -36,11 +36,18 @@ capture catalogs.
   knob moves. Native window updates settle before another bounds adjustment,
   preventing the editor freeze encountered while rotating on Linux. The full
   button, including its border and rim, starts the same captured gesture.
+  Queued gestures retain their own pointer positions, and deferred bounds fits
+  retain the latest accepted panel position.
 - **Match the live perspective:** Preview projection uses the panel's actual
   position, display and panel scales, and the calibrated game lens when available.
   Rotated content can render beyond its original frame within the game viewport.
   Dragging keeps the grabbed panel point stable as its projected bounds change;
   ordinary desktop previews remain visible outside the game viewport.
+  Saved angles stay relative to the cockpit: looking toward an angled panel
+  changes its perspective naturally. The editor shows the centered view.
+  Extreme angles retain a readable recovery frame and reset handle; off-center
+  panels keep the knob outside their border. Right-clicking the visible rotated
+  border still opens the appearance controls.
 - **Keep editing controls reachable:** Expanded settings scroll on shorter
   displays while the editor's save and cancel controls stay visible. Rotation
   handles remain visible and accessible across themes.

@@ -15,7 +15,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         ClipToBounds="False"
-        Title="SrvSurvey position preview overlay">
+        Title="SrvSurvey position preview overlay"
+        PointerPressed="OnPreviewSurfacePointerPressed">
   <Window.Styles>
     <Style Selector="controls|BiologyRewardBandControl">
       <Setter Property="FilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedSegmentEdgeBrush}" />
@@ -46,8 +47,7 @@
           Padding="0"
           Background="Transparent"
           BorderThickness="0"
-          ClipToBounds="False"
-          PointerPressed="OnPreviewSurfacePointerPressed">
+          ClipToBounds="False">
     <Grid RowDefinitions="Auto,*"
           ClipToBounds="False">
       <!-- Folder tab: solid yellow so it stays visible even before theme

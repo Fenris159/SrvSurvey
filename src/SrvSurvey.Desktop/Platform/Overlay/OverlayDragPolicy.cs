@@ -117,6 +117,7 @@ internal sealed class OverlayDragPolicy : AvaloniaObject
 
 internal sealed record OverlayDragOptions
 {
+    internal Func<Action, IDisposable>? ScheduleMove { get; init; }
     internal Func<PixelPoint>? PanelOriginOffset { get; init; }
     internal PixelRect? MonitorBounds { get; init; }
     internal Func<PixelPoint, PixelPoint>? ConstrainPosition { get; init; }

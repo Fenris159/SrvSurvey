@@ -42,7 +42,6 @@ public sealed class PanelRotationOrb : Control
     private PixelPoint rollCenter;
     private double dragRenderScaling = 1;
     private IPointer? dragPointer;
-    private IOverlayDragPointerProbe? pointerProbe;
     private bool dragging;
     private bool rolling;
     public event EventHandler? ResetRequested;
@@ -216,8 +215,6 @@ public sealed class PanelRotationOrb : Control
         rolling = offset.Length > OrbRadius * 0.8;
         var top = TopLevel.GetTopLevel(this);
         dragRenderScaling = top?.RenderScaling ?? 1;
-        pointerProbe?.Dispose();
-        pointerProbe = X11Native.TryCreatePointerProbe(top?.TryGetPlatformHandle()?.HandleDescriptor);
         // Keep the actual press point even if motion has advanced past a queued press.
         previousScreenPoint = this.PointToScreen(e.GetPosition(this));
         rollCenter = this.PointToScreen(center);
@@ -236,16 +233,13 @@ public sealed class PanelRotationOrb : Control
         {
             return;
         }
-        OverlayDragPointerSample? sample = pointerProbe?.Read();
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             StopRotation(releasePointer: true);
             e.Handled = true;
             return;
         }
-        PixelPoint current = sample is { LeftButtonPressed: true } native
-            ? native.Position
-            : this.PointToScreen(e.GetPosition(this));
+        PixelPoint current = this.PointToScreen(e.GetPosition(this));
         ApplyRotation(current);
         e.Handled = true;
     }
@@ -298,8 +292,6 @@ public sealed class PanelRotationOrb : Control
     private void StopRotation(bool releasePointer)
     {
         dragging = false;
-        pointerProbe?.Dispose();
-        pointerProbe = null;
         IPointer? pointer = dragPointer;
         dragPointer = null;
         if (releasePointer && pointer?.Captured == this)
