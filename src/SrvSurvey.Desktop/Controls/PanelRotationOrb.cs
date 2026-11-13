@@ -38,7 +38,11 @@ public sealed class PanelRotationOrb : Control
         PanelRotationOrb,
         IBrush?
     >(nameof(PanelBrush));
-    private Point previousPoint;
+    private PixelPoint previousScreenPoint;
+    private PixelPoint rollCenter;
+    private double dragRenderScaling = 1;
+    private IPointer? dragPointer;
+    private IOverlayDragPointerProbe? pointerProbe;
     private bool dragging;
     private bool rolling;
     public event EventHandler? ResetRequested;
@@ -130,6 +134,7 @@ public sealed class PanelRotationOrb : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
+        context.DrawRectangle(Brushes.Transparent, null, new Rect(Bounds.Size));
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
         double radius = OrbRadius;
         double arrowScale = Math.Min(1, radius / 30);
@@ -191,13 +196,32 @@ public sealed class PanelRotationOrb : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        BeginRotation(e);
+    }
+
+    /// <summary>Lets the outer button border start the same captured gesture as the orb itself.</summary>
+    internal void BeginRotation(PointerPressedEventArgs e)
+    {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             return;
         }
-        previousPoint = e.GetPosition(this);
-        Avalonia.Vector offset = previousPoint - new Point(Bounds.Width / 2, Bounds.Height / 2);
+        if (dragging && ReferenceEquals(dragPointer, e.Pointer))
+        {
+            e.Handled = true;
+            return;
+        }
+        var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
+        Avalonia.Vector offset = e.GetPosition(this) - center;
         rolling = offset.Length > OrbRadius * 0.8;
+        var top = TopLevel.GetTopLevel(this);
+        dragRenderScaling = top?.RenderScaling ?? 1;
+        pointerProbe?.Dispose();
+        pointerProbe = X11Native.TryCreatePointerProbe(top?.TryGetPlatformHandle()?.HandleDescriptor);
+        // Keep the actual press point even if motion has advanced past a queued press.
+        previousScreenPoint = this.PointToScreen(e.GetPosition(this));
+        rollCenter = this.PointToScreen(center);
+        dragPointer = e.Pointer;
         dragging = true;
         e.Pointer.Capture(this);
         Focus();
@@ -208,42 +232,80 @@ public sealed class PanelRotationOrb : Control
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        if (!dragging)
+        if (!dragging || !ReferenceEquals(dragPointer, e.Pointer))
         {
             return;
         }
-        Point current = e.GetPosition(this);
+        OverlayDragPointerSample? sample = pointerProbe?.Read();
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            StopRotation(releasePointer: true);
+            e.Handled = true;
+            return;
+        }
+        PixelPoint current = sample is { LeftButtonPressed: true } native
+            ? native.Position
+            : this.PointToScreen(e.GetPosition(this));
+        ApplyRotation(current);
+        e.Handled = true;
+    }
+
+    private void ApplyRotation(PixelPoint current)
+    {
         if (rolling)
         {
-            var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
-            double before = Math.Atan2(previousPoint.Y - center.Y, previousPoint.X - center.X);
-            double after = Math.Atan2(current.Y - center.Y, current.X - center.X);
+            double before = Math.Atan2(previousScreenPoint.Y - rollCenter.Y, previousScreenPoint.X - rollCenter.X);
+            double after = Math.Atan2(current.Y - rollCenter.Y, current.X - rollCenter.X);
             SetCurrentValue(RollProperty, NormalizeRoll(Roll - (after - before) * 180 / Math.PI));
         }
         else
         {
-            SetCurrentValue(YawProperty, Math.Clamp(Yaw + (current.X - previousPoint.X) * 0.6, -85, 85));
-            SetCurrentValue(PitchProperty, Math.Clamp(Pitch - (current.Y - previousPoint.Y) * 0.6, -85, 85));
+            SetCurrentValue(
+                YawProperty,
+                Math.Clamp(Yaw + (current.X - previousScreenPoint.X) * 0.6 / dragRenderScaling, -85, 85)
+            );
+            SetCurrentValue(
+                PitchProperty,
+                Math.Clamp(Pitch - (current.Y - previousScreenPoint.Y) * 0.6 / dragRenderScaling, -85, 85)
+            );
         }
-        previousPoint = current;
-        e.Handled = true;
+        previousScreenPoint = current;
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
-        if (dragging)
+        if (dragging && ReferenceEquals(dragPointer, e.Pointer))
         {
-            dragging = false;
-            e.Pointer.Capture(null);
+            ApplyRotation(this.PointToScreen(e.GetPosition(this)));
+            StopRotation(releasePointer: true);
             e.Handled = true;
         }
     }
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
-        dragging = false;
+        StopRotation(releasePointer: false);
         base.OnPointerCaptureLost(e);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        StopRotation(releasePointer: true);
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void StopRotation(bool releasePointer)
+    {
+        dragging = false;
+        pointerProbe?.Dispose();
+        pointerProbe = null;
+        IPointer? pointer = dragPointer;
+        dragPointer = null;
+        if (releasePointer && pointer?.Captured == this)
+        {
+            pointer.Capture(null);
+        }
     }
 
     /// <summary>Offers the same angle control with arrow keys; Control changes roll and Shift uses five-degree steps.</summary>

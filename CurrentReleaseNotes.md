@@ -1,6 +1,6 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.13
+# SrvSurvey-XP 2.1.3.0-rc.77.14
 
-RC77.13 adds an opt-in cockpit-following overlay prototype for normal monitors,
+RC77.14 adds an opt-in cockpit-following overlay prototype for normal monitors,
 perspective controls in the overlay editor, and independently updated camera
 capture catalogs.
 
@@ -21,9 +21,10 @@ capture catalogs.
 
 ### Perspective controls in the overlay editor
 
-- **Tilt and rotate individual panels:** Each preview keeps a rotation orb beside
-  its resize handle. Drag the center to tilt and the rim to roll; the panel
-  previews its perspective immediately. Right-click the orb to reset that
+- **Tilt and rotate individual panels:** Each preview keeps a rotation orb outside
+  its projected corner. The border, title tab, and contents rotate together.
+  Drag the center to tilt and the rim to roll; dragging continues outside the
+  button until release. Right-click the orb to reset that
   panel's rotation. The right-click settings menu stays focused on appearance.
 - **Keep size controls together:** Use the existing right-click scale controls
   to change panel size. The orb only changes orientation; arrow keys tilt and
@@ -31,6 +32,10 @@ capture catalogs.
   while editing. Perspective settings follow the editor's existing save/cancel flow.
   Minimum scale can be restored without a layout error.
   Angles can be prepared while cockpit tracking is off, without enabling capture.
+- **Keep dragging responsive:** Screen-based input avoids rotation jumps when the
+  knob moves. Native window updates settle before another bounds adjustment,
+  preventing the editor freeze encountered while rotating on Linux. The full
+  button, including its border and rim, starts the same captured gesture.
 - **Match the live perspective:** Preview projection uses the panel's actual
   position, display and panel scales, and the calibrated game lens when available.
   Rotated content can render beyond its original frame within the game viewport.

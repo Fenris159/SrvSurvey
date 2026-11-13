@@ -122,7 +122,7 @@
               Margin="0,-2,0,0"
               MinHeight="24"
               Background="Transparent"
-              BorderBrush="#FFCC33"
+              BorderBrush="Transparent"
               BorderThickness="2"
               CornerRadius="0,7,7,7"
               ClipToBounds="False"
@@ -316,6 +316,7 @@
         </Border>
       </Border>
       <Border x:Name="ProjectionReferenceOutline" Grid.Row="1" ZIndex="1" Margin="0,-2,0,0" IsHitTestVisible="False"
+              HorizontalAlignment="Left" VerticalAlignment="Top"
               BorderBrush="#FFCC33" BorderThickness="2" CornerRadius="0,7,7,7" />
       <Border x:Name="PanelRotationHandleBorder"
               ZIndex="2"

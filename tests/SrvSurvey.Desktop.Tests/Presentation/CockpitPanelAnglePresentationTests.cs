@@ -21,6 +21,163 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class CockpitPanelAnglePresentationTests
 {
     [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MovingTheCapturedKnobDoesNotRotateForAStationaryScreenPointer(bool roll)
+    {
+        var orb = new PanelRotationOrb { Width = 30, Height = 30 };
+        var canvas = new Canvas
+        {
+            Width = 400,
+            Height = 400,
+            Children = { orb },
+        };
+        Canvas.SetLeft(orb, 100);
+        Canvas.SetTop(orb, 100);
+        var window = new Window
+        {
+            Width = 400,
+            Height = 400,
+            Content = canvas,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Point center = orb.TranslatePoint(new Point(roll ? 28 : 15, 15), window)!.Value;
+            PixelPoint held = window.PointToScreen(center);
+            window.MouseDown(center, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Canvas.SetLeft(orb, 125);
+            Canvas.SetTop(orb, 120);
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? moved = window.CaptureRenderedFrame();
+            window.MouseMove(window.PointToClient(held), RawInputModifiers.LeftMouseButton);
+            Assert.Equal(0, orb.Yaw);
+            Assert.Equal(0, orb.Pitch);
+            Assert.Equal(0, orb.Roll);
+            if (roll)
+            {
+                PixelPoint down = new(held.X - 13, held.Y + 60);
+                window.MouseMove(window.PointToClient(down), RawInputModifiers.LeftMouseButton);
+                Assert.Equal(-90, orb.Roll, 3);
+                held = down;
+            }
+            window.MouseUp(window.PointToClient(held), MouseButton.Left, RawInputModifiers.None);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PlotRouteBio", false, 600)]
+    [InlineData("PlotRouteBio", true, 600)]
+    [InlineData("PlotRouteBio", false, 300)]
+    [InlineData("PlotFSSInfo", true, 300)]
+    public void HeldRotationUsesScreenMotionOutsideTheKnobWithoutIdleJitter(string name, bool enabled, int height)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-rotation-gesture-{Guid.NewGuid():N}");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(Path.Combine(directory, "ui.json")));
+        model.Enabled = enabled;
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired(name));
+        int positionChanges = 0;
+        preview.PositionChanged += (_, _) =>
+        {
+            if (++positionChanges > 100)
+            {
+                throw new InvalidOperationException(
+                    "Rotation never settled: preview position changed more than 100 times."
+                );
+            }
+        };
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            preview.ConfigureSize(new OverlayPanelSize(420, height));
+            preview.ConfigureCockpitViewport(new PixelRect(0, 0, 1280, 720), 1);
+            preview.MaxHeight = 340;
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PositionPanel(preview, new PixelPoint(300, 150));
+            PanelRotationOrb orb = preview.FindControl<PanelRotationOrb>("PanelRotationHandle")!;
+            IPointer? pointer = null;
+            orb.AddHandler(
+                InputElement.PointerPressedEvent,
+                (_, e) => pointer = e.Pointer,
+                Avalonia.Interactivity.RoutingStrategies.Tunnel,
+                handledEventsToo: true
+            );
+            Point center = orb.TranslatePoint(new Point(15, 15), preview)!.Value;
+            PixelPoint start = preview.PointToScreen(center);
+            preview.MouseDown(center, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Assert.Same(orb, pointer!.Captured);
+            for (int step = 1; step <= 8; step++)
+            {
+                PixelPoint target = new(start.X + step * 8, start.Y - step * 5);
+                preview.MouseMove(preview.PointToClient(target), RawInputModifiers.LeftMouseButton);
+                Dispatcher.UIThread.RunJobs();
+                using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+                // A second sample at the same screen point must not add rotation after layout settles.
+                preview.MouseMove(preview.PointToClient(target), RawInputModifiers.LeftMouseButton);
+                Dispatcher.UIThread.RunJobs();
+                Assert.InRange(model.Resolve(name).Yaw, step * 4.8 - .01, step * 4.8 + .01);
+                Assert.InRange(model.Resolve(name).Pitch, step * 3 - .01, step * 3 + .01);
+                Assert.Same(orb, pointer.Captured);
+            }
+            PixelPoint release = new(start.X + 64, start.Y - 40);
+            preview.MouseUp(preview.PointToClient(release), MouseButton.Left, RawInputModifiers.None);
+            Assert.Null(pointer.Captured);
+            preview.MouseMove(preview.PointToClient(new PixelPoint(release.X + 50, release.Y)), RawInputModifiers.None);
+            Assert.InRange(model.Resolve(name).Yaw, 38.39, 38.41);
+            Assert.InRange(model.Resolve(name).Pitch, 23.99, 24.01);
+        }
+        finally
+        {
+            preview.Close();
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [AvaloniaFact]
+    public void RotationHandleSitsOutsideThePreviewAndTheBorderRotatesWithItsContents()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-rotation-frame-{Guid.NewGuid():N}");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(Path.Combine(directory, "ui.json")));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            preview.ConfigureSize(new OverlayPanelSize(300, 100));
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PositionPanel(preview, new PixelPoint(300, 200));
+            Border outline = preview.FindControl<Border>("ProjectionReferenceOutline")!;
+            PanelRotationOrb orb = preview.FindControl<PanelRotationOrb>("PanelRotationHandle")!;
+            Rect panel = new(outline.TranslatePoint(default, preview)!.Value, outline.Bounds.Size);
+            Rect handle = new(orb.TranslatePoint(default, preview)!.Value, orb.Bounds.Size);
+            Assert.False(panel.Intersects(handle));
+            model.SetPanelPose("PlotFSSInfo", new CockpitPanelPose(Roll: 30));
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            Point left = outline.TranslatePoint(default, preview)!.Value;
+            Point right = outline.TranslatePoint(new Point(outline.Bounds.Width, 0), preview)!.Value;
+            Assert.True(Math.Abs(right.Y - left.Y) > 100, "The outer preview border must rotate with the panel.");
+        }
+        finally
+        {
+            preview.Close();
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [AvaloniaTheory]
     [InlineData("monochrome-dark")]
     [InlineData("blue-light")]
     [InlineData("orange-dark")]
@@ -76,9 +233,10 @@ public sealed class CockpitPanelAnglePresentationTests
             Control panel = preview.RuntimePresentation!;
             Point corner = panel.RenderTransform!.Value.Transform(new Point(0, 0));
             Point center = orb.TranslatePoint(new Point(15, 15), preview)!.Value;
+            PixelPoint tiltTarget = preview.PointToScreen(center + new Vector(50, -25));
             preview.MouseDown(center, MouseButton.Left, RawInputModifiers.LeftMouseButton);
-            preview.MouseMove(center + new Vector(50, -25), RawInputModifiers.LeftMouseButton);
-            preview.MouseUp(center + new Vector(50, -25), MouseButton.Left, RawInputModifiers.None);
+            preview.MouseMove(preview.PointToClient(tiltTarget), RawInputModifiers.LeftMouseButton);
+            preview.MouseUp(preview.PointToClient(tiltTarget), MouseButton.Left, RawInputModifiers.None);
             Assert.Equal(new CockpitPanelPose(30, 15), model.Resolve("PlotRouteBio"));
             Assert.NotEqual(corner, panel.RenderTransform.Value.Transform(new Point(0, 0)));
             Assert.True(orb.Focus());
@@ -98,7 +256,8 @@ public sealed class CockpitPanelAnglePresentationTests
                 Directory.CreateDirectory(output);
                 frame!.Save(Path.Combine(output, $"cockpit-panel-corner-{theme}.png"), PngBitmapEncoderOptions.Default);
             }
-            Assert.Equal(knobScreenOrigin, preview.PointToScreen(orb.TranslatePoint(default, preview)!.Value));
+            Assert.NotEqual(knobScreenOrigin, preview.PointToScreen(orb.TranslatePoint(default, preview)!.Value));
+            AssertHandleOutsideProjectedCorner(preview);
             preview.KeyPress(Key.Home, RawInputModifiers.None, PhysicalKey.Home, null);
             Assert.Equal(new CockpitPanelPose(), model.Resolve("PlotRouteBio"));
             Assert.Equal("Yaw 0°, pitch 0°, roll 0°", peer.GetItemStatus());
@@ -279,5 +438,28 @@ public sealed class CockpitPanelAnglePresentationTests
         Point actual = panel.RenderTransform!.Value.Transform(default);
         Assert.InRange(actual.X, x - .001, x + .001);
         Assert.InRange(actual.Y, y - .001, y + .001);
+    }
+
+    private static void AssertHandleOutsideProjectedCorner(OverlayPositionPreviewWindow preview)
+    {
+        Border outline = preview.FindControl<Border>("ProjectionReferenceOutline")!;
+        PanelRotationOrb orb = preview.FindControl<PanelRotationOrb>("PanelRotationHandle")!;
+        Point top = outline.TranslatePoint(new Point(outline.Bounds.Width, 0), preview)!.Value;
+        Point corner = outline.TranslatePoint(new Point(outline.Bounds.Width, outline.Bounds.Height), preview)!.Value;
+        Point inside = outline
+            .TranslatePoint(new Point(outline.Bounds.Width / 2, outline.Bounds.Height / 2), preview)!
+            .Value;
+        Vector edge = corner - top;
+        Vector inward = inside - top;
+        double sign = Math.Sign(edge.X * inward.Y - edge.Y * inward.X);
+        foreach (Point local in new[] { new Point(0, 0), new Point(30, 0), new Point(30, 30), new Point(0, 30) })
+        {
+            Vector relative = orb.TranslatePoint(local, preview)!.Value - top;
+            double distance = sign * (edge.X * relative.Y - edge.Y * relative.X) / edge.Length;
+            Assert.True(distance <= -8, "The complete knob must remain outside the projected border with a clear gap.");
+        }
+        Point center = orb.TranslatePoint(new Point(15, 15), preview)!.Value;
+        Vector separation = center - corner;
+        Assert.InRange(separation.Length, 24, 42);
     }
 }

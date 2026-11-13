@@ -267,6 +267,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.SettingsRequested += OnPreviewSettingsRequested;
             preview.PanelSizeChanged += OnPreviewSizeChanged;
             preview.SizeChanged += OnPreviewMeasured;
+            preview.ProjectionLayoutSettled += OnPreviewProjectionSettled;
             preview.Opened += OnPreviewOpened;
             previews.Add(preview);
             registry.PrepareWindow(preview);
@@ -433,6 +434,14 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         else if (sender is OverlayPositionPreviewWindow measured && editSession is { } session)
         {
             PositionPreviewAfterOpening(measured, session);
+        }
+    }
+
+    private void OnPreviewProjectionSettled(object? sender, EventArgs eventArgs)
+    {
+        if (sender is OverlayPositionPreviewWindow preview && editSession is { } session)
+        {
+            PositionPreviewAfterOpening(preview, session);
         }
     }
 
@@ -774,6 +783,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.SettingsRequested -= OnPreviewSettingsRequested;
             preview.PanelSizeChanged -= OnPreviewSizeChanged;
             preview.SizeChanged -= OnPreviewMeasured;
+            preview.ProjectionLayoutSettled -= OnPreviewProjectionSettled;
             preview.Opened -= OnPreviewOpened;
             OverlayDragPolicy.SetOptionsFactory(preview, null);
             TryCleanup(preview.Close);
