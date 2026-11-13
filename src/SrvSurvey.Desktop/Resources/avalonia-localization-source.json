@@ -12848,14 +12848,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
-    "Text": "Cockpit panel angle",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
-  },
-  {
     "Text": "Cockpit panel angles or depth are outside the supported range.",
     "IsFormat": false,
     "SourceKinds": [
@@ -19623,14 +19615,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Drag center to tilt. Drag rim to roll.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
     "Text": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -19655,12 +19639,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
+    "Text": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.Cockpit.cs"
   },
   {
     "Text": "Drag to change width. Height follows content.",
@@ -26859,14 +26843,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
-  },
-  {
-    "Text": "Greater distance makes this panel smaller, as it would in VR.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
     "Text": "Green",
@@ -41760,6 +41736,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "Open the overlay position editor to adjust this panel\u0027s angle.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.Cockpit.cs"
+  },
+  {
     "Text": "Open the overlay-settings icon beside Firegroups.",
     "IsFormat": false,
     "SourceKinds": [
@@ -43781,22 +43765,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPanelVisibilityViewModel.cs"
   },
   {
-    "Text": "Panel distance",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
-    "Text": "Panel rotation",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
     "Text": "Panels",
     "IsFormat": false,
     "SourceKinds": [
@@ -44164,22 +44132,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
-  },
-  {
-    "Text": "Pitch (\u00B0)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
-    "Text": "Pitch, degrees",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
     "Text": "Place in front of me",
@@ -51167,14 +51119,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Reset angle and depth",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
     "Text": "Reset cancelled; totals were not changed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -52539,22 +52483,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
-    "Text": "Roll (\u00B0)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
-    "Text": "Roll, degrees",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
     "Text": "Rollback backup: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -52593,6 +52521,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MiningCalibrationWindow.cs"
+  },
+  {
+    "Text": "Rotate this cockpit panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "RotateAlphaAerial",
@@ -66822,14 +66758,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The orb previews this panel\u0027s perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
     "Text": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
     "IsFormat": false,
     "SourceKinds": [
@@ -75346,22 +75274,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
-  },
-  {
-    "Text": "Yaw (\u00B0)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
-  },
-  {
-    "Text": "Yaw, degrees",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/CockpitPanelAngleView.axaml"
   },
   {
     "Text": "Years",

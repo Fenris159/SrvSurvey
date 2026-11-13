@@ -1,7 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:overlay="using:SrvSurvey.Desktop.Platform.Overlay"
-        xmlns:views="using:SrvSurvey.Desktop.Views"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.OverlayPositionEditorWindow"
         x:DataType="vm:OverlayInteractionViewModel"
@@ -187,10 +186,6 @@
                   </Grid>
                 </StackPanel>
               </Grid>
-              <Expander Header="Cockpit panel angle" IsVisible="{Binding IsCockpitAngleEditingEnabled}"
-                        HorizontalContentAlignment="Stretch">
-                <views:CockpitPanelAngleView DataContext="{Binding CockpitPanels}" />
-              </Expander>
             </StackPanel>
           </Border>
           <Border x:Name="OverlayCategoryMenu"

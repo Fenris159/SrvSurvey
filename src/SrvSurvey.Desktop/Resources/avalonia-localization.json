@@ -6409,10 +6409,6 @@
       "translation": "Cockpit-Offset: {0}"
     },
     {
-      "source": "Cockpit panel angle",
-      "translation": "Winkel der Cockpitverkleidung"
-    },
-    {
       "source": "Cockpit panel angles or depth are outside the supported range.",
       "translation": "Winkel oder Tiefe der Cockpitverkleidung liegen außerhalb des unterstützten Bereichs."
     },
@@ -9781,10 +9777,6 @@
       "translation": "Entwurfspunkte werden auf der aktiven Siedlungskarte in der Vorschau angezeigt. Auf der Festplatte ändert sich nichts, bis Sie ein Exportziel auswählen."
     },
     {
-      "source": "Drag center to tilt. Drag rim to roll.",
-      "translation": "Zum Neigen die Mitte ziehen. Ziehen Sie die Felge, um sie zu rollen."
-    },
-    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Ziehen Sie Punkte auf Kreismittelpunkte. Zum Verschieben leeren Raum ziehen; unten rechts, um die Größe zu ändern. {0}"
     },
@@ -9797,8 +9789,8 @@
       "translation": "Ziehen Sie die umrandeten Vorschaubilder auf die gewünschten Monitore und Positionen. Vorschauinhalte stammen aus einem falschen Spielstatus, der wie echte Overlay-Daten aussieht."
     },
     {
-      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
-      "translation": "Ziehen Sie die Mitte, um sie zu neigen. Ziehen Sie die Felge, um sie zu rollen. Pfeiltasten neigen, Strg plus Links- oder Rechtsrollen; Die Verschiebung ändert sich um fünf Grad."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+      "translation": "Ziehen Sie die Mitte der Kugel, um sie zu neigen. Ziehen Sie den Rand, um ihn zu rollen. Klicken Sie mit der rechten Maustaste auf die Kugel, um die Drehung zurückzusetzen. Speichern Sie mit der Editor-Symbolleiste."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -13387,10 +13379,6 @@
     {
       "source": "Great Annihilator",
       "translation": "Großer Vernichter"
-    },
-    {
-      "source": "Greater distance makes this panel smaller, as it would in VR.",
-      "translation": "Bei einem größeren Abstand wird dieses Panel kleiner, wie es auch in VR der Fall wäre."
     },
     {
       "source": "Green",
@@ -20805,6 +20793,10 @@
       "translation": "Öffnen Sie auf dieser Ebene das nächste Boxel"
     },
     {
+      "source": "Open the overlay position editor to adjust this panel's angle.",
+      "translation": "Öffnen Sie den Overlay-Positionseditor, um den Winkel dieses Panels anzupassen."
+    },
+    {
       "source": "Open the overlay-settings icon beside Firegroups.",
       "translation": "Öffnen Sie das Overlay-Einstellungssymbol neben Firegroups."
     },
@@ -21813,14 +21805,6 @@
       "translation": "Die Panel-Verfügbarkeit hat sich für diese Sitzung geändert, konnte aber nicht gespeichert werden: {0}"
     },
     {
-      "source": "Panel distance",
-      "translation": "Plattenabstand"
-    },
-    {
-      "source": "Panel rotation",
-      "translation": "Panel-Rotation"
-    },
-    {
       "source": "Panels",
       "translation": "Panels"
     },
@@ -22003,14 +21987,6 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Tonhöhe (Grad)"
-    },
-    {
-      "source": "Pitch (°)",
-      "translation": "Neigung (°)"
-    },
-    {
-      "source": "Pitch, degrees",
-      "translation": "Tonhöhe, Grad"
     },
     {
       "source": "Place in front of me",
@@ -25497,10 +25473,6 @@
       "translation": "Beim Zurücksetzen der VR-Ausrichtung wird die aktuelle Gierbewegung des Headsets SteamVR oder die Headset-Pose VDXR als Overlay-Ursprung erfasst, ohne dass die gespeicherte Panel-Platzierung geändert wird."
     },
     {
-      "source": "Reset angle and depth",
-      "translation": "Winkel und Tiefe zurücksetzen"
-    },
-    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Zurücksetzen abgebrochen; Summen wurden nicht verändert."
     },
@@ -26181,14 +26153,6 @@
       "translation": "Rolle (Grad)"
     },
     {
-      "source": "Roll (°)",
-      "translation": "Rolle (°)"
-    },
-    {
-      "source": "Roll, degrees",
-      "translation": "Roll, Grad"
-    },
-    {
       "source": "Rollback backup: {0}",
       "translation": "Rollback-Backup: {0}"
     },
@@ -26207,6 +26171,10 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Drehen Sie Umrisse und Balkenführungen um 2 Grad gegen den Uhrzeigersinn"
+    },
+    {
+      "source": "Rotate this cockpit panel",
+      "translation": "Drehen Sie dieses Cockpit-Panel"
     },
     {
       "source": "RotateAlphaAerial",
@@ -33301,10 +33269,6 @@
       "translation": "Die optionale Erinnerung „Ladung voll“ wartet, bis die Ladung voll ist und die Sammlung eine Minute lang inaktiv ist."
     },
     {
-      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-      "translation": "Die Kugel zeigt eine Vorschau der Perspektive dieses Panels an. Mit der Editor-Symbolleiste speichern oder abbrechen; Die Headset-Kalibrierung erfolgt separat."
-    },
-    {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
       "translation": "Der orbital geplante Raven-Standort konnte nicht mit dem lokalen Baukatalog abgeglichen werden. Nur der Systemarchitekt kann einen Build ohne Plan starten."
     },
@@ -37555,14 +37519,6 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Gier (Grad)"
-    },
-    {
-      "source": "Yaw (°)",
-      "translation": "Gier (°)"
-    },
-    {
-      "source": "Yaw, degrees",
-      "translation": "Gier, Grad"
     },
     {
       "source": "Years",
@@ -49119,10 +49075,6 @@
       "translation": "Desplazamiento de la cabina: {0}"
     },
     {
-      "source": "Cockpit panel angle",
-      "translation": "Ángulo del panel de la cabina"
-    },
-    {
       "source": "Cockpit panel angles or depth are outside the supported range.",
       "translation": "Los ángulos o la profundidad del panel de la cabina están fuera del rango admitido."
     },
@@ -52491,10 +52443,6 @@
       "translation": "Los puntos borrador se obtienen una vista previa en el mapa de asentamiento activo. Nada cambia en el disco hasta que elija un destino de exportación."
     },
     {
-      "source": "Drag center to tilt. Drag rim to roll.",
-      "translation": "Arrastra el centro para inclinarlo. Arrastre el borde para rodar."
-    },
-    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Arrastra puntos a los centros de los círculos. Arrastra el espacio vacío para moverte; esquina inferior derecha para cambiar el tamaño. {0}"
     },
@@ -52507,8 +52455,8 @@
       "translation": "Arrastre las vistas previas con bordes a los monitores y posiciones deseados. El contenido de la vista previa proviene de un estado de juego falso con forma de datos superpuestos reales."
     },
     {
-      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
-      "translation": "Arrastre el centro para inclinarlo; Arrastre el borde para rodar. Teclas de flecha inclinadas, Control más giros hacia la izquierda o hacia la derecha; El cambio cambia cinco grados."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+      "translation": "Arrastre el centro del orbe para inclinarlo; Arrastre su borde para rodar. Haga clic derecho en el orbe para restablecer la rotación. Guarde con la barra de herramientas del editor."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -56097,10 +56045,6 @@
     {
       "source": "Great Annihilator",
       "translation": "Gran aniquilador"
-    },
-    {
-      "source": "Greater distance makes this panel smaller, as it would in VR.",
-      "translation": "Una mayor distancia hace que este panel sea más pequeño, como lo haría en la realidad virtual."
     },
     {
       "source": "Green",
@@ -63515,6 +63459,10 @@
       "translation": "Abra el siguiente cuadro en este nivel."
     },
     {
+      "source": "Open the overlay position editor to adjust this panel's angle.",
+      "translation": "Abra el editor de posición de superposición para ajustar el ángulo de este panel."
+    },
+    {
       "source": "Open the overlay-settings icon beside Firegroups.",
       "translation": "Abra el ícono de configuración superpuesta al lado de Firegroups."
     },
@@ -64523,14 +64471,6 @@
       "translation": "La disponibilidad del panel cambió para esta sesión pero no se pudo guardar: {0}"
     },
     {
-      "source": "Panel distance",
-      "translation": "Distancia entre paneles"
-    },
-    {
-      "source": "Panel rotation",
-      "translation": "Rotación de paneles"
-    },
-    {
       "source": "Panels",
       "translation": "Paneles"
     },
@@ -64713,14 +64653,6 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Paso (grados)"
-    },
-    {
-      "source": "Pitch (°)",
-      "translation": "Paso (°)"
-    },
-    {
-      "source": "Pitch, degrees",
-      "translation": "Paso, grados"
     },
     {
       "source": "Place in front of me",
@@ -68207,10 +68139,6 @@
       "translation": "Restablecer la orientación de VR captura la orientación actual del visor SteamVR, o la posición del visor VDXR, como origen de superposición sin cambiar la ubicación guardada del panel."
     },
     {
-      "source": "Reset angle and depth",
-      "translation": "Restablecer ángulo y profundidad"
-    },
-    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Reinicio cancelado; los totales no fueron cambiados."
     },
@@ -68891,14 +68819,6 @@
       "translation": "Rollo (grados)"
     },
     {
-      "source": "Roll (°)",
-      "translation": "Rollo (°)"
-    },
-    {
-      "source": "Roll, degrees",
-      "translation": "Rollo, grados"
-    },
-    {
       "source": "Rollback backup: {0}",
       "translation": "Revertir copia de seguridad: {0}"
     },
@@ -68917,6 +68837,10 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Gire los contornos y las guías de las barras 2 grados en el sentido contrario a las agujas del reloj."
+    },
+    {
+      "source": "Rotate this cockpit panel",
+      "translation": "Girar este panel de cabina"
     },
     {
       "source": "RotateAlphaAerial",
@@ -76011,10 +75935,6 @@
       "translation": "El recordatorio de carga completa opcional espera hasta que la carga esté llena y la recolección esté inactiva durante un minuto."
     },
     {
-      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-      "translation": "El orbe muestra una vista previa de la perspectiva de este panel. Guarde o cancele con la barra de herramientas del editor; La calibración de los auriculares es independiente."
-    },
-    {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
       "translation": "El sitio orbital planeado por Raven no pudo coincidir con el catálogo de construcción local. Sólo el arquitecto del sistema puede iniciar una construcción sin un plan."
     },
@@ -80265,14 +80185,6 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Guiñada (grados)"
-    },
-    {
-      "source": "Yaw (°)",
-      "translation": "Guiñada (°)"
-    },
-    {
-      "source": "Yaw, degrees",
-      "translation": "Guiñada, grados"
     },
     {
       "source": "Years",
@@ -91829,10 +91741,6 @@
       "translation": "Décalage du cockpit : {0}"
     },
     {
-      "source": "Cockpit panel angle",
-      "translation": "Angle du panneau de cockpit"
-    },
-    {
       "source": "Cockpit panel angles or depth are outside the supported range.",
       "translation": "Les angles ou la profondeur du panneau du cockpit sont en dehors de la plage prise en charge."
     },
@@ -95201,10 +95109,6 @@
       "translation": "Les points de draft sont prévisualisés sur la carte de colonie active. Rien ne change sur le disque jusqu'à ce que vous choisissiez une destination d'exportation."
     },
     {
-      "source": "Drag center to tilt. Drag rim to roll.",
-      "translation": "Faites glisser le centre pour incliner. Faites glisser la jante pour rouler."
-    },
-    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Faites glisser les points sur les centres des cercles. Faites glisser l'espace vide pour vous déplacer ; coin inférieur droit pour redimensionner. {0}"
     },
@@ -95217,8 +95121,8 @@
       "translation": "Faites glisser les aperçus bordés vers les moniteurs et les positions souhaités. Le contenu de l'aperçu provient d'un faux état de jeu façonné comme de véritables données de superposition."
     },
     {
-      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
-      "translation": "Faites glisser le centre pour l'incliner ; faites glisser la jante pour rouler. Inclinaison des touches fléchées, contrôle plus rouleaux gauche ou droit ; Le décalage change de cinq degrés."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+      "translation": "Faites glisser le centre de l'orbe pour l'incliner ; faites glisser son bord pour rouler. Cliquez avec le bouton droit sur l’orbe pour réinitialiser la rotation. Enregistrez avec la barre d'outils de l'éditeur."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -98807,10 +98711,6 @@
     {
       "source": "Great Annihilator",
       "translation": "Grand Annihilateur"
-    },
-    {
-      "source": "Greater distance makes this panel smaller, as it would in VR.",
-      "translation": "Une plus grande distance rend ce panneau plus petit, comme ce serait le cas en VR."
     },
     {
       "source": "Green",
@@ -106225,6 +106125,10 @@
       "translation": "Ouvrir le prochain boxel à ce niveau"
     },
     {
+      "source": "Open the overlay position editor to adjust this panel's angle.",
+      "translation": "Ouvrez l'éditeur de position de superposition pour ajuster l'angle de ce panneau."
+    },
+    {
       "source": "Open the overlay-settings icon beside Firegroups.",
       "translation": "Ouvrez l'icône des paramètres de superposition à côté de Firegroups."
     },
@@ -107233,14 +107137,6 @@
       "translation": "La disponibilité du panneau a changé pour cette session mais n'a pas pu être enregistrée : {0}"
     },
     {
-      "source": "Panel distance",
-      "translation": "Distance du panneau"
-    },
-    {
-      "source": "Panel rotation",
-      "translation": "Rotation du panneau"
-    },
-    {
       "source": "Panels",
       "translation": "Panneaux"
     },
@@ -107423,14 +107319,6 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Pas (degrés)"
-    },
-    {
-      "source": "Pitch (°)",
-      "translation": "Pas (°)"
-    },
-    {
-      "source": "Pitch, degrees",
-      "translation": "Pas, degrés"
     },
     {
       "source": "Place in front of me",
@@ -110917,10 +110805,6 @@
       "translation": "La réinitialisation de l'orientation VR capture le lacet actuel du casque SteamVR ou la pose du casque VDXR, comme origine de superposition sans modifier le placement du panneau enregistré."
     },
     {
-      "source": "Reset angle and depth",
-      "translation": "Réinitialiser l'angle et la profondeur"
-    },
-    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Réinitialisation annulée ; les totaux n’ont pas été modifiés."
     },
@@ -111601,14 +111485,6 @@
       "translation": "Rouleau (degrés)"
     },
     {
-      "source": "Roll (°)",
-      "translation": "Roulement (°)"
-    },
-    {
-      "source": "Roll, degrees",
-      "translation": "Rouleau, degrés"
-    },
-    {
       "source": "Rollback backup: {0}",
       "translation": "Sauvegarde de restauration : {0}"
     },
@@ -111627,6 +111503,10 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Faites pivoter les contours et les guides-barres de 2 degrés dans le sens inverse des aiguilles d'une montre."
+    },
+    {
+      "source": "Rotate this cockpit panel",
+      "translation": "Faites pivoter ce panneau de cockpit"
     },
     {
       "source": "RotateAlphaAerial",
@@ -118721,10 +118601,6 @@
       "translation": "Le rappel optionnel de chargement plein attend que le chargement soit plein et que la collecte soit inactive pendant une minute."
     },
     {
-      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-      "translation": "L'orbe donne un aperçu de la perspective de ce panneau. Enregistrez ou annulez avec la barre d'outils de l'éditeur ; l’étalonnage du casque est séparé."
-    },
-    {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
       "translation": "Le site orbital Raven prévu ne pouvait pas correspondre au catalogue de construction local. Seul l'architecte système peut démarrer une construction sans plan."
     },
@@ -122975,14 +122851,6 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Lacet (degrés)"
-    },
-    {
-      "source": "Yaw (°)",
-      "translation": "Lacet (°)"
-    },
-    {
-      "source": "Yaw, degrees",
-      "translation": "Lacet, degrés"
     },
     {
       "source": "Years",
@@ -134539,10 +134407,6 @@
       "translation": "Deslocamento da cabine: {0}"
     },
     {
-      "source": "Cockpit panel angle",
-      "translation": "Ângulo do painel da cabine"
-    },
-    {
       "source": "Cockpit panel angles or depth are outside the supported range.",
       "translation": "Os ângulos ou a profundidade do painel da cabine estão fora da faixa suportada."
     },
@@ -137911,10 +137775,6 @@
       "translation": "Os pontos de calado são visualizados no mapa de assentamento ativo. Nada muda no disco até que você escolha um destino de exportação."
     },
     {
-      "source": "Drag center to tilt. Drag rim to roll.",
-      "translation": "Arraste o centro para inclinar. Arraste a borda para rolar."
-    },
-    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Arraste os pontos para os centros dos círculos. Arraste o espaço vazio para mover; canto inferior direito para redimensionar. {0}"
     },
@@ -137927,8 +137787,8 @@
       "translation": "Arraste as visualizações com bordas para os monitores e posições desejadas. O conteúdo de visualização vem de um estado de jogo falso em forma de dados de sobreposição reais."
     },
     {
-      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
-      "translation": "Arraste o centro para inclinar; arraste o aro para rolar. Inclinação das teclas de seta, controle mais rolagens para a esquerda ou direita; O turno muda em cinco graus."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+      "translation": "Arraste o centro do orbe para inclinar; arraste sua borda para rolar. Clique com o botão direito no orbe para redefinir a rotação. Salve com a barra de ferramentas do editor."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -141517,10 +141377,6 @@
     {
       "source": "Great Annihilator",
       "translation": "Grande Aniquilador"
-    },
-    {
-      "source": "Greater distance makes this panel smaller, as it would in VR.",
-      "translation": "Uma distância maior torna este painel menor, como seria em VR."
     },
     {
       "source": "Green",
@@ -148935,6 +148791,10 @@
       "translation": "Abra o próximo boxel neste nível"
     },
     {
+      "source": "Open the overlay position editor to adjust this panel's angle.",
+      "translation": "Abra o editor de posição de sobreposição para ajustar o ângulo deste painel."
+    },
+    {
       "source": "Open the overlay-settings icon beside Firegroups.",
       "translation": "Abra o ícone de configurações de sobreposição ao lado de Firegroups."
     },
@@ -149943,14 +149803,6 @@
       "translation": "A disponibilidade do painel foi alterada para esta sessão, mas não pôde ser salva: {0}"
     },
     {
-      "source": "Panel distance",
-      "translation": "Distância do painel"
-    },
-    {
-      "source": "Panel rotation",
-      "translation": "Rotação do painel"
-    },
-    {
       "source": "Panels",
       "translation": "Painéis"
     },
@@ -150133,14 +149985,6 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Passo (graus)"
-    },
-    {
-      "source": "Pitch (°)",
-      "translation": "Passo (°)"
-    },
-    {
-      "source": "Pitch, degrees",
-      "translation": "Passo, graus"
     },
     {
       "source": "Place in front of me",
@@ -153627,10 +153471,6 @@
       "translation": "A redefinição da orientação VR captura a guinada atual do headset ativada SteamVR ou a pose do headset ativada VDXR, como a origem da sobreposição sem alterar o posicionamento salvo do painel."
     },
     {
-      "source": "Reset angle and depth",
-      "translation": "Redefinir ângulo e profundidade"
-    },
-    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Redefinição cancelada; os totais não foram alterados."
     },
@@ -154311,14 +154151,6 @@
       "translation": "Rolar (graus)"
     },
     {
-      "source": "Roll (°)",
-      "translation": "Rolar (°)"
-    },
-    {
-      "source": "Roll, degrees",
-      "translation": "Rolar, graus"
-    },
-    {
       "source": "Rollback backup: {0}",
       "translation": "Backup de reversão: {0}"
     },
@@ -154337,6 +154169,10 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Gire contornos e guias de barra no sentido anti-horário em 2 graus"
+    },
+    {
+      "source": "Rotate this cockpit panel",
+      "translation": "Gire este painel da cabine"
     },
     {
       "source": "RotateAlphaAerial",
@@ -161431,10 +161267,6 @@
       "translation": "O lembrete opcional de carga cheia aguarda até que a carga esteja cheia e a coleta ociosa por um minuto."
     },
     {
-      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-      "translation": "O orbe visualiza a perspectiva deste painel. Salve ou cancele com a barra de ferramentas do editor; a calibração do fone de ouvido é separada."
-    },
-    {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
       "translation": "O local orbital planejado de Raven não pôde ser comparado ao catálogo de construção local. Somente o arquiteto do sistema pode iniciar uma construção sem um plano."
     },
@@ -165685,14 +165517,6 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Guinada (graus)"
-    },
-    {
-      "source": "Yaw (°)",
-      "translation": "Guinada (°)"
-    },
-    {
-      "source": "Yaw, degrees",
-      "translation": "Guinada, graus"
     },
     {
       "source": "Years",
@@ -177249,10 +177073,6 @@
       "translation": "Смещение кабины: {0}"
     },
     {
-      "source": "Cockpit panel angle",
-      "translation": "Угол панели кабины"
-    },
-    {
       "source": "Cockpit panel angles or depth are outside the supported range.",
       "translation": "Углы или глубина панели кабины находятся за пределами поддерживаемого диапазона."
     },
@@ -180621,10 +180441,6 @@
       "translation": "Точки уклона предварительно просматриваются на активной карте поселения. На диске ничего не изменится, пока вы не выберете место назначения экспорта."
     },
     {
-      "source": "Drag center to tilt. Drag rim to roll.",
-      "translation": "Перетащите центр, чтобы наклонить. Перетащите край, чтобы свернуть."
-    },
-    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Перетащите точки в центры кругов. Перетащите пустое место для перемещения; нижний правый угол для изменения размера. {0}"
     },
@@ -180637,8 +180453,8 @@
       "translation": "Перетащите границы предварительного просмотра на нужные мониторы и в нужные позиции. Содержимое предварительного просмотра создается из ложного состояния игры, имеющего форму реальных данных наложения."
     },
     {
-      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
-      "translation": "Перетащите центр, чтобы наклонить; перетащите обод, чтобы свернуть. Наклон клавиш со стрелками, управление плюс прокрутка влево или вправо; Сдвиг меняется на пять градусов."
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+      "translation": "Перетащите центр сферы, чтобы наклонить ее; перетащите его край, чтобы катиться. Щелкните правой кнопкой мыши по шару, чтобы сбросить вращение. Сохраните с помощью панели инструментов редактора."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -184227,10 +184043,6 @@
     {
       "source": "Great Annihilator",
       "translation": "Великий Аннигилятор"
-    },
-    {
-      "source": "Greater distance makes this panel smaller, as it would in VR.",
-      "translation": "Большее расстояние делает эту панель меньше, как в виртуальной реальности."
     },
     {
       "source": "Green",
@@ -191645,6 +191457,10 @@
       "translation": "Откройте следующий ящик на этом уровне."
     },
     {
+      "source": "Open the overlay position editor to adjust this panel's angle.",
+      "translation": "Откройте редактор положения наложения, чтобы отрегулировать угол этой панели."
+    },
+    {
       "source": "Open the overlay-settings icon beside Firegroups.",
       "translation": "Откройте значок настроек наложения рядом с «Пожарные группы»."
     },
@@ -192653,14 +192469,6 @@
       "translation": "Доступность панели для этого сеанса изменилась, но не удалось сохранить: {0}"
     },
     {
-      "source": "Panel distance",
-      "translation": "Расстояние до панели"
-    },
-    {
-      "source": "Panel rotation",
-      "translation": "Вращение панели"
-    },
-    {
       "source": "Panels",
       "translation": "Панели"
     },
@@ -192843,14 +192651,6 @@
     {
       "source": "Pitch (degrees)",
       "translation": "Шаг (градусы)"
-    },
-    {
-      "source": "Pitch (°)",
-      "translation": "Угол наклона (°)"
-    },
-    {
-      "source": "Pitch, degrees",
-      "translation": "Шаг, градусы"
     },
     {
       "source": "Place in front of me",
@@ -196337,10 +196137,6 @@
       "translation": "Сброс ориентации VR фиксирует текущее положение гарнитуры SteamVR или положение гарнитуры VDXR в качестве исходной точки наложения без изменения сохраненного расположения панели."
     },
     {
-      "source": "Reset angle and depth",
-      "translation": "Сбросить угол и глубину"
-    },
-    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "Сброс отменен; итоговые суммы не изменились."
     },
@@ -197021,14 +196817,6 @@
       "translation": "Крен (градусы)"
     },
     {
-      "source": "Roll (°)",
-      "translation": "Крен (°)"
-    },
-    {
-      "source": "Roll, degrees",
-      "translation": "Крен, градусы"
-    },
-    {
       "source": "Rollback backup: {0}",
       "translation": "Резервная копия для отката: {0}"
     },
@@ -197047,6 +196835,10 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Поворот контуров и направляющих стержней против часовой стрелки на 2 градуса"
+    },
+    {
+      "source": "Rotate this cockpit panel",
+      "translation": "Поверните эту панель кабины"
     },
     {
       "source": "RotateAlphaAerial",
@@ -204141,10 +203933,6 @@
       "translation": "Дополнительное напоминание о заполнении груза ожидает, пока груз не будет заполнен и сбор не будет приостановлен в течение одной минуты."
     },
     {
-      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-      "translation": "Сфера позволяет просмотреть перспективу этой панели. Сохранить или отменить с помощью панели инструментов редактора; калибровка гарнитуры осуществляется отдельно."
-    },
-    {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
       "translation": "Планируемая орбитальная площадка Ворона не могла быть сопоставлена ​​с местным каталогом построек. Только системный архитектор может начать сборку без плана."
     },
@@ -208395,14 +208183,6 @@
     {
       "source": "Yaw (degrees)",
       "translation": "Отклонение от курса (градусы)"
-    },
-    {
-      "source": "Yaw (°)",
-      "translation": "Отклонение (°)"
-    },
-    {
-      "source": "Yaw, degrees",
-      "translation": "Отклонение от курса, градусы"
     },
     {
       "source": "Years",
@@ -219959,10 +219739,6 @@
       "translation": "驾驶舱偏移：{0}"
     },
     {
-      "source": "Cockpit panel angle",
-      "translation": "驾驶舱面板角度"
-    },
-    {
       "source": "Cockpit panel angles or depth are outside the supported range.",
       "translation": "驾驶舱面板角度或深度超出支持范围。"
     },
@@ -223331,10 +223107,6 @@
       "translation": "在活动的定居点地图上预览吃水点。在您选择导出目标之前，磁盘上不会发生任何变化。"
     },
     {
-      "source": "Drag center to tilt. Drag rim to roll.",
-      "translation": "拖动中心进行倾斜。拖动边缘进行滚动。"
-    },
-    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "将点拖到圆心上。拖动空白处进行移动；右下角可以调整大小。 {0}"
     },
@@ -223347,8 +223119,8 @@
       "translation": "将带边框的预览拖动到所需的监视器和位置。预览内容来自形状像真实叠加数据的虚假游戏状态。"
     },
     {
-      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
-      "translation": "拖动中心倾斜；拖动边缘滚动。方向键倾斜，Control 加向左或向右滚动；平移改变五度。"
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+      "translation": "拖动球体中心倾斜；拖动其边缘滚动。右键单击球体可重置旋转。使用编辑器工具栏保存。"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -226937,10 +226709,6 @@
     {
       "source": "Great Annihilator",
       "translation": "大歼灭者"
-    },
-    {
-      "source": "Greater distance makes this panel smaller, as it would in VR.",
-      "translation": "距离越大，面板越小，就像在 VR 中一样。"
     },
     {
       "source": "Green",
@@ -234355,6 +234123,10 @@
       "translation": "打开该级别的下一个盒子"
     },
     {
+      "source": "Open the overlay position editor to adjust this panel's angle.",
+      "translation": "打开叠加位置编辑器以调整该面板的角度。"
+    },
+    {
       "source": "Open the overlay-settings icon beside Firegroups.",
       "translation": "打开 Firegroups 旁边的覆盖设置图标。"
     },
@@ -235363,14 +235135,6 @@
       "translation": "此会话的面板可用性已更改，但无法保存：{0}"
     },
     {
-      "source": "Panel distance",
-      "translation": "面板距离"
-    },
-    {
-      "source": "Panel rotation",
-      "translation": "面板旋转"
-    },
-    {
       "source": "Panels",
       "translation": "面板"
     },
@@ -235553,14 +235317,6 @@
     {
       "source": "Pitch (degrees)",
       "translation": "螺距（度）"
-    },
-    {
-      "source": "Pitch (°)",
-      "translation": "螺距（°）"
-    },
-    {
-      "source": "Pitch, degrees",
-      "translation": "螺距、度数"
     },
     {
       "source": "Place in front of me",
@@ -239047,10 +238803,6 @@
       "translation": "重置 VR 方向捕获当前耳机偏航 SteamVR 或耳机姿势 VDXR 作为叠加原点，而不更改已保存的面板位置。"
     },
     {
-      "source": "Reset angle and depth",
-      "translation": "重置角度和深度"
-    },
-    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "重置已取消；总数没有改变。"
     },
@@ -239731,14 +239483,6 @@
       "translation": "滚动（度）"
     },
     {
-      "source": "Roll (°)",
-      "translation": "滚动（°）"
-    },
-    {
-      "source": "Roll, degrees",
-      "translation": "滚动，度数"
-    },
-    {
       "source": "Rollback backup: {0}",
       "translation": "回滚备份：{0}"
     },
@@ -239757,6 +239501,10 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "将轮廓和导杆逆时针旋转 2 度"
+    },
+    {
+      "source": "Rotate this cockpit panel",
+      "translation": "旋转这个驾驶舱面板"
     },
     {
       "source": "RotateAlphaAerial",
@@ -246851,10 +246599,6 @@
       "translation": "可选的货物已满提醒会等待货物已满且收集空闲一分钟。"
     },
     {
-      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-      "translation": "球体预览该面板的视角。使用编辑器工具栏保存或取消；耳机校准是单独的。"
-    },
-    {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
       "translation": "轨道计划的 Raven 站点无法与本地构建目录匹配。只有系统架构师才能在没有计划的情况下开始构建。"
     },
@@ -251105,14 +250849,6 @@
     {
       "source": "Yaw (degrees)",
       "translation": "偏航（度）"
-    },
-    {
-      "source": "Yaw (°)",
-      "translation": "偏航角 (°)"
-    },
-    {
-      "source": "Yaw, degrees",
-      "translation": "偏航，度数"
     },
     {
       "source": "Years",
@@ -262669,10 +262405,6 @@
       "translation": "* COCKPIT OFFSET: {0} >>>!"
     },
     {
-      "source": "Cockpit panel angle",
-      "translation": "* COCKPIT PANEL ANGLE >>>!"
-    },
-    {
       "source": "Cockpit panel angles or depth are outside the supported range.",
       "translation": "* COCKPIT PANEL ANGLES OR DEPTH ARE OUTSIDE THE SUPPORTED RANGE. >>>!"
     },
@@ -266041,10 +265773,6 @@
       "translation": "* DRAFT POINTS ARE PREVIEWED ON THE ACTIVE SETTLEMENT MAP. NOTHING CHANGES ON DISK UNTIL YOU CHOOSE AN EXPORT DESTINATION. >>>!"
     },
     {
-      "source": "Drag center to tilt. Drag rim to roll.",
-      "translation": "* DRAG CENTER TO TILT. DRAG RIM TO ROLL. >>>!"
-    },
-    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "* DRAG DOTS ONTO CIRCLE CENTRES. DRAG EMPTY SPACE TO MOVE; LOWER-RIGHT CORNER TO RESIZE. {0} >>>!"
     },
@@ -266057,8 +265785,8 @@
       "translation": "* DRAG THE BORDERED PREVIEWS TO THE DESIRED MONITORS AND POSITIONS. PREVIEW CONTENT COMES FROM A FALSE GAME STATE SHAPED LIKE REAL OVERLAY DATA. >>>!"
     },
     {
-      "source": "Drag the center to tilt; drag the rim to roll. Arrow keys tilt, Control plus Left or Right rolls; Shift changes by five degrees.",
-      "translation": "* DRAG THE CENTER TO TILT; DRAG THE RIM TO ROLL. ARROW KEYS TILT, CONTROL PLUS LEFT OR RIGHT ROLLS; SHIFT CHANGES BY FIVE DEGREES. >>>!"
+      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation. Save with the editor toolbar.",
+      "translation": "* DRAG THE ORB CENTER TO TILT; DRAG ITS RIM TO ROLL. RIGHT-CLICK THE ORB TO RESET ROTATION. SAVE WITH THE EDITOR TOOLBAR. >>>!"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -269647,10 +269375,6 @@
     {
       "source": "Great Annihilator",
       "translation": "* GREAT ANNIHILATOR >>>!"
-    },
-    {
-      "source": "Greater distance makes this panel smaller, as it would in VR.",
-      "translation": "* GREATER DISTANCE MAKES THIS PANEL SMALLER, AS IT WOULD IN VR. >>>!"
     },
     {
       "source": "Green",
@@ -277065,6 +276789,10 @@
       "translation": "* OPEN THE NEXT BOXEL AT THIS LEVEL >>>!"
     },
     {
+      "source": "Open the overlay position editor to adjust this panel's angle.",
+      "translation": "* OPEN THE OVERLAY POSITION EDITOR TO ADJUST THIS PANEL'S ANGLE. >>>!"
+    },
+    {
       "source": "Open the overlay-settings icon beside Firegroups.",
       "translation": "* OPEN THE OVERLAY-SETTINGS ICON BESIDE FIREGROUPS. >>>!"
     },
@@ -278073,14 +277801,6 @@
       "translation": "* PANEL AVAILABILITY CHANGED FOR THIS SESSION BUT COULD NOT BE SAVED: {0} >>>!"
     },
     {
-      "source": "Panel distance",
-      "translation": "* PANEL DISTANCE >>>!"
-    },
-    {
-      "source": "Panel rotation",
-      "translation": "* PANEL ROTATION >>>!"
-    },
-    {
       "source": "Panels",
       "translation": "* PANELS >>>!"
     },
@@ -278263,14 +277983,6 @@
     {
       "source": "Pitch (degrees)",
       "translation": "* PITCH (DEGREES) >>>!"
-    },
-    {
-      "source": "Pitch (°)",
-      "translation": "* PITCH (°) >>>!"
-    },
-    {
-      "source": "Pitch, degrees",
-      "translation": "* PITCH, DEGREES >>>!"
     },
     {
       "source": "Place in front of me",
@@ -281757,10 +281469,6 @@
       "translation": "* RESET VR ORIENTATION CAPTURES THE CURRENT HEADSET YAW ON STEAMVR, OR THE HEADSET POSE ON VDXR, AS THE OVERLAY ORIGIN WITHOUT CHANGING SAVED PANEL PLACEMENT. >>>!"
     },
     {
-      "source": "Reset angle and depth",
-      "translation": "* RESET ANGLE AND DEPTH >>>!"
-    },
-    {
       "source": "Reset cancelled; totals were not changed.",
       "translation": "* RESET CANCELLED; TOTALS WERE NOT CHANGED. >>>!"
     },
@@ -282441,14 +282149,6 @@
       "translation": "* ROLL (DEGREES) >>>!"
     },
     {
-      "source": "Roll (°)",
-      "translation": "* ROLL (°) >>>!"
-    },
-    {
-      "source": "Roll, degrees",
-      "translation": "* ROLL, DEGREES >>>!"
-    },
-    {
       "source": "Rollback backup: {0}",
       "translation": "* ROLLBACK BACKUP: {0} >>>!"
     },
@@ -282467,6 +282167,10 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "* ROTATE OUTLINES AND BAR GUIDES COUNTERCLOCKWISE BY 2 DEGREES >>>!"
+    },
+    {
+      "source": "Rotate this cockpit panel",
+      "translation": "* ROTATE THIS COCKPIT PANEL >>>!"
     },
     {
       "source": "RotateAlphaAerial",
@@ -289561,10 +289265,6 @@
       "translation": "* THE OPTIONAL CARGO-FULL REMINDER WAITS UNTIL CARGO HAS BEEN FULL AND COLLECTION IDLE FOR ONE MINUTE. >>>!"
     },
     {
-      "source": "The orb previews this panel's perspective. Save or cancel with the editor toolbar; headset calibration is separate.",
-      "translation": "* THE ORB PREVIEWS THIS PANEL'S PERSPECTIVE. SAVE OR CANCEL WITH THE EDITOR TOOLBAR; HEADSET CALIBRATION IS SEPARATE. >>>!"
-    },
-    {
       "source": "The orbital planned Raven site could not be matched to the local build catalog. Only the system architect can start a build without a plan.",
       "translation": "* THE ORBITAL PLANNED RAVEN SITE COULD NOT BE MATCHED TO THE LOCAL BUILD CATALOG. ONLY THE SYSTEM ARCHITECT CAN START A BUILD WITHOUT A PLAN. >>>!"
     },
@@ -293815,14 +293515,6 @@
     {
       "source": "Yaw (degrees)",
       "translation": "* YAW (DEGREES) >>>!"
-    },
-    {
-      "source": "Yaw (°)",
-      "translation": "* YAW (°) >>>!"
-    },
-    {
-      "source": "Yaw, degrees",
-      "translation": "* YAW, DEGREES >>>!"
     },
     {
       "source": "Years",

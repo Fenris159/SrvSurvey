@@ -1,6 +1,6 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.12
+# SrvSurvey-XP 2.1.3.0-rc.77.13
 
-RC77.12 adds an opt-in cockpit-following overlay prototype for normal monitors,
+RC77.13 adds an opt-in cockpit-following overlay prototype for normal monitors,
 perspective controls in the overlay editor, and independently updated camera
 capture catalogs.
 
@@ -21,13 +21,17 @@ capture catalogs.
 
 ### Perspective controls in the overlay editor
 
-- **Tilt and rotate individual panels:** Use the rotation orb or numeric yaw,
-  pitch, and roll controls. Drag the orb center to tilt and its rim to roll.
-- **Adjust apparent distance:** Move a panel farther away to reduce its apparent
-  size. Perspective settings follow the editor's existing save/cancel flow.
+- **Tilt and rotate individual panels:** Each preview keeps a rotation orb beside
+  its resize handle. Drag the center to tilt and the rim to roll; the panel
+  previews its perspective immediately. Right-click the orb to reset that
+  panel's rotation. The right-click settings menu stays focused on appearance.
+- **Keep size controls together:** Use the existing right-click scale controls
+  to change panel size. The orb only changes orientation; arrow keys tilt and
+  Control plus Left/Right rolls. Perspective settings follow the editor's existing save/cancel flow.
+  Angles can be prepared while cockpit tracking is off, without enabling capture.
 - **Keep editing controls reachable:** Expanded settings scroll on shorter
-  displays while the editor's save and cancel controls stay visible. Angle and
-  distance inputs also have screen-reader labels.
+  displays while the editor's save and cancel controls stay visible. Rotation
+  handles remain visible and accessible across themes.
 - **Keep settings on this computer:** Cockpit mode and panel angles are
   machine-specific, use the application's theme resources, and retain existing
   overlay visibility controls.

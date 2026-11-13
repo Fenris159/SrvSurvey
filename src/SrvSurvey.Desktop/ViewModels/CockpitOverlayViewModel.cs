@@ -224,13 +224,22 @@ public sealed class CockpitOverlayViewModel : INotifyPropertyChanged
 
     private void SetPose(CockpitPanelPose pose)
     {
-        if (selectedPanel is null || !pose.IsValid || pose == SelectedPose)
+        if (selectedPanel is not null)
+        {
+            SetPanelPose(selectedPanel, pose);
+        }
+    }
+
+    /// <summary>Edits a corner handle's own panel without borrowing another panel's selection.</summary>
+    internal void SetPanelPose(string plotterName, CockpitPanelPose pose)
+    {
+        if (!pose.IsValid || pose == Resolve(plotterName))
         {
             return;
         }
         var panels = new Dictionary<string, CockpitPanelPose>(preferences.Panels, StringComparer.Ordinal)
         {
-            [selectedPanel] = pose,
+            [plotterName] = pose,
         };
         preferences = preferences with { Panels = panels };
         NotifyPose();

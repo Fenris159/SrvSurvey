@@ -260,6 +260,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                 }
             }
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(definition.Name).Opacity);
+            preview.ConfigureCockpitPanels(viewModel?.CockpitPanels);
             OverlayDragPolicy.SetOptionsFactory(preview, () => CreatePreviewDragOptions(preview));
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.SettingsRequested += OnPreviewSettingsRequested;

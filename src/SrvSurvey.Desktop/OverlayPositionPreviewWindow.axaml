@@ -126,6 +126,7 @@
               CornerRadius="0,7,7,7"
               ClipToBounds="False"
               Padding="4">
+        <Border x:Name="PanelProjectionHost" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="True">
         <Grid>
           <TextBlock HorizontalAlignment="Center"
                      VerticalAlignment="Center"
@@ -311,6 +312,16 @@
                        ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE" />
           </Grid>
         </Grid>
+        </Border>
+      </Border>
+      <Border x:Name="PanelRotationHandleBorder"
+              Grid.Row="1" Width="32" Height="32" Margin="0,0,28,2"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Background="#CC1A1208" BorderBrush="#FFCC33" BorderThickness="1" CornerRadius="5"
+              ToolTip.ShowOnDisabled="True">
+        <controls:PanelRotationOrb x:Name="PanelRotationHandle" Width="30" Height="30"
+            IsEnabled="False" Accent="#FFCC33" GuideBrush="#99FFCC33" PanelBrush="#CC1A1208"
+            Cursor="Hand" AutomationProperties.Name="Rotate this cockpit panel" />
       </Border>
       <primitives:Thumb x:Name="PanelResizeThumb"
                         Grid.Row="1"

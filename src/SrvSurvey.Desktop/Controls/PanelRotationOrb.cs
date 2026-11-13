@@ -38,6 +38,11 @@ public sealed class PanelRotationOrb : Control
     private Point previousPoint;
     private bool dragging;
     private bool rolling;
+    private double OrbRadius =>
+        Math.Max(
+            1,
+            Math.Min(Bounds.Width, Bounds.Height) / 2 - Math.Min(9, Math.Min(Bounds.Width, Bounds.Height) * 0.15)
+        );
 
     static PanelRotationOrb()
     {
@@ -96,7 +101,8 @@ public sealed class PanelRotationOrb : Control
     {
         base.Render(context);
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
-        double radius = Math.Max(1, Math.Min(Bounds.Width, Bounds.Height) / 2 - 9);
+        double radius = OrbRadius;
+        double arrowScale = Math.Min(1, radius / 30);
         var guide = new Pen(GuideBrush, 1);
         var accent = new Pen(Accent, IsFocused ? 2 : 1.5);
         context.DrawEllipse(Brushes.Transparent, accent, center, radius, radius);
@@ -104,23 +110,23 @@ public sealed class PanelRotationOrb : Control
         context.DrawEllipse(null, guide, center, radius * 0.35, radius);
         context.DrawLine(
             accent,
-            new Point(center.X + radius - 4, center.Y - 8),
+            new Point(center.X + radius - 4 * arrowScale, center.Y - 8 * arrowScale),
             new Point(center.X + radius, center.Y)
         );
         context.DrawLine(
             accent,
             new Point(center.X + radius, center.Y),
-            new Point(center.X + radius + 4, center.Y - 8)
+            new Point(center.X + radius + 4 * arrowScale, center.Y - 8 * arrowScale)
         );
         context.DrawLine(
             accent,
-            new Point(center.X - radius + 4, center.Y + 8),
+            new Point(center.X - radius + 4 * arrowScale, center.Y + 8 * arrowScale),
             new Point(center.X - radius, center.Y)
         );
         context.DrawLine(
             accent,
             new Point(center.X - radius, center.Y),
-            new Point(center.X - radius - 4, center.Y + 8)
+            new Point(center.X - radius - 4 * arrowScale, center.Y + 8 * arrowScale)
         );
         double width = radius * 1.25;
         double height = radius * 0.8;
@@ -161,7 +167,7 @@ public sealed class PanelRotationOrb : Control
         }
         previousPoint = e.GetPosition(this);
         Avalonia.Vector offset = previousPoint - new Point(Bounds.Width / 2, Bounds.Height / 2);
-        rolling = offset.Length > Math.Min(Bounds.Width, Bounds.Height) * 0.36;
+        rolling = offset.Length > OrbRadius * 0.8;
         dragging = true;
         e.Pointer.Capture(this);
         Focus();
