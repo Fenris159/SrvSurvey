@@ -48,8 +48,10 @@ public sealed partial class OverlayPositionPreviewWindow
     private void InitializeCockpitEditor()
     {
         PanelRotationHandle.PropertyChanged += OnRotationHandleChanged;
+        PanelRollHandle.PropertyChanged += OnRotationHandleChanged;
         PanelRotationHandle.ResetRequested += OnRotationResetRequested;
-        PanelRotationHandleBorder.AddHandler(PointerPressedEvent, OnRotationHandlePressed, RoutingStrategies.Tunnel);
+        PanelRollHandle.ResetRequested += OnRotationResetRequested;
+        PanelAngleHandles.AddHandler(PointerPressedEvent, OnRotationHandlePressed, RoutingStrategies.Tunnel);
         PanelProjectionHost.SizeChanged += (_, _) => ScheduleCockpitPreview();
         PositionChanged += (_, _) => ScheduleCockpitPreview();
         RefreshCockpitHandle();
@@ -144,15 +146,24 @@ public sealed partial class OverlayPositionPreviewWindow
         applyingCockpitPose = true;
         CockpitPanelPose pose = cockpitPanels?.Resolve(Definition.Name) ?? new CockpitPanelPose();
         displayedCockpitPose = pose;
-        PanelRotationHandle.Yaw = pose.Yaw;
-        PanelRotationHandle.Pitch = pose.Pitch;
-        PanelRotationHandle.Roll = pose.Roll;
-        PanelRotationHandle.Depth = pose.Depth;
-        PanelRotationHandle.IsEnabled = cockpitPanels is not null;
+        foreach (PanelRotationOrb handle in new[] { PanelRotationHandle, PanelRollHandle })
+        {
+            handle.Yaw = pose.Yaw;
+            handle.Pitch = pose.Pitch;
+            handle.Roll = pose.Roll;
+            handle.Depth = pose.Depth;
+            handle.IsEnabled = cockpitPanels is not null;
+        }
         ToolTip.SetTip(
             PanelRotationHandleBorder,
-            PanelRotationHandle.IsEnabled
-                ? "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar."
+            cockpitPanels is not null
+                ? "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar."
+                : "Open the overlay position editor to adjust this panel's angle."
+        );
+        ToolTip.SetTip(
+            PanelRollHandleBorder,
+            cockpitPanels is not null
+                ? "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar."
                 : "Open the overlay position editor to adjust this panel's angle."
         );
         applyingCockpitPose = false;
@@ -161,17 +172,27 @@ public sealed partial class OverlayPositionPreviewWindow
 
     private void OnRotationHandlePressed(object? sender, PointerPressedEventArgs e)
     {
-        if (e.GetCurrentPoint(PanelRotationHandleBorder).Properties.IsRightButtonPressed)
+        Border? button = new[] { PanelRotationHandleBorder, PanelRollHandleBorder }.FirstOrDefault(candidate =>
+            new Rect(candidate.Bounds.Size).Contains(e.GetPosition(candidate))
+        );
+        if (button is null)
+        {
+            return;
+        }
+        if (e.GetCurrentPoint(button).Properties.IsRightButtonPressed)
         {
             OnRotationResetRequested(this, EventArgs.Empty);
             e.Handled = true;
             return;
         }
-        if (e.GetCurrentPoint(PanelRotationHandleBorder).Properties.IsLeftButtonPressed)
+        if (e.GetCurrentPoint(button).Properties.IsLeftButtonPressed)
         {
-            if (PanelRotationHandle.IsEnabled)
+            PanelRotationOrb handle = ReferenceEquals(button, PanelRollHandleBorder)
+                ? PanelRollHandle
+                : PanelRotationHandle;
+            if (handle.IsEnabled)
             {
-                PanelRotationHandle.BeginRotation(e);
+                handle.BeginRotation(e);
             }
             e.Handled = true;
         }
@@ -189,6 +210,7 @@ public sealed partial class OverlayPositionPreviewWindow
     {
         if (
             !applyingCockpitPose
+            && sender is PanelRotationOrb handle
             && cockpitPanels is not null
             && (
                 e.Property == PanelRotationOrb.YawProperty
@@ -200,12 +222,7 @@ public sealed partial class OverlayPositionPreviewWindow
         {
             cockpitPanels.SetPanelPose(
                 Definition.Name,
-                new CockpitPanelPose(
-                    PanelRotationHandle.Yaw,
-                    PanelRotationHandle.Pitch,
-                    PanelRotationHandle.Roll,
-                    PanelRotationHandle.Depth
-                )
+                new CockpitPanelPose(handle.Yaw, handle.Pitch, handle.Roll, handle.Depth)
             );
         }
     }
@@ -338,14 +355,14 @@ public sealed partial class OverlayPositionPreviewWindow
         {
             outward = -outward;
         }
-        var knobSize = new Size(PanelRotationHandleBorder.Width, PanelRotationHandleBorder.Height);
+        var knobSize = new Size(PanelAngleHandles.Width, PanelAngleHandles.Height);
         double clearance = (Math.Abs(outward.X) * knobSize.Width + Math.Abs(outward.Y) * knobSize.Height) / 2 + 8;
         Vector along = edge.Length > .001 ? edge / edge.Length : new Vector(0, 1);
         double inset = (Math.Abs(along.X) * knobSize.Width + Math.Abs(along.Y) * knobSize.Height) / 2;
         Point knobOrigin =
             corner + outward * clearance - along * inset - new Vector(knobSize.Width / 2, knobSize.Height / 2);
-        Vector knobOffset = GetEditorLayoutOrigin(PanelRotationHandleBorder) - panelOrigin;
-        PanelRotationHandleBorder.RenderTransform = new TranslateTransform(
+        Vector knobOffset = GetEditorLayoutOrigin(PanelAngleHandles) - panelOrigin;
+        PanelAngleHandles.RenderTransform = new TranslateTransform(
             knobOrigin.X - knobOffset.X,
             knobOrigin.Y - knobOffset.Y
         );

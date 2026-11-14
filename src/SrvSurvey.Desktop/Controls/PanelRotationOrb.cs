@@ -1,4 +1,3 @@
-using System.Numerics;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -6,11 +5,10 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using SrvSurvey.Desktop.Localization;
-using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Controls;
 
-/// <summary>A draggable panel orientation preview with a separate rim gesture for roll.</summary>
+/// <summary>A dedicated tilt or roll handle with a full-area captured drag gesture.</summary>
 public sealed class PanelRotationOrb : Control
 {
     public static readonly StyledProperty<double> YawProperty = AvaloniaProperty.Register<PanelRotationOrb, double>(
@@ -39,21 +37,26 @@ public sealed class PanelRotationOrb : Control
         IBrush?
     >(nameof(PanelBrush));
     private PixelPoint previousScreenPoint;
-    private PixelPoint rollCenter;
     private double dragRenderScaling = 1;
     private IPointer? dragPointer;
     private bool dragging;
     private bool rolling;
     public event EventHandler? ResetRequested;
-    private double OrbRadius =>
-        Math.Max(
-            1,
-            Math.Min(Bounds.Width, Bounds.Height) / 2 - Math.Min(9, Math.Min(Bounds.Width, Bounds.Height) * 0.15)
-        );
+    public static readonly StyledProperty<bool> IsRollControlProperty = AvaloniaProperty.Register<
+        PanelRotationOrb,
+        bool
+    >(nameof(IsRollControl));
+
+    public bool IsRollControl
+    {
+        get => GetValue(IsRollControlProperty);
+        set => SetValue(IsRollControlProperty, value);
+    }
 
     static PanelRotationOrb()
     {
         AffectsRender<PanelRotationOrb>(
+            IsRollControlProperty,
             YawProperty,
             PitchProperty,
             RollProperty,
@@ -109,7 +112,11 @@ public sealed class PanelRotationOrb : Control
         UpdateAccessibleAngles();
         AutomationProperties.SetHelpText(
             this,
-            LocalizationCatalog.Translate("Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.")
+            LocalizationCatalog.Translate(
+                IsRollControl
+                    ? "Drag left or right to roll; Left and Right keys roll; Home resets rotation."
+                    : "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation."
+            )
         );
         return new ControlAutomationPeer(this);
     }
@@ -129,69 +136,59 @@ public sealed class PanelRotationOrb : Control
             LocalizationCatalog.Translate($"Yaw {Yaw:0.#}°, pitch {Pitch:0.#}°, roll {Roll:0.#}°")
         );
 
-    /// <summary>Draws a theme-aware orientation sphere, rotation arrows and the panel's projective outline.</summary>
+    /// <summary>Shows separate perspective and roll symbols instead of overlapping center/rim targets.</summary>
     public override void Render(DrawingContext context)
     {
         base.Render(context);
         context.DrawRectangle(Brushes.Transparent, null, new Rect(Bounds.Size));
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
-        double radius = OrbRadius;
-        double arrowScale = Math.Min(1, radius / 30);
-        var guide = new Pen(GuideBrush, 1);
-        var accent = new Pen(Accent, IsFocused ? 2 : 1.5);
-        context.DrawEllipse(Brushes.Transparent, accent, center, radius, radius);
-        context.DrawEllipse(null, guide, center, radius, radius * 0.35);
-        context.DrawEllipse(null, guide, center, radius * 0.35, radius);
-        context.DrawLine(
-            accent,
-            new Point(center.X + radius - 4 * arrowScale, center.Y - 8 * arrowScale),
-            new Point(center.X + radius, center.Y)
-        );
-        context.DrawLine(
-            accent,
-            new Point(center.X + radius, center.Y),
-            new Point(center.X + radius + 4 * arrowScale, center.Y - 8 * arrowScale)
-        );
-        context.DrawLine(
-            accent,
-            new Point(center.X - radius + 4 * arrowScale, center.Y + 8 * arrowScale),
-            new Point(center.X - radius, center.Y)
-        );
-        context.DrawLine(
-            accent,
-            new Point(center.X - radius, center.Y),
-            new Point(center.X - radius - 4 * arrowScale, center.Y + 8 * arrowScale)
-        );
-        double width = radius * 1.25;
-        double height = radius * 0.8;
-        var rectangle = new Rect(center.X - width / 2, center.Y - height / 2, width, height);
-        Matrix? projection = CockpitPanelProjection.Create(
-            rectangle,
-            Bounds.Size,
-            new CockpitPanelPose(Yaw, Pitch, Roll, Depth),
-            Matrix4x4.Identity
-        );
-        if (projection is not { } matrix)
+        var pen = new Pen(Accent, IsFocused ? 2 : 1.5);
+        double scale = Math.Min(Bounds.Width, Bounds.Height) / 30;
+        using (context.PushTransform(Matrix.CreateScale(scale, scale) * Matrix.CreateTranslation(center.X, center.Y)))
         {
-            return;
+            if (IsRollControl)
+            {
+                var arc = new StreamGeometry();
+                using (StreamGeometryContext geometry = arc.Open())
+                {
+                    geometry.BeginFigure(new Point(8, 7), false);
+                    geometry.ArcTo(new Point(8, -7), new Size(11, 11), 0, true, SweepDirection.Clockwise);
+                }
+                context.DrawGeometry(null, pen, arc);
+                context.DrawLine(pen, new Point(8, -7), new Point(2, -7));
+                context.DrawLine(pen, new Point(8, -7), new Point(8, -13));
+                context.DrawLine(pen, new Point(-4, 0), new Point(4, 0));
+            }
+            else
+            {
+                var plane = new StreamGeometry();
+                using (StreamGeometryContext geometry = plane.Open())
+                {
+                    geometry.BeginFigure(new Point(-6, -4), true);
+                    geometry.LineTo(new Point(6, -2));
+                    geometry.LineTo(new Point(6, 4));
+                    geometry.LineTo(new Point(-6, 2));
+                    geometry.EndFigure(true);
+                }
+                context.DrawGeometry(PanelBrush, pen, plane);
+                DrawTiltArrow(context, pen, new Vector(1, 0));
+                DrawTiltArrow(context, pen, new Vector(-1, 0));
+                DrawTiltArrow(context, pen, new Vector(0, 1));
+                DrawTiltArrow(context, pen, new Vector(0, -1));
+            }
         }
-        var shape = new StreamGeometry();
-        using (StreamGeometryContext geometry = shape.Open())
-        {
-            geometry.BeginFigure(matrix.Transform(new Point(0, 0)), true);
-            geometry.LineTo(matrix.Transform(new Point(width, 0)));
-            geometry.LineTo(matrix.Transform(new Point(width, height)));
-            geometry.LineTo(matrix.Transform(new Point(0, height)));
-            geometry.EndFigure(true);
-        }
-        using (context.PushClip(new Rect(Bounds.Size)))
-        {
-            context.DrawGeometry(PanelBrush, accent, shape);
-        }
-        context.DrawEllipse(Accent, null, center, 2, 2);
     }
 
-    /// <summary>Captures a central tilt drag or a rim roll drag without moving the overlay window.</summary>
+    private static void DrawTiltArrow(DrawingContext context, Pen pen, Vector direction)
+    {
+        var side = new Vector(-direction.Y, direction.X);
+        Point tip = new(direction.X * 14, direction.Y * 14);
+        context.DrawLine(pen, new Point(direction.X * 9, direction.Y * 9), tip);
+        context.DrawLine(pen, tip, tip - direction * 2 + side * 2);
+        context.DrawLine(pen, tip, tip - direction * 2 - side * 2);
+    }
+
+    /// <summary>Captures the handle's dedicated gesture without moving the overlay window.</summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -210,14 +207,11 @@ public sealed class PanelRotationOrb : Control
             e.Handled = true;
             return;
         }
-        var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
-        Avalonia.Vector offset = e.GetPosition(this) - center;
-        rolling = offset.Length > OrbRadius * 0.8;
+        rolling = IsRollControl;
         var top = TopLevel.GetTopLevel(this);
         dragRenderScaling = top?.RenderScaling ?? 1;
         // Keep the actual press point even if motion has advanced past a queued press.
         previousScreenPoint = this.PointToScreen(e.GetPosition(this));
-        rollCenter = this.PointToScreen(center);
         dragPointer = e.Pointer;
         dragging = true;
         e.Pointer.Capture(this);
@@ -225,7 +219,7 @@ public sealed class PanelRotationOrb : Control
         e.Handled = true;
     }
 
-    /// <summary>Applies bounded yaw and pitch, or continuous roll around the rim.</summary>
+    /// <summary>Applies screen-space tilt or horizontal roll until the captured pointer is released.</summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
@@ -248,9 +242,10 @@ public sealed class PanelRotationOrb : Control
     {
         if (rolling)
         {
-            double before = Math.Atan2(previousScreenPoint.Y - rollCenter.Y, previousScreenPoint.X - rollCenter.X);
-            double after = Math.Atan2(current.Y - rollCenter.Y, current.X - rollCenter.X);
-            SetCurrentValue(RollProperty, NormalizeRoll(Roll - (after - before) * 180 / Math.PI));
+            SetCurrentValue(
+                RollProperty,
+                NormalizeRoll(Roll - (current.X - previousScreenPoint.X) * 0.6 / dragRenderScaling)
+            );
         }
         else
         {
@@ -314,7 +309,7 @@ public sealed class PanelRotationOrb : Control
         double step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 5 : 1;
         if (e.Key is Key.Left or Key.Right)
         {
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            if (IsRollControl || e.KeyModifiers.HasFlag(KeyModifiers.Control))
             {
                 SetCurrentValue(RollProperty, NormalizeRoll(Roll - direction * step));
             }
@@ -323,7 +318,7 @@ public sealed class PanelRotationOrb : Control
                 SetCurrentValue(YawProperty, Math.Clamp(Yaw + direction * step, -85, 85));
             }
         }
-        else if (e.Key is Key.Up or Key.Down)
+        else if (!IsRollControl && e.Key is Key.Up or Key.Down)
         {
             SetCurrentValue(PitchProperty, Math.Clamp(Pitch + direction * step, -85, 85));
         }
@@ -334,5 +329,5 @@ public sealed class PanelRotationOrb : Control
         e.Handled = true;
     }
 
-    private static double NormalizeRoll(double angle) => ((angle + 540) % 360) - 180;
+    private static double NormalizeRoll(double angle) => (((angle % 360) + 540) % 360) - 180;
 }

@@ -1,6 +1,6 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.14
+# SrvSurvey-XP 2.1.3.0-rc.77.15
 
-RC77.14 adds an opt-in cockpit-following overlay prototype for normal monitors,
+RC77.15 adds an opt-in cockpit-following overlay prototype for normal monitors,
 perspective controls in the overlay editor, and independently updated camera
 capture catalogs.
 
@@ -21,13 +21,15 @@ capture catalogs.
 
 ### Perspective controls in the overlay editor
 
-- **Tilt and rotate individual panels:** Each preview keeps a rotation orb outside
-  its projected corner. The border, title tab, and contents rotate together.
-  Drag the center to tilt and the rim to roll; dragging continues outside the
-  button until release. Right-click the orb to reset that
-  panel's rotation. The right-click settings menu stays focused on appearance.
+- **Tilt and roll with separate controls:** Each preview keeps two labeled,
+  48-pixel controls stacked vertically outside its projected corner, with an
+  eight-pixel gap. Drag anywhere on **Tilt** to change the left/right and up/down
+  perspective. Drag anywhere on **Roll** left or right to spin the panel.
+  Dragging continues beyond either button until release. Right-click either
+  control to reset the panel's rotation. The border, title tab, and contents
+  rotate together; the right-click settings menu stays focused on appearance.
 - **Keep size controls together:** Use the existing right-click scale controls
-  to change panel size. The orb only changes orientation; arrow keys tilt and
+  to change panel size. The angle controls only change orientation; arrow keys tilt and
   Control plus Left/Right rolls; Home resets rotation. Accessible angle values update
   while editing. Perspective settings follow the editor's existing save/cancel flow.
   Minimum scale can be restored without a layout error.
@@ -35,7 +37,7 @@ capture catalogs.
 - **Keep dragging responsive:** Screen-based input avoids rotation jumps when the
   knob moves. Native window updates settle before another bounds adjustment,
   preventing the editor freeze encountered while rotating on Linux. The full
-  button, including its border and rim, starts the same captured gesture.
+  button, including its border and label, starts its dedicated gesture.
   Queued gestures retain their own pointer positions, and deferred bounds fits
   retain the latest accepted panel position.
 - **Match the live perspective:** Preview projection uses the panel's actual

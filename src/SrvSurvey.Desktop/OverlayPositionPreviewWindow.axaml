@@ -318,16 +318,33 @@
       <Border x:Name="ProjectionReferenceOutline" Grid.Row="1" ZIndex="1" Margin="0,-2,0,0" IsHitTestVisible="False"
               HorizontalAlignment="Left" VerticalAlignment="Top"
               BorderBrush="#FFCC33" BorderThickness="2" CornerRadius="0,7,7,7" />
-      <Border x:Name="PanelRotationHandleBorder"
-              ZIndex="2"
-              Grid.Row="1" Width="32" Height="32" Margin="0,0,28,2"
-              HorizontalAlignment="Right" VerticalAlignment="Bottom"
-              Background="#CC1A1208" BorderBrush="#FFCC33" BorderThickness="1" CornerRadius="5"
-              ToolTip.ShowOnDisabled="True">
-        <controls:PanelRotationOrb x:Name="PanelRotationHandle" Width="30" Height="30"
-            IsEnabled="False" Accent="#FFCC33" GuideBrush="#99FFCC33" PanelBrush="#CC1A1208"
-            Cursor="Hand" AutomationProperties.Name="Rotate this cockpit panel" />
-      </Border>
+      <Canvas Grid.Row="1" ZIndex="2" Width="0" Height="0"
+              HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="False">
+      <StackPanel x:Name="PanelAngleHandles" Width="48" Height="104" Spacing="8" Background="Transparent">
+        <Border x:Name="PanelRotationHandleBorder" Width="48" Height="48"
+                Background="#CC1A1208" BorderBrush="#FFCC33" BorderThickness="1" CornerRadius="6"
+                ToolTip.ShowOnDisabled="True">
+          <StackPanel VerticalAlignment="Center">
+            <controls:PanelRotationOrb x:Name="PanelRotationHandle" Width="30" Height="30"
+                IsEnabled="False" Accent="#FFCC33" GuideBrush="#99FFCC33" PanelBrush="#CC1A1208"
+                Cursor="Hand" AutomationProperties.Name="Tilt this cockpit panel" />
+            <TextBlock Text="Tilt" MaxWidth="42" TextTrimming="CharacterEllipsis" FontSize="10" Foreground="#FFCC33" HorizontalAlignment="Center"
+                       IsHitTestVisible="False" />
+          </StackPanel>
+        </Border>
+        <Border x:Name="PanelRollHandleBorder" Width="48" Height="48"
+                Background="#CC1A1208" BorderBrush="#FFCC33" BorderThickness="1" CornerRadius="6"
+                ToolTip.ShowOnDisabled="True">
+          <StackPanel VerticalAlignment="Center">
+            <controls:PanelRotationOrb x:Name="PanelRollHandle" Width="30" Height="30" IsRollControl="True"
+                IsEnabled="False" Accent="#FFCC33" GuideBrush="#99FFCC33" PanelBrush="#CC1A1208"
+                Cursor="Hand" AutomationProperties.Name="Roll this cockpit panel" />
+            <TextBlock Text="Roll" MaxWidth="42" TextTrimming="CharacterEllipsis" FontSize="10" Foreground="#FFCC33" HorizontalAlignment="Center"
+                       IsHitTestVisible="False" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      </Canvas>
       <primitives:Thumb x:Name="PanelResizeThumb"
                         ZIndex="2"
                         Grid.Row="1"

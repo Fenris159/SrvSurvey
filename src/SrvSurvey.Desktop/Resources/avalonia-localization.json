@@ -9781,6 +9781,14 @@
       "translation": "Entwurfspunkte werden auf der aktiven Siedlungskarte in der Vorschau angezeigt. Auf der Festplatte ändert sich nichts, bis Sie ein Exportziel auswählen."
     },
     {
+      "source": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Ziehen Sie an einer beliebigen Stelle auf „Drehen“ nach links oder rechts, um das Panel zu drehen. Rechtsklick oder Pos1 setzt die Drehung zurück. Speichern Sie über die Editor-Werkzeugleiste."
+    },
+    {
+      "source": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Ziehen Sie an einer beliebigen Stelle auf „Neigen“, um die Perspektive nach links/rechts und oben/unten zu ändern. Rechtsklick oder Pos1 setzt die Drehung zurück. Speichern Sie über die Editor-Werkzeugleiste."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Ziehen Sie Punkte auf Kreismittelpunkte. Zum Verschieben leeren Raum ziehen; unten rechts, um die Größe zu ändern. {0}"
     },
@@ -9789,12 +9797,12 @@
       "translation": "Ziehen Sie jeden nummerierten roten Punkt auf seinen Kreismittelpunkt: 1–3 in der oberen Reihe, 4–6 in der unteren Reihe. Jede Mitte kann separat eingestellt werden."
     },
     {
-      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
-      "translation": "Ziehen Sie die umrandeten Vorschaubilder auf die gewünschten Monitore und Positionen. Vorschauinhalte stammen aus einem falschen Spielstatus, der wie echte Overlay-Daten aussieht."
+      "source": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+      "translation": "Zum Drehen nach links oder rechts ziehen; die Pfeiltasten Links/Rechts drehen; Pos1 setzt die Drehung zurück."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-      "translation": "Ziehen Sie die Mitte der Kugel, um sie zu neigen. Ziehen Sie den Rand, um ihn zu rollen. Klicken Sie mit der rechten Maustaste auf die Kugel, um die Drehung zurückzusetzen, oder drücken Sie die Home-Taste. Speichern Sie mit der Editor-Symbolleiste."
+      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
+      "translation": "Ziehen Sie die umrandeten Vorschaubilder auf die gewünschten Monitore und Positionen. Vorschauinhalte stammen aus einem falschen Spielstatus, der wie echte Overlay-Daten aussieht."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -26153,8 +26161,16 @@
       "translation": "Felsig | 268.661 CR/t"
     },
     {
+      "source": "Roll",
+      "translation": "Drehen"
+    },
+    {
       "source": "Roll (degrees)",
       "translation": "Rolle (Grad)"
+    },
+    {
+      "source": "Roll this cockpit panel",
+      "translation": "Dieses Cockpit-Panel drehen"
     },
     {
       "source": "Rollback backup: {0}",
@@ -26175,10 +26191,6 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Drehen Sie Umrisse und Balkenführungen um 2 Grad gegen den Uhrzeigersinn"
-    },
-    {
-      "source": "Rotate this cockpit panel",
-      "translation": "Drehen Sie dieses Cockpit-Panel"
     },
     {
       "source": "RotateAlphaAerial",
@@ -34595,6 +34607,14 @@
     {
       "source": "Tier {0}: {1}",
       "translation": "Stufe {0}: {1}"
+    },
+    {
+      "source": "Tilt",
+      "translation": "Neigen"
+    },
+    {
+      "source": "Tilt this cockpit panel",
+      "translation": "Dieses Cockpit-Panel neigen"
     },
     {
       "source": "Time H/M/S:",
@@ -52455,6 +52475,14 @@
       "translation": "Los puntos borrador se obtienen una vista previa en el mapa de asentamiento activo. Nada cambia en el disco hasta que elija un destino de exportación."
     },
     {
+      "source": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Arrastre desde cualquier punto de «Girar» hacia la izquierda o la derecha para girar el panel. Haga clic derecho o pulse Inicio para restablecer la rotación. Guarde los cambios con la barra del editor."
+    },
+    {
+      "source": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Arrastre desde cualquier punto de «Inclinar» para cambiar la perspectiva hacia los lados y arriba/abajo. Haga clic derecho o pulse Inicio para restablecer la rotación. Guarde los cambios con la barra del editor."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Arrastra puntos a los centros de los círculos. Arrastra el espacio vacío para moverte; esquina inferior derecha para cambiar el tamaño. {0}"
     },
@@ -52463,12 +52491,12 @@
       "translation": "Arrastre cada punto rojo numerado hasta el centro de su círculo: 1 a 3 en la fila superior, 4 a 6 en la inferior. Cada centro se puede ajustar por separado."
     },
     {
-      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
-      "translation": "Arrastre las vistas previas con bordes a los monitores y posiciones deseados. El contenido de la vista previa proviene de un estado de juego falso con forma de datos superpuestos reales."
+      "source": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+      "translation": "Arrastre hacia la izquierda o la derecha para girar; las flechas izquierda/derecha giran el panel; Inicio restablece la rotación."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-      "translation": "Arrastre el centro del orbe para inclinarlo; Arrastre su borde para rodar. Haz clic derecho en el orbe para restablecer la rotación o presiona Inicio. Guarde con la barra de herramientas del editor."
+      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
+      "translation": "Arrastre las vistas previas con bordes a los monitores y posiciones deseados. El contenido de la vista previa proviene de un estado de juego falso con forma de datos superpuestos reales."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -68827,8 +68855,16 @@
       "translation": "Rocoso | 268.661 CR/t"
     },
     {
+      "source": "Roll",
+      "translation": "Girar"
+    },
+    {
       "source": "Roll (degrees)",
       "translation": "Rollo (grados)"
+    },
+    {
+      "source": "Roll this cockpit panel",
+      "translation": "Girar este panel de la cabina"
     },
     {
       "source": "Rollback backup: {0}",
@@ -68849,10 +68885,6 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Gire los contornos y las guías de las barras 2 grados en el sentido contrario a las agujas del reloj."
-    },
-    {
-      "source": "Rotate this cockpit panel",
-      "translation": "Girar este panel de cabina"
     },
     {
       "source": "RotateAlphaAerial",
@@ -77269,6 +77301,14 @@
     {
       "source": "Tier {0}: {1}",
       "translation": "Nivel {0}: {1}"
+    },
+    {
+      "source": "Tilt",
+      "translation": "Inclinar"
+    },
+    {
+      "source": "Tilt this cockpit panel",
+      "translation": "Inclinar este panel de la cabina"
     },
     {
       "source": "Time H/M/S:",
@@ -95129,6 +95169,14 @@
       "translation": "Les points de draft sont prévisualisés sur la carte de colonie active. Rien ne change sur le disque jusqu'à ce que vous choisissiez une destination d'exportation."
     },
     {
+      "source": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Faites glisser depuis n’importe quel point de « Pivoter » vers la gauche ou la droite pour faire pivoter le panneau. Un clic droit ou la touche Début réinitialise la rotation. Enregistrez avec la barre d’outils de l’éditeur."
+    },
+    {
+      "source": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Faites glisser depuis n’importe quel point d’« Incliner » pour modifier la perspective horizontalement et verticalement. Un clic droit ou la touche Début réinitialise la rotation. Enregistrez avec la barre d’outils de l’éditeur."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Faites glisser les points sur les centres des cercles. Faites glisser l'espace vide pour vous déplacer ; coin inférieur droit pour redimensionner. {0}"
     },
@@ -95137,12 +95185,12 @@
       "translation": "Faites glisser chaque point rouge numéroté sur le centre de son cercle : 1 à 3 sur la rangée du haut, 4 à 6 sur la rangée du bas. Chaque centre peut être ajusté séparément."
     },
     {
-      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
-      "translation": "Faites glisser les aperçus bordés vers les moniteurs et les positions souhaités. Le contenu de l'aperçu provient d'un faux état de jeu façonné comme de véritables données de superposition."
+      "source": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+      "translation": "Faites glisser vers la gauche ou la droite pour pivoter ; les flèches gauche/droite font pivoter le panneau ; Début réinitialise la rotation."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-      "translation": "Faites glisser le centre de l'orbe pour l'incliner ; faites glisser son bord pour rouler. Cliquez avec le bouton droit sur l’orbe pour réinitialiser la rotation ou appuyez sur Accueil. Enregistrez avec la barre d'outils de l'éditeur."
+      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
+      "translation": "Faites glisser les aperçus bordés vers les moniteurs et les positions souhaités. Le contenu de l'aperçu provient d'un faux état de jeu façonné comme de véritables données de superposition."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -111501,8 +111549,16 @@
       "translation": "Rocheux | 268 661 CR/t"
     },
     {
+      "source": "Roll",
+      "translation": "Pivoter"
+    },
+    {
       "source": "Roll (degrees)",
       "translation": "Rouleau (degrés)"
+    },
+    {
+      "source": "Roll this cockpit panel",
+      "translation": "Faire pivoter ce panneau du cockpit"
     },
     {
       "source": "Rollback backup: {0}",
@@ -111523,10 +111579,6 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Faites pivoter les contours et les guides-barres de 2 degrés dans le sens inverse des aiguilles d'une montre."
-    },
-    {
-      "source": "Rotate this cockpit panel",
-      "translation": "Faites pivoter ce panneau de cockpit"
     },
     {
       "source": "RotateAlphaAerial",
@@ -119943,6 +119995,14 @@
     {
       "source": "Tier {0}: {1}",
       "translation": "Niveau {0} : {1}"
+    },
+    {
+      "source": "Tilt",
+      "translation": "Incliner"
+    },
+    {
+      "source": "Tilt this cockpit panel",
+      "translation": "Incliner ce panneau du cockpit"
     },
     {
       "source": "Time H/M/S:",
@@ -137803,6 +137863,14 @@
       "translation": "Os pontos de calado são visualizados no mapa de assentamento ativo. Nada muda no disco até que você escolha um destino de exportação."
     },
     {
+      "source": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Arraste a partir de qualquer ponto de Girar para a esquerda ou direita para girar o painel. Clique com o botão direito ou pressione Home para redefinir a rotação. Salve pela barra de ferramentas do editor."
+    },
+    {
+      "source": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Arraste a partir de qualquer ponto de Inclinar para mudar a perspectiva para os lados e para cima/baixo. Clique com o botão direito ou pressione Home para redefinir a rotação. Salve pela barra de ferramentas do editor."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Arraste os pontos para os centros dos círculos. Arraste o espaço vazio para mover; canto inferior direito para redimensionar. {0}"
     },
@@ -137811,12 +137879,12 @@
       "translation": "Arraste cada ponto vermelho numerado para o centro do círculo: 1–3 na linha superior, 4–6 na linha inferior. Cada centro pode ser ajustado separadamente."
     },
     {
-      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
-      "translation": "Arraste as visualizações com bordas para os monitores e posições desejadas. O conteúdo de visualização vem de um estado de jogo falso em forma de dados de sobreposição reais."
+      "source": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+      "translation": "Arraste para a esquerda ou direita para girar; as setas esquerda/direita giram o painel; Home redefine a rotação."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-      "translation": "Arraste o centro do orbe para inclinar; arraste sua borda para rolar. Clique com o botão direito no orbe para redefinir a rotação ou pressione Home. Salve com a barra de ferramentas do editor."
+      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
+      "translation": "Arraste as visualizações com bordas para os monitores e posições desejadas. O conteúdo de visualização vem de um estado de jogo falso em forma de dados de sobreposição reais."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -154175,8 +154243,16 @@
       "translation": "Rochoso | 268.661 CR/t"
     },
     {
+      "source": "Roll",
+      "translation": "Girar"
+    },
+    {
       "source": "Roll (degrees)",
       "translation": "Rolar (graus)"
+    },
+    {
+      "source": "Roll this cockpit panel",
+      "translation": "Girar este painel da cabine"
     },
     {
       "source": "Rollback backup: {0}",
@@ -154197,10 +154273,6 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Gire contornos e guias de barra no sentido anti-horário em 2 graus"
-    },
-    {
-      "source": "Rotate this cockpit panel",
-      "translation": "Gire este painel da cabine"
     },
     {
       "source": "RotateAlphaAerial",
@@ -162617,6 +162689,14 @@
     {
       "source": "Tier {0}: {1}",
       "translation": "Nível {0}: {1}"
+    },
+    {
+      "source": "Tilt",
+      "translation": "Inclinar"
+    },
+    {
+      "source": "Tilt this cockpit panel",
+      "translation": "Inclinar este painel da cabine"
     },
     {
       "source": "Time H/M/S:",
@@ -180477,6 +180557,14 @@
       "translation": "Точки уклона предварительно просматриваются на активной карте поселения. На диске ничего не изменится, пока вы не выберете место назначения экспорта."
     },
     {
+      "source": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Перетаскивайте любую точку кнопки «Крен» влево или вправо, чтобы повернуть панель. Щёлкните правой кнопкой мыши или нажмите Home, чтобы сбросить поворот. Сохраните изменения на панели инструментов редактора."
+    },
+    {
+      "source": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "Перетаскивайте любую точку кнопки «Наклон», чтобы менять перспективу влево/вправо и вверх/вниз. Щёлкните правой кнопкой мыши или нажмите Home, чтобы сбросить поворот. Сохраните изменения на панели инструментов редактора."
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "Перетащите точки в центры кругов. Перетащите пустое место для перемещения; нижний правый угол для изменения размера. {0}"
     },
@@ -180485,12 +180573,12 @@
       "translation": "Перетащите каждую пронумерованную красную точку в центр ее круга: 1–3 в верхнем ряду, 4–6 в нижнем. Каждый центр можно настроить отдельно."
     },
     {
-      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
-      "translation": "Перетащите границы предварительного просмотра на нужные мониторы и в нужные позиции. Содержимое предварительного просмотра создается из ложного состояния игры, имеющего форму реальных данных наложения."
+      "source": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+      "translation": "Перетаскивайте влево или вправо для поворота; стрелки влево/вправо поворачивают панель; Home сбрасывает поворот."
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-      "translation": "Перетащите центр сферы, чтобы наклонить ее; перетащите его край, чтобы катиться. Щелкните шар правой кнопкой мыши, чтобы сбросить вращение, или нажмите «Домой». Сохраните с помощью панели инструментов редактора."
+      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
+      "translation": "Перетащите границы предварительного просмотра на нужные мониторы и в нужные позиции. Содержимое предварительного просмотра создается из ложного состояния игры, имеющего форму реальных данных наложения."
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -196849,8 +196937,16 @@
       "translation": "Рокки | 268 661 CR/т"
     },
     {
+      "source": "Roll",
+      "translation": "Крен"
+    },
+    {
       "source": "Roll (degrees)",
       "translation": "Крен (градусы)"
+    },
+    {
+      "source": "Roll this cockpit panel",
+      "translation": "Повернуть эту панель кабины"
     },
     {
       "source": "Rollback backup: {0}",
@@ -196871,10 +196967,6 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "Поворот контуров и направляющих стержней против часовой стрелки на 2 градуса"
-    },
-    {
-      "source": "Rotate this cockpit panel",
-      "translation": "Поверните эту панель кабины"
     },
     {
       "source": "RotateAlphaAerial",
@@ -205291,6 +205383,14 @@
     {
       "source": "Tier {0}: {1}",
       "translation": "Уровень {0}: {1}"
+    },
+    {
+      "source": "Tilt",
+      "translation": "Наклон"
+    },
+    {
+      "source": "Tilt this cockpit panel",
+      "translation": "Наклонить эту панель кабины"
     },
     {
       "source": "Time H/M/S:",
@@ -223151,6 +223251,14 @@
       "translation": "在活动的定居点地图上预览吃水点。在您选择导出目标之前，磁盘上不会发生任何变化。"
     },
     {
+      "source": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "从“旋转”按钮的任意位置向左或向右拖动，可旋转面板。右键单击或按 Home 键可重置旋转。使用编辑器工具栏保存。"
+    },
+    {
+      "source": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "从“倾斜”按钮的任意位置拖动，可调整左右和上下方向的透视角度。右键单击或按 Home 键可重置旋转。使用编辑器工具栏保存。"
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "将点拖到圆心上。拖动空白处进行移动；右下角可以调整大小。 {0}"
     },
@@ -223159,12 +223267,12 @@
       "translation": "将每个编号的红点拖动到其圆中心：1-3 穿过顶行，4-6 穿过底部。每个中心都可以单独调整。"
     },
     {
-      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
-      "translation": "将带边框的预览拖动到所需的监视器和位置。预览内容来自形状像真实叠加数据的虚假游戏状态。"
+      "source": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+      "translation": "向左或向右拖动以旋转；左右方向键可旋转面板；Home 键可重置旋转。"
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-      "translation": "拖动球体中心倾斜；拖动其边缘滚动。右键单击球体以重置旋转，或按 Home。使用编辑器工具栏保存。"
+      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
+      "translation": "将带边框的预览拖动到所需的监视器和位置。预览内容来自形状像真实叠加数据的虚假游戏状态。"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -239523,8 +239631,16 @@
       "translation": "洛基 | 268,661 冷轧/吨"
     },
     {
+      "source": "Roll",
+      "translation": "旋转"
+    },
+    {
       "source": "Roll (degrees)",
       "translation": "滚动（度）"
+    },
+    {
+      "source": "Roll this cockpit panel",
+      "translation": "旋转此驾驶舱面板"
     },
     {
       "source": "Rollback backup: {0}",
@@ -239545,10 +239661,6 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "将轮廓和导杆逆时针旋转 2 度"
-    },
-    {
-      "source": "Rotate this cockpit panel",
-      "translation": "旋转这个驾驶舱面板"
     },
     {
       "source": "RotateAlphaAerial",
@@ -247965,6 +248077,14 @@
     {
       "source": "Tier {0}: {1}",
       "translation": "第{0}：{1}"
+    },
+    {
+      "source": "Tilt",
+      "translation": "倾斜"
+    },
+    {
+      "source": "Tilt this cockpit panel",
+      "translation": "倾斜此驾驶舱面板"
     },
     {
       "source": "Time H/M/S:",
@@ -265825,6 +265945,14 @@
       "translation": "* DRAFT POINTS ARE PREVIEWED ON THE ACTIVE SETTLEMENT MAP. NOTHING CHANGES ON DISK UNTIL YOU CHOOSE AN EXPORT DESTINATION. >>>!"
     },
     {
+      "source": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "* DRAG ANYWHERE ON ROLL LEFT OR RIGHT TO SPIN THE PANEL. RIGHT-CLICK TO RESET ROTATION, OR PRESS HOME. SAVE WITH THE EDITOR TOOLBAR. >>>!"
+    },
+    {
+      "source": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+      "translation": "* DRAG ANYWHERE ON TILT TO CHANGE PERSPECTIVE LEFT/RIGHT AND UP/DOWN. RIGHT-CLICK TO RESET ROTATION, OR PRESS HOME. SAVE WITH THE EDITOR TOOLBAR. >>>!"
+    },
+    {
       "source": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
       "translation": "* DRAG DOTS ONTO CIRCLE CENTRES. DRAG EMPTY SPACE TO MOVE; LOWER-RIGHT CORNER TO RESIZE. {0} >>>!"
     },
@@ -265833,12 +265961,12 @@
       "translation": "* DRAG EACH NUMBERED RED DOT ONTO ITS CIRCLE CENTRE: 1–3 ACROSS THE TOP ROW, 4–6 ACROSS THE BOTTOM. EACH CENTRE CAN BE ADJUSTED SEPARATELY. >>>!"
     },
     {
-      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
-      "translation": "* DRAG THE BORDERED PREVIEWS TO THE DESIRED MONITORS AND POSITIONS. PREVIEW CONTENT COMES FROM A FALSE GAME STATE SHAPED LIKE REAL OVERLAY DATA. >>>!"
+      "source": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+      "translation": "* DRAG LEFT OR RIGHT TO ROLL; LEFT AND RIGHT KEYS ROLL; HOME RESETS ROTATION. >>>!"
     },
     {
-      "source": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-      "translation": "* DRAG THE ORB CENTER TO TILT; DRAG ITS RIM TO ROLL. RIGHT-CLICK THE ORB TO RESET ROTATION, OR PRESS HOME. SAVE WITH THE EDITOR TOOLBAR. >>>!"
+      "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
+      "translation": "* DRAG THE BORDERED PREVIEWS TO THE DESIRED MONITORS AND POSITIONS. PREVIEW CONTENT COMES FROM A FALSE GAME STATE SHAPED LIKE REAL OVERLAY DATA. >>>!"
     },
     {
       "source": "Drag to change width. Height follows content.",
@@ -282197,8 +282325,16 @@
       "translation": "* ROCKY | 268,661 CR/T >>>!"
     },
     {
+      "source": "Roll",
+      "translation": "* ROLL >>>!"
+    },
+    {
       "source": "Roll (degrees)",
       "translation": "* ROLL (DEGREES) >>>!"
+    },
+    {
+      "source": "Roll this cockpit panel",
+      "translation": "* ROLL THIS COCKPIT PANEL >>>!"
     },
     {
       "source": "Rollback backup: {0}",
@@ -282219,10 +282355,6 @@
     {
       "source": "Rotate outlines and bar guides counterclockwise by 2 degrees",
       "translation": "* ROTATE OUTLINES AND BAR GUIDES COUNTERCLOCKWISE BY 2 DEGREES >>>!"
-    },
-    {
-      "source": "Rotate this cockpit panel",
-      "translation": "* ROTATE THIS COCKPIT PANEL >>>!"
     },
     {
       "source": "RotateAlphaAerial",
@@ -290639,6 +290771,14 @@
     {
       "source": "Tier {0}: {1}",
       "translation": "* TIER {0}: {1} >>>!"
+    },
+    {
+      "source": "Tilt",
+      "translation": "* TILT >>>!"
+    },
+    {
+      "source": "Tilt this cockpit panel",
+      "translation": "* TILT THIS COCKPIT PANEL >>>!"
     },
     {
       "source": "Time H/M/S:",

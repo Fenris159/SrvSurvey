@@ -208,8 +208,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             Assert.True(handle.IsEffectivelyVisible);
             Assert.True(handle.IsEnabled);
             Assert.Contains(
-                "Right-click the orb to reset",
-                Assert.IsType<string>(ToolTip.GetTip(Assert.IsType<Border>(handle.Parent)))
+                "Right-click to reset rotation",
+                Assert.IsType<string>(ToolTip.GetTip(preview.FindControl<Border>("PanelRotationHandleBorder")!))
             );
             PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
             OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
@@ -226,10 +226,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             Assert.Equal(metrics.PanelSize, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
             Assert.False(model.IsOverlaySettingsOpen);
             Assert.False(cockpit.Enabled);
-            center = handle.TranslatePoint(new Point(15, 15), preview)!.Value;
-            PixelPoint rollTarget = preview.PointToScreen(center + new Vector(0, 10));
-            Border button = preview.FindControl<Border>("PanelRotationHandleBorder")!;
-            Point outerRim = button.TranslatePoint(new Point(31.5, 16), preview)!.Value;
+            Border button = preview.FindControl<Border>("PanelRollHandleBorder")!;
+            Point outerRim = button.TranslatePoint(new Point(47.5, 24), preview)!.Value;
+            PixelPoint rollTarget = preview.PointToScreen(outerRim + new Vector(150, 0));
             preview.MouseDown(outerRim, MouseButton.Left, RawInputModifiers.LeftMouseButton);
             Assert.False(ManagedOverlayWindowDragSession.IsDragging(preview));
             preview.MouseMove(preview.PointToClient(rollTarget), RawInputModifiers.LeftMouseButton);

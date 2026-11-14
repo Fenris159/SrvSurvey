@@ -20,6 +20,89 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CockpitPanelAnglePresentationTests
 {
+    [AvaloniaTheory]
+    [InlineData(2410, -6)]
+    [InlineData(-2410, 6)]
+    public void DedicatedRollWrapsSeveralTurnsInOnePointerMove(double horizontalMotion, double expected)
+    {
+        var handle = new PanelRotationOrb
+        {
+            Width = 30,
+            Height = 30,
+            IsRollControl = true,
+        };
+        var window = new Window
+        {
+            Width = 200,
+            Height = 200,
+            Content = handle,
+        };
+        try
+        {
+            window.Show();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Point start = handle.TranslatePoint(new Point(15, 15), window)!.Value;
+            window.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            window.MouseMove(start + new Vector(horizontalMotion, 400), RawInputModifiers.LeftMouseButton);
+            Assert.Equal(expected, handle.Roll, 3);
+            window.MouseUp(start + new Vector(horizontalMotion, 400), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(expected, handle.Roll, 3);
+            Assert.Equal(0, handle.Yaw);
+            Assert.Equal(0, handle.Pitch);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false, 1, 1)]
+    [InlineData(false, 47, 47)]
+    [InlineData(true, 1, 1)]
+    [InlineData(true, 47, 47)]
+    public void SeparateTiltAndRollButtonsUseTheirWholeArea(bool roll, double x, double y)
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-separate-handles-{Guid.NewGuid():N}", "ui.json");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(path));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotFSSInfo"));
+        try
+        {
+            preview.ConfigureSize(new OverlayPanelSize(300, 200));
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PositionPanel(preview, new PixelPoint(300, 200));
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            Border tilt = preview.FindControl<Border>("PanelRotationHandleBorder")!;
+            Border spin = preview.FindControl<Border>("PanelRollHandleBorder")!;
+            Assert.Equal(new Size(48, 48), tilt.Bounds.Size);
+            Assert.Equal(new Size(48, 48), spin.Bounds.Size);
+            Point tiltOrigin = tilt.TranslatePoint(default, preview)!.Value;
+            Point rollOrigin = spin.TranslatePoint(default, preview)!.Value;
+            Assert.Equal(tiltOrigin.X, rollOrigin.X, 3);
+            Assert.Equal(8, rollOrigin.Y - tiltOrigin.Y - 48, 3);
+            Border button = roll ? spin : tilt;
+            Point start = button.TranslatePoint(new Point(x, y), preview)!.Value;
+            PixelPoint target = preview.PointToScreen(start + new Vector(20, -10));
+            preview.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            preview.MouseMove(preview.PointToClient(target), RawInputModifiers.LeftMouseButton);
+            preview.MouseUp(preview.PointToClient(target), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(
+                roll ? new CockpitPanelPose(Roll: -12) : new CockpitPanelPose(12, 6),
+                model.Resolve("PlotFSSInfo")
+            );
+            AssertHandleOutsideProjectedCorner(preview);
+            Point reset = button.TranslatePoint(new Point(24, 24), preview)!.Value;
+            preview.MouseDown(reset, MouseButton.Right, RawInputModifiers.RightMouseButton);
+            preview.MouseUp(reset, MouseButton.Right, RawInputModifiers.None);
+            Assert.Equal(new CockpitPanelPose(), model.Resolve("PlotFSSInfo"));
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void OffCenterPanelKeepsItsKnobOutsideWhenProjectionWindingReverses()
     {
@@ -110,7 +193,12 @@ public sealed class CockpitPanelAnglePresentationTests
     [InlineData(true)]
     public void MovingTheCapturedKnobDoesNotRotateForAStationaryScreenPointer(bool roll)
     {
-        var orb = new PanelRotationOrb { Width = 30, Height = 30 };
+        var orb = new PanelRotationOrb
+        {
+            Width = 30,
+            Height = 30,
+            IsRollControl = roll,
+        };
         var canvas = new Canvas
         {
             Width = 400,
@@ -129,7 +217,7 @@ public sealed class CockpitPanelAnglePresentationTests
         {
             window.Show();
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
-            Point center = orb.TranslatePoint(new Point(roll ? 28 : 15, 15), window)!.Value;
+            Point center = orb.TranslatePoint(new Point(15, 15), window)!.Value;
             PixelPoint held = window.PointToScreen(center);
             window.MouseDown(center, MouseButton.Left, RawInputModifiers.LeftMouseButton);
             Canvas.SetLeft(orb, 125);
@@ -142,7 +230,7 @@ public sealed class CockpitPanelAnglePresentationTests
             Assert.Equal(0, orb.Roll);
             if (roll)
             {
-                PixelPoint down = new(held.X - 13, held.Y + 60);
+                PixelPoint down = new(held.X + 150, held.Y);
                 window.MouseMove(window.PointToClient(down), RawInputModifiers.LeftMouseButton);
                 Assert.Equal(-90, orb.Roll, 3);
                 held = down;
@@ -302,9 +390,16 @@ public sealed class CockpitPanelAnglePresentationTests
             Assert.True(orb.IsEffectivelyVisible);
             Assert.True(orb.IsEnabled);
             AutomationPeer peer = ControlAutomationPeer.CreatePeerForElement(orb);
-            Assert.Equal("Rotate this cockpit panel", peer.GetName());
+            Assert.Equal("Tilt this cockpit panel", peer.GetName());
             Assert.True(peer.IsControlElement());
             Assert.True(peer.IsKeyboardFocusable());
+            PanelRotationOrb rollHandle = preview.FindControl<PanelRotationOrb>("PanelRollHandle")!;
+            AutomationPeer rollPeer = ControlAutomationPeer.CreatePeerForElement(rollHandle);
+            Assert.Equal("Roll this cockpit panel", rollPeer.GetName());
+            Assert.Equal(
+                "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+                rollPeer.GetHelpText()
+            );
             Assert.Equal(
                 "Arrow keys tilt; Control plus Left or Right rolls; Home resets rotation.",
                 peer.GetHelpText()
@@ -346,6 +441,14 @@ public sealed class CockpitPanelAnglePresentationTests
             preview.KeyPress(Key.Home, RawInputModifiers.None, PhysicalKey.Home, null);
             Assert.Equal(new CockpitPanelPose(), model.Resolve("PlotRouteBio"));
             Assert.Equal("Yaw 0°, pitch 0°, roll 0°", peer.GetItemStatus());
+            Assert.True(rollHandle.Focus());
+            preview.KeyPress(Key.Right, RawInputModifiers.None, PhysicalKey.ArrowRight, null);
+            preview.KeyPress(Key.Up, RawInputModifiers.None, PhysicalKey.ArrowUp, null);
+            Assert.Equal(new CockpitPanelPose(Roll: -1), model.Resolve("PlotRouteBio"));
+            preview.KeyPress(Key.Left, RawInputModifiers.Shift, PhysicalKey.ArrowLeft, null);
+            Assert.Equal(new CockpitPanelPose(Roll: 4), model.Resolve("PlotRouteBio"));
+            preview.KeyPress(Key.Home, RawInputModifiers.None, PhysicalKey.Home, null);
+            Assert.Equal(new CockpitPanelPose(), model.Resolve("PlotRouteBio"));
         }
         finally
         {
@@ -528,7 +631,7 @@ public sealed class CockpitPanelAnglePresentationTests
     private static void AssertHandleOutsideProjectedCorner(OverlayPositionPreviewWindow preview)
     {
         Border outline = preview.FindControl<Border>("ProjectionReferenceOutline")!;
-        PanelRotationOrb orb = preview.FindControl<PanelRotationOrb>("PanelRotationHandle")!;
+        StackPanel handles = preview.FindControl<StackPanel>("PanelAngleHandles")!;
         Point top = outline.TranslatePoint(new Point(outline.Bounds.Width, 0), preview)!.Value;
         Point corner = outline.TranslatePoint(new Point(outline.Bounds.Width, outline.Bounds.Height), preview)!.Value;
         Point inside = outline
@@ -537,14 +640,20 @@ public sealed class CockpitPanelAnglePresentationTests
         Vector edge = corner - top;
         Vector inward = inside - top;
         double sign = Math.Sign(edge.X * inward.Y - edge.Y * inward.X);
-        foreach (Point local in new[] { new Point(0, 0), new Point(30, 0), new Point(30, 30), new Point(0, 30) })
+        double furthestAlongEdge = double.NegativeInfinity;
+        foreach (Point local in new[] { new Point(0, 0), new Point(48, 0), new Point(48, 104), new Point(0, 104) })
         {
-            Vector relative = orb.TranslatePoint(local, preview)!.Value - top;
+            Point screen = handles.TranslatePoint(local, preview)!.Value;
+            Vector relative = screen - top;
             double distance = sign * (edge.X * relative.Y - edge.Y * relative.X) / edge.Length;
-            Assert.True(distance <= -8, "The complete knob must remain outside the projected border with a clear gap.");
+            Assert.True(
+                distance <= -7.99,
+                "Both complete buttons must remain outside the projected border with an eight-pixel gap."
+            );
+            Vector fromCorner = screen - corner;
+            double along = (fromCorner.X * edge.X + fromCorner.Y * edge.Y) / edge.Length;
+            furthestAlongEdge = Math.Max(furthestAlongEdge, along);
         }
-        Point center = orb.TranslatePoint(new Point(15, 15), preview)!.Value;
-        Vector separation = center - corner;
-        Assert.InRange(separation.Length, 24, 42);
+        Assert.InRange(furthestAlongEdge, -.01, .01);
     }
 }

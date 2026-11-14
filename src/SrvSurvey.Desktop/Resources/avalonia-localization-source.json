@@ -19623,6 +19623,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Drag anywhere on Roll left or right to spin the panel. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.Cockpit.cs"
+  },
+  {
+    "Text": "Drag anywhere on Tilt to change perspective left/right and up/down. Right-click to reset rotation, or press Home. Save with the editor toolbar.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.Cockpit.cs"
+  },
+  {
     "Text": "Drag dots onto circle centres. Drag empty space to move; lower-right corner to resize. {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -19639,20 +19655,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Drag left or right to roll; Left and Right keys roll; Home resets rotation.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/PanelRotationOrb.cs"
+  },
+  {
     "Text": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Drag the orb center to tilt; drag its rim to roll. Right-click the orb to reset rotation, or press Home. Save with the editor toolbar.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.Cockpit.cs"
   },
   {
     "Text": "Drag to change width. Height follows content.",
@@ -52483,12 +52499,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Roll",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
+  },
+  {
     "Text": "Roll (degrees)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Roll this cockpit panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "Rollback backup: {0}",
@@ -52529,14 +52561,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/MiningCalibrationWindow.cs"
-  },
-  {
-    "Text": "Rotate this cockpit panel",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "RotateAlphaAerial",
@@ -69414,6 +69438,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
+  },
+  {
+    "Text": "Tilt",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
+  },
+  {
+    "Text": "Tilt this cockpit panel",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"
   },
   {
     "Text": "Time H/M/S:",
