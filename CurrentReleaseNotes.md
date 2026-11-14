@@ -25,6 +25,8 @@ capture catalogs.
   48-pixel controls stacked vertically outside its projected corner, with an
   eight-pixel gap. Drag anywhere on **Tilt** to change the left/right and up/down
   perspective. Drag anywhere on **Roll** left or right to spin the panel.
+  Roll uses a gentle 15 degrees per 100 logical screen pixels of movement,
+  consistently across display scaling; arrow keys allow one-degree adjustments.
   Dragging continues beyond either button until release. Right-click either
   control to reset the panel's rotation. The border, title tab, and contents
   rotate together; the right-click settings menu stays focused on appearance.

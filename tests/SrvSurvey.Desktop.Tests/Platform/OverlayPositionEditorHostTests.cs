@@ -228,7 +228,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             Assert.False(cockpit.Enabled);
             Border button = preview.FindControl<Border>("PanelRollHandleBorder")!;
             Point outerRim = button.TranslatePoint(new Point(47.5, 24), preview)!.Value;
-            PixelPoint rollTarget = preview.PointToScreen(outerRim + new Vector(150, 0));
+            PixelPoint rollTarget = preview.PointToScreen(outerRim + new Vector(600, 0));
             preview.MouseDown(outerRim, MouseButton.Left, RawInputModifiers.LeftMouseButton);
             Assert.False(ManagedOverlayWindowDragSession.IsDragging(preview));
             preview.MouseMove(preview.PointToClient(rollTarget), RawInputModifiers.LeftMouseButton);

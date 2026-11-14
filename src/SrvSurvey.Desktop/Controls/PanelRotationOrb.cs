@@ -11,6 +11,8 @@ namespace SrvSurvey.Desktop.Controls;
 /// <summary>A dedicated tilt or roll handle with a full-area captured drag gesture.</summary>
 public sealed class PanelRotationOrb : Control
 {
+    private const double RollDegreesPerLogicalPixel = 0.15;
+
     public static readonly StyledProperty<double> YawProperty = AvaloniaProperty.Register<PanelRotationOrb, double>(
         nameof(Yaw)
     );
@@ -244,7 +246,9 @@ public sealed class PanelRotationOrb : Control
         {
             SetCurrentValue(
                 RollProperty,
-                NormalizeRoll(Roll - (current.X - previousScreenPoint.X) * 0.6 / dragRenderScaling)
+                NormalizeRoll(
+                    Roll - (current.X - previousScreenPoint.X) * RollDegreesPerLogicalPixel / dragRenderScaling
+                )
             );
         }
         else

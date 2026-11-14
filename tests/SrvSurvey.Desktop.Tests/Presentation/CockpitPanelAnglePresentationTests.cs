@@ -106,9 +106,18 @@ public sealed class CockpitPanelAnglePresentationTests
     }
 
     [AvaloniaTheory]
-    [InlineData(2410, -6)]
-    [InlineData(-2410, 6)]
-    public void DedicatedRollWrapsSeveralTurnsInOnePointerMove(double horizontalMotion, double expected)
+    [InlineData(100, 1, -15)]
+    [InlineData(-100, 1, 15)]
+    [InlineData(100, 1.5, -15)]
+    [InlineData(100, 2, -15)]
+    [InlineData(1, 1, -.15)]
+    [InlineData(9640, 1, -6)]
+    [InlineData(-9640, 1, 6)]
+    public void DedicatedRollUsesGentleDpiIndependentMotionAndWrapsLongDrags(
+        double horizontalMotion,
+        double renderScaling,
+        double expected
+    )
     {
         var handle = new PanelRotationOrb
         {
@@ -125,6 +134,7 @@ public sealed class CockpitPanelAnglePresentationTests
         try
         {
             window.Show();
+            window.SetRenderScaling(renderScaling);
             using WriteableBitmap? frame = window.CaptureRenderedFrame();
             Point start = handle.TranslatePoint(new Point(15, 15), window)!.Value;
             window.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
@@ -168,7 +178,7 @@ public sealed class CockpitPanelAnglePresentationTests
             Assert.Equal(8, rollOrigin.Y - tiltOrigin.Y - 48, 3);
             Border button = roll ? spin : tilt;
             Point start = button.TranslatePoint(new Point(x, y), preview)!.Value;
-            PixelPoint target = preview.PointToScreen(start + new Vector(20, -10));
+            PixelPoint target = preview.PointToScreen(start + new Vector(roll ? 80 : 20, -10));
             preview.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
             preview.MouseMove(preview.PointToClient(target), RawInputModifiers.LeftMouseButton);
             preview.MouseUp(preview.PointToClient(target), MouseButton.Left, RawInputModifiers.None);
@@ -315,7 +325,7 @@ public sealed class CockpitPanelAnglePresentationTests
             Assert.Equal(0, orb.Roll);
             if (roll)
             {
-                PixelPoint down = new(held.X + 150, held.Y);
+                PixelPoint down = new(held.X + 600, held.Y);
                 window.MouseMove(window.PointToClient(down), RawInputModifiers.LeftMouseButton);
                 Assert.Equal(-90, orb.Roll, 3);
                 held = down;
