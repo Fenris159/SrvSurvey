@@ -1,7 +1,9 @@
+using System.Numerics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 
@@ -18,11 +20,31 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
     private readonly OverlayDispatcherTimer timer;
     private CombinedOverlayWindow? host;
     private PixelRect hostBounds;
+    private PixelRect gameViewportBounds;
     private OverlayPreparationResult? hostPreparation;
     private PixelRect[] appliedInputRegions = [];
     private OverlayInteractionResult? appliedInputResult;
     private DragState? drag;
     private bool disposed;
+    private Matrix4x4? cockpitCameraChange;
+    private Func<string, CockpitPanelPose>? cockpitPoseProvider;
+    private CockpitProjectionLens? cockpitLens;
+
+    /// <summary>Reprojects live controls at camera cadence while preserving their existing layout, content and visibility.</summary>
+    internal void SetCockpitProjection(
+        Matrix4x4? cameraChange,
+        Func<string, CockpitPanelPose>? poseProvider,
+        CockpitProjectionLens? lens = null
+    )
+    {
+        cockpitCameraChange = cameraChange;
+        cockpitPoseProvider = poseProvider;
+        cockpitLens = lens;
+        foreach (Entry entry in entries.Values)
+        {
+            UpdateCockpitEntry(entry);
+        }
+    }
 
     public CombinedOverlayPresentationController(
         IOverlayPlatformService nativePlatform,
@@ -284,7 +306,8 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return;
         }
 
-        hostBounds = gameWindow.OverlayCanvasBounds ?? gameWindow.ClientBounds;
+        gameViewportBounds = gameWindow.ClientBounds;
+        hostBounds = gameWindow.OverlayCanvasBounds ?? gameViewportBounds;
         window.Position = hostBounds.Position;
         window.Width = hostBounds.Width / screen.Scaling;
         window.Height = hostBounds.Height / screen.Scaling;
@@ -333,6 +356,46 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return;
         }
 
+        UpdateCockpitEntry(entry);
+    }
+
+    /// <summary>Updates only visual projection at camera cadence, leaving content measurement on its normal cadence.</summary>
+    private void UpdateCockpitEntry(Entry entry)
+    {
+        if (host is null || entry.Projection is not { } projection)
+        {
+            return;
+        }
+        ContentControl presenter = entry.Presenter;
+        bool shouldPresent = registry.ShouldPresent(entry.Window);
+        presenter.IsVisible = shouldPresent;
+        presenter.IsHitTestVisible = shouldPresent && interactiveWindows.Contains(entry.Window);
+        if (cockpitCameraChange is { } camera && cockpitPoseProvider is { } poses && interactiveWindows.Count == 0)
+        {
+            Size size = GetLogicalSize(entry);
+            double viewportLeft = (gameViewportBounds.X - hostBounds.X) / host.RenderScaling;
+            double viewportTop = (gameViewportBounds.Y - hostBounds.Y) / host.RenderScaling;
+            Matrix? perspective = CockpitPanelProjection.Create(
+                new Rect(projection.Left - viewportLeft, projection.Top - viewportTop, size.Width, size.Height),
+                new Size(gameViewportBounds.Width / host.RenderScaling, gameViewportBounds.Height / host.RenderScaling),
+                poses(entry.PlotterName),
+                camera,
+                cockpitLens
+            );
+            perspective = perspective * Matrix.CreateTranslation(viewportLeft, viewportTop);
+            presenter.IsVisible = perspective is not null && shouldPresent;
+            presenter.IsHitTestVisible = false;
+            presenter.RenderTransformOrigin = RelativePoint.TopLeft;
+            if (perspective is { } matrix)
+            {
+                entry.CockpitTransform.Matrix = matrix;
+                presenter.RenderTransform = entry.CockpitTransform;
+            }
+            Canvas.SetLeft(presenter, 0);
+            Canvas.SetTop(presenter, 0);
+            return;
+        }
+        presenter.RenderTransform = null;
         Canvas.SetLeft(presenter, projection.Left);
         Canvas.SetTop(presenter, projection.Top);
     }
@@ -648,6 +711,8 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         public string PlotterName { get; } = plotterName;
 
         public ContentControl Presenter { get; } = presenter;
+
+        public MatrixTransform CockpitTransform { get; } = new();
 
         public Border Placeholder { get; } = placeholder;
 

@@ -1,98 +1,98 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.11
+# SrvSurvey-XP 2.1.3.0-rc.77.15
 
-RC77.11 expands backup coverage for saved preferences, Colonization planning,
-and workspace continuity, keeps screenshot and hardware configuration specific
-to each computer, makes outstanding ring scans clearer in System status, and
-improves shared journal data quality while preserving each provider's format.
+RC77.15 adds an opt-in cockpit-following overlay prototype for normal monitors,
+perspective controls in the overlay editor, and independently updated camera
+capture catalogs.
 
 ## What's changed
 
-### Portable preferences and saved work
+### Cockpit-following overlay panels
 
-- **Restore Colonization planning:** Backups now include plans, shopping and
-  wish lists, retained project scope, checked carriers, project focus, and
-  hidden plans for shared and Commander-specific settings.
-- **Keep Exploration choices:** Exploration POI preferences, automatic value-reset
-  preference, active Journey reference, and active Boxel/sphere configuration
-  and progress are included alongside existing saved searches and Journey data.
-- **Preserve recorded progress:** Include empty-boxel records, Ram Tah log
-  progress, and local quest development data without duplicating quest recovery
-  archives.
-- **Resume workspace tabs:** Exploration, Colonization, and Diagnostics now retain
-  their selected tabs across restarts and restores, alongside the workspaces
-  already covered.
+- **Follow normal cockpit freelook:** Enable the experimental cockpit-camera
+  option in Global overlay settings to anchor overlay panels to the cockpit.
+  The optional D3D11 bridge reads live camera/cockpit transforms; normal use
+  does not require a VR headset or frame-analysis captures.
+- **Calibrate the centered view:** Center cockpit freelook and select the
+  calibration control. Camera availability and calibration status are shown
+  separately from capture-catalog update status.
+- **Keep a usable fallback:** If verified camera data is unavailable or stale,
+  panels return to their ordinary desktop placements. Disabling the option
+  stops capture after its short receiver lease expires.
 
-### Configuration for the original machine
+### Perspective controls in the overlay editor
 
-- **Keep screenshot settings local to each computer:** Back up all screenshot
-  processing options and folders in the machine section. They restore only when
-  explicitly restoring hardware settings on the originating machine and operating
-  system. Screenshot images and conversion queues are not backed up.
-- **Recover local setup:** Include the preferred startup Commander, journal-folder
-  configuration, and VR mode/VDXR calibration overrides. Portable restores leave
-  the destination computer's configuration unchanged.
-- **Read VR layouts consistently:** Capture and restore calibration overrides
-  under their owning layout lock without following linked folders outside the
-  profile.
+- **Tilt and roll with separate controls:** Each preview keeps two labeled,
+  48-pixel controls stacked vertically outside its projected corner, with an
+  eight-pixel gap. Drag anywhere on **Tilt** to change the left/right and up/down
+  perspective. Drag anywhere on **Roll** left or right to spin the panel.
+  Roll uses a gentle 15 degrees per 100 logical screen pixels of movement,
+  consistently across display scaling; arrow keys allow one-degree adjustments.
+  Dragging continues beyond either button until release. Right-click either
+  control to reset the panel's rotation. The border, title tab, and contents
+  rotate together; the right-click settings menu stays focused on appearance.
+- **Keep size controls together:** Use the existing right-click scale controls
+  to change panel size. The angle controls only change orientation; arrow keys tilt and
+  Control plus Left/Right rolls; Home resets rotation. Accessible angle values update
+  while editing. Perspective settings follow the editor's existing save/cancel flow.
+  Minimum scale can be restored without a layout error.
+  **Reset size** also restores normal depth for panels saved by an earlier
+  prototype, retaining their angles and honoring Save or Cancel.
+  Angles can be prepared while cockpit tracking is off, without enabling capture.
+- **Keep dragging responsive:** Screen-based input avoids rotation jumps when the
+  knob moves. Native window updates settle before another bounds adjustment,
+  preventing the editor freeze encountered while rotating on Linux. The full
+  button, including its border and label, starts its dedicated gesture.
+  Queued gestures retain their own pointer positions, and deferred bounds fits
+  retain the latest accepted panel position. Changing display scaling keeps
+  the controls correctly sized and responsive.
+- **Match the live perspective:** Preview projection uses the panel's actual
+  position, display and panel scales, and the calibrated game lens when available.
+  Rotated content can render beyond its original frame within the game viewport.
+  Dragging keeps the grabbed panel point stable as its projected bounds change;
+  ordinary desktop previews remain visible outside the game viewport.
+  Saved angles stay relative to the cockpit: looking toward an angled panel
+  changes its perspective naturally. The editor shows the centered view.
+  Extreme angles retain a readable recovery frame and reset handle; off-center
+  panels keep the knob outside their border. Right-clicking the visible rotated
+  border still opens the appearance controls.
+- **Keep editing controls reachable:** Expanded settings scroll on shorter
+  displays while the editor's save and cancel controls stay visible. Rotation
+  handles remain visible and accessible across themes. The control stack shifts
+  along an exterior edge or chooses another edge near the monitor boundary,
+  keeping both buttons reachable without moving the panel.
+- **Keep settings on this computer:** Cockpit mode and panel angles are
+  machine-specific, use the application's theme resources, and retain existing
+  overlay visibility controls.
 
-### System status overlay panel
+### Independent capture-catalog updates
 
-- **Group rings with their body:** Show one body tag with nested borders
-  separated by 1 px gaps for its unscanned rings instead of separate ring-suffix
-  tags. Count each body once and retain its tag until the body and included rings
-  are mapped.
-- **Use configured theme colors:** Inner-to-outer borders identify rings A, B,
-  and C using General Warning, General Success, and General Success (dim).
-  Each border and its adjoining spacing disappear after its ring is DSS-scanned.
-- **Keep existing controls and context:** Respect Skip DSS of rings and body
-  filters, preserve navigation destination highlighting and the separate
-  biological-body list, and use the same presentation in the overlay editor.
+- **Refresh at launch:** While cockpit mode is enabled, SrvSurvey checks the
+  versioned GitHub catalog and caches newer valid revisions locally. Restart
+  Elite to load a refreshed catalog.
+- **Update layouts without rebuilding:** The catalog describes shader identity,
+  buffer bindings, sizes, strides, offsets, numeric formats, matrix conventions,
+  and detection tolerances. Supported source changes can be delivered without
+  rebuilding the application or bridge DLL.
+- **Allow future bridge-only upgrades:** The application preserves future
+  declarative layout fields. The bridge validates reader compatibility and
+  resource bounds, and falls back to a compatible predecessor or installed
+  profile when a catalog is unsupported. Each reader retains its supported source
+  across successive future-layout updates. New capture algorithms may require
+  a replacement DLL; communication-protocol changes may also require an app update.
+- **Retain working configuration:** Failed checks, malformed content,
+  downgrades, and changed content without a revision bump do not replace the
+  current cache. Downloads are bounded and installed bridge files stay unchanged.
 
-### Shared journal data quality
+## Prototype setup and validation limits
 
-- **Avoid duplicate survey reports:** EDDN, EDSM, and VoxStellar retain
-  bounded content receipts for eligible observations across restarts. New
-  timestamps, changed observations, and different Commanders remain distinct.
-  Personal transactions and EDAstro docking records retain their source identity.
-  EDAstro suppresses duplicate pending survey reports; its aggregate response
-  cannot confirm each item. Rejected reports do not become successful content
-  receipts, including EDSM per-event processing failures.
-- **Keep location context accurate:** Clear EDDN's tracked body after leaving it,
-  retain known Codex body names without inventing body IDs, and prevent EDSM
-  events from inheriting conflicting system, station, or coordinate metadata.
-- **Expand supported EDDN contributions:** Send organic Log/Sample scans with
-  coordinates only from a matching event-time Status snapshot, and detailed
-  outfitting catalogs with module IDs and prices when available. Keep live
-  Fleet Carrier Materials sharing; no
-  FCMaterials CAPI collection is added.
-- **Respect provider rules:** Exclude temporary Operations stations from EDDN,
-  honor each other service's accepted event types, and identify new uploads with
-  the full RC version. Preserve actual market prices, names, physical values,
-  event timestamps, retry pacing, and Stealth Mode delays.
+Cockpit mode is off by default. The optional CameraBridge archive contains the
+Windows x64 DLL for Windows or Linux/Proton, experimental capture profile,
+reversible installer, and setup instructions. Exit Elite before installing or
+removing the bridge; the installer preserves the existing EDHM DLL and backs up
+its configuration. The application does not install the bridge automatically.
 
-### Backup compatibility and safeguards
-
-- **Preserve reopened shopping searches:** Keep each saved search together when
-  project tags are cleared and a search is reopened across successive backups,
-  retaining its latest carrier choices and wishlist. Upgrade older flattened
-  search backups and sync baselines before capture or restore, preserving their
-  field-change history and resolved wishlist choices. Reject contradictory object
-  records or oversized upgraded backups before changing files, and avoid repeated
-  work on long legacy paths.
-- **Recover missing exploration totals:** A preferences-only Commander restore
-  allows the available journal bootstrap to rebuild missing exploration counters.
-  Existing local totals, including saved zero totals, keep their replay guard;
-  other restored progress stays protected.
-- **Handle older screenshot backups:** Move legacy portable screenshot settings
-  into their original machine section when reading backups. Existing machine
-  values take precedence. Restores staged by an older release skip formerly
-  portable screenshot settings; reselect the backup for an explicit same-machine
-  restore that includes them.
-- **Keep private and live data excluded:** Select only approved fields from
-  Commander profiles. Credentials, raw journals, live cargo and mission snapshots,
-  exploration history indexes, provider caches, and pending API uploads stay local.
-- **Catch future coverage gaps:** A settings inventory check requires new stores
-  to declare whether their configuration is portable, machine-specific, or excluded.
-
-Update every linked computer before synchronizing backups with the additional
-settings. Older releases do not recognize all of the new backup sections.
+Recorded cockpit views and an isolated GPU harness validate the camera math,
+freelook response, context recovery, and receiver expiry. The standalone Wine
+harness still encounters a graphics-cleanup failure that also reproduces with
+capture observation disabled. Actual Elite/EDHM startup, normal rendering,
+clean game exit, other ships, and camera modes still require in-game validation.

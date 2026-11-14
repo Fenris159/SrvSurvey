@@ -21,198 +21,205 @@
           BorderBrush="{DynamicResource RavenAccentBrush}"
           BorderThickness="1"
           CornerRadius="10">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+    <Grid RowDefinitions="*,*,*,Auto,Auto,Auto,Auto"
           RowSpacing="5">
-      <Border x:Name="TypographySettingsPanel"
-              Grid.Row="0"
-              Width="570"
-              Margin="0,0,0,4"
-              Padding="12"
-              HorizontalAlignment="Right"
-              Background="{DynamicResource RavenWindowBrush}"
-              BorderBrush="{DynamicResource RavenAccentBrush}"
-              BorderThickness="1"
-              CornerRadius="8"
-              IsVisible="{Binding IsTypographySettingsOpen}">
-        <StackPanel Spacing="8">
-          <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       Text="Text scale from baseline" />
-            <Button Grid.Column="1"
-                    Width="30"
-                    Height="30"
-                    Padding="0"
-                    Command="{Binding ResetTypographyCommand}"
-                    FontSize="20"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    ToolTip.Tip="Reset text and icon scales and brush overrides in this panel"
-                    Content="&#x21BA;" />
-          </Grid>
-          <TextBlock Classes="muted"
-                     FontSize="10"
-                     Text="Each role grows or shrinks independently. Zero uses the theme's baseline size."
-                     TextWrapping="Wrap" />
-          <ItemsControl ItemsSource="{Binding TypographyRoles}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:OverlayTypographyRoleViewModel">
-                <Grid Margin="0,2"
-                      ColumnDefinitions="64,180,*,46"
-                      ColumnSpacing="8">
-                  <TextBlock VerticalAlignment="Center"
-                             FontWeight="SemiBold"
-                             Text="{Binding DisplayName}" />
-                  <ComboBox Grid.Column="1" ItemsSource="{Binding BrushChoices}"
-                            SelectedItem="{Binding SelectedBrush, Mode=TwoWay}" IsEnabled="{Binding CanOverrideBrush}"
-                            HorizontalAlignment="Stretch" ToolTip.Tip="Override this text role with an overlay appearance brush">
-                    <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:OverlayBrushChoice"><TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" /></DataTemplate></ComboBox.ItemTemplate>
-                  </ComboBox>
-                  <Slider Grid.Column="2"
-                          Minimum="-50"
-                          Maximum="100"
-                          TickFrequency="5"
-                          IsSnapToTickEnabled="True"
-                          Value="{Binding Percent, Mode=TwoWay}" />
-                  <TextBlock Grid.Column="3"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"
-                             FontWeight="SemiBold"
-                             Text="{Binding Label}" />
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-      </Border>
-      <Border x:Name="OverlaySettingsPanel"
-              Grid.Row="1"
-              Margin="0,0,0,4"
-              Padding="9"
-              Background="{DynamicResource RavenWindowBrush}"
-              BorderBrush="{DynamicResource RavenAccentBrush}"
-              BorderThickness="1"
-              CornerRadius="7"
-              IsVisible="{Binding IsOverlaySettingsOpen}">
-        <StackPanel Spacing="7">
-          <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
-            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       Text="{Binding SelectedOverlaySettingsTitle}" />
-            <Button x:Name="GrowthDirectionButton"
-                    Grid.Column="1"
-                    Width="32"
-                    Height="32"
-                    Padding="0"
-                    Command="{Binding CycleOverlayGrowthCommand}"
-                    FontSize="19"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    ToolTip.Tip="{Binding SelectedOverlayGrowthTooltip}"
-                    AutomationProperties.Name="{Binding SelectedOverlayGrowthTooltip}"
-                    Content="{Binding SelectedOverlayGrowthSymbol}" />
-            <Button x:Name="ResetOverlaySizeButton"
-                    Grid.Column="2"
-                    Width="32"
-                    Height="32"
-                    Padding="0"
-                    Command="{Binding ResetOverlaySizeCommand}"
-                    FontSize="19"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    ToolTip.Tip="Restore this panel's original measured size"
-                    Content="&#x2922;" />
-            <Button x:Name="TypographyButton"
-                    Grid.Column="3"
-                    Width="32"
-                    Height="32"
-                    Padding="0"
-                    Command="{Binding ToggleTypographySettingsCommand}"
-                    FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani"
-                    FontSize="15"
-                    FontWeight="Bold"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    ToolTip.Tip="Adjust text size by role for this panel"
-                    Content="Aa" />
-          </Grid>
-          <TextBlock Classes="muted"
-                     FontSize="10"
-                     Text="Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor."
-                     TextWrapping="Wrap" />
-          <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
-            <StackPanel Spacing="4">
-              <TextBlock Classes="eyebrow" Text="OPACITY" />
-              <CheckBox Content="Use global opacity"
-                        IsChecked="{Binding UseGlobalOverlayOpacity, Mode=TwoWay}"
-                        IsThreeState="False" />
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <Slider IsEnabled="{Binding !UseGlobalOverlayOpacity}"
-                        Minimum="0"
-                        Maximum="100"
-                        TickFrequency="1"
-                        Value="{Binding SelectedOverlayOpacityPercent, Mode=TwoWay}" />
-                <TextBlock Grid.Column="1"
-                           MinWidth="42"
-                           VerticalAlignment="Center"
+      <!-- The three settings regions share scrolling; the toolbar and footer retain their fixed rows. -->
+      <ScrollViewer x:Name="EditorSettingsScroll" Grid.Row="0" Grid.RowSpan="3"
+                    Padding="0,0,16,0" HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
+          <Border x:Name="TypographySettingsPanel"
+                  Grid.Row="0"
+                  MaxWidth="570"
+                  Margin="0,0,0,4"
+                  Padding="12"
+                  HorizontalAlignment="Stretch"
+                  Background="{DynamicResource RavenWindowBrush}"
+                  BorderBrush="{DynamicResource RavenAccentBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  IsVisible="{Binding IsTypographySettingsOpen}">
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                            FontWeight="SemiBold"
-                           Text="{Binding SelectedOverlayOpacityLabel}" />
+                           VerticalAlignment="Center"
+                           Text="Text scale from baseline" />
+                <Button Grid.Column="1"
+                        Width="30"
+                        Height="30"
+                        Padding="0"
+                        Command="{Binding ResetTypographyCommand}"
+                        FontSize="20"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        ToolTip.Tip="Reset text and icon scales and brush overrides in this panel"
+                        Content="&#x21BA;" />
+              </Grid>
+              <TextBlock Classes="muted"
+                         FontSize="10"
+                         Text="Each role grows or shrinks independently. Zero uses the theme's baseline size."
+                         TextWrapping="Wrap" />
+              <ItemsControl ItemsSource="{Binding TypographyRoles}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:OverlayTypographyRoleViewModel">
+                    <Grid Margin="0,2"
+                          ColumnDefinitions="64,180,*,46"
+                          ColumnSpacing="8">
+                      <TextBlock VerticalAlignment="Center"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding DisplayName}" />
+                      <ComboBox Grid.Column="1" ItemsSource="{Binding BrushChoices}"
+                                SelectedItem="{Binding SelectedBrush, Mode=TwoWay}" IsEnabled="{Binding CanOverrideBrush}"
+                                HorizontalAlignment="Stretch" ToolTip.Tip="Override this text role with an overlay appearance brush">
+                        <ComboBox.ItemTemplate><DataTemplate x:DataType="vm:OverlayBrushChoice"><TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" /></DataTemplate></ComboBox.ItemTemplate>
+                      </ComboBox>
+                      <Slider Grid.Column="2"
+                              Minimum="-50"
+                              Maximum="100"
+                              TickFrequency="5"
+                              IsSnapToTickEnabled="True"
+                              Value="{Binding Percent, Mode=TwoWay}" />
+                      <TextBlock Grid.Column="3"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Center"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding Label}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+          <Border x:Name="OverlaySettingsPanel"
+                  Grid.Row="1"
+                  Margin="0,0,0,4"
+                  Padding="9"
+                  Background="{DynamicResource RavenWindowBrush}"
+                  BorderBrush="{DynamicResource RavenAccentBrush}"
+                  BorderThickness="1"
+                  CornerRadius="7"
+                  IsVisible="{Binding IsOverlaySettingsOpen}">
+            <StackPanel Spacing="7">
+              <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Text="{Binding SelectedOverlaySettingsTitle}" />
+                <Button x:Name="GrowthDirectionButton"
+                        Grid.Column="1"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        Command="{Binding CycleOverlayGrowthCommand}"
+                        FontSize="19"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        ToolTip.Tip="{Binding SelectedOverlayGrowthTooltip}"
+                        AutomationProperties.Name="{Binding SelectedOverlayGrowthTooltip}"
+                        Content="{Binding SelectedOverlayGrowthSymbol}" />
+                <Button x:Name="ResetOverlaySizeButton"
+                        Grid.Column="2"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        Command="{Binding ResetOverlaySizeCommand}"
+                        FontSize="19"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        ToolTip.Tip="Restore this panel's original measured size"
+                        Content="&#x2922;" />
+                <Button x:Name="TypographyButton"
+                        Grid.Column="3"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        Command="{Binding ToggleTypographySettingsCommand}"
+                        FontFamily="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        ToolTip.Tip="Adjust text size by role for this panel"
+                        Content="Aa" />
+              </Grid>
+              <TextBlock Classes="muted"
+                         FontSize="10"
+                         Text="Right-click another preview to edit that pane. The toolbar checkmark saves every change and closes the editor."
+                         TextWrapping="Wrap" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="eyebrow" Text="OPACITY" />
+                  <CheckBox Content="Use global opacity"
+                            IsChecked="{Binding UseGlobalOverlayOpacity, Mode=TwoWay}"
+                            IsThreeState="False" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Slider IsEnabled="{Binding !UseGlobalOverlayOpacity}"
+                            Minimum="0"
+                            Maximum="100"
+                            TickFrequency="1"
+                            Value="{Binding SelectedOverlayOpacityPercent, Mode=TwoWay}" />
+                    <TextBlock Grid.Column="1"
+                               MinWidth="42"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Text="{Binding SelectedOverlayOpacityLabel}" />
+                  </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <TextBlock Classes="eyebrow" Text="SCALE" />
+                  <CheckBox Content="Use global scale"
+                            IsChecked="{Binding UseGlobalOverlayScale, Mode=TwoWay}"
+                            IsThreeState="False" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Slider IsEnabled="{Binding !UseGlobalOverlayScale}"
+                            Minimum="-100"
+                            Maximum="200"
+                            TickFrequency="5"
+                            IsSnapToTickEnabled="True"
+                            Value="{Binding SelectedOverlayScalePercent, Mode=TwoWay}" />
+                    <TextBlock Grid.Column="1"
+                               MinWidth="50"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Text="{Binding SelectedOverlayScaleLabel}" />
+                  </Grid>
+                </StackPanel>
               </Grid>
             </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="4">
-              <TextBlock Classes="eyebrow" Text="SCALE" />
-              <CheckBox Content="Use global scale"
-                        IsChecked="{Binding UseGlobalOverlayScale, Mode=TwoWay}"
-                        IsThreeState="False" />
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <Slider IsEnabled="{Binding !UseGlobalOverlayScale}"
-                        Minimum="-100"
-                        Maximum="200"
-                        TickFrequency="5"
-                        IsSnapToTickEnabled="True"
-                        Value="{Binding SelectedOverlayScalePercent, Mode=TwoWay}" />
-                <TextBlock Grid.Column="1"
-                           MinWidth="50"
-                           VerticalAlignment="Center"
-                           FontWeight="SemiBold"
-                           Text="{Binding SelectedOverlayScaleLabel}" />
-              </Grid>
+          </Border>
+          <Border x:Name="OverlayCategoryMenu"
+                Grid.Row="2"
+                Width="310"
+                Margin="124,0,0,4"
+                Padding="9"
+                HorizontalAlignment="Left"
+                Background="{DynamicResource RavenWindowBrush}"
+                BorderBrush="{DynamicResource RavenAccentBrush}"
+                BorderThickness="1"
+                CornerRadius="7"
+                IsVisible="{Binding IsCategoryMenuOpen}">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="eyebrow" Text="Overlay category" />
+              <ItemsControl ItemsSource="{Binding Categories}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="overlay:OverlayLayoutCategoryDefinition">
+                    <Button Classes="secondary"
+                            Margin="0,2"
+                            Padding="10,6"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left"
+                            Command="{Binding $parent[Window].((vm:OverlayInteractionViewModel)DataContext).SelectCategoryCommand}"
+                            CommandParameter="{Binding}">
+                      <TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" />
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
             </StackPanel>
-          </Grid>
-        </StackPanel>
-      </Border>
-      <Border x:Name="OverlayCategoryMenu"
-            Grid.Row="2"
-            Width="310"
-            Margin="124,0,0,4"
-            Padding="9"
-            HorizontalAlignment="Left"
-            Background="{DynamicResource RavenWindowBrush}"
-            BorderBrush="{DynamicResource RavenAccentBrush}"
-            BorderThickness="1"
-            CornerRadius="7"
-            IsVisible="{Binding IsCategoryMenuOpen}">
-        <StackPanel Spacing="5">
-          <TextBlock Classes="eyebrow" Text="Overlay category" />
-          <ItemsControl ItemsSource="{Binding Categories}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="overlay:OverlayLayoutCategoryDefinition">
-                <Button Classes="secondary"
-                        Margin="0,2"
-                        Padding="10,6"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Command="{Binding $parent[Window].((vm:OverlayInteractionViewModel)DataContext).SelectCategoryCommand}"
-                        CommandParameter="{Binding}">
-                  <TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" />
-                </Button>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-      </Border>
+          </Border>
+        </Grid>
+      </ScrollViewer>
       <Grid x:Name="EditorToolbarPanel"
             Grid.Row="3"
             ColumnDefinitions="Auto,*,Auto,Auto,Auto"

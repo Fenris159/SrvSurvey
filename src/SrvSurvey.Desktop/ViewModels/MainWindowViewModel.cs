@@ -471,6 +471,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             OverlayInteraction =
                 overlayInteraction ?? new OverlayInteractionViewModel(OverlayPlatformCapabilities.DetectCurrent());
             OverlayInteraction.OverlayBehavior = OverlayBehavior;
+            CockpitPanels = new CockpitOverlayViewModel(
+                new CockpitOverlaySettingsStore(AppDataPaths.UiSettingsPath),
+                new CockpitCaptureProfileUpdater(AppDataPaths.CacheDirectory)
+            );
+            OverlayInteraction.CockpitPanels = CockpitPanels;
             rollback.AddIfCreated(overlayInteraction, OverlayInteraction);
             OverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
                 binding.Definition.Action == GlobalInputAction.ToggleOverlayInteraction
@@ -1184,6 +1189,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public OverlayScaleSettingsViewModel OverlayScale { get; }
 
     public OverlayBehaviorViewModel OverlayBehavior { get; }
+
+    public CockpitOverlayViewModel CockpitPanels { get; }
 
     public OverlayInteractionViewModel OverlayInteraction { get; }
 

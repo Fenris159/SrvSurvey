@@ -11,6 +11,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -20,6 +21,355 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayPositionEditorHostTests : IDisposable
 {
+    [AvaloniaFact]
+    public void AcceptedDragMovementSurvivesAnEarlierPendingProjectionFit()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout layout = store.Load();
+        layout.SetPlacement(
+            "PlotJumpInfo",
+            new(LegacyHorizontalAnchor.Left, 300, LegacyVerticalAnchor.Top, 300, null, SizeOverride: new(300, 100))
+        );
+        store.Save(layout.Placements);
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var cockpit = new CockpitOverlayViewModel(
+            new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
+        cockpit.SelectPanel("PlotJumpInfo");
+        cockpit.Roll = 30;
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+        Assert.True(model.Begin());
+        try
+        {
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(window =>
+                window.Definition.Name == "PlotJumpInfo"
+            );
+            using WriteableBitmap? initial = preview.CaptureRenderedFrame();
+            preview.FlushCockpitProjection();
+            var clock = new ManualDragClock();
+            OverlayDragOptions options = OverlayDragPolicy.GetOptions(preview);
+            OverlayDragPolicy.SetOptionsFactory(preview, () => options with { ScheduleMove = clock.Schedule });
+            Point start = preview
+                .FindControl<Border>("EditorFolderTab")!
+                .TranslatePoint(new Point(20, 10), preview)!
+                .Value;
+            PixelPoint target = preview.PointToScreen(start + new Vector(40, -20));
+            preview.MouseDown(start, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            preview.MouseMove(preview.PointToClient(target), RawInputModifiers.LeftMouseButton);
+            cockpit.Roll = 75;
+            clock.Tick();
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(ManagedOverlayWindowDragSession.IsDragging(preview));
+            Assert.Equal(new PixelPoint(340, 280), preview.GetPanelScreenOrigin(preview.RenderScaling));
+            preview.MouseUp(preview.PointToClient(target), MouseButton.Left, RawInputModifiers.None);
+            PixelSize size = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            model.Save();
+            Assert.Equal(new PixelPoint(340, 280), store.Load().GetPosition("PlotJumpInfo", bounds, size));
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
+    private sealed class ManualDragClock : IDisposable
+    {
+        private Action? callback;
+
+        public ManualDragClock Schedule(Action action)
+        {
+            callback = action;
+            return this;
+        }
+
+        public void Tick()
+        {
+            Action action = callback ?? throw new InvalidOperationException("No move was queued.");
+            callback = null;
+            action();
+        }
+
+        public void Dispose() => callback = null;
+    }
+
+    [AvaloniaFact]
+    public void DraggingKeepsTheGrabbedPanelPointWhenProjectionPaddingChanges()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        LegacyOverlayLayout layout = store.Load();
+        layout.SetPlacement(
+            "PlotJumpInfo",
+            new(LegacyHorizontalAnchor.Left, 300, LegacyVerticalAnchor.Top, 300, null, SizeOverride: new(300, 100))
+        );
+        store.Save(layout.Placements);
+        var bounds = new PixelRect(0, 0, 1920, 1080);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var cockpit = new CockpitOverlayViewModel(
+            new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
+        cockpit.SelectPanel("PlotJumpInfo");
+        cockpit.Roll = 90;
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+        Assert.True(model.Begin());
+        try
+        {
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(window =>
+                window.Definition.Name == "PlotJumpInfo"
+            );
+            using WriteableBitmap? before = preview.CaptureRenderedFrame();
+            preview.FlushCockpitProjection();
+            PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            Point grab = preview
+                .FindControl<Border>("PreviewSurface")!
+                .TranslatePoint(new Point(20, 10), preview)!
+                .Value;
+            PixelPoint heldPoint = preview.PointToScreen(grab);
+            preview.MouseDown(grab, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Assert.True(ManagedOverlayWindowDragSession.IsDragging(preview));
+            cockpit.Roll = 0;
+            Dispatcher.UIThread.RunJobs();
+            preview.FlushCockpitProjection();
+            preview.MouseUp(
+                preview.PointToClient(new PixelPoint(heldPoint.X + 40, heldPoint.Y - 20)),
+                MouseButton.Left,
+                RawInputModifiers.None
+            );
+            Dispatcher.UIThread.RunJobs();
+            preview.FlushCockpitProjection();
+            Assert.Equal(
+                new PixelPoint(origin.X + 40, origin.Y - 20),
+                preview.GetPanelScreenOrigin(preview.RenderScaling)
+            );
+            PixelSize size = preview.GetPanelMetrics(preview.RenderScaling).PanelSize;
+            model.Save();
+            Assert.Equal(new PixelPoint(340, 280), store.Load().GetPosition("PlotJumpInfo", bounds, size));
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CornerRotationHandleCanEditWithoutStartingCameraTracking()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var cockpit = new CockpitOverlayViewModel(
+            new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1920, 1080), true, true)),
+            store,
+            store.Load(),
+            registry,
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+        Assert.True(model.Begin());
+        try
+        {
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(window =>
+                window.Definition.Name == "PlotJumpInfo"
+            );
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            PanelRotationOrb? handle = preview.FindControl<PanelRotationOrb>("PanelRotationHandle");
+            Assert.NotNull(handle);
+            Assert.True(handle.IsEffectivelyVisible);
+            Assert.True(handle.IsEnabled);
+            Assert.Contains(
+                "Right-click to reset rotation",
+                Assert.IsType<string>(ToolTip.GetTip(preview.FindControl<Border>("PanelRotationHandleBorder")!))
+            );
+            PixelPoint origin = preview.GetPanelScreenOrigin(preview.RenderScaling);
+            OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            Point center = handle.TranslatePoint(new Point(15, 15), preview)!.Value;
+            PixelPoint tiltTarget = preview.PointToScreen(center + new Vector(20, -10));
+            preview.MouseDown(center, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            preview.MouseMove(preview.PointToClient(tiltTarget), RawInputModifiers.LeftMouseButton);
+            preview.MouseUp(preview.PointToClient(tiltTarget), MouseButton.Left, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? rotated = preview.CaptureRenderedFrame();
+            Assert.Equal(new CockpitPanelPose(12, 6), cockpit.Resolve("PlotJumpInfo"));
+            Assert.Equal(new CockpitPanelPose(), cockpit.Resolve("PlotFSSInfo"));
+            Assert.Equal(origin, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            Assert.Equal(metrics.PanelSize, preview.GetPanelMetrics(preview.RenderScaling).PanelSize);
+            Assert.False(model.IsOverlaySettingsOpen);
+            Assert.False(cockpit.Enabled);
+            Border button = preview.FindControl<Border>("PanelRollHandleBorder")!;
+            Point outerRim = button.TranslatePoint(new Point(47.5, 24), preview)!.Value;
+            PixelPoint rollTarget = preview.PointToScreen(outerRim + new Vector(600, 0));
+            preview.MouseDown(outerRim, MouseButton.Left, RawInputModifiers.LeftMouseButton);
+            Assert.False(ManagedOverlayWindowDragSession.IsDragging(preview));
+            preview.MouseMove(preview.PointToClient(rollTarget), RawInputModifiers.LeftMouseButton);
+            preview.MouseUp(preview.PointToClient(rollTarget), MouseButton.Left, RawInputModifiers.None);
+            Assert.Equal(-90, cockpit.Resolve("PlotJumpInfo").Roll, 3);
+            center = handle.TranslatePoint(new Point(15, 15), preview)!.Value;
+            preview.MouseWheel(center, new Vector(0, -2));
+            Assert.Equal(new CockpitPanelPose(12, 6, -90), cockpit.Resolve("PlotJumpInfo"));
+            model.Save();
+            CockpitOverlayPreferences saved = new CockpitOverlaySettingsStore(
+                Path.Combine(temporaryDirectory, "ui.json")
+            ).Load();
+            Assert.Equal(new CockpitPanelPose(12, 6, -90), saved.Panels["PlotJumpInfo"]);
+            Assert.False(saved.Enabled);
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
+    [AvaloniaFact]
+    public void RightClickingTheCornerResetsOnlyThatPanelAndCancelRestoresItsSavedPose()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var layoutStore = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
+        var settings = new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui.json"));
+        settings.Save(
+            new CockpitOverlayPreferences(
+                false,
+                new Dictionary<string, CockpitPanelPose>
+                {
+                    ["PlotJumpInfo"] = new(25, -10, 15, 1.5),
+                    ["PlotFSSInfo"] = new(-20, 30, -45, 2),
+                }
+            )
+        );
+        var cockpit = new CockpitOverlayViewModel(settings);
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, new PixelRect(0, 0, 1920, 1080), true, true)),
+            layoutStore,
+            layoutStore.Load(),
+            registry,
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+        Assert.True(model.Begin());
+        try
+        {
+            OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(window =>
+                window.Definition.Name == "PlotJumpInfo"
+            );
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            PanelRotationOrb handle = preview.FindControl<PanelRotationOrb>("PanelRotationHandle")!;
+            Point center = handle.TranslatePoint(new Point(15, 15), preview)!.Value;
+            preview.MouseDown(center, MouseButton.Right, RawInputModifiers.RightMouseButton);
+            preview.MouseUp(center, MouseButton.Right, RawInputModifiers.None);
+            Assert.Equal(new CockpitPanelPose(Depth: 1.5), cockpit.Resolve("PlotJumpInfo"));
+            Assert.Equal(new CockpitPanelPose(-20, 30, -45, 2), cockpit.Resolve("PlotFSSInfo"));
+            Assert.False(model.IsOverlaySettingsOpen);
+            Assert.True(handle.IsEffectivelyVisible);
+            model.Cancel();
+            Assert.Equal(new CockpitPanelPose(25, -10, 15, 1.5), cockpit.Resolve("PlotJumpInfo"));
+            Assert.Equal(new CockpitPanelPose(25, -10, 15, 1.5), settings.Load().Panels["PlotJumpInfo"]);
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ExpandedSettingsKeepSaveReachableInsideAShortGameWindow()
+    {
+        var bounds = new PixelRect(0, 0, 900, 540);
+        var platform = new FakeOverlayPlatform();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new AvaloniaOverlayPositionEditorHost(platform, new OverlayWindowRegistry());
+        var cockpit = new CockpitOverlayViewModel(
+            new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui.json"))
+        )
+        {
+            Enabled = true,
+        };
+        using var model = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot((nint)1, 42, bounds, true, true)),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+        Assert.True(model.Begin());
+        try
+        {
+            model.OpenOverlaySettings("PlotJumpInfo");
+            model.IsTypographySettingsOpen = true;
+            OverlayPositionEditorWindow toolbar = Assert.IsType<OverlayPositionEditorWindow>(host.EditorToolbar);
+            Assert.DoesNotContain(
+                toolbar.GetVisualDescendants().OfType<Expander>(),
+                item => Equals(item.Header, "Cockpit panel angle")
+            );
+            using WriteableBitmap? frame = toolbar.CaptureRenderedFrame();
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? settled = toolbar.CaptureRenderedFrame();
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_COCKPIT_PREVIEW_DIRECTORY");
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                Directory.CreateDirectory(output);
+                settled!.Save(Path.Combine(output, "cockpit-editor-short-screen.png"), PngBitmapEncoderOptions.Default);
+            }
+            Button save = Assert.Single(
+                toolbar.GetVisualDescendants().OfType<Button>(),
+                item => ReferenceEquals(item.Command, model.SaveCommand)
+            );
+            Point point = save.TranslatePoint(default, toolbar)!.Value;
+            Assert.InRange(point.Y + save.Bounds.Height, 1, 516);
+            Assert.InRange(toolbar.Bounds.Height, 116, 516);
+            ScrollViewer scroll = toolbar.FindControl<ScrollViewer>("EditorSettingsScroll")!;
+            Assert.True(scroll.Extent.Height > scroll.Viewport.Height);
+            Border typography = toolbar.FindControl<Border>("TypographySettingsPanel")!;
+            Point left = typography.TranslatePoint(default, scroll)!.Value;
+            Assert.InRange(left.X, 0, scroll.Bounds.Width - typography.Bounds.Width);
+            scroll.Offset = new Vector(0, scroll.Extent.Height);
+            using WriteableBitmap? scrolled = toolbar.CaptureRenderedFrame();
+            Assert.Equal(point, save.TranslatePoint(default, toolbar)!.Value);
+        }
+        finally
+        {
+            model.Cancel();
+        }
+    }
+
     [AvaloniaFact]
     public async Task SphericalSearchPreviewFollowsContentInsteadOfAnOldManualSize()
     {

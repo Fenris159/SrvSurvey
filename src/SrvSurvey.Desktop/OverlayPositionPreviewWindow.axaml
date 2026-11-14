@@ -15,7 +15,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         ClipToBounds="False"
-        Title="SrvSurvey position preview overlay">
+        Title="SrvSurvey position preview overlay"
+        PointerPressed="OnPreviewSurfacePointerPressed">
   <Window.Styles>
     <Style Selector="controls|BiologyRewardBandControl">
       <Setter Property="FilledSegmentEdgeBrush" Value="{DynamicResource RavenBioConfirmedSegmentEdgeBrush}" />
@@ -46,13 +47,13 @@
           Padding="0"
           Background="Transparent"
           BorderThickness="0"
-          ClipToBounds="False"
-          PointerPressed="OnPreviewSurfacePointerPressed">
+          ClipToBounds="False">
     <Grid RowDefinitions="Auto,*"
           ClipToBounds="False">
       <!-- Folder tab: solid yellow so it stays visible even before theme
            brushes fully resolve on first frame. -->
       <Border x:Name="EditorFolderTab"
+              ZIndex="1"
               HorizontalAlignment="Left"
               Margin="10,0,16,0"
               MinHeight="24"
@@ -121,11 +122,12 @@
               Margin="0,-2,0,0"
               MinHeight="24"
               Background="Transparent"
-              BorderBrush="#FFCC33"
+              BorderBrush="Transparent"
               BorderThickness="2"
               CornerRadius="0,7,7,7"
               ClipToBounds="False"
               Padding="4">
+        <Border x:Name="PanelProjectionHost" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="False">
         <Grid>
           <TextBlock HorizontalAlignment="Center"
                      VerticalAlignment="Center"
@@ -311,8 +313,40 @@
                        ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE" />
           </Grid>
         </Grid>
+        </Border>
       </Border>
+      <Border x:Name="ProjectionReferenceOutline" Grid.Row="1" ZIndex="1" Margin="0,-2,0,0" IsHitTestVisible="False"
+              HorizontalAlignment="Left" VerticalAlignment="Top"
+              BorderBrush="#FFCC33" BorderThickness="2" CornerRadius="0,7,7,7" />
+      <Canvas Grid.Row="1" ZIndex="2" Width="0" Height="0"
+              HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="False">
+      <StackPanel x:Name="PanelAngleHandles" Width="48" Height="104" Spacing="8" Background="Transparent">
+        <Border x:Name="PanelRotationHandleBorder" Width="48" Height="48"
+                Background="#CC1A1208" BorderBrush="#FFCC33" BorderThickness="1" CornerRadius="6"
+                ToolTip.ShowOnDisabled="True">
+          <StackPanel VerticalAlignment="Center">
+            <controls:PanelRotationOrb x:Name="PanelRotationHandle" Width="30" Height="30"
+                IsEnabled="False" Accent="#FFCC33" GuideBrush="#99FFCC33" PanelBrush="#CC1A1208"
+                Cursor="Hand" AutomationProperties.Name="Tilt this cockpit panel" />
+            <TextBlock Text="Tilt" MaxWidth="42" TextTrimming="CharacterEllipsis" FontSize="10" Foreground="#FFCC33" HorizontalAlignment="Center"
+                       IsHitTestVisible="False" />
+          </StackPanel>
+        </Border>
+        <Border x:Name="PanelRollHandleBorder" Width="48" Height="48"
+                Background="#CC1A1208" BorderBrush="#FFCC33" BorderThickness="1" CornerRadius="6"
+                ToolTip.ShowOnDisabled="True">
+          <StackPanel VerticalAlignment="Center">
+            <controls:PanelRotationOrb x:Name="PanelRollHandle" Width="30" Height="30" IsRollControl="True"
+                IsEnabled="False" Accent="#FFCC33" GuideBrush="#99FFCC33" PanelBrush="#CC1A1208"
+                Cursor="Hand" AutomationProperties.Name="Roll this cockpit panel" />
+            <TextBlock Text="Roll" MaxWidth="42" TextTrimming="CharacterEllipsis" FontSize="10" Foreground="#FFCC33" HorizontalAlignment="Center"
+                       IsHitTestVisible="False" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      </Canvas>
       <primitives:Thumb x:Name="PanelResizeThumb"
+                        ZIndex="2"
                         Grid.Row="1"
                         Width="22"
                         Height="22"

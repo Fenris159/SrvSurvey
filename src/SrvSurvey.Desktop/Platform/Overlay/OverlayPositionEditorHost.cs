@@ -234,6 +234,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(session.ScaleIndex, session.GetPlacement(definition.Name).ScaleIndex, hostScaling);
             preview.ConfigureViewport(hostBounds.Width, hostBounds.Height);
+            preview.ConfigureCockpitViewport(hostBounds, hostScaling);
             preview.ConfigureTypography(session.GetTypographyScale(definition.Name));
             preview.ConfigureSize(session.GetSizeOverride(definition.Name));
             PixelSize previewSize = preview.GetExpectedPixelSize(hostScaling);
@@ -260,11 +261,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                 }
             }
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(definition.Name).Opacity);
+            preview.ConfigureCockpitPanels(viewModel?.CockpitPanels);
             OverlayDragPolicy.SetOptionsFactory(preview, () => CreatePreviewDragOptions(preview));
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.SettingsRequested += OnPreviewSettingsRequested;
             preview.PanelSizeChanged += OnPreviewSizeChanged;
             preview.SizeChanged += OnPreviewMeasured;
+            preview.ProjectionLayoutSettled += OnPreviewProjectionSettled;
             preview.Opened += OnPreviewOpened;
             previews.Add(preview);
             registry.PrepareWindow(preview);
@@ -417,6 +420,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     /// <summary>Measures final panel dimensions and translates the preserved origin into the saved anchors.</summary>
     private void OnPreviewMeasured(object? sender, SizeChangedEventArgs eventArgs)
     {
+        if (sender is OverlayPositionPreviewWindow { IsAdjustingCockpitProjection: true })
+        {
+            return;
+        }
         if (
             sender is OverlayPositionPreviewWindow preview
             && pendingGeometryOrigins.Remove(preview.Definition.Name, out PixelPoint origin)
@@ -427,6 +434,14 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         else if (sender is OverlayPositionPreviewWindow measured && editSession is { } session)
         {
             PositionPreviewAfterOpening(measured, session);
+        }
+    }
+
+    private void OnPreviewProjectionSettled(object? sender, EventArgs eventArgs)
+    {
+        if (sender is OverlayPositionPreviewWindow preview && editSession is { } session)
+        {
+            PositionPreviewAfterOpening(preview, session);
         }
     }
 
@@ -469,6 +484,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         foreach (OverlayPositionPreviewWindow preview in previews)
         {
             ManagedOverlayWindowDragSession.Cancel(preview);
+            preview.FlushCockpitProjection();
             if (pendingGeometryOrigins.Remove(preview.Definition.Name, out PixelPoint origin))
             {
                 RecordMeasuredGeometry(preview, origin, preview.GetExpectedPixelSize(preview.RenderScaling));
@@ -678,6 +694,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
         OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var panelPosition = new PixelPoint(position.X + metrics.OriginOffset.X, position.Y + metrics.OriginOffset.Y);
+        preview.AcceptCockpitDragOrigin(panelPosition);
         PreviewMoved?.Invoke(
             this,
             new OverlayPreviewMovedEventArgs(
@@ -700,7 +717,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             hostBounds,
             metrics.PanelSize,
             metrics.OriginOffset
-        );
+        ) with
+        {
+            PanelOriginOffset = () => preview.GetPanelMetrics(preview.RenderScaling).OriginOffset,
+        };
     }
 
     private void OnPreviewSettingsRequested(object? sender, OverlayPreviewSettingsRequestedEventArgs eventArgs)
@@ -764,6 +784,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.SettingsRequested -= OnPreviewSettingsRequested;
             preview.PanelSizeChanged -= OnPreviewSizeChanged;
             preview.SizeChanged -= OnPreviewMeasured;
+            preview.ProjectionLayoutSettled -= OnPreviewProjectionSettled;
             preview.Opened -= OnPreviewOpened;
             OverlayDragPolicy.SetOptionsFactory(preview, null);
             TryCleanup(preview.Close);
@@ -948,6 +969,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             screens
         );
         PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, workingArea);
+        toolbar.MaxHeight = Math.Max(toolbar.MinHeight, (usableBounds.Height - 24) / screen.Scaling);
         double logicalWidth = measuredSize?.Width ?? (toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width);
         double logicalHeight =
             measuredSize?.Height ?? (toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight);

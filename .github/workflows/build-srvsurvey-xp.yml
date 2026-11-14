@@ -215,6 +215,30 @@ jobs:
           cmake --build artifacts/openxr-build
           ctest --test-dir artifacts/openxr-build --output-on-failure
 
+      - name: Build and test Windows cockpit camera bridge
+        if: matrix.rid == 'win-x64'
+        shell: pwsh
+        run: |
+          cmake -S src/SrvSurvey.CameraBridge -B artifacts/camera-bridge-build -A x64 -DCAMERA_BRIDGE_INTEGRATION_TESTS=ON
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build artifacts/camera-bridge-build --config Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir artifacts/camera-bridge-build -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --install artifacts/camera-bridge-build --config Release --prefix artifacts/camera-bridge
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./src/SrvSurvey.CameraBridge/tests/InstallerTests.ps1
+
+      - name: Test portable cockpit camera decoding on Linux
+        if: matrix.rid == 'linux-x64'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S src/SrvSurvey.CameraBridge -B artifacts/camera-bridge-build -DCMAKE_BUILD_TYPE=Release
+          cmake --build artifacts/camera-bridge-build
+          ctest --test-dir artifacts/camera-bridge-build --output-on-failure
+          pwsh -NoProfile -File src/SrvSurvey.CameraBridge/tests/InstallerTests.ps1
+
       - name: Test
         # Linux PR validation already ran the full solution with retained TRX and coverage.
         if: matrix.rid != 'linux-x64' || github.event_name != 'pull_request'
@@ -330,6 +354,13 @@ jobs:
       - name: Prepare package output
         shell: pwsh
         run: New-Item -ItemType Directory -Path packages -Force | Out-Null
+
+      - name: Package optional cockpit camera bridge
+        if: matrix.rid == 'win-x64'
+        shell: pwsh
+        run: |
+          $archive = "packages/SrvSurvey-CameraBridge-${{ needs.release-metadata.outputs.package_version }}-win-x64.zip"
+          Compress-Archive -Path "artifacts/camera-bridge/*" -DestinationPath $archive
 
       - name: Generate SPDX software bill of materials
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610

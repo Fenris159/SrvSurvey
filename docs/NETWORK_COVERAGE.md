@@ -11,6 +11,7 @@ size, SHA-256, staging, health-confirmation, and rollback contract.
 | Runtime surface | Implementation | Contract evidence |
 |---|---|---|
 | Published reference data | `PublishedDataIndexClient`, `PublishedReferenceUpdateService` | Version-gated downloads, bounded archives, strict catalog validation, transactional activation and rollback |
+| Cockpit capture profiles | `CockpitCaptureProfileUpdater`; bounded HTTP transport owned by `PublishedReferenceUpdateService` | Opt-in launch checks, 8 KiB/15-second downloads, app envelope/protocol checks, bridge decoder validation, monotonic revisions, atomic machine-local cache, compatible fallback and next-game-launch activation |
 | Application releases | `CrossPlatformReleaseClient`, download/staging/install services | Windows/Linux package metadata, bounded streaming, hashes, manifests, safe paths, same-volume replacement, health token and rollback |
 | System lookup and enrichment | `SystemBodyDataClient`, `SystemSummaryClient`, `CodexDiscoveryLocationClient`, `SpanshStarSystemResolver` | EDSM and Spansh isolation, identity and shape validation, bounded responses, cancellation and stale-result containment |
 | EDAstro exploration POIs | `EdAstroPoiClient`, `ExplorationPoiCatalog` | Bounded GEC snapshots, atomic disk cache, quota-aware cooldown, stale-cache fallback, cancellation, exact system/source identities and local gameplay lookups |

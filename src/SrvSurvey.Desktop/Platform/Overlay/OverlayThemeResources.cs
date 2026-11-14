@@ -731,7 +731,7 @@ public static class OverlayThemeResources
 
     private static double Scale(double value, double factor)
     {
-        return double.IsNaN(value) ? value : value * factor;
+        return double.IsFinite(value) ? value * factor : value;
     }
 
     private sealed class LegacyPresentationRegistration

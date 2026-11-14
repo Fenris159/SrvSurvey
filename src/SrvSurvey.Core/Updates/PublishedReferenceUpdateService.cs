@@ -83,6 +83,27 @@ public sealed class PublishedReferenceUpdateService : IPublishedReferenceUpdateS
     private readonly TimeProvider timeProvider;
     private readonly Action<PublishedReferenceUpdateCheckpoint>? checkpoint;
 
+    /// <summary>Uses the reference-data transport for small, independently versioned cockpit configuration downloads.</summary>
+    internal static async Task<byte[]> DownloadCaptureProfileAsync(
+        Uri source,
+        CancellationToken cancellationToken,
+        HttpClient? client = null
+    )
+    {
+        using HttpResponseMessage response = await (client ?? SharedClient)
+            .GetAsync(source, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        return await BoundedHttpContent
+            .ReadBytesAsync(
+                response.Content,
+                CockpitCaptureProfile.MaximumBytes,
+                "Cockpit capture profile",
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+    }
+
     public PublishedReferenceUpdateService(
         IPublishedDataIndexClient? indexClient = null,
         PublishedReferenceVersionStore? versionStore = null,

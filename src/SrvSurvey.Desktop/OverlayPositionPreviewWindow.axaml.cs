@@ -43,6 +43,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         DataContext = Preview;
         EnsureEditorFolderTab(Definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
+        InitializeCockpitEditor();
         ApplyContentSize();
     }
 
@@ -58,6 +59,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         DataContext = Preview;
         EnsureEditorFolderTab(definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
+        InitializeCockpitEditor();
         ApplyContentSize();
         Title = $"SrvSurvey {definition.DisplayName} position preview overlay";
     }
@@ -80,6 +82,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             : Avalonia.Layout.HorizontalAlignment.Left;
         EditorFolderTab.Margin = usesCenteredTopAnchor ? new Thickness(0) : new Thickness(10, 0, 16, 0);
         PreviewBody.CornerRadius = usesCenteredTopAnchor ? new CornerRadius(7) : new CornerRadius(0, 7, 7, 7);
+        ProjectionReferenceOutline.CornerRadius = PreviewBody.CornerRadius;
         EditorFolderTabLabel.Text = label;
         ToolTip.SetTip(EditorFolderTab, label);
         UpdateEditorPreviewStateButton();
@@ -161,7 +164,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     internal OverlayPreviewPanelMetrics GetPanelMetrics(double scaling)
     {
         double safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1d;
-        Control panel = runtimePresentation ?? PreviewBody;
+        Control panel = runtimePresentation is null ? PreviewBody : PanelProjectionHost;
         Point? panelOrigin = panel.TranslatePoint(default, this);
         Point origin = panelOrigin ?? default;
         var originOffset = new PixelPoint(
@@ -394,7 +397,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         presentation.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
         // Host the real shared template inside the yellow body; the folder
         // tab above remains editor-only chrome for identification.
-        PreviewBody.Child = presentation;
+        PanelProjectionHost.Child = presentation;
         PreviewBody.Padding = new Thickness(0);
         PreviewBody.Background = Avalonia.Media.Brushes.Transparent;
         return true;
@@ -461,6 +464,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             runtimePresentation,
             Math.Max(1, width - 16) / Math.Max(0.01, scaling * scaleFactor)
         );
+        ScheduleCockpitPreview();
         if (runtimePresentation is IOverlayPanelViewportAware panel)
         {
             int height = Math.Min(
@@ -556,6 +560,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         Opened -= OnRenderSurfaceChanged;
         ScalingChanged -= OnRenderSurfaceChanged;
+        ConfigureCockpitPanels(null);
         DisposeEditorDataContext(runtimePresentation?.DataContext);
         runtimePresentation?.DataContext = null;
         base.OnClosed(e);

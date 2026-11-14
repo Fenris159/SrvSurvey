@@ -16,6 +16,8 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
     private readonly IPointer pointer;
     private readonly PixelPoint initialWindowPosition;
     private readonly PixelPoint initialPointerPosition;
+    private readonly Func<PixelPoint>? panelOriginOffset;
+    private readonly PixelPoint initialPanelOriginOffset;
     private readonly PendingWindowMove pendingMove;
     private readonly OverlayDragOptions options;
     private readonly OverlayDragDiagnostics diagnostics;
@@ -31,24 +33,29 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
     )
     {
         this.window = window;
+        options = OverlayDragPolicy.GetOptions(window);
+        panelOriginOffset = options.PanelOriginOffset;
+        initialPanelOriginOffset = panelOriginOffset?.Invoke() ?? default;
         pointer = eventArgs.Pointer;
         initialWindowPosition = window.Position;
         lastRequestedPosition = initialWindowPosition;
         initialPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
         latestPointerPosition = initialPointerPosition;
-        options = OverlayDragPolicy.GetOptions(window);
         diagnostics = new OverlayDragDiagnostics(window, initialPointerPosition, options);
         pendingMove = new PendingWindowMove(
             position =>
             {
                 OverlayDragPointerSample? native = diagnostics.Observe(latestPointerPosition);
+                if (panelOriginOffset is not null)
+                {
+                    position = GetPointerTarget(latestPointerPosition);
+                }
                 // A button-up sample can belong to free movement after a queued release.
                 if (native is { LeftButtonPressed: true } && !stopped)
                 {
-                    position = CalculatePosition(initialWindowPosition, initialPointerPosition, native.Position);
-                    position = options.ConstrainPosition?.Invoke(position) ?? position;
+                    position = GetPointerTarget(native.Position);
                 }
-                if (lastRequestedPosition != position)
+                if (lastRequestedPosition != position || (panelOriginOffset is not null && window.Position != position))
                 {
                     lastRequestedPosition = position;
                     window.Position = position;
@@ -60,7 +67,11 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
                     Stop(releasePointer: true, reason: "native button-up");
                 }
             },
-            callback => DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)
+            options.ScheduleMove
+                ?? (
+                    callback =>
+                        DispatcherTimer.RunOnce(callback, TimeSpan.FromMilliseconds(16), DispatcherPriority.Input)
+                )
         );
     }
 
@@ -156,8 +167,24 @@ internal sealed class ManagedOverlayWindowDragSession : IDisposable
     private void UpdatePendingPosition(PixelPoint pointerPosition)
     {
         latestPointerPosition = pointerPosition;
+        pendingMove.Update(GetPointerTarget(pointerPosition));
+    }
+
+    /// <summary>Keeps the grabbed content fixed when preview projection changes its native window padding.</summary>
+    private PixelPoint GetPointerTarget(PixelPoint pointerPosition)
+    {
         PixelPoint position = CalculatePosition(initialWindowPosition, initialPointerPosition, pointerPosition);
-        pendingMove.Update(options.ConstrainPosition?.Invoke(position) ?? position);
+        OverlayDragOptions currentOptions = options;
+        if (panelOriginOffset is not null)
+        {
+            PixelPoint offset = panelOriginOffset();
+            position = new PixelPoint(
+                position.X + initialPanelOriginOffset.X - offset.X,
+                position.Y + initialPanelOriginOffset.Y - offset.Y
+            );
+            currentOptions = OverlayDragPolicy.GetOptions(window);
+        }
+        return currentOptions.ConstrainPosition?.Invoke(position) ?? position;
     }
 
     /// <summary>Finishes at the release event's position rather than sampling a pointer that may already be elsewhere.</summary>

@@ -10,6 +10,7 @@ using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
+using Matrix4x4 = System.Numerics.Matrix4x4;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -73,6 +74,114 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(.3, miningStore.LoadDetection().X);
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "plotters.json")));
         Assert.Contains("calibration", vm.StatusMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnchangedCockpitAnglesDoNotRequireWritableSettings(bool savePositions)
+    {
+        string cockpitPath = Path.Combine(temporaryDirectory, "cockpit.json");
+        var cockpit = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(cockpitPath));
+        var miningStore = new SurfaceMiningSettingsStore(Path.Combine(temporaryDirectory, "mining.json"));
+        var detection = new MiningDetectionViewModel(miningStore);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var model = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+            MiningDetection = detection,
+        };
+        Assert.True(model.Begin());
+        detection.UpdateCalibration(detection.Settings with { X = .3 });
+        Directory.CreateDirectory(cockpitPath);
+        if (savePositions)
+        {
+            host.Move(
+                "PlotJumpInfo",
+                new PixelPoint(420, 310),
+                new PixelSize(300, 100),
+                new PixelRect(100, 200, 1200, 800)
+            );
+        }
+        model.Save();
+        Assert.False(model.IsEditing);
+        Assert.Equal(.3, miningStore.LoadDetection().X);
+        Assert.True(Directory.Exists(cockpitPath));
+        Assert.Equal(savePositions, File.Exists(Path.Combine(temporaryDirectory, "plotters.json")));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FailedCockpitSaveIdentifiesCommittedChangesAndRetainsOnlyItsDraft(bool savePositions)
+    {
+        string cockpitPath = Path.Combine(temporaryDirectory, "cockpit.json");
+        var cockpitStore = new CockpitOverlaySettingsStore(cockpitPath);
+        var cockpit = new CockpitOverlayViewModel(cockpitStore);
+        var miningStore = new SurfaceMiningSettingsStore(Path.Combine(temporaryDirectory, "mining.json"));
+        var detection = new MiningDetectionViewModel(miningStore);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var model = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host
+        )
+        {
+            CockpitPanels = cockpit,
+            MiningDetection = detection,
+        };
+        Assert.True(model.Begin());
+        detection.UpdateCalibration(detection.Settings with { X = .3 });
+        cockpit.SelectPanel("PlotJumpInfo");
+        cockpit.Yaw = 15;
+        Directory.CreateDirectory(cockpitPath);
+        if (savePositions)
+        {
+            host.Move(
+                "PlotJumpInfo",
+                new PixelPoint(420, 310),
+                new PixelSize(300, 100),
+                new PixelRect(100, 200, 1200, 800)
+            );
+        }
+        model.Save();
+        Assert.True(model.IsEditing);
+        Assert.True(cockpit.HasChanges);
+        Assert.False(detection.HasCalibrationChanges);
+        Assert.Equal(.3, miningStore.LoadDetection().X);
+        Assert.Contains("cockpit panel angles could not be saved", model.StatusMessage, StringComparison.Ordinal);
+        Assert.Contains(
+            savePositions ? "Overlay positions saved." : "Overlay positions were unchanged.",
+            model.StatusMessage,
+            StringComparison.Ordinal
+        );
+        Assert.Contains("Mining HUD calibration saved.", model.StatusMessage, StringComparison.Ordinal);
+        Assert.Equal(savePositions, File.Exists(Path.Combine(temporaryDirectory, "plotters.json")));
+        if (savePositions)
+        {
+            Directory.Delete(cockpitPath);
+            model.Save();
+            Assert.False(model.IsEditing);
+            Assert.Equal(15, cockpitStore.Load().Panels["PlotJumpInfo"].Yaw);
+        }
+        else
+        {
+            model.Cancel();
+            Assert.Equal(0, cockpit.Resolve("PlotJumpInfo").Yaw);
+            Assert.Equal(.3, miningStore.LoadDetection().X);
+        }
     }
 
     [Fact]
@@ -1153,6 +1262,75 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(new OverlayPanelSize(360, 210), activeLayout.GetSizeOverride("PlotJumpInfo"));
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void SizeResetRecoversSavedCockpitDepthWithinTheEditorTransaction(bool resized, bool save)
+    {
+        var cockpitStore = new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "cockpit.json"));
+        var originalPose = new CockpitPanelPose(20, -10, 15, 2);
+        var otherPose = new CockpitPanelPose(5, 10, -15, 3);
+        cockpitStore.Save(
+            new CockpitOverlayPreferences(
+                true,
+                new Dictionary<string, CockpitPanelPose> { ["PlotJumpInfo"] = originalPose, ["PlotPulse"] = otherPose }
+            )
+        );
+        var cockpit = new CockpitOverlayViewModel(cockpitStore);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        OverlayPanelSize? originalSize = resized ? new OverlayPanelSize(480, 260) : null;
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new LegacyOverlayPlacement(
+                    LegacyHorizontalAnchor.Center,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null,
+                    SizeOverride: originalSize
+                ),
+            }
+        );
+        LegacyOverlayLayout layout = store.Load();
+        using var model = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            layout,
+            new OverlayWindowRegistry(),
+            new FakeEditorHost()
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+
+        Assert.True(model.Begin());
+        model.OpenOverlaySettings("PlotJumpInfo");
+        model.ResetOverlaySizeCommand.Execute(null);
+
+        Assert.Equal(new CockpitPanelPose(20, -10, 15, 1), cockpit.Resolve("PlotJumpInfo"));
+        Assert.Equal(otherPose, cockpit.Resolve("PlotPulse"));
+        Assert.Equal(originalPose, cockpitStore.Load().Panels["PlotJumpInfo"]);
+        if (save)
+        {
+            model.Save();
+        }
+        else
+        {
+            model.Cancel();
+        }
+
+        CockpitPanelPose expected = save ? new CockpitPanelPose(20, -10, 15, 1) : originalPose;
+        Assert.Equal(expected, cockpit.Resolve("PlotJumpInfo"));
+        Assert.Equal(expected, cockpitStore.Load().Panels["PlotJumpInfo"]);
+        Assert.Equal(otherPose, cockpitStore.Load().Panels["PlotPulse"]);
+        Assert.Equal(save ? null : originalSize, store.Load().GetSizeOverride("PlotJumpInfo"));
+        Assert.False(model.IsEditing);
+    }
+
     /// <summary>Joined capture windows reach the native pre-show hook even when the session uses combined presentation.</summary>
     [AvaloniaFact]
     public void CombinedStreamCapturePreparesNativePolicyBeforeShowing()
@@ -1190,6 +1368,48 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Empty(registry.Snapshot());
         timer.Pulse();
         Assert.Single(platform.PreShowWindows);
+    }
+
+    [AvaloniaFact]
+    public void CockpitProjectionUsesTheGameViewportInsideALargerGamescopeCanvas()
+    {
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var snapshot = new GameWindowSnapshot(1, 42, new PixelRect(200, 100, 800, 600), true, true)
+        {
+            OverlayCanvasBounds = new PixelRect(0, 0, 1200, 800),
+        };
+        var content = new Border();
+        var source = new Window
+        {
+            Width = 100,
+            Height = 100,
+            Content = content,
+        };
+        registry.Register(source, "PlotJumpInfo");
+        using var controller = new CombinedOverlayPresentationController(
+            platform,
+            new FakeGameWindowTracker(snapshot),
+            registry
+        );
+        try
+        {
+            source.Show();
+            source.Position = new PixelPoint(550, 350);
+            Assert.True(controller.PreparePassiveWindow(source).IsPrepared);
+            CombinedOverlayWindow host = Assert.IsType<CombinedOverlayWindow>(TopLevel.GetTopLevel(content));
+            Matrix4x4 camera = Matrix4x4.Identity;
+            camera.M41 = 0.5f;
+            controller.SetCockpitProjection(camera, _ => new CockpitPanelPose());
+            using WriteableBitmap? frame = host.CaptureRenderedFrame();
+            Point center = Assert.IsType<Point>(content.TranslatePoint(new Point(50, 50), host));
+            Assert.InRange(center.X, 799.99, 800.01);
+            Assert.InRange(center.Y, 399.99, 400.01);
+        }
+        finally
+        {
+            source.Close();
+        }
     }
 
     public void Dispose()
