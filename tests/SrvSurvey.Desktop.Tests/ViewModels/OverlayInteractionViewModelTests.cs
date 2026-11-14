@@ -1262,6 +1262,75 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Equal(new OverlayPanelSize(360, 210), activeLayout.GetSizeOverride("PlotJumpInfo"));
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void SizeResetRecoversSavedCockpitDepthWithinTheEditorTransaction(bool resized, bool save)
+    {
+        var cockpitStore = new CockpitOverlaySettingsStore(Path.Combine(temporaryDirectory, "cockpit.json"));
+        var originalPose = new CockpitPanelPose(20, -10, 15, 2);
+        var otherPose = new CockpitPanelPose(5, 10, -15, 3);
+        cockpitStore.Save(
+            new CockpitOverlayPreferences(
+                true,
+                new Dictionary<string, CockpitPanelPose> { ["PlotJumpInfo"] = originalPose, ["PlotPulse"] = otherPose }
+            )
+        );
+        var cockpit = new CockpitOverlayViewModel(cockpitStore);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        OverlayPanelSize? originalSize = resized ? new OverlayPanelSize(480, 260) : null;
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new LegacyOverlayPlacement(
+                    LegacyHorizontalAnchor.Center,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null,
+                    SizeOverride: originalSize
+                ),
+            }
+        );
+        LegacyOverlayLayout layout = store.Load();
+        using var model = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            layout,
+            new OverlayWindowRegistry(),
+            new FakeEditorHost()
+        )
+        {
+            CockpitPanels = cockpit,
+        };
+
+        Assert.True(model.Begin());
+        model.OpenOverlaySettings("PlotJumpInfo");
+        model.ResetOverlaySizeCommand.Execute(null);
+
+        Assert.Equal(new CockpitPanelPose(20, -10, 15, 1), cockpit.Resolve("PlotJumpInfo"));
+        Assert.Equal(otherPose, cockpit.Resolve("PlotPulse"));
+        Assert.Equal(originalPose, cockpitStore.Load().Panels["PlotJumpInfo"]);
+        if (save)
+        {
+            model.Save();
+        }
+        else
+        {
+            model.Cancel();
+        }
+
+        CockpitPanelPose expected = save ? new CockpitPanelPose(20, -10, 15, 1) : originalPose;
+        Assert.Equal(expected, cockpit.Resolve("PlotJumpInfo"));
+        Assert.Equal(expected, cockpitStore.Load().Panels["PlotJumpInfo"]);
+        Assert.Equal(otherPose, cockpitStore.Load().Panels["PlotPulse"]);
+        Assert.Equal(save ? null : originalSize, store.Load().GetSizeOverride("PlotJumpInfo"));
+        Assert.False(model.IsEditing);
+    }
+
     /// <summary>Joined capture windows reach the native pre-show hook even when the session uses combined presentation.</summary>
     [AvaloniaFact]
     public void CombinedStreamCapturePreparesNativePolicyBeforeShowing()

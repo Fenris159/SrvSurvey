@@ -33,6 +33,8 @@ capture catalogs.
   Control plus Left/Right rolls; Home resets rotation. Accessible angle values update
   while editing. Perspective settings follow the editor's existing save/cancel flow.
   Minimum scale can be restored without a layout error.
+  **Reset size** also restores normal depth for panels saved by an earlier
+  prototype, retaining their angles and honoring Save or Cancel.
   Angles can be prepared while cockpit tracking is off, without enabling capture.
 - **Keep dragging responsive:** Screen-based input avoids rotation jumps when the
   knob moves. Native window updates settle before another bounds adjustment,

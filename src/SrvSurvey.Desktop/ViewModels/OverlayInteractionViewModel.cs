@@ -1536,7 +1536,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         OnPropertyChanged(nameof(SelectedOverlayGrowthTooltip));
     }
 
-    /// <summary>Removes the selected panel size override and refreshes its preview.</summary>
+    /// <summary>Restores measured size and neutral depth, preserving the selected panel's angles.</summary>
     private void ResetOverlaySize()
     {
         if (!IsEditing || editSession is null || selectedOverlaySettingsPlotterName is not { } plotterName)
@@ -1544,7 +1544,13 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        if (!editSession.SetSizeOverride(plotterName, null))
+        bool changed = editSession.SetSizeOverride(plotterName, null);
+        if (CockpitPanels is { } cockpit && cockpit.Resolve(plotterName) is { Depth: not 1 } pose)
+        {
+            cockpit.SetPanelPose(plotterName, pose with { Depth = 1 });
+            changed = true;
+        }
+        if (!changed)
         {
             return;
         }
