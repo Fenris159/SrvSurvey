@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -332,35 +333,20 @@ public sealed partial class OverlayPositionPreviewWindow
             chromeBounds = chromeBounds?.Union(bounds) ?? bounds;
         }
 
-        Vector outlineOffset = GetEditorLayoutOrigin(ProjectionReferenceOutline) - panelOrigin;
-        Point corner = projection.Transform(
-            new Point(
-                outlineOffset.X + ProjectionReferenceOutline.Width,
-                outlineOffset.Y + ProjectionReferenceOutline.Height
-            )
-        );
-        Point top = projection.Transform(
-            new Point(outlineOffset.X + ProjectionReferenceOutline.Width, outlineOffset.Y)
-        );
-        Vector edge = corner - top;
-        Vector outward = edge.Length > .001 ? new Vector(edge.Y, -edge.X) / edge.Length : new Vector(1, 0);
-        Point interior = projection.Transform(
-            new Point(
-                outlineOffset.X + ProjectionReferenceOutline.Width / 2,
-                outlineOffset.Y + ProjectionReferenceOutline.Height / 2
-            )
-        );
-        Vector towardInterior = interior - corner;
-        if (outward.X * towardInterior.X + outward.Y * towardInterior.Y > 0)
-        {
-            outward = -outward;
-        }
+        Rect outline = GetChromeRectangle(ProjectionReferenceOutline, panelOrigin);
+        Point[] corners = ProjectRectangle(projection, outline);
+        Point[] chromeCorners =
+        [
+            .. corners,
+            .. ProjectRectangle(projection, GetChromeRectangle(EditorFolderTab, panelOrigin)),
+        ];
         var knobSize = new Size(PanelAngleHandles.Width, PanelAngleHandles.Height);
-        double clearance = (Math.Abs(outward.X) * knobSize.Width + Math.Abs(outward.Y) * knobSize.Height) / 2 + 8;
-        Vector along = edge.Length > .001 ? edge / edge.Length : new Vector(0, 1);
-        double inset = (Math.Abs(along.X) * knobSize.Width + Math.Abs(along.Y) * knobSize.Height) / 2;
-        Point knobOrigin =
-            corner + outward * clearance - along * inset - new Vector(knobSize.Width / 2, knobSize.Height / 2);
+        Point knobOrigin = CockpitPanelHandlePlacement.GetOrigin(
+            corners,
+            chromeCorners,
+            knobSize,
+            GetHandleDisplayBounds(panelSize)
+        );
         Vector knobOffset = GetEditorLayoutOrigin(PanelAngleHandles) - panelOrigin;
         PanelAngleHandles.RenderTransform = new TranslateTransform(
             knobOrigin.X - knobOffset.X,
@@ -368,6 +354,47 @@ public sealed partial class OverlayPositionPreviewWindow
         );
         return chromeBounds!.Value.Union(new Rect(knobOrigin, knobSize));
     }
+
+    private Rect GetHandleDisplayBounds(Size panelSize)
+    {
+        double physicalScale = RenderScaling * scaleFactor;
+        if (physicalScale <= 0)
+        {
+            physicalScale = 1;
+        }
+        PixelPoint origin = pendingCockpitOrigin ?? GetPanelScreenOrigin(RenderScaling);
+        var body = new PixelRect(
+            origin,
+            new PixelSize(
+                Math.Max(1, (int)Math.Ceiling(panelSize.Width * physicalScale)),
+                Math.Max(1, (int)Math.Ceiling(panelSize.Height * physicalScale))
+            )
+        );
+        Screen? screen = Screens.ScreenFromBounds(body) ?? Screens.Primary;
+        PixelRect bounds = cockpitViewport ?? new PixelRect(0, 0, 1920, 1080);
+        if (screen is not null)
+        {
+            bounds = screen.WorkingArea;
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+            {
+                bounds = screen.Bounds;
+            }
+        }
+        return new Rect(
+            (bounds.X - origin.X) / physicalScale,
+            (bounds.Y - origin.Y) / physicalScale,
+            bounds.Width / physicalScale,
+            bounds.Height / physicalScale
+        );
+    }
+
+    private static Point[] ProjectRectangle(Matrix projection, Rect rectangle) =>
+        [
+            projection.Transform(rectangle.TopLeft),
+            projection.Transform(rectangle.TopRight),
+            projection.Transform(rectangle.BottomRight),
+            projection.Transform(rectangle.BottomLeft),
+        ];
 
     private Rect GetChromeRectangle(Control chrome, Point panelOrigin)
     {
@@ -408,13 +435,7 @@ public sealed partial class OverlayPositionPreviewWindow
 
     private static Rect GetProjectedBounds(Matrix projection, Rect rectangle)
     {
-        Point[] corners =
-        [
-            projection.Transform(rectangle.TopLeft),
-            projection.Transform(rectangle.TopRight),
-            projection.Transform(rectangle.BottomRight),
-            projection.Transform(rectangle.BottomLeft),
-        ];
+        Point[] corners = ProjectRectangle(projection, rectangle);
         return new Rect(
             new Point(corners.Min(p => p.X), corners.Min(p => p.Y)),
             new Point(corners.Max(p => p.X), corners.Max(p => p.Y))
@@ -468,5 +489,10 @@ public sealed partial class OverlayPositionPreviewWindow
         ScheduleCockpitPreview();
     }
 
-    private static double ProjectionOverflow(double amount) => Math.Max(0, Math.Ceiling(amount - 0.01));
+    // Device-pixel padding stays stable when the window uses fractional display scaling.
+    private double ProjectionOverflow(double amount)
+    {
+        double scaling = RenderScaling;
+        return Math.Max(0, Math.Ceiling(amount * scaling - 0.01) / scaling);
+    }
 }

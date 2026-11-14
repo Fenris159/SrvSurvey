@@ -21,6 +21,91 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed class CockpitPanelAnglePresentationTests
 {
     [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ShortPanelHandlesRemainReachableWhenDisplayScalingChanges(bool configured)
+    {
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotPulse"));
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            if (configured)
+            {
+                string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-handle-dpi-{Guid.NewGuid():N}", "ui.json");
+                preview.ConfigureCockpitPanels(new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(path)));
+            }
+            preview.Show();
+            preview.SetRenderScaling(1.5);
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            PixelRect screen = preview.Screens.Primary!.WorkingArea;
+            foreach (string name in new[] { "PanelRotationHandleBorder", "PanelRollHandleBorder" })
+            {
+                Border button = preview.FindControl<Border>(name)!;
+                Assert.Equal(new Size(48, 48), button.Bounds.Size);
+                PixelPoint first = preview.PointToScreen(button.TranslatePoint(default, preview)!.Value);
+                PixelPoint last = preview.PointToScreen(button.TranslatePoint(new Point(48, 48), preview)!.Value);
+                Assert.Equal(new PixelSize(72, 72), new PixelSize(last.X - first.X, last.Y - first.Y));
+                Assert.InRange(first.X, screen.X, screen.Right - 1);
+                Assert.InRange(first.Y, screen.Y, screen.Bottom - 1);
+                Assert.InRange(last.X, first.X + 1, screen.Right);
+                Assert.InRange(last.Y, first.Y + 1, screen.Bottom);
+            }
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void BothAngleButtonsStayOnScreenAtMonitorCorners(bool right, bool bottom)
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-reachable-handles-{Guid.NewGuid():N}", "ui.json");
+        var model = new CockpitOverlayViewModel(new CockpitOverlaySettingsStore(path));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotPulse"));
+        try
+        {
+            preview.ConfigureScale(OverlayScaleCatalog.GetIndex(0), null, 1);
+            preview.ConfigureSize(new OverlayPanelSize(300, 32));
+            preview.ConfigureCockpitPanels(model);
+            preview.Show();
+            PixelRect screen = preview.Screens.Primary!.WorkingArea;
+            preview.ConfigureCockpitViewport(screen, 1);
+            PixelPoint wanted = new(
+                right ? screen.Right - 308 : screen.X + 8,
+                bottom ? screen.Bottom - 40 : screen.Y + 8
+            );
+            PositionPanel(preview, wanted);
+            Dispatcher.UIThread.RunJobs();
+            using WriteableBitmap? frame = preview.CaptureRenderedFrame();
+            Assert.Equal(wanted, preview.GetPanelScreenOrigin(preview.RenderScaling));
+            foreach (string name in new[] { "PanelRotationHandleBorder", "PanelRollHandleBorder" })
+            {
+                Border button = preview.FindControl<Border>(name)!;
+                PixelPoint first = preview.PointToScreen(button.TranslatePoint(default, preview)!.Value);
+                PixelPoint last = preview.PointToScreen(button.TranslatePoint(new Point(48, 48), preview)!.Value);
+                Assert.InRange(first.X, screen.X, screen.Right - 48);
+                Assert.InRange(first.Y, screen.Y, screen.Bottom - 48);
+                Assert.InRange(last.X, screen.X + 48, screen.Right);
+                Assert.InRange(last.Y, screen.Y + 48, screen.Bottom);
+            }
+            Border outline = preview.FindControl<Border>("ProjectionReferenceOutline")!;
+            StackPanel handles = preview.FindControl<StackPanel>("PanelAngleHandles")!;
+            Rect panel = new(outline.TranslatePoint(default, preview)!.Value, outline.Bounds.Size);
+            Rect controls = new(handles.TranslatePoint(default, preview)!.Value, handles.Bounds.Size);
+            Assert.False(panel.Inflate(7.99).Intersects(controls));
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaTheory]
     [InlineData(2410, -6)]
     [InlineData(-2410, 6)]
     public void DedicatedRollWrapsSeveralTurnsInOnePointerMove(double horizontalMotion, double expected)

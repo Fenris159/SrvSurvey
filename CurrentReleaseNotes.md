@@ -39,7 +39,8 @@ capture catalogs.
   preventing the editor freeze encountered while rotating on Linux. The full
   button, including its border and label, starts its dedicated gesture.
   Queued gestures retain their own pointer positions, and deferred bounds fits
-  retain the latest accepted panel position.
+  retain the latest accepted panel position. Changing display scaling keeps
+  the controls correctly sized and responsive.
 - **Match the live perspective:** Preview projection uses the panel's actual
   position, display and panel scales, and the calibrated game lens when available.
   Rotated content can render beyond its original frame within the game viewport.
@@ -52,7 +53,9 @@ capture catalogs.
   border still opens the appearance controls.
 - **Keep editing controls reachable:** Expanded settings scroll on shorter
   displays while the editor's save and cancel controls stay visible. Rotation
-  handles remain visible and accessible across themes.
+  handles remain visible and accessible across themes. The control stack shifts
+  along an exterior edge or chooses another edge near the monitor boundary,
+  keeping both buttons reachable without moving the panel.
 - **Keep settings on this computer:** Cockpit mode and panel angles are
   machine-specific, use the application's theme resources, and retain existing
   overlay visibility controls.
