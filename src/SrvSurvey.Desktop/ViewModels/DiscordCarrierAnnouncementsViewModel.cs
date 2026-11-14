@@ -95,6 +95,14 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
         get => draft.JumpArrived;
         set => Edit(draft with { JumpArrived = value });
     }
+    public DiscordCarrierMessageSettings MessageSettings => draft.MessageSettings ?? new();
+
+    public void ApplyMessageSettings(DiscordCarrierMessageSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        Edit(draft with { MessageSettings = settings });
+    }
+
     internal Task PendingDelivery => lastDelivery;
 
     private void Edit(DiscordCarrierPreferences next)
@@ -234,7 +242,13 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
                         continue;
                     }
                     DiscordWebhookResult result = await client
-                        .SendAnnouncementAsync(delivery.Preferences.WebhookUrl, delivery.Announcement, shutdown.Token)
+                        .SendAnnouncementAsync(
+                            delivery.Preferences.WebhookUrl,
+                            delivery.Announcement,
+                            delivery.Preferences.MessageSettings ?? new(),
+                            canSend: () => delivery.Revision == Volatile.Read(ref revision) && networkAllowed(),
+                            cancellationToken: shutdown.Token
+                        )
                         .ConfigureAwait(false);
                     dispatch(() =>
                     {

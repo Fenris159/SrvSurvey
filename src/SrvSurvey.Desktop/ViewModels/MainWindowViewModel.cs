@@ -363,7 +363,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             );
             DiscordCarrierAnnouncements = new DiscordCarrierAnnouncementsViewModel(
                 new DiscordCarrierSettingsStore(AppDataPaths.UiSettingsPath),
-                new DiscordCarrierWebhookClient(externalNetworkClient),
+                new DiscordCarrierWebhookClient(externalNetworkClient, imageCropper: DiscordCarrierImageProcessor.Crop),
                 () => !IsDiagnosticReplay
             );
             rollback.Add(() => DiscordCarrierAnnouncements.DisposeAsync().AsTask().GetAwaiter().GetResult());

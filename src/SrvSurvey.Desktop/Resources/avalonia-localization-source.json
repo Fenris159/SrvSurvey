@@ -2353,6 +2353,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/GuardianStatusOverlayPresentation.axaml"
   },
   {
+    "Text": "ABC-123",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
+  },
+  {
     "Text": "ABSENT",
     "IsFormat": false,
     "SourceKinds": [
@@ -2728,6 +2736,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "APP",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "APPIMAGE",
@@ -4661,6 +4677,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Announcement message template",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Announcement preset \u0027{0}\u0027 applied.",
     "IsFormat": true,
     "SourceKinds": [
@@ -4691,6 +4715,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Announcement title",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Announcements",
@@ -5069,6 +5101,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Apply to settings",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
+    "Text": "Apply, then Save changes in settings to use these messages. Cancel discards this editor\u0027s changes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Approach a Guardian point before marking it empty.",
     "IsFormat": false,
     "SourceKinds": [
@@ -5372,7 +5420,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Arrival distance (ls)",
@@ -8463,6 +8511,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.History.cs"
   },
   {
+    "Text": "Bold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Bookmark POI",
     "IsFormat": false,
     "SourceKinds": [
@@ -9000,6 +9056,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.Buildings.cs"
+  },
+  {
+    "Text": "Bullet list",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Bumper",
@@ -9984,6 +10048,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
+    "Text": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml.cs"
+  },
+  {
     "Text": "Canonn",
     "IsFormat": false,
     "SourceKinds": [
@@ -10541,6 +10613,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "Carrier announcement editor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -10571,6 +10651,46 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Carrier image",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
+    "Text": "Carrier image and preview",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
+    "Text": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
+    "Text": "Carrier image zoom",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
+    "Text": "Carrier images",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml.cs"
   },
   {
     "Text": "Carrier linking",
@@ -11494,6 +11614,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "Choose a carrier image to include it here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11959,6 +12087,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Choose image\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Choose local images...",
     "IsFormat": false,
     "SourceKinds": [
@@ -12197,6 +12333,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Choose your carrier image",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml.cs"
   },
   {
     "Text": "Choose...",
@@ -16202,6 +16346,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationNexusView.axaml"
   },
   {
+    "Text": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Create a project",
     "IsFormat": false,
     "SourceKinds": [
@@ -18724,6 +18876,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Discord preview",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Discord webhook URL",
     "IsFormat": false,
     "SourceKinds": [
@@ -19487,6 +19647,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml.cs"
   },
   {
+    "Text": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Drag to resize this overlay panel",
     "IsFormat": false,
     "SourceKinds": [
@@ -20219,6 +20387,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Edit announcement messages\u2026",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Edit bookmark",
@@ -22159,6 +22335,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
+  },
+  {
+    "Text": "Exploration route: Sol \u2192 Lave \u2192 Colonia",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
   },
   {
     "Text": "Exploration screenshots",
@@ -30078,6 +30262,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
+    "Text": "Include standard itinerary and time fields",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Incomplete",
     "IsFormat": false,
     "SourceKinds": [
@@ -30174,6 +30366,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "Inline code",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
     "IsFormat": false,
     "SourceKinds": [
@@ -30236,6 +30436,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/SpanshSystemListEntry.axaml.cs"
+  },
+  {
+    "Text": "Insert announcement field",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
+    "Text": "Insert field",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Inside",
@@ -30469,6 +30685,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
+  },
+  {
+    "Text": "Italic",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Item",
@@ -31079,7 +31303,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Jump cooldown",
@@ -31096,6 +31320,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Jump event",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
+    "Text": "Jump event template",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Jump events",
@@ -31133,9 +31373,10 @@
     "Text": "Jump scheduled",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Jump scheduled / drive charging",
@@ -32327,6 +32568,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Lave",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
+  },
+  {
+    "Text": "Lave 1",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
   },
   {
     "Text": "Layout",
@@ -35472,9 +35729,10 @@
     "Text": "Message",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Message opened.",
@@ -38663,6 +38921,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "No carrier image selected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
   },
   {
     "Text": "No carriers are linked to this Nexus.",
@@ -43253,6 +43519,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
   },
   {
+    "Text": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "POI",
     "IsFormat": false,
     "SourceKinds": [
@@ -43803,7 +44077,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Personal progress not supplied by Frontier or local journals",
@@ -46898,6 +47172,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
+  },
+  {
+    "Text": "Quote",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "R\u002B",
@@ -50103,6 +50385,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FiregroupsView.axaml"
   },
   {
+    "Text": "Remove image",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Remove key",
     "IsFormat": false,
     "SourceKinds": [
@@ -50895,6 +51185,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Reset crop",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Reset input detection",
     "IsFormat": false,
     "SourceKinds": [
@@ -51293,6 +51591,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
+  },
+  {
+    "Text": "Restore this event\u0027s default",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Restore this panel\u0027s original measured size",
@@ -53560,6 +53866,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -55954,6 +56268,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BoxelAverageHelpDialog.axaml"
+  },
+  {
+    "Text": "Selected carrier image",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Selected entries: {0}",
@@ -58656,7 +58978,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
   },
   {
     "Text": "Sol and Sagittarius A* are coordinate references, not extra travel legs. The map uses the galactic X/Z plane with the same distance scale on both axes.",
@@ -59172,7 +59494,7 @@
       "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Squadron carrier itinerary",
@@ -60093,7 +60415,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "SrvSurvey-XP {0}",
@@ -61267,6 +61589,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Strikethrough",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Stronghold",
@@ -64820,6 +65150,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The carrier image could not be decoded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/DiscordCarrierImageProcessor.cs"
   },
   {
     "Text": "The carrier operation failed: {0}",
@@ -69123,9 +69461,10 @@
     "Text": "Title",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "TitleBarBackgroundBrush",
@@ -70042,6 +70381,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord\u0027s live departure countdown; it is empty for cancellations and arrivals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
+  },
+  {
     "Text": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
     "IsFormat": false,
     "SourceKinds": [
@@ -70553,6 +70900,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Underline",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Undermine",
@@ -75037,6 +75392,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningPowerplayView.axaml"
   },
   {
+    "Text": "Your carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
+  },
+  {
     "Text": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
     "IsFormat": true,
     "SourceKinds": [
@@ -75163,6 +75526,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Zoom",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml"
   },
   {
     "Text": "Zoom Guardian map in",
@@ -78501,12 +78872,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
+    "Text": "image/jpeg",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml.cs"
+  },
+  {
     "Text": "image/png",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml.cs"
   },
   {
     "Text": "images",
@@ -78547,6 +78926,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "in {0} minutes",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/DiscordMessagePreview.cs"
   },
   {
     "Text": "inara-accepted.txt",
@@ -79323,6 +79710,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeCatalog.cs"
+  },
+  {
+    "Text": "monospace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/DiscordMessagePreview.cs"
   },
   {
     "Text": "more than one imported profile has that name",
@@ -81189,6 +81584,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GamescopeScalingState.cs"
   },
   {
+    "Text": "style",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/DiscordMessagePreview.cs"
+  },
+  {
     "Text": "suffix {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -81373,6 +81776,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "text",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/DiscordCarrierMessageEditorWindow.axaml.cs"
+  },
+  {
     "Text": "text scale",
     "IsFormat": false,
     "SourceKinds": [
@@ -81531,6 +81942,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "time",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/DiscordMessagePreview.cs"
   },
   {
     "Text": "timestamp",
@@ -82572,6 +82991,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerDeviceProvider.cs"
+  },
+  {
+    "Text": "{0} / 4096 characters",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
   },
   {
     "Text": "{0} / 5 stars \u00B7 {1} votes",
@@ -83708,6 +84135,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} minutes ago",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Controls/DiscordMessagePreview.cs"
   },
   {
     "Text": "{0} missions tracked",
