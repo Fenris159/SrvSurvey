@@ -20,7 +20,8 @@ formatted preview.
   include Discord's updating relative time. Absolute timestamps display in each
   reader's local time. Custom templates can place the countdown with
   `{countdown}`; cancellations and arrivals leave that field empty.
-- **Frame your carrier screenshot:** Choose a PNG or JPEG up to 8 MB separately
+- **Frame your carrier screenshot:** Choose a PNG or JPEG up to 8 MB and 16
+  megapixels (16,384 pixels per side) separately
   for your personal and squadron carriers. Pan and zoom beneath the fixed 16:9
   crop frame, watch the announcement preview follow your selection, and reset
   the crop when needed. Discord receives the selected area as a 1280 × 720 image

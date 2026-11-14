@@ -7,12 +7,13 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Discord;
 using SrvSurvey.Desktop.Controls;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Presentation;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
-public sealed partial class DiscordCarrierMessageEditorWindow : Window
+public sealed partial class DiscordCarrierMessageEditorWindow : Window, IDisposable
 {
     private readonly DiscordCarrierMessageEditorViewModel model;
     private readonly Action<DiscordCarrierMessageSettings> apply;
@@ -20,6 +21,7 @@ public sealed partial class DiscordCarrierMessageEditorWindow : Window
     private string? requestedImagePath;
     private int requestedImageSelection = -1;
     private int imageRevision;
+    private bool disposed;
     internal Task PendingImage { get; private set; } = Task.CompletedTask;
 
     public DiscordCarrierMessageEditorWindow()
@@ -42,15 +44,25 @@ public sealed partial class DiscordCarrierMessageEditorWindow : Window
             PendingImage = RefreshImageAsync();
             await PendingImage;
         };
-        Closed += (_, _) =>
-        {
-            model.PropertyChanged -= ModelChanged;
-            imageRevision++;
-            CarrierImage.Source = null;
-            ImageCropSelector.Source = null;
-            image?.Dispose();
-        };
+        Closed += (_, _) => Dispose();
         UpdatePreview();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+        disposed = true;
+        model.PropertyChanged -= ModelChanged;
+        imageRevision++;
+        CarrierImage.Source = null;
+        ImageCropSelector.Source = null;
+        image?.Dispose();
+        image = null;
+        Close();
+        GC.SuppressFinalize(this);
     }
 
     private async void ModelChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -139,8 +151,13 @@ public sealed partial class DiscordCarrierMessageEditorWindow : Window
             {
                 return;
             }
-            using var stream = new MemoryStream(selected.Bytes);
-            image = new Bitmap(stream);
+            Bitmap preview = await Task.Run(() => DiscordCarrierImageProcessor.CreatePreview(selected));
+            if (revision != imageRevision)
+            {
+                preview.Dispose();
+                return;
+            }
+            image = preview;
             ImageCropSelector.Source = image;
             ImageCropPanel.IsVisible = true;
             UpdateImageCrop();
@@ -157,7 +174,8 @@ public sealed partial class DiscordCarrierMessageEditorWindow : Window
         {
             if (revision == imageRevision)
             {
-                ImageError.Text = "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.";
+                ImageError.Text =
+                    "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.";
             }
         }
     }
@@ -219,7 +237,8 @@ public sealed partial class DiscordCarrierMessageEditorWindow : Window
     {
         if (FieldChoice.SelectedItem is string token)
         {
-            Insert(token, "", "");
+            MessageEditor.SelectedText = token;
+            MessageEditor.Focus();
             FieldChoice.SelectedIndex = -1;
         }
     }
@@ -234,6 +253,10 @@ public sealed partial class DiscordCarrierMessageEditorWindow : Window
                 string text = MessageEditor.Text ?? "";
                 int lineStart = start == 0 ? 0 : text.LastIndexOf('\n', start - 1) + 1;
                 int end = Math.Max(MessageEditor.SelectionStart, MessageEditor.SelectionEnd);
+                if (end > lineStart && text[end - 1] == '\n')
+                {
+                    end--;
+                }
                 string selection = text[lineStart..end];
                 string formatted = marker + selection.Replace("\n", "\n" + marker, StringComparison.Ordinal);
                 MessageEditor.Text = text[..lineStart] + formatted + text[end..];

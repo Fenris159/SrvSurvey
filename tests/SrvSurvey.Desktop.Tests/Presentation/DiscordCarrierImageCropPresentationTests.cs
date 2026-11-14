@@ -66,6 +66,40 @@ public sealed class DiscordCarrierImageCropPresentationTests
     }
 
     [AvaloniaFact]
+    public void ZoomingDuringAPanKeepsTheNewZoomWhenDraggingContinues()
+    {
+        using var stream = new MemoryStream(Quadrants());
+        using var bitmap = new Bitmap(stream);
+        var selector = new CarrierImageCropSelector
+        {
+            Source = bitmap,
+            Crop = new(2),
+            Focusable = true,
+        };
+        var window = new Window
+        {
+            Width = 400,
+            Height = 300,
+            Content = selector,
+        };
+        try
+        {
+            window.Show();
+            window.UpdateLayout();
+            window.MouseDown(new Point(200, 150), MouseButton.Left);
+            window.MouseWheel(new Point(200, 150), new Vector(0, 1));
+            window.MouseMove(new Point(280.96, 150));
+            window.MouseUp(new Point(280.96, 150), MouseButton.Left);
+            Assert.Equal(2.2, selector.Crop.Zoom, 6);
+            Assert.Equal(0.4, selector.Crop.CenterX, 6);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public async Task ImageSelectorShowsTheCropAndTheMessagePreviewTracksZoomAndReset()
     {
         string root = Path.Combine(Path.GetTempPath(), "carrier-crop-ui-" + Guid.NewGuid());

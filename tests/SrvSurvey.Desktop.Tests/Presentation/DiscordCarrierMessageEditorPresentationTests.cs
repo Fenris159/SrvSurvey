@@ -145,7 +145,7 @@ public sealed class DiscordCarrierMessageEditorPresentationTests
             await editor.Window.PendingImage;
             Assert.Equal(
                 new Size(240, 120),
-                Assert.IsAssignableFrom<IImage>(editor.Window.FindControl<Image>("CarrierImage")!.Source).Size
+                Assert.IsType<IImage>(editor.Window.FindControl<Image>("CarrierImage")!.Source, exactMatch: false).Size
             );
             Assert.False(editor.Window.FindControl<TextBlock>("ImagePlaceholder")!.IsVisible);
             Assert.Equal("", editor.Window.FindControl<TextBlock>("ImageError")!.Text);
@@ -166,7 +166,7 @@ public sealed class DiscordCarrierMessageEditorPresentationTests
             model.ImagePath = Path.Combine(root, "missing.png");
             await editor.Window.PendingImage;
             Assert.Equal(
-                "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
+                "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
                 editor.Window.FindControl<TextBlock>("ImageError")!.Text
             );
             Assert.True(editor.Window.FindControl<TextBlock>("ImagePlaceholder")!.IsVisible);
@@ -271,12 +271,72 @@ public sealed class DiscordCarrierMessageEditorPresentationTests
 
     [AvaloniaTheory]
     [InlineData("**Board now")]
+    [InlineData("***Board now")]
     [InlineData("``Board now")]
     public void UnmatchedFormattingRemainsVisibleInThePreview(string markdown)
     {
         var preview = new DiscordMessagePreview { Markdown = markdown };
         Assert.Equal(markdown, string.Concat(preview.Inlines!.Select(inline => Assert.IsType<Run>(inline).Text)));
     }
+
+    [AvaloniaFact]
+    public void InsertingAFieldReplacesSelectedText()
+    {
+        var model = new DiscordCarrierMessageEditorViewModel(new(), previewTime: DateTimeOffset.UnixEpoch)
+        {
+            Message = "Depart Sol",
+            IncludeDetails = false,
+        };
+        using var editor = new EditorFixture(model);
+        TextBox box = editor.Window.FindControl<TextBox>("MessageEditor")!;
+        box.SelectionStart = 10;
+        box.SelectionEnd = 7;
+        editor.Window.FindControl<ComboBox>("FieldChoice")!.SelectedItem = "{destination}";
+        Assert.Equal("Depart {destination}", model.Message);
+        Assert.Equal("Depart Lave", model.Preview.Description);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("QuoteButton", "> first\nsecond")]
+    [InlineData("ListButton", "- first\nsecond")]
+    public void FormattingAWholeLineDoesNotChangeTheNextUnselectedLine(string button, string expected)
+    {
+        var model = new DiscordCarrierMessageEditorViewModel(new(), previewTime: DateTimeOffset.UnixEpoch)
+        {
+            Message = "first\nsecond",
+        };
+        using var editor = new EditorFixture(model);
+        TextBox box = editor.Window.FindControl<TextBox>("MessageEditor")!;
+        box.SelectionStart = 0;
+        box.SelectionEnd = 6;
+        Click(editor.Window, button);
+        Assert.Equal(expected, model.Message);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(@"\*literal\*", "*literal*", false)]
+    [InlineData(@"*literal\* tail*", "literal* tail", true)]
+    public void PreviewHonorsEscapedOpeningAndClosingDelimiters(string markdown, string expected, bool italic)
+    {
+        var preview = new DiscordMessagePreview { Markdown = markdown };
+        Assert.Equal(expected, string.Concat(preview.Inlines!.Select(VisibleText)));
+        if (italic)
+        {
+            Assert.Equal(FontStyle.Italic, Assert.IsType<Span>(Assert.Single(preview.Inlines!)).FontStyle);
+        }
+        else
+        {
+            Assert.Empty(preview.Inlines!.OfType<Span>());
+        }
+    }
+
+    private static string VisibleText(Inline inline) =>
+        inline switch
+        {
+            Run run => run.Text ?? "",
+            Span span => string.Concat(span.Inlines.Select(VisibleText)),
+            _ => "",
+        };
 
     [AvaloniaFact]
     public async Task InvalidImagesShowAnErrorAndReselectionRetriesTheSamePath()
@@ -290,7 +350,7 @@ public sealed class DiscordCarrierMessageEditorPresentationTests
             model.SelectImage(path);
             await editor.Window.PendingImage;
             Assert.Equal(
-                "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
+                "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
                 editor.Window.FindControl<TextBlock>("ImageError")!.Text
             );
             using (var bitmap = new WriteableBitmap(new PixelSize(120, 60), new Vector(96, 96)))

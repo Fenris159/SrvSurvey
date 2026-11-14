@@ -10048,7 +10048,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
-    "Text": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
+    "Text": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -11989,6 +11989,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.cs"
+  },
+  {
+    "Text": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/DiscordCarrierImageProcessor.cs"
   },
   {
     "Text": "Choose an overlay monitor",
@@ -43519,7 +43527,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
   },
   {
-    "Text": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+    "Text": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -65152,7 +65160,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The carrier image could not be allocated.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/DiscordCarrierImageProcessor.cs"
+  },
+  {
     "Text": "The carrier image could not be decoded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/DiscordCarrierImageProcessor.cs"
+  },
+  {
+    "Text": "The carrier image could not be encoded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/DiscordCarrierImageProcessor.cs"
+  },
+  {
+    "Text": "The carrier image could not be rendered.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -70772,6 +70804,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/EliteKeyboardDisplayDiscovery.cs"
+  },
+  {
+    "Text": "Unable to create a new SKBitmap instance.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/DiscordCarrierImageProcessor.cs"
   },
   {
     "Text": "Unable to open EDAstro\u0027s New POI page.",

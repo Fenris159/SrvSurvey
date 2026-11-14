@@ -24,6 +24,17 @@ public sealed class DiscordCarrierImageCropTests
     }
 
     [Fact]
+    public void RoundingSensitiveDimensionsKeepTheFrameWithinTheImage()
+    {
+        DiscordCarrierCropRectangle area = new DiscordCarrierImageCrop().GetRectangle(206, 103);
+        Assert.Equal(11.444444444444443, area.X, 10);
+        Assert.Equal(0, area.Y, 10);
+        Assert.Equal(183.11111111111111, area.Width, 10);
+        Assert.Equal(103, area.Height, 10);
+        Assert.Equal(new DiscordCarrierImageCrop(), new DiscordCarrierImageCrop().Constrain(206, 103));
+    }
+
+    [Fact]
     public void PanningStopsAtTheImageEdgesAndKeepsTheFrameFilled()
     {
         var crop = new DiscordCarrierImageCrop(2, -10, 10);

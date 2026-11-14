@@ -11,6 +11,7 @@ namespace SrvSurvey.Desktop.Controls;
 public sealed partial class DiscordMessagePreview : TextBlock
 {
     private static readonly string[] markers = ["`", "***", "**", "__", "~~", "*"];
+    private const string EscapablePunctuation = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
     public static readonly StyledProperty<string> MarkdownProperty = AvaloniaProperty.Register<
         DiscordMessagePreview,
         string
@@ -42,12 +43,19 @@ public sealed partial class DiscordMessagePreview : TextBlock
         }
     }
 
-    private bool AppendUntil(InlineCollection target, string text, ref int offset, string? closing, int depth)
+    private bool AppendUntil(
+        InlineCollection target,
+        string text,
+        ref int offset,
+        string? closing,
+        int depth,
+        int minimumClosingOffset = 0
+    )
     {
         int plainStart = offset;
         while (offset < text.Length)
         {
-            if (closing is not null && IsClosing(text, offset, closing))
+            if (closing is not null && offset >= minimumClosingOffset && IsClosing(text, offset, closing))
             {
                 AppendText(target, text[plainStart..offset]);
                 offset += closing.Length;
@@ -70,6 +78,12 @@ public sealed partial class DiscordMessagePreview : TextBlock
 
     private Inline? ReadInline(string text, ref int offset, int depth)
     {
+        if (text[offset] == '\\' && offset + 1 < text.Length && EscapablePunctuation.Contains(text[offset + 1]))
+        {
+            string literal = text[offset + 1].ToString();
+            offset += 2;
+            return new Run(literal);
+        }
         Match special = SpecialFormatting().Match(text, offset);
         if (special.Success)
         {
@@ -107,9 +121,18 @@ public sealed partial class DiscordMessagePreview : TextBlock
     private Span? ReadEmphasis(string text, ref int offset, string marker, int depth)
     {
         int start = offset;
+        int runEnd = start;
+        while (runEnd < text.Length && text[runEnd] == marker[0])
+        {
+            runEnd++;
+        }
+        if (text.IndexOf(marker, runEnd, StringComparison.Ordinal) < 0)
+        {
+            return null;
+        }
         offset += marker.Length;
         Span span = CreateSpan(marker);
-        if (AppendUntil(span.Inlines, text, ref offset, marker, depth + 1) && span.Inlines.Count > 0)
+        if (AppendUntil(span.Inlines, text, ref offset, marker, depth + 1, runEnd) && span.Inlines.Count > 0)
         {
             return span;
         }

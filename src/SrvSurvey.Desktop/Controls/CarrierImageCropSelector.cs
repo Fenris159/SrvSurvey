@@ -167,6 +167,11 @@ public sealed class CarrierImageCropSelector : Control
                 Source.PixelSize.Height
             )
         );
+        if (dragOrigin is not null)
+        {
+            dragOrigin = e.GetPosition(this);
+            dragCrop = Crop;
+        }
         e.Handled = true;
     }
 

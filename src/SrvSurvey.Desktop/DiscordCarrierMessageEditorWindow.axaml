@@ -52,7 +52,7 @@
             <Button x:Name="ChooseImageButton" Classes="secondary" Content="Choose image…" Click="ChooseImage_Click" />
             <Button x:Name="RemoveImageButton" Classes="secondary" Content="Remove image" Click="RemoveImage_Click" />
           </StackPanel>
-          <TextBlock Classes="muted" TextWrapping="Wrap" Text="PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier." />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier." />
           <StackPanel x:Name="ImageCropPanel" Spacing="8" IsVisible="False">
             <controls:CarrierImageCropSelector x:Name="ImageCropSelector" Height="250" Focusable="True" Cursor="SizeAll"
                 Crop="{Binding ImageCrop, Mode=TwoWay}" AutomationProperties.Name="Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop." />

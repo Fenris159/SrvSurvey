@@ -20,7 +20,7 @@ public sealed record DiscordCarrierImageCrop(double Zoom = 1, double CenterX = 0
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sourceWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sourceHeight);
         double width = Math.Min(sourceWidth, sourceHeight * AspectRatio) / EffectiveZoom;
-        double height = width / AspectRatio;
+        double height = Math.Min(sourceHeight, width / AspectRatio);
         double x = Math.Clamp(
             double.IsFinite(CenterX) ? CenterX : 0.5,
             width / (2 * sourceWidth),

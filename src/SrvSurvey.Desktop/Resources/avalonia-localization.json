@@ -5013,8 +5013,8 @@
       "translation": "Kandidat {0} wurde nicht hochgeladen: {1}"
     },
     {
-      "source": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
-      "translation": "Dieses Bild kann nicht geöffnet werden. Wählen Sie ein lesbares PNG oder JPEG mit bis zu 8 MB."
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Dieses Bild kann nicht geöffnet werden. Wähle eine PNG- oder JPEG-Datei mit höchstens 8 MB, 16 Megapixeln und 16.384 Pixeln pro Seite."
     },
     {
       "source": "Canonn",
@@ -5979,6 +5979,10 @@
     {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Wählen Sie einen vorhandenen absoluten Screenshot-Quellordner."
+    },
+    {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Wähle ein Bild mit höchstens 16 Megapixeln und 16.384 Pixeln pro Seite."
     },
     {
       "source": "Choose an overlay monitor",
@@ -21681,8 +21685,8 @@
       "translation": "PNG-Bild"
     },
     {
-      "source": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
-      "translation": "PNG oder JPEG, bis zu 8 MB. Wählen Sie den Screenshot Ihres Mobilfunkanbieters. Es wird mit jeder Ankündigung für diesen Netzbetreiber hochgeladen."
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG oder JPEG, bis zu 8 MB und 16 Megapixel (16.384 Pixel pro Seite). Wähle deinen Träger-Screenshot; er wird bei jeder Ankündigung für diesen Träger hochgeladen."
     },
     {
       "source": "POI",
@@ -32465,8 +32469,20 @@
       "translation": "Die Frachtreihe zeigt eine von 72 belegte Kapazität. Die Rigg-Einstellungsgurte bleiben zu Fuß deaktiviert."
     },
     {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Für das Trägerbild konnte kein Speicher reserviert werden."
+    },
+    {
       "source": "The carrier image could not be decoded.",
       "translation": "Das Trägerbild konnte nicht dekodiert werden."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Das Trägerbild konnte nicht kodiert werden."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Das Trägerbild konnte nicht gerendert werden."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -35271,6 +35287,10 @@
     {
       "source": "Uid:",
       "translation": "Uid:"
+    },
+    {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Es konnte keine neue SKBitmap-Instanz erstellt werden."
     },
     {
       "source": "Unable to open EDAstro's New POI page.",
@@ -47719,8 +47739,8 @@
       "translation": "El candidato {0} no fue subido: {1}"
     },
     {
-      "source": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
-      "translation": "No se puede abrir esta imagen. Elija un PNG o JPEG legible de hasta 8 MB."
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "No se puede abrir esta imagen. Selecciona un PNG o JPEG de hasta 8 MB, 16 megapíxeles y 16.384 píxeles por lado."
     },
     {
       "source": "Canonn",
@@ -48685,6 +48705,10 @@
     {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Elija una carpeta de origen de captura de pantalla absoluta existente."
+    },
+    {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Selecciona una imagen de hasta 16 megapíxeles y 16.384 píxeles por lado."
     },
     {
       "source": "Choose an overlay monitor",
@@ -64387,8 +64411,8 @@
       "translation": "imagen PNG"
     },
     {
-      "source": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
-      "translation": "PNG o JPEG, hasta 8 MB. Elija la captura de pantalla de su operador; se carga con cada anuncio de este operador."
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG o JPEG, hasta 8 MB y 16 megapíxeles (16.384 píxeles por lado). Selecciona la captura de tu portanaves; se adjuntará a cada anuncio de este portanaves."
     },
     {
       "source": "POI",
@@ -75171,8 +75195,20 @@
       "translation": "La fila de carga muestra capacidad ocupada sobre 72. Los cordones de ajuste de plataformas permanecen inhabilitados a pie."
     },
     {
+      "source": "The carrier image could not be allocated.",
+      "translation": "No se pudo asignar memoria para la imagen del portanaves."
+    },
+    {
       "source": "The carrier image could not be decoded.",
       "translation": "La imagen del portador no se pudo decodificar."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "No se pudo codificar la imagen del portanaves."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "No se pudo renderizar la imagen del portanaves."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -77977,6 +78013,10 @@
     {
       "source": "Uid:",
       "translation": "identificador de pantalla:"
+    },
+    {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "No se pudo crear una nueva instancia de SKBitmap."
     },
     {
       "source": "Unable to open EDAstro's New POI page.",
@@ -90425,8 +90465,8 @@
       "translation": "Le candidat {0} n'a pas été téléchargé : {1}"
     },
     {
-      "source": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
-      "translation": "Impossible d'ouvrir cette image. Choisissez un PNG ou un JPEG lisible jusqu'à 8 Mo."
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Impossible d’ouvrir cette image. Choisissez un PNG ou JPEG de 8 Mo, 16 mégapixels et 16 384 pixels par côté au maximum."
     },
     {
       "source": "Canonn",
@@ -91391,6 +91431,10 @@
     {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Choisissez un dossier source de capture d'écran absolu existant."
+    },
+    {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Choisissez une image de 16 mégapixels et 16 384 pixels par côté au maximum."
     },
     {
       "source": "Choose an overlay monitor",
@@ -107093,8 +107137,8 @@
       "translation": "Image PNG"
     },
     {
-      "source": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
-      "translation": "PNG ou JPEG, jusqu'à 8 Mo. Choisissez la capture d'écran de votre opérateur ; il est téléchargé avec chaque annonce de ce transporteur."
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG ou JPEG, jusqu’à 8 Mo et 16 mégapixels (16 384 pixels par côté). Choisissez la capture de votre porte-vaisseaux ; elle sera jointe à chaque annonce de ce porte-vaisseaux."
     },
     {
       "source": "POI",
@@ -117877,8 +117921,20 @@
       "translation": "La rangée de chargement affiche une capacité occupée sur 72. Les cordes de réglage restent désactivées à pied."
     },
     {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Impossible d’allouer la mémoire pour l’image du porte-vaisseaux."
+    },
+    {
       "source": "The carrier image could not be decoded.",
       "translation": "L'image porteuse n'a pas pu être décodée."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Impossible d’encoder l’image du porte-vaisseaux."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Impossible d’afficher l’image du porte-vaisseaux."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -120683,6 +120739,10 @@
     {
       "source": "Uid:",
       "translation": "Uid :"
+    },
+    {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Impossible de créer une nouvelle instance de SKBitmap."
     },
     {
       "source": "Unable to open EDAstro's New POI page.",
@@ -133131,8 +133191,8 @@
       "translation": "Candidato {0} não foi enviado: {1}"
     },
     {
-      "source": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
-      "translation": "Não é possível abrir esta imagem. Escolha um PNG ou JPEG legível de até 8 MB."
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Não foi possível abrir esta imagem. Escolha um PNG ou JPEG com até 8 MB, 16 megapixels e 16.384 pixels por lado."
     },
     {
       "source": "Canonn",
@@ -134097,6 +134157,10 @@
     {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Escolha uma pasta de origem absoluta da captura de tela existente."
+    },
+    {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Escolha uma imagem com até 16 megapixels e 16.384 pixels por lado."
     },
     {
       "source": "Choose an overlay monitor",
@@ -149799,8 +149863,8 @@
       "translation": "Imagem PNG"
     },
     {
-      "source": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
-      "translation": "PNG ou JPEG, até 8 MB. Escolha a captura de tela da sua operadora; ele é carregado com todos os anúncios desta operadora."
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG ou JPEG, até 8 MB e 16 megapixels (16.384 pixels por lado). Escolha a captura da sua nave cargueira; ela será enviada com cada anúncio desta nave cargueira."
     },
     {
       "source": "POI",
@@ -160583,8 +160647,20 @@
       "translation": "A fila de carga mostra capacidade ocupada de 72. As cordas de fixação da plataforma permanecem desativadas a pé."
     },
     {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Não foi possível alocar memória para a imagem da nave cargueira."
+    },
+    {
       "source": "The carrier image could not be decoded.",
       "translation": "A imagem da portadora não pôde ser decodificada."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Não foi possível codificar a imagem da nave cargueira."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Não foi possível renderizar a imagem da nave cargueira."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -163389,6 +163465,10 @@
     {
       "source": "Uid:",
       "translation": "Uid:"
+    },
+    {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Não foi possível criar uma nova instância de SKBitmap."
     },
     {
       "source": "Unable to open EDAstro's New POI page.",
@@ -175837,8 +175917,8 @@
       "translation": "Кандидат {0} не был загружен: {1}"
     },
     {
-      "source": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
-      "translation": "Невозможно открыть это изображение. Выберите читаемый PNG или JPEG размером до 8 МБ."
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Не удалось открыть изображение. Выберите PNG или JPEG размером до 8 МБ, 16 мегапикселей и 16 384 пикселей на сторону."
     },
     {
       "source": "Canonn",
@@ -176803,6 +176883,10 @@
     {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "Выберите существующую исходную папку с абсолютным скриншотом."
+    },
+    {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Выберите изображение размером до 16 мегапикселей и 16 384 пикселей на сторону."
     },
     {
       "source": "Choose an overlay monitor",
@@ -192505,8 +192589,8 @@
       "translation": "PNG изображение"
     },
     {
-      "source": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
-      "translation": "PNG или JPEG, до 8 МБ. Выберите скриншот своего оператора связи; он загружается с каждым объявлением для этого оператора связи."
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG или JPEG, до 8 МБ и 16 мегапикселей (16 384 пикселя на сторону). Выберите снимок вашего авианосца; он будет добавляться к каждому объявлению этого авианосца."
     },
     {
       "source": "POI",
@@ -203289,8 +203373,20 @@
       "translation": "В грузовом ряду указана занятая вместимость из 72. Пояса для установки буровой установки остаются отключенными при ходьбе пешком."
     },
     {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Не удалось выделить память для изображения авианосца."
+    },
+    {
       "source": "The carrier image could not be decoded.",
       "translation": "Изображение носителя не удалось декодировать."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Не удалось закодировать изображение авианосца."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Не удалось отобразить изображение авианосца."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -206095,6 +206191,10 @@
     {
       "source": "Uid:",
       "translation": "Пользовательский идентификатор:"
+    },
+    {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Не удалось создать новый экземпляр SKBitmap."
     },
     {
       "source": "Unable to open EDAstro's New POI page.",
@@ -218543,8 +218643,8 @@
       "translation": "候选 {0} 未上传：{1}"
     },
     {
-      "source": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
-      "translation": "无法打开该图像。选择最大 8 MB 的可读 PNG 或 JPEG。"
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "无法打开此图像。请选择不超过 8 MB、1600 万像素且每边不超过 16,384 像素的 PNG 或 JPEG。"
     },
     {
       "source": "Canonn",
@@ -219509,6 +219609,10 @@
     {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "选择现有的绝对屏幕截图源文件夹。"
+    },
+    {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "请选择不超过 1600 万像素且每边不超过 16,384 像素的图像。"
     },
     {
       "source": "Choose an overlay monitor",
@@ -235211,8 +235315,8 @@
       "translation": "PNG图像"
     },
     {
-      "source": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
-      "translation": "PNG 或 JPEG，最大 8 MB。选择您的运营商截图；它随该运营商的每个公告一起上传。"
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG 或 JPEG，不超过 8 MB、1600 万像素（每边不超过 16,384 像素）。请选择你的航母截图；它会随该航母的每条公告一起上传。"
     },
     {
       "source": "POI",
@@ -245995,8 +246099,20 @@
       "translation": "货舱显示已占用容量 72 个。钻机设置弦杆仍然无法步行。"
     },
     {
+      "source": "The carrier image could not be allocated.",
+      "translation": "无法为航母图像分配内存。"
+    },
+    {
       "source": "The carrier image could not be decoded.",
       "translation": "无法解码载体图像。"
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "无法编码航母图像。"
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "无法渲染航母图像。"
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -248801,6 +248917,10 @@
     {
       "source": "Uid:",
       "translation": "用户 ID："
+    },
+    {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "无法创建新的 SKBitmap 实例。"
     },
     {
       "source": "Unable to open EDAstro's New POI page.",
@@ -261249,8 +261369,8 @@
       "translation": "* CANDIDATE {0} WAS NOT UPLOADED: {1} >>>!"
     },
     {
-      "source": "Cannot open this image. Choose a readable PNG or JPEG up to 8 MB.",
-      "translation": "* CANNOT OPEN THIS IMAGE. CHOOSE A READABLE PNG OR JPEG UP TO 8 MB. >>>!"
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "* CANNOT OPEN THIS IMAGE. CHOOSE A PNG OR JPEG UP TO 8 MB, 16 MEGAPIXELS, AND 16,384 PIXELS PER SIDE. >>>!"
     },
     {
       "source": "Canonn",
@@ -262215,6 +262335,10 @@
     {
       "source": "Choose an existing absolute screenshot source folder.",
       "translation": "* CHOOSE AN EXISTING ABSOLUTE SCREENSHOT SOURCE FOLDER. >>>!"
+    },
+    {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "* CHOOSE AN IMAGE UP TO 16 MEGAPIXELS AND 16,384 PIXELS PER SIDE. >>>!"
     },
     {
       "source": "Choose an overlay monitor",
@@ -277917,8 +278041,8 @@
       "translation": "* PNG IMAGE >>>!"
     },
     {
-      "source": "PNG or JPEG, up to 8 MB. Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
-      "translation": "* PNG OR JPEG, UP TO 8 MB. CHOOSE YOUR CARRIER SCREENSHOT; IT IS UPLOADED WITH EVERY ANNOUNCEMENT FOR THIS CARRIER. >>>!"
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "* PNG OR JPEG, UP TO 8 MB AND 16 MEGAPIXELS (16,384 PIXELS PER SIDE). CHOOSE YOUR CARRIER SCREENSHOT; IT IS UPLOADED WITH EVERY ANNOUNCEMENT FOR THIS CARRIER. >>>!"
     },
     {
       "source": "POI",
@@ -288701,8 +288825,20 @@
       "translation": "* THE CARGO ROW SHOWS OCCUPIED CAPACITY OUT OF 72. RIG-SETTING CHORDS REMAIN DISABLED ON FOOT. >>>!"
     },
     {
+      "source": "The carrier image could not be allocated.",
+      "translation": "* THE CARRIER IMAGE COULD NOT BE ALLOCATED. >>>!"
+    },
+    {
       "source": "The carrier image could not be decoded.",
       "translation": "* THE CARRIER IMAGE COULD NOT BE DECODED. >>>!"
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "* THE CARRIER IMAGE COULD NOT BE ENCODED. >>>!"
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "* THE CARRIER IMAGE COULD NOT BE RENDERED. >>>!"
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -291507,6 +291643,10 @@
     {
       "source": "Uid:",
       "translation": "* UID: >>>!"
+    },
+    {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "* UNABLE TO CREATE A NEW SKBITMAP INSTANCE. >>>!"
     },
     {
       "source": "Unable to open EDAstro's New POI page.",
