@@ -208,6 +208,7 @@ public sealed partial class ColonizationSystemEditorViewModel
 
     public void Dispose()
     {
+        ResetBodyCatalogWork();
         catalogDisposed = true;
         contextVersion++;
         sessionVersion++;

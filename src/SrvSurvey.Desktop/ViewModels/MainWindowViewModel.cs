@@ -612,6 +612,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 MarketSearchFactory = () => new ColonizationMarketSearchClient(externalNetworkClient),
             };
             rollback.Add(Colonization.Dispose);
+            ConfigureBodyCatalogRecovery(externalNetworkClient, resolvedApplicationLogService);
             OverlayInteraction.ColonizationOverlay = Colonization.CommodityOverlay;
             FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);
             rollback.Add(FleetCarrierWorkspace.Dispose);
@@ -3354,6 +3355,19 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         string VisitKey,
         string Key
     );
+
+    private void ConfigureBodyCatalogRecovery(HttpClient? networkClient, ApplicationLogService? log)
+    {
+        Colonization.SystemEditor.BodyRecoveryClient = new ColonizationBodyRecoveryClient(networkClient);
+        Colonization.SystemEditor.BodyCatalogUpdatesAllowed = !IsDiagnosticReplay;
+        Colonization.SystemEditor.BodyCatalogLog = message => log?.Append(message);
+        Colonization.SystemEditor.HasLocalFssCompletion = address =>
+            SystemSurvey.Snapshot.SystemAddress == address && SystemSurvey.Snapshot.AllBodiesFound;
+        Colonization.SystemEditor.BodyJournalHistoryReader = (address, token) =>
+            ResolvePrimaryJournalPath(folderResolution) is { } path && activeProfileFrontierId is { } fid
+                ? ColonizationBodyJournalHistoryReader.ReadAsync(path, address, fid, token)
+                : Task.FromResult<IReadOnlyList<JournalEventEnvelope>>([]);
+    }
 
     private async Task LoadCurrentSystemBodyDataAsync()
     {

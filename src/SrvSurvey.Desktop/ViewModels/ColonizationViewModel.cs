@@ -665,11 +665,15 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     /// <summary>
     /// Switches commander data and discards repair warnings and pending results from the previous commander.
     /// </summary>
-    public async Task SetCommanderAsync(string? value)
+    public async Task SetCommanderAsync(string? value, bool confirmBodyIdentity = true)
     {
         string? normalized = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         if (string.Equals(CommanderName, normalized, StringComparison.OrdinalIgnoreCase))
         {
+            if (confirmBodyIdentity)
+            {
+                await SystemEditor.ConfirmBodyCatalogCommanderAsync(normalized);
+            }
             return;
         }
 
@@ -688,6 +692,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         RestoreShoppingSelection();
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
+        if (!confirmBodyIdentity)
+        {
+            SystemEditor.SuspendBodyCatalogForCommanderChange();
+        }
         if (CommanderName is null)
         {
             StatusMessage = "No commander profile is active.";
@@ -706,11 +714,23 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     /// </summary>
     public void ApplyJournalEvents(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        string? journalCommanderName = null
+        string? journalCommanderName = null,
+        bool allowBodyPublishing = false,
+        bool allowBodyAttribution = true
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        SystemEditor.ApplyJournalEvents(journalEvents);
+        if (
+            !string.IsNullOrWhiteSpace(journalCommanderName)
+            && !string.Equals(journalCommanderName, CommanderName, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            SystemEditor.SuspendBodyCatalogForCommanderChange();
+        }
+        else if (allowBodyAttribution)
+        {
+            SystemEditor.ApplyJournalEvents(journalEvents, allowBodyPublishing);
+        }
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             ApplyShipIdentity(journalEvent);
@@ -725,6 +745,33 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             publishFleetCarrierCommand.RaiseCanExecuteChanged();
             syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
         }
+    }
+
+    /// <summary>Revokes the previous commander before any asynchronous projection work can yield.</summary>
+    public void PrepareBodyCatalogJournalBatch(
+        IReadOnlyList<JournalEventEnvelope> entries,
+        string? previousFrontierId,
+        bool awaitingIdentity = false
+    )
+    {
+        if (awaitingIdentity || entries.Any(entry => IsForeignBodyCatalogCommander(entry, previousFrontierId)))
+        {
+            SystemEditor.SuspendBodyCatalogForCommanderChange();
+        }
+    }
+
+    private bool IsForeignBodyCatalogCommander(JournalEventEnvelope entry, string? previousFrontierId)
+    {
+        if (entry.EventName is not ("Commander" or "LoadGame"))
+        {
+            return false;
+        }
+        string? name = GetJournalString(entry.Payload, entry.EventName == "Commander" ? "Name" : "Commander");
+        string? fid = GetJournalString(entry.Payload, "FID");
+        return name is not null && !string.Equals(name, CommanderName, StringComparison.OrdinalIgnoreCase)
+            || previousFrontierId is not null
+                && fid is not null
+                && !string.Equals(fid, previousFrontierId, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Captures live carrier movements before optional workspace awaits without adopting another profile.</summary>

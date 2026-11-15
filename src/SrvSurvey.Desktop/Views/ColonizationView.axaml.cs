@@ -10,13 +10,28 @@ namespace SrvSurvey.Desktop.Views;
 
 public sealed partial class ColonizationView : UserControl
 {
+    private ColonizationSystemEditorViewModel? bodyConfirmationModel;
     private const string DesktopLinkLauncherUnavailable = "The desktop link launcher is not available.";
     private const string DefaultBrowserDeclined = "The default browser declined the request.";
 
     public ColonizationView()
     {
         InitializeComponent();
+        DataContextChanged += (_, _) => BindBodyRemovalConfirmation();
     }
+
+    private void BindBodyRemovalConfirmation()
+    {
+        bodyConfirmationModel?.BodyRemovalConfirmationRequested -= ConfirmBodyRemovalAsync;
+
+        bodyConfirmationModel = (DataContext as MainWindowViewModel)?.Colonization.SystemEditor;
+        bodyConfirmationModel?.BodyRemovalConfirmationRequested += ConfirmBodyRemovalAsync;
+    }
+
+    private Task<bool> ConfirmBodyRemovalAsync(RavenBodyRemovalWarning warning) =>
+        TopLevel.GetTopLevel(this) is Window owner
+            ? new RavenBodyRemovalDialog(warning).ShowDialog<bool>(owner)
+            : Task.FromResult(false);
 
     private void EditorSystemDropdown_Click(object? sender, RoutedEventArgs eventArgs)
     {
