@@ -1,4 +1,6 @@
 using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -9,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using SkiaSharp;
+using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Discord;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
@@ -16,6 +19,7 @@ using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Presentation;
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Views;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
@@ -244,6 +248,195 @@ public sealed class DiscordCarrierImageCropPresentationTests
         }
         finally
         {
+            await main.DisposeAsync();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task AppliedAndSavedMessageAndImageArePostedAfterRestart()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "carrier-editor-restart-" + Guid.NewGuid());
+        Directory.CreateDirectory(root);
+        string path = Path.Combine(root, "carrier.png");
+        await File.WriteAllBytesAsync(path, Quadrants());
+        string journals = Path.Combine(root, "journals");
+        Directory.CreateDirectory(journals);
+        string journal = Path.Combine(journals, "Journal.2026-11-14T120000.01.log");
+        await File.WriteAllTextAsync(
+            journal,
+            """
+            {"timestamp":"2026-11-14T12:00:00Z","event":"Fileheader","Odyssey":true,"gameversion":"4.0.0.1"}
+            {"timestamp":"2026-11-14T12:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
+            {"timestamp":"2026-11-14T12:00:02Z","event":"LoadGame","Commander":"Drew","FID":"F123","Ship":"CobraMkIII","GameMode":"Solo"}
+            {"timestamp":"2026-11-14T12:00:03Z","event":"CarrierStats","CarrierID":1,"Name":"Explorer","Callsign":"ABC-123"}
+            {"timestamp":"2026-11-14T12:00:04Z","event":"CarrierLocation","CarrierID":1,"StarSystem":"Sol"}
+            """ + "\n"
+        );
+        byte[]? deliveredImage = null;
+        string? deliveredTitle = null;
+        string? deliveredImageUrl = null;
+        using var handler = new Handler(async request =>
+        {
+            if (request.RequestUri!.Host != "discord.com")
+            {
+                return new(HttpStatusCode.NotFound);
+            }
+            string json;
+            if (request.Content is MultipartFormDataContent multipart)
+            {
+                HttpContent[] parts = multipart.ToArray();
+                json = await parts[0].ReadAsStringAsync();
+                deliveredImage = await parts[1].ReadAsByteArrayAsync();
+            }
+            else
+            {
+                json = await request.Content!.ReadAsStringAsync();
+            }
+            using var payload = JsonDocument.Parse(json);
+            JsonElement embed = payload.RootElement.GetProperty("embeds")[0];
+            deliveredTitle = embed.GetProperty("title").GetString();
+            deliveredImageUrl = embed.TryGetProperty("image", out JsonElement image)
+                ? image.GetProperty("url").GetString()
+                : null;
+            return new(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(
+                    new
+                    {
+                        id = "456",
+                        embeds = new[]
+                        {
+                            new
+                            {
+                                title = deliveredTitle,
+                                image = new
+                                {
+                                    url = "https://cdn.discordapp.com/attachments/123/456/carrier.png?private-signature",
+                                },
+                            },
+                        },
+                        attachments = Array.Empty<object>(),
+                    }
+                ),
+            };
+        });
+        using var http = new HttpClient(handler);
+        var paths = new AppDataPaths(
+            Path.Combine(root, "config"),
+            Path.Combine(root, "data"),
+            Path.Combine(root, "cache"),
+            []
+        )
+        {
+            SettingsFrontierId = "F123",
+        };
+        var applicationLog = new ApplicationLogService(paths.DataDirectory);
+        MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder =>
+                builder
+                    .WithAppDataPaths(paths)
+                    .WithExternalNetworkClient(http)
+                    .WithApplicationLogService(applicationLog)
+        );
+        var view = new SettingsView { DataContext = main };
+        var owner = new Window { Content = view };
+        try
+        {
+            await main.RefreshAsync();
+            main.DiscordCarrierAnnouncements.Enabled = true;
+            main.DiscordCarrierAnnouncements.WebhookUrl = "https://discord.com/api/webhooks/123/test-token";
+            owner.Show();
+            main.SettingsWorkspace.SelectCategory("application");
+            view.FindControl<Button>("EditDiscordCarrierMessageButton")!
+                .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            DiscordCarrierMessageEditorWindow editor = Assert.Single(
+                owner.OwnedWindows.OfType<DiscordCarrierMessageEditorWindow>()
+            );
+            editor.FindControl<TextBox>("TitleEditor")!.Text = "Departure to {destination}";
+            DiscordCarrierMessageEditorViewModel model = Assert.IsType<DiscordCarrierMessageEditorViewModel>(
+                editor.DataContext
+            );
+            model.SelectImage(path);
+            model.ImageCrop = new(2, 0.75, 0.75);
+            await editor.PendingImage;
+            editor.FindControl<Button>("ApplyEditorButton")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Button save = view.FindControl<Button>("SaveDiscordWebhookButton")!;
+            Assert.True(save.Command!.CanExecute(null));
+            save.Command.Execute(null);
+            Assert.False(main.DiscordCarrierAnnouncements.HasChanges);
+            owner.Close();
+            await main.DisposeAsync();
+
+            main = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithExternalNetworkClient(http)
+                        .WithApplicationLogService(applicationLog)
+            );
+            await main.RefreshAsync();
+            await File.AppendAllTextAsync(
+                journal,
+                """{"timestamp":"2026-11-14T12:00:05Z","event":"CarrierJumpRequest","CarrierID":1,"CarrierType":"FleetCarrier","SystemName":"Lave","DepartureTime":"2026-11-14T12:15:00Z"}"""
+                    + "\n"
+            );
+            await main.RefreshAsync();
+            await main.DiscordCarrierAnnouncements.PendingDelivery.WaitAsync(TimeSpan.FromSeconds(5));
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("Departure to Lave", deliveredTitle);
+            Assert.Equal("attachment://carrier.png", deliveredImageUrl);
+            using var result = SKBitmap.Decode(Assert.IsType<byte[]>(deliveredImage));
+            Assert.Equal(1280, result.Width);
+            Assert.Equal(720, result.Height);
+            Assert.Equal(SKColors.Cyan, result.GetPixel(5, 5));
+            Assert.Equal(SKColors.Cyan, result.GetPixel(1274, 714));
+            Assert.Equal("Message sent to Discord.", main.DiscordCarrierAnnouncements.StatusMessage);
+            string[] diagnostics = applicationLog
+                .Entries.Where(entry => entry.Contains("[Discord carrier]", StringComparison.Ordinal))
+                .ToArray();
+            Assert.Contains(
+                diagnostics,
+                entry =>
+                    entry.Contains("editor-applied; scope=", StringComparison.Ordinal)
+                    && entry.Contains("personal-image=True; personal-crop=True", StringComparison.Ordinal)
+            );
+            Assert.Contains(
+                diagnostics,
+                entry =>
+                    entry.Contains("saved; scope=", StringComparison.Ordinal)
+                    && entry.Contains("revision=1; enabled=True", StringComparison.Ordinal)
+            );
+            string queued = Assert.Single(diagnostics, entry => entry.Contains(" queued; ", StringComparison.Ordinal));
+            string sendId = queued.Split("send=", 2)[1].Split(' ')[0];
+            Assert.True(Guid.TryParseExact(sendId, "N", out _));
+            Assert.Contains(
+                diagnostics,
+                entry =>
+                    entry.Contains($"send={sendId} rendered;", StringComparison.Ordinal)
+                    && entry.Contains("custom-template=True", StringComparison.Ordinal)
+            );
+            Assert.Contains(
+                diagnostics,
+                entry =>
+                    entry.Contains($"send={sendId} confirmed;", StringComparison.Ordinal)
+                    && entry.Contains("title-match=True", StringComparison.Ordinal)
+                    && entry.Contains("image-expected=True; image-returned=True", StringComparison.Ordinal)
+            );
+            Assert.DoesNotContain(
+                diagnostics,
+                entry =>
+                    entry.Contains(path, StringComparison.Ordinal)
+                    || entry.Contains("test-token", StringComparison.Ordinal)
+                    || entry.Contains("private-signature", StringComparison.Ordinal)
+                    || entry.Contains("Departure to", StringComparison.Ordinal)
+            );
+        }
+        finally
+        {
+            owner.Close();
             await main.DisposeAsync();
             Directory.Delete(root, true);
         }

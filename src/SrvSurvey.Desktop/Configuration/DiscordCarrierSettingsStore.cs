@@ -9,6 +9,8 @@ public sealed class DiscordCarrierSettingsStore(string path)
 {
     private readonly UiSettingsDocumentStore document = new(path);
 
+    internal string DiagnosticScope => DiscordCarrierDiagnostics.Fingerprint(Path.GetFullPath(path));
+
     public DiscordCarrierPreferences Load()
     {
         try
