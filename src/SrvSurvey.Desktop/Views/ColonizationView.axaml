@@ -836,7 +836,7 @@
                                  Text="{Binding Colonization.SystemEditor.SystemsStatusMessage}" />
                       <TextBlock Classes="muted"
                                  TextWrapping="Wrap"
-                                 Text="Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish." />
+                                 Text="Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed." />
                     </StackPanel>
                     <WrapPanel HorizontalAlignment="Left" x:Name="EditorSystemTools">
                       <Button x:Name="RefreshEditorSystems"
@@ -857,6 +857,10 @@
                               Click="OpenRavenVisualizer_Click"
                               Content="Visualizer" />
                       <Button Margin="0,0,8,4" Classes="secondary" VerticalAlignment="Center" Click="OpenRavenUpdaterGuide_Click" Content="Guide" />
+                      <Button x:Name="RediscoverAbsentBodies"
+                              Margin="0,0,8,4" Classes="danger" VerticalAlignment="Center"
+                              Command="{Binding Colonization.SystemEditor.RediscoverBodiesCommand}"
+                              Content="Rediscover Absent Bodies" />
                     </WrapPanel>
                   </StackPanel>
                   <Border CornerRadius="8" Padding="12" Classes="colonization-status">
@@ -906,6 +910,9 @@
                       <StackPanel Spacing="3">
                         <TextBlock Classes="colonization-field-label" Text="Journal coverage" />
                         <TextBlock Text="{Binding Colonization.SystemEditor.ScanSummary}" />
+                        <Button Classes="secondary" HorizontalAlignment="Left"
+                                Command="{Binding Colonization.SystemEditor.UpdateScannedBodiesCommand}"
+                                Content="Upload scanned bodies" />
                       </StackPanel>
                       <CheckBox VerticalAlignment="Center"
                                 IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"

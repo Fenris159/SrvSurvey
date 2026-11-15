@@ -4,6 +4,7 @@ public sealed class NetworkSurfaceCoverageTests
 {
     private static readonly string[] HttpClientOwners =
     [
+        "src/SrvSurvey.Core/Colonization/ColonizationBodyRecoveryClient.cs",
         "src/SrvSurvey.Core/Colonization/RavenColonialClient.cs",
         "src/SrvSurvey.Core/Colonization/ColonizationMarketSearchClient.cs",
         "src/SrvSurvey.Core/Exobiology/CanonnCodexChallengeClient.cs",
@@ -225,6 +226,8 @@ public sealed class NetworkSurfaceCoverageTests
         new(
             "raven-colonial-quests-and-ggg",
             [
+                "src/SrvSurvey.Core/Colonization/ColonizationBodyRecoveryClient.cs",
+                "src/SrvSurvey.Core/Colonization/RavenColonialClient.Bodies.cs",
                 "src/SrvSurvey.Core/Colonization/RavenColonialClient.cs",
                 "src/SrvSurvey.Core/Colonization/RavenColonialClient.CarrierManifest.cs",
                 "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
@@ -232,6 +235,7 @@ public sealed class NetworkSurfaceCoverageTests
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialClientTests.cs",
+                "tests/SrvSurvey.Core.Tests/Colonization/ColonizationBodyCatalogTests.cs",
                 "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialCarrierManifestTests.cs",
                 "tests/SrvSurvey.Core.Tests/Quests/RavenQuestClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/GreenGasGiantClientTests.cs",

@@ -7137,8 +7137,16 @@
       "translation": "Komplette Reise"
     },
     {
+      "source": "Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed.",
+      "translation": "Durch vollständige lokale Scans kann Ravens Körperkatalog aktualisiert werden. Site-Änderungen bleiben lokal, bis sie überprüft und bestätigt werden."
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Vollständig oder ausreichend"
+    },
+    {
+      "source": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+      "translation": "Vervollständigen Sie das System-FSS und sammeln Sie alle Körperscans, bevor Sie Raven aktualisieren ({0}/{1}). Scannen Sie das Navigationssignal, wenn Körperaufzeichnungen fehlen."
     },
     {
       "source": "Complete the vendor's normal wired or wireless headset connection first.",
@@ -16609,10 +16617,6 @@
       "translation": "Laden Sie ein Commander-Profil, um einen Inara-API-Schlüssel zu konfigurieren."
     },
     {
-      "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-      "translation": "Das Laden ist schreibgeschützt. Änderungen bleiben lokal, bis ein neuer Raven-Vergleich erfolgreich ist und Sie die Veröffentlichung ausdrücklich bestätigen."
-    },
-    {
       "source": "Load system",
       "translation": "System laden"
     },
@@ -16915,6 +16919,10 @@
     {
       "source": "Local ring discoveries",
       "translation": "Lokale Ringentdeckungen"
+    },
+    {
+      "source": "Local scans",
+      "translation": "Lokale Scans"
     },
     {
       "source": "Local system projects could not be refreshed: {0}",
@@ -18775,6 +18783,10 @@
     {
       "source": "Natural Disaster",
       "translation": "Naturkatastrophe"
+    },
+    {
+      "source": "NavBeaconScan",
+      "translation": "NavBeaconScan"
     },
     {
       "source": "NavRoute",
@@ -23925,6 +23937,10 @@
       "translation": "Das Raven Architect-Update wurde nicht gesendet, da dieser Commander keinen gespeicherten API-Schlüssel hat."
     },
     {
+      "source": "Raven body journal backfill could not be read: {0}",
+      "translation": "Raven-Body-Journal-Backfill konnte nicht gelesen werden: {0}"
+    },
+    {
       "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
       "translation": "Raven hat sich nach der Überprüfung geändert. Laden Sie widersprüchliche Änderungen erneut und überprüfen Sie sie vor der Veröffentlichung."
     },
@@ -23991,6 +24007,14 @@
     {
       "source": "Raven's Reach",
       "translation": "Raven's Reach"
+    },
+    {
+      "source": "Raven's body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+      "translation": "Ravens Leichenkatalog änderte sich, während die Warnung offen war. Versuchen Sie die Neuerkennung erneut, um die aktuellen Entfernungen zu überprüfen."
+    },
+    {
+      "source": "Raven's body import returned a different system.",
+      "translation": "Der Körperimport von Raven ergab ein anderes System."
     },
     {
       "source": "RavenAccentBrush",
@@ -24657,12 +24681,24 @@
       "translation": "Die wiederhergestellten Profildaten sind verfügbar. Beim vorherigen Import wurden Warnungen gemeldet. Wählen Sie einen Profilordner, um die Wiederherstellung erneut zu versuchen. Vollständiger Bericht: {0}"
     },
     {
+      "source": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+      "translation": "Wiederherstellung von Körpern für {0} ({1}) von Spansh und EDSM..."
+    },
+    {
       "source": "Red",
       "translation": "rot"
     },
     {
       "source": "Redact commander identities, chat, locations, coordinates, and screenshot paths",
       "translation": "Schwärzen Sie die Identitäten, Chats, Standorte, Koordinaten und Screenshot-Pfade von Kommandanten"
+    },
+    {
+      "source": "Rediscover Absent Bodies",
+      "translation": "Entdecken Sie abwesende Körper neu"
+    },
+    {
+      "source": "Rediscovery cancelled. Raven's body catalog was not changed.",
+      "translation": "Neuentdeckung abgebrochen. Ravens Körperkatalog wurde nicht verändert."
     },
     {
       "source": "Reduce circle diameter by 2 pixels",
@@ -25079,6 +25115,10 @@
     {
       "source": "Remove all items from ShoppingList.",
       "translation": "Entfernen Sie alle Artikel aus ShoppingList."
+    },
+    {
+      "source": "Remove bodies from Raven?",
+      "translation": "Leichen von Raven entfernen?"
     },
     {
       "source": "Remove commodity",
@@ -29513,6 +29553,10 @@
       "translation": "Spansh URL aus der Zwischenablage"
     },
     {
+      "source": "Spansh and EDSM",
+      "translation": "Spansh und EDSM"
+    },
+    {
       "source": "Spansh conflict progress",
       "translation": "Spansh Konfliktfortschritt"
     },
@@ -32409,6 +32453,14 @@
       "translation": "Der Körper kann darauf gelandet werden."
     },
     {
+      "source": "The body catalog update could not be completed: {0}",
+      "translation": "Die Aktualisierung des Hauptkatalogs konnte nicht abgeschlossen werden: {0}"
+    },
+    {
+      "source": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+      "translation": "Die Aktualisierung des Hauptkatalogs wurde abgebrochen oder es kam zu einer Zeitüberschreitung. Laden Sie Raven neu, bevor Sie es erneut versuchen."
+    },
+    {
       "source": "The body catalog was not imported: {0}",
       "translation": "Der Körperkatalog wurde nicht importiert: {0}"
     },
@@ -33137,6 +33189,10 @@
       "translation": "Das Live-System hat sich geändert. Vor dem Importieren von Körpern neu laden."
     },
     {
+      "source": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+      "translation": "Die Identität oder der Architekt des geladenen Raven-Systems hat sich geändert. Laden Sie das System neu, bevor Sie Körper aktualisieren."
+    },
+    {
       "source": "The loaded construction requirements are stale.",
       "translation": "Die geladenen Bauanforderungen sind veraltet."
     },
@@ -33151,6 +33207,10 @@
     {
       "source": "The local authoring draft was discarded. No file was changed.",
       "translation": "Der lokale Autorenentwurf wurde verworfen. Es wurde keine Datei geändert."
+    },
+    {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "Der lokale Körperkatalog hat sich während der Raven-Überprüfung geändert. Schließen Sie den FSS ab und erfassen Sie alle Körperscans, bevor Sie es erneut versuchen."
     },
     {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -34093,6 +34153,10 @@
       "translation": "Das System konnte nicht kopiert werden: {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "Das System wurde geladen, aber Ravens Körperimport schlug fehl. Sie können „Abwesende Körper neu entdecken“ verwenden oder lokale Scans durchführen, um sie wiederherzustellen. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "Die Systemsuche ist fehlgeschlagen, ohne dass Ihr Limit geändert wurde: {0}"
     },
@@ -34371,6 +34435,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Dabei handelt es sich um Planungsfilter, nicht um einen Leistungsrechner. Überprüfen Sie vor dem Schürfen oder Verkaufen die aktuellen Spielberechtigungs- und Belohnungsregeln. Eigentum, Marktpreise und Nachfrage können sich ändern."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Diese Körper fehlen in den Ergebnissen Spansh und EDSM. Wenn Sie fortfahren, werden sie aus Ravens Körperkatalog entfernt. Möchten Sie fortfahren?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -35769,6 +35837,10 @@
       "translation": "Der Status des gespeicherten Overlay-Designs „{0}“ wurde aktualisiert."
     },
     {
+      "source": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+      "translation": "Aktualisierte {0} Raven-Körper für {1} von {2}. Site-Änderungen wurden beibehalten."
+    },
+    {
       "source": "Updated {0} cargo entries for {1}.",
       "translation": "{0} Frachteinträge für {1} aktualisiert."
     },
@@ -35819,6 +35891,10 @@
     {
       "source": "Upload newly calculated settlement geometry to Canonn",
       "translation": "Neu berechnete Siedlungsgeometrie auf Canonn hochladen"
+    },
+    {
+      "source": "Upload scanned bodies",
+      "translation": "Laden Sie gescannte Leichen hoch"
     },
     {
       "source": "UploadGreenGasGiantCandidates",
@@ -41371,6 +41447,10 @@
     {
       "source": "{0} \"{1}\" at {2}",
       "translation": "{0} „{1}“ bei {2}"
+    },
+    {
+      "source": "{0} (BodyID {1})",
+      "translation": "{0} (BodyID {1})"
     },
     {
       "source": "{0} (owner)",
@@ -49863,8 +49943,16 @@
       "translation": "viaje completo"
     },
     {
+      "source": "Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed.",
+      "translation": "Los escaneos locales completos pueden actualizar el catálogo de cuerpos de Raven. Las ediciones del sitio permanecen locales hasta que se revisen y confirmen."
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Completo o suficiente"
+    },
+    {
+      "source": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+      "translation": "Complete el FSS del sistema y recopile todos los escaneos corporales antes de actualizar Raven ({0}/{1}). Escanee la baliza de navegación si faltan registros corporales."
     },
     {
       "source": "Complete the vendor's normal wired or wireless headset connection first.",
@@ -59335,10 +59423,6 @@
       "translation": "Cargue un perfil de comandante para configurar una clave API Inara."
     },
     {
-      "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-      "translation": "La carga es de sólo lectura. Las ediciones permanecen locales hasta que se realiza una nueva comparación de Raven y usted confirma explícitamente la publicación."
-    },
-    {
       "source": "Load system",
       "translation": "Sistema de carga"
     },
@@ -59641,6 +59725,10 @@
     {
       "source": "Local ring discoveries",
       "translation": "Descubrimientos de anillos locales"
+    },
+    {
+      "source": "Local scans",
+      "translation": "Escaneos locales"
     },
     {
       "source": "Local system projects could not be refreshed: {0}",
@@ -61501,6 +61589,10 @@
     {
       "source": "Natural Disaster",
       "translation": "desastre natural"
+    },
+    {
+      "source": "NavBeaconScan",
+      "translation": "NavBeaconScan"
     },
     {
       "source": "NavRoute",
@@ -66651,6 +66743,10 @@
       "translation": "La actualización del arquitecto Raven no se envió porque este comandante no tiene una clave API guardada."
     },
     {
+      "source": "Raven body journal backfill could not be read: {0}",
+      "translation": "No se pudo leer el relleno del diario corporal de Raven: {0}"
+    },
+    {
       "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
       "translation": "Raven cambió después de la revisión. Vuelva a cargar y revise las ediciones conflictivas antes de publicarlas."
     },
@@ -66717,6 +66813,14 @@
     {
       "source": "Raven's Reach",
       "translation": "El alcance del cuervo"
+    },
+    {
+      "source": "Raven's body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+      "translation": "El catálogo de cuerpos de Raven cambió mientras la advertencia estaba abierta. Vuelva a intentar el redescubrimiento para revisar las eliminaciones actuales."
+    },
+    {
+      "source": "Raven's body import returned a different system.",
+      "translation": "La importación del cuerpo de Raven devolvió un sistema diferente."
     },
     {
       "source": "RavenAccentBrush",
@@ -67383,12 +67487,24 @@
       "translation": "Los datos de perfil recuperados están disponibles. La importación anterior informó advertencias; elija una carpeta de perfil para volver a intentar la recuperación. Informe completo: {0}"
     },
     {
+      "source": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+      "translation": "Recuperador de carrocerías para {0} ({1}) de Spansh y EDSM..."
+    },
+    {
       "source": "Red",
       "translation": "rojo"
     },
     {
       "source": "Redact commander identities, chat, locations, coordinates, and screenshot paths",
       "translation": "Redactar identidades de comandantes, chat, ubicaciones, coordenadas y rutas de captura de pantalla."
+    },
+    {
+      "source": "Rediscover Absent Bodies",
+      "translation": "Redescubrir cuerpos ausentes"
+    },
+    {
+      "source": "Rediscovery cancelled. Raven's body catalog was not changed.",
+      "translation": "Redescubrimiento cancelado. El catálogo de cuerpos de Raven no fue cambiado."
     },
     {
       "source": "Reduce circle diameter by 2 pixels",
@@ -67805,6 +67921,10 @@
     {
       "source": "Remove all items from ShoppingList.",
       "translation": "Eliminar todos los artículos de ShoppingList."
+    },
+    {
+      "source": "Remove bodies from Raven?",
+      "translation": "¿Quitar los cuerpos de Raven?"
     },
     {
       "source": "Remove commodity",
@@ -72239,6 +72359,10 @@
       "translation": "Spansh URL del portapapeles"
     },
     {
+      "source": "Spansh and EDSM",
+      "translation": "Spansh y EDSM"
+    },
+    {
       "source": "Spansh conflict progress",
       "translation": "Spansh progreso del conflicto"
     },
@@ -75135,6 +75259,14 @@
       "translation": "Se puede aterrizar sobre el cuerpo."
     },
     {
+      "source": "The body catalog update could not be completed: {0}",
+      "translation": "No se pudo completar la actualización del catálogo de carrocerías: {0}"
+    },
+    {
+      "source": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+      "translation": "La actualización del catálogo de cuerpos se canceló o se agotó el tiempo de espera. Vuelva a cargar Raven antes de volver a intentarlo."
+    },
+    {
       "source": "The body catalog was not imported: {0}",
       "translation": "No se importó el catálogo de carrocerías: {0}"
     },
@@ -75863,6 +75995,10 @@
       "translation": "El sistema en vivo cambió. Recargar antes de importar cuerpos."
     },
     {
+      "source": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+      "translation": "La identidad o el arquitecto del sistema Raven cargado cambió. Vuelva a cargar el sistema antes de actualizar los cuerpos."
+    },
+    {
       "source": "The loaded construction requirements are stale.",
       "translation": "Los requisitos de construcción cargados están obsoletos."
     },
@@ -75877,6 +76013,10 @@
     {
       "source": "The local authoring draft was discarded. No file was changed.",
       "translation": "El borrador de autoría local fue descartado. No se modificó ningún archivo."
+    },
+    {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "El catálogo de cuerpos local cambió durante la revisión de Raven. Complete el FSS y recopile todos los escaneos corporales antes de volver a intentarlo."
     },
     {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -76819,6 +76959,10 @@
       "translation": "No se pudo copiar el sistema: {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "El sistema se cargó, pero la importación del cuerpo de Raven falló. Puede utilizar Rediscover Absent Bodies o completar escaneos locales para recuperarlo. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "La búsqueda del sistema falló sin cambiar su límite: {0}"
     },
@@ -77097,6 +77241,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Estos son filtros de planificación, no una calculadora de méritos. Verifique las reglas actuales de elegibilidad y recompensas en el juego antes de minar o vender. La propiedad, los precios de mercado y la demanda pueden cambiar."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Estos cuerpos están ausentes en los resultados Spansh y EDSM. Continuar los eliminará del catálogo de cuerpos de Raven. ¿Quieres continuar?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -78495,6 +78643,10 @@
       "translation": "Se actualizó el estado del tema de superposición guardado '{0}'."
     },
     {
+      "source": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+      "translation": "Cuerpos Raven {0} actualizados para {1} de {2}. Se conservaron las ediciones del sitio."
+    },
+    {
       "source": "Updated {0} cargo entries for {1}.",
       "translation": "Se actualizaron las entradas de carga {0} para {1}."
     },
@@ -78545,6 +78697,10 @@
     {
       "source": "Upload newly calculated settlement geometry to Canonn",
       "translation": "Cargue la geometría de liquidación recién calculada a Canonn"
+    },
+    {
+      "source": "Upload scanned bodies",
+      "translation": "Subir cuerpos escaneados"
     },
     {
       "source": "UploadGreenGasGiantCandidates",
@@ -84097,6 +84253,10 @@
     {
       "source": "{0} \"{1}\" at {2}",
       "translation": "{0} \"{1}\" en {2}"
+    },
+    {
+      "source": "{0} (BodyID {1})",
+      "translation": "{0} (ID de cuerpo {1})"
     },
     {
       "source": "{0} (owner)",
@@ -92589,8 +92749,16 @@
       "translation": "Voyage complet"
     },
     {
+      "source": "Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed.",
+      "translation": "Des analyses locales complètes peuvent mettre à jour le catalogue corporel de Raven. Les modifications du site restent locales jusqu'à ce qu'elles soient examinées et confirmées."
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Complet ou suffisant"
+    },
+    {
+      "source": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+      "translation": "Complétez le système FSS et collectez tous les scans corporels avant de mettre à jour Raven ({0}/{1}). Scannez la balise de navigation si les enregistrements du corps sont manquants."
     },
     {
       "source": "Complete the vendor's normal wired or wireless headset connection first.",
@@ -102061,10 +102229,6 @@
       "translation": "Chargez un profil de commandant pour configurer une clé API Inara."
     },
     {
-      "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-      "translation": "La charge est en lecture seule. Les modifications restent locales jusqu'à ce qu'une nouvelle comparaison Raven soit effectuée et que vous confirmiez explicitement la publication."
-    },
-    {
       "source": "Load system",
       "translation": "Système de chargement"
     },
@@ -102367,6 +102531,10 @@
     {
       "source": "Local ring discoveries",
       "translation": "Découvertes d'anneaux locaux"
+    },
+    {
+      "source": "Local scans",
+      "translation": "Analyses locales"
     },
     {
       "source": "Local system projects could not be refreshed: {0}",
@@ -104227,6 +104395,10 @@
     {
       "source": "Natural Disaster",
       "translation": "Catastrophe naturelle"
+    },
+    {
+      "source": "NavBeaconScan",
+      "translation": "NavBeaconScan"
     },
     {
       "source": "NavRoute",
@@ -109377,6 +109549,10 @@
       "translation": "La mise à jour de l'architecte Raven n'a pas été envoyée car ce commandant n'a pas de clé API enregistrée."
     },
     {
+      "source": "Raven body journal backfill could not be read: {0}",
+      "translation": "Le remplissage du journal corporel Raven n'a pas pu être lu : {0}"
+    },
+    {
       "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
       "translation": "Raven a changé après examen. Rechargez et examinez les modifications conflictuelles avant de les publier."
     },
@@ -109443,6 +109619,14 @@
     {
       "source": "Raven's Reach",
       "translation": "La portée du corbeau"
+    },
+    {
+      "source": "Raven's body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+      "translation": "Le catalogue du corps de Raven a changé pendant que l'avertissement était ouvert. Réessayez la redécouverte pour examiner les suppressions actuelles."
+    },
+    {
+      "source": "Raven's body import returned a different system.",
+      "translation": "L'importation du corps de Raven a renvoyé un système différent."
     },
     {
       "source": "RavenAccentBrush",
@@ -110109,12 +110293,24 @@
       "translation": "Les données de profil récupérées sont disponibles. L'importation précédente a signalé des avertissements ; choisissez un dossier de profil pour réessayer la récupération. Rapport complet : {0}"
     },
     {
+      "source": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+      "translation": "Carrosseries de récupération pour {0} ({1}) de Spansh et EDSM..."
+    },
+    {
       "source": "Red",
       "translation": "rouge"
     },
     {
       "source": "Redact commander identities, chat, locations, coordinates, and screenshot paths",
       "translation": "Rédigez les identités des commandants, les discussions, les emplacements, les coordonnées et les chemins de capture d'écran"
+    },
+    {
+      "source": "Rediscover Absent Bodies",
+      "translation": "Redécouvrez les corps absents"
+    },
+    {
+      "source": "Rediscovery cancelled. Raven's body catalog was not changed.",
+      "translation": "Redécouverte annulée. Le catalogue du corps de Raven n'a pas été modifié."
     },
     {
       "source": "Reduce circle diameter by 2 pixels",
@@ -110531,6 +110727,10 @@
     {
       "source": "Remove all items from ShoppingList.",
       "translation": "Supprimez tous les articles de ShoppingList."
+    },
+    {
+      "source": "Remove bodies from Raven?",
+      "translation": "Retirer les corps de Raven ?"
     },
     {
       "source": "Remove commodity",
@@ -114965,6 +115165,10 @@
       "translation": "Spansh URL du presse-papiers"
     },
     {
+      "source": "Spansh and EDSM",
+      "translation": "Spansh et EDSM"
+    },
+    {
       "source": "Spansh conflict progress",
       "translation": "Spansh progression du conflit"
     },
@@ -117861,6 +118065,14 @@
       "translation": "Le corps peut être posé dessus."
     },
     {
+      "source": "The body catalog update could not be completed: {0}",
+      "translation": "La mise à jour du catalogue de carrosserie n'a pas pu être terminée : {0}"
+    },
+    {
+      "source": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+      "translation": "La mise à jour du catalogue de corps a été annulée ou a expiré. Rechargez Raven avant de réessayer."
+    },
+    {
       "source": "The body catalog was not imported: {0}",
       "translation": "Le catalogue de corps n'a pas été importé : {0}"
     },
@@ -118589,6 +118801,10 @@
       "translation": "Le système en direct a changé. Rechargez avant d’importer des corps."
     },
     {
+      "source": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+      "translation": "L'identité ou l'architecte du système Raven chargé a changé. Rechargez le système avant de mettre à jour les corps."
+    },
+    {
       "source": "The loaded construction requirements are stale.",
       "translation": "Les exigences de construction chargées sont obsolètes."
     },
@@ -118603,6 +118819,10 @@
     {
       "source": "The local authoring draft was discarded. No file was changed.",
       "translation": "Le projet de rédaction local a été rejeté. Aucun fichier n'a été modifié."
+    },
+    {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "Le catalogue local des corps a changé lors de la vérification Raven. Complétez le FSS et collectez tous les scans corporels avant de réessayer."
     },
     {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -119545,6 +119765,10 @@
       "translation": "Le système n'a pas pu être copié : {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "Le système s'est chargé, mais l'importation du corps de Raven a échoué. Vous pouvez utiliser Rediscover Absent Bodies ou effectuer des analyses locales pour les récupérer. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "La recherche du système a échoué sans modifier votre limite : {0}"
     },
@@ -119823,6 +120047,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Ce sont des filtres de planification, pas un calculateur de mérite. Vérifiez l’éligibilité actuelle du jeu et les règles de récompense avant d’exploiter ou de vendre. La propriété, les prix du marché et la demande peuvent changer."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Ces corps sont absents des résultats Spansh et EDSM. Continuer les supprimera du catalogue de corps de Raven. Voulez-vous continuer ?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -121221,6 +121449,10 @@
       "translation": "État du thème de superposition enregistré mis à jour '{0}'."
     },
     {
+      "source": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+      "translation": "Mise à jour des corps Raven {0} pour {1} à partir de {2}. Les modifications du site ont été conservées."
+    },
+    {
       "source": "Updated {0} cargo entries for {1}.",
       "translation": "Mise à jour des entrées de fret {0} pour {1}."
     },
@@ -121271,6 +121503,10 @@
     {
       "source": "Upload newly calculated settlement geometry to Canonn",
       "translation": "Téléchargez la géométrie de tassement nouvellement calculée dans Canonn"
+    },
+    {
+      "source": "Upload scanned bodies",
+      "translation": "Télécharger des corps numérisés"
     },
     {
       "source": "UploadGreenGasGiantCandidates",
@@ -126823,6 +127059,10 @@
     {
       "source": "{0} \"{1}\" at {2}",
       "translation": "{0} \"{1}\" à {2}"
+    },
+    {
+      "source": "{0} (BodyID {1})",
+      "translation": "{0} (ID corps {1})"
     },
     {
       "source": "{0} (owner)",
@@ -135315,8 +135555,16 @@
       "translation": "Jornada completa"
     },
     {
+      "source": "Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed.",
+      "translation": "Varreduras locais completas podem atualizar o catálogo corporal de Raven. As edições do site permanecem locais até serem revisadas e confirmadas."
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Completo ou suficiente"
+    },
+    {
+      "source": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+      "translation": "Conclua o FSS do sistema e colete todas as varreduras corporais antes de atualizar o Raven ({0}/{1}). Faça a varredura do farol de navegação se os registros do corpo estiverem faltando."
     },
     {
       "source": "Complete the vendor's normal wired or wireless headset connection first.",
@@ -144787,10 +145035,6 @@
       "translation": "Carregue um perfil de comandante para configurar uma chave de API Inara."
     },
     {
-      "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-      "translation": "A carga é somente leitura. As edições permanecem locais até que uma nova comparação do Raven seja aprovada e você confirme explicitamente a publicação."
-    },
-    {
       "source": "Load system",
       "translation": "Sistema de carga"
     },
@@ -145093,6 +145337,10 @@
     {
       "source": "Local ring discoveries",
       "translation": "Descobertas de anéis locais"
+    },
+    {
+      "source": "Local scans",
+      "translation": "Verificações locais"
     },
     {
       "source": "Local system projects could not be refreshed: {0}",
@@ -146953,6 +147201,10 @@
     {
       "source": "Natural Disaster",
       "translation": "Desastre Natural"
+    },
+    {
+      "source": "NavBeaconScan",
+      "translation": "NavBeaconScan"
     },
     {
       "source": "NavRoute",
@@ -152103,6 +152355,10 @@
       "translation": "A atualização do arquiteto Raven não foi enviada porque este comandante não possui uma chave de API salva."
     },
     {
+      "source": "Raven body journal backfill could not be read: {0}",
+      "translation": "O preenchimento do diário corporal Raven não pôde ser lido: {0}"
+    },
+    {
       "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
       "translation": "Raven mudou após revisão. Recarregue e revise as edições conflitantes antes de publicar."
     },
@@ -152169,6 +152425,14 @@
     {
       "source": "Raven's Reach",
       "translation": "Alcance de Raven"
+    },
+    {
+      "source": "Raven's body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+      "translation": "O catálogo corporal de Raven mudou enquanto o aviso estava aberto. Tente novamente a redescoberta para revisar as remoções atuais."
+    },
+    {
+      "source": "Raven's body import returned a different system.",
+      "translation": "A importação do corpo de Raven retornou um sistema diferente."
     },
     {
       "source": "RavenAccentBrush",
@@ -152835,12 +153099,24 @@
       "translation": "Os dados do perfil recuperado estão disponíveis. A importação anterior relatou avisos; escolha uma pasta de perfil para tentar novamente a recuperação. Relatório completo: {0}"
     },
     {
+      "source": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+      "translation": "Recuperando corpos para {0} ({1}) de Spansh e EDSM..."
+    },
+    {
       "source": "Red",
       "translation": "vermelho"
     },
     {
       "source": "Redact commander identities, chat, locations, coordinates, and screenshot paths",
       "translation": "Editar identidades de comandantes, bate-papo, locais, coordenadas e caminhos de captura de tela"
+    },
+    {
+      "source": "Rediscover Absent Bodies",
+      "translation": "Redescubra corpos ausentes"
+    },
+    {
+      "source": "Rediscovery cancelled. Raven's body catalog was not changed.",
+      "translation": "Redescoberta cancelada. O catálogo corporal de Raven não foi alterado."
     },
     {
       "source": "Reduce circle diameter by 2 pixels",
@@ -153257,6 +153533,10 @@
     {
       "source": "Remove all items from ShoppingList.",
       "translation": "Remova todos os itens do ShoppingList."
+    },
+    {
+      "source": "Remove bodies from Raven?",
+      "translation": "Remover corpos de Raven?"
     },
     {
       "source": "Remove commodity",
@@ -157691,6 +157971,10 @@
       "translation": "Spansh URL da área de transferência"
     },
     {
+      "source": "Spansh and EDSM",
+      "translation": "Spansh e EDSM"
+    },
+    {
       "source": "Spansh conflict progress",
       "translation": "Spansh progresso do conflito"
     },
@@ -160587,6 +160871,14 @@
       "translation": "O corpo pode ser pousado."
     },
     {
+      "source": "The body catalog update could not be completed: {0}",
+      "translation": "A atualização do catálogo da carroceria não pôde ser concluída: {0}"
+    },
+    {
+      "source": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+      "translation": "A atualização do catálogo corporal foi cancelada ou expirou. Recarregue Raven antes de tentar novamente."
+    },
+    {
       "source": "The body catalog was not imported: {0}",
       "translation": "O catálogo de carrocerias não foi importado: {0}"
     },
@@ -161315,6 +161607,10 @@
       "translation": "O sistema ao vivo mudou. Recarregue antes de importar corpos."
     },
     {
+      "source": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+      "translation": "A identidade ou arquiteto do sistema Raven carregado foi alterado. Recarregue o sistema antes de atualizar os corpos."
+    },
+    {
       "source": "The loaded construction requirements are stale.",
       "translation": "Os requisitos de construção carregados estão obsoletos."
     },
@@ -161329,6 +161625,10 @@
     {
       "source": "The local authoring draft was discarded. No file was changed.",
       "translation": "O rascunho de autoria local foi descartado. Nenhum arquivo foi alterado."
+    },
+    {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "O catálogo do corpo local mudou durante a verificação de Raven. Preencha o FSS e colete todas as varreduras corporais antes de tentar novamente."
     },
     {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -162271,6 +162571,10 @@
       "translation": "O sistema não pôde ser copiado: {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "O sistema foi carregado, mas a importação do corpo de Raven falhou. Você pode usar Redescobrir corpos ausentes ou realizar varreduras locais para recuperá-lo. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "A pesquisa do sistema falhou sem alterar seu limite: {0}"
     },
@@ -162549,6 +162853,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Estes são filtros de planejamento, não uma calculadora de mérito. Verifique as regras atuais de elegibilidade e recompensa no jogo antes de minerar ou vender. A propriedade, os preços de mercado e a procura podem mudar."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Esses corpos estão ausentes nos resultados Spansh e EDSM. Continuar irá removê-los do catálogo de corpos de Raven. Você quer prosseguir?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -163947,6 +164255,10 @@
       "translation": "Estado do tema de sobreposição salvo atualizado '{0}'."
     },
     {
+      "source": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+      "translation": "Corpos Raven {0} atualizados para {1} de {2}. As edições do site foram preservadas."
+    },
+    {
       "source": "Updated {0} cargo entries for {1}.",
       "translation": "Entradas de carga {0} atualizadas para {1}."
     },
@@ -163997,6 +164309,10 @@
     {
       "source": "Upload newly calculated settlement geometry to Canonn",
       "translation": "Carregue a geometria de assentamento recém-calculada para Canonn"
+    },
+    {
+      "source": "Upload scanned bodies",
+      "translation": "Carregar corpos digitalizados"
     },
     {
       "source": "UploadGreenGasGiantCandidates",
@@ -169549,6 +169865,10 @@
     {
       "source": "{0} \"{1}\" at {2}",
       "translation": "{0} \"{1}\" em {2}"
+    },
+    {
+      "source": "{0} (BodyID {1})",
+      "translation": "{0} (ID do corpo {1})"
     },
     {
       "source": "{0} (owner)",
@@ -178041,8 +178361,16 @@
       "translation": "Полное путешествие"
     },
     {
+      "source": "Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed.",
+      "translation": "Полное локальное сканирование может обновить каталог тел Рейвен. Изменения на сайте остаются локальными до тех пор, пока не будут проверены и подтверждены."
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "Полное или достаточное"
+    },
+    {
+      "source": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+      "translation": "Завершите системный FSS и соберите все сканы тела перед обновлением Raven ({0}/{1}). Сканируйте навигационный маяк, если записи о теле отсутствуют."
     },
     {
       "source": "Complete the vendor's normal wired or wireless headset connection first.",
@@ -187513,10 +187841,6 @@
       "translation": "Загрузите профиль командира, чтобы настроить ключ API Inara API."
     },
     {
-      "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-      "translation": "Загрузка доступна только для чтения. Изменения остаются локальными до тех пор, пока не будет проведено новое сравнение Raven и вы явно не подтвердите публикацию."
-    },
-    {
       "source": "Load system",
       "translation": "Система загрузки"
     },
@@ -187819,6 +188143,10 @@
     {
       "source": "Local ring discoveries",
       "translation": "Открытие локальных колец"
+    },
+    {
+      "source": "Local scans",
+      "translation": "Локальные сканирования"
     },
     {
       "source": "Local system projects could not be refreshed: {0}",
@@ -189679,6 +190007,10 @@
     {
       "source": "Natural Disaster",
       "translation": "Стихийное бедствие"
+    },
+    {
+      "source": "NavBeaconScan",
+      "translation": "NavBeaconScan"
     },
     {
       "source": "NavRoute",
@@ -194829,6 +195161,10 @@
       "translation": "Обновление архитектора Raven не было отправлено, поскольку у этого командира нет сохраненного ключа API."
     },
     {
+      "source": "Raven body journal backfill could not be read: {0}",
+      "translation": "Заполнение журнала тела Ворона не удалось прочитать: {0}"
+    },
+    {
       "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
       "translation": "Ворон изменился после обзора. Перед публикацией перезагрузите и просмотрите конфликтующие изменения."
     },
@@ -194895,6 +195231,14 @@
     {
       "source": "Raven's Reach",
       "translation": "Досягаемость Ворона"
+    },
+    {
+      "source": "Raven's body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+      "translation": "Каталог тел Рейвен изменился, пока предупреждение было открыто. Повторите попытку обнаружения, чтобы просмотреть текущие удаления."
+    },
+    {
+      "source": "Raven's body import returned a different system.",
+      "translation": "Импорт тела Рейвен вернул другую систему."
     },
     {
       "source": "RavenAccentBrush",
@@ -195561,12 +195905,24 @@
       "translation": "Восстановленные данные профиля доступны. Предыдущий импорт сообщил о предупреждениях; выберите папку профиля, чтобы повторить попытку восстановления. Полный отчет: {0}"
     },
     {
+      "source": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+      "translation": "Восстановление тел для {0} ({1}) из Spansh и EDSM..."
+    },
+    {
       "source": "Red",
       "translation": "красный"
     },
     {
       "source": "Redact commander identities, chat, locations, coordinates, and screenshot paths",
       "translation": "Редактировать личности командиров, чат, местоположения, координаты и пути к скриншотам."
+    },
+    {
+      "source": "Rediscover Absent Bodies",
+      "translation": "Откройте для себя заново отсутствующие тела"
+    },
+    {
+      "source": "Rediscovery cancelled. Raven's body catalog was not changed.",
+      "translation": "Повторное открытие отменено. Каталог тел Рейвен не изменился."
     },
     {
       "source": "Reduce circle diameter by 2 pixels",
@@ -195983,6 +196339,10 @@
     {
       "source": "Remove all items from ShoppingList.",
       "translation": "Удалить все товары из ShoppingList."
+    },
+    {
+      "source": "Remove bodies from Raven?",
+      "translation": "Удалить тела из Рейвен?"
     },
     {
       "source": "Remove commodity",
@@ -200417,6 +200777,10 @@
       "translation": "Spansh URL-адрес из буфера обмена"
     },
     {
+      "source": "Spansh and EDSM",
+      "translation": "Spansh и EDSM"
+    },
+    {
       "source": "Spansh conflict progress",
       "translation": "Spansh ход конфликта"
     },
@@ -203313,6 +203677,14 @@
       "translation": "На тело можно приземлиться."
     },
     {
+      "source": "The body catalog update could not be completed: {0}",
+      "translation": "Не удалось завершить обновление каталога тел: {0}."
+    },
+    {
+      "source": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+      "translation": "Обновление каталога тел было отменено или истекло время ожидания. Перезагрузите Raven перед повторной попыткой."
+    },
+    {
       "source": "The body catalog was not imported: {0}",
       "translation": "Каталог тел не был импортирован: {0}"
     },
@@ -204041,6 +204413,10 @@
       "translation": "Живая система изменилась. Перезагрузите перед импортом тел."
     },
     {
+      "source": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+      "translation": "Изменились идентификаторы или архитектор загруженной системы Raven. Перезагрузите систему перед обновлением тел."
+    },
+    {
       "source": "The loaded construction requirements are stale.",
       "translation": "Требования к строительству устарели."
     },
@@ -204055,6 +204431,10 @@
     {
       "source": "The local authoring draft was discarded. No file was changed.",
       "translation": "Локальный авторский черновик был отклонен. Ни один файл не был изменен."
+    },
+    {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "Локальный каталог тел изменился во время проверки Рейвен. Завершите FSS и соберите все сканы тела, прежде чем повторить попытку."
     },
     {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -204997,6 +205377,10 @@
       "translation": "Не удалось скопировать систему: {0}."
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "Система загрузилась, но импорт тела Рейвен не удался. Вы можете использовать функцию «Повторное обнаружение отсутствующих тел» или выполнить локальное сканирование, чтобы восстановить его. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "Не удалось выполнить поиск в системе без изменения ограничения: {0}"
     },
@@ -205275,6 +205659,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Это фильтры планирования, а не калькулятор достоинств. Перед майнингом или продажей проверьте текущие внутриигровые правила участия и вознаграждения. Право собственности, рыночные цены и спрос могут измениться."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Эти тела отсутствуют в результатах Spansh и EDSM. Если продолжить, они будут удалены из каталога тел Рейвен. Хотите продолжить?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -206673,6 +207061,10 @@
       "translation": "Обновлено сохраненное состояние темы наложения «{0}»."
     },
     {
+      "source": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+      "translation": "Обновлены тела {0} Raven для {1} из {2}. Правки сайта сохранены."
+    },
+    {
       "source": "Updated {0} cargo entries for {1}.",
       "translation": "Обновлены записи о грузе {0} для {1}."
     },
@@ -206723,6 +207115,10 @@
     {
       "source": "Upload newly calculated settlement geometry to Canonn",
       "translation": "Загрузите вновь рассчитанную расчетную геометрию в Canonn"
+    },
+    {
+      "source": "Upload scanned bodies",
+      "translation": "Загрузить отсканированные тела"
     },
     {
       "source": "UploadGreenGasGiantCandidates",
@@ -212275,6 +212671,10 @@
     {
       "source": "{0} \"{1}\" at {2}",
       "translation": "{0} \"{1}\" в {2}"
+    },
+    {
+      "source": "{0} (BodyID {1})",
+      "translation": "{0} (идентификатор тела {1})"
     },
     {
       "source": "{0} (owner)",
@@ -220767,8 +221167,16 @@
       "translation": "完成旅程"
     },
     {
+      "source": "Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed.",
+      "translation": "完整的本地扫描可以更新 Raven 的身体目录。网站编辑内容在经过审核和确认之前仍保留在本地。"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "完整或充分"
+    },
+    {
+      "source": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+      "translation": "在更新 Raven ({0}/{1}) 之前完成系统 FSS 并收集所有身体扫描。如果身体记录丢失，请扫描导航信标。"
     },
     {
       "source": "Complete the vendor's normal wired or wireless headset connection first.",
@@ -230239,10 +230647,6 @@
       "translation": "加载指挥官配置文件以配置 Inara API 密钥。"
     },
     {
-      "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-      "translation": "加载是只读的。编辑将保留在本地，直到新的 Raven 比较通过且您明确确认发布为止。"
-    },
-    {
       "source": "Load system",
       "translation": "负载系统"
     },
@@ -230545,6 +230949,10 @@
     {
       "source": "Local ring discoveries",
       "translation": "本地环发现"
+    },
+    {
+      "source": "Local scans",
+      "translation": "本地扫描"
     },
     {
       "source": "Local system projects could not be refreshed: {0}",
@@ -232405,6 +232813,10 @@
     {
       "source": "Natural Disaster",
       "translation": "自然灾害"
+    },
+    {
+      "source": "NavBeaconScan",
+      "translation": "导航信标扫描"
     },
     {
       "source": "NavRoute",
@@ -237555,6 +237967,10 @@
       "translation": "Raven 架构师更新未发送，因为该指挥官没有保存的 API 密钥。"
     },
     {
+      "source": "Raven body journal backfill could not be read: {0}",
+      "translation": "无法读取 Raven 体日志回填：{0}"
+    },
+    {
       "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
       "translation": "乌鸦审核后改变了。在发布之前重新加载并检查冲突的编辑。"
     },
@@ -237621,6 +238037,14 @@
     {
       "source": "Raven's Reach",
       "translation": "乌鸦之所及"
+    },
+    {
+      "source": "Raven's body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+      "translation": "当警告打开时，雷文的身体目录发生了变化。重试重新发现以查看当前删除。"
+    },
+    {
+      "source": "Raven's body import returned a different system.",
+      "translation": "Raven的身体导入返回了一个不同的系统。"
     },
     {
       "source": "RavenAccentBrush",
@@ -238287,12 +238711,24 @@
       "translation": "恢复的配置文件数据可用。之前的导入报告了警告；选择一个配置文件文件夹以重试恢复。完整报告：{0}"
     },
     {
+      "source": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+      "translation": "正在从 Spansh 和 EDSM 回收 {0} ({1}) 的车身..."
+    },
+    {
       "source": "Red",
       "translation": "红色"
     },
     {
       "source": "Redact commander identities, chat, locations, coordinates, and screenshot paths",
       "translation": "编辑指挥官身份、聊天、位置、坐标和屏幕截图路径"
+    },
+    {
+      "source": "Rediscover Absent Bodies",
+      "translation": "重新发现失踪的尸体"
+    },
+    {
+      "source": "Rediscovery cancelled. Raven's body catalog was not changed.",
+      "translation": "重新发现已取消。 Raven 的身体目录没有改变。"
     },
     {
       "source": "Reduce circle diameter by 2 pixels",
@@ -238709,6 +239145,10 @@
     {
       "source": "Remove all items from ShoppingList.",
       "translation": "从 ShoppingList 中删除所有商品。"
+    },
+    {
+      "source": "Remove bodies from Raven?",
+      "translation": "把乌鸦的尸体移走？"
     },
     {
       "source": "Remove commodity",
@@ -243143,6 +243583,10 @@
       "translation": "Spansh 剪贴板中的网址"
     },
     {
+      "source": "Spansh and EDSM",
+      "translation": "Spansh 和 EDSM"
+    },
+    {
       "source": "Spansh conflict progress",
       "translation": "Spansh 冲突进度"
     },
@@ -246039,6 +246483,14 @@
       "translation": "身体可以落地。"
     },
     {
+      "source": "The body catalog update could not be completed: {0}",
+      "translation": "无法完成主体目录更新：{0}"
+    },
+    {
+      "source": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+      "translation": "正文目录更新已取消或超时。重试之前重新加载 Raven。"
+    },
+    {
       "source": "The body catalog was not imported: {0}",
       "translation": "未导入正文目录：{0}"
     },
@@ -246767,6 +247219,10 @@
       "translation": "直播系统变了。导入实体之前重新加载。"
     },
     {
+      "source": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+      "translation": "加载的 Raven 系统身份或架构师发生了变化。在更新主体之前重新加载系统。"
+    },
+    {
       "source": "The loaded construction requirements are stale.",
       "translation": "加载的施工要求已过时。"
     },
@@ -246781,6 +247237,10 @@
     {
       "source": "The local authoring draft was discarded. No file was changed.",
       "translation": "本地创作草稿被丢弃。没有更改任何文件。"
+    },
+    {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "在 Raven 检查期间，本地身体目录发生了变化。在重试之前完成 FSS 并收集所有身体扫描。"
     },
     {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -247723,6 +248183,10 @@
       "translation": "无法复制系统：{0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "系统已加载，但 Raven 的身体导入失败。您可以使用重新发现缺失的身体或完成本地扫描来恢复它。 {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "系统查找失败，但未更改限制：{0}"
     },
@@ -248001,6 +248465,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "这些是计划过滤器，而不是绩效计算器。在采矿或出售之前检查当前的游戏内资格和奖励规则。所有权、市场价格和需求可能会发生变化。"
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Spansh 和 EDSM 结果中不存在这些机构。继续会将它们从 Raven 的身体目录中删除。您想继续吗？"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -249399,6 +249867,10 @@
       "translation": "更新了已保存的叠加主题状态“{0}”。"
     },
     {
+      "source": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+      "translation": "从 {2} 更新了 {0} Raven 车身为 {1}。站点编辑被保留。"
+    },
+    {
       "source": "Updated {0} cargo entries for {1}.",
       "translation": "更新了 {1} 的 {0} 货物条目。"
     },
@@ -249449,6 +249921,10 @@
     {
       "source": "Upload newly calculated settlement geometry to Canonn",
       "translation": "将新计算的沉降几何形状上传到 Canonn"
+    },
+    {
+      "source": "Upload scanned bodies",
+      "translation": "上传尸体扫描件"
     },
     {
       "source": "UploadGreenGasGiantCandidates",
@@ -255001,6 +255477,10 @@
     {
       "source": "{0} \"{1}\" at {2}",
       "translation": "{0} “{1}”位于 {2}"
+    },
+    {
+      "source": "{0} (BodyID {1})",
+      "translation": "{0}（主体ID {1}）"
     },
     {
       "source": "{0} (owner)",
@@ -263493,8 +263973,16 @@
       "translation": "* COMPLETE JOURNEY >>>!"
     },
     {
+      "source": "Complete local scans can update Raven's body catalog. Site edits remain local until reviewed and confirmed.",
+      "translation": "* COMPLETE LOCAL SCANS CAN UPDATE RAVEN'S BODY CATALOG. SITE EDITS REMAIN LOCAL UNTIL REVIEWED AND CONFIRMED. >>>!"
+    },
+    {
       "source": "Complete or sufficient",
       "translation": "* COMPLETE OR SUFFICIENT >>>!"
+    },
+    {
+      "source": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+      "translation": "* COMPLETE THE SYSTEM FSS AND COLLECT ALL BODY SCANS BEFORE UPDATING RAVEN ({0}/{1}). SCAN THE NAV BEACON IF BODY RECORDS ARE MISSING. >>>!"
     },
     {
       "source": "Complete the vendor's normal wired or wireless headset connection first.",
@@ -272965,10 +273453,6 @@
       "translation": "* LOAD A COMMANDER PROFILE TO CONFIGURE AN INARA API KEY. >>>!"
     },
     {
-      "source": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-      "translation": "* LOAD IS READ-ONLY. EDITS REMAIN LOCAL UNTIL A FRESH RAVEN COMPARISON PASSES AND YOU EXPLICITLY CONFIRM THE PUBLISH. >>>!"
-    },
-    {
       "source": "Load system",
       "translation": "* LOAD SYSTEM >>>!"
     },
@@ -273271,6 +273755,10 @@
     {
       "source": "Local ring discoveries",
       "translation": "* LOCAL RING DISCOVERIES >>>!"
+    },
+    {
+      "source": "Local scans",
+      "translation": "* LOCAL SCANS >>>!"
     },
     {
       "source": "Local system projects could not be refreshed: {0}",
@@ -275131,6 +275619,10 @@
     {
       "source": "Natural Disaster",
       "translation": "* NATURAL DISASTER >>>!"
+    },
+    {
+      "source": "NavBeaconScan",
+      "translation": "* NAVBEACONSCAN >>>!"
     },
     {
       "source": "NavRoute",
@@ -280281,6 +280773,10 @@
       "translation": "* RAVEN ARCHITECT UPDATE WAS NOT SENT BECAUSE THIS COMMANDER HAS NO SAVED API KEY. >>>!"
     },
     {
+      "source": "Raven body journal backfill could not be read: {0}",
+      "translation": "* RAVEN BODY JOURNAL BACKFILL COULD NOT BE READ: {0} >>>!"
+    },
+    {
       "source": "Raven changed after review. Reload and review conflicting edits before publishing.",
       "translation": "* RAVEN CHANGED AFTER REVIEW. RELOAD AND REVIEW CONFLICTING EDITS BEFORE PUBLISHING. >>>!"
     },
@@ -280347,6 +280843,14 @@
     {
       "source": "Raven's Reach",
       "translation": "* RAVEN'S REACH >>>!"
+    },
+    {
+      "source": "Raven's body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+      "translation": "* RAVEN'S BODY CATALOG CHANGED WHILE THE WARNING WAS OPEN. RETRY REDISCOVERY TO REVIEW THE CURRENT REMOVALS. >>>!"
+    },
+    {
+      "source": "Raven's body import returned a different system.",
+      "translation": "* RAVEN'S BODY IMPORT RETURNED A DIFFERENT SYSTEM. >>>!"
     },
     {
       "source": "RavenAccentBrush",
@@ -281013,12 +281517,24 @@
       "translation": "* RECOVERED PROFILE DATA IS AVAILABLE. THE PREVIOUS IMPORT REPORTED WARNINGS; CHOOSE A PROFILE FOLDER TO RETRY RECOVERY. FULL REPORT: {0} >>>!"
     },
     {
+      "source": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+      "translation": "* RECOVERING BODIES FOR {0} ({1}) FROM SPANSH AND EDSM... >>>!"
+    },
+    {
       "source": "Red",
       "translation": "* RED >>>!"
     },
     {
       "source": "Redact commander identities, chat, locations, coordinates, and screenshot paths",
       "translation": "* REDACT COMMANDER IDENTITIES, CHAT, LOCATIONS, COORDINATES, AND SCREENSHOT PATHS >>>!"
+    },
+    {
+      "source": "Rediscover Absent Bodies",
+      "translation": "* REDISCOVER ABSENT BODIES >>>!"
+    },
+    {
+      "source": "Rediscovery cancelled. Raven's body catalog was not changed.",
+      "translation": "* REDISCOVERY CANCELLED. RAVEN'S BODY CATALOG WAS NOT CHANGED. >>>!"
     },
     {
       "source": "Reduce circle diameter by 2 pixels",
@@ -281435,6 +281951,10 @@
     {
       "source": "Remove all items from ShoppingList.",
       "translation": "* REMOVE ALL ITEMS FROM SHOPPINGLIST. >>>!"
+    },
+    {
+      "source": "Remove bodies from Raven?",
+      "translation": "* REMOVE BODIES FROM RAVEN? >>>!"
     },
     {
       "source": "Remove commodity",
@@ -285869,6 +286389,10 @@
       "translation": "* SPANSH URL FROM CLIPBOARD >>>!"
     },
     {
+      "source": "Spansh and EDSM",
+      "translation": "* SPANSH AND EDSM >>>!"
+    },
+    {
       "source": "Spansh conflict progress",
       "translation": "* SPANSH CONFLICT PROGRESS >>>!"
     },
@@ -288765,6 +289289,14 @@
       "translation": "* THE BODY CAN BE LANDED ON. >>>!"
     },
     {
+      "source": "The body catalog update could not be completed: {0}",
+      "translation": "* THE BODY CATALOG UPDATE COULD NOT BE COMPLETED: {0} >>>!"
+    },
+    {
+      "source": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+      "translation": "* THE BODY CATALOG UPDATE WAS CANCELLED OR TIMED OUT. RELOAD RAVEN BEFORE RETRYING. >>>!"
+    },
+    {
       "source": "The body catalog was not imported: {0}",
       "translation": "* THE BODY CATALOG WAS NOT IMPORTED: {0} >>>!"
     },
@@ -289493,6 +290025,10 @@
       "translation": "* THE LIVE SYSTEM CHANGED. RELOAD BEFORE IMPORTING BODIES. >>>!"
     },
     {
+      "source": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+      "translation": "* THE LOADED RAVEN SYSTEM IDENTITY OR ARCHITECT CHANGED. RELOAD THE SYSTEM BEFORE UPDATING BODIES. >>>!"
+    },
+    {
       "source": "The loaded construction requirements are stale.",
       "translation": "* THE LOADED CONSTRUCTION REQUIREMENTS ARE STALE. >>>!"
     },
@@ -289507,6 +290043,10 @@
     {
       "source": "The local authoring draft was discarded. No file was changed.",
       "translation": "* THE LOCAL AUTHORING DRAFT WAS DISCARDED. NO FILE WAS CHANGED. >>>!"
+    },
+    {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "* THE LOCAL BODY CATALOG CHANGED DURING THE RAVEN CHECK. COMPLETE THE FSS AND COLLECT ALL BODY SCANS BEFORE RETRYING. >>>!"
     },
     {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -290449,6 +290989,10 @@
       "translation": "* THE SYSTEM COULD NOT BE COPIED: {0} >>>!"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "* THE SYSTEM LOADED, BUT RAVEN'S BODY IMPORT FAILED. YOU CAN USE REDISCOVER ABSENT BODIES OR COMPLETE LOCAL SCANS TO RECOVER IT. {0} >>>!"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "* THE SYSTEM LOOKUP FAILED WITHOUT CHANGING YOUR LIMIT: {0} >>>!"
     },
@@ -290727,6 +291271,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "* THESE ARE PLANNING FILTERS, NOT A MERIT CALCULATOR. CHECK CURRENT IN-GAME ELIGIBILITY AND REWARD RULES BEFORE MINING OR SELLING. OWNERSHIP, MARKET PRICES, AND DEMAND CAN CHANGE. >>>!"
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "* THESE BODIES ARE ABSENT FROM THE SPANSH AND EDSM RESULTS. CONTINUING WILL REMOVE THEM FROM RAVEN'S BODY CATALOG. DO YOU WANT TO PROCEED? >>>!"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -292125,6 +292673,10 @@
       "translation": "* UPDATED SAVED OVERLAY THEME STATE '{0}'. >>>!"
     },
     {
+      "source": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+      "translation": "* UPDATED {0} RAVEN BODIES FOR {1} FROM {2}. SITE EDITS WERE PRESERVED. >>>!"
+    },
+    {
       "source": "Updated {0} cargo entries for {1}.",
       "translation": "* UPDATED {0} CARGO ENTRIES FOR {1}. >>>!"
     },
@@ -292175,6 +292727,10 @@
     {
       "source": "Upload newly calculated settlement geometry to Canonn",
       "translation": "* UPLOAD NEWLY CALCULATED SETTLEMENT GEOMETRY TO CANONN >>>!"
+    },
+    {
+      "source": "Upload scanned bodies",
+      "translation": "* UPLOAD SCANNED BODIES >>>!"
     },
     {
       "source": "UploadGreenGasGiantCandidates",
@@ -297727,6 +298283,10 @@
     {
       "source": "{0} \"{1}\" at {2}",
       "translation": "* {0} \"{1}\" AT {2} >>>!"
+    },
+    {
+      "source": "{0} (BodyID {1})",
+      "translation": "* {0} (BODYID {1}) >>>!"
     },
     {
       "source": "{0} (owner)",

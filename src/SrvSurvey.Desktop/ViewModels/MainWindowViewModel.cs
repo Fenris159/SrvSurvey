@@ -612,6 +612,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 MarketSearchFactory = () => new ColonizationMarketSearchClient(externalNetworkClient),
             };
             rollback.Add(Colonization.Dispose);
+            ConfigureBodyCatalogRecovery(externalNetworkClient, resolvedApplicationLogService);
             OverlayInteraction.ColonizationOverlay = Colonization.CommodityOverlay;
             FleetCarrierWorkspace = new FleetCarrierWorkspaceViewModel(FrontierProfile, Colonization);
             rollback.Add(FleetCarrierWorkspace.Dispose);
@@ -3354,6 +3355,30 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         string VisitKey,
         string Key
     );
+
+    private void ConfigureBodyCatalogRecovery(HttpClient? networkClient, ApplicationLogService? log)
+    {
+        Colonization.SystemEditor.BodyRecoveryClient = new ColonizationBodyRecoveryClient(networkClient);
+        Colonization.SystemEditor.BodyCatalogUpdatesAllowed = !IsDiagnosticReplay;
+        Colonization.SystemEditor.BodyCatalogLog = message => log?.Append(message);
+        Colonization.SystemEditor.HasLocalFssCompletion = address =>
+            journalState.IsLegacy != true
+            && SystemSurvey.Snapshot.SystemAddress == address
+            && SystemSurvey.Snapshot.AllBodiesFound;
+        Colonization.SystemEditor.BodyJournalHistoryReader = ReadBodyJournalHistoryAsync;
+    }
+
+    private Task<IReadOnlyList<JournalEventEnvelope>> ReadBodyJournalHistoryAsync(long address, CancellationToken token)
+    {
+        string? fid = activeProfileFrontierId;
+        string? source = CurrentJournalPath;
+        return
+            source is not null
+            && fid is not null
+            && string.Equals(journalState.FrontierId, fid, StringComparison.OrdinalIgnoreCase)
+            ? ColonizationBodyJournalHistoryReader.ReadAsync(Path.GetDirectoryName(source)!, address, fid, token)
+            : Task.FromResult<IReadOnlyList<JournalEventEnvelope>>([]);
+    }
 
     private async Task LoadCurrentSystemBodyDataAsync()
     {

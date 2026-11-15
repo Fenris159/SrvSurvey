@@ -18,6 +18,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     private const string FleetCarrierStationType = "FleetCarrier";
     private const string FleetCarrierSyncOffMessage = "Automatic Fleet Carrier cargo sync is off.";
 
+    private const int MaximumPendingEditorEvents = 2048;
+    private string? pendingEditorCommander;
+    private readonly List<JournalEventEnvelope> pendingEditorEvents = [];
+
     private readonly IRavenColonialClient client;
     private Action<ColonizationProject>? projectPreviewOpener;
     private Action? combinedReportOpener;
@@ -665,11 +669,16 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     /// <summary>
     /// Switches commander data and discards repair warnings and pending results from the previous commander.
     /// </summary>
-    public async Task SetCommanderAsync(string? value)
+    public async Task SetCommanderAsync(string? value, bool confirmBodyIdentity = true)
     {
         string? normalized = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         if (string.Equals(CommanderName, normalized, StringComparison.OrdinalIgnoreCase))
         {
+            if (confirmBodyIdentity)
+            {
+                await SystemEditor.ConfirmBodyCatalogCommanderAsync(normalized);
+            }
+            ReplayVerifiedEditorEvents(normalized);
             return;
         }
 
@@ -688,6 +697,11 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         RestoreShoppingSelection();
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();
+        if (!confirmBodyIdentity)
+        {
+            SystemEditor.SuspendBodyCatalogForCommanderChange();
+        }
+        ReplayVerifiedEditorEvents(normalized);
         if (CommanderName is null)
         {
             StatusMessage = "No commander profile is active.";
@@ -706,11 +720,16 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     /// </summary>
     public void ApplyJournalEvents(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        string? journalCommanderName = null
+        string? journalCommanderName = null,
+        bool allowBodyPublishing = false,
+        bool allowBodyAttribution = true
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        SystemEditor.ApplyJournalEvents(journalEvents);
+        if (allowBodyAttribution)
+        {
+            ApplyVerifiedEditorJournalEvents(journalEvents, journalCommanderName, allowBodyPublishing);
+        }
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             ApplyShipIdentity(journalEvent);
@@ -725,6 +744,81 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             publishFleetCarrierCommand.RaiseCanExecuteChanged();
             syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
         }
+    }
+
+    internal void ApplyVerifiedEditorJournalEvents(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? journalCommanderName,
+        bool allowBodyPublishing
+    )
+    {
+        if (
+            !string.IsNullOrWhiteSpace(journalCommanderName)
+            && !string.Equals(journalCommanderName, CommanderName, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            SystemEditor.SuspendBodyCatalogForCommanderChange();
+            StageVerifiedEditorEvents(journalCommanderName, journalEvents);
+        }
+        else
+        {
+            SystemEditor.ApplyJournalEvents(journalEvents, allowBodyPublishing);
+        }
+    }
+
+    private void StageVerifiedEditorEvents(string commander, IReadOnlyList<JournalEventEnvelope> entries)
+    {
+        if (!string.Equals(pendingEditorCommander, commander, StringComparison.OrdinalIgnoreCase))
+        {
+            pendingEditorEvents.Clear();
+        }
+        pendingEditorCommander = commander;
+        pendingEditorEvents.AddRange(entries);
+        if (pendingEditorEvents.Count > MaximumPendingEditorEvents)
+        {
+            pendingEditorEvents.RemoveRange(0, pendingEditorEvents.Count - MaximumPendingEditorEvents);
+        }
+    }
+
+    private void ReplayVerifiedEditorEvents(string? commander)
+    {
+        if (
+            string.Equals(commander, pendingEditorCommander, StringComparison.OrdinalIgnoreCase)
+            && pendingEditorEvents.Count > 0
+        )
+        {
+            SystemEditor.ApplyJournalEvents(pendingEditorEvents.ToArray(), allowBodyPublishing: false);
+        }
+        pendingEditorEvents.Clear();
+        pendingEditorCommander = null;
+    }
+
+    /// <summary>Revokes the previous commander before any asynchronous projection work can yield.</summary>
+    public void PrepareBodyCatalogJournalBatch(
+        IReadOnlyList<JournalEventEnvelope> entries,
+        string? previousFrontierId,
+        bool awaitingIdentity = false
+    )
+    {
+        bool foreignCommander = entries.Any(entry => IsForeignBodyCatalogCommander(entry, previousFrontierId));
+        if (foreignCommander || awaitingIdentity || entries.Any(entry => entry.EventName == "Fileheader"))
+        {
+            SystemEditor.SuspendBodyCatalogForCommanderChange(discardSiteHistory: foreignCommander);
+        }
+    }
+
+    private bool IsForeignBodyCatalogCommander(JournalEventEnvelope entry, string? previousFrontierId)
+    {
+        if (entry.EventName is not ("Commander" or "LoadGame"))
+        {
+            return false;
+        }
+        string? name = GetJournalString(entry.Payload, entry.EventName == "Commander" ? "Name" : "Commander");
+        string? fid = GetJournalString(entry.Payload, "FID");
+        return name is not null && !string.Equals(name, CommanderName, StringComparison.OrdinalIgnoreCase)
+            || previousFrontierId is not null
+                && fid is not null
+                && !string.Equals(fid, previousFrontierId, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Captures live carrier movements before optional workspace awaits without adopting another profile.</summary>

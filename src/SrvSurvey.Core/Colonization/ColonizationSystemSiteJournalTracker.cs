@@ -52,6 +52,14 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     public int? ExpectedBodyCount { get; private set; }
 
+    /// <summary>Refreshes body membership without discarding collected scans, signals, or site changes.</summary>
+    public void UpdateKnownBodies(IEnumerable<int> bodyNumbers)
+    {
+        ArgumentNullException.ThrowIfNull(bodyNumbers);
+        knownBodyNumbers.Clear();
+        knownBodyNumbers.UnionWith(bodyNumbers);
+    }
+
     public int ScannedBodyCount => scannedBodyNumbers.Count;
 
     public bool HasDiscoveryScan { get; private set; }

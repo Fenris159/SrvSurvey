@@ -14318,12 +14318,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/JourneysView.axaml"
   },
   {
+    "Text": "Complete local scans can update Raven\u0027s body catalog. Site edits remain local until reviewed and confirmed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
     "Text": "Complete or sufficient",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Complete the system FSS and collect all body scans before updating Raven ({0}/{1}). Scan the nav beacon if body records are missing.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "Complete the vendor\u0027s normal wired or wireless headset connection first.",
@@ -22991,7 +23007,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/FiregroupsWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
     "Text": "FIELD MANUAL",
@@ -23418,7 +23434,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "FSSBodySignals",
@@ -23434,7 +23450,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "FSSSignalDiscovered",
@@ -33331,14 +33347,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InaraSettingsViewModel.cs"
   },
   {
-    "Text": "Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
     "Text": "Load system",
     "IsFormat": false,
     "SourceKinds": [
@@ -33946,6 +33954,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Local scans",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "Local system projects could not be refreshed: {0}",
@@ -37693,6 +37709,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
+  },
+  {
+    "Text": "NavBeaconScan",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "NavRoute",
@@ -48023,6 +48047,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationDeliveryMessages.cs"
   },
   {
+    "Text": "Raven body journal backfill could not be read: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "Raven changed after review. Reload and review conflicting edits before publishing.",
     "IsFormat": false,
     "SourceKinds": [
@@ -48157,6 +48189,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "Raven\u0027s body catalog changed while the warning was open. Retry rediscovery to review the current removals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
+    "Text": "Raven\u0027s body import returned a different system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "RavenAccentBrush",
@@ -49487,6 +49535,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Recovering bodies for {0} ({1}) from Spansh and EDSM...",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "Red",
     "IsFormat": false,
     "SourceKinds": [
@@ -49501,6 +49557,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Rediscover Absent Bodies",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Rediscovery cancelled. Raven\u0027s body catalog was not changed.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "Reduce circle diameter by 2 pixels",
@@ -50335,6 +50407,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
+  },
+  {
+    "Text": "Remove bodies from Raven?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RavenBodyRemovalDialog.axaml"
   },
   {
     "Text": "Remove commodity",
@@ -59231,6 +59311,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "Spansh and EDSM",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "Spansh conflict progress",
     "IsFormat": false,
     "SourceKinds": [
@@ -65040,6 +65128,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The body catalog update could not be completed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
+    "Text": "The body catalog update was cancelled or timed out. Reload Raven before retrying.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "The body catalog was not imported: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -66496,6 +66600,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
+    "Text": "The loaded Raven system identity or architect changed. Reload the system before updating bodies.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "The loaded construction requirements are stale.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66526,6 +66638,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
+  },
+  {
+    "Text": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "The local flora path is not absolute. Cached and remote Codex images remain available.",
@@ -68408,6 +68528,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
+    "Text": "The system loaded, but Raven\u0027s body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "The system lookup failed without changing your limit: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -68967,6 +69095,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven\u0027s body catalog. Do you want to proceed?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RavenBodyRemovalDialog.axaml"
   },
   {
     "Text": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -71767,6 +71903,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Updated {0} Raven bodies for {1} from {2}. Site edits were preserved.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "Updated {0} cargo entries for {1}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -71870,6 +72014,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Upload scanned bodies",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
     "Text": "UploadGreenGasGiantCandidates",
@@ -82983,6 +83135,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ErrorReportViewModel.cs"
+  },
+  {
+    "Text": "{0} (BodyID {1})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
     "Text": "{0} (owner)",

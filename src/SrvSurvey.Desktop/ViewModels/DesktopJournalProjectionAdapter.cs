@@ -25,6 +25,10 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     private readonly JournalProjectionDependencies dependencies;
     private readonly JournalProjectionState state;
     private readonly JournalProjectionShell shell;
+    private (string? FrontierId, string? Name) bodyJournalIdentity;
+    private (string? FrontierId, string? Name) bodyBatchInitialIdentity;
+    private bool? bodyJournalIsLive;
+    private bool? bodyBatchInitialIsLive;
     private readonly Dictionary<
         JournalProjectionOperation,
         Func<JournalProjectionContext, JournalProjectionTick, Task>
@@ -63,7 +67,13 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
 
     private void BindIdle()
     {
-        operations[JournalProjectionOperation.MiningIdle] = Sync((_, _) => dependencies.MiningWorkspace.Tick());
+        operations[JournalProjectionOperation.MiningIdle] = Sync(
+            (context, _) =>
+            {
+                PrepareBodyCatalogBatch(context);
+                dependencies.MiningWorkspace.Tick();
+            }
+        );
         operations[JournalProjectionOperation.ColonizationIdle] = (context, tick) =>
             dependencies.Colonization.SynchronizeLiveProjectsAsync(
                 [],
@@ -80,7 +90,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         operations[JournalProjectionOperation.Timeline] = (context, tick) =>
             AppendCompanionTimelineAsync(context.Update);
         operations[JournalProjectionOperation.SessionBaseline] = Sync(
-            (context, tick) => ApplySessionBaseline(context, tick)
+            (context, tick) =>
+            {
+                PrepareBodyCatalogBatch(context);
+                ApplySessionBaseline(context, tick);
+            }
         );
         operations[JournalProjectionOperation.JournalInspector] = Sync(
             (context, tick) => dependencies.JournalInspector.ApplyUpdate(context.JournalEvents, context.Update.Status)
@@ -130,6 +144,33 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             }
         );
     }
+
+    private void PrepareBodyCatalogBatch(JournalProjectionContext context)
+    {
+        dependencies.Colonization.PrepareBodyCatalogJournalBatch(
+            context.JournalEvents,
+            state.Session.FrontierId,
+            context.Update.IsAwaitingCommanderIdentity
+        );
+        bodyBatchInitialIdentity = bodyJournalIdentity;
+        bodyBatchInitialIsLive = bodyJournalIsLive;
+        foreach (JournalEventEnvelope header in context.JournalEvents.Where(entry => entry.EventName == "Fileheader"))
+        {
+            bodyJournalIsLive = JournalGalaxy.IsLive(header.Payload);
+        }
+        bodyJournalIdentity = JournalCommanderEvents.ReadFinalIdentity(
+            context.JournalEvents,
+            bodyBatchInitialIdentity.FrontierId,
+            bodyBatchInitialIdentity.Name
+        );
+    }
+
+    private bool HasVerifiedBodyCatalogIdentity(JournalProjectionContext context) =>
+        !context.Update.IsAwaitingCommanderIdentity
+        && state.Session.IsLegacy != true
+        && bodyJournalIsLive != false
+        && bodyJournalIdentity.FrontierId is { } fid
+        && string.Equals(fid, state.Session.FrontierId, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Keeps shared UI cargo and independently attributed provider cargo in separate projections.</summary>
     private void BindCargoAndStatus()
@@ -225,7 +266,35 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     state.Session.StarPosition,
                     state.Session.SystemAddress
                 );
-                dependencies.Colonization.ApplyJournalEvents(context.JournalEvents, state.Session.CommanderName);
+                dependencies.Colonization.ApplyJournalEvents(
+                    context.JournalEvents,
+                    state.Session.CommanderName,
+                    allowBodyAttribution: false
+                );
+                if (state.Session.FrontierId is { } frontierId)
+                {
+                    JournalEventEnvelope[] attributed = JournalCommanderEvents
+                        .ForCommander(
+                            context.JournalEvents,
+                            frontierId,
+                            bodyBatchInitialIdentity.FrontierId,
+                            bodyBatchInitialIdentity.Name,
+                            excludeLegacy: true,
+                            initialIsLive: bodyBatchInitialIsLive
+                        )
+                        .ToArray();
+                    if (attributed.Length > 0)
+                    {
+                        dependencies.Colonization.ApplyVerifiedEditorJournalEvents(
+                            attributed,
+                            state.Session.CommanderName,
+                            allowBodyPublishing: HasVerifiedBodyCatalogIdentity(context)
+                                && tick.AllowLiveEffects
+                                && tick.AllowAttributedJournal
+                                && !dependencies.IsDiagnosticReplay()
+                        );
+                    }
+                }
             }
         );
         operations[JournalProjectionOperation.SearchContext] = Sync(
@@ -302,8 +371,11 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         };
         operations[JournalProjectionOperation.Quests] = (context, tick) =>
             ApplyQuestUpdateAsync(context.Update, tick.AllowRavenCargo);
-        operations[JournalProjectionOperation.ColonizationCommander] = (_, _) =>
-            dependencies.Colonization.SetCommanderAsync(state.Session.CommanderName);
+        operations[JournalProjectionOperation.ColonizationCommander] = (context, tick) =>
+            dependencies.Colonization.SetCommanderAsync(
+                state.Session.CommanderName,
+                confirmBodyIdentity: HasVerifiedBodyCatalogIdentity(context)
+            );
         operations[JournalProjectionOperation.ColonizationProjects] = (context, tick) =>
             SynchronizeColonizationLiveProjectsAsync(context, tick);
         operations[JournalProjectionOperation.Journey] = (context, tick) =>
