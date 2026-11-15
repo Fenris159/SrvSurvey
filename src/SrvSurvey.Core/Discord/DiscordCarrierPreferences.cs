@@ -9,7 +9,8 @@ public sealed record DiscordCarrierPreferences(
     bool SquadronCarrier = true,
     bool JumpScheduled = true,
     bool JumpCancelled = true,
-    bool JumpArrived = true
+    bool JumpArrived = true,
+    DiscordCarrierMessageSettings? MessageSettings = null
 )
 {
     public bool Includes(CarrierJumpAnnouncement announcement) =>

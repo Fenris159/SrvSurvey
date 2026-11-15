@@ -289,6 +289,21 @@ public sealed partial class SettingsView : UserControl
         await OpenSettingsUriAsync(WellKnownUris.EdsmCommanderApiSettings, "the EDSM API key page");
     }
 
+    private void EditDiscordCarrierMessage_Click(object? sender, RoutedEventArgs eventArgs)
+    {
+        if (TopLevel.GetTopLevel(this) is Window owner && DataContext is MainWindowViewModel viewModel)
+        {
+            var editor = new DiscordCarrierMessageEditorWindow(
+                new DiscordCarrierMessageEditorViewModel(
+                    viewModel.DiscordCarrierAnnouncements.MessageSettings,
+                    viewModel.FrontierProfile.Snapshot
+                ),
+                viewModel.DiscordCarrierAnnouncements.ApplyMessageSettings
+            );
+            editor.ShowDialog(owner);
+        }
+    }
+
     private async void ConfigureEddnSharing_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (TopLevel.GetTopLevel(this) is not Window owner || DataContext is not MainWindowViewModel viewModel)

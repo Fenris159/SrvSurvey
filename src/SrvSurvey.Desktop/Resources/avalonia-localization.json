@@ -1177,6 +1177,10 @@
       "translation": "A:"
     },
     {
+      "source": "ABC-123",
+      "translation": "ABC-123"
+    },
+    {
       "source": "ABSENT",
       "translation": "ABWESEND"
     },
@@ -1363,6 +1367,10 @@
     {
       "source": "API",
       "translation": "API"
+    },
+    {
+      "source": "APP",
+      "translation": "APP"
     },
     {
       "source": "APPIMAGE",
@@ -2329,6 +2337,10 @@
       "translation": "Ankündigungsveranstaltungen"
     },
     {
+      "source": "Announcement message template",
+      "translation": "Vorlage für Ankündigungsnachrichten"
+    },
+    {
       "source": "Announcement preset '{0}' applied.",
       "translation": "Ankündigungsvoreinstellung „{0}“ angewendet."
     },
@@ -2343,6 +2355,10 @@
     {
       "source": "Announcement presets",
       "translation": "Ankündigungsvoreinstellungen"
+    },
+    {
+      "source": "Announcement title",
+      "translation": "Titel der Ankündigung"
     },
     {
       "source": "Announcements",
@@ -2531,6 +2547,14 @@
     {
       "source": "Apply selected",
       "translation": "Anwenden ausgewählt"
+    },
+    {
+      "source": "Apply to settings",
+      "translation": "Auf Einstellungen anwenden"
+    },
+    {
+      "source": "Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes.",
+      "translation": "Klicken Sie auf „Übernehmen“ und dann auf „Änderungen in den Einstellungen speichern“, um diese Nachrichten zu verwenden. Abbrechen verwirft die Änderungen dieses Editors."
     },
     {
       "source": "Approach a Guardian point before marking it empty.",
@@ -4225,6 +4249,10 @@
       "translation": "Körpertyp"
     },
     {
+      "source": "Bold",
+      "translation": "Deutlich"
+    },
+    {
       "source": "Bookmark POI",
       "translation": "POI als Lesezeichen speichern"
     },
@@ -4491,6 +4519,10 @@
     {
       "source": "Buildings:",
       "translation": "Gebäude:"
+    },
+    {
+      "source": "Bullet list",
+      "translation": "Bullet-Liste"
     },
     {
       "source": "Bumper",
@@ -4981,6 +5013,10 @@
       "translation": "Kandidat {0} wurde nicht hochgeladen: {1}"
     },
     {
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Dieses Bild kann nicht geöffnet werden. Wähle eine PNG- oder JPEG-Datei mit höchstens 8 MB, 16 Megapixeln und 16.384 Pixeln pro Seite."
+    },
+    {
       "source": "Canonn",
       "translation": "Canonn"
     },
@@ -5257,6 +5293,10 @@
       "translation": "Träger"
     },
     {
+      "source": "Carrier announcement editor",
+      "translation": "Herausgeber von Carrier-Ankündigungen"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Carrier-Fracht nicht verfügbar. Fehlmengen und Fahrten können nicht bestätigt werden."
     },
@@ -5271,6 +5311,26 @@
     {
       "source": "Carrier fuel recalculated from the current waypoint.",
       "translation": "Der Treibstoff des Trägers wurde vom aktuellen Wegpunkt aus neu berechnet."
+    },
+    {
+      "source": "Carrier image",
+      "translation": "Trägerbild"
+    },
+    {
+      "source": "Carrier image and preview",
+      "translation": "Trägerbild und Vorschau"
+    },
+    {
+      "source": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+      "translation": "Bildausschnitt des Trägers. Ziehen Sie zum Schwenken, scrollen Sie zum Zoomen oder verwenden Sie die Pfeiltasten, um den Ausschnitt zu verschieben."
+    },
+    {
+      "source": "Carrier image zoom",
+      "translation": "Trägerbildzoom"
+    },
+    {
+      "source": "Carrier images",
+      "translation": "Trägerbilder"
     },
     {
       "source": "Carrier linking",
@@ -5733,6 +5793,10 @@
       "translation": "Wählen Sie ein PNG-Hintergrundbild, bevor Sie einen neuen Kartenentwurf speichern."
     },
     {
+      "source": "Choose a carrier image to include it here.",
+      "translation": "Wählen Sie ein Trägerbild aus, um es hier einzubinden."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Wählen Sie oben in der Auswahl eine Kategorie aus. Es wird nur diese Gruppe angezeigt, sodass der Desktop nicht überlastet wird."
     },
@@ -5917,6 +5981,10 @@
       "translation": "Wählen Sie einen vorhandenen absoluten Screenshot-Quellordner."
     },
     {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Wähle ein Bild mit höchstens 16 Megapixeln und 16.384 Pixeln pro Seite."
+    },
+    {
       "source": "Choose an overlay monitor",
       "translation": "Wählen Sie einen Overlay-Monitor"
     },
@@ -5963,6 +6031,10 @@
     {
       "source": "Choose folder",
       "translation": "Ordner auswählen"
+    },
+    {
+      "source": "Choose image…",
+      "translation": "Bild auswählen…"
     },
     {
       "source": "Choose local images...",
@@ -6083,6 +6155,10 @@
     {
       "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
       "translation": "Wählen Sie aus, welche Tracker die Wayland-Erfassung verwenden dürfen. Jeder Tracker beginnt damit, dass Sie ihn separat testen können."
+    },
+    {
+      "source": "Choose your carrier image",
+      "translation": "Wählen Sie Ihr Trägerbild"
     },
     {
       "source": "Choose...",
@@ -8077,6 +8153,10 @@
       "translation": "Erstellen Sie einen Nexus"
     },
     {
+      "source": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+      "translation": "Erstellen Sie für jedes Sprungereignis eine Nachricht. Felder werden automatisch ausgefüllt, wenn eine Ankündigung gesendet wird."
+    },
+    {
       "source": "Create a project",
       "translation": "Erstellen Sie ein Projekt"
     },
@@ -9333,6 +9413,10 @@
       "translation": "Discord Carrier-Ankündigungen"
     },
     {
+      "source": "Discord preview",
+      "translation": "Discord Vorschau"
+    },
+    {
       "source": "Discord webhook URL",
       "translation": "Discord Webhook-URL"
     },
@@ -9713,6 +9797,10 @@
       "translation": "Ziehen Sie, um die Breite zu ändern. Die Höhe folgt dem Inhalt."
     },
     {
+      "source": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+      "translation": "Ziehen Sie, um das Bild zu verschieben. Scrollen Sie oder verwenden Sie Zoom, um den 16:9-Rahmen auszufüllen. Nur der Bereich innerhalb des Frames wird an Discord gesendet."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Ziehen Sie, um die Größe dieses Overlay-Panels zu ändern"
     },
@@ -10075,6 +10163,10 @@
     {
       "source": "Edit all overlay positions",
       "translation": "Bearbeiten Sie alle Overlay-Positionen"
+    },
+    {
+      "source": "Edit announcement messages…",
+      "translation": "Ankündigungsnachrichten bearbeiten…"
     },
     {
       "source": "Edit bookmark",
@@ -11043,6 +11135,10 @@
     {
       "source": "Exploration rewards ~{0} CR",
       "translation": "Erkundungsbelohnungen ~{0} CR"
+    },
+    {
+      "source": "Exploration route: Sol → Lave → Colonia",
+      "translation": "Erkundungsroute: Sol → Lave → Colonia"
     },
     {
       "source": "Exploration screenshots",
@@ -14989,6 +15085,10 @@
       "translation": "Beziehen Sie veraltete lokale Märkte ein"
     },
     {
+      "source": "Include standard itinerary and time fields",
+      "translation": "Fügen Sie standardmäßige Reiserouten- und Zeitfelder hinzu"
+    },
+    {
       "source": "Incomplete",
       "translation": "Unvollständig"
     },
@@ -15037,6 +15137,10 @@
       "translation": "Ausfall der Infrastruktur"
     },
     {
+      "source": "Inline code",
+      "translation": "Inline-Code"
+    },
+    {
       "source": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
       "translation": "Vorschläge für Inline-Systeme stammen von EDSM mit einem Ardent-Fallback; Das aufgelöste Zentrum und die Koordinaten stammen weiterhin von Spansh. Beim Speichern werden nur die kompatiblen sphereLimit-Felder aktualisiert."
     },
@@ -15067,6 +15171,14 @@
     {
       "source": "InputBox",
       "translation": "InputBox"
+    },
+    {
+      "source": "Insert announcement field",
+      "translation": "Ansagefeld einfügen"
+    },
+    {
+      "source": "Insert field",
+      "translation": "Feld einfügen"
     },
     {
       "source": "Inside",
@@ -15183,6 +15295,10 @@
     {
       "source": "Iron ×3",
       "translation": "Eisen ×3"
+    },
+    {
+      "source": "Italic",
+      "translation": "Kursiv"
     },
     {
       "source": "Item",
@@ -15495,6 +15611,14 @@
     {
       "source": "Jump cost",
       "translation": "Sprungkosten"
+    },
+    {
+      "source": "Jump event",
+      "translation": "Sprungereignis"
+    },
+    {
+      "source": "Jump event template",
+      "translation": "Jump-Event-Vorlage"
     },
     {
       "source": "Jump events",
@@ -16107,6 +16231,14 @@
     {
       "source": "Lava spout",
       "translation": "Lavaauslauf"
+    },
+    {
+      "source": "Lave",
+      "translation": "Waschen"
+    },
+    {
+      "source": "Lave 1",
+      "translation": "Waschraum 1"
     },
     {
       "source": "Layout",
@@ -19261,6 +19393,10 @@
       "translation": "Im Arbeitsbereich sind keine Build-Projekte verfügbar."
     },
     {
+      "source": "No carrier image selected",
+      "translation": "Kein Trägerbild ausgewählt"
+    },
+    {
       "source": "No carriers are linked to this Nexus.",
       "translation": "Mit diesem Nexus sind keine Mobilfunkanbieter verbunden."
     },
@@ -21549,6 +21685,10 @@
       "translation": "PNG-Bild"
     },
     {
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG oder JPEG, bis zu 8 MB und 16 Megapixel (16.384 Pixel pro Seite). Wähle deinen Träger-Screenshot; er wird bei jeder Ankündigung für diesen Träger hochgeladen."
+    },
+    {
       "source": "POI",
       "translation": "POI"
     },
@@ -23365,6 +23505,10 @@
       "translation": "Quick Tracker {0} wurde nicht geändert: {1}"
     },
     {
+      "source": "Quote",
+      "translation": "Zitat"
+    },
+    {
       "source": "R+",
       "translation": "R+"
     },
@@ -24965,6 +25109,10 @@
       "translation": "Gruppe entfernen"
     },
     {
+      "source": "Remove image",
+      "translation": "Bild entfernen"
+    },
+    {
       "source": "Remove key",
       "translation": "Schlüssel abziehen"
     },
@@ -25361,6 +25509,10 @@
       "translation": "Koordinaten zurücksetzen"
     },
     {
+      "source": "Reset crop",
+      "translation": "Zuschnitt zurücksetzen"
+    },
+    {
       "source": "Reset input detection",
       "translation": "Eingangserkennung zurücksetzen"
     },
@@ -25559,6 +25711,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Ausgewähltes Backup wiederherstellen"
+    },
+    {
+      "source": "Restore this event's default",
+      "translation": "Stellen Sie die Standardeinstellung dieses Ereignisses wieder her"
     },
     {
       "source": "Restore this panel's original measured size",
@@ -26687,6 +26843,10 @@
     {
       "source": "Sample 1 of 3 recorded",
       "translation": "Probe 1 von 3 aufgezeichnet"
+    },
+    {
+      "source": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+      "translation": "Beispielreise nach Lave. Sofern verfügbar, wird Ihre Mobilfunkanbieteridentität verwendet. Discord steuert die endgültige Abstands- und Zeitanzeige."
     },
     {
       "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -27879,6 +28039,10 @@
     {
       "source": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
       "translation": "Ausgewähltes Boxel verwendet nur die aufgezeichneten Systeme und Körper im aktuell geöffneten Boxel."
+    },
+    {
+      "source": "Selected carrier image",
+      "translation": "Ausgewähltes Trägerbild"
     },
     {
       "source": "Selected entries: {0}",
@@ -30529,6 +30693,10 @@
       "translation": "Streaming"
     },
     {
+      "source": "Strikethrough",
+      "translation": "Durchgestrichen"
+    },
+    {
       "source": "Stronghold",
       "translation": "Hochburg"
     },
@@ -32299,6 +32467,22 @@
     {
       "source": "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
       "translation": "Die Frachtreihe zeigt eine von 72 belegte Kapazität. Die Rigg-Einstellungsgurte bleiben zu Fuß deaktiviert."
+    },
+    {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Für das Trägerbild konnte kein Speicher reserviert werden."
+    },
+    {
+      "source": "The carrier image could not be decoded.",
+      "translation": "Das Trägerbild konnte nicht dekodiert werden."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Das Trägerbild konnte nicht kodiert werden."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Das Trägerbild konnte nicht gerendert werden."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -34909,6 +35093,10 @@
       "translation": "Stimmen Sie das FSS auf einen Planeten ab"
     },
     {
+      "source": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals.",
+      "translation": "Deaktivieren Sie Standardfelder, um alles in Ihrer Nachricht zu ordnen. Verwenden Sie {countdown} für den Live-Abflug-Countdown von Discord. es ist leer für Stornierungen und Ankünfte."
+    },
+    {
       "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
       "translation": "Aktivieren Sie diese Option, um die Kolonisierungsgüter für diese Sitzung sichtbar zu halten, auch nach dem Abdocken. Deaktivieren Sie die Option, um die automatische Sichtbarkeit in den Shopping-Overlay-Einstellungen zu nutzen."
     },
@@ -35101,6 +35289,10 @@
       "translation": "Uid:"
     },
     {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Es konnte keine neue SKBitmap-Instanz erstellt werden."
+    },
+    {
       "source": "Unable to open EDAstro's New POI page.",
       "translation": "Die neue POI-Seite von EDAstro kann nicht geöffnet werden."
     },
@@ -35163,6 +35355,10 @@
     {
       "source": "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
       "translation": "Wählen Sie unter „Sichtbarkeit der Cockpit-Ansicht“ die Optionen „Links“, „Haupt“ und „Rechts“ aus. Änderungen werden sofort wirksam und überdauern den Neustart."
+    },
+    {
+      "source": "Underline",
+      "translation": "Unterstreichen"
     },
     {
       "source": "Undermine",
@@ -37401,6 +37597,10 @@
       "translation": "Deine Kraft"
     },
     {
+      "source": "Your carrier",
+      "translation": "Ihr Träger"
+    },
+    {
       "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
       "translation": "Ihr Träger benötigt für die verbleibende Strecke ca. {0} t Tritium und hat knapp {1} t. Minen oder kaufen Sie mindestens {2} t und wählen Sie dann „Aktualisieren“, um eine Neuberechnung von diesem Wegpunkt aus durchzuführen."
     },
@@ -37463,6 +37663,10 @@
     {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
+    },
+    {
+      "source": "Zoom",
+      "translation": "Zoom"
     },
     {
       "source": "Zoom Guardian map in",
@@ -39133,6 +39337,10 @@
       "translation": "Bildeinreichungsformular"
     },
     {
+      "source": "image/jpeg",
+      "translation": "Bild/JPEG"
+    },
+    {
       "source": "image/png",
       "translation": "Bild/PNG"
     },
@@ -39155,6 +39363,10 @@
     {
       "source": "in",
       "translation": "in"
+    },
+    {
+      "source": "in {0} minutes",
+      "translation": "in {0} Minuten"
     },
     {
       "source": "inara-accepted.txt",
@@ -39543,6 +39755,10 @@
     {
       "source": "monochrome-dark",
       "translation": "monochrom-dunkel"
+    },
+    {
+      "source": "monospace",
+      "translation": "Monoraum"
     },
     {
       "source": "more than one imported profile has that name",
@@ -40477,6 +40693,10 @@
       "translation": "strecken"
     },
     {
+      "source": "style",
+      "translation": "Stil"
+    },
+    {
       "source": "suffix {0}",
       "translation": "Suffix {0}"
     },
@@ -40569,6 +40789,10 @@
       "translation": "testbuggy"
     },
     {
+      "source": "text",
+      "translation": "Text"
+    },
+    {
       "source": "text scale",
       "translation": "Textskala"
     },
@@ -40647,6 +40871,10 @@
     {
       "source": "tier",
       "translation": "Stufe"
+    },
+    {
+      "source": "time",
+      "translation": "Zeit"
     },
     {
       "source": "timestamp",
@@ -41167,6 +41395,10 @@
     {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} – USB {1}:{2}"
+    },
+    {
+      "source": "{0} / 4096 characters",
+      "translation": "{0} / 4096 Zeichen"
     },
     {
       "source": "{0} / 5 stars · {1} votes",
@@ -41735,6 +41967,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "{0} Nachrichten • {1} ungelesen"
+    },
+    {
+      "source": "{0} minutes ago",
+      "translation": "{0} vor Minuten"
     },
     {
       "source": "{0} missions tracked",
@@ -43667,6 +43903,10 @@
       "translation": "A:"
     },
     {
+      "source": "ABC-123",
+      "translation": "ABC-123"
+    },
+    {
       "source": "ABSENT",
       "translation": "AUSENTE"
     },
@@ -43853,6 +44093,10 @@
     {
       "source": "API",
       "translation": "API"
+    },
+    {
+      "source": "APP",
+      "translation": "APLICACIÓN"
     },
     {
       "source": "APPIMAGE",
@@ -44819,6 +45063,10 @@
       "translation": "Eventos de anuncio"
     },
     {
+      "source": "Announcement message template",
+      "translation": "Plantilla de mensaje de anuncio"
+    },
+    {
       "source": "Announcement preset '{0}' applied.",
       "translation": "Se aplicó el ajuste preestablecido de anuncio '{0}'."
     },
@@ -44833,6 +45081,10 @@
     {
       "source": "Announcement presets",
       "translation": "Ajustes preestablecidos de anuncios"
+    },
+    {
+      "source": "Announcement title",
+      "translation": "Título del anuncio"
     },
     {
       "source": "Announcements",
@@ -45021,6 +45273,14 @@
     {
       "source": "Apply selected",
       "translation": "Aplicar seleccionado"
+    },
+    {
+      "source": "Apply to settings",
+      "translation": "Aplicar a la configuración"
+    },
+    {
+      "source": "Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes.",
+      "translation": "Aplicar y luego guardar los cambios en la configuración para usar estos mensajes. Cancelar descarta los cambios de este editor."
     },
     {
       "source": "Approach a Guardian point before marking it empty.",
@@ -46715,6 +46975,10 @@
       "translation": "Tipo de cuerpo"
     },
     {
+      "source": "Bold",
+      "translation": "Atrevido"
+    },
+    {
       "source": "Bookmark POI",
       "translation": "Marcar PDI"
     },
@@ -46981,6 +47245,10 @@
     {
       "source": "Buildings:",
       "translation": "Edificios:"
+    },
+    {
+      "source": "Bullet list",
+      "translation": "lista de viñetas"
     },
     {
       "source": "Bumper",
@@ -47471,6 +47739,10 @@
       "translation": "El candidato {0} no fue subido: {1}"
     },
     {
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "No se puede abrir esta imagen. Selecciona un PNG o JPEG de hasta 8 MB, 16 megapíxeles y 16.384 píxeles por lado."
+    },
+    {
       "source": "Canonn",
       "translation": "Canonn"
     },
@@ -47747,6 +48019,10 @@
       "translation": "Transportador"
     },
     {
+      "source": "Carrier announcement editor",
+      "translation": "Editor de anuncios del operador"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Carga del transportista no disponible. No se pueden confirmar desabastecimientos ni viajes."
     },
@@ -47761,6 +48037,26 @@
     {
       "source": "Carrier fuel recalculated from the current waypoint.",
       "translation": "Combustible del portaaviones recalculado a partir del punto de ruta actual."
+    },
+    {
+      "source": "Carrier image",
+      "translation": "Imagen del operador"
+    },
+    {
+      "source": "Carrier image and preview",
+      "translation": "Imagen del operador y vista previa"
+    },
+    {
+      "source": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+      "translation": "Recorte de imagen del portador. Arrastre para desplazarse, desplácese para hacer zoom o use las teclas de flecha para mover el recorte."
+    },
+    {
+      "source": "Carrier image zoom",
+      "translation": "Zoom de imagen del portador"
+    },
+    {
+      "source": "Carrier images",
+      "translation": "Imágenes del transportista"
     },
     {
       "source": "Carrier linking",
@@ -48223,6 +48519,10 @@
       "translation": "Elija una imagen de fondo PNG antes de guardar un nuevo borrador de mapa."
     },
     {
+      "source": "Choose a carrier image to include it here.",
+      "translation": "Elija una imagen de operador para incluirla aquí."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Elija una categoría del selector en la parte superior; solo aparece ese grupo para que el escritorio no se vea abrumado."
     },
@@ -48407,6 +48707,10 @@
       "translation": "Elija una carpeta de origen de captura de pantalla absoluta existente."
     },
     {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Selecciona una imagen de hasta 16 megapíxeles y 16.384 píxeles por lado."
+    },
+    {
       "source": "Choose an overlay monitor",
       "translation": "Elija un monitor superpuesto"
     },
@@ -48453,6 +48757,10 @@
     {
       "source": "Choose folder",
       "translation": "Elige carpeta"
+    },
+    {
+      "source": "Choose image…",
+      "translation": "Elige imagen…"
     },
     {
       "source": "Choose local images...",
@@ -48573,6 +48881,10 @@
     {
       "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
       "translation": "Elige qué rastreadores pueden usar la captura de Wayland. Cada rastreador comienza para permitirle probarlos por separado."
+    },
+    {
+      "source": "Choose your carrier image",
+      "translation": "Elige la imagen de tu operador"
     },
     {
       "source": "Choose...",
@@ -50567,6 +50879,10 @@
       "translation": "Crear nexo"
     },
     {
+      "source": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+      "translation": "Crea un mensaje para cada evento de salto. Los campos se completan automáticamente cuando se envía un anuncio."
+    },
+    {
       "source": "Create a project",
       "translation": "Crear un proyecto"
     },
@@ -51823,6 +52139,10 @@
       "translation": "Discord anuncios del operador"
     },
     {
+      "source": "Discord preview",
+      "translation": "Discord vista previa"
+    },
+    {
       "source": "Discord webhook URL",
       "translation": "Discord URL del webhook"
     },
@@ -52203,6 +52523,10 @@
       "translation": "Arrastre para cambiar el ancho. La altura sigue al contenido."
     },
     {
+      "source": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+      "translation": "Arrastra para mover la imagen. Desplácese o use Zoom para llenar el cuadro 16:9. Solo se envía el área dentro del marco a Discord."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Arrastre para cambiar el tamaño de este panel superpuesto"
     },
@@ -52565,6 +52889,10 @@
     {
       "source": "Edit all overlay positions",
       "translation": "Editar todas las posiciones de superposición"
+    },
+    {
+      "source": "Edit announcement messages…",
+      "translation": "Editar mensajes de anuncio..."
     },
     {
       "source": "Edit bookmark",
@@ -53533,6 +53861,10 @@
     {
       "source": "Exploration rewards ~{0} CR",
       "translation": "Recompensas de exploración ~{0} CR"
+    },
+    {
+      "source": "Exploration route: Sol → Lave → Colonia",
+      "translation": "Ruta de exploración: Sol → Lave → Colonia"
     },
     {
       "source": "Exploration screenshots",
@@ -57479,6 +57811,10 @@
       "translation": "Incluir mercados locales obsoletos"
     },
     {
+      "source": "Include standard itinerary and time fields",
+      "translation": "Incluir campos estándar de itinerario y hora"
+    },
+    {
       "source": "Incomplete",
       "translation": "Incompleto"
     },
@@ -57527,6 +57863,10 @@
       "translation": "Fallo de infraestructura"
     },
     {
+      "source": "Inline code",
+      "translation": "código en línea"
+    },
+    {
       "source": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
       "translation": "Las sugerencias del sistema en línea provienen de EDSM con un respaldo de Ardent; el centro resuelto y las coordenadas aún provienen de Spansh. Al guardar se actualizan solo los campos compatibles consphereLimit."
     },
@@ -57557,6 +57897,14 @@
     {
       "source": "InputBox",
       "translation": "Cuadro de entrada"
+    },
+    {
+      "source": "Insert announcement field",
+      "translation": "Insertar campo de anuncio"
+    },
+    {
+      "source": "Insert field",
+      "translation": "Insertar campo"
     },
     {
       "source": "Inside",
@@ -57673,6 +58021,10 @@
     {
       "source": "Iron ×3",
       "translation": "Hierro ×3"
+    },
+    {
+      "source": "Italic",
+      "translation": "Itálico"
     },
     {
       "source": "Item",
@@ -57985,6 +58337,14 @@
     {
       "source": "Jump cost",
       "translation": "Costo de salto"
+    },
+    {
+      "source": "Jump event",
+      "translation": "evento de salto"
+    },
+    {
+      "source": "Jump event template",
+      "translation": "Plantilla de evento de salto"
     },
     {
       "source": "Jump events",
@@ -58597,6 +58957,14 @@
     {
       "source": "Lava spout",
       "translation": "Pico de lava"
+    },
+    {
+      "source": "Lave",
+      "translation": "Lavar"
+    },
+    {
+      "source": "Lave 1",
+      "translation": "Lava 1"
     },
     {
       "source": "Layout",
@@ -61751,6 +62119,10 @@
       "translation": "No hay proyectos de compilación disponibles en el espacio de trabajo."
     },
     {
+      "source": "No carrier image selected",
+      "translation": "No se seleccionó ninguna imagen de operador"
+    },
+    {
       "source": "No carriers are linked to this Nexus.",
       "translation": "No hay ningún operador vinculado a este Nexus."
     },
@@ -64039,6 +64411,10 @@
       "translation": "imagen PNG"
     },
     {
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG o JPEG, hasta 8 MB y 16 megapíxeles (16.384 píxeles por lado). Selecciona la captura de tu portanaves; se adjuntará a cada anuncio de este portanaves."
+    },
+    {
       "source": "POI",
       "translation": "PDI"
     },
@@ -65855,6 +66231,10 @@
       "translation": "El rastreador rápido {0} no fue cambiado: {1}"
     },
     {
+      "source": "Quote",
+      "translation": "Cita"
+    },
+    {
       "source": "R+",
       "translation": "R+"
     },
@@ -67455,6 +67835,10 @@
       "translation": "Quitar grupo"
     },
     {
+      "source": "Remove image",
+      "translation": "Quitar imagen"
+    },
+    {
       "source": "Remove key",
       "translation": "Quitar clave"
     },
@@ -67851,6 +68235,10 @@
       "translation": "Restablecer coordenadas"
     },
     {
+      "source": "Reset crop",
+      "translation": "Restablecer recorte"
+    },
+    {
       "source": "Reset input detection",
       "translation": "Restablecer detección de entrada"
     },
@@ -68049,6 +68437,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Restaurar la copia de seguridad seleccionada"
+    },
+    {
+      "source": "Restore this event's default",
+      "translation": "Restaurar el valor predeterminado de este evento"
     },
     {
       "source": "Restore this panel's original measured size",
@@ -69177,6 +69569,10 @@
     {
       "source": "Sample 1 of 3 recorded",
       "translation": "Muestra 1 de 3 grabadas"
+    },
+    {
+      "source": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+      "translation": "Ejemplo de viaje a Lave. La identidad de su operador se utiliza cuando está disponible. Discord controla el espaciado final y la visualización del tiempo."
     },
     {
       "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -70369,6 +70765,10 @@
     {
       "source": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
       "translation": "El cuadro seleccionado utiliza solo los sistemas y cuerpos registrados en el cuadro actualmente abierto."
+    },
+    {
+      "source": "Selected carrier image",
+      "translation": "Imagen del operador seleccionado"
     },
     {
       "source": "Selected entries: {0}",
@@ -73019,6 +73419,10 @@
       "translation": "Transmisión"
     },
     {
+      "source": "Strikethrough",
+      "translation": "Tachado"
+    },
+    {
       "source": "Stronghold",
       "translation": "Fortaleza"
     },
@@ -74789,6 +75193,22 @@
     {
       "source": "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
       "translation": "La fila de carga muestra capacidad ocupada sobre 72. Los cordones de ajuste de plataformas permanecen inhabilitados a pie."
+    },
+    {
+      "source": "The carrier image could not be allocated.",
+      "translation": "No se pudo asignar memoria para la imagen del portanaves."
+    },
+    {
+      "source": "The carrier image could not be decoded.",
+      "translation": "La imagen del portador no se pudo decodificar."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "No se pudo codificar la imagen del portanaves."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "No se pudo renderizar la imagen del portanaves."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -77399,6 +77819,10 @@
       "translation": "Sintoniza el FSS con un planeta"
     },
     {
+      "source": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals.",
+      "translation": "Desactive los campos estándar para organizar todo en su mensaje. Utilice {countdown} para la cuenta regresiva de salida en vivo de Discord; está vacío para cancelaciones y llegadas."
+    },
+    {
       "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
       "translation": "Actívelo para mantener visibles los productos de colonización durante esta sesión, incluso después del desacoplamiento. Desactívelo para utilizar la visibilidad automática desde la configuración de superposición de compras."
     },
@@ -77591,6 +78015,10 @@
       "translation": "identificador de pantalla:"
     },
     {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "No se pudo crear una nueva instancia de SKBitmap."
+    },
+    {
       "source": "Unable to open EDAstro's New POI page.",
       "translation": "No se puede abrir la página Nuevo PDI de EDAstro."
     },
@@ -77653,6 +78081,10 @@
     {
       "source": "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
       "translation": "En Visibilidad de la vista de cabina, elija Izquierda, Principal y Derecha. Los cambios se aplican inmediatamente y sobreviven al reinicio."
+    },
+    {
+      "source": "Underline",
+      "translation": "Subrayar"
     },
     {
       "source": "Undermine",
@@ -79891,6 +80323,10 @@
       "translation": "Tu poder"
     },
     {
+      "source": "Your carrier",
+      "translation": "Tu operador"
+    },
+    {
       "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
       "translation": "Su transportista necesita aproximadamente {0} t de tritio para la ruta restante y le faltan {1} t. Extrae o compra al menos {2} t, luego selecciona Actualizar para volver a calcular desde este punto de ruta."
     },
@@ -79953,6 +80389,10 @@
     {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
+    },
+    {
+      "source": "Zoom",
+      "translation": "Zoom"
     },
     {
       "source": "Zoom Guardian map in",
@@ -81623,6 +82063,10 @@
       "translation": "formulario de envío de imágenes"
     },
     {
+      "source": "image/jpeg",
+      "translation": "imagen/jpeg"
+    },
+    {
       "source": "image/png",
       "translation": "imagen/png"
     },
@@ -81645,6 +82089,10 @@
     {
       "source": "in",
       "translation": "en"
+    },
+    {
+      "source": "in {0} minutes",
+      "translation": "en minutos {0}"
     },
     {
       "source": "inara-accepted.txt",
@@ -82033,6 +82481,10 @@
     {
       "source": "monochrome-dark",
       "translation": "monocromo-oscuro"
+    },
+    {
+      "source": "monospace",
+      "translation": "monoespacio"
     },
     {
       "source": "more than one imported profile has that name",
@@ -82967,6 +83419,10 @@
       "translation": "estirar"
     },
     {
+      "source": "style",
+      "translation": "estilo"
+    },
+    {
       "source": "suffix {0}",
       "translation": "sufijo {0}"
     },
@@ -83059,6 +83515,10 @@
       "translation": "error de prueba"
     },
     {
+      "source": "text",
+      "translation": "texto"
+    },
+    {
       "source": "text scale",
       "translation": "escala de texto"
     },
@@ -83137,6 +83597,10 @@
     {
       "source": "tier",
       "translation": "nivel"
+    },
+    {
+      "source": "time",
+      "translation": "tiempo"
     },
     {
       "source": "timestamp",
@@ -83657,6 +84121,10 @@
     {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1}:{2}"
+    },
+    {
+      "source": "{0} / 4096 characters",
+      "translation": "{0} / 4096 caracteres"
     },
     {
       "source": "{0} / 5 stars · {1} votes",
@@ -84225,6 +84693,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensajes • {1} no leídos"
+    },
+    {
+      "source": "{0} minutes ago",
+      "translation": "{0} hace minutos"
     },
     {
       "source": "{0} missions tracked",
@@ -86157,6 +86629,10 @@
       "translation": "UN:"
     },
     {
+      "source": "ABC-123",
+      "translation": "ABC-123"
+    },
+    {
       "source": "ABSENT",
       "translation": "ABSENT"
     },
@@ -86343,6 +86819,10 @@
     {
       "source": "API",
       "translation": "API"
+    },
+    {
+      "source": "APP",
+      "translation": "APPLICATION"
     },
     {
       "source": "APPIMAGE",
@@ -87309,6 +87789,10 @@
       "translation": "Événements d’annonce"
     },
     {
+      "source": "Announcement message template",
+      "translation": "Modèle de message d'annonce"
+    },
+    {
       "source": "Announcement preset '{0}' applied.",
       "translation": "Le préréglage d'annonce « {0} » est appliqué."
     },
@@ -87323,6 +87807,10 @@
     {
       "source": "Announcement presets",
       "translation": "Préréglages d'annonces"
+    },
+    {
+      "source": "Announcement title",
+      "translation": "Titre de l'annonce"
     },
     {
       "source": "Announcements",
@@ -87511,6 +87999,14 @@
     {
       "source": "Apply selected",
       "translation": "Appliquer la sélection"
+    },
+    {
+      "source": "Apply to settings",
+      "translation": "Appliquer aux paramètres"
+    },
+    {
+      "source": "Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes.",
+      "translation": "Appliquez, puis enregistrez les modifications dans les paramètres pour utiliser ces messages. Annuler annule les modifications de cet éditeur."
     },
     {
       "source": "Approach a Guardian point before marking it empty.",
@@ -89205,6 +89701,10 @@
       "translation": "Type de corps"
     },
     {
+      "source": "Bold",
+      "translation": "Audacieux"
+    },
+    {
       "source": "Bookmark POI",
       "translation": "Ajouter un POI aux favoris"
     },
@@ -89471,6 +89971,10 @@
     {
       "source": "Buildings:",
       "translation": "Bâtiments :"
+    },
+    {
+      "source": "Bullet list",
+      "translation": "Liste à puces"
     },
     {
       "source": "Bumper",
@@ -89961,6 +90465,10 @@
       "translation": "Le candidat {0} n'a pas été téléchargé : {1}"
     },
     {
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Impossible d’ouvrir cette image. Choisissez un PNG ou JPEG de 8 Mo, 16 mégapixels et 16 384 pixels par côté au maximum."
+    },
+    {
       "source": "Canonn",
       "translation": "Canonn"
     },
@@ -90237,6 +90745,10 @@
       "translation": "Transporteur"
     },
     {
+      "source": "Carrier announcement editor",
+      "translation": "Éditeur d'annonces de transporteur"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Cargaison du transporteur indisponible. Les pénuries et les voyages ne peuvent être confirmés."
     },
@@ -90251,6 +90763,26 @@
     {
       "source": "Carrier fuel recalculated from the current waypoint.",
       "translation": "Carburant du transporteur recalculé à partir du waypoint actuel."
+    },
+    {
+      "source": "Carrier image",
+      "translation": "Image porteuse"
+    },
+    {
+      "source": "Carrier image and preview",
+      "translation": "Image du transporteur et aperçu"
+    },
+    {
+      "source": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+      "translation": "Recadrage de l'image porteuse. Faites glisser pour effectuer un panoramique, faites défiler pour zoomer ou utilisez les touches fléchées pour déplacer le recadrage."
+    },
+    {
+      "source": "Carrier image zoom",
+      "translation": "Zoom sur l'image porteuse"
+    },
+    {
+      "source": "Carrier images",
+      "translation": "Images porteuses"
     },
     {
       "source": "Carrier linking",
@@ -90713,6 +91245,10 @@
       "translation": "Choisissez une image d’arrière-plan PNG avant d’enregistrer un nouveau brouillon de carte."
     },
     {
+      "source": "Choose a carrier image to include it here.",
+      "translation": "Choisissez une image porteuse pour l'inclure ici."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Choisissez une catégorie dans le sélecteur en haut ; seul ce groupe apparaît afin que le bureau ne soit pas submergé."
     },
@@ -90897,6 +91433,10 @@
       "translation": "Choisissez un dossier source de capture d'écran absolu existant."
     },
     {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Choisissez une image de 16 mégapixels et 16 384 pixels par côté au maximum."
+    },
+    {
       "source": "Choose an overlay monitor",
       "translation": "Choisissez un moniteur superposé"
     },
@@ -90943,6 +91483,10 @@
     {
       "source": "Choose folder",
       "translation": "Choisir un dossier"
+    },
+    {
+      "source": "Choose image…",
+      "translation": "Choisissez une image…"
     },
     {
       "source": "Choose local images...",
@@ -91063,6 +91607,10 @@
     {
       "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
       "translation": "Choisissez quels trackers peuvent utiliser la capture Wayland. Chaque tracker démarre pour vous permettre de les tester séparément."
+    },
+    {
+      "source": "Choose your carrier image",
+      "translation": "Choisissez votre image de transporteur"
     },
     {
       "source": "Choose...",
@@ -93057,6 +93605,10 @@
       "translation": "Créer un lien"
     },
     {
+      "source": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+      "translation": "Créez un message pour chaque événement de saut. Les champs se remplissent automatiquement lorsqu'une annonce est envoyée."
+    },
+    {
       "source": "Create a project",
       "translation": "Créer un projet"
     },
@@ -94313,6 +94865,10 @@
       "translation": "Discord annonces des opérateurs"
     },
     {
+      "source": "Discord preview",
+      "translation": "Discord aperçu"
+    },
+    {
       "source": "Discord webhook URL",
       "translation": "Discord URL du webhook"
     },
@@ -94693,6 +95249,10 @@
       "translation": "Faites glisser pour modifier la largeur. La hauteur suit le contenu."
     },
     {
+      "source": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+      "translation": "Faites glisser pour déplacer l'image. Faites défiler ou utilisez Zoom pour remplir le cadre 16:9. Seule la zone à l'intérieur du cadre est envoyée vers Discord."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Faites glisser pour redimensionner ce panneau de superposition"
     },
@@ -95055,6 +95615,10 @@
     {
       "source": "Edit all overlay positions",
       "translation": "Modifier toutes les positions de superposition"
+    },
+    {
+      "source": "Edit announcement messages…",
+      "translation": "Modifier les messages d'annonce…"
     },
     {
       "source": "Edit bookmark",
@@ -96023,6 +96587,10 @@
     {
       "source": "Exploration rewards ~{0} CR",
       "translation": "Récompenses d'exploration ~{0} CR"
+    },
+    {
+      "source": "Exploration route: Sol → Lave → Colonia",
+      "translation": "Itinéraire d'exploration : Sol → Lave → Colonia"
     },
     {
       "source": "Exploration screenshots",
@@ -99969,6 +100537,10 @@
       "translation": "Inclure les marchés locaux obsolètes"
     },
     {
+      "source": "Include standard itinerary and time fields",
+      "translation": "Inclure les champs d'itinéraire et d'heure standard"
+    },
+    {
       "source": "Incomplete",
       "translation": "Incomplet"
     },
@@ -100017,6 +100589,10 @@
       "translation": "Défaillance des infrastructures"
     },
     {
+      "source": "Inline code",
+      "translation": "Code en ligne"
+    },
+    {
       "source": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
       "translation": "Les suggestions de système en ligne proviennent de EDSM avec une solution de secours Ardent ; le centre résolu et les coordonnées proviennent toujours de Spansh. L’enregistrement met à jour uniquement les champs sphèreLimit compatibles."
     },
@@ -100047,6 +100623,14 @@
     {
       "source": "InputBox",
       "translation": "Boîte de saisie"
+    },
+    {
+      "source": "Insert announcement field",
+      "translation": "Insérer un champ d'annonce"
+    },
+    {
+      "source": "Insert field",
+      "translation": "Insérer un champ"
     },
     {
       "source": "Inside",
@@ -100163,6 +100747,10 @@
     {
       "source": "Iron ×3",
       "translation": "Fer ×3"
+    },
+    {
+      "source": "Italic",
+      "translation": "Italique"
     },
     {
       "source": "Item",
@@ -100475,6 +101063,14 @@
     {
       "source": "Jump cost",
       "translation": "Coût du saut"
+    },
+    {
+      "source": "Jump event",
+      "translation": "Événement de saut"
+    },
+    {
+      "source": "Jump event template",
+      "translation": "Modèle d'événement de saut"
     },
     {
       "source": "Jump events",
@@ -101087,6 +101683,14 @@
     {
       "source": "Lava spout",
       "translation": "Bec de lave"
+    },
+    {
+      "source": "Lave",
+      "translation": "Laver"
+    },
+    {
+      "source": "Lave 1",
+      "translation": "Laver 1"
     },
     {
       "source": "Layout",
@@ -104241,6 +104845,10 @@
       "translation": "Aucun projet de build n'est disponible dans l'espace de travail."
     },
     {
+      "source": "No carrier image selected",
+      "translation": "Aucune image porteuse sélectionnée"
+    },
+    {
       "source": "No carriers are linked to this Nexus.",
       "translation": "Aucun opérateur n'est lié à ce Nexus."
     },
@@ -106529,6 +107137,10 @@
       "translation": "Image PNG"
     },
     {
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG ou JPEG, jusqu’à 8 Mo et 16 mégapixels (16 384 pixels par côté). Choisissez la capture de votre porte-vaisseaux ; elle sera jointe à chaque annonce de ce porte-vaisseaux."
+    },
+    {
       "source": "POI",
       "translation": "POI"
     },
@@ -108345,6 +108957,10 @@
       "translation": "Le suivi rapide {0} n'a pas été modifié : {1}"
     },
     {
+      "source": "Quote",
+      "translation": "Citation"
+    },
+    {
       "source": "R+",
       "translation": "R+"
     },
@@ -109945,6 +110561,10 @@
       "translation": "Supprimer le groupe"
     },
     {
+      "source": "Remove image",
+      "translation": "Supprimer l'image"
+    },
+    {
       "source": "Remove key",
       "translation": "Supprimer la clé"
     },
@@ -110341,6 +110961,10 @@
       "translation": "Réinitialiser les coordonnées"
     },
     {
+      "source": "Reset crop",
+      "translation": "Réinitialiser le recadrage"
+    },
+    {
       "source": "Reset input detection",
       "translation": "Réinitialiser la détection d'entrée"
     },
@@ -110539,6 +111163,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Restaurer la sauvegarde sélectionnée"
+    },
+    {
+      "source": "Restore this event's default",
+      "translation": "Restaurer la valeur par défaut de cet événement"
     },
     {
       "source": "Restore this panel's original measured size",
@@ -111667,6 +112295,10 @@
     {
       "source": "Sample 1 of 3 recorded",
       "translation": "Échantillon 1 sur 3 enregistré"
+    },
+    {
+      "source": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+      "translation": "Exemple de voyage à Lave. L'identité de votre opérateur est utilisée lorsqu'elle est disponible. Discord contrôle l'espacement final et l'affichage de l'heure."
     },
     {
       "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -112859,6 +113491,10 @@
     {
       "source": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
       "translation": "Le boxel sélectionné utilise uniquement les systèmes et corps enregistrés dans le boxel actuellement ouvert."
+    },
+    {
+      "source": "Selected carrier image",
+      "translation": "Image du transporteur sélectionné"
     },
     {
       "source": "Selected entries: {0}",
@@ -115509,6 +116145,10 @@
       "translation": "Diffusion en continu"
     },
     {
+      "source": "Strikethrough",
+      "translation": "Barré"
+    },
+    {
       "source": "Stronghold",
       "translation": "Bastion"
     },
@@ -117279,6 +117919,22 @@
     {
       "source": "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
       "translation": "La rangée de chargement affiche une capacité occupée sur 72. Les cordes de réglage restent désactivées à pied."
+    },
+    {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Impossible d’allouer la mémoire pour l’image du porte-vaisseaux."
+    },
+    {
+      "source": "The carrier image could not be decoded.",
+      "translation": "L'image porteuse n'a pas pu être décodée."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Impossible d’encoder l’image du porte-vaisseaux."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Impossible d’afficher l’image du porte-vaisseaux."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -119889,6 +120545,10 @@
       "translation": "Adaptez le FSS à une planète"
     },
     {
+      "source": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals.",
+      "translation": "Désactivez les champs standard pour tout organiser dans votre message. Utilisez {countdown} pour le compte à rebours de départ en direct de Discord ; il est vide pour les annulations et les arrivées."
+    },
+    {
       "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
       "translation": "Activez cette option pour que les produits de colonisation restent visibles pour cette session, y compris après le désamarrage. Désactivez-la pour utiliser la visibilité automatique à partir des paramètres de superposition d'achats."
     },
@@ -120081,6 +120741,10 @@
       "translation": "Uid :"
     },
     {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Impossible de créer une nouvelle instance de SKBitmap."
+    },
+    {
       "source": "Unable to open EDAstro's New POI page.",
       "translation": "Impossible d'ouvrir la page Nouveau POI d'EDAstro."
     },
@@ -120143,6 +120807,10 @@
     {
       "source": "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
       "translation": "Sous Visibilité de la vue Cockpit, choisissez Gauche, Principal et Droite. Les modifications s'appliquent immédiatement et survivent au redémarrage."
+    },
+    {
+      "source": "Underline",
+      "translation": "Souligner"
     },
     {
       "source": "Undermine",
@@ -122381,6 +123049,10 @@
       "translation": "Votre pouvoir"
     },
     {
+      "source": "Your carrier",
+      "translation": "Votre transporteur"
+    },
+    {
       "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
       "translation": "Votre transporteur a besoin d'environ {0} t de tritium pour le trajet restant et il lui manque {1} t. Extrayez ou achetez au moins {2} t, puis sélectionnez Actualiser pour recalculer à partir de ce waypoint."
     },
@@ -122443,6 +123115,10 @@
     {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
+    },
+    {
+      "source": "Zoom",
+      "translation": "Zoom"
     },
     {
       "source": "Zoom Guardian map in",
@@ -124113,6 +124789,10 @@
       "translation": "formulaire de soumission d'images"
     },
     {
+      "source": "image/jpeg",
+      "translation": "image/jpeg"
+    },
+    {
       "source": "image/png",
       "translation": "image/png"
     },
@@ -124135,6 +124815,10 @@
     {
       "source": "in",
       "translation": "dans"
+    },
+    {
+      "source": "in {0} minutes",
+      "translation": "en minutes {0}"
     },
     {
       "source": "inara-accepted.txt",
@@ -124523,6 +125207,10 @@
     {
       "source": "monochrome-dark",
       "translation": "monochrome-sombre"
+    },
+    {
+      "source": "monospace",
+      "translation": "monospace"
     },
     {
       "source": "more than one imported profile has that name",
@@ -125457,6 +126145,10 @@
       "translation": "extensible"
     },
     {
+      "source": "style",
+      "translation": "style"
+    },
+    {
       "source": "suffix {0}",
       "translation": "suffixe {0}"
     },
@@ -125549,6 +126241,10 @@
       "translation": "buggy de test"
     },
     {
+      "source": "text",
+      "translation": "texte"
+    },
+    {
       "source": "text scale",
       "translation": "échelle du texte"
     },
@@ -125627,6 +126323,10 @@
     {
       "source": "tier",
       "translation": "niveau"
+    },
+    {
+      "source": "time",
+      "translation": "temps"
     },
     {
       "source": "timestamp",
@@ -126147,6 +126847,10 @@
     {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1} :{2}"
+    },
+    {
+      "source": "{0} / 4096 characters",
+      "translation": "{0} / 4096 caractères"
     },
     {
       "source": "{0} / 5 stars · {1} votes",
@@ -126715,6 +127419,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "{0} messages • {1} non lus"
+    },
+    {
+      "source": "{0} minutes ago",
+      "translation": "{0} il y a quelques minutes"
     },
     {
       "source": "{0} missions tracked",
@@ -128647,6 +129355,10 @@
       "translation": "UM:"
     },
     {
+      "source": "ABC-123",
+      "translation": "ABC-123"
+    },
+    {
       "source": "ABSENT",
       "translation": "AUSENTE"
     },
@@ -128833,6 +129545,10 @@
     {
       "source": "API",
       "translation": "API"
+    },
+    {
+      "source": "APP",
+      "translation": "APLICATIVO"
     },
     {
       "source": "APPIMAGE",
@@ -129799,6 +130515,10 @@
       "translation": "Eventos de anúncio"
     },
     {
+      "source": "Announcement message template",
+      "translation": "Modelo de mensagem de anúncio"
+    },
+    {
       "source": "Announcement preset '{0}' applied.",
       "translation": "Predefinição de anúncio '{0}' aplicada."
     },
@@ -129813,6 +130533,10 @@
     {
       "source": "Announcement presets",
       "translation": "Predefinições de anúncios"
+    },
+    {
+      "source": "Announcement title",
+      "translation": "Título do anúncio"
     },
     {
       "source": "Announcements",
@@ -130001,6 +130725,14 @@
     {
       "source": "Apply selected",
       "translation": "Aplicar selecionado"
+    },
+    {
+      "source": "Apply to settings",
+      "translation": "Aplicar às configurações"
+    },
+    {
+      "source": "Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes.",
+      "translation": "Aplique e salve as alterações nas configurações para usar essas mensagens. Cancelar descarta as alterações deste editor."
     },
     {
       "source": "Approach a Guardian point before marking it empty.",
@@ -131695,6 +132427,10 @@
       "translation": "Tipo de corpo"
     },
     {
+      "source": "Bold",
+      "translation": "Audacioso"
+    },
+    {
       "source": "Bookmark POI",
       "translation": "Marcar POI"
     },
@@ -131961,6 +132697,10 @@
     {
       "source": "Buildings:",
       "translation": "Edifícios:"
+    },
+    {
+      "source": "Bullet list",
+      "translation": "Lista com marcadores"
     },
     {
       "source": "Bumper",
@@ -132451,6 +133191,10 @@
       "translation": "Candidato {0} não foi enviado: {1}"
     },
     {
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Não foi possível abrir esta imagem. Escolha um PNG ou JPEG com até 8 MB, 16 megapixels e 16.384 pixels por lado."
+    },
+    {
       "source": "Canonn",
       "translation": "Canonn"
     },
@@ -132727,6 +133471,10 @@
       "translation": "Operadora"
     },
     {
+      "source": "Carrier announcement editor",
+      "translation": "Editor de anúncios da operadora"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Carga da transportadora indisponível. Escassez e viagens não podem ser confirmadas."
     },
@@ -132741,6 +133489,26 @@
     {
       "source": "Carrier fuel recalculated from the current waypoint.",
       "translation": "Combustível do transportador recalculado a partir do waypoint atual."
+    },
+    {
+      "source": "Carrier image",
+      "translation": "Imagem da operadora"
+    },
+    {
+      "source": "Carrier image and preview",
+      "translation": "Imagem da transportadora e visualização"
+    },
+    {
+      "source": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+      "translation": "Corte de imagem da transportadora. Arraste para deslocar, role para ampliar ou use as teclas de seta para mover o corte."
+    },
+    {
+      "source": "Carrier image zoom",
+      "translation": "Zoom da imagem da operadora"
+    },
+    {
+      "source": "Carrier images",
+      "translation": "Imagens da operadora"
     },
     {
       "source": "Carrier linking",
@@ -133203,6 +133971,10 @@
       "translation": "Escolha uma imagem de fundo PNG antes de salvar um novo rascunho de mapa."
     },
     {
+      "source": "Choose a carrier image to include it here.",
+      "translation": "Escolha uma imagem transportadora para incluí-la aqui."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Escolha uma categoria no seletor na parte superior; apenas esse grupo aparece para que a área de trabalho não fique sobrecarregada."
     },
@@ -133387,6 +134159,10 @@
       "translation": "Escolha uma pasta de origem absoluta da captura de tela existente."
     },
     {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Escolha uma imagem com até 16 megapixels e 16.384 pixels por lado."
+    },
+    {
       "source": "Choose an overlay monitor",
       "translation": "Escolha um monitor de sobreposição"
     },
@@ -133433,6 +134209,10 @@
     {
       "source": "Choose folder",
       "translation": "Escolha a pasta"
+    },
+    {
+      "source": "Choose image…",
+      "translation": "Escolha a imagem…"
     },
     {
       "source": "Choose local images...",
@@ -133553,6 +134333,10 @@
     {
       "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
       "translation": "Escolha quais rastreadores podem usar a captura Wayland. Cada rastreador começa para permitir que você os teste separadamente."
+    },
+    {
+      "source": "Choose your carrier image",
+      "translation": "Escolha a imagem da sua operadora"
     },
     {
       "source": "Choose...",
@@ -135547,6 +136331,10 @@
       "translation": "Criar Nexus"
     },
     {
+      "source": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+      "translation": "Crie uma mensagem para cada evento de salto. Os campos são preenchidos automaticamente quando um anúncio é enviado."
+    },
+    {
       "source": "Create a project",
       "translation": "Crie um projeto"
     },
@@ -136803,6 +137591,10 @@
       "translation": "Discord anúncios da operadora"
     },
     {
+      "source": "Discord preview",
+      "translation": "Visualização Discord"
+    },
+    {
       "source": "Discord webhook URL",
       "translation": "URL do webhook Discord"
     },
@@ -137183,6 +137975,10 @@
       "translation": "Arraste para alterar a largura. A altura segue o conteúdo."
     },
     {
+      "source": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+      "translation": "Arraste para mover a imagem. Role ou use o Zoom para preencher o quadro 16:9. Somente a área dentro do quadro é enviada para Discord."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Arraste para redimensionar este painel de sobreposição"
     },
@@ -137545,6 +138341,10 @@
     {
       "source": "Edit all overlay positions",
       "translation": "Edite todas as posições de sobreposição"
+    },
+    {
+      "source": "Edit announcement messages…",
+      "translation": "Editar mensagens de anúncio…"
     },
     {
       "source": "Edit bookmark",
@@ -138513,6 +139313,10 @@
     {
       "source": "Exploration rewards ~{0} CR",
       "translation": "Recompensas de exploração ~{0} CR"
+    },
+    {
+      "source": "Exploration route: Sol → Lave → Colonia",
+      "translation": "Rota de exploração: Sol → Lave → Colônia"
     },
     {
       "source": "Exploration screenshots",
@@ -142459,6 +143263,10 @@
       "translation": "Incluir mercados locais desatualizados"
     },
     {
+      "source": "Include standard itinerary and time fields",
+      "translation": "Incluir itinerário padrão e campos de horário"
+    },
+    {
       "source": "Incomplete",
       "translation": "Incompleto"
     },
@@ -142507,6 +143315,10 @@
       "translation": "Falha de infraestrutura"
     },
     {
+      "source": "Inline code",
+      "translation": "Código embutido"
+    },
+    {
       "source": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
       "translation": "Sugestões de sistema inline vêm de EDSM com um substituto Ardent; o centro resolvido e as coordenadas ainda vêm de Spansh. Salvar atualiza apenas os campos de esferaLimit compatíveis."
     },
@@ -142537,6 +143349,14 @@
     {
       "source": "InputBox",
       "translation": "Caixa de entrada"
+    },
+    {
+      "source": "Insert announcement field",
+      "translation": "Inserir campo de anúncio"
+    },
+    {
+      "source": "Insert field",
+      "translation": "Inserir campo"
     },
     {
       "source": "Inside",
@@ -142653,6 +143473,10 @@
     {
       "source": "Iron ×3",
       "translation": "Ferro ×3"
+    },
+    {
+      "source": "Italic",
+      "translation": "itálico"
     },
     {
       "source": "Item",
@@ -142965,6 +143789,14 @@
     {
       "source": "Jump cost",
       "translation": "Custo de salto"
+    },
+    {
+      "source": "Jump event",
+      "translation": "Evento de salto"
+    },
+    {
+      "source": "Jump event template",
+      "translation": "Modelo de evento de salto"
     },
     {
       "source": "Jump events",
@@ -143577,6 +144409,14 @@
     {
       "source": "Lava spout",
       "translation": "Bico de lava"
+    },
+    {
+      "source": "Lave",
+      "translation": "Lave"
+    },
+    {
+      "source": "Lave 1",
+      "translation": "Lava 1"
     },
     {
       "source": "Layout",
@@ -146731,6 +147571,10 @@
       "translation": "Nenhum projeto de construção está disponível no espaço de trabalho."
     },
     {
+      "source": "No carrier image selected",
+      "translation": "Nenhuma imagem da operadora selecionada"
+    },
+    {
       "source": "No carriers are linked to this Nexus.",
       "translation": "Nenhuma operadora está vinculada a este Nexus."
     },
@@ -149019,6 +149863,10 @@
       "translation": "Imagem PNG"
     },
     {
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG ou JPEG, até 8 MB e 16 megapixels (16.384 pixels por lado). Escolha a captura da sua nave cargueira; ela será enviada com cada anúncio desta nave cargueira."
+    },
+    {
       "source": "POI",
       "translation": "PI"
     },
@@ -150835,6 +151683,10 @@
       "translation": "Rastreador rápido {0} não foi alterado: {1}"
     },
     {
+      "source": "Quote",
+      "translation": "Citar"
+    },
+    {
       "source": "R+",
       "translation": "R+"
     },
@@ -152435,6 +153287,10 @@
       "translation": "Remover grupo"
     },
     {
+      "source": "Remove image",
+      "translation": "Remover imagem"
+    },
+    {
       "source": "Remove key",
       "translation": "Remover chave"
     },
@@ -152831,6 +153687,10 @@
       "translation": "Redefinir coordenadas"
     },
     {
+      "source": "Reset crop",
+      "translation": "Redefinir corte"
+    },
+    {
       "source": "Reset input detection",
       "translation": "Redefinir detecção de entrada"
     },
@@ -153029,6 +153889,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Restaurar backup selecionado"
+    },
+    {
+      "source": "Restore this event's default",
+      "translation": "Restaurar o padrão deste evento"
     },
     {
       "source": "Restore this panel's original measured size",
@@ -154157,6 +155021,10 @@
     {
       "source": "Sample 1 of 3 recorded",
       "translation": "Amostra 1 de 3 gravada"
+    },
+    {
+      "source": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+      "translation": "Exemplo de viagem para Lave. A identidade da sua operadora é usada quando disponível. Discord controla o espaçamento final e a exibição do tempo."
     },
     {
       "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -155349,6 +156217,10 @@
     {
       "source": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
       "translation": "O boxel selecionado utiliza apenas os sistemas e corpos gravados no boxel atualmente aberto."
+    },
+    {
+      "source": "Selected carrier image",
+      "translation": "Imagem da operadora selecionada"
     },
     {
       "source": "Selected entries: {0}",
@@ -157999,6 +158871,10 @@
       "translation": "Transmissão"
     },
     {
+      "source": "Strikethrough",
+      "translation": "Tachado"
+    },
+    {
       "source": "Stronghold",
       "translation": "Fortaleza"
     },
@@ -159769,6 +160645,22 @@
     {
       "source": "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
       "translation": "A fila de carga mostra capacidade ocupada de 72. As cordas de fixação da plataforma permanecem desativadas a pé."
+    },
+    {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Não foi possível alocar memória para a imagem da nave cargueira."
+    },
+    {
+      "source": "The carrier image could not be decoded.",
+      "translation": "A imagem da portadora não pôde ser decodificada."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Não foi possível codificar a imagem da nave cargueira."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Não foi possível renderizar a imagem da nave cargueira."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -162379,6 +163271,10 @@
       "translation": "Sintonize o FSS para um planeta"
     },
     {
+      "source": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals.",
+      "translation": "Desative os campos padrão para organizar tudo na sua mensagem. Use {countdown} para a contagem regressiva da partida ao vivo de Discord; está vazio para cancelamentos e chegadas."
+    },
+    {
       "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
       "translation": "Ative para manter os produtos de colonização visíveis nesta sessão, inclusive após o desencaixe. Desative para usar a visibilidade automática nas configurações de sobreposição de compras."
     },
@@ -162571,6 +163467,10 @@
       "translation": "Uid:"
     },
     {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Não foi possível criar uma nova instância de SKBitmap."
+    },
+    {
       "source": "Unable to open EDAstro's New POI page.",
       "translation": "Não foi possível abrir a página Novo POI do EDAstro."
     },
@@ -162633,6 +163533,10 @@
     {
       "source": "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
       "translation": "Em Visibilidade da visualização do Cockpit, escolha Esquerda, Principal e Direita. As alterações são aplicadas imediatamente e sobrevivem à reinicialização."
+    },
+    {
+      "source": "Underline",
+      "translation": "Sublinhado"
     },
     {
       "source": "Undermine",
@@ -164871,6 +165775,10 @@
       "translation": "Seu poder"
     },
     {
+      "source": "Your carrier",
+      "translation": "Sua operadora"
+    },
+    {
       "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
       "translation": "Sua transportadora precisa de aproximadamente {0} t de trítio para a rota restante e está com falta de {1} t. Minere ou compre pelo menos {2} t e selecione Atualizar para recalcular a partir deste ponto de referência."
     },
@@ -164933,6 +165841,10 @@
     {
       "source": "Zemina Torval",
       "translation": "Zemina Torval"
+    },
+    {
+      "source": "Zoom",
+      "translation": "Zoom"
     },
     {
       "source": "Zoom Guardian map in",
@@ -166603,6 +167515,10 @@
       "translation": "formulário de envio de imagem"
     },
     {
+      "source": "image/jpeg",
+      "translation": "imagem/jpeg"
+    },
+    {
       "source": "image/png",
       "translation": "imagem/png"
     },
@@ -166625,6 +167541,10 @@
     {
       "source": "in",
       "translation": "em"
+    },
+    {
+      "source": "in {0} minutes",
+      "translation": "em {0} minutos"
     },
     {
       "source": "inara-accepted.txt",
@@ -167013,6 +167933,10 @@
     {
       "source": "monochrome-dark",
       "translation": "monocromático-escuro"
+    },
+    {
+      "source": "monospace",
+      "translation": "monoespaçado"
     },
     {
       "source": "more than one imported profile has that name",
@@ -167947,6 +168871,10 @@
       "translation": "esticar"
     },
     {
+      "source": "style",
+      "translation": "estilo"
+    },
+    {
       "source": "suffix {0}",
       "translation": "sufixo {0}"
     },
@@ -168039,6 +168967,10 @@
       "translation": "teste de erros"
     },
     {
+      "source": "text",
+      "translation": "texto"
+    },
+    {
       "source": "text scale",
       "translation": "escala de texto"
     },
@@ -168117,6 +169049,10 @@
     {
       "source": "tier",
       "translation": "nível"
+    },
+    {
+      "source": "time",
+      "translation": "tempo"
     },
     {
       "source": "timestamp",
@@ -168637,6 +169573,10 @@
     {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1}:{2}"
+    },
+    {
+      "source": "{0} / 4096 characters",
+      "translation": "{0}/4096 caracteres"
     },
     {
       "source": "{0} / 5 stars · {1} votes",
@@ -169205,6 +170145,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "{0} mensagens • {1} não lidas"
+    },
+    {
+      "source": "{0} minutes ago",
+      "translation": "{0} minutos atrás"
     },
     {
       "source": "{0} missions tracked",
@@ -171137,6 +172081,10 @@
       "translation": "А:"
     },
     {
+      "source": "ABC-123",
+      "translation": "АВС-123"
+    },
+    {
       "source": "ABSENT",
       "translation": "ОТСУТСТВУЮЩИЙ"
     },
@@ -171323,6 +172271,10 @@
     {
       "source": "API",
       "translation": "API"
+    },
+    {
+      "source": "APP",
+      "translation": "ПРИЛОЖЕНИЕ"
     },
     {
       "source": "APPIMAGE",
@@ -172289,6 +173241,10 @@
       "translation": "Анонсирование событий"
     },
     {
+      "source": "Announcement message template",
+      "translation": "Шаблон сообщения объявления"
+    },
+    {
       "source": "Announcement preset '{0}' applied.",
       "translation": "Применена предустановка объявлений «{0}»."
     },
@@ -172303,6 +173259,10 @@
     {
       "source": "Announcement presets",
       "translation": "Пресеты объявлений"
+    },
+    {
+      "source": "Announcement title",
+      "translation": "Название объявления"
     },
     {
       "source": "Announcements",
@@ -172491,6 +173451,14 @@
     {
       "source": "Apply selected",
       "translation": "Применить выбранное"
+    },
+    {
+      "source": "Apply to settings",
+      "translation": "Применить к настройкам"
+    },
+    {
+      "source": "Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes.",
+      "translation": "Примените, затем сохраните изменения в настройках, чтобы использовать эти сообщения. Отмена отменяет изменения этого редактора."
     },
     {
       "source": "Approach a Guardian point before marking it empty.",
@@ -174185,6 +175153,10 @@
       "translation": "Тип тела"
     },
     {
+      "source": "Bold",
+      "translation": "Смелый"
+    },
+    {
       "source": "Bookmark POI",
       "translation": "Добавить в закладки POI"
     },
@@ -174451,6 +175423,10 @@
     {
       "source": "Buildings:",
       "translation": "Здания:"
+    },
+    {
+      "source": "Bullet list",
+      "translation": "Маркированный список"
     },
     {
       "source": "Bumper",
@@ -174941,6 +175917,10 @@
       "translation": "Кандидат {0} не был загружен: {1}"
     },
     {
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "Не удалось открыть изображение. Выберите PNG или JPEG размером до 8 МБ, 16 мегапикселей и 16 384 пикселей на сторону."
+    },
+    {
       "source": "Canonn",
       "translation": "Canonn"
     },
@@ -175217,6 +176197,10 @@
       "translation": "Перевозчик"
     },
     {
+      "source": "Carrier announcement editor",
+      "translation": "Редактор объявлений операторов связи"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "Груз перевозчика недоступен. Недостачи и поездки не могут быть подтверждены."
     },
@@ -175231,6 +176215,26 @@
     {
       "source": "Carrier fuel recalculated from the current waypoint.",
       "translation": "Топливо носителя пересчитано с текущей точки маршрута."
+    },
+    {
+      "source": "Carrier image",
+      "translation": "Изображение носителя"
+    },
+    {
+      "source": "Carrier image and preview",
+      "translation": "Изображение носителя и предварительный просмотр"
+    },
+    {
+      "source": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+      "translation": "Обрезка изображения носителя. Перетащите для панорамирования, прокрутите для масштабирования или используйте клавиши со стрелками для перемещения кадра."
+    },
+    {
+      "source": "Carrier image zoom",
+      "translation": "Увеличение изображения носителя"
+    },
+    {
+      "source": "Carrier images",
+      "translation": "Изображения носителя"
     },
     {
       "source": "Carrier linking",
@@ -175693,6 +176697,10 @@
       "translation": "Прежде чем сохранять новый черновик карты, выберите фоновое изображение PNG."
     },
     {
+      "source": "Choose a carrier image to include it here.",
+      "translation": "Выберите изображение носителя, чтобы включить его сюда."
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "Выберите категорию в селекторе вверху; появляется только эта группа, чтобы рабочий стол не был перегружен."
     },
@@ -175877,6 +176885,10 @@
       "translation": "Выберите существующую исходную папку с абсолютным скриншотом."
     },
     {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "Выберите изображение размером до 16 мегапикселей и 16 384 пикселей на сторону."
+    },
+    {
       "source": "Choose an overlay monitor",
       "translation": "Выберите накладной монитор"
     },
@@ -175923,6 +176935,10 @@
     {
       "source": "Choose folder",
       "translation": "Выбрать папку"
+    },
+    {
+      "source": "Choose image…",
+      "translation": "Выбрать изображение…"
     },
     {
       "source": "Choose local images...",
@@ -176043,6 +177059,10 @@
     {
       "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
       "translation": "Выберите, какие трекеры могут использовать захват Wayland. Каждый трекер запускается, чтобы вы могли протестировать его отдельно."
+    },
+    {
+      "source": "Choose your carrier image",
+      "translation": "Выберите изображение своего оператора связи"
     },
     {
       "source": "Choose...",
@@ -178037,6 +179057,10 @@
       "translation": "Создать Нексус"
     },
     {
+      "source": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+      "translation": "Создайте сообщение для каждого события прыжка. Поля заполняются автоматически при отправке объявления."
+    },
+    {
       "source": "Create a project",
       "translation": "Создать проект"
     },
@@ -179293,6 +180317,10 @@
       "translation": "Discord объявления операторов связи"
     },
     {
+      "source": "Discord preview",
+      "translation": "Discord предварительный просмотр"
+    },
+    {
       "source": "Discord webhook URL",
       "translation": "Discord URL-адрес веб-перехватчика"
     },
@@ -179673,6 +180701,10 @@
       "translation": "Перетащите, чтобы изменить ширину. Высота соответствует содержанию."
     },
     {
+      "source": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+      "translation": "Перетащите, чтобы переместить изображение. Прокрутите или используйте масштабирование, чтобы заполнить кадр 16:9. На адрес Discord отправляется только область внутри кадра."
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "Перетащите, чтобы изменить размер этой наложенной панели."
     },
@@ -180035,6 +181067,10 @@
     {
       "source": "Edit all overlay positions",
       "translation": "Редактировать все позиции наложения"
+    },
+    {
+      "source": "Edit announcement messages…",
+      "translation": "Изменить сообщения объявлений…"
     },
     {
       "source": "Edit bookmark",
@@ -181003,6 +182039,10 @@
     {
       "source": "Exploration rewards ~{0} CR",
       "translation": "Награды за исследование ~{0} CR"
+    },
+    {
+      "source": "Exploration route: Sol → Lave → Colonia",
+      "translation": "Маршрут исследования: Соль → Лаве → Колония."
     },
     {
       "source": "Exploration screenshots",
@@ -184949,6 +185989,10 @@
       "translation": "Включить устаревшие местные рынки"
     },
     {
+      "source": "Include standard itinerary and time fields",
+      "translation": "Включите стандартные поля маршрута и времени."
+    },
+    {
       "source": "Incomplete",
       "translation": "Неполный"
     },
@@ -184997,6 +186041,10 @@
       "translation": "Сбой инфраструктуры"
     },
     {
+      "source": "Inline code",
+      "translation": "Встроенный код"
+    },
+    {
       "source": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
       "translation": "Предложения встроенной системы поступают от EDSM с резервным вариантом Ardent; разрешенный центр и координаты по-прежнему берутся из Spansh. При сохранении обновляются только совместимые поляSphereLimit."
     },
@@ -185027,6 +186075,14 @@
     {
       "source": "InputBox",
       "translation": "Поле ввода"
+    },
+    {
+      "source": "Insert announcement field",
+      "translation": "Вставить поле объявления"
+    },
+    {
+      "source": "Insert field",
+      "translation": "Вставить поле"
     },
     {
       "source": "Inside",
@@ -185143,6 +186199,10 @@
     {
       "source": "Iron ×3",
       "translation": "Железо ×3"
+    },
+    {
+      "source": "Italic",
+      "translation": "Курсив"
     },
     {
       "source": "Item",
@@ -185455,6 +186515,14 @@
     {
       "source": "Jump cost",
       "translation": "Стоимость прыжка"
+    },
+    {
+      "source": "Jump event",
+      "translation": "Событие перехода"
+    },
+    {
+      "source": "Jump event template",
+      "translation": "Шаблон события перехода"
     },
     {
       "source": "Jump events",
@@ -186067,6 +187135,14 @@
     {
       "source": "Lava spout",
       "translation": "Извержение лавы"
+    },
+    {
+      "source": "Lave",
+      "translation": "Лаве"
+    },
+    {
+      "source": "Lave 1",
+      "translation": "Лаве 1"
     },
     {
       "source": "Layout",
@@ -189221,6 +190297,10 @@
       "translation": "В рабочей области нет проектов сборки."
     },
     {
+      "source": "No carrier image selected",
+      "translation": "Изображение носителя не выбрано"
+    },
+    {
       "source": "No carriers are linked to this Nexus.",
       "translation": "К этому Nexus не привязан ни один оператор связи."
     },
@@ -191509,6 +192589,10 @@
       "translation": "PNG изображение"
     },
     {
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG или JPEG, до 8 МБ и 16 мегапикселей (16 384 пикселя на сторону). Выберите снимок вашего авианосца; он будет добавляться к каждому объявлению этого авианосца."
+    },
+    {
       "source": "POI",
       "translation": "POI"
     },
@@ -193325,6 +194409,10 @@
       "translation": "Быстрый трекер {0} не был изменен: {1}"
     },
     {
+      "source": "Quote",
+      "translation": "Цитировать"
+    },
+    {
       "source": "R+",
       "translation": "Р+"
     },
@@ -194925,6 +196013,10 @@
       "translation": "Удалить группу"
     },
     {
+      "source": "Remove image",
+      "translation": "Удалить изображение"
+    },
+    {
       "source": "Remove key",
       "translation": "Удалить ключ"
     },
@@ -195321,6 +196413,10 @@
       "translation": "Сбросить координаты"
     },
     {
+      "source": "Reset crop",
+      "translation": "Сбросить обрезку"
+    },
+    {
       "source": "Reset input detection",
       "translation": "Сбросить обнаружение входа"
     },
@@ -195519,6 +196615,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Восстановить выбранную резервную копию"
+    },
+    {
+      "source": "Restore this event's default",
+      "translation": "Восстановить настройки этого мероприятия по умолчанию"
     },
     {
       "source": "Restore this panel's original measured size",
@@ -196647,6 +197747,10 @@
     {
       "source": "Sample 1 of 3 recorded",
       "translation": "Образец 1 из 3 записан"
+    },
+    {
+      "source": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+      "translation": "Пример поездки в Лаве. Идентификатор вашего оператора связи используется, если он доступен. Discord управляет окончательным отображением интервала и времени."
     },
     {
       "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -197839,6 +198943,10 @@
     {
       "source": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
       "translation": "Выбранный бокс использует только записанные системы и тела в открытом в данный момент бокселе."
+    },
+    {
+      "source": "Selected carrier image",
+      "translation": "Выбранное изображение оператора связи"
     },
     {
       "source": "Selected entries: {0}",
@@ -200489,6 +201597,10 @@
       "translation": "Потоковое вещание"
     },
     {
+      "source": "Strikethrough",
+      "translation": "Зачеркивание"
+    },
+    {
       "source": "Stronghold",
       "translation": "Крепость"
     },
@@ -202259,6 +203371,22 @@
     {
       "source": "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
       "translation": "В грузовом ряду указана занятая вместимость из 72. Пояса для установки буровой установки остаются отключенными при ходьбе пешком."
+    },
+    {
+      "source": "The carrier image could not be allocated.",
+      "translation": "Не удалось выделить память для изображения авианосца."
+    },
+    {
+      "source": "The carrier image could not be decoded.",
+      "translation": "Изображение носителя не удалось декодировать."
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "Не удалось закодировать изображение авианосца."
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "Не удалось отобразить изображение авианосца."
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -204869,6 +205997,10 @@
       "translation": "Настройте ФСС на планету"
     },
     {
+      "source": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals.",
+      "translation": "Отключите стандартные поля, чтобы упорядочить все в сообщении. Используйте {countdown} для обратного отсчета вылета Discord в реальном времени; он пуст для отмен и приездов."
+    },
+    {
       "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
       "translation": "Включите, чтобы товары колонизации оставались видимыми в этом сеансе, в том числе после отстыковки. Отключите, чтобы использовать автоматическую видимость в настройках наложения покупок."
     },
@@ -205061,6 +206193,10 @@
       "translation": "Пользовательский идентификатор:"
     },
     {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "Не удалось создать новый экземпляр SKBitmap."
+    },
+    {
       "source": "Unable to open EDAstro's New POI page.",
       "translation": "Невозможно открыть страницу новых POI EDAstro."
     },
@@ -205123,6 +206259,10 @@
     {
       "source": "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
       "translation": "В разделе «Видимость из кабины» выберите «Слева», «Основной» и «Справа». Изменения вступают в силу немедленно и сохраняются после перезапуска."
+    },
+    {
+      "source": "Underline",
+      "translation": "Подчеркнуть"
     },
     {
       "source": "Undermine",
@@ -207361,6 +208501,10 @@
       "translation": "Ваша сила"
     },
     {
+      "source": "Your carrier",
+      "translation": "Ваш оператор связи"
+    },
+    {
       "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
       "translation": "Вашему авиаперевозчику требуется примерно {0} т трития на оставшийся маршрут, и ему не хватает {1} т. Добудьте или купите как минимум {2} t, затем выберите «Обновить», чтобы выполнить перерасчет с этой точки."
     },
@@ -207423,6 +208567,10 @@
     {
       "source": "Zemina Torval",
       "translation": "Земина Торваль"
+    },
+    {
+      "source": "Zoom",
+      "translation": "Увеличить"
     },
     {
       "source": "Zoom Guardian map in",
@@ -209093,6 +210241,10 @@
       "translation": "форма отправки изображения"
     },
     {
+      "source": "image/jpeg",
+      "translation": "изображение/JPEG"
+    },
+    {
       "source": "image/png",
       "translation": "изображение/png"
     },
@@ -209115,6 +210267,10 @@
     {
       "source": "in",
       "translation": "в"
+    },
+    {
+      "source": "in {0} minutes",
+      "translation": "через {0} минут"
     },
     {
       "source": "inara-accepted.txt",
@@ -209503,6 +210659,10 @@
     {
       "source": "monochrome-dark",
       "translation": "монохромный-темный"
+    },
+    {
+      "source": "monospace",
+      "translation": "моноширинный"
     },
     {
       "source": "more than one imported profile has that name",
@@ -210437,6 +211597,10 @@
       "translation": "потягиваться"
     },
     {
+      "source": "style",
+      "translation": "стиль"
+    },
+    {
       "source": "suffix {0}",
       "translation": "суффикс {0}"
     },
@@ -210529,6 +211693,10 @@
       "translation": "тестбагги"
     },
     {
+      "source": "text",
+      "translation": "текст"
+    },
+    {
       "source": "text scale",
       "translation": "масштаб текста"
     },
@@ -210607,6 +211775,10 @@
     {
       "source": "tier",
       "translation": "уровень"
+    },
+    {
+      "source": "time",
+      "translation": "время"
     },
     {
       "source": "timestamp",
@@ -211127,6 +212299,10 @@
     {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} – USB {1}:{2}"
+    },
+    {
+      "source": "{0} / 4096 characters",
+      "translation": "{0} / 4096 символов"
     },
     {
       "source": "{0} / 5 stars · {1} votes",
@@ -211695,6 +212871,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "{0} сообщения • {1} непрочитано"
+    },
+    {
+      "source": "{0} minutes ago",
+      "translation": "{0} минут назад"
     },
     {
       "source": "{0} missions tracked",
@@ -213627,6 +214807,10 @@
       "translation": "一个："
     },
     {
+      "source": "ABC-123",
+      "translation": "ABC-123"
+    },
+    {
       "source": "ABSENT",
       "translation": "缺席的"
     },
@@ -213813,6 +214997,10 @@
     {
       "source": "API",
       "translation": "应用程序编程接口"
+    },
+    {
+      "source": "APP",
+      "translation": "应用程序"
     },
     {
       "source": "APPIMAGE",
@@ -214779,6 +215967,10 @@
       "translation": "公告活动"
     },
     {
+      "source": "Announcement message template",
+      "translation": "公告消息模板"
+    },
+    {
       "source": "Announcement preset '{0}' applied.",
       "translation": "应用了公告预设“{0}”。"
     },
@@ -214793,6 +215985,10 @@
     {
       "source": "Announcement presets",
       "translation": "公告预设"
+    },
+    {
+      "source": "Announcement title",
+      "translation": "公告标题"
     },
     {
       "source": "Announcements",
@@ -214981,6 +216177,14 @@
     {
       "source": "Apply selected",
       "translation": "应用选定的"
+    },
+    {
+      "source": "Apply to settings",
+      "translation": "应用于设置"
+    },
+    {
+      "source": "Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes.",
+      "translation": "应用，然后保存设置中的更改以使用这些消息。取消将放弃该编辑器的更改。"
     },
     {
       "source": "Approach a Guardian point before marking it empty.",
@@ -216675,6 +217879,10 @@
       "translation": "体型"
     },
     {
+      "source": "Bold",
+      "translation": "大胆的"
+    },
+    {
       "source": "Bookmark POI",
       "translation": "收藏兴趣点"
     },
@@ -216941,6 +218149,10 @@
     {
       "source": "Buildings:",
       "translation": "建筑物："
+    },
+    {
+      "source": "Bullet list",
+      "translation": "项目符号列表"
     },
     {
       "source": "Bumper",
@@ -217431,6 +218643,10 @@
       "translation": "候选 {0} 未上传：{1}"
     },
     {
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "无法打开此图像。请选择不超过 8 MB、1600 万像素且每边不超过 16,384 像素的 PNG 或 JPEG。"
+    },
+    {
       "source": "Canonn",
       "translation": "Canonn"
     },
@@ -217707,6 +218923,10 @@
       "translation": "载体"
     },
     {
+      "source": "Carrier announcement editor",
+      "translation": "运营商公告编辑"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "无法承运货物。短缺和行程无法确认。"
     },
@@ -217721,6 +218941,26 @@
     {
       "source": "Carrier fuel recalculated from the current waypoint.",
       "translation": "从当前航路点重新计算航母燃油。"
+    },
+    {
+      "source": "Carrier image",
+      "translation": "载体形象"
+    },
+    {
+      "source": "Carrier image and preview",
+      "translation": "载体图像和预览"
+    },
+    {
+      "source": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+      "translation": "载体图像裁剪。拖动进行平移，滚动进行缩放，或使用箭头键移动作物。"
+    },
+    {
+      "source": "Carrier image zoom",
+      "translation": "载体图像缩放"
+    },
+    {
+      "source": "Carrier images",
+      "translation": "载体图像"
     },
     {
       "source": "Carrier linking",
@@ -218183,6 +219423,10 @@
       "translation": "在保存新地图草稿之前选择 PNG 背景图像。"
     },
     {
+      "source": "Choose a carrier image to include it here.",
+      "translation": "选择一个载体图像将其包含在此处。"
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "从顶部的选择器中选择一个类别；只有该组才会出现，这样桌面就不会被淹没。"
     },
@@ -218367,6 +219611,10 @@
       "translation": "选择现有的绝对屏幕截图源文件夹。"
     },
     {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "请选择不超过 1600 万像素且每边不超过 16,384 像素的图像。"
+    },
+    {
       "source": "Choose an overlay monitor",
       "translation": "选择覆盖监视器"
     },
@@ -218413,6 +219661,10 @@
     {
       "source": "Choose folder",
       "translation": "选择文件夹"
+    },
+    {
+      "source": "Choose image…",
+      "translation": "选择图像..."
     },
     {
       "source": "Choose local images...",
@@ -218533,6 +219785,10 @@
     {
       "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
       "translation": "选择哪些跟踪器可以使用 Wayland 捕获。每个跟踪器一开始就让您单独测试它们。"
+    },
+    {
+      "source": "Choose your carrier image",
+      "translation": "选择您的载体图像"
     },
     {
       "source": "Choose...",
@@ -220527,6 +221783,10 @@
       "translation": "创建联系"
     },
     {
+      "source": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+      "translation": "为每个跳跃事件创建一条消息。发送公告时，字段会自动填写。"
+    },
+    {
       "source": "Create a project",
       "translation": "创建一个项目"
     },
@@ -221783,6 +223043,10 @@
       "translation": "Discord 运营商公告"
     },
     {
+      "source": "Discord preview",
+      "translation": "Discord 预览"
+    },
+    {
       "source": "Discord webhook URL",
       "translation": "Discord webhook URL"
     },
@@ -222163,6 +223427,10 @@
       "translation": "拖动以更改宽度。高度跟随内容。"
     },
     {
+      "source": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+      "translation": "拖动以移动图像。滚动或使用缩放来填充 16:9 帧。仅帧内的区域被发送到Discord。"
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "拖动以调整此覆盖面板的大小"
     },
@@ -222525,6 +223793,10 @@
     {
       "source": "Edit all overlay positions",
       "translation": "编辑所有叠加位置"
+    },
+    {
+      "source": "Edit announcement messages…",
+      "translation": "编辑公告消息..."
     },
     {
       "source": "Edit bookmark",
@@ -223493,6 +224765,10 @@
     {
       "source": "Exploration rewards ~{0} CR",
       "translation": "探索奖励 ~{0} CR"
+    },
+    {
+      "source": "Exploration route: Sol → Lave → Colonia",
+      "translation": "探索路线：Sol → Lave → Colonia"
     },
     {
       "source": "Exploration screenshots",
@@ -227439,6 +228715,10 @@
       "translation": "包括过时的本地市场"
     },
     {
+      "source": "Include standard itinerary and time fields",
+      "translation": "包括标准行程和时间字段"
+    },
+    {
       "source": "Incomplete",
       "translation": "不完整"
     },
@@ -227487,6 +228767,10 @@
       "translation": "基础设施故障"
     },
     {
+      "source": "Inline code",
+      "translation": "内联代码"
+    },
+    {
       "source": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
       "translation": "内联系统建议来自 EDSM 并带有 Ardent 后备；解析的中心和坐标仍然来自Spansh。保存仅更新兼容的 sphereLimit 字段。"
     },
@@ -227517,6 +228801,14 @@
     {
       "source": "InputBox",
       "translation": "输入框"
+    },
+    {
+      "source": "Insert announcement field",
+      "translation": "插入公告字段"
+    },
+    {
+      "source": "Insert field",
+      "translation": "插入字段"
     },
     {
       "source": "Inside",
@@ -227633,6 +228925,10 @@
     {
       "source": "Iron ×3",
       "translation": "铁×3"
+    },
+    {
+      "source": "Italic",
+      "translation": "斜体"
     },
     {
       "source": "Item",
@@ -227945,6 +229241,14 @@
     {
       "source": "Jump cost",
       "translation": "跳跃成本"
+    },
+    {
+      "source": "Jump event",
+      "translation": "跳跃活动"
+    },
+    {
+      "source": "Jump event template",
+      "translation": "跳跃事件模板"
     },
     {
       "source": "Jump events",
@@ -228557,6 +229861,14 @@
     {
       "source": "Lava spout",
       "translation": "熔岩喷口"
+    },
+    {
+      "source": "Lave",
+      "translation": "澡"
+    },
+    {
+      "source": "Lave 1",
+      "translation": "莱夫 1"
     },
     {
       "source": "Layout",
@@ -231711,6 +233023,10 @@
       "translation": "工作区中没有可用的构建项目。"
     },
     {
+      "source": "No carrier image selected",
+      "translation": "未选择载体图像"
+    },
+    {
       "source": "No carriers are linked to this Nexus.",
       "translation": "没有运营商链接到此 Nexus。"
     },
@@ -233999,6 +235315,10 @@
       "translation": "PNG图像"
     },
     {
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "PNG 或 JPEG，不超过 8 MB、1600 万像素（每边不超过 16,384 像素）。请选择你的航母截图；它会随该航母的每条公告一起上传。"
+    },
+    {
       "source": "POI",
       "translation": "兴趣点"
     },
@@ -235815,6 +237135,10 @@
       "translation": "快速跟踪器 {0} 未更改：{1}"
     },
     {
+      "source": "Quote",
+      "translation": "引用"
+    },
+    {
       "source": "R+",
       "translation": "右+"
     },
@@ -237415,6 +238739,10 @@
       "translation": "删除组"
     },
     {
+      "source": "Remove image",
+      "translation": "删除图像"
+    },
+    {
       "source": "Remove key",
       "translation": "移除钥匙"
     },
@@ -237811,6 +239139,10 @@
       "translation": "重置坐标"
     },
     {
+      "source": "Reset crop",
+      "translation": "重置裁剪"
+    },
+    {
       "source": "Reset input detection",
       "translation": "复位输入检测"
     },
@@ -238009,6 +239341,10 @@
     {
       "source": "Restore selected backup",
       "translation": "恢复选定的备份"
+    },
+    {
+      "source": "Restore this event's default",
+      "translation": "恢复此事件的默认设置"
     },
     {
       "source": "Restore this panel's original measured size",
@@ -239137,6 +240473,10 @@
     {
       "source": "Sample 1 of 3 recorded",
       "translation": "记录了 3 个样本中的第 1 个"
+    },
+    {
+      "source": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+      "translation": "前往拉夫的旅程示例。您的运营商身份将在可用时使用。 Discord 控制最终的间距和时间显示。"
     },
     {
       "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -240329,6 +241669,10 @@
     {
       "source": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
       "translation": "选定的 boxel 仅使用当前打开的 boxel 中记录的系统和主体。"
+    },
+    {
+      "source": "Selected carrier image",
+      "translation": "选定的载体图像"
     },
     {
       "source": "Selected entries: {0}",
@@ -242979,6 +244323,10 @@
       "translation": "流媒体"
     },
     {
+      "source": "Strikethrough",
+      "translation": "删除线"
+    },
+    {
       "source": "Stronghold",
       "translation": "据点"
     },
@@ -244749,6 +246097,22 @@
     {
       "source": "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
       "translation": "货舱显示已占用容量 72 个。钻机设置弦杆仍然无法步行。"
+    },
+    {
+      "source": "The carrier image could not be allocated.",
+      "translation": "无法为航母图像分配内存。"
+    },
+    {
+      "source": "The carrier image could not be decoded.",
+      "translation": "无法解码载体图像。"
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "无法编码航母图像。"
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "无法渲染航母图像。"
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -247359,6 +248723,10 @@
       "translation": "将 FSS 调整到行星"
     },
     {
+      "source": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals.",
+      "translation": "关闭标准字段以排列消息中的所有内容。使用{countdown}进行Discord的实时出发倒计时；它是空的，可供取消和抵达。"
+    },
+    {
       "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
       "translation": "打开以使殖民商品在此会话中保持可见，包括在脱离对接后。关闭以使用购物叠加设置中的自动可见性。"
     },
@@ -247551,6 +248919,10 @@
       "translation": "用户 ID："
     },
     {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "无法创建新的 SKBitmap 实例。"
+    },
+    {
       "source": "Unable to open EDAstro's New POI page.",
       "translation": "无法打开 EDAstro 的新 POI 页面。"
     },
@@ -247613,6 +248985,10 @@
     {
       "source": "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
       "translation": "在“驾驶舱视图可见性”下，选择“左”、“主”和“右”。更改立即应用并在重新启动后有效。"
+    },
+    {
+      "source": "Underline",
+      "translation": "强调"
     },
     {
       "source": "Undermine",
@@ -249851,6 +251227,10 @@
       "translation": "你的力量"
     },
     {
+      "source": "Your carrier",
+      "translation": "您的运营商"
+    },
+    {
       "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
       "translation": "您的运营商需要大约 {0} t 的氚来完成剩余路线，并且还缺少 {1} t。开采或购买至少 {2} t，然后选择“刷新”以从此航路点重新计算。"
     },
@@ -249913,6 +251293,10 @@
     {
       "source": "Zemina Torval",
       "translation": "泽米娜·托瓦尔"
+    },
+    {
+      "source": "Zoom",
+      "translation": "飞涨"
     },
     {
       "source": "Zoom Guardian map in",
@@ -251583,6 +252967,10 @@
       "translation": "图片提交表格"
     },
     {
+      "source": "image/jpeg",
+      "translation": "图片/jpeg"
+    },
+    {
       "source": "image/png",
       "translation": "图片/png"
     },
@@ -251605,6 +252993,10 @@
     {
       "source": "in",
       "translation": "在"
+    },
+    {
+      "source": "in {0} minutes",
+      "translation": "在 {0} 分钟内"
     },
     {
       "source": "inara-accepted.txt",
@@ -251993,6 +253385,10 @@
     {
       "source": "monochrome-dark",
       "translation": "单色-暗"
+    },
+    {
+      "source": "monospace",
+      "translation": "等宽字体"
     },
     {
       "source": "more than one imported profile has that name",
@@ -252927,6 +254323,10 @@
       "translation": "拉紧"
     },
     {
+      "source": "style",
+      "translation": "风格"
+    },
+    {
       "source": "suffix {0}",
       "translation": "后缀 {0}"
     },
@@ -253019,6 +254419,10 @@
       "translation": "测试车"
     },
     {
+      "source": "text",
+      "translation": "文本"
+    },
+    {
       "source": "text scale",
       "translation": "文字比例"
     },
@@ -253097,6 +254501,10 @@
     {
       "source": "tier",
       "translation": "层"
+    },
+    {
+      "source": "time",
+      "translation": "时间"
     },
     {
       "source": "timestamp",
@@ -253617,6 +255025,10 @@
     {
       "source": "{0} - USB {1}:{2}",
       "translation": "{0} - USB {1}:{2}"
+    },
+    {
+      "source": "{0} / 4096 characters",
+      "translation": "{0} / 4096 个字符"
     },
     {
       "source": "{0} / 5 stars · {1} votes",
@@ -254185,6 +255597,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "{0} 消息 • {1} 未读"
+    },
+    {
+      "source": "{0} minutes ago",
+      "translation": "{0} 分钟前"
     },
     {
       "source": "{0} missions tracked",
@@ -256117,6 +257533,10 @@
       "translation": "* A: >>>!"
     },
     {
+      "source": "ABC-123",
+      "translation": "* ABC-123 >>>!"
+    },
+    {
       "source": "ABSENT",
       "translation": "* ABSENT >>>!"
     },
@@ -256303,6 +257723,10 @@
     {
       "source": "API",
       "translation": "* API >>>!"
+    },
+    {
+      "source": "APP",
+      "translation": "* APP >>>!"
     },
     {
       "source": "APPIMAGE",
@@ -257269,6 +258693,10 @@
       "translation": "* ANNOUNCEMENT EVENTS >>>!"
     },
     {
+      "source": "Announcement message template",
+      "translation": "* ANNOUNCEMENT MESSAGE TEMPLATE >>>!"
+    },
+    {
       "source": "Announcement preset '{0}' applied.",
       "translation": "* ANNOUNCEMENT PRESET '{0}' APPLIED. >>>!"
     },
@@ -257283,6 +258711,10 @@
     {
       "source": "Announcement presets",
       "translation": "* ANNOUNCEMENT PRESETS >>>!"
+    },
+    {
+      "source": "Announcement title",
+      "translation": "* ANNOUNCEMENT TITLE >>>!"
     },
     {
       "source": "Announcements",
@@ -257471,6 +258903,14 @@
     {
       "source": "Apply selected",
       "translation": "* APPLY SELECTED >>>!"
+    },
+    {
+      "source": "Apply to settings",
+      "translation": "* APPLY TO SETTINGS >>>!"
+    },
+    {
+      "source": "Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes.",
+      "translation": "* APPLY, THEN SAVE CHANGES IN SETTINGS TO USE THESE MESSAGES. CANCEL DISCARDS THIS EDITOR'S CHANGES. >>>!"
     },
     {
       "source": "Approach a Guardian point before marking it empty.",
@@ -259165,6 +260605,10 @@
       "translation": "* BODYTYPE >>>!"
     },
     {
+      "source": "Bold",
+      "translation": "* BOLD >>>!"
+    },
+    {
       "source": "Bookmark POI",
       "translation": "* BOOKMARK POI >>>!"
     },
@@ -259431,6 +260875,10 @@
     {
       "source": "Buildings:",
       "translation": "* BUILDINGS: >>>!"
+    },
+    {
+      "source": "Bullet list",
+      "translation": "* BULLET LIST >>>!"
     },
     {
       "source": "Bumper",
@@ -259921,6 +261369,10 @@
       "translation": "* CANDIDATE {0} WAS NOT UPLOADED: {1} >>>!"
     },
     {
+      "source": "Cannot open this image. Choose a PNG or JPEG up to 8 MB, 16 megapixels, and 16,384 pixels per side.",
+      "translation": "* CANNOT OPEN THIS IMAGE. CHOOSE A PNG OR JPEG UP TO 8 MB, 16 MEGAPIXELS, AND 16,384 PIXELS PER SIDE. >>>!"
+    },
+    {
       "source": "Canonn",
       "translation": "* CANONN >>>!"
     },
@@ -260197,6 +261649,10 @@
       "translation": "* CARRIER >>>!"
     },
     {
+      "source": "Carrier announcement editor",
+      "translation": "* CARRIER ANNOUNCEMENT EDITOR >>>!"
+    },
+    {
       "source": "Carrier cargo unavailable. Shortages and trips cannot be confirmed.",
       "translation": "* CARRIER CARGO UNAVAILABLE. SHORTAGES AND TRIPS CANNOT BE CONFIRMED. >>>!"
     },
@@ -260211,6 +261667,26 @@
     {
       "source": "Carrier fuel recalculated from the current waypoint.",
       "translation": "* CARRIER FUEL RECALCULATED FROM THE CURRENT WAYPOINT. >>>!"
+    },
+    {
+      "source": "Carrier image",
+      "translation": "* CARRIER IMAGE >>>!"
+    },
+    {
+      "source": "Carrier image and preview",
+      "translation": "* CARRIER IMAGE AND PREVIEW >>>!"
+    },
+    {
+      "source": "Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop.",
+      "translation": "* CARRIER IMAGE CROP. DRAG TO PAN, SCROLL TO ZOOM, OR USE ARROW KEYS TO MOVE THE CROP. >>>!"
+    },
+    {
+      "source": "Carrier image zoom",
+      "translation": "* CARRIER IMAGE ZOOM >>>!"
+    },
+    {
+      "source": "Carrier images",
+      "translation": "* CARRIER IMAGES >>>!"
     },
     {
       "source": "Carrier linking",
@@ -260673,6 +262149,10 @@
       "translation": "* CHOOSE A PNG BACKGROUND IMAGE BEFORE SAVING A NEW MAP DRAFT. >>>!"
     },
     {
+      "source": "Choose a carrier image to include it here.",
+      "translation": "* CHOOSE A CARRIER IMAGE TO INCLUDE IT HERE. >>>!"
+    },
+    {
       "source": "Choose a category from the selector at the top; only that group appears so the desktop is not overwhelmed.",
       "translation": "* CHOOSE A CATEGORY FROM THE SELECTOR AT THE TOP; ONLY THAT GROUP APPEARS SO THE DESKTOP IS NOT OVERWHELMED. >>>!"
     },
@@ -260857,6 +262337,10 @@
       "translation": "* CHOOSE AN EXISTING ABSOLUTE SCREENSHOT SOURCE FOLDER. >>>!"
     },
     {
+      "source": "Choose an image up to 16 megapixels and 16,384 pixels per side.",
+      "translation": "* CHOOSE AN IMAGE UP TO 16 MEGAPIXELS AND 16,384 PIXELS PER SIDE. >>>!"
+    },
+    {
       "source": "Choose an overlay monitor",
       "translation": "* CHOOSE AN OVERLAY MONITOR >>>!"
     },
@@ -260903,6 +262387,10 @@
     {
       "source": "Choose folder",
       "translation": "* CHOOSE FOLDER >>>!"
+    },
+    {
+      "source": "Choose image…",
+      "translation": "* CHOOSE IMAGE… >>>!"
     },
     {
       "source": "Choose local images...",
@@ -261023,6 +262511,10 @@
     {
       "source": "Choose which trackers may use Wayland capture. Each tracker starts off to let you test them separately.",
       "translation": "* CHOOSE WHICH TRACKERS MAY USE WAYLAND CAPTURE. EACH TRACKER STARTS OFF TO LET YOU TEST THEM SEPARATELY. >>>!"
+    },
+    {
+      "source": "Choose your carrier image",
+      "translation": "* CHOOSE YOUR CARRIER IMAGE >>>!"
     },
     {
       "source": "Choose...",
@@ -263017,6 +264509,10 @@
       "translation": "* CREATE NEXUS >>>!"
     },
     {
+      "source": "Create a message for each jump event. Fields fill in automatically when an announcement is sent.",
+      "translation": "* CREATE A MESSAGE FOR EACH JUMP EVENT. FIELDS FILL IN AUTOMATICALLY WHEN AN ANNOUNCEMENT IS SENT. >>>!"
+    },
+    {
       "source": "Create a project",
       "translation": "* CREATE A PROJECT >>>!"
     },
@@ -264273,6 +265769,10 @@
       "translation": "* DISCORD CARRIER ANNOUNCEMENTS >>>!"
     },
     {
+      "source": "Discord preview",
+      "translation": "* DISCORD PREVIEW >>>!"
+    },
+    {
       "source": "Discord webhook URL",
       "translation": "* DISCORD WEBHOOK URL >>>!"
     },
@@ -264653,6 +266153,10 @@
       "translation": "* DRAG TO CHANGE WIDTH. HEIGHT FOLLOWS CONTENT. >>>!"
     },
     {
+      "source": "Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord.",
+      "translation": "* DRAG TO MOVE THE IMAGE. SCROLL OR USE ZOOM TO FILL THE 16:9 FRAME. ONLY THE AREA INSIDE THE FRAME IS SENT TO DISCORD. >>>!"
+    },
+    {
       "source": "Drag to resize this overlay panel",
       "translation": "* DRAG TO RESIZE THIS OVERLAY PANEL >>>!"
     },
@@ -265015,6 +266519,10 @@
     {
       "source": "Edit all overlay positions",
       "translation": "* EDIT ALL OVERLAY POSITIONS >>>!"
+    },
+    {
+      "source": "Edit announcement messages…",
+      "translation": "* EDIT ANNOUNCEMENT MESSAGES… >>>!"
     },
     {
       "source": "Edit bookmark",
@@ -265983,6 +267491,10 @@
     {
       "source": "Exploration rewards ~{0} CR",
       "translation": "* EXPLORATION REWARDS ~{0} CR >>>!"
+    },
+    {
+      "source": "Exploration route: Sol → Lave → Colonia",
+      "translation": "* EXPLORATION ROUTE: SOL → LAVE → COLONIA >>>!"
     },
     {
       "source": "Exploration screenshots",
@@ -269929,6 +271441,10 @@
       "translation": "* INCLUDE OUTDATED LOCAL MARKETS >>>!"
     },
     {
+      "source": "Include standard itinerary and time fields",
+      "translation": "* INCLUDE STANDARD ITINERARY AND TIME FIELDS >>>!"
+    },
+    {
       "source": "Incomplete",
       "translation": "* INCOMPLETE >>>!"
     },
@@ -269977,6 +271493,10 @@
       "translation": "* INFRASTRUCTURE FAILURE >>>!"
     },
     {
+      "source": "Inline code",
+      "translation": "* INLINE CODE >>>!"
+    },
+    {
       "source": "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.",
       "translation": "* INLINE SYSTEM SUGGESTIONS COME FROM EDSM WITH AN ARDENT FALLBACK; THE RESOLVED CENTER AND COORDINATES STILL COME FROM SPANSH. SAVING UPDATES ONLY THE COMPATIBLE SPHERELIMIT FIELDS. >>>!"
     },
@@ -270007,6 +271527,14 @@
     {
       "source": "InputBox",
       "translation": "* INPUTBOX >>>!"
+    },
+    {
+      "source": "Insert announcement field",
+      "translation": "* INSERT ANNOUNCEMENT FIELD >>>!"
+    },
+    {
+      "source": "Insert field",
+      "translation": "* INSERT FIELD >>>!"
     },
     {
       "source": "Inside",
@@ -270123,6 +271651,10 @@
     {
       "source": "Iron ×3",
       "translation": "* IRON ×3 >>>!"
+    },
+    {
+      "source": "Italic",
+      "translation": "* ITALIC >>>!"
     },
     {
       "source": "Item",
@@ -270435,6 +271967,14 @@
     {
       "source": "Jump cost",
       "translation": "* JUMP COST >>>!"
+    },
+    {
+      "source": "Jump event",
+      "translation": "* JUMP EVENT >>>!"
+    },
+    {
+      "source": "Jump event template",
+      "translation": "* JUMP EVENT TEMPLATE >>>!"
     },
     {
       "source": "Jump events",
@@ -271047,6 +272587,14 @@
     {
       "source": "Lava spout",
       "translation": "* LAVA SPOUT >>>!"
+    },
+    {
+      "source": "Lave",
+      "translation": "* LAVE >>>!"
+    },
+    {
+      "source": "Lave 1",
+      "translation": "* LAVE 1 >>>!"
     },
     {
       "source": "Layout",
@@ -274201,6 +275749,10 @@
       "translation": "* NO BUILD PROJECTS ARE AVAILABLE IN THE WORKSPACE. >>>!"
     },
     {
+      "source": "No carrier image selected",
+      "translation": "* NO CARRIER IMAGE SELECTED >>>!"
+    },
+    {
       "source": "No carriers are linked to this Nexus.",
       "translation": "* NO CARRIERS ARE LINKED TO THIS NEXUS. >>>!"
     },
@@ -276489,6 +278041,10 @@
       "translation": "* PNG IMAGE >>>!"
     },
     {
+      "source": "PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier.",
+      "translation": "* PNG OR JPEG, UP TO 8 MB AND 16 MEGAPIXELS (16,384 PIXELS PER SIDE). CHOOSE YOUR CARRIER SCREENSHOT; IT IS UPLOADED WITH EVERY ANNOUNCEMENT FOR THIS CARRIER. >>>!"
+    },
+    {
       "source": "POI",
       "translation": "* POI >>>!"
     },
@@ -278305,6 +279861,10 @@
       "translation": "* QUICK TRACKER {0} WAS NOT CHANGED: {1} >>>!"
     },
     {
+      "source": "Quote",
+      "translation": "* QUOTE >>>!"
+    },
+    {
       "source": "R+",
       "translation": "* R+ >>>!"
     },
@@ -279905,6 +281465,10 @@
       "translation": "* REMOVE GROUP >>>!"
     },
     {
+      "source": "Remove image",
+      "translation": "* REMOVE IMAGE >>>!"
+    },
+    {
       "source": "Remove key",
       "translation": "* REMOVE KEY >>>!"
     },
@@ -280301,6 +281865,10 @@
       "translation": "* RESET COORDINATES >>>!"
     },
     {
+      "source": "Reset crop",
+      "translation": "* RESET CROP >>>!"
+    },
+    {
       "source": "Reset input detection",
       "translation": "* RESET INPUT DETECTION >>>!"
     },
@@ -280499,6 +282067,10 @@
     {
       "source": "Restore selected backup",
       "translation": "* RESTORE SELECTED BACKUP >>>!"
+    },
+    {
+      "source": "Restore this event's default",
+      "translation": "* RESTORE THIS EVENT'S DEFAULT >>>!"
     },
     {
       "source": "Restore this panel's original measured size",
@@ -281627,6 +283199,10 @@
     {
       "source": "Sample 1 of 3 recorded",
       "translation": "* SAMPLE 1 OF 3 RECORDED >>>!"
+    },
+    {
+      "source": "Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display.",
+      "translation": "* SAMPLE JOURNEY TO LAVE. YOUR CARRIER IDENTITY IS USED WHEN AVAILABLE. DISCORD CONTROLS FINAL SPACING AND TIME DISPLAY. >>>!"
     },
     {
       "source": "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.",
@@ -282819,6 +284395,10 @@
     {
       "source": "Selected boxel uses only the recorded systems and bodies in the boxel currently open.",
       "translation": "* SELECTED BOXEL USES ONLY THE RECORDED SYSTEMS AND BODIES IN THE BOXEL CURRENTLY OPEN. >>>!"
+    },
+    {
+      "source": "Selected carrier image",
+      "translation": "* SELECTED CARRIER IMAGE >>>!"
     },
     {
       "source": "Selected entries: {0}",
@@ -285469,6 +287049,10 @@
       "translation": "* STREAMING >>>!"
     },
     {
+      "source": "Strikethrough",
+      "translation": "* STRIKETHROUGH >>>!"
+    },
+    {
       "source": "Stronghold",
       "translation": "* STRONGHOLD >>>!"
     },
@@ -287239,6 +288823,22 @@
     {
       "source": "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
       "translation": "* THE CARGO ROW SHOWS OCCUPIED CAPACITY OUT OF 72. RIG-SETTING CHORDS REMAIN DISABLED ON FOOT. >>>!"
+    },
+    {
+      "source": "The carrier image could not be allocated.",
+      "translation": "* THE CARRIER IMAGE COULD NOT BE ALLOCATED. >>>!"
+    },
+    {
+      "source": "The carrier image could not be decoded.",
+      "translation": "* THE CARRIER IMAGE COULD NOT BE DECODED. >>>!"
+    },
+    {
+      "source": "The carrier image could not be encoded.",
+      "translation": "* THE CARRIER IMAGE COULD NOT BE ENCODED. >>>!"
+    },
+    {
+      "source": "The carrier image could not be rendered.",
+      "translation": "* THE CARRIER IMAGE COULD NOT BE RENDERED. >>>!"
     },
     {
       "source": "The carrier operation failed: {0}",
@@ -289849,6 +291449,10 @@
       "translation": "* TUNE THE FSS TO A PLANET >>>!"
     },
     {
+      "source": "Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals.",
+      "translation": "* TURN OFF STANDARD FIELDS TO ARRANGE EVERYTHING IN YOUR MESSAGE. USE {COUNTDOWN} FOR DISCORD'S LIVE DEPARTURE COUNTDOWN; IT IS EMPTY FOR CANCELLATIONS AND ARRIVALS. >>>!"
+    },
+    {
       "source": "Turn on to keep colonization commodities visible for this session, including after undocking. Turn off to use automatic visibility from the shopping overlay settings.",
       "translation": "* TURN ON TO KEEP COLONIZATION COMMODITIES VISIBLE FOR THIS SESSION, INCLUDING AFTER UNDOCKING. TURN OFF TO USE AUTOMATIC VISIBILITY FROM THE SHOPPING OVERLAY SETTINGS. >>>!"
     },
@@ -290041,6 +291645,10 @@
       "translation": "* UID: >>>!"
     },
     {
+      "source": "Unable to create a new SKBitmap instance.",
+      "translation": "* UNABLE TO CREATE A NEW SKBITMAP INSTANCE. >>>!"
+    },
+    {
       "source": "Unable to open EDAstro's New POI page.",
       "translation": "* UNABLE TO OPEN EDASTRO'S NEW POI PAGE. >>>!"
     },
@@ -290103,6 +291711,10 @@
     {
       "source": "Under Cockpit view visibility, choose Left, Main, and Right. Changes apply immediately and survive restart.",
       "translation": "* UNDER COCKPIT VIEW VISIBILITY, CHOOSE LEFT, MAIN, AND RIGHT. CHANGES APPLY IMMEDIATELY AND SURVIVE RESTART. >>>!"
+    },
+    {
+      "source": "Underline",
+      "translation": "* UNDERLINE >>>!"
     },
     {
       "source": "Undermine",
@@ -292341,6 +293953,10 @@
       "translation": "* YOUR POWER >>>!"
     },
     {
+      "source": "Your carrier",
+      "translation": "* YOUR CARRIER >>>!"
+    },
+    {
       "source": "Your carrier needs approximately {0} t of tritium for the remaining route and is short by {1} t. Mine or buy at least {2} t, then select Refresh to recalculate from this waypoint.",
       "translation": "* YOUR CARRIER NEEDS APPROXIMATELY {0} T OF TRITIUM FOR THE REMAINING ROUTE AND IS SHORT BY {1} T. MINE OR BUY AT LEAST {2} T, THEN SELECT REFRESH TO RECALCULATE FROM THIS WAYPOINT. >>>!"
     },
@@ -292403,6 +294019,10 @@
     {
       "source": "Zemina Torval",
       "translation": "* ZEMINA TORVAL >>>!"
+    },
+    {
+      "source": "Zoom",
+      "translation": "* ZOOM >>>!"
     },
     {
       "source": "Zoom Guardian map in",
@@ -294073,6 +295693,10 @@
       "translation": "* IMAGE SUBMISSION FORM >>>!"
     },
     {
+      "source": "image/jpeg",
+      "translation": "* IMAGE/JPEG >>>!"
+    },
+    {
       "source": "image/png",
       "translation": "* IMAGE/PNG >>>!"
     },
@@ -294095,6 +295719,10 @@
     {
       "source": "in",
       "translation": "* IN >>>!"
+    },
+    {
+      "source": "in {0} minutes",
+      "translation": "* IN {0} MINUTES >>>!"
     },
     {
       "source": "inara-accepted.txt",
@@ -294483,6 +296111,10 @@
     {
       "source": "monochrome-dark",
       "translation": "* MONOCHROME-DARK >>>!"
+    },
+    {
+      "source": "monospace",
+      "translation": "* MONOSPACE >>>!"
     },
     {
       "source": "more than one imported profile has that name",
@@ -295417,6 +297049,10 @@
       "translation": "* STRETCH >>>!"
     },
     {
+      "source": "style",
+      "translation": "* STYLE >>>!"
+    },
+    {
       "source": "suffix {0}",
       "translation": "* SUFFIX {0} >>>!"
     },
@@ -295509,6 +297145,10 @@
       "translation": "* TESTBUGGY >>>!"
     },
     {
+      "source": "text",
+      "translation": "* TEXT >>>!"
+    },
+    {
       "source": "text scale",
       "translation": "* TEXT SCALE >>>!"
     },
@@ -295587,6 +297227,10 @@
     {
       "source": "tier",
       "translation": "* TIER >>>!"
+    },
+    {
+      "source": "time",
+      "translation": "* TIME >>>!"
     },
     {
       "source": "timestamp",
@@ -296107,6 +297751,10 @@
     {
       "source": "{0} - USB {1}:{2}",
       "translation": "* {0} - USB {1}:{2} >>>!"
+    },
+    {
+      "source": "{0} / 4096 characters",
+      "translation": "* {0} / 4096 CHARACTERS >>>!"
     },
     {
       "source": "{0} / 5 stars · {1} votes",
@@ -296675,6 +298323,10 @@
     {
       "source": "{0} messages • {1} unread",
       "translation": "* {0} MESSAGES • {1} UNREAD >>>!"
+    },
+    {
+      "source": "{0} minutes ago",
+      "translation": "* {0} MINUTES AGO >>>!"
     },
     {
       "source": "{0} missions tracked",

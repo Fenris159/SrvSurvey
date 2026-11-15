@@ -223,6 +223,8 @@
             <TextBlock Classes="muted" VerticalAlignment="Center" Margin="0,0,0,6"
                        IsVisible="{Binding DiscordCarrierAnnouncements.HasChanges}" Text="Unsaved changes" />
           </WrapPanel>
+          <Button x:Name="EditDiscordCarrierMessageButton" Classes="secondary" HorizontalAlignment="Left"
+                  Content="Edit announcement messages…" Click="EditDiscordCarrierMessage_Click" />
           <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding DiscordCarrierAnnouncements.StatusMessage}" />
         </StackPanel>
       </Border>

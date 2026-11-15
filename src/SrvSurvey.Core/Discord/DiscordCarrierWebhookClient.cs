@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using SrvSurvey.Core.Network;
@@ -16,12 +17,18 @@ public sealed class DiscordCarrierWebhookClient : IDisposable
     private readonly HttpClient client;
     private readonly bool ownsClient;
     private readonly Func<TimeSpan, CancellationToken, Task> delay;
+    private readonly Func<DiscordCarrierImage, DiscordCarrierImageCrop, DiscordCarrierImage>? imageCropper;
 
-    public DiscordCarrierWebhookClient(HttpClient? client = null, Func<TimeSpan, CancellationToken, Task>? delay = null)
+    public DiscordCarrierWebhookClient(
+        HttpClient? client = null,
+        Func<TimeSpan, CancellationToken, Task>? delay = null,
+        Func<DiscordCarrierImage, DiscordCarrierImageCrop, DiscordCarrierImage>? imageCropper = null
+    )
     {
         this.client = client ?? new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
         ownsClient = client is null;
         this.delay = delay ?? Task.Delay;
+        this.imageCropper = imageCropper;
     }
 
     public static Uri? ParseWebhookUrl(string? text)
@@ -90,6 +97,8 @@ public sealed class DiscordCarrierWebhookClient : IDisposable
                     },
                 },
             },
+            null,
+            null,
             cancellationToken
         );
 
@@ -97,89 +106,105 @@ public sealed class DiscordCarrierWebhookClient : IDisposable
         string url,
         CarrierJumpAnnouncement announcement,
         CancellationToken cancellationToken = default
+    ) => SendAnnouncementAsync(url, announcement, new DiscordCarrierMessageSettings(), cancellationToken);
+
+    public Task<DiscordWebhookResult> SendAnnouncementAsync(
+        string url,
+        CarrierJumpAnnouncement announcement,
+        DiscordCarrierMessageSettings settings,
+        CancellationToken cancellationToken = default
+    ) => SendAnnouncementAsync(url, announcement, settings, null, cancellationToken);
+
+    public async Task<DiscordWebhookResult> SendAnnouncementAsync(
+        string url,
+        CarrierJumpAnnouncement announcement,
+        DiscordCarrierMessageSettings settings,
+        Func<bool>? canSend,
+        CancellationToken cancellationToken = default
     )
     {
         ArgumentNullException.ThrowIfNull(announcement);
-        var fields = new List<object>
+        ArgumentNullException.ThrowIfNull(settings);
+        DiscordCarrierMessageTemplate template = settings.ForEvent(announcement.Event);
+        string? validation = DiscordCarrierMessageFormatter.Validate(template);
+        if (validation is not null)
         {
-            Field(
-                "Itinerary",
-                $"{(string.IsNullOrWhiteSpace(announcement.Origin) ? "Departure system not reported" : announcement.Origin)} → {announcement.Destination}",
-                false
-            ),
-        };
-        if (!string.IsNullOrWhiteSpace(announcement.Body))
-        {
-            fields.Add(Field("Destination body", announcement.Body));
+            return new(false, validation);
         }
-        if (announcement.Departure is { } departure)
+        DiscordCarrierMessage message = DiscordCarrierMessageFormatter.Render(announcement, template);
+        string path =
+            announcement.CarrierKind == FollowRouteCarrierKind.Squadron
+                ? settings.SquadronImagePath
+                : settings.PersonalImagePath;
+        DiscordCarrierImage? image = null;
+        bool imageUnavailable = false;
+        try
         {
-            fields.Add(Field("Scheduled departure", DiscordTime(departure)));
-        }
-        if (announcement.Event == CarrierAnnouncementKind.Arrived)
-        {
-            fields.Add(Field("Arrival confirmed", DiscordTime(announcement.ObservedAt)));
-        }
-        if (!string.IsNullOrWhiteSpace(announcement.Route))
-        {
-            fields.Add(Field("Route", announcement.Route, false));
-        }
-        string title = announcement.Event switch
-        {
-            CarrierAnnouncementKind.Scheduled => "Carrier jump scheduled",
-            CarrierAnnouncementKind.Cancelled => "Carrier jump cancelled",
-            _ => "Carrier jump completed",
-        };
-        string kind =
-            announcement.CarrierKind == FollowRouteCarrierKind.Squadron ? "Squadron carrier" : "Personal fleet carrier";
-        string identity = string.Join(
-            " · ",
-            new[] { announcement.Name, announcement.Callsign }.Where(value => !string.IsNullOrWhiteSpace(value))
-        );
-        return SendAsync(
-            url,
-            new
+            image = await DiscordCarrierImage.LoadAsync(path, cancellationToken).ConfigureAwait(false);
+            DiscordCarrierImageCrop? crop =
+                announcement.CarrierKind == FollowRouteCarrierKind.Squadron
+                    ? settings.SquadronImageCrop
+                    : settings.PersonalImageCrop;
+            if (image is not null && crop is not null)
             {
-                allowed_mentions = new { parse = Array.Empty<string>() },
-                embeds = new[]
-                {
-                    new
-                    {
-                        title,
-                        description = Limit(
-                            $"{kind}: {(identity.Length == 0 ? announcement.CarrierId.ToString(CultureInfo.InvariantCulture) : identity)}"
-                        ),
-                        color = announcement.Event switch
-                        {
-                            CarrierAnnouncementKind.Cancelled => 15158332,
-                            CarrierAnnouncementKind.Arrived => 3066993,
-                            _ => 3447003,
-                        },
-                        fields,
-                        timestamp = announcement
-                            .ObservedAt.ToUniversalTime()
-                            .ToString("O", CultureInfo.InvariantCulture),
-                        footer = new { text = "SrvSurvey-XP" },
-                    },
-                },
-            },
-            cancellationToken
-        );
+                image =
+                    imageCropper?.Invoke(image, crop)
+                    ?? throw new NotSupportedException("An image crop encoder is required.");
+            }
+        }
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or InvalidDataException
+                        or UnauthorizedAccessException
+                        or ArgumentException
+                        or NotSupportedException
+            )
+        {
+            image = null;
+            imageUnavailable = true;
+        }
+        var embed = new Dictionary<string, object>
+        {
+            ["title"] = message.Title,
+            ["description"] = message.Description,
+            ["color"] = message.Color,
+            ["fields"] = message.Fields.Select(field => new
+            {
+                name = field.Name,
+                value = field.Value,
+                inline = field.Inline,
+            }),
+            ["timestamp"] = announcement.ObservedAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
+            ["footer"] = new { text = "SrvSurvey-XP" },
+        };
+        if (image is not null)
+        {
+            embed["image"] = new { url = "attachment://" + image.FileName };
+        }
+        DiscordWebhookResult result = await SendAsync(
+                url,
+                new { allowed_mentions = new { parse = Array.Empty<string>() }, embeds = new[] { embed } },
+                image,
+                canSend,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+        return result.Success && imageUnavailable
+            ? new(
+                true,
+                "Message sent to Discord without its image. Choose the carrier image again in the message editor."
+            )
+            : result;
     }
 
-    private static string DiscordTime(DateTimeOffset time) => $"<t:{time.ToUnixTimeSeconds()}:F>";
-
-    private static object Field(string name, string value, bool inline = true) =>
-        new
-        {
-            name,
-            value = Limit(value),
-            inline,
-        };
-
-    private static string Limit(string value) => value.Length <= 500 ? value : value[..499] + "…";
-
-    private async Task<DiscordWebhookResult> SendAsync(string url, object payload, CancellationToken cancellationToken)
+    private async Task<DiscordWebhookResult> SendAsync(
+        string url,
+        object payload,
+        DiscordCarrierImage? image,
+        Func<bool>? canSend,
+        CancellationToken cancellationToken
+    )
     {
         Uri? endpoint = ParseWebhookUrl(url);
         if (endpoint is null)
@@ -190,7 +215,7 @@ public sealed class DiscordCarrierWebhookClient : IDisposable
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(TimeSpan.FromSeconds(45));
-            return await SendWithRetriesAsync(endpoint, payload, timeout.Token).ConfigureAwait(false);
+            return await SendWithRetriesAsync(endpoint, payload, image, canSend, timeout.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -206,14 +231,20 @@ public sealed class DiscordCarrierWebhookClient : IDisposable
     private async Task<DiscordWebhookResult> SendWithRetriesAsync(
         Uri endpoint,
         object payload,
+        DiscordCarrierImage? image,
+        Func<bool>? canSend,
         CancellationToken cancellationToken
     )
     {
         for (int attempt = 0; attempt < 3; attempt++)
         {
+            if (canSend?.Invoke() == false)
+            {
+                return new(false, "This announcement was skipped because its settings changed.");
+            }
             using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
             {
-                Content = JsonContent.Create(payload),
+                Content = CreateContent(payload, image),
             };
             using HttpResponseMessage response = await client
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -243,6 +274,19 @@ public sealed class DiscordCarrierWebhookClient : IDisposable
             await delay(retry.Value, cancellationToken).ConfigureAwait(false);
         }
         return new(false, "Discord is rate limiting this webhook. Try again later.");
+    }
+
+    private static HttpContent CreateContent(object payload, DiscordCarrierImage? image)
+    {
+        if (image is null)
+        {
+            return JsonContent.Create(payload);
+        }
+        var content = new MultipartFormDataContent { { JsonContent.Create(payload), "payload_json" } };
+        var file = new ByteArrayContent(image.Bytes);
+        file.Headers.ContentType = new MediaTypeHeaderValue(image.MediaType);
+        content.Add(file, "files[0]", image.FileName);
+        return content;
     }
 
     private static async Task<TimeSpan?> RetryDelayAsync(

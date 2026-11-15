@@ -1,0 +1,108 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
+        x:Class="SrvSurvey.Desktop.DiscordCarrierMessageEditorWindow"
+        x:DataType="vm:DiscordCarrierMessageEditorViewModel"
+        Classes="app-window" Title="Carrier announcement editor"
+        Width="1120" Height="820" MinWidth="860" MinHeight="640"
+        ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+    <StackPanel Spacing="6" Margin="0,0,0,20">
+      <TextBlock Classes="page-title" FontSize="24" Text="Carrier announcement editor" />
+      <TextBlock Classes="muted" TextWrapping="Wrap" Text="Create a message for each jump event. Fields fill in automatically when an announcement is sent." />
+    </StackPanel>
+    <Grid Grid.Row="1" ColumnDefinitions="*,24,*">
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="12">
+          <TextBlock FontWeight="SemiBold" Text="Jump event" />
+          <ComboBox x:Name="EventChoice" HorizontalAlignment="Stretch" SelectedIndex="{Binding SelectedEvent, Mode=TwoWay}" AutomationProperties.Name="Jump event template">
+            <ComboBoxItem Content="Jump scheduled" />
+            <ComboBoxItem Content="Jump cancelled" />
+            <ComboBoxItem Content="Arrival confirmed" />
+          </ComboBox>
+          <TextBlock FontWeight="SemiBold" Text="Title" />
+          <TextBox x:Name="TitleEditor" Text="{Binding Title, Mode=TwoWay}" AutomationProperties.Name="Announcement title" />
+          <TextBlock FontWeight="SemiBold" Text="Message" />
+          <WrapPanel>
+            <Button x:Name="BoldButton" Classes="secondary" Content="B" FontWeight="Bold" Tag="**" Click="Format_Click" ToolTip.Tip="Bold" AutomationProperties.Name="Bold" Margin="0,0,4,4" />
+            <Button x:Name="ItalicButton" Classes="secondary" Content="I" FontStyle="Italic" Tag="*" Click="Format_Click" ToolTip.Tip="Italic" AutomationProperties.Name="Italic" Margin="0,0,4,4" />
+            <Button x:Name="UnderlineButton" Classes="secondary" Tag="__" Click="Format_Click" ToolTip.Tip="Underline" AutomationProperties.Name="Underline" Margin="0,0,4,4"><TextBlock Text="U" TextDecorations="Underline" /></Button>
+            <Button x:Name="StrikeButton" Classes="secondary" Tag="~~" Click="Format_Click" ToolTip.Tip="Strikethrough" AutomationProperties.Name="Strikethrough" Margin="0,0,4,4"><TextBlock Text="S" TextDecorations="Strikethrough" /></Button>
+            <Button x:Name="CodeButton" Classes="secondary" Content="&lt;/&gt;" Tag="`" Click="Format_Click" ToolTip.Tip="Inline code" AutomationProperties.Name="Inline code" Margin="0,0,4,4" />
+            <Button x:Name="QuoteButton" Classes="secondary" Content="❯" Tag="&gt; " Click="Format_Click" ToolTip.Tip="Quote" AutomationProperties.Name="Quote" Margin="0,0,4,4" />
+            <Button x:Name="ListButton" Classes="secondary" Content="•" Tag="- " Click="Format_Click" ToolTip.Tip="Bullet list" AutomationProperties.Name="Bullet list" Margin="0,0,4,4" />
+          </WrapPanel>
+          <TextBox x:Name="MessageEditor" Text="{Binding Message, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="170" VerticalContentAlignment="Top" AutomationProperties.Name="Announcement message template" />
+          <Grid ColumnDefinitions="*,Auto">
+            <ComboBox x:Name="FieldChoice" PlaceholderText="Insert field" SelectionChanged="Field_SelectionChanged" AutomationProperties.Name="Insert announcement field" />
+            <TextBlock Grid.Column="1" Classes="muted" Margin="8,0,0,0" VerticalAlignment="Center" Text="{Binding CharacterCount}" />
+          </Grid>
+          <CheckBox x:Name="IncludeDetailsChoice" IsChecked="{Binding IncludeDetails, Mode=TwoWay}" Content="Include standard itinerary and time fields" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="Turn off standard fields to arrange everything in your message. Use {countdown} for Discord's live departure countdown; it is empty for cancellations and arrivals." />
+          <Button x:Name="RestoreDefaultButton" Classes="secondary" Content="Restore this event's default" Click="RestoreDefault_Click" />
+          <Border Height="1" Background="{DynamicResource RavenBorderBrush}" Margin="0,6" />
+          <TextBlock FontWeight="SemiBold" Text="Carrier image" />
+          <ComboBox x:Name="CarrierChoice" HorizontalAlignment="Stretch" SelectedIndex="{Binding SelectedCarrier, Mode=TwoWay}" AutomationProperties.Name="Carrier image and preview">
+            <ComboBoxItem Content="Personal fleet carrier" />
+            <ComboBoxItem Content="Squadron carrier" />
+          </ComboBox>
+          <TextBlock Classes="muted" Text="{Binding ImageName}" TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="ChooseImageButton" Classes="secondary" Content="Choose image…" Click="ChooseImage_Click" />
+            <Button x:Name="RemoveImageButton" Classes="secondary" Content="Remove image" Click="RemoveImage_Click" />
+          </StackPanel>
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="PNG or JPEG, up to 8 MB and 16 megapixels (16,384 pixels per side). Choose your carrier screenshot; it is uploaded with every announcement for this carrier." />
+          <StackPanel x:Name="ImageCropPanel" Spacing="8" IsVisible="False">
+            <controls:CarrierImageCropSelector x:Name="ImageCropSelector" Height="250" Focusable="True" Cursor="SizeAll"
+                Crop="{Binding ImageCrop, Mode=TwoWay}" AutomationProperties.Name="Carrier image crop. Drag to pan, scroll to zoom, or use arrow keys to move the crop." />
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+              <TextBlock Text="Zoom" VerticalAlignment="Center" />
+              <Slider x:Name="ImageZoomSlider" Grid.Column="1" Minimum="1" Maximum="8" SmallChange="0.1" LargeChange="0.5" Value="{Binding ImageZoom, Mode=TwoWay}" AutomationProperties.Name="Carrier image zoom" />
+              <TextBlock Grid.Column="2" Text="{Binding ZoomLabel}" VerticalAlignment="Center" />
+            </Grid>
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Drag to move the image. Scroll or use Zoom to fill the 16:9 frame. Only the area inside the frame is sent to Discord." />
+            <Button x:Name="ResetImageCropButton" Classes="secondary" Content="Reset crop" Click="ResetImageCrop_Click" HorizontalAlignment="Left" />
+          </StackPanel>
+          <TextBlock x:Name="ImageError" Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+      </ScrollViewer>
+      <Grid Grid.Column="2" RowDefinitions="Auto,*">
+        <StackPanel Spacing="6" Margin="0,0,0,12">
+          <TextBlock FontWeight="SemiBold" Text="Discord preview" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="Sample journey to Lave. Your carrier identity is used when available. Discord controls final spacing and time display." />
+        </StackPanel>
+        <Border Grid.Row="1" Background="#313338" CornerRadius="8" Padding="18">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Foreground="#F2F3F5" FontWeight="SemiBold" Text="SrvSurvey-XP" />
+                <Border Background="#5865F2" CornerRadius="3" Padding="4,1"><TextBlock Foreground="White" FontSize="10" Text="APP" /></Border>
+              </StackPanel>
+              <Border x:Name="PreviewEmbed" Background="#2B2D31" BorderThickness="4,0,0,0" CornerRadius="4" Padding="16">
+                <StackPanel Spacing="14">
+                  <TextBlock x:Name="PreviewTitle" Foreground="#F2F3F5" FontWeight="Bold" TextWrapping="Wrap" Text="{Binding Preview.Title}" />
+                  <controls:DiscordMessagePreview x:Name="PreviewMessage" Foreground="#DBDEE1" TextWrapping="Wrap" Markdown="{Binding Preview.Description}" />
+                  <Grid x:Name="PreviewFields" ColumnDefinitions="*,16,*" />
+                  <Image x:Name="CarrierImage" Stretch="Uniform" MaxHeight="240" HorizontalAlignment="Left" AutomationProperties.Name="Selected carrier image" />
+                  <TextBlock x:Name="ImagePlaceholder" Foreground="#B5BAC1" TextWrapping="Wrap" Text="Choose a carrier image to include it here." />
+                  <TextBlock Foreground="#B5BAC1" FontSize="11" Text="SrvSurvey-XP" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+        </Border>
+      </Grid>
+    </Grid>
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,20,0,0">
+      <StackPanel Spacing="4" Margin="0,0,16,0" VerticalAlignment="Center">
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}" TextWrapping="Wrap" Text="{Binding ValidationMessage}" />
+        <TextBlock Classes="muted" TextWrapping="Wrap" Text="Apply, then Save changes in settings to use these messages. Cancel discards this editor's changes." />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <Button x:Name="CancelEditorButton" Classes="secondary" Content="Cancel" Click="Cancel_Click" />
+        <Button x:Name="ApplyEditorButton" Classes="primary" Content="Apply to settings" IsEnabled="{Binding CanApply}" Click="Apply_Click" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>
