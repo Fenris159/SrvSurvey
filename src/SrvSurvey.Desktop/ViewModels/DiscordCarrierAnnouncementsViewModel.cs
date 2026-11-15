@@ -18,6 +18,7 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
     private readonly CarrierJumpAnnouncementTracker tracker = new();
     private readonly Func<bool> networkAllowed;
     private readonly Action<Action> dispatch;
+    private readonly DiscordCarrierDiagnostics diagnostics;
     private readonly Channel<Delivery> queue = Channel.CreateBounded<Delivery>(100);
     private readonly CancellationTokenSource shutdown = new();
     private readonly Command saveCommand;
@@ -36,15 +37,18 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
         DiscordCarrierSettingsStore store,
         DiscordCarrierWebhookClient? webhookClient = null,
         Func<bool>? networkAllowed = null,
-        Action<Action>? dispatch = null
+        Action<Action>? dispatch = null,
+        Action<string>? log = null
     )
     {
         this.store = store;
         client = webhookClient ?? new DiscordCarrierWebhookClient();
         this.networkAllowed = networkAllowed ?? (() => true);
         this.dispatch = dispatch ?? (action => Dispatcher.UIThread.Post(action));
+        diagnostics = new(log);
         saved = store.Load();
         draft = saved;
+        LogSettings(DiscordCarrierDiagnostics.Loaded, saved);
         saveCommand = new Command(SaveAsync, () => !isBusy && HasChanges && (!Enabled || IsWebhookValid));
         testCommand = new Command(TestAsync, () => !isBusy && IsWebhookValid && this.networkAllowed());
         if (saved.Enabled)
@@ -101,9 +105,17 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
     {
         ArgumentNullException.ThrowIfNull(settings);
         Edit(draft with { MessageSettings = settings });
+        LogSettings(DiscordCarrierDiagnostics.EditorApplied, draft);
     }
 
     internal Task PendingDelivery => lastDelivery;
+
+    private void LogSettings(string stage, DiscordCarrierPreferences preferences) =>
+        diagnostics.Write(
+            stage,
+            $"scope={store.DiagnosticScope}; revision={Volatile.Read(ref revision)}; enabled={preferences.Enabled}; "
+                + DiscordCarrierDiagnostics.SettingsSummary(preferences.MessageSettings ?? new())
+        );
 
     private void Edit(DiscordCarrierPreferences next)
     {
@@ -132,6 +144,7 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
             saved = next;
             draft = next;
             Interlocked.Increment(ref revision);
+            LogSettings(DiscordCarrierDiagnostics.Saved, saved);
             Report(
                 Enabled
                     ? "Saved. Listening for live carrier jump events."
@@ -140,6 +153,7 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            diagnostics.Write(DiscordCarrierDiagnostics.SaveFailed, $"error={exception.GetType().Name}");
             Report("Could not save Discord settings. Check that the settings folder is writable.");
         }
         return Task.CompletedTask;
@@ -200,11 +214,18 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
                 announcement.CarrierKind == FollowRouteCarrierKind.Squadron ? squadronRoute ?? route : route
             );
             var complete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            if (!queue.Writer.TryWrite(new Delivery(message, saved, Volatile.Read(ref revision), complete)))
+            var delivery = new Delivery(message, saved, Volatile.Read(ref revision), complete, Guid.NewGuid());
+            if (!queue.Writer.TryWrite(delivery))
             {
                 Report("Discord announcements are queued faster than they can be sent. Some messages were skipped.");
                 continue;
             }
+            diagnostics.Write(
+                DiscordCarrierDiagnostics.Queued,
+                $"scope={store.DiagnosticScope}; revision={delivery.Revision}; event={message.Event}; carrier={message.CarrierKind}; "
+                    + DiscordCarrierDiagnostics.SettingsSummary(delivery.Preferences.MessageSettings ?? new()),
+                delivery.Id
+            );
             lastDelivery = complete.Task;
             worker ??= Task.Run(DeliverAsync, CancellationToken.None);
         }
@@ -239,6 +260,11 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
                 {
                     if (delivery.Revision != Volatile.Read(ref revision) || !networkAllowed())
                     {
+                        diagnostics.Write(
+                            DiscordCarrierDiagnostics.Skipped,
+                            $"queued-revision={delivery.Revision}; current-revision={Volatile.Read(ref revision)}; reason=settings-changed-or-network-disabled",
+                            delivery.Id
+                        );
                         continue;
                     }
                     DiscordWebhookResult result = await client
@@ -247,7 +273,8 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
                             delivery.Announcement,
                             delivery.Preferences.MessageSettings ?? new(),
                             canSend: () => delivery.Revision == Volatile.Read(ref revision) && networkAllowed(),
-                            cancellationToken: shutdown.Token
+                            cancellationToken: shutdown.Token,
+                            diagnosticId: delivery.Id
                         )
                         .ConfigureAwait(false);
                     dispatch(() =>
@@ -306,7 +333,8 @@ public sealed class DiscordCarrierAnnouncementsViewModel : INotifyPropertyChange
         CarrierJumpAnnouncement Announcement,
         DiscordCarrierPreferences Preferences,
         int Revision,
-        TaskCompletionSource Complete
+        TaskCompletionSource Complete,
+        Guid Id
     );
 
     private sealed class Command(Func<Task> execute, Func<bool> canExecute) : ICommand

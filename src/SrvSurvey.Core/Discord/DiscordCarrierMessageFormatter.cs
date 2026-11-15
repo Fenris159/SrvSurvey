@@ -107,8 +107,8 @@ public static partial class DiscordCarrierMessageFormatter
             {
                 AddField(fields, "Scheduled departure", values["departure"]);
             }
-            AddField(fields, "Countdown", values["countdown"]);
-            AddField(fields, "Arrival confirmed", values["arrival"]);
+            AddField(fields, "Countdown", values["countdown"], false);
+            AddField(fields, "Arrival confirmed", values["arrival"], false);
             AddField(fields, "Route", announcement.Route, false);
         }
         // Reserve the embed's remaining 6000-character budget for its standard details and footer.

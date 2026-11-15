@@ -23,4 +23,18 @@ Startup journal history restores tracking without posting historical notificatio
 
 The webhook URL is masked in the editor, stored in this commander's local application settings, and excluded from cloud profile sync. Delivery status messages do not contain the URL. No Discord bot or FCMS account is required.
 
+## Delivery diagnostics
+
+After an affected announcement, open **Diagnostics → Logs** and use **Copy logs**. Include the `[Discord carrier]` entries from applying and saving the editor settings through the affected send. Each send has a correlation ID shared by its queue, upload, and response entries.
+
+- `loaded`, `editor-applied`, and `saved` record the settings-scope fingerprint, revision, template fingerprints, and whether each carrier has an image and crop. Template fingerprints should remain the same through saving and delivery. The rendered title has its own fingerprint because carrier and journey fields expand when sending.
+- `queued` and `rendered` identify the event, carrier type, saved revision, and whether the selected template differs from the default. These show whether the live sender received the customized settings.
+- `prepared` records whether an image will be uploaded, its byte count, and its fingerprint. `image-unavailable` records the failing preparation phase and exception type. `skipped` identifies settings changes or disabled networking that discarded a queued send.
+- `response`, `rejected`, and `retry` record HTTP status, known Discord API error codes, and retry timing. Size and invalid-file rejections have specific status messages instead of a generic failure.
+- `confirmed` records Discord's message ID, whether its returned title matches the submitted title, and whether the expected embed image is present. Discord may omit embed-backed images from its separate attachment list, so that list is not used to decide whether the image arrived. A confirmation does not check CDN availability or how a Discord client renders the image.
+
+If Discord accepts a post but returns a different title, omits the expected image, or sends an unreadable confirmation, settings show a warning directing you to Logs. SrvSurvey does not post the accepted message again. Confirmation bodies are limited to 64 KiB and rejection bodies to 16 KiB; logs retain only the diagnostic fields above. The Discord entries omit webhook URLs/tokens, message text, image paths, and CDN links.
+
+**Send test message** still checks the webhook connection with a standard text message; its trace is marked `connection-test`. An actual carrier event exercises the customized title and carrier image.
+
 The announcement information flow uses [Fuel Rats FCMS](https://github.com/FuelRats/FCMS/blob/master/FCMS/utils/webhooks.py) as a behavioral reference. The C# journal tracking and Discord delivery implementation are native to SrvSurvey.

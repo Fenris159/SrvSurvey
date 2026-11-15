@@ -363,8 +363,13 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             );
             DiscordCarrierAnnouncements = new DiscordCarrierAnnouncementsViewModel(
                 new DiscordCarrierSettingsStore(AppDataPaths.UiSettingsPath),
-                new DiscordCarrierWebhookClient(externalNetworkClient, imageCropper: DiscordCarrierImageProcessor.Crop),
-                () => !IsDiagnosticReplay
+                new DiscordCarrierWebhookClient(
+                    externalNetworkClient,
+                    imageCropper: DiscordCarrierImageProcessor.Crop,
+                    log: message => resolvedApplicationLogService?.Append(message)
+                ),
+                () => !IsDiagnosticReplay,
+                log: message => resolvedApplicationLogService?.Append(message)
             );
             rollback.Add(() => DiscordCarrierAnnouncements.DisposeAsync().AsTask().GetAwaiter().GetResult());
             WaylandCapture = new WaylandCaptureSettingsViewModel(

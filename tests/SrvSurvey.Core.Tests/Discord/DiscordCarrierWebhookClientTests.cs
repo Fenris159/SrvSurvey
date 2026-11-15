@@ -268,10 +268,7 @@ public sealed class DiscordCarrierWebhookClientTests
     [Theory]
     [InlineData(HttpStatusCode.OK, true)]
     [InlineData(HttpStatusCode.TooManyRequests, false)]
-    public async Task SuccessBodiesAreNotReadAndRateLimitBodiesHaveAnExplicitSizeLimit(
-        HttpStatusCode status,
-        bool success
-    )
+    public async Task ConfirmationAndRateLimitBodiesHaveAnExplicitSizeLimit(HttpStatusCode status, bool success)
     {
         using var handler = new Handler(
             (_, _) => Task.FromResult(new HttpResponseMessage(status) { Content = new OversizedContent() })
@@ -285,7 +282,7 @@ public sealed class DiscordCarrierWebhookClientTests
     {
         protected override bool TryComputeLength(out long length)
         {
-            length = 64 * 1024;
+            length = 64 * 1024 + 1;
             return true;
         }
 

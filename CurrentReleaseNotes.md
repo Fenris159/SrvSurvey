@@ -1,39 +1,29 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.16
+# SrvSurvey-XP 2.1.3.0-rc.77.17
 
-RC77.16 adds customizable Discord carrier announcements with live departure
-countdowns, your own carrier screenshots, and a pop-out message editor with a
-formatted preview.
+RC77.17 improves Discord carrier announcement layout and adds delivery
+diagnostics for investigating posts that differ from the message editor preview.
 
 ## What's changed
 
-- **Customize carrier announcements:** Open **Edit announcement messages…** under
-  **Settings > Application > Discord carrier announcements**. Give scheduled,
-  cancelled, and completed jumps their own titles and message templates. Insert
-  fields for your carrier, itinerary, destination body, departure, arrival, and
-  route, or arrange those details yourself instead of using the standard fields.
-- **Preview Discord formatting:** See a sample journey with your carrier's
-  identity and the selected image while editing. The toolbar supports bold,
-  italic, underline, strikethrough, inline code, quotes, and bullet lists,
-  including nested bold and italic. Unfinished formatting stays visible while
-  you type.
-- **Show a live departure countdown:** Scheduled jumps with a reported departure
-  include Discord's updating relative time. Absolute timestamps display in each
-  reader's local time. Custom templates can place the countdown with
-  `{countdown}`; cancellations and arrivals leave that field empty.
-- **Frame your carrier screenshot:** Choose a PNG or JPEG up to 8 MB and 16
-  megapixels (16,384 pixels per side) separately
-  for your personal and squadron carriers. Pan and zoom beneath the fixed 16:9
-  crop frame, watch the announcement preview follow your selection, and reset
-  the crop when needed. Discord receives the selected area as a 1280 × 720 image
-  attachment; your original file stays unchanged. Reselecting an updated file
-  refreshes the preview even when its filename is unchanged.
-- **Apply changes when ready:** **Apply to settings** transfers the editor's
-  drafts, then **Save changes** activates them. **Cancel** discards the editor's
-  changes. Templates, image paths, and crops remain local with the Discord
-  settings and are excluded from cloud profile sync.
-- **Keep announcements reliable:** Missing, unreadable, invalid, or oversized
-  images no longer interrupt subsequent announcements. The message is delivered
-  without an image and the status asks you to choose it again. A failed crop
-  never uploads the uncropped original. Saving disabled announcements or a
-  changed webhook prevents older messages still being prepared or awaiting a
-  retry from being sent with the previous settings.
+- **Keep time fields on their own rows:** Countdown and arrival confirmation
+  fields now start separate rows in Discord, matching the editor's layout.
+- **Check Discord's confirmation:** After Discord accepts an announcement,
+  SrvSurvey checks the returned title and carrier image. A changed title,
+  missing image, or unreadable confirmation produces a warning in Discord
+  settings. Accepted messages are not posted again because of a warning.
+  Malformed response text is handled without interrupting later announcements.
+- **Trace settings through delivery:** Correlated log entries follow the editor's
+  Apply action, saved settings, queued event, prepared image, and Discord
+  response. They identify the carrier type, settings revision, template and
+  image fingerprints, image byte count, HTTP status, and Discord message ID.
+  These entries omit webhook URLs and tokens, message text, image paths, and
+  CDN links.
+- **Explain upload rejections:** Size, invalid-file, and message-format errors
+  from Discord now have specific status messages. The outgoing image is also
+  checked against the 8 MiB limit after cropping; a rejected local image uses
+  the existing text-only fallback.
+
+If a live post still differs from the preview, open **Diagnostics > Logs**, use
+**Copy logs**, and include the `[Discord carrier]` entries for the affected send
+in the bug report. **Send test message** remains a connection-only check;
+an actual carrier event exercises customized titles and images.

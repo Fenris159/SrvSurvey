@@ -296,6 +296,28 @@ public sealed class DiscordCarrierAnnouncementsTests
         Assert.Empty(fixture.Payloads);
     }
 
+    [Fact]
+    public async Task MalformedConfirmationDoesNotStopTheNextQueuedAnnouncement()
+    {
+        await using var fixture = new Fixture(
+            new(true, Webhook),
+            response: attempt =>
+                attempt == 1
+                    ? """{"id":"456","embeds":[{"title":"\uD800"}]}"""
+                    : """{"id":"457","embeds":[{"title":"Carrier jump cancelled"}]}"""
+        );
+        var statuses = new List<string>();
+        fixture.Model.PropertyChanged += (_, _) => statuses.Add(fixture.Model.StatusMessage);
+        fixture.Model.ApplyJournalEvents("F1", [Request(1, false), Event("CarrierJumpCancelled", 1, 20)], true);
+        await fixture.Model.PendingDelivery.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(2, fixture.Payloads.Count);
+        Assert.Contains(
+            "Message sent to Discord, but its confirmation could not be read. See Diagnostics → Logs.",
+            statuses
+        );
+        Assert.Equal("Message sent to Discord.", fixture.Model.StatusMessage);
+    }
+
     private static JournalEventEnvelope Request(long id, bool squadron) =>
         Parse(
             $$"""{"timestamp":"2026-10-28T12:00:00Z","event":"CarrierJumpRequest","CarrierID":{{id}},"CarrierType":"{{(squadron ? "SquadronCarrier" : "FleetCarrier")}}","SystemName":"Lave","DepartureTime":"2026-10-28T12:00:10Z"} """
@@ -325,7 +347,8 @@ public sealed class DiscordCarrierAnnouncementsTests
         public Fixture(
             DiscordCarrierPreferences? preferences = null,
             Func<CancellationToken, Task>? wait = null,
-            Func<bool>? allowed = null
+            Func<bool>? allowed = null,
+            Func<int, string>? response = null
         )
         {
             Directory.CreateDirectory(Root);
@@ -334,7 +357,7 @@ public sealed class DiscordCarrierAnnouncementsTests
             {
                 Store.Save(preferences);
             }
-            http = new HttpClient(new Handler(Payloads, wait));
+            http = new HttpClient(new Handler(Payloads, wait, response));
             Model = new DiscordCarrierAnnouncementsViewModel(
                 Store,
                 new DiscordCarrierWebhookClient(http),
@@ -351,8 +374,11 @@ public sealed class DiscordCarrierAnnouncementsTests
         }
     }
 
-    private sealed class Handler(ConcurrentQueue<string> payloads, Func<CancellationToken, Task>? wait)
-        : HttpMessageHandler
+    private sealed class Handler(
+        ConcurrentQueue<string> payloads,
+        Func<CancellationToken, Task>? wait,
+        Func<int, string>? response
+    ) : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -364,7 +390,10 @@ public sealed class DiscordCarrierAnnouncementsTests
                 await wait(cancellationToken);
             }
             payloads.Enqueue(await request.Content!.ReadAsStringAsync(cancellationToken));
-            return new(HttpStatusCode.OK);
+            return new(HttpStatusCode.OK)
+            {
+                Content = response is null ? null : new StringContent(response(payloads.Count)),
+            };
         }
     }
 }

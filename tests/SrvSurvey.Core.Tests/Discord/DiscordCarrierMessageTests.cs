@@ -84,6 +84,21 @@ public sealed class DiscordCarrierMessageTests
     }
 
     [Theory]
+    [InlineData(CarrierAnnouncementKind.Scheduled, "Countdown")]
+    [InlineData(CarrierAnnouncementKind.Arrived, "Arrival confirmed")]
+    public void EventTimeFieldsStartTheirOwnRowToMatchTheEditor(CarrierAnnouncementKind kind, string fieldName)
+    {
+        DiscordCarrierMessage message = DiscordCarrierMessageFormatter.Render(
+            Scheduled with
+            {
+                Event = kind,
+            },
+            new DiscordCarrierMessageSettings().ForEvent(kind)
+        );
+        Assert.False(Assert.Single(message.Fields, field => field.Name == fieldName).Inline);
+    }
+
+    [Theory]
     [InlineData("", "Hello", "Enter a title of 1–256 characters.")]
     [InlineData("Title", "", "Enter a message of 1–4096 characters.")]
     [InlineData("{unknown}", "Hello", "Unknown field {unknown}. Choose a field from Insert field.")]
@@ -150,7 +165,26 @@ public sealed class DiscordCarrierMessageTests
                 Assert.Equal("image/png", parts[1].Headers.ContentType!.MediaType);
                 return ++attempts == 1
                     ? new(HttpStatusCode.TooManyRequests) { Content = JsonContent.Create(new { retry_after = 0 }) }
-                    : new(HttpStatusCode.OK);
+                    : new(HttpStatusCode.OK)
+                    {
+                        Content = JsonContent.Create(
+                            new
+                            {
+                                id = "456",
+                                embeds = new[]
+                                {
+                                    new
+                                    {
+                                        title = "Custom departure",
+                                        image = new
+                                        {
+                                            url = "https://cdn.discordapp.com/attachments/123/456/carrier.png",
+                                        },
+                                    },
+                                },
+                            }
+                        ),
+                    };
             });
             using var http = new HttpClient(handler);
             using var client = new DiscordCarrierWebhookClient(http, (_, _) => Task.CompletedTask);
@@ -185,7 +219,12 @@ public sealed class DiscordCarrierMessageTests
             delivered = await request.Content!.ReadAsStringAsync();
             using var payload = JsonDocument.Parse(delivered);
             Assert.False(payload.RootElement.GetProperty("embeds")[0].TryGetProperty("image", out _));
-            return new(HttpStatusCode.OK);
+            return new(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(
+                    new { id = "456", embeds = new[] { new { title = "Carrier jump scheduled" } } }
+                ),
+            };
         });
         using var http = new HttpClient(handler);
         using var client = new DiscordCarrierWebhookClient(http);
@@ -241,6 +280,7 @@ public sealed class DiscordCarrierMessageTests
     [Theory]
     [InlineData("invalid-file")]
     [InlineData("oversized-file")]
+    [InlineData("oversized-crop")]
     [InlineData("invalid-crop")]
     [InlineData("failed-crop")]
     [InlineData("missing-encoder")]
@@ -263,7 +303,12 @@ public sealed class DiscordCarrierMessageTests
                 JsonElement embed = payload.RootElement.GetProperty("embeds")[0];
                 Assert.Equal("Carrier jump scheduled", embed.GetProperty("title").GetString());
                 Assert.False(embed.TryGetProperty("image", out _));
-                return new(HttpStatusCode.OK);
+                return new(HttpStatusCode.OK)
+                {
+                    Content = JsonContent.Create(
+                        new { id = "456", embeds = new[] { new { title = "Carrier jump scheduled" } } }
+                    ),
+                };
             });
             using var http = new HttpClient(handler);
             using var client = new DiscordCarrierWebhookClient(
@@ -271,11 +316,13 @@ public sealed class DiscordCarrierMessageTests
                 imageCropper: failure == "missing-encoder"
                     ? null
                     : (_, _) =>
-                        throw failure switch
-                        {
-                            "invalid-crop" => new InvalidDataException("Invalid image"),
-                            _ => new IOException("Encoder failed"),
-                        }
+                        failure == "oversized-crop"
+                            ? new(new byte[8 * 1024 * 1024 + 1], "carrier.png", "image/png")
+                            : throw failure switch
+                            {
+                                "invalid-crop" => new InvalidDataException("Invalid image"),
+                                _ => new IOException("Encoder failed"),
+                            }
             );
             DiscordWebhookResult result = await client.SendAnnouncementAsync(
                 Webhook,
