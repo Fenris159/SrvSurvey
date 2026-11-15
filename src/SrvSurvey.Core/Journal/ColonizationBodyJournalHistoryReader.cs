@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using SrvSurvey.Core.Diagnostics;
 
@@ -29,7 +28,42 @@ public static class ColonizationBodyJournalHistoryReader
                 merged.Add(entry);
             }
         }
-        return merged.OrderBy(entry => entry.Timestamp ?? DateTimeOffset.MaxValue).ToArray();
+        return OrderMergedRecords(merged);
+    }
+
+    private static List<JournalEventEnvelope> OrderMergedRecords(List<JournalEventEnvelope> records)
+    {
+        var positioned = records
+            .Select(entry => new { Entry = entry, Position = ReadSourcePosition(entry.SourceRecordIdentity) })
+            .ToArray();
+        JournalEventEnvelope[] physical = positioned
+            .Where(item => item.Position.Offset != long.MaxValue)
+            .OrderBy(item => item.Position.OpenedAt)
+            .ThenBy(item => item.Position.Part)
+            .ThenBy(item => item.Position.File, StringComparer.Ordinal)
+            .ThenBy(item => item.Position.Offset)
+            .Select(item => item.Entry)
+            .ToArray();
+        JournalEventEnvelope[] fallback = positioned
+            .Where(item => item.Position.Offset == long.MaxValue)
+            .OrderBy(item => item.Entry.Timestamp ?? DateTimeOffset.MaxValue)
+            .Select(item => item.Entry)
+            .ToArray();
+        var result = new List<JournalEventEnvelope>(records.Count);
+        int physicalIndex = 0;
+        int fallbackIndex = 0;
+        while (physicalIndex < physical.Length || fallbackIndex < fallback.Length)
+        {
+            bool usePhysical =
+                physicalIndex < physical.Length
+                && (
+                    fallbackIndex >= fallback.Length
+                    || (physical[physicalIndex].Timestamp ?? DateTimeOffset.MaxValue)
+                        <= (fallback[fallbackIndex].Timestamp ?? DateTimeOffset.MaxValue)
+                );
+            result.Add(usePhysical ? physical[physicalIndex++] : fallback[fallbackIndex++]);
+        }
+        return result;
     }
 
     public static async Task<IReadOnlyList<JournalEventEnvelope>> ReadAsync(
@@ -82,7 +116,7 @@ public static class ColonizationBodyJournalHistoryReader
             previousPath = file.FullName;
             previousGalaxy = galaxy;
         }
-        return SelectRecentBodiesWithBackfill(result);
+        return result;
     }
 
     private static FileInfo[] SelectHistoryFiles(string directory) =>
@@ -113,41 +147,27 @@ public static class ColonizationBodyJournalHistoryReader
             : 0;
     }
 
-    private static List<JournalEventEnvelope> SelectRecentBodiesWithBackfill(List<JournalEventEnvelope> entries)
+    private static (DateTimeOffset OpenedAt, int Part, string File, long Offset) ReadSourcePosition(string? identity)
     {
-        int jumpCount = 0;
-        int start = 0;
-        for (int index = entries.Count - 1; index >= 0; index--)
-        {
-            if (entries[index].EventName == "FSDJump" && ++jumpCount > 10)
-            {
-                start = index + 1;
-                break;
-            }
-        }
-        var recentIds = entries
-            .Skip(start)
-            .Where(entry => entry.EventName is "Scan" or "ScanBaryCentre")
-            .Select(BodyId)
-            .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .ToHashSet();
-        return entries
-            .Where(
-                (entry, index) =>
-                    index >= start
-                    || entry.EventName == "FSSAllBodiesFound"
-                    || BodyId(entry) is { } id && recentIds.Contains(id)
+        int separator = identity?.LastIndexOf(':') ?? -1;
+        if (
+            separator < 1
+            || !long.TryParse(
+                identity.AsSpan(separator + 1),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out long offset
             )
-            .ToList();
+        )
+        {
+            return (DateTimeOffset.MaxValue, int.MaxValue, string.Empty, long.MaxValue);
+        }
+        string file = identity![..separator];
+        DateTimeOffset openedAt = JournalHistoryAnalyzer.TryGetJournalTimestamp(file, out DateTimeOffset stamp)
+            ? stamp
+            : DateTimeOffset.MaxValue;
+        return (openedAt, ReadPartNumber(file), file, offset);
     }
-
-    private static int? BodyId(JournalEventEnvelope entry) =>
-        entry.Payload.TryGetProperty("BodyID", out JsonElement id)
-        && id.ValueKind == JsonValueKind.Number
-        && id.TryGetInt32(out int value)
-            ? value
-            : null;
 
     private static bool MatchesBodyEvent(JournalEventEnvelope entry, long systemAddress) =>
         entry.EventName == "FSDJump"
@@ -180,13 +200,27 @@ public static class ColonizationBodyJournalHistoryReader
             16 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        using var reader = new StreamReader(stream, Encoding.UTF8);
         var entries = new List<JournalEventEnvelope>();
-        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
+        var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
+        string? previous = null;
+        await foreach (
+            (string line, long offset) in JournalSourceRecordReader
+                .ReadAsync(stream, cancellationToken)
+                .ConfigureAwait(false)
+        )
         {
             if (JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? entry, out _))
             {
-                entries.Add(entry!);
+                string identity = entry!.CaptureContentIdentity(file.Name, occurrences);
+                entries.Add(
+                    entry with
+                    {
+                        SourceContentIdentity = identity,
+                        SourceRecordIdentity = file.Name + ":" + offset.ToString(CultureInfo.InvariantCulture),
+                        SourcePreviousContentIdentity = previous,
+                    }
+                );
+                previous = identity;
             }
         }
         return entries;

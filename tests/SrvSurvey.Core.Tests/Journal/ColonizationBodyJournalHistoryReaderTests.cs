@@ -5,6 +5,101 @@ namespace SrvSurvey.Core.Tests.Journal;
 
 public sealed class ColonizationBodyJournalHistoryReaderTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ArrivalAndScanKeepPhysicalOrderWhenClockTimesTieOrStepBack(bool clockStepsBack)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "raven-body-ties-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            string arrival = clockStepsBack
+                ? ArrivalAndScan.Replace(
+                    "12:00:00Z\",\"event\":\"FSDJump",
+                    "12:00:01Z\",\"event\":\"FSDJump",
+                    StringComparison.Ordinal
+                )
+                : ArrivalAndScan;
+            string text = Header + arrival + LaterJumps(1, 10);
+            await File.WriteAllTextAsync(Path.Combine(directory, "Journal.2026-11-15T120000.01.log"), text);
+            var monitor = new JournalDirectoryMonitor(directory, "F1");
+            JournalMonitorUpdate buffered = await monitor.PollAsync();
+            IReadOnlyList<JournalEventEnvelope> history = await ColonizationBodyJournalHistoryReader.ReadAsync(
+                directory,
+                42,
+                "F1"
+            );
+            var catalog = new ColonizationBodyJournalCatalog(42, "Example");
+            catalog.Apply(
+                ColonizationBodyJournalHistoryReader.MergeWithBufferedEvents(history, buffered.JournalEvents)
+            );
+            Assert.True(catalog.CanUpload);
+            Assert.Equal([0], catalog.CreateBodies().Select(body => body.Number));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BackfillAndLiveCatchupKeepScansEligibleUntilElevenRealJumps(bool consumedNineJumps)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "raven-body-handoff-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            string path = Path.Combine(directory, "Journal.2026-11-15T120000.01.log");
+            await File.WriteAllTextAsync(
+                path,
+                Header + (consumedNineJumps ? ArrivalAndScan + LaterJumps(1, 9) : string.Empty)
+            );
+            var monitor = new JournalDirectoryMonitor(directory, "F1");
+            JournalMonitorUpdate initial = await monitor.PollAsync();
+            await File.AppendAllTextAsync(
+                path,
+                consumedNineJumps ? LaterJumps(10, 1) : ArrivalAndScan + LaterJumps(1, 10)
+            );
+            var catalog = new ColonizationBodyJournalCatalog(42, "Example");
+            catalog.Apply(
+                ColonizationBodyJournalHistoryReader.MergeWithBufferedEvents(
+                    await ColonizationBodyJournalHistoryReader.ReadAsync(directory, 42, "F1"),
+                    initial.JournalEvents
+                )
+            );
+            Assert.True(catalog.CanUpload);
+            JournalMonitorUpdate catchup = await monitor.PollAsync();
+            catalog.Apply(catchup.JournalEvents);
+            Assert.True(catalog.CanUpload);
+            Assert.Equal([0], catalog.CreateBodies().Select(body => body.Number));
+            await File.AppendAllTextAsync(path, LaterJumps(11, 1));
+            catalog.Apply((await monitor.PollAsync()).JournalEvents);
+            Assert.False(catalog.CanUpload);
+            Assert.Equal(0, catalog.ScannedBodyCount);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private const string Header =
+        "{\"event\":\"Fileheader\",\"Odyssey\":true,\"part\":1}\n{\"event\":\"Commander\",\"FID\":\"F1\",\"Name\":\"Test Cmdr\"}\n";
+    private const string ArrivalAndScan =
+        "{\"timestamp\":\"2026-11-15T12:00:00Z\",\"event\":\"FSDJump\",\"SystemAddress\":42}\n{\"timestamp\":\"2026-11-15T12:00:00Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyID\":0,\"BodyName\":\"Example\",\"StarType\":\"G\"}\n{\"timestamp\":\"2026-11-15T12:00:01Z\",\"event\":\"FSSAllBodiesFound\",\"SystemAddress\":42,\"Count\":1}\n";
+
+    private static string LaterJumps(int start, int count) =>
+        string.Concat(
+            Enumerable
+                .Range(start, count)
+                .Select(minute =>
+                    $$"""{"timestamp":"2026-11-15T12:{{minute:D2}}:00Z","event":"FSDJump","SystemAddress":43}""" + "\n"
+                )
+        );
+
     [Fact]
     public async Task ModernJournalsRemainRecentWhenTheDirectoryContainsALegacyFilenameArchive()
     {

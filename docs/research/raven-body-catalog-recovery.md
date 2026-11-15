@@ -199,7 +199,7 @@ repair, and the combined
 cached/on-disk ten-jump body-count window.
 
 The required local gate passed a Sonar-profile build with all warnings treated
-as errors, 3,833 Core tests, 153 selected Desktop/scenario tests, 19 localization
+as errors, 3,837 Core tests, 154 selected Desktop/scenario tests, 19 localization
 tests, and all 66 mandatory journal-upload scenarios. Changed production line
 and branch coverage was **above 90% (80% required)**. Fourteen deliberately broken
 copied binary variants were each caught by behavioral tests; original assemblies
@@ -218,3 +218,12 @@ snapshots and the submitted catalog were retained locally under
 A final read-only run with the updated production conversion code recovered and
 proposed the same 37 body IDs, 32 populated radii, and zero removals. The original
 pre-PUT snapshot remains intact; this later run did not publish another update.
+
+Disk backfill now shares the live monitor's physical record reader and content
+identities. The catalog alone applies the ten-jump window to all selected
+records, deduplicating later live delivery without dropping the live event's
+check trigger. Real-file regressions cover equal-time and backward-clock arrival/scan ordering,
+monitor catch-up after nine jumps or before the scan, and expiration on the
+eleventh genuinely new jump. The journey reader uses the same extracted byte
+reader through a forwarding wrapper, retaining its existing BOM/line-ending
+behavior.

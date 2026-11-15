@@ -12,6 +12,25 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class ColonizationBodyRecoveryTests
 {
     [Fact]
+    public async Task ACompletionReadDuringBackfillStillStartsItsCheckWhenDeliveredLive()
+    {
+        using var fixture = new Fixture();
+        fixture.Record = fixture.Record with { Bodies = [fixture.Record.Bodies![0]] };
+        JournalEventEnvelope complete = Event("{\"event\":\"FSSAllBodiesFound\",\"SystemAddress\":42,\"Count\":2}") with
+        {
+            SourceContentIdentity = "completion-record",
+        };
+        fixture.Editor.BodyJournalHistoryReader = (_, _) =>
+            Task.FromResult<IReadOnlyList<JournalEventEnvelope>>([.. LocalScans(), complete]);
+        await fixture.LoadAsync();
+        Assert.Equal(0, fixture.BodyWrites);
+        fixture.Editor.ApplyJournalEvents([complete]);
+        await fixture.Editor.BodyCatalogUpdateTask;
+        Assert.Equal(1, fixture.BodyWrites);
+        Assert.Equal([0, 1], fixture.Published!.Select(body => body.Number));
+    }
+
+    [Fact]
     public async Task ALegacyPrefixCannotCompleteTheLiveCatalogAfterASameAccountRotation()
     {
         using var fixture = new Fixture();

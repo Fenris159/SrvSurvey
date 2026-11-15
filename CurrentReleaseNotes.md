@@ -39,3 +39,9 @@ Spansh and EDSM in the System Editor.
   still enriches local sites when the game has already closed or the next
   journal identity is pending. Body counts use the same ten-jump window for
   cached and on-disk records; older details can enrich a newly scanned body.
+
+- **Handle journal handoffs:** Backfill no longer counts a jump twice when live
+  monitoring catches up. Jump and scan events retain their journal order even
+  when timestamps tie or the clock moves backward. A backfilled FSS event still
+  starts its normal check when delivered
+  live.

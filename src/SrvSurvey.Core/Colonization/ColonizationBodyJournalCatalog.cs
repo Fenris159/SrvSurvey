@@ -9,6 +9,7 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
     private readonly Dictionary<int, JournalEventEnvelope> scans = [];
     private readonly Dictionary<int, int> lastScanJump = [];
     private int jumpCount;
+    private readonly HashSet<string> observedSourceRecords = new(StringComparer.Ordinal);
     private readonly Dictionary<int, HashSet<string>> signalFeatures = [];
     private int? allBodiesCount;
     private int? discoveryCount;
@@ -32,7 +33,7 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
         {
             if (entry.EventName == "FSDJump")
             {
-                AdvanceJumpWindow();
+                AdvanceJumpWindow(entry);
                 continue;
             }
             JsonElement root = entry.Payload;
@@ -46,20 +47,20 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
                 continue;
             }
 
+            triggered |= IsCheckTrigger(entry.EventName);
+            if (!RememberSourceRecord(entry))
+            {
+                continue;
+            }
             switch (entry.EventName)
             {
                 case "FSSDiscoveryScan":
                     discoveryCount = (int?)ColonizationBodyCatalog.Number(root, "BodyCount") ?? discoveryCount;
                     discoveryProgress = ColonizationBodyCatalog.Number(root, "Progress") ?? 0;
-                    triggered = true;
                     break;
                 case "FSSAllBodiesFound":
                     allBodiesCount = (int?)ColonizationBodyCatalog.Number(root, "Count") ?? allBodiesCount;
                     localFssComplete = true;
-                    triggered = true;
-                    break;
-                case "NavBeaconScan":
-                    triggered = true;
                     break;
                 case "Scan":
                 case "ScanBaryCentre":
@@ -81,6 +82,15 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
             signalFeatures
         );
 
+    private bool RememberSourceRecord(JournalEventEnvelope entry)
+    {
+        string? identity = entry.SourceContentIdentity ?? entry.SourceRecordIdentity;
+        return identity is null || observedSourceRecords.Add(identity);
+    }
+
+    private static bool IsCheckTrigger(string eventName) =>
+        eventName is "FSSDiscoveryScan" or "FSSAllBodiesFound" or "NavBeaconScan";
+
     private void ReadScan(JournalEventEnvelope entry)
     {
         JsonElement root = entry.Payload;
@@ -97,8 +107,12 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
         }
     }
 
-    private void AdvanceJumpWindow()
+    private void AdvanceJumpWindow(JournalEventEnvelope entry)
     {
+        if (!RememberSourceRecord(entry))
+        {
+            return;
+        }
         jumpCount++;
         foreach (KeyValuePair<int, int> scan in lastScanJump.ToArray())
         {
