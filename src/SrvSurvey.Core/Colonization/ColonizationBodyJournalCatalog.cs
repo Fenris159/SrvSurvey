@@ -7,6 +7,8 @@ namespace SrvSurvey.Core.Colonization;
 public sealed class ColonizationBodyJournalCatalog(long systemAddress, string systemName)
 {
     private readonly Dictionary<int, JournalEventEnvelope> scans = [];
+    private readonly Dictionary<int, int> lastScanJump = [];
+    private int jumpCount;
     private readonly Dictionary<int, HashSet<string>> signalFeatures = [];
     private int? allBodiesCount;
     private int? discoveryCount;
@@ -14,12 +16,12 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
     private bool localFssComplete;
 
     public int ExpectedBodyCount => allBodiesCount ?? discoveryCount ?? 0;
-    public int ScannedBodyCount => scans.Count;
+    public int ScannedBodyCount => lastScanJump.Count;
     public bool CanUpload =>
         localFssComplete
         && (allBodiesCount.HasValue || discoveryProgress >= 1)
         && ExpectedBodyCount > 0
-        && scans.Count >= ExpectedBodyCount;
+        && ScannedBodyCount >= ExpectedBodyCount;
 
     /// <summary>Only the events upstream uses to advance its updater request a catalog check.</summary>
     public bool Apply(IEnumerable<JournalEventEnvelope> entries, bool knownLocalFssComplete = false)
@@ -28,6 +30,11 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
         bool triggered = false;
         foreach (JournalEventEnvelope entry in entries)
         {
+            if (entry.EventName == "FSDJump")
+            {
+                AdvanceJumpWindow();
+                continue;
+            }
             JsonElement root = entry.Payload;
             if (
                 !root.TryGetProperty("SystemAddress", out JsonElement address)
@@ -56,17 +63,7 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
                     break;
                 case "Scan":
                 case "ScanBaryCentre":
-                    if (
-                        root.TryGetProperty("BodyID", out JsonElement id)
-                        && id.ValueKind == JsonValueKind.Number
-                        && id.TryGetInt32(out int number)
-                    )
-                    {
-                        scans[number] = scans.TryGetValue(number, out JournalEventEnvelope? prior)
-                            ? PreserveDetailedScan(prior, entry)
-                            : entry;
-                    }
-
+                    ReadScan(entry);
                     break;
                 case "FSSBodySignals":
                 case "SAASignalsFound":
@@ -78,7 +75,39 @@ public sealed class ColonizationBodyJournalCatalog(long systemAddress, string sy
     }
 
     public IReadOnlyList<ColonizationSystemBody> CreateBodies() =>
-        ColonizationBodyCatalog.FromJournal(scans.Values, systemName, signalFeatures);
+        ColonizationBodyCatalog.FromJournal(
+            scans.Where(pair => lastScanJump.ContainsKey(pair.Key)).Select(pair => pair.Value),
+            systemName,
+            signalFeatures
+        );
+
+    private void ReadScan(JournalEventEnvelope entry)
+    {
+        JsonElement root = entry.Payload;
+        if (
+            root.TryGetProperty("BodyID", out JsonElement id)
+            && id.ValueKind == JsonValueKind.Number
+            && id.TryGetInt32(out int number)
+        )
+        {
+            scans[number] = scans.TryGetValue(number, out JournalEventEnvelope? prior)
+                ? PreserveDetailedScan(prior, entry)
+                : entry;
+            lastScanJump[number] = jumpCount;
+        }
+    }
+
+    private void AdvanceJumpWindow()
+    {
+        jumpCount++;
+        foreach (KeyValuePair<int, int> scan in lastScanJump.ToArray())
+        {
+            if (scan.Value < jumpCount - 10)
+            {
+                lastScanJump.Remove(scan.Key);
+            }
+        }
+    }
 
     private static JournalEventEnvelope PreserveDetailedScan(JournalEventEnvelope prior, JournalEventEnvelope current)
     {

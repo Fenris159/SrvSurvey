@@ -321,6 +321,7 @@ public sealed partial class ColonizationSystemEditorViewModel : INotifyPropertyC
         {
             bodyCatalogCommanderConfirmed = true;
             bufferedJournalEvents.Clear();
+            bufferedBodyJournalEvents.Clear();
             hasManualSystemSelection = false;
             RestoreSystemCatalog();
         }
@@ -387,14 +388,8 @@ public sealed partial class ColonizationSystemEditorViewModel : INotifyPropertyC
     public void ApplyJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents, bool allowBodyPublishing = true)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        foreach (JournalEventEnvelope journalEvent in journalEvents)
-        {
-            bufferedJournalEvents.Enqueue(journalEvent);
-            while (bufferedJournalEvents.Count > MaximumBufferedJournalEvents)
-            {
-                bufferedJournalEvents.Dequeue();
-            }
-        }
+        BufferJournalEvents(bufferedJournalEvents, journalEvents);
+        BufferJournalEvents(bufferedBodyJournalEvents, journalEvents);
 
         ApplyBodyCatalogEvents(journalEvents, allowBodyPublishing);
 
@@ -412,6 +407,21 @@ public sealed partial class ColonizationSystemEditorViewModel : INotifyPropertyC
                 $"Journal data enriched {changed:N0} Raven site entr{(changed == 1 ? "y" : "ies")} locally."
             );
             ReplaceVisibleSites(sites);
+        }
+    }
+
+    private static void BufferJournalEvents(
+        Queue<JournalEventEnvelope> buffer,
+        IReadOnlyList<JournalEventEnvelope> entries
+    )
+    {
+        foreach (JournalEventEnvelope entry in entries)
+        {
+            buffer.Enqueue(entry);
+            while (buffer.Count > MaximumBufferedJournalEvents)
+            {
+                buffer.Dequeue();
+            }
         }
     }
 
@@ -463,21 +473,10 @@ public sealed partial class ColonizationSystemEditorViewModel : INotifyPropertyC
                 return;
             }
 
-            if (
-                loaded.Bodies is null
-                && client is IRavenColonialBodyClient
-                && bodyCatalogCommanderConfirmed
-                && BodyCatalogUpdatesAllowed
-            )
+            (loaded, string? importWarning) = await ImportMissingBodiesForLoadAsync(loaded);
+            if (version != contextVersion)
             {
-                loaded = await client.ImportSystemBodiesAsync(
-                    loaded.SystemAddress.ToString(CultureInfo.InvariantCulture),
-                    CancellationToken.None
-                );
-                if (version != contextVersion)
-                {
-                    return;
-                }
+                return;
             }
 
             ApplyLoadedSystem(loaded);
@@ -487,9 +486,13 @@ public sealed partial class ColonizationSystemEditorViewModel : INotifyPropertyC
                 return;
             }
 
-            StatusMessage = NeedsBodyImport
-                ? "Sites loaded read-only from Raven. Confirm a body import before using body-aware editing."
-                : $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed.";
+            StatusMessage =
+                importWarning
+                ?? (
+                    NeedsBodyImport
+                        ? "Sites loaded read-only from Raven. Confirm a body import before using body-aware editing."
+                        : $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed."
+                );
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {

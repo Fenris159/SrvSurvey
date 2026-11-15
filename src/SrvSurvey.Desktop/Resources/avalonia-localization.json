@@ -24013,6 +24013,10 @@
       "translation": "Ravens Leichenkatalog änderte sich, während die Warnung offen war. Versuchen Sie die Neuerkennung erneut, um die aktuellen Entfernungen zu überprüfen."
     },
     {
+      "source": "Raven's body import returned a different system.",
+      "translation": "Der Körperimport von Raven ergab ein anderes System."
+    },
+    {
       "source": "RavenAccentBrush",
       "translation": "RavenAccentBrush"
     },
@@ -33205,6 +33209,10 @@
       "translation": "Der lokale Autorenentwurf wurde verworfen. Es wurde keine Datei geändert."
     },
     {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "Der lokale Körperkatalog hat sich während der Raven-Überprüfung geändert. Schließen Sie den FSS ab und erfassen Sie alle Körperscans, bevor Sie es erneut versuchen."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "Der lokale Pflanzenpfad ist nicht absolut. Zwischengespeicherte und Remote-Codex-Bilder bleiben verfügbar."
     },
@@ -34145,6 +34153,10 @@
       "translation": "Das System konnte nicht kopiert werden: {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "Das System wurde geladen, aber Ravens Körperimport schlug fehl. Sie können „Abwesende Körper neu entdecken“ verwenden oder lokale Scans durchführen, um sie wiederherzustellen. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "Die Systemsuche ist fehlgeschlagen, ohne dass Ihr Limit geändert wurde: {0}"
     },
@@ -34423,6 +34435,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Dabei handelt es sich um Planungsfilter, nicht um einen Leistungsrechner. Überprüfen Sie vor dem Schürfen oder Verkaufen die aktuellen Spielberechtigungs- und Belohnungsregeln. Eigentum, Marktpreise und Nachfrage können sich ändern."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Diese Körper fehlen in den Ergebnissen Spansh und EDSM. Wenn Sie fortfahren, werden sie aus Ravens Körperkatalog entfernt. Möchten Sie fortfahren?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -66803,6 +66819,10 @@
       "translation": "El catálogo de cuerpos de Raven cambió mientras la advertencia estaba abierta. Vuelva a intentar el redescubrimiento para revisar las eliminaciones actuales."
     },
     {
+      "source": "Raven's body import returned a different system.",
+      "translation": "La importación del cuerpo de Raven devolvió un sistema diferente."
+    },
+    {
       "source": "RavenAccentBrush",
       "translation": "CuervoAcentoCepillo"
     },
@@ -75995,6 +76015,10 @@
       "translation": "El borrador de autoría local fue descartado. No se modificó ningún archivo."
     },
     {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "El catálogo de cuerpos local cambió durante la revisión de Raven. Complete el FSS y recopile todos los escaneos corporales antes de volver a intentarlo."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "El camino de la flora local no es absoluto. Las imágenes del Codex remotas y en caché siguen estando disponibles."
     },
@@ -76935,6 +76959,10 @@
       "translation": "No se pudo copiar el sistema: {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "El sistema se cargó, pero la importación del cuerpo de Raven falló. Puede utilizar Rediscover Absent Bodies o completar escaneos locales para recuperarlo. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "La búsqueda del sistema falló sin cambiar su límite: {0}"
     },
@@ -77213,6 +77241,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Estos son filtros de planificación, no una calculadora de méritos. Verifique las reglas actuales de elegibilidad y recompensas en el juego antes de minar o vender. La propiedad, los precios de mercado y la demanda pueden cambiar."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Estos cuerpos están ausentes en los resultados Spansh y EDSM. Continuar los eliminará del catálogo de cuerpos de Raven. ¿Quieres continuar?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -109593,6 +109625,10 @@
       "translation": "Le catalogue du corps de Raven a changé pendant que l'avertissement était ouvert. Réessayez la redécouverte pour examiner les suppressions actuelles."
     },
     {
+      "source": "Raven's body import returned a different system.",
+      "translation": "L'importation du corps de Raven a renvoyé un système différent."
+    },
+    {
       "source": "RavenAccentBrush",
       "translation": "RavenAccentBrosse"
     },
@@ -118785,6 +118821,10 @@
       "translation": "Le projet de rédaction local a été rejeté. Aucun fichier n'a été modifié."
     },
     {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "Le catalogue local des corps a changé lors de la vérification Raven. Complétez le FSS et collectez tous les scans corporels avant de réessayer."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "Le sentier de la flore locale n'est pas absolu. Les images Codex mises en cache et distantes restent disponibles."
     },
@@ -119725,6 +119765,10 @@
       "translation": "Le système n'a pas pu être copié : {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "Le système s'est chargé, mais l'importation du corps de Raven a échoué. Vous pouvez utiliser Rediscover Absent Bodies ou effectuer des analyses locales pour les récupérer. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "La recherche du système a échoué sans modifier votre limite : {0}"
     },
@@ -120003,6 +120047,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Ce sont des filtres de planification, pas un calculateur de mérite. Vérifiez l’éligibilité actuelle du jeu et les règles de récompense avant d’exploiter ou de vendre. La propriété, les prix du marché et la demande peuvent changer."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Ces corps sont absents des résultats Spansh et EDSM. Continuer les supprimera du catalogue de corps de Raven. Voulez-vous continuer ?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -152383,6 +152431,10 @@
       "translation": "O catálogo corporal de Raven mudou enquanto o aviso estava aberto. Tente novamente a redescoberta para revisar as remoções atuais."
     },
     {
+      "source": "Raven's body import returned a different system.",
+      "translation": "A importação do corpo de Raven retornou um sistema diferente."
+    },
+    {
       "source": "RavenAccentBrush",
       "translation": "RavenAccentBrush"
     },
@@ -161575,6 +161627,10 @@
       "translation": "O rascunho de autoria local foi descartado. Nenhum arquivo foi alterado."
     },
     {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "O catálogo do corpo local mudou durante a verificação de Raven. Preencha o FSS e colete todas as varreduras corporais antes de tentar novamente."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "A trajetória da flora local não é absoluta. Imagens do Codex em cache e remotas permanecem disponíveis."
     },
@@ -162515,6 +162571,10 @@
       "translation": "O sistema não pôde ser copiado: {0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "O sistema foi carregado, mas a importação do corpo de Raven falhou. Você pode usar Redescobrir corpos ausentes ou realizar varreduras locais para recuperá-lo. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "A pesquisa do sistema falhou sem alterar seu limite: {0}"
     },
@@ -162793,6 +162853,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Estes são filtros de planejamento, não uma calculadora de mérito. Verifique as regras atuais de elegibilidade e recompensa no jogo antes de minerar ou vender. A propriedade, os preços de mercado e a procura podem mudar."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Esses corpos estão ausentes nos resultados Spansh e EDSM. Continuar irá removê-los do catálogo de corpos de Raven. Você quer prosseguir?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -195173,6 +195237,10 @@
       "translation": "Каталог тел Рейвен изменился, пока предупреждение было открыто. Повторите попытку обнаружения, чтобы просмотреть текущие удаления."
     },
     {
+      "source": "Raven's body import returned a different system.",
+      "translation": "Импорт тела Рейвен вернул другую систему."
+    },
+    {
       "source": "RavenAccentBrush",
       "translation": "ВоронАкцентКисть"
     },
@@ -204365,6 +204433,10 @@
       "translation": "Локальный авторский черновик был отклонен. Ни один файл не был изменен."
     },
     {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "Локальный каталог тел изменился во время проверки Рейвен. Завершите FSS и соберите все сканы тела, прежде чем повторить попытку."
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "Траектория местной флоры не является абсолютной. Кэшированные и удаленные изображения Кодекса остаются доступными."
     },
@@ -205305,6 +205377,10 @@
       "translation": "Не удалось скопировать систему: {0}."
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "Система загрузилась, но импорт тела Рейвен не удался. Вы можете использовать функцию «Повторное обнаружение отсутствующих тел» или выполнить локальное сканирование, чтобы восстановить его. {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "Не удалось выполнить поиск в системе без изменения ограничения: {0}"
     },
@@ -205583,6 +205659,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "Это фильтры планирования, а не калькулятор достоинств. Перед майнингом или продажей проверьте текущие внутриигровые правила участия и вознаграждения. Право собственности, рыночные цены и спрос могут измениться."
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Эти тела отсутствуют в результатах Spansh и EDSM. Если продолжить, они будут удалены из каталога тел Рейвен. Хотите продолжить?"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -237963,6 +238043,10 @@
       "translation": "当警告打开时，雷文的身体目录发生了变化。重试重新发现以查看当前删除。"
     },
     {
+      "source": "Raven's body import returned a different system.",
+      "translation": "Raven的身体导入返回了一个不同的系统。"
+    },
+    {
       "source": "RavenAccentBrush",
       "translation": "乌鸦口音笔刷"
     },
@@ -247155,6 +247239,10 @@
       "translation": "本地创作草稿被丢弃。没有更改任何文件。"
     },
     {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "在 Raven 检查期间，本地身体目录发生了变化。在重试之前完成 FSS 并收集所有身体扫描。"
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "本地植物区系路径不是绝对的。缓存和远程 Codex 图像仍然可用。"
     },
@@ -248095,6 +248183,10 @@
       "translation": "无法复制系统：{0}"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "系统已加载，但 Raven 的身体导入失败。您可以使用重新发现缺失的身体或完成本地扫描来恢复它。 {0}"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "系统查找失败，但未更改限制：{0}"
     },
@@ -248373,6 +248465,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "这些是计划过滤器，而不是绩效计算器。在采矿或出售之前检查当前的游戏内资格和奖励规则。所有权、市场价格和需求可能会发生变化。"
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "Spansh 和 EDSM 结果中不存在这些机构。继续会将它们从 Raven 的身体目录中删除。您想继续吗？"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",
@@ -280753,6 +280849,10 @@
       "translation": "* RAVEN'S BODY CATALOG CHANGED WHILE THE WARNING WAS OPEN. RETRY REDISCOVERY TO REVIEW THE CURRENT REMOVALS. >>>!"
     },
     {
+      "source": "Raven's body import returned a different system.",
+      "translation": "* RAVEN'S BODY IMPORT RETURNED A DIFFERENT SYSTEM. >>>!"
+    },
+    {
       "source": "RavenAccentBrush",
       "translation": "* RAVENACCENTBRUSH >>>!"
     },
@@ -289945,6 +290045,10 @@
       "translation": "* THE LOCAL AUTHORING DRAFT WAS DISCARDED. NO FILE WAS CHANGED. >>>!"
     },
     {
+      "source": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+      "translation": "* THE LOCAL BODY CATALOG CHANGED DURING THE RAVEN CHECK. COMPLETE THE FSS AND COLLECT ALL BODY SCANS BEFORE RETRYING. >>>!"
+    },
+    {
       "source": "The local flora path is not absolute. Cached and remote Codex images remain available.",
       "translation": "* THE LOCAL FLORA PATH IS NOT ABSOLUTE. CACHED AND REMOTE CODEX IMAGES REMAIN AVAILABLE. >>>!"
     },
@@ -290885,6 +290989,10 @@
       "translation": "* THE SYSTEM COULD NOT BE COPIED: {0} >>>!"
     },
     {
+      "source": "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+      "translation": "* THE SYSTEM LOADED, BUT RAVEN'S BODY IMPORT FAILED. YOU CAN USE REDISCOVER ABSENT BODIES OR COMPLETE LOCAL SCANS TO RECOVER IT. {0} >>>!"
+    },
+    {
       "source": "The system lookup failed without changing your limit: {0}",
       "translation": "* THE SYSTEM LOOKUP FAILED WITHOUT CHANGING YOUR LIMIT: {0} >>>!"
     },
@@ -291163,6 +291271,10 @@
     {
       "source": "These are planning filters, not a merit calculator. Check current in-game eligibility and reward rules before mining or selling. Ownership, market prices, and demand can change.",
       "translation": "* THESE ARE PLANNING FILTERS, NOT A MERIT CALCULATOR. CHECK CURRENT IN-GAME ELIGIBILITY AND REWARD RULES BEFORE MINING OR SELLING. OWNERSHIP, MARKET PRICES, AND DEMAND CAN CHANGE. >>>!"
+    },
+    {
+      "source": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?",
+      "translation": "* THESE BODIES ARE ABSENT FROM THE SPANSH AND EDSM RESULTS. CONTINUING WILL REMOVE THEM FROM RAVEN'S BODY CATALOG. DO YOU WANT TO PROCEED? >>>!"
     },
     {
       "source": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",

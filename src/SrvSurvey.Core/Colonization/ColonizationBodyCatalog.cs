@@ -24,11 +24,7 @@ public static partial class ColonizationBodyCatalog
         {
             throw new InvalidDataException("The body catalog is empty or contains an incomplete body identity.");
         }
-        if (
-            bodies.Select(body => body.Number).Distinct().Count() != bodies.Count
-            || bodies.Select(body => body.Name.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Count()
-                != bodies.Count
-        )
+        if (bodies.Select(body => body.Number).Distinct().Count() != bodies.Count)
         {
             throw new InvalidDataException("The body catalog contains conflicting body identities.");
         }
@@ -72,11 +68,13 @@ public static partial class ColonizationBodyCatalog
             Type = preferred.Type is "" or "un" ? fallback.Type : preferred.Type,
             Subtype = preferred.Subtype ?? fallback.Subtype,
             Parents = preferred.Parents.Count > 0 ? preferred.Parents : fallback.Parents,
-            DistanceLightSeconds =
-                preferred.DistanceLightSeconds > 0 ? preferred.DistanceLightSeconds : fallback.DistanceLightSeconds,
-            Radius = preferred.Radius > 0 ? preferred.Radius : fallback.Radius,
-            Temperature = preferred.Temperature > 0 ? preferred.Temperature : fallback.Temperature,
-            Gravity = preferred.Gravity > 0 ? preferred.Gravity : fallback.Gravity,
+            DistanceLightSeconds = PreferKnownPhysicalValue(
+                preferred.DistanceLightSeconds,
+                fallback.DistanceLightSeconds
+            ),
+            Radius = PreferKnownPhysicalValue(preferred.Radius, fallback.Radius),
+            Temperature = PreferKnownPhysicalValue(preferred.Temperature, fallback.Temperature),
+            Gravity = PreferKnownPhysicalValue(preferred.Gravity, fallback.Gravity),
             Features = [.. preferred.Features, .. fallback.Features],
             ExtensionData = fallback
                 .ExtensionData.Concat(preferred.ExtensionData)
@@ -84,6 +82,9 @@ public static partial class ColonizationBodyCatalog
                 .ToDictionary(group => group.Key, group => group.Last().Value.Clone(), StringComparer.Ordinal),
         };
     }
+
+    private static double PreferKnownPhysicalValue(double known, double recovered) =>
+        double.IsFinite(known) && known > 0 ? known : recovered;
 
     private static List<ColonizationSystemBody> OrderBelts(IEnumerable<ColonizationSystemBody> source)
     {
@@ -100,7 +101,13 @@ public static partial class ColonizationBodyCatalog
             );
             if (index < 0)
             {
-                index = result.FindIndex(body => body.Number == parent) + 1;
+                index =
+                    result.FindLastIndex(body =>
+                        body.Number == parent
+                        || body.Parents.Contains(parent)
+                            && body.DistanceLightSeconds > 0
+                            && body.DistanceLightSeconds <= belt.DistanceLightSeconds
+                    ) + 1;
             }
 
             result.Insert(Math.Clamp(index, 0, result.Count), belt);
@@ -132,7 +139,7 @@ public static partial class ColonizationBodyCatalog
             "high metal content body" or "high metal content world" => "hmc",
             "metal rich body" or "metalrich body" => "mrb",
             "rocky body" => "rb",
-            "rocky ice body" or "rocky icy body" => "ri",
+            "rocky ice body" or "rocky icy body" or "rocky ice world" => "ri",
             "icy body" or "ice body" => "ib",
             "water giant" or "water giant with life" => "wg",
             _ => "un",
@@ -256,7 +263,8 @@ public static partial class ColonizationBodyCatalog
         ColonizationSystemBody star,
         JsonElement body,
         string key,
-        bool kilometers
+        bool kilometers,
+        IReadOnlyList<ColonizationSystemBody>? existing = null
     )
     {
         if (!body.TryGetProperty(key, out JsonElement rings) || rings.ValueKind != JsonValueKind.Array)
@@ -264,7 +272,6 @@ public static partial class ColonizationBodyCatalog
             return;
         }
 
-        int index = 0;
         foreach (JsonElement ring in rings.EnumerateArray())
         {
             if (ring.ValueKind != JsonValueKind.Object)
@@ -279,10 +286,11 @@ public static partial class ColonizationBodyCatalog
 
             double radius = Number(ring, key == JournalRings ? "InnerRad" : "innerRadius") ?? 0;
             star.Features.Add("rings");
+            int number = ResolveBeltNumber(target, existing ?? [], star.Number, name);
             target.Add(
                 new ColonizationSystemBody
                 {
-                    Number = checked(100_000 + star.Number * 100 + index++),
+                    Number = number,
                     Name = name,
                     Parents = [star.Number, .. star.Parents],
                     Type = "ac",
@@ -293,5 +301,37 @@ public static partial class ColonizationBodyCatalog
                 }
             );
         }
+    }
+
+    private static int ResolveBeltNumber(
+        List<ColonizationSystemBody> target,
+        IReadOnlyList<ColonizationSystemBody> existing,
+        int parent,
+        string name
+    )
+    {
+        ColonizationSystemBody[] matches = target
+            .Concat(existing)
+            .Where(item =>
+                item.Type == "ac"
+                && item.Parents.FirstOrDefault(-1) == parent
+                && string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)
+            )
+            .DistinctBy(item => item.Number)
+            .ToArray();
+        if (matches.Length > 1)
+        {
+            throw new InvalidDataException($"The asteroid belt identity for '{name}' is ambiguous.");
+        }
+        ColonizationSystemBody? known = matches.SingleOrDefault();
+        int number = known?.Number ?? checked(100_000 + parent * 100);
+        while (
+            known is null
+            && (target.Exists(item => item.Number == number) || existing.Any(item => item.Number == number))
+        )
+        {
+            number = checked(number + 1);
+        }
+        return number;
     }
 }

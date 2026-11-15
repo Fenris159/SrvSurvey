@@ -24,8 +24,18 @@ Spansh and EDSM in the System Editor.
   Choosing **No** leaves Raven unchanged. This warning applies to web
   rediscovery only.
 - **Keep recovered data consistent:** Rediscovery preserves populated Raven
-  properties and feature flags for matching bodies, fills missing physical
+  properties and feature flags for matching bodies, fills missing or invalid physical
   values, and normalizes provider radius and gravity units. Invalid identities,
   unavailable providers, and obsolete editor selections stop the update.
 - **Preserve site edits:** Body updates refresh the editor's body choices without
   publishing or discarding your unsaved site changes.
+- **Recover after import errors:** A failed Raven body import keeps the loaded
+  system available for web rediscovery or complete local scans. Recovery also
+  clears an obsolete import prompt so site changes can still be reviewed.
+- **Use the correct journal history:** Local backfill follows the commander's
+  actual monitored folder, keeps each record's commander and Live/Legacy galaxy
+  separate during journal rotations, and orders
+  older and newer journal filename formats correctly. Verified startup history
+  still enriches local sites when the game has already closed or the next
+  journal identity is pending. Body counts use the same ten-jump window for
+  cached and on-disk records; older details can enrich a newly scanned body.

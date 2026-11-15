@@ -8,6 +8,223 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationBodyCatalogTests
 {
+    [Theory]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity)]
+    [InlineData(double.NaN)]
+    public void NonfiniteRavenPhysicalValuesAreRepairedFromValidRecoveredValues(double invalid)
+    {
+        ColonizationSystemBody known = new()
+        {
+            Number = 1,
+            Name = "Example 1",
+            Type = "rb",
+            DistanceLightSeconds = invalid,
+            Radius = invalid,
+            Temperature = invalid,
+            Gravity = invalid,
+        };
+        ColonizationSystemBody recovered = new()
+        {
+            Number = 1,
+            Name = "Example 1",
+            Type = "rb",
+            DistanceLightSeconds = 12,
+            Radius = 6000000,
+            Temperature = 250,
+            Gravity = 1,
+        };
+        ColonizationSystemBody result = Assert.Single(ColonizationBodyCatalog.Merge([recovered], [known]));
+        Assert.Equal(12, result.DistanceLightSeconds);
+        Assert.Equal(6000000, result.Radius);
+        Assert.Equal(250, result.Temperature);
+        Assert.Equal(1, result.Gravity);
+    }
+
+    [Fact]
+    public void OldScansStopCountingAfterTenJumpsButCanEnrichANewScanOfTheSameBody()
+    {
+        var catalog = new ColonizationBodyJournalCatalog(42, "Example");
+        catalog.Apply([
+            Event(
+                "{\"event\":\"Scan\",\"SystemAddress\":42,\"BodyID\":1,\"BodyName\":\"Example 1\",\"PlanetClass\":\"Rocky body\",\"Radius\":1000000,\"TidalLock\":true}"
+            ),
+        ]);
+        catalog.Apply(Enumerable.Repeat(Event("{\"event\":\"FSDJump\",\"SystemAddress\":43}"), 10));
+        Assert.Equal(1, catalog.ScannedBodyCount);
+        catalog.Apply([
+            Event("{\"event\":\"FSDJump\",\"SystemAddress\":43}"),
+            Event("{\"event\":\"Scan\",\"SystemAddress\":42,\"BodyID\":0,\"BodyName\":\"Example\",\"StarType\":\"G\"}"),
+            Event("{\"event\":\"FSSAllBodiesFound\",\"SystemAddress\":42,\"Count\":2}"),
+        ]);
+        Assert.Equal(1, catalog.ScannedBodyCount);
+        Assert.False(catalog.CanUpload);
+        catalog.Apply([
+            Event(
+                "{\"event\":\"Scan\",\"SystemAddress\":42,\"BodyID\":1,\"BodyName\":\"Example 1\",\"PlanetClass\":\"Rocky body\"}"
+            ),
+        ]);
+        Assert.True(catalog.CanUpload);
+        ColonizationSystemBody planet = catalog.CreateBodies().Single(body => body.Number == 1);
+        Assert.Equal(1000000, planet.Radius);
+        Assert.Contains("tidal", planet.Features);
+    }
+
+    [Fact]
+    public void AProviderBeltSubsetRetainsMatchingRavenIdsWithoutKeepingAbsentBelts()
+    {
+        using var spansh = JsonDocument.Parse(
+            """
+            {"system":{"id64":42,"name":"Example","bodies":[{"bodyId":0,"name":"Example","type":"Star","belts":[
+              {"name":"Example B Belt","type":"Rocky","innerRadius":599584916}]}]}}
+            """
+        );
+        using var edsm = JsonDocument.Parse(
+            """
+            {"id64":42,"name":"Example","bodies":[{"bodyId":0,"name":"Example","type":"Star","belts":[
+              {"name":"Example C Belt","type":"Rocky","innerRadius":899377.374}]}]}
+            """
+        );
+        ColonizationSystemBody[] existing =
+        [
+            new()
+            {
+                Number = 100000,
+                Name = "Example A Belt",
+                Type = "ac",
+                Parents = [0],
+            },
+            new()
+            {
+                Number = 100001,
+                Name = "Example B Belt",
+                Type = "ac",
+                Parents = [0],
+            },
+        ];
+        IReadOnlyList<ColonizationSystemBody> result = ColonizationBodyCatalog.FromProviders(
+            spansh.RootElement,
+            edsm.RootElement,
+            42,
+            "Example",
+            existing
+        );
+        Assert.Equal([0, 100001, 100002], result.Select(body => body.Number));
+        Assert.Equal(["Example", "Example B Belt", "Example C Belt"], result.Select(body => body.Name));
+    }
+
+    [Fact]
+    public void ProviderBeltSubsetsAndDifferentOrderingReuseTheSameBodyIdentities()
+    {
+        using var spansh = JsonDocument.Parse(
+            """
+            {"system":{"id64":42,"name":"Example","bodies":[{"bodyId":0,"name":"Example","type":"Star","belts":[
+              {"name":"Example A Belt","type":"Rocky","innerRadius":299792458},
+              {"name":"Example B Belt","type":"Rocky","innerRadius":599584916}]}]}}
+            """
+        );
+        using var edsm = JsonDocument.Parse(
+            """
+            {"id64":42,"name":"Example","bodies":[{"bodyId":0,"name":"Example","type":"Star","belts":[
+              {"name":"Example B Belt","type":"Rocky","innerRadius":599584.916},
+              {"name":"Example C Belt","type":"Rocky","innerRadius":899377.374}]}]}
+            """
+        );
+        IReadOnlyList<ColonizationSystemBody> result = ColonizationBodyCatalog.FromProviders(
+            spansh.RootElement,
+            edsm.RootElement,
+            42,
+            "Example"
+        );
+        Assert.Equal([0, 100000, 100001, 100002], result.Select(body => body.Number));
+        Assert.Equal(
+            ["Example", "Example A Belt", "Example B Belt", "Example C Belt"],
+            result.Select(body => body.Name)
+        );
+        Assert.Equal([0d, 1d, 2d, 3d], result.Select(body => body.DistanceLightSeconds));
+    }
+
+    [Fact]
+    public void DistinctBodyIdsCanShareANameAndMissingIdsUseAnUnambiguousBodyKind()
+    {
+        using var spansh = JsonDocument.Parse(
+            "{\"system\":{\"id64\":42,\"name\":\"Leesti\",\"bodies\":[{\"bodyId\":0,\"name\":\"Leesti\",\"type\":\"Star\",\"subType\":\"G (White-Yellow) Star\"},{\"bodyId\":1,\"name\":\"Leesti\",\"type\":\"Planet\",\"subType\":\"Earth-like world\"}]}}"
+        );
+        using var edsm = JsonDocument.Parse(
+            "{\"id64\":42,\"name\":\"Leesti\",\"bodies\":[{\"bodyId\":null,\"name\":\"Leesti\",\"type\":\"Star\",\"subType\":\"G (White-Yellow) Star\"}]}"
+        );
+        IReadOnlyList<ColonizationSystemBody> result = ColonizationBodyCatalog.FromProviders(
+            spansh.RootElement,
+            edsm.RootElement,
+            42,
+            "Leesti"
+        );
+        Assert.Equal([0, 1], result.Select(body => body.Number));
+        Assert.Equal(["st", "elw"], result.Select(body => body.Type));
+        Assert.Equal(["Leesti", "Leesti"], result.Select(body => body.Name));
+    }
+
+    [Fact]
+    public void ANameWithoutAnIdCannotChooseBetweenTwoMatchingStars()
+    {
+        using var spansh = JsonDocument.Parse(
+            "{\"system\":{\"id64\":42,\"name\":\"Example\",\"bodies\":[{\"bodyId\":0,\"name\":\"Example\",\"type\":\"Star\"},{\"bodyId\":1,\"name\":\"Example\",\"type\":\"Star\"}]}}"
+        );
+        using var edsm = JsonDocument.Parse(
+            "{\"id64\":42,\"name\":\"Example\",\"bodies\":[{\"bodyId\":null,\"name\":\"Example\",\"type\":\"Star\"}]}"
+        );
+        Assert.Throws<InvalidDataException>(() =>
+            ColonizationBodyCatalog.FromProviders(spansh.RootElement, edsm.RootElement, 42, "Example")
+        );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void OuterBeltsFollowNearerChildrenInRadialOrder(bool withPlanet)
+    {
+        var bodies = new List<ColonizationSystemBody>
+        {
+            new()
+            {
+                Number = 0,
+                Name = "Example",
+                Type = "st",
+            },
+            new()
+            {
+                Number = 100000,
+                Name = "Example A Belt",
+                Type = "ac",
+                Parents = [0],
+                DistanceLightSeconds = 1,
+            },
+            new()
+            {
+                Number = 100001,
+                Name = "Example B Belt",
+                Type = "ac",
+                Parents = [0],
+                DistanceLightSeconds = 2,
+            },
+        };
+        if (withPlanet)
+        {
+            bodies.Add(
+                new()
+                {
+                    Number = 1,
+                    Name = "Example 1",
+                    Type = "rb",
+                    Parents = [0],
+                    DistanceLightSeconds = 0.5,
+                }
+            );
+        }
+        int[] expected = withPlanet ? [0, 1, 100000, 100001] : [0, 100000, 100001];
+        Assert.Equal(expected, ColonizationBodyCatalog.Merge(bodies).Select(body => body.Number));
+    }
+
     [Fact]
     public void OrdinaryScanWithoutANameCannotInventABarycentreIdentity()
     {
@@ -168,6 +385,7 @@ public sealed class ColonizationBodyCatalogTests
     [InlineData("Metal-rich body", "mrb")]
     [InlineData("Rocky body", "rb")]
     [InlineData("Rocky ice body", "ri")]
+    [InlineData("Rocky Ice world", "ri")]
     [InlineData("Icy body", "ib")]
     [InlineData("Water giant", "wg")]
     [InlineData("Class I gas giant", "gg")]
@@ -239,7 +457,6 @@ public sealed class ColonizationBodyCatalogTests
 
     [Theory]
     [InlineData("{\"name\":\"Other\",\"num\":1,\"type\":\"rb\"}")]
-    [InlineData("{\"name\":\"Example 1\",\"num\":2,\"type\":\"rb\"}")]
     public void ConflictingBodyIdentitiesCannotBePublished(string conflicting)
     {
         ColonizationSystemBody first = new()

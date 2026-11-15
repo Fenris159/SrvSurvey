@@ -13,6 +13,7 @@ public sealed partial class ColonizationSystemEditorViewModel
     private ColonizationBodyJournalCatalog? bodyJournalCatalog;
     private CancellationTokenSource? bodyCatalogCancellation;
     private bool bodyCatalogCheckPending;
+    private readonly Queue<JournalEventEnvelope> bufferedBodyJournalEvents = [];
     private bool isLoadingSystemForBodies;
     private readonly HashSet<long> bodyCatalogLoadTriggers = [];
     private bool bodyCatalogCommanderConfirmed = true;
@@ -86,12 +87,16 @@ public sealed partial class ColonizationSystemEditorViewModel
         bodyJournalCatalog = null;
     }
 
-    internal void SuspendBodyCatalogForCommanderChange()
+    internal void SuspendBodyCatalogForCommanderChange(bool discardSiteHistory = true)
     {
         contextVersion++;
         sessionVersion++;
         bodyCatalogCommanderConfirmed = false;
-        bufferedJournalEvents.Clear();
+        if (discardSiteHistory)
+        {
+            bufferedJournalEvents.Clear();
+        }
+        bufferedBodyJournalEvents.Clear();
         ResetBodyCatalogWork();
         RaiseCommandStates();
     }
@@ -138,15 +143,53 @@ public sealed partial class ColonizationSystemEditorViewModel
         BodyCatalogUpdateTask = UpdateScannedBodiesAsync();
     }
 
+    private async Task<(ColonizationSystemRecord System, string? Warning)> ImportMissingBodiesForLoadAsync(
+        ColonizationSystemRecord loaded
+    )
+    {
+        if (
+            loaded.Bodies is not null
+            || client is not IRavenColonialBodyClient
+            || !bodyCatalogCommanderConfirmed
+            || !BodyCatalogUpdatesAllowed
+        )
+        {
+            return (loaded, null);
+        }
+        try
+        {
+            ColonizationSystemRecord imported = await client.ImportSystemBodiesAsync(
+                loaded.SystemAddress.ToString(CultureInfo.InvariantCulture),
+                CancellationToken.None
+            );
+            if (
+                imported.SystemAddress != loaded.SystemAddress
+                || !string.Equals(imported.Name, loaded.Name, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                throw new InvalidDataException("Raven's body import returned a different system.");
+            }
+            return (imported, null);
+        }
+        catch (Exception exception) when (IsExpectedFailure(exception))
+        {
+            return (
+                loaded,
+                "The system loaded, but Raven's body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. "
+                    + exception.Message
+            );
+        }
+    }
+
     private async Task LoadBodyJournalHistoryAsync(ColonizationSystemRecord loaded, int version)
     {
         var catalog = new ColonizationBodyJournalCatalog(loaded.SystemAddress, loaded.Name);
+        IReadOnlyList<JournalEventEnvelope> history = [];
         if (BodyJournalHistoryReader is { } read)
         {
             try
             {
-                IReadOnlyList<JournalEventEnvelope> history = await read(loaded.SystemAddress, CancellationToken.None);
-                catalog.Apply(history, HasLocalFssCompletion?.Invoke(loaded.SystemAddress) == true);
+                history = await read(loaded.SystemAddress, CancellationToken.None);
             }
             catch (Exception exception)
                 when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
@@ -159,7 +202,10 @@ public sealed partial class ColonizationSystemEditorViewModel
             return;
         }
 
-        catalog.Apply(bufferedJournalEvents, HasLocalFssCompletion?.Invoke(loaded.SystemAddress) == true);
+        catalog.Apply(
+            ColonizationBodyJournalHistoryReader.MergeWithBufferedEvents(history, bufferedBodyJournalEvents),
+            HasLocalFssCompletion?.Invoke(loaded.SystemAddress) == true
+        );
         bodyJournalCatalog = catalog;
         bodyCatalogCheckPending |= bodyCatalogLoadTriggers.Contains(loaded.SystemAddress);
         bodyCatalogLoadTriggers.Clear();
@@ -188,6 +234,12 @@ public sealed partial class ColonizationSystemEditorViewModel
             async token =>
             {
                 ColonizationSystemRecord latest = await ReadBodyTargetAsync(loaded, token);
+                if (!catalog.CanUpload)
+                {
+                    StatusMessage =
+                        "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.";
+                    return null;
+                }
                 if (!force && (latest.Bodies?.Count ?? 0) >= catalog.ExpectedBodyCount)
                 {
                     return null;
@@ -355,6 +407,7 @@ public sealed partial class ColonizationSystemEditorViewModel
 
     private void ApplyUpdatedBodies(IReadOnlyList<ColonizationSystemBody> updated)
     {
+        IsBodyImportConfirmationPending = false;
         journalTracker?.UpdateKnownBodies(updated.Select(body => body.Number));
         system = system! with { Bodies = updated.Select(CloneBody).ToList() };
         bodies = updated.Select(body => new ColonizationSystemBodyOptionViewModel(body.Number, body.Name)).ToArray();

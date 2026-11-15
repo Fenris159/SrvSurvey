@@ -3,8 +3,9 @@
 Researched 2026-11-14 against upstream SrvSurvey commit
 `ba86777989765ccf07bbdd9d38f5aee4e883bf6b`, RavenColonialWeb commit
 `9d1709d86561f360961a8e793eb1bd61006e4ac7`, and the live public provider APIs.
-Only anonymous GET requests were made. No Raven data was changed. Public response
-snapshots are available locally under `/tmp/raven-body-recovery/`.
+The research phase used anonymous GET requests only. The authorized implementation
+validation below includes a live PUT. Public response snapshots are available
+locally under `/tmp/raven-body-recovery/`.
 
 ## Upstream automatic upload contract
 
@@ -190,16 +191,20 @@ window for overwriting concurrent changes but cannot eliminate it.
 
 The local Kilo CLI reviewed the full branch with the authenticated Kilo Gateway
 OpenAI subscription connection, `kilo/openai/gpt-6.1-sol`, variant `xhigh`.
-Follow-up passes reproduced and fixed scan filtering, continuation attribution,
-commander buffer/cancellation boundaries, catalog hydration, missing-name and
-malformed-belt failures. The final pass reported **No findings**.
+Findings from local and GitHub reviews were reproduced and fixed, including
+shared-name body identities, provider belt matching and radial order, source
+ordering, event-time commander/galaxy attribution, identity-less headers,
+read-only startup site enrichment, import failure recovery, nonfinite-value
+repair, and the combined
+cached/on-disk ten-jump body-count window.
 
 The required local gate passed a Sonar-profile build with all warnings treated
-as errors, 3,820 Core tests, 140 selected Desktop/scenario tests, all 66 mandatory
-journal-upload scenarios, and 89.1% changed production line/branch coverage
-(1,301/1,460 points). The final pre-commit gate repeats validation with the last
-diagnostic-replay regression included. Eleven deliberately broken copied binary
-variants were each caught by behavioral tests; original assemblies were unchanged.
+as errors, 3,833 Core tests, 153 selected Desktop/scenario tests, 19 localization
+tests, and all 66 mandatory journal-upload scenarios. Changed production line
+and branch coverage was **above 90% (80% required)**. Fourteen deliberately broken
+copied binary variants were each caught by behavioral tests; original assemblies
+were unchanged. Regression cases also failed against the preceding code before
+the corresponding corrections.
 
 An authorized live check of **Synuefai CX-V c18-6**, ID64 **1732784263842**,
 used the production recovery/conversion and Raven clients. Both providers were
@@ -209,3 +214,7 @@ star/planet radii (previously none). All 13 site records were byte-equivalent as
 serialized before/after. No site-update endpoint was called. Public response
 snapshots and the submitted catalog were retained locally under
 `/tmp/raven-body-recovery/` for verification.
+
+A final read-only run with the updated production conversion code recovered and
+proposed the same 37 body IDs, 32 populated radii, and zero removals. The original
+pre-PUT snapshot remains intact; this later run did not publish another update.

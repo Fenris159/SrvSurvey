@@ -64,18 +64,7 @@ public static partial class ColonizationBodyCatalog
                 throw new InvalidDataException("An external body record is not an object.");
             }
             string name = Text(body, "name") ?? throw new InvalidDataException("An external body has no name.");
-            int? id =
-                body.TryGetProperty("bodyId", out JsonElement number)
-                && number.ValueKind == JsonValueKind.Number
-                && number.TryGetInt32(out int parsed)
-                    ? parsed
-                    : known
-                        .FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))
-                        ?.Number;
-            if (id is null or < 0)
-            {
-                throw new InvalidDataException($"The journal BodyID for '{name}' could not be resolved.");
-            }
+            int id = ResolveBodyId(body, known, name);
 
             string? subtype = Text(body, "subType");
             bool star = Text(body, "type") == "Star";
@@ -87,7 +76,7 @@ public static partial class ColonizationBodyCatalog
 
             ColonizationSystemBody normalized = new()
             {
-                Number = id.Value,
+                Number = id,
                 Name = name,
                 Type = type,
                 Subtype = subtype,
@@ -101,11 +90,38 @@ public static partial class ColonizationBodyCatalog
             AddSignals(normalized.Features, body, "signals");
             if (star)
             {
-                AddBelts(result, normalized, body, "belts", edsm);
+                AddBelts(result, normalized, body, "belts", edsm, known);
             }
 
             result.Add(normalized);
         }
+    }
+
+    private static int ResolveBodyId(JsonElement body, IReadOnlyList<ColonizationSystemBody> known, string name)
+    {
+        if (
+            body.TryGetProperty("bodyId", out JsonElement number)
+            && number.ValueKind == JsonValueKind.Number
+            && number.TryGetInt32(out int id)
+            && id >= 0
+        )
+        {
+            return id;
+        }
+        bool star = Text(body, "type") == "Star";
+        int[] matches = known
+            .Where(item =>
+                string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)
+                && (item.Type is "st" or "bh" or "ns" or "wd") == star
+            )
+            .Select(item => item.Number)
+            .Distinct()
+            .ToArray();
+        if (matches.Length != 1)
+        {
+            throw new InvalidDataException($"The journal BodyID for '{name}' is missing or ambiguous.");
+        }
+        return matches[0];
     }
 
     private static double ProviderRadius(JsonElement body)

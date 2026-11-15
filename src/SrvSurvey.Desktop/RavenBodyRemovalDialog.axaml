@@ -7,7 +7,7 @@
     <TextBlock Classes="page-title" FontSize="24" Text="Remove bodies from Raven?" />
     <TextBlock Grid.Row="1" x:Name="SystemText" TextWrapping="Wrap" />
     <TextBlock Grid.Row="2" TextWrapping="Wrap"
-               Text="Spansh and EDSM did not return the following bodies. Continuing will remove them from Raven's body catalog. Do you want to proceed?" />
+               Text="These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven's body catalog. Do you want to proceed?" />
     <ScrollViewer Grid.Row="3" MaxHeight="360" VerticalScrollBarVisibility="Auto">
       <ItemsControl x:Name="RemovedBodies">
         <ItemsControl.ItemTemplate>

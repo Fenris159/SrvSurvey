@@ -3362,11 +3362,22 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         Colonization.SystemEditor.BodyCatalogUpdatesAllowed = !IsDiagnosticReplay;
         Colonization.SystemEditor.BodyCatalogLog = message => log?.Append(message);
         Colonization.SystemEditor.HasLocalFssCompletion = address =>
-            SystemSurvey.Snapshot.SystemAddress == address && SystemSurvey.Snapshot.AllBodiesFound;
-        Colonization.SystemEditor.BodyJournalHistoryReader = (address, token) =>
-            ResolvePrimaryJournalPath(folderResolution) is { } path && activeProfileFrontierId is { } fid
-                ? ColonizationBodyJournalHistoryReader.ReadAsync(path, address, fid, token)
-                : Task.FromResult<IReadOnlyList<JournalEventEnvelope>>([]);
+            journalState.IsLegacy != true
+            && SystemSurvey.Snapshot.SystemAddress == address
+            && SystemSurvey.Snapshot.AllBodiesFound;
+        Colonization.SystemEditor.BodyJournalHistoryReader = ReadBodyJournalHistoryAsync;
+    }
+
+    private Task<IReadOnlyList<JournalEventEnvelope>> ReadBodyJournalHistoryAsync(long address, CancellationToken token)
+    {
+        string? fid = activeProfileFrontierId;
+        string? source = CurrentJournalPath;
+        return
+            source is not null
+            && fid is not null
+            && string.Equals(journalState.FrontierId, fid, StringComparison.OrdinalIgnoreCase)
+            ? ColonizationBodyJournalHistoryReader.ReadAsync(Path.GetDirectoryName(source)!, address, fid, token)
+            : Task.FromResult<IReadOnlyList<JournalEventEnvelope>>([]);
     }
 
     private async Task LoadCurrentSystemBodyDataAsync()

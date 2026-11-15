@@ -48199,6 +48199,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
   },
   {
+    "Text": "Raven\u0027s body import returned a different system.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "RavenAccentBrush",
     "IsFormat": false,
     "SourceKinds": [
@@ -66632,6 +66640,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "The local body catalog changed during the Raven check. Complete the FSS and collect all body scans before retrying.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "The local flora path is not absolute. Cached and remote Codex images remain available.",
     "IsFormat": false,
     "SourceKinds": [
@@ -68512,6 +68528,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationPoiViewModel.cs"
   },
   {
+    "Text": "The system loaded, but Raven\u0027s body import failed. You can use Rediscover Absent Bodies or complete local scans to recover it. {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.Bodies.cs"
+  },
+  {
     "Text": "The system lookup failed without changing your limit: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -69071,6 +69095,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "These bodies are absent from the Spansh and EDSM results. Continuing will remove them from Raven\u0027s body catalog. Do you want to proceed?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RavenBodyRemovalDialog.axaml"
   },
   {
     "Text": "These choices style only the Avalonia application shell and native light/dark controls. They never change the in-game overlay palette.",

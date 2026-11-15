@@ -18,6 +18,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     private const string FleetCarrierStationType = "FleetCarrier";
     private const string FleetCarrierSyncOffMessage = "Automatic Fleet Carrier cargo sync is off.";
 
+    private const int MaximumPendingEditorEvents = 2048;
+    private string? pendingEditorCommander;
+    private readonly List<JournalEventEnvelope> pendingEditorEvents = [];
+
     private readonly IRavenColonialClient client;
     private Action<ColonizationProject>? projectPreviewOpener;
     private Action? combinedReportOpener;
@@ -674,6 +678,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
             {
                 await SystemEditor.ConfirmBodyCatalogCommanderAsync(normalized);
             }
+            ReplayVerifiedEditorEvents(normalized);
             return;
         }
 
@@ -696,6 +701,7 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         {
             SystemEditor.SuspendBodyCatalogForCommanderChange();
         }
+        ReplayVerifiedEditorEvents(normalized);
         if (CommanderName is null)
         {
             StatusMessage = "No commander profile is active.";
@@ -720,16 +726,9 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        if (
-            !string.IsNullOrWhiteSpace(journalCommanderName)
-            && !string.Equals(journalCommanderName, CommanderName, StringComparison.OrdinalIgnoreCase)
-        )
+        if (allowBodyAttribution)
         {
-            SystemEditor.SuspendBodyCatalogForCommanderChange();
-        }
-        else if (allowBodyAttribution)
-        {
-            SystemEditor.ApplyJournalEvents(journalEvents, allowBodyPublishing);
+            ApplyVerifiedEditorJournalEvents(journalEvents, journalCommanderName, allowBodyPublishing);
         }
         foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
@@ -747,6 +746,53 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         }
     }
 
+    internal void ApplyVerifiedEditorJournalEvents(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? journalCommanderName,
+        bool allowBodyPublishing
+    )
+    {
+        if (
+            !string.IsNullOrWhiteSpace(journalCommanderName)
+            && !string.Equals(journalCommanderName, CommanderName, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            SystemEditor.SuspendBodyCatalogForCommanderChange();
+            StageVerifiedEditorEvents(journalCommanderName, journalEvents);
+        }
+        else
+        {
+            SystemEditor.ApplyJournalEvents(journalEvents, allowBodyPublishing);
+        }
+    }
+
+    private void StageVerifiedEditorEvents(string commander, IReadOnlyList<JournalEventEnvelope> entries)
+    {
+        if (!string.Equals(pendingEditorCommander, commander, StringComparison.OrdinalIgnoreCase))
+        {
+            pendingEditorEvents.Clear();
+        }
+        pendingEditorCommander = commander;
+        pendingEditorEvents.AddRange(entries);
+        if (pendingEditorEvents.Count > MaximumPendingEditorEvents)
+        {
+            pendingEditorEvents.RemoveRange(0, pendingEditorEvents.Count - MaximumPendingEditorEvents);
+        }
+    }
+
+    private void ReplayVerifiedEditorEvents(string? commander)
+    {
+        if (
+            string.Equals(commander, pendingEditorCommander, StringComparison.OrdinalIgnoreCase)
+            && pendingEditorEvents.Count > 0
+        )
+        {
+            SystemEditor.ApplyJournalEvents(pendingEditorEvents.ToArray(), allowBodyPublishing: false);
+        }
+        pendingEditorEvents.Clear();
+        pendingEditorCommander = null;
+    }
+
     /// <summary>Revokes the previous commander before any asynchronous projection work can yield.</summary>
     public void PrepareBodyCatalogJournalBatch(
         IReadOnlyList<JournalEventEnvelope> entries,
@@ -754,9 +800,10 @@ public sealed partial class ColonizationViewModel : INotifyPropertyChanged, IDis
         bool awaitingIdentity = false
     )
     {
-        if (awaitingIdentity || entries.Any(entry => IsForeignBodyCatalogCommander(entry, previousFrontierId)))
+        bool foreignCommander = entries.Any(entry => IsForeignBodyCatalogCommander(entry, previousFrontierId));
+        if (foreignCommander || awaitingIdentity || entries.Any(entry => entry.EventName == "Fileheader"))
         {
-            SystemEditor.SuspendBodyCatalogForCommanderChange();
+            SystemEditor.SuspendBodyCatalogForCommanderChange(discardSiteHistory: foreignCommander);
         }
     }
 
