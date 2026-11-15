@@ -13,8 +13,7 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
 {
     private const int MaximumErrorDetailBytes = 2 * 1024;
 
-    public static Uri DefaultServiceUri { get; } =
-        new("https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/");
+    public static Uri DefaultServiceUri { get; } = new("https://ravencolonial.net/");
 
     private readonly HttpClient httpClient;
     private readonly Uri serviceUri;

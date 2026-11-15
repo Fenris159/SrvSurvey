@@ -17,7 +17,7 @@ The upstream help explicitly says architected systems may require searching
 once before they appear.
 [Map client](https://github.com/njthomson/RavenColonialWeb/blob/1b65322073bcdc39803776a43dce6bbc873bce87/public/map/map_architect.js#L15-L27),
 [upstream help](https://github.com/njthomson/RavenColonialWeb/blob/1b65322073bcdc39803776a43dce6bbc873bce87/src/views/About.tsx#L123-L126),
-[live public map](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/Cmdr/Grinning2001/map/architect).
+[live public map](https://ravencolonial.net/api/Cmdr/Grinning2001/map/architect).
 
 ## Endpoint distinctions
 
@@ -28,7 +28,7 @@ once before they appear.
 | `GET /api/v2/system/{nameOrNum}/architect` | Takes an already-known system name or ID64 and returns a string. A live public lookup returned its current Raven architect. | Confirm each discovered system's architect; this route cannot discover system names from a commander. |
 
 The declared response shapes come from the
-[live official OpenAPI](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/openapi/v1.json).
+[live official OpenAPI](https://ravencolonial.net/openapi/v1.json).
 Snapshot behavior is visible in
 [the API client](https://github.com/njthomson/RavenColonialWeb/blob/1b65322073bcdc39803776a43dce6bbc873bce87/src/api/v2-system.ts#L85-L103),
 [commander summary](https://github.com/njthomson/RavenColonialWeb/blob/1b65322073bcdc39803776a43dce6bbc873bce87/src/views/SystemView2/ArchitectSummary.tsx#L202-L209),
@@ -44,10 +44,10 @@ returned **687 nodes: 19 Architect and 668 Helped**. Its category dictionary
 mapped `0` to Architect, `1` Favourite, `2` Building, `3` Planning, and
 `4` Helped. One Helped node, `Greae Phoea RF-I c25-207`, has ID64
 `56991766159322`; its
-[architect lookup](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/v2/system/56991766159322/architect)
+[architect lookup](https://ravencolonial.net/api/v2/system/56991766159322/architect)
 returned `"GFJake"`. Thus the dedicated endpoint itself demonstrably includes
 another architect's system. Counts describe this dated sample only.
-[Sample response](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/Cmdr/Grinning2001/map/architect).
+[Sample response](https://ravencolonial.net/api/Cmdr/Grinning2001/map/architect).
 
 - Keep nodes where `cat` **contains numeric `0`**, not only those whose first
   category is `0`. Architect nodes can also have Favourite/Building/Planning

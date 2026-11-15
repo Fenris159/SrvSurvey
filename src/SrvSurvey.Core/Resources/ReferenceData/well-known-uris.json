@@ -9,7 +9,7 @@
   "PublishedGuardianSurveyArchive": "https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/guardian.zip",
   "PublishedHumanSettlementsArchive": "https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/settlements.zip",
   "PublishedGreenGasGiants": "https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/ggg.json",
-  "PublishedRavenNicknames": "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/misc/nicknames",
+  "PublishedRavenNicknames": "https://ravencolonial.net/api/misc/nicknames",
   "ExampleInvalidPackage": "https://example.invalid/package",
   "InaraCommanderApiSettings": "https://inara.cz/elite/cmdr-settings-api/",
   "EdsmCommanderApiSettings": "https://www.edsm.net/settings/api",

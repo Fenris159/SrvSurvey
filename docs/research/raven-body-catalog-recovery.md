@@ -86,7 +86,7 @@ security schemes, or body-operation authentication requirement. This is evidence
 of the published contract and client behavior, not proof that anonymous writes
 are accepted: no write was attempted during research.
 [Upload client](https://github.com/njthomson/SrvSurvey/blob/ba86777989765ccf07bbdd9d38f5aee4e883bf6b/SrvSurvey/net/RavenColonial.cs#L423-L443),
-[live API schema](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/openapi/v1.json).
+[live API schema](https://ravencolonial.net/openapi/v1.json).
 
 Required `Bod` fields are `name`, `num`, `distLS`, `parents`, `type`, and
 `features`; optional properties are `subType`, `radius`, `temp`, and `gravity`.
@@ -97,7 +97,7 @@ and unknown existing properties is preferable to reconstructing Raven records
 from a limited DTO.
 [Bod DTO](https://github.com/njthomson/SrvSurvey/blob/ba86777989765ccf07bbdd9d38f5aee4e883bf6b/SrvSurvey/net/RavenColonial.cs#L860-L872),
 [web body model](https://github.com/njthomson/RavenColonialWeb/blob/9d1709d86561f360961a8e793eb1bd61006e4ac7/src/types2.ts#L50-L64),
-[live API schema](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/openapi/v1.json).
+[live API schema](https://ravencolonial.net/openapi/v1.json).
 
 ## Live example: Synuefai CX-V c18-6
 
@@ -115,8 +115,8 @@ barycentres 32, 43, and 59. Expanding Spansh's two star belts produces the same
 37 names/identities already present in Raven. Thus this captured example exposes
 missing physical detail, rather than a missing catalog entry. For example, body
 13 has radius 2636.74625 km in both external sources, while Raven has -1.
-[Raven system](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/v2/system/1732784263842),
-[Raven body list](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/v2/system/1732784263842/bodies),
+[Raven system](https://ravencolonial.net/api/v2/system/1732784263842),
+[Raven body list](https://ravencolonial.net/api/v2/system/1732784263842/bodies),
 [Spansh dump](https://spansh.co.uk/api/dump/1732784263842),
 [EDSM body list](https://www.edsm.net/api-system-v1/bodies?systemId64=1732784263842).
 
@@ -184,7 +184,7 @@ The following is a proposed client policy, not a server merge guarantee:
 Read/merge/write is not atomic: the public contract has no documented body PATCH,
 ETag precondition, or fill-blanks option. A final fresh Raven read reduces the
 window for overwriting concurrent changes but cannot eliminate it.
-[Published body routes and models](https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/openapi/v1.json).
+[Published body routes and models](https://ravencolonial.net/openapi/v1.json).
 
 
 ## Implementation validation

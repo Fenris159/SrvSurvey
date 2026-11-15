@@ -123,8 +123,7 @@ public sealed partial class RavenColonialClient : IRavenColonialClient, IRavenCo
     private const int MaximumJsonResponseBytes = 8 * 1024 * 1024;
     private const int MaximumErrorDetailBytes = 2048;
 
-    public static Uri DefaultServiceUri { get; } =
-        new("https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/");
+    public static Uri DefaultServiceUri { get; } = new("https://ravencolonial.net/");
 
     public static Uri WebsiteUri { get; } = new("https://ravencolonial.com/");
 
