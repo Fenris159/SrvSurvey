@@ -323,12 +323,16 @@ function Invoke-ChangedCoverageCheck {
             if ($LASTEXITCODE -ne 0) { throw "Coverage test run failed for $target." }
         }
 
-        # Desktop-only local validation still requires the core sender behavior matrix.
-        $coreTests = Join-Path $RepositoryRoot "tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj"
-        if (-not $FullTestSuite -and $coreTests -notin $testProjects) {
-            & dotnet test $coreTests --configuration Release --no-build --no-restore `
-                --filter "Category=JournalUploadScenario" --logger trx --results-directory $testResultsPath
-            if ($LASTEXITCODE -ne 0) { throw "Journal upload behavior scenarios failed." }
+        # The mandatory scenario matrix includes both core senders and desktop commander ownership.
+        if (-not $FullTestSuite) {
+            foreach ($scenarioProject in @("SrvSurvey.Core.Tests", "SrvSurvey.Desktop.Tests")) {
+                $scenarioTests = Join-Path $RepositoryRoot "tests/$scenarioProject/$scenarioProject.csproj"
+                if ($scenarioTests -notin $testProjects) {
+                    & dotnet test $scenarioTests --configuration Release --no-build --no-restore `
+                        --filter "Category=JournalUploadScenario" --logger trx --results-directory $testResultsPath
+                    if ($LASTEXITCODE -ne 0) { throw "Journal upload behavior scenarios failed for $scenarioProject." }
+                }
+            }
         }
         & (Join-Path $RepositoryRoot "tools/Test-JournalUploadScenarios.ps1") -ResultsDirectory $testResultsPath
         if ($coverable.Count -eq 0) {
