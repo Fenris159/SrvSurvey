@@ -10,6 +10,7 @@ using SrvSurvey.Desktop.Views;
 
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class RavenBodyRecoveryPresentationTests
 {
     [AvaloniaTheory]
