@@ -992,13 +992,16 @@ public sealed class InaraPublisherTests
     {
         var handler = new InaraResponseHandler
         {
-            EventStatusSelector = index =>
-                index switch
+            ResponseBody = """
                 {
-                    0 => 200,
-                    1 => 429,
-                    _ => 400,
-                },
+                  "header":{"eventStatus":200},
+                  "events":[
+                    {"eventStatus":200},
+                    {"eventStatus":429},
+                    {"eventStatus":400,"eventStatusText":"Invalid event data."}
+                  ]
+                }
+                """,
         };
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
         await publisher.ApplyAsync(
@@ -1452,6 +1455,283 @@ public sealed class InaraPublisherTests
         Assert.Equal(0, empty.PendingEventCount);
     }
 
+    [Theory]
+    [InlineData("header.eventStatus", "null", "Null")]
+    [InlineData("events[1].eventStatus", "null", "Null")]
+    [InlineData("events[1].eventStatus", "[]", "Array")]
+    [InlineData("header.eventStatus", "\"private-response\"", "String")]
+    [InlineData("events[1].eventStatus", "200.5", "Float")]
+    [InlineData("events[1].eventStatus", "2147483648", "Integer")]
+    [InlineData("header", "[]", "Array")]
+    [InlineData("events", "{}", "Object")]
+    [InlineData("events[1]", "null", "Null")]
+    public async Task MalformedStatusRetainsEntireBatchAndReportsFieldType(
+        string field,
+        string invalidValue,
+        string receivedType
+    )
+    {
+        var response = JObject.Parse(
+            """
+            {"header":{"eventStatus":200},"events":[{"eventStatus":200},{"eventStatus":200}]}
+            """
+        );
+        response.SelectToken(field)!.Replace(JToken.Parse(invalidValue));
+        var handler = new InaraResponseHandler { ResponseBody = response.ToString() };
+        var logs = new List<string>();
+        using var publisher = new InaraPublisher("2.1.3.0", new HttpClient(handler), log: logs.Add);
+        await ApplyLiveAsync(publisher, LoadGameJson());
+
+        InaraPublicationResult deferred = await publisher.FlushAsync();
+
+        Assert.Equal(0, deferred.AcceptedEventCount);
+        Assert.Equal(2, deferred.PendingEventCount);
+        Assert.Contains(
+            logs,
+            line =>
+                line.Contains(field, StringComparison.Ordinal)
+                && line.Contains(receivedType, StringComparison.Ordinal)
+                && line.Contains("http=200", StringComparison.Ordinal)
+                && line.Contains("parsing response", StringComparison.Ordinal)
+        );
+        Assert.All(
+            logs.Concat(deferred.Warnings),
+            line =>
+            {
+                Assert.DoesNotContain("personal-key", line, StringComparison.Ordinal);
+                Assert.DoesNotContain("private-response", line, StringComparison.Ordinal);
+            }
+        );
+
+        handler.ResponseBody = null;
+        InaraPublicationResult retried = await publisher.FlushAsync();
+        Assert.Equal(2, retried.AcceptedEventCount);
+        Assert.Equal(0, retried.PendingEventCount);
+    }
+
+    [Theory]
+    [InlineData("{\"APIkey\":\"personal-key\",\"data\":\"private-response\"}", "Object")]
+    [InlineData("[\"private-response\"]", "Array")]
+    [InlineData("42", "Integer")]
+    public async Task MalformedOptionalTextDoesNotBlockKnownEventOutcomes(string invalidText, string receivedType)
+    {
+        var handler = new InaraResponseHandler
+        {
+            ResponseBody = $$"""
+                {
+                  "header":{"eventStatus":200,"eventStatusText":{{invalidText}}},
+                  "events":[
+                    {"eventStatus":200,"eventStatusText":{{invalidText}}},
+                    {"eventStatus":429}
+                  ]
+                }
+                """,
+        };
+        var logs = new List<string>();
+        using var publisher = new InaraPublisher("2.1.3.0", new HttpClient(handler), log: logs.Add);
+        await ApplyLiveAsync(publisher, LoadGameJson());
+
+        InaraPublicationResult result = await publisher.FlushAsync();
+
+        Assert.Equal(1, result.AcceptedEventCount);
+        Assert.Equal(1, result.PendingEventCount);
+        Assert.Contains(
+            result.Warnings,
+            line =>
+                line.Contains("eventStatusText", StringComparison.Ordinal)
+                && line.Contains(receivedType, StringComparison.Ordinal)
+        );
+        Assert.All(
+            logs.Concat(result.Warnings),
+            line =>
+            {
+                Assert.DoesNotContain("personal-key", line, StringComparison.Ordinal);
+                Assert.DoesNotContain("private-response", line, StringComparison.Ordinal);
+            }
+        );
+
+        handler.ResponseBody = null;
+        InaraPublicationResult retried = await publisher.FlushAsync();
+        Assert.Equal(1, retried.AcceptedEventCount);
+        Assert.Equal(0, retried.PendingEventCount);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.OK, 400, 0)]
+    [InlineData(HttpStatusCode.BadRequest, 400, 0)]
+    [InlineData(HttpStatusCode.OK, 429, 2)]
+    public async Task HeaderErrorsAreHandledWithoutRequiringEventResults(
+        HttpStatusCode httpStatus,
+        int apiStatus,
+        int pendingCount
+    )
+    {
+        var handler = new InaraResponseHandler(httpStatus)
+        {
+            ResponseBody = $$$"""
+                {"header":{"eventStatus":{{{apiStatus}}},"eventStatusText":"API key: personal-key"}}
+                """,
+        };
+        using var publisher = new InaraPublisher("2.1.3.0", new HttpClient(handler));
+        await ApplyLiveAsync(publisher, LoadGameJson());
+
+        InaraPublicationResult result = await publisher.FlushAsync();
+
+        Assert.Equal(0, result.AcceptedEventCount);
+        Assert.Equal(pendingCount, result.PendingEventCount);
+        Assert.Contains(result.Warnings, line => line.Contains($"API status {apiStatus}", StringComparison.Ordinal));
+        Assert.All(result.Warnings, line => Assert.DoesNotContain("personal-key", line, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false, "http=200", "parsing response")]
+    [InlineData(true, "http=unavailable", "sending request")]
+    public async Task FailureDiagnosticsIncludeStageAndStackWithoutSensitiveValues(
+        bool transportFailure,
+        string expectedHttp,
+        string expectedStage
+    )
+    {
+        var handler = new InaraResponseHandler
+        {
+            Failure = transportFailure ? new InvalidCastException("personal-key private-response") : null,
+            ResponseBody = transportFailure ? null : "{\"personal-key\":\"private-response\",invalid}",
+        };
+        var logs = new List<string>();
+        using var publisher = new InaraPublisher("2.1.3.0", new HttpClient(handler), log: logs.Add);
+        await ApplyLiveAsync(publisher, LoadGameJson());
+
+        InaraPublicationResult result = await publisher.FlushAsync();
+
+        Assert.Equal(0, result.AcceptedEventCount);
+        Assert.Equal(2, result.PendingEventCount);
+        Assert.Contains(
+            logs,
+            line =>
+                line.Contains(expectedHttp, StringComparison.Ordinal)
+                && line.Contains(expectedStage, StringComparison.Ordinal)
+                && line.Contains("stack=", StringComparison.Ordinal)
+                && !line.Contains("stack=unavailable", StringComparison.Ordinal)
+        );
+        Assert.All(
+            logs.Concat(result.Warnings),
+            line =>
+            {
+                Assert.DoesNotContain("personal-key", line, StringComparison.Ordinal);
+                Assert.DoesNotContain("private-response", line, StringComparison.Ordinal);
+            }
+        );
+    }
+
+    /// <summary>Ambiguous status-400 failures survive restart without replaying independently accepted events.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public Task MalformedRateLimitTextPreservesAmbiguousReportsAcrossRestart(bool headerFailure)
+    {
+        return VerifyAmbiguousStatusRecoveryAsync(
+            headerFailure,
+            HttpStatusCode.OK,
+            """
+            {"message":"Temporarily revoked because of rate limiting","APIkey":"personal-key"}
+            """
+        );
+    }
+
+    /// <summary>Absent, null, and blank explanations cannot make a status-400 outcome final.</summary>
+    [Theory]
+    [InlineData(true, HttpStatusCode.OK, null)]
+    [InlineData(true, HttpStatusCode.BadRequest, null)]
+    [InlineData(true, HttpStatusCode.OK, "null")]
+    [InlineData(true, HttpStatusCode.BadRequest, "\"\"")]
+    [InlineData(false, HttpStatusCode.OK, null)]
+    [InlineData(false, HttpStatusCode.OK, "null")]
+    [InlineData(false, HttpStatusCode.OK, "\" \\t\\n \"")]
+    public Task UnexplainedStatusFourHundredPreservesReportsAcrossRestart(
+        bool headerFailure,
+        HttpStatusCode httpStatus,
+        string? statusTextJson
+    )
+    {
+        return VerifyAmbiguousStatusRecoveryAsync(headerFailure, httpStatus, statusTextJson);
+    }
+
+    private static async Task VerifyAmbiguousStatusRecoveryAsync(
+        bool headerFailure,
+        HttpStatusCode httpStatus,
+        string? statusTextJson
+    )
+    {
+        string storage = Path.Combine(Path.GetTempPath(), $"SrvSurvey-inara-ambiguous-{Guid.NewGuid():N}");
+        var clock = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        try
+        {
+            var error = new JObject { ["eventStatus"] = 400 };
+            if (statusTextJson is not null)
+            {
+                error["eventStatusText"] = JToken.Parse(statusTextJson);
+            }
+
+            var response = new JObject { ["header"] = headerFailure ? error : new JObject { ["eventStatus"] = 200 } };
+            if (!headerFailure)
+            {
+                response["events"] = new JArray(new JObject { ["eventStatus"] = 200 }, error);
+            }
+
+            var handler = new InaraResponseHandler(httpStatus) { ResponseBody = response.ToString() };
+            var logs = new List<string>();
+            using (var http = new HttpClient(handler))
+            using (var publisher = new InaraPublisher("2.1.3.0", http, clock, logs.Add, outboxDirectory: storage))
+            {
+                await ApplyLiveAsync(publisher, LoadGameJson());
+
+                InaraPublicationResult result = await publisher.FlushAsync();
+
+                Assert.Equal(headerFailure ? 0 : 1, result.AcceptedEventCount);
+                Assert.Equal(headerFailure ? 2 : 1, result.PendingEventCount);
+                Assert.Contains(result.Warnings, line => line.Contains("deferred", StringComparison.Ordinal));
+                Assert.All(
+                    logs.Concat(result.Warnings),
+                    line => Assert.DoesNotContain("personal-key", line, StringComparison.Ordinal)
+                );
+
+                clock.Advance(TimeSpan.FromSeconds(34));
+                InaraPublicationResult waiting = await publisher.FlushAsync();
+                Assert.Equal(0, waiting.AcceptedEventCount);
+                Assert.Equal(headerFailure ? 2 : 1, waiting.PendingEventCount);
+                Assert.Equal(1, handler.RequestCount);
+                publisher.CancelPendingPublication();
+            }
+
+            clock.Advance(TimeSpan.FromHours(1));
+            var recovery = new InaraResponseHandler();
+            using var recoveryHttp = new HttpClient(recovery);
+            using var restarted = new InaraPublisher("2.1.3.0", recoveryHttp, clock, outboxDirectory: storage);
+            await restarted.ApplyAsync(CreateUpdate([], cargo: null, allowPublishing: false, allowSharedData: true));
+
+            InaraPublicationResult recovered = await restarted.FlushAsync();
+
+            Assert.Equal(headerFailure ? 2 : 1, recovered.AcceptedEventCount);
+            Assert.Equal(0, recovered.PendingEventCount);
+            string[] expectedNames = headerFailure
+                ? ["getCommanderProfile", "setCommanderCredits"]
+                : ["setCommanderCredits"];
+            Assert.Equal(
+                expectedNames,
+                recovery.LastPayload!["events"]!.Select(entry => entry.Value<string>("eventName"))
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(storage))
+            {
+                Directory.Delete(storage, recursive: true);
+            }
+        }
+    }
+
     private static async Task ApplyLiveAsync(InaraPublisher publisher, params string[] jsonEvents)
     {
         await publisher.ApplyAsync(
@@ -1566,6 +1846,10 @@ public sealed class InaraPublisherTests
 
         public TimeSpan? RetryAfter { get; init; }
 
+        public string? ResponseBody { get; set; }
+
+        public Exception? Failure { get; init; }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -1577,6 +1861,19 @@ public sealed class InaraPublisherTests
             string body = await request.Content!.ReadAsStringAsync(cancellationToken);
             LastPayload = JToken.Parse(body);
             Payloads.Add(LastPayload);
+            if (Failure is { } failure)
+            {
+                throw failure;
+            }
+
+            if (ResponseBody is { } responseBody)
+            {
+                return new HttpResponseMessage(StatusCode)
+                {
+                    Content = new StringContent(responseBody, Encoding.UTF8, "application/json"),
+                };
+            }
+
             if ((int)StatusCode is < 200 or > 299)
             {
                 var failed = new HttpResponseMessage(StatusCode);

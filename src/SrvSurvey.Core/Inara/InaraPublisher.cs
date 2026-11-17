@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
@@ -1115,19 +1116,21 @@ public sealed class InaraPublisher : IInaraPublisher
             );
         }
         InaraQueuedEvent[] capturedBatch = batch.ToArray();
+        var attempt = new InaraUploadAttempt(apiKey);
+        InaraPublicationResult result;
         try
         {
             outbox?.DeferUntil(timeProvider.GetUtcNow() + SendInterval);
-            return await SendBatchAsync(sendSession, apiKey, generation, batch, warnings, cancellationToken)
+            result = await SendBatchAsync(sendSession, apiKey, generation, batch, warnings, attempt, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (OperationCanceledException exception) when (cancellationToken.IsCancellationRequested)
         {
-            return HandleSendCancellation(generation, batch, warnings, exception);
+            result = HandleSendCancellation(generation, batch, warnings, exception);
         }
         catch (Exception exception)
         {
-            return HandleSendException(batch, warnings, exception);
+            result = HandleSendException(batch, warnings, exception, attempt);
         }
         finally
         {
@@ -1137,6 +1140,11 @@ public sealed class InaraPublisher : IInaraPublisher
                 activeBatchCount = 0;
             }
         }
+
+        return result with
+        {
+            Warnings = result.Warnings.Select(attempt.Redact).ToArray(),
+        };
     }
 
     private async Task<InaraPublicationResult> SendBatchAsync(
@@ -1145,6 +1153,7 @@ public sealed class InaraPublisher : IInaraPublisher
         long generation,
         List<InaraQueuedEvent> batch,
         List<string> warnings,
+        InaraUploadAttempt attempt,
         CancellationToken cancellationToken
     )
     {
@@ -1179,7 +1188,7 @@ public sealed class InaraPublisher : IInaraPublisher
             return CreateSendResult(0, warnings);
         }
 
-        return await SendPayloadAsync(generation, batch, payloadBytes, warnings, cancellationToken)
+        return await SendPayloadAsync(generation, batch, payloadBytes, warnings, attempt, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -1188,6 +1197,7 @@ public sealed class InaraPublisher : IInaraPublisher
         List<InaraQueuedEvent> batch,
         byte[] payloadBytes,
         List<string> warnings,
+        InaraUploadAttempt attempt,
         CancellationToken cancellationToken
     )
     {
@@ -1203,58 +1213,45 @@ public sealed class InaraPublisher : IInaraPublisher
 
         cancellationToken.ThrowIfCancellationRequested();
         rateLimiter.Record(timeProvider.GetUtcNow());
+        attempt.Stage = "sending request";
         using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        return await InterpretSendResponseAsync(response, batch, warnings, cancellationToken).ConfigureAwait(false);
+        attempt.HttpStatusCode = (int)response.StatusCode;
+        return await InterpretSendResponseAsync(response, batch, warnings, attempt, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<InaraPublicationResult> InterpretSendResponseAsync(
         HttpResponseMessage response,
         List<InaraQueuedEvent> batch,
         List<string> warnings,
+        InaraUploadAttempt attempt,
         CancellationToken cancellationToken
     )
     {
-        if (IsTransient((int)response.StatusCode, SafeStatusText(response.ReasonPhrase)))
+        string reason = SafeStatusText(attempt.Redact(response.ReasonPhrase ?? string.Empty));
+        if (IsTransient((int)response.StatusCode, reason))
         {
             return DeferBatch(
                 batch,
                 warnings,
-                $"Inara upload was deferred after HTTP {(int)response.StatusCode} ({SafeStatusText(response.ReasonPhrase)}); {batch.Count} event(s) were retained.",
+                $"Inara upload was deferred after HTTP {(int)response.StatusCode} ({reason}); {batch.Count} event(s) were retained.",
                 GetRetryAfter(response.Headers.RetryAfter)
             );
         }
 
-        if ((int)response.StatusCode == 400)
+        if (!IsSuccess((int)response.StatusCode) && response.StatusCode != System.Net.HttpStatusCode.BadRequest)
         {
-            string badRequestBody = await ReadBoundedTextAsync(response.Content, cancellationToken)
-                .ConfigureAwait(false);
-            try
-            {
-                return ProcessInaraResponseBody(badRequestBody, batch, warnings);
-            }
-            catch (Exception exception) when (exception is JsonException or InvalidDataException)
-            {
-                return DeferBatch(
-                    batch,
-                    warnings,
-                    $"Inara upload was deferred after HTTP 400 ({SafeStatusText(response.ReasonPhrase)}); {batch.Count} event(s) were retained."
-                );
-            }
-        }
-
-        if (!IsSuccess((int)response.StatusCode))
-        {
-            warnings.Add(
-                $"Inara rejected {batch.Count} event(s) with HTTP {(int)response.StatusCode} ({SafeStatusText(response.ReasonPhrase)})."
-            );
+            warnings.Add($"Inara rejected {batch.Count} event(s) with HTTP {(int)response.StatusCode} ({reason}).");
             ScheduleNextAttempt(transientFailure: false);
             return CreateSendResult(0, warnings);
         }
 
+        attempt.Stage = "reading response";
         string body = await ReadBoundedTextAsync(response.Content, cancellationToken).ConfigureAwait(false);
-        return ProcessInaraResponseBody(body, batch, warnings);
+        attempt.Stage = "parsing response";
+        return ProcessInaraResponseBody(body, batch, warnings, attempt);
     }
 
     private InaraPublicationResult DiscardUnauthorizedBatch(List<InaraQueuedEvent> batch, List<string> warnings)
@@ -1289,12 +1286,31 @@ public sealed class InaraPublisher : IInaraPublisher
     private InaraPublicationResult HandleSendException(
         List<InaraQueuedEvent> batch,
         List<string> warnings,
-        Exception exception
+        Exception exception,
+        InaraUploadAttempt attempt
     )
     {
         Requeue(batch, warnings);
         ScheduleNextAttempt(transientFailure: true);
-        warnings.Add($"Inara upload was deferred ({exception.GetType().Name}); {batch.Count} event(s) were retained.");
+        string detail =
+            attempt.Stage == "parsing response" && exception is InvalidDataException
+                ? " " + exception.Message
+                : string.Empty;
+        warnings.Add(
+            $"Inara upload was deferred ({exception.GetType().Name}; {attempt.Describe()}); {batch.Count} event(s) were retained.{detail}"
+        );
+        string stack = string.Join(
+            " <- ",
+            new StackTrace(exception, false)
+                .GetFrames()
+                .Take(8)
+                .Select(frame => frame.GetMethod())
+                .Where(method => method is not null)
+                .Select(method => $"{method!.DeclaringType?.Name}.{method.Name}")
+        );
+        WriteLog(
+            $"Inara upload diagnostic: {attempt.Describe()}; exception={exception.GetType().Name}; stack={stack}.{detail}"
+        );
         return CreateSendResult(0, warnings);
     }
 
@@ -1416,7 +1432,8 @@ public sealed class InaraPublisher : IInaraPublisher
     private InaraPublicationResult ProcessInaraResponseBody(
         string? body,
         List<InaraQueuedEvent> batch,
-        List<string> warnings
+        List<string> warnings,
+        InaraUploadAttempt attempt
     )
     {
         if (string.IsNullOrWhiteSpace(body))
@@ -1425,41 +1442,43 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         var result = JObject.Parse(body);
-        int? headerStatus = result.SelectToken("header.eventStatus")?.Value<int?>();
-        var responseEvents = result["events"] as JArray;
-        bool responseIsComplete =
-            headerStatus is not null
-            && responseEvents?.Count == batch.Count
-            && responseEvents.All(eventResult =>
-                eventResult is JObject responseEvent && responseEvent["eventStatus"] is not null
-            );
-        if (!responseIsComplete)
+        JObject header = ReadResponseObject(result["header"], "header");
+        int headerStatus = ReadResponseStatus(header["eventStatus"], "header.eventStatus");
+        InaraStatusText headerText = ReadResponseText(
+            header["eventStatusText"],
+            "header.eventStatusText",
+            warnings,
+            attempt
+        );
+        if (!IsSuccess(headerStatus))
         {
-            throw new InvalidDataException("Inara returned an incomplete response.");
+            return HandleUnsuccessfulHeader(headerStatus, headerText, batch, warnings);
         }
 
-        if (!IsSuccess(headerStatus!.Value))
+        if (result["events"] is not JArray responseEvents)
         {
-            return HandleUnsuccessfulHeader(
-                headerStatus.Value,
-                result.SelectToken("header.eventStatusText")?.Value<string>(),
-                batch,
-                warnings
+            throw InvalidResponseField("events", "Array", result["events"]);
+        }
+
+        if (responseEvents.Count != batch.Count)
+        {
+            throw new InvalidDataException(
+                $"Inara response field events expected {batch.Count} results; received {responseEvents.Count}."
             );
         }
 
-        return ApplyEventStatuses(responseEvents!, batch, warnings);
+        return ApplyEventStatuses(responseEvents, batch, warnings, attempt);
     }
 
     private InaraPublicationResult HandleUnsuccessfulHeader(
         int headerStatus,
-        string? headerStatusText,
+        InaraStatusText headerStatusText,
         List<InaraQueuedEvent> batch,
         List<string> warnings
     )
     {
-        string detail = SafeStatusText(headerStatusText);
-        if (IsTransient(headerStatus, detail))
+        string detail = headerStatusText.Value;
+        if (ShouldRetryStatus(headerStatus, headerStatusText))
         {
             Requeue(batch, warnings);
             ScheduleNextAttempt(transientFailure: true);
@@ -1477,27 +1496,19 @@ public sealed class InaraPublisher : IInaraPublisher
     private InaraPublicationResult ApplyEventStatuses(
         JArray responseEvents,
         List<InaraQueuedEvent> batch,
-        List<string> warnings
+        List<string> warnings,
+        InaraUploadAttempt attempt
     )
     {
-        var statuses = responseEvents
-            .Cast<JObject>()
-            .Select(
-                (eventResult, index) =>
-                    new
-                    {
-                        Index = index,
-                        Status = eventResult.Value<int>("eventStatus"),
-                        Text = SafeStatusText(eventResult.Value<string>("eventStatusText")),
-                    }
-            )
+        InaraEventStatus[] statuses = responseEvents
+            .Select((eventResult, index) => ReadEventStatus(eventResult, index, warnings, attempt))
             .ToArray();
         InaraQueuedEvent[] transient = statuses
-            .Where(item => IsTransient(item.Status, item.Text))
+            .Where(item => ShouldRetryStatus(item.Status, item.Text))
             .Select(item => batch[item.Index])
             .ToArray();
-        var rejected = statuses
-            .Where(item => !IsSuccess(item.Status) && !IsTransient(item.Status, item.Text))
+        InaraEventStatus[] rejected = statuses
+            .Where(item => !IsSuccess(item.Status) && !ShouldRetryStatus(item.Status, item.Text))
             .ToArray();
         if (transient.Length > 0)
         {
@@ -1513,10 +1524,10 @@ public sealed class InaraPublisher : IInaraPublisher
         if (rejected.Length > 0)
         {
             const int maximumReportedFailures = 10;
-            foreach (var item in rejected.Take(maximumReportedFailures))
+            foreach (InaraEventStatus item in rejected.Take(maximumReportedFailures))
             {
                 warnings.Add(
-                    $"Inara rejected {batch[item.Index].Event.Name} with API status {item.Status}: {item.Text}."
+                    $"Inara rejected {batch[item.Index].Event.Name} with API status {item.Status}: {item.Text.Value}."
                 );
             }
 
@@ -1527,13 +1538,94 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         int accepted = statuses.Count(item => IsSuccess(item.Status));
-        foreach (var item in statuses.Where(status => IsSuccess(status.Status)))
+        foreach (InaraEventStatus item in statuses.Where(status => IsSuccess(status.Status)))
         {
             InaraEvent acceptedEvent = batch[item.Index].Event;
             RecordAcceptedEvent(acceptedEvent);
         }
 
         return CreateSendResult(accepted, warnings);
+    }
+
+    private static InaraEventStatus ReadEventStatus(
+        JToken token,
+        int index,
+        List<string> warnings,
+        InaraUploadAttempt attempt
+    )
+    {
+        string field = $"events[{index}]";
+        JObject response = ReadResponseObject(token, field);
+        return new InaraEventStatus(
+            index,
+            ReadResponseStatus(response["eventStatus"], field + ".eventStatus"),
+            ReadResponseText(response["eventStatusText"], field + ".eventStatusText", warnings, attempt)
+        );
+    }
+
+    private static JObject ReadResponseObject(JToken? token, string field)
+    {
+        return token as JObject ?? throw InvalidResponseField(field, "Object", token);
+    }
+
+    private static int ReadResponseStatus(JToken? token, string field)
+    {
+        return token is JValue { Type: JTokenType.Integer, Value: long status } && status is >= 100 and <= 599
+            ? (int)status
+            : throw InvalidResponseField(field, "Integer status between 100 and 599", token);
+    }
+
+    private static InaraStatusText ReadResponseText(
+        JToken? token,
+        string field,
+        List<string> warnings,
+        InaraUploadAttempt attempt
+    )
+    {
+        if (token is null or { Type: JTokenType.Null })
+        {
+            return new InaraStatusText(SafeStatusText(null), true);
+        }
+
+        if (token is JValue { Type: JTokenType.String, Value: string text })
+        {
+            return new InaraStatusText(SafeStatusText(attempt.Redact(text)), string.IsNullOrWhiteSpace(text));
+        }
+
+        warnings.Add(
+            $"Inara response field {field} expected String or Null; received {token.Type}. Optional status text was ignored."
+        );
+        return new InaraStatusText(SafeStatusText(null), true);
+    }
+
+    private static InvalidDataException InvalidResponseField(string field, string expected, JToken? token)
+    {
+        return new InvalidDataException(
+            $"Inara response field {field} expected {expected}; received {token?.Type.ToString() ?? "Missing"}."
+        );
+    }
+
+    private static bool ShouldRetryStatus(int statusCode, InaraStatusText statusText)
+    {
+        // An unexplained 400 may be a temporary rate limit. Preserve its reports
+        // and use ScheduleNextAttempt's capped exponential retry cadence.
+        return (statusCode == 400 && statusText.IsAmbiguous) || IsTransient(statusCode, statusText.Value);
+    }
+
+    private sealed record InaraStatusText(string Value, bool IsAmbiguous);
+
+    private sealed record InaraEventStatus(int Index, int Status, InaraStatusText Text);
+
+    private sealed class InaraUploadAttempt(string apiKey)
+    {
+        public string Stage { get; set; } = "preparing request";
+
+        public int? HttpStatusCode { get; set; }
+
+        public string Redact(string value) => value.Replace(apiKey, "<REDACTED>", StringComparison.Ordinal);
+
+        public string Describe() =>
+            $"stage={Stage}; http={HttpStatusCode?.ToString(CultureInfo.InvariantCulture) ?? "unavailable"}";
     }
 
     private void RecordAcceptedEvent(InaraEvent acceptedEvent)
