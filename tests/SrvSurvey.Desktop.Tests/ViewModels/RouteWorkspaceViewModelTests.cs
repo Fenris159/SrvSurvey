@@ -1761,6 +1761,28 @@ public sealed class RouteWorkspaceViewModelTests : IAsyncLifetime
     private static Task ArriveAsync(RouteWorkspaceViewModel model, string arrival, string name) =>
         model.ApplyJournalEventsAsync([Parse($$"""{"event":"{{arrival}}","StarSystem":"{{name}}"}""")]);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StructuredNameImportPreservesUnsavedDraftAndShowsImportGuidance(bool appendToRoute)
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        RouteWorkspaceViewModel viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
+        await viewModel.ImportNamesTextAsync("Draft Stop", appendToRoute: true);
+
+        await viewModel.ImportNamesTextAsync(
+            "{\n\"bodies\": [\n{\n\"estimated_scan_value\": 303275\n}\n]\n}",
+            appendToRoute
+        );
+
+        Assert.Equal(["Sol", "Second", "Third", "Draft Stop"], viewModel.Hops.Select(hop => hop.Name));
+        Assert.Equal(1, viewModel.ReachedCount);
+        Assert.True(viewModel.IsDirty);
+        Assert.False(viewModel.IsBusy);
+        Assert.Contains("Spansh URL from clipboard", viewModel.StatusMessage, StringComparison.Ordinal);
+    }
+
     private RouteWorkspaceViewModel CreateViewModel(
         IStarSystemResolver? resolver = null,
         ISpanshRouteClient? spanshClient = null,

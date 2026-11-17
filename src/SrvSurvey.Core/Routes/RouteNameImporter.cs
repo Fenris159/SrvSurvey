@@ -13,8 +13,17 @@ public sealed class RouteNameImporter(IStarSystemResolver resolver)
         ArgumentNullException.ThrowIfNull(names);
         string[] normalizedNames = names
             .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Select(name => name.Trim())
+            .Select(name => name.Trim().TrimStart('\uFEFF').Trim())
+            .Where(name => name.Length > 0)
             .ToArray();
+        if (normalizedNames.Any(name => name[0] is '{' or '}' or '[' or ']' or '"'))
+        {
+            throw new InvalidDataException(
+                "Structured route data cannot be imported as system names. "
+                    + "Use 'Spansh URL from clipboard' or provide one system name per line."
+            );
+        }
+
         var hops = new List<FollowRouteHop>(normalizedNames.Length);
         int resolvedCount = 0;
         for (int index = 0; index < normalizedNames.Length; index++)
@@ -24,7 +33,9 @@ public sealed class RouteNameImporter(IStarSystemResolver resolver)
             IReadOnlyList<StarSystemReference> matches = await resolver
                 .SearchAsync(requestedName, cancellationToken)
                 .ConfigureAwait(false);
-            StarSystemReference? match = matches.Count > 0 ? matches[0] : null;
+            StarSystemReference? match = matches.FirstOrDefault(candidate =>
+                string.Equals(candidate.Name, requestedName, StringComparison.OrdinalIgnoreCase)
+            );
             if (match is not null)
             {
                 resolvedCount++;
