@@ -14,8 +14,9 @@ Inara response handling and failure diagnostics.
 - **Inara recovery:** Malformed status fields retain the upload batch for retry.
   Unexpected optional error text no longer prevents valid upload results from
   being processed. API-level errors are handled even when event results are
-  absent. Ambiguous status-400 errors stay queued for retry, including after
-  restarting the app, while independently accepted reports are acknowledged.
+  absent. Status-400 errors with missing, blank, or malformed explanations stay
+  queued across restarts and use the existing capped exponential retry cadence.
+  Independently accepted reports are acknowledged.
 - **Inara diagnostics:** Failed uploads record their stage, HTTP status, response
   field types, and a bounded stack trace. Diagnostics redact the API key and omit
   response bodies and arbitrary exception messages.

@@ -1584,12 +1584,12 @@ public sealed class InaraPublisher : IInaraPublisher
     {
         if (token is null or { Type: JTokenType.Null })
         {
-            return new InaraStatusText(SafeStatusText(null), false);
+            return new InaraStatusText(SafeStatusText(null), true);
         }
 
         if (token is JValue { Type: JTokenType.String, Value: string text })
         {
-            return new InaraStatusText(SafeStatusText(attempt.Redact(text)), false);
+            return new InaraStatusText(SafeStatusText(attempt.Redact(text)), string.IsNullOrWhiteSpace(text));
         }
 
         warnings.Add(
@@ -1607,10 +1607,12 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private static bool ShouldRetryStatus(int statusCode, InaraStatusText statusText)
     {
-        return (statusCode == 400 && statusText.IsMalformed) || IsTransient(statusCode, statusText.Value);
+        // An unexplained 400 may be a temporary rate limit. Preserve its reports
+        // and use ScheduleNextAttempt's capped exponential retry cadence.
+        return (statusCode == 400 && statusText.IsAmbiguous) || IsTransient(statusCode, statusText.Value);
     }
 
-    private sealed record InaraStatusText(string Value, bool IsMalformed);
+    private sealed record InaraStatusText(string Value, bool IsAmbiguous);
 
     private sealed record InaraEventStatus(int Index, int Status, InaraStatusText Text);
 

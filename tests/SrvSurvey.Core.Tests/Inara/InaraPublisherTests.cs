@@ -992,13 +992,16 @@ public sealed class InaraPublisherTests
     {
         var handler = new InaraResponseHandler
         {
-            EventStatusSelector = index =>
-                index switch
+            ResponseBody = """
                 {
-                    0 => 200,
-                    1 => 429,
-                    _ => 400,
-                },
+                  "header":{"eventStatus":200},
+                  "events":[
+                    {"eventStatus":200},
+                    {"eventStatus":429},
+                    {"eventStatus":400,"eventStatusText":"Invalid event data."}
+                  ]
+                }
+                """,
         };
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
         await publisher.ApplyAsync(
@@ -1624,7 +1627,40 @@ public sealed class InaraPublisherTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task MalformedRateLimitTextPreservesAmbiguousReportsAcrossRestart(bool headerFailure)
+    public Task MalformedRateLimitTextPreservesAmbiguousReportsAcrossRestart(bool headerFailure)
+    {
+        return VerifyAmbiguousStatusRecoveryAsync(
+            headerFailure,
+            HttpStatusCode.OK,
+            """
+            {"message":"Temporarily revoked because of rate limiting","APIkey":"personal-key"}
+            """
+        );
+    }
+
+    /// <summary>Absent, null, and blank explanations cannot make a status-400 outcome final.</summary>
+    [Theory]
+    [InlineData(true, HttpStatusCode.OK, null)]
+    [InlineData(true, HttpStatusCode.BadRequest, null)]
+    [InlineData(true, HttpStatusCode.OK, "null")]
+    [InlineData(true, HttpStatusCode.BadRequest, "\"\"")]
+    [InlineData(false, HttpStatusCode.OK, null)]
+    [InlineData(false, HttpStatusCode.OK, "null")]
+    [InlineData(false, HttpStatusCode.OK, "\" \\t\\n \"")]
+    public Task UnexplainedStatusFourHundredPreservesReportsAcrossRestart(
+        bool headerFailure,
+        HttpStatusCode httpStatus,
+        string? statusTextJson
+    )
+    {
+        return VerifyAmbiguousStatusRecoveryAsync(headerFailure, httpStatus, statusTextJson);
+    }
+
+    private static async Task VerifyAmbiguousStatusRecoveryAsync(
+        bool headerFailure,
+        HttpStatusCode httpStatus,
+        string? statusTextJson
+    )
     {
         string storage = Path.Combine(Path.GetTempPath(), $"SrvSurvey-inara-ambiguous-{Guid.NewGuid():N}");
         var clock = new MutableTimeProvider(
@@ -1632,25 +1668,19 @@ public sealed class InaraPublisherTests
         );
         try
         {
-            var malformedText = new JObject
+            var error = new JObject { ["eventStatus"] = 400 };
+            if (statusTextJson is not null)
             {
-                ["message"] = "Temporarily revoked because of rate limiting",
-                ["APIkey"] = "personal-key",
-            };
-            var response = new JObject { ["header"] = new JObject { ["eventStatus"] = headerFailure ? 400 : 200 } };
-            if (headerFailure)
-            {
-                response["header"]!["eventStatusText"] = malformedText;
-            }
-            else
-            {
-                response["events"] = new JArray(
-                    new JObject { ["eventStatus"] = 200 },
-                    new JObject { ["eventStatus"] = 400, ["eventStatusText"] = malformedText }
-                );
+                error["eventStatusText"] = JToken.Parse(statusTextJson);
             }
 
-            var handler = new InaraResponseHandler { ResponseBody = response.ToString() };
+            var response = new JObject { ["header"] = headerFailure ? error : new JObject { ["eventStatus"] = 200 } };
+            if (!headerFailure)
+            {
+                response["events"] = new JArray(new JObject { ["eventStatus"] = 200 }, error);
+            }
+
+            var handler = new InaraResponseHandler(httpStatus) { ResponseBody = response.ToString() };
             var logs = new List<string>();
             using (var http = new HttpClient(handler))
             using (var publisher = new InaraPublisher("2.1.3.0", http, clock, logs.Add, outboxDirectory: storage))
@@ -1666,6 +1696,12 @@ public sealed class InaraPublisherTests
                     logs.Concat(result.Warnings),
                     line => Assert.DoesNotContain("personal-key", line, StringComparison.Ordinal)
                 );
+
+                clock.Advance(TimeSpan.FromSeconds(34));
+                InaraPublicationResult waiting = await publisher.FlushAsync();
+                Assert.Equal(0, waiting.AcceptedEventCount);
+                Assert.Equal(headerFailure ? 2 : 1, waiting.PendingEventCount);
+                Assert.Equal(1, handler.RequestCount);
                 publisher.CancelPendingPublication();
             }
 
