@@ -46,6 +46,7 @@ public sealed record ExplorationHistorySummary
     public long SaleEarnings { get; init; }
     public long? ActualSaleEarnings { get; init; }
     public long? TrackedUnsoldValue { get; init; }
+    public bool IsSurveyValueAvailable { get; init; } = true;
     public int UnrecordedPayouts { get; init; }
     public int UnsoldSystems { get; init; }
     public int SoldSystems { get; init; }

@@ -195,7 +195,11 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     public string SoldCount => $"{summary.SoldSystems:N0} sold entries";
     public string LostCount => $"{summary.LostSystems:N0} lost entries";
     public long? AutomaticEstimatedValue =>
-        AutoResetEstimatedValue && summary.HasCommanderHistory && summary.IsComplete
+        AutoResetEstimatedValue
+        && pendingSurveyResetPoint is null
+        && summary.HasCommanderHistory
+        && summary.IsComplete
+        && summary.IsSurveyValueAvailable
             ? summary.TrackedUnsoldValue ?? summary.UnsoldValue
             : null;
     public string ValueModeDescription
@@ -205,6 +209,10 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             if (!AutoResetEstimatedValue)
             {
                 return "Survey estimate accumulated since the last manual reset.";
+            }
+            if (!summary.IsSurveyValueAvailable)
+            {
+                return "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.";
             }
             if (AutomaticEstimatedValue is not null)
             {
@@ -291,7 +299,13 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         }
     }
 
-    public void SetCommander(string? id, string? name, bool live, bool autoReset)
+    public void SetCommander(
+        string? id,
+        string? name,
+        bool live,
+        bool autoReset,
+        ExplorationSurveyResetPoint? surveyStart = null
+    )
     {
         if (disposed)
         {
@@ -301,6 +315,12 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         {
             commanderName = name;
             Changed(nameof(CommanderLabel));
+            if (surveyStart is not null)
+            {
+                pendingSurveyResetPoint = surveyStart;
+                NotifyBalance();
+                PendingSynchronization = QueueSynchronizationAsync([], full: true);
+            }
             return;
         }
         contextCancellation.Cancel();
@@ -313,6 +333,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         commanderName = name;
         isLive = live;
         autoResetEstimatedValue = autoReset;
+        pendingSurveyResetPoint = surveyStart;
         pageOffset = 0;
         totalRows = 0;
         searchText = string.Empty;
@@ -405,6 +426,21 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             if (!Current(version, token))
             {
                 return;
+            }
+            if (pendingSurveyResetPoint is { } point)
+            {
+                candidate = await TrackIo(current.ApplySurveyResetPointAsync(point, token));
+                if (!Current(version, token))
+                {
+                    return;
+                }
+
+                if (pendingSurveyResetPoint?.Id == point.Id)
+                {
+                    pendingSurveyResetPoint = null;
+                }
+
+                queryGeneration++;
             }
             summary = candidate;
             NotifyBalance();
@@ -684,46 +720,6 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         }
     }
 
-    public Task ResetSurveyValueAsync()
-    {
-        Task reset = ResetSurveyValueCoreAsync(PendingSynchronization);
-        PendingSynchronization = RetainResetCompletionAsync(reset);
-        return reset;
-    }
-
-    private static async Task RetainResetCompletionAsync(Task reset)
-    {
-        try
-        {
-            await reset;
-        }
-        catch (Exception exception) when (IsStorageFailure(exception) || exception is InvalidOperationException)
-        {
-            // The reset caller reports the failure. Later refreshes must still be able to recover.
-        }
-    }
-
-    private async Task ResetSurveyValueCoreAsync(Task previous)
-    {
-        long version = generation;
-        CancellationToken token = contextCancellation.Token;
-        ExplorationHistoryCatalog? current = catalog;
-        await previous;
-        if (current is null || !Current(version, token))
-        {
-            throw new InvalidOperationException("Select the commander again before resetting exploration value.");
-        }
-        ExplorationHistorySummary reset = await TrackIo(current.ResetSurveyValueAsync(CancellationToken.None));
-        if (Current(version, token))
-        {
-            queryGeneration++;
-            summary = reset;
-            NotifyBalance();
-            PendingQuery = QueryAsync();
-            await PendingQuery;
-        }
-    }
-
     private async Task CopyNameAsync(string name)
     {
         if (clipboardWriter is null)
@@ -934,14 +930,19 @@ public sealed class ExplorationHistoryRowViewModel(ExplorationHistoryRow data, I
             {
                 return "Body totals unavailable";
             }
-            string landed = payment.LandedBodies is { } count ? $"{count:N0} landed" : "landings unavailable";
-            return $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} DSS, {landed}";
+            return payment.LandedBodies is { } count
+                ? $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} DSS, {count:N0} landed"
+                : $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} DSS; landings unavailable";
         }
     }
     public string ReceiptTravel =>
-        Data.Payment is { JumpCount: { } jumps, DistanceTravelled: { } distance }
-            ? $"{jumps:N0} hyperspace jumps, {distance:N1} ly travelled"
-            : "Travel totals unavailable";
+        Data.Payment switch
+        {
+            { JumpCount: { } jumps, DistanceTravelled: { } distance } =>
+                $"{jumps:N0} hyperspace jumps, {distance:N1} ly travelled",
+            { JumpCount: { } jumps } => $"{jumps:N0} hyperspace jumps; distance unavailable",
+            _ => "Travel totals unavailable",
+        };
     public string ReceiptSystems =>
         Data.Payment?.Systems is { Count: > 0 } systems
             ? string.Join(", ", systems)

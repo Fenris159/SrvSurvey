@@ -14782,7 +14782,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
   },
   {
-    "Text": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
+    "Text": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -56443,7 +56443,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.SurveyReset.cs"
   },
   {
     "Text": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -62609,6 +62609,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
   },
   {
+    "Text": "Survey totals and their starting point were saved.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
     "Text": "Survey totals could not be reset: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -68678,6 +68686,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "The system could not be copied: {0}",
@@ -79504,14 +79520,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
-    "Text": "landings unavailable",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
-  },
-  {
     "Text": "lang",
     "IsFormat": false,
     "SourceKinds": [
@@ -84105,6 +84113,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
+    "Text": "{0} hyperspace jumps; distance unavailable",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
     "IsFormat": true,
     "SourceKinds": [
@@ -84223,14 +84239,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
-  },
-  {
-    "Text": "{0} landed",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{0} landings",
@@ -84921,7 +84929,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
-    "Text": "{0} scanned, {1} DSS, {2}",
+    "Text": "{0} scanned, {1} DSS, {2} landed",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "{0} scanned, {1} DSS; landings unavailable",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"

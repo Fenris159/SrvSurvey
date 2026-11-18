@@ -2,6 +2,13 @@
 
 RC77.21 adds granular survey resets and exploration sale receipts.
 
+## Before upgrading
+
+This release upgrades the exploration history catalog to schema 6. RC77.20 cannot
+open the upgraded catalog. Keep a pre-upgrade copy of your data folder if you may
+need to roll back. Missing original journals can pause automatic value tracking
+until history recovery finishes.
+
 ## What's changed
 
 - **Granular survey resets:** Exploration > Survey totals now has three actions.
@@ -21,4 +28,7 @@ RC77.21 adds granular survey resets and exploration sale receipts.
 - **Reliable history:** Duplicate journal delivery does not duplicate receipts.
   Older sales are backfilled from available journals; missing payout or travel
   details are marked unavailable. Resetting totals preserves the scan details
-  needed for later DSS events, and confirmed resets finish saving during shutdown.
+  needed for later DSS events, and shutdown waits for in-progress confirmed resets before closing.
+
+- **Journey report exports:** Input image files are closed before the completed
+  report folder is published, improving export reliability on Windows.

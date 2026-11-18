@@ -998,19 +998,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             journalProjections = CreateJournalProjection();
             RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
             ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
-            resetExplorationCommand = new AsyncCommand(
-                ResetExplorationAsync,
-                () => activeProfileFrontierId is not null
-            );
+            resetExplorationCommand = new AsyncCommand(ResetExplorationAsync, CanResetExploration);
             ResetExplorationCommand = resetExplorationCommand;
-            resetExplorationOdometerCommand = new AsyncCommand(
-                ResetExplorationOdometerAsync,
-                () => activeProfileFrontierId is not null
-            );
-            resetExplorationValueCommand = new AsyncCommand(
-                ResetExplorationValueAsync,
-                () => activeProfileFrontierId is not null
-            );
+            resetExplorationOdometerCommand = new AsyncCommand(ResetExplorationOdometerAsync, CanResetExploration);
+            resetExplorationValueCommand = new AsyncCommand(ResetExplorationValueAsync, CanResetExploration);
             cancelResetExplorationCommand = new AsyncCommand(
                 CancelResetExplorationAsync,
                 () => IsResetExplorationPending
@@ -3024,6 +3015,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         if (
             string.Equals(activeProfileFrontierId, journalState.FrontierId, StringComparison.OrdinalIgnoreCase)
             && activeProfileIsOdyssey == isOdyssey
+            && activeExplorationProfileReady
         )
         {
             activeProfileCommanderName = journalState.CommanderName ?? activeProfileCommanderName;
@@ -3044,6 +3036,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         activeProfileFrontierId = journalState.FrontierId;
         activeProfileCommanderName = journalState.CommanderName ?? result.Data?.CommanderName;
         activeProfileIsOdyssey = isOdyssey;
+        activeExplorationProfileReady = result.Data is not null;
         resetExplorationCommand.RaiseCanExecuteChanged();
         resetExplorationOdometerCommand.RaiseCanExecuteChanged();
         resetExplorationValueCommand.RaiseCanExecuteChanged();
@@ -3054,6 +3047,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         if (result.Data is null)
         {
             ExplorationHistory.SetCommander(null, null, isOdyssey, false);
+            explorationState.Reset();
+            UpdateExplorationDisplay(ExplorationSnapshot.Empty);
             await boxelSurveyStats.SwitchCommanderAsync(journalState.FrontierId, CancellationToken.None);
             projectionState.ProfileRavenApiKey = null;
             Inara.SetCommanderProfile(null, journalState.CommanderName, isOdyssey, inaraApiKey: null);
@@ -3096,7 +3091,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             result.Data.FrontierId,
             activeProfileCommanderName,
             result.Data.IsOdyssey,
-            result.Data.AutoResetExplorationValue
+            result.Data.AutoResetExplorationValue,
+            result.Data.ExplorationSurveyStart
         );
         exobiologyState.Reset(result.Data.Exobiology);
         SurfaceSurvey.Reset(result.Data.Exobiology);
@@ -3141,7 +3137,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private async Task SaveExplorationAsync(ExplorationSnapshot snapshot)
     {
-        if (activeProfileFrontierId is null)
+        if (activeProfileFrontierId is null || !activeExplorationProfileReady)
         {
             return;
         }

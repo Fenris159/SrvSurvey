@@ -1,6 +1,8 @@
 using System.Windows.Input;
 using Microsoft.Data.Sqlite;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Exploration.History;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -8,9 +10,12 @@ public sealed partial class MainWindowViewModel
 {
     private readonly AsyncCommand resetExplorationOdometerCommand;
     private readonly AsyncCommand resetExplorationValueCommand;
+    private bool activeExplorationProfileReady;
+    private long explorationResetGeneration;
+
+    private sealed record ExplorationResetIntent(string Owner, bool IsLive, long Generation, bool IsConfirmation);
+
     private ExplorationResetScope? pendingExplorationReset;
-    private string? pendingExplorationResetOwner;
-    private bool pendingExplorationResetIsLive;
 
     private enum ExplorationResetScope
     {
@@ -32,9 +37,8 @@ public sealed partial class MainWindowViewModel
 
     private void SetPendingExplorationReset(ExplorationResetScope? scope)
     {
+        explorationResetGeneration++;
         pendingExplorationReset = scope;
-        pendingExplorationResetOwner = scope is null ? null : activeProfileFrontierId;
-        pendingExplorationResetIsLive = activeProfileIsOdyssey;
         OnPropertyChanged(nameof(IsResetExplorationPending));
         OnPropertyChanged(nameof(ResetExplorationButtonText));
         OnPropertyChanged(nameof(ResetExplorationOdometerButtonText));
@@ -42,14 +46,23 @@ public sealed partial class MainWindowViewModel
         cancelResetExplorationCommand.RaiseCanExecuteChanged();
     }
 
+    private bool CanResetExploration() => activeProfileFrontierId is not null && activeExplorationProfileReady;
+
     private async Task ResetExplorationAsync(ExplorationResetScope scope)
     {
+        ExplorationResetIntent intent;
         lock (journalUpdateLifetime)
         {
-            if (disposed)
+            if (disposed || !activeExplorationProfileReady || activeProfileFrontierId is null)
             {
                 return;
             }
+            intent = new(
+                activeProfileFrontierId,
+                activeProfileIsOdyssey,
+                explorationResetGeneration,
+                pendingExplorationReset == scope
+            );
             journalUpdateUsers++;
         }
         try
@@ -57,9 +70,15 @@ public sealed partial class MainWindowViewModel
             await journalUpdateGate.WaitAsync(CancellationToken.None);
             try
             {
-                if (!disposed && activeProfileFrontierId is not null)
+                if (
+                    activeExplorationProfileReady
+                    && (!disposed || intent.IsConfirmation)
+                    && intent.Generation == explorationResetGeneration
+                    && string.Equals(intent.Owner, activeProfileFrontierId, StringComparison.OrdinalIgnoreCase)
+                    && intent.IsLive == activeProfileIsOdyssey
+                )
                 {
-                    await ApplyExplorationResetAsync(scope);
+                    await ApplyExplorationResetAsync(scope, intent);
                 }
             }
             finally
@@ -80,13 +99,9 @@ public sealed partial class MainWindowViewModel
         }
     }
 
-    private async Task ApplyExplorationResetAsync(ExplorationResetScope scope)
+    private async Task ApplyExplorationResetAsync(ExplorationResetScope scope, ExplorationResetIntent intent)
     {
-        if (
-            pendingExplorationReset != scope
-            || !string.Equals(pendingExplorationResetOwner, activeProfileFrontierId, StringComparison.OrdinalIgnoreCase)
-            || pendingExplorationResetIsLive != activeProfileIsOdyssey
-        )
+        if (!intent.IsConfirmation)
         {
             SetPendingExplorationReset(scope);
             ExplorationStatusMessage = scope switch
@@ -94,7 +109,7 @@ public sealed partial class MainWindowViewModel
                 ExplorationResetScope.Odometer =>
                     "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
                 ExplorationResetScope.Value =>
-                    "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
+                    "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
                 _ =>
                     "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
             };
@@ -103,28 +118,52 @@ public sealed partial class MainWindowViewModel
         SetPendingExplorationReset(null);
         try
         {
+            long acceptedGeneration = explorationResetGeneration;
+            if (journalMonitor is not null)
+            {
+                // Bring the live counters through records already visible to history. The
+                // consumed references below then give both stores the same reset boundary.
+                JournalMonitorUpdate pending = await journalMonitor.PollAsync(CancellationToken.None);
+                await ApplyMonitorUpdateAsync(pending, isManualRefresh: false, CancellationToken.None);
+            }
+            if (
+                !activeExplorationProfileReady
+                || acceptedGeneration != explorationResetGeneration
+                || !string.Equals(intent.Owner, activeProfileFrontierId, StringComparison.OrdinalIgnoreCase)
+                || intent.IsLive != activeProfileIsOdyssey
+            )
+            {
+                return;
+            }
             if (scope != ExplorationResetScope.Odometer && ExplorationHistory.AutoResetEstimatedValue)
             {
-                await ExplorationHistory.ResetSurveyValueAsync();
+                ExplorationSurveyResetPoint point = await ExplorationHistory.CaptureSurveyResetPointAsync(
+                    projectionState.ConsumedExplorationRecords.Values.ToArray()
+                );
+                ExplorationSnapshot target = SnapshotAfterExplorationReset(scope);
+                // The profile owns the reset intent and totals in one atomic file write. If
+                // catalog I/O is interrupted, startup reapplies this same point, never a later one.
+                await commanderProfileStore.SaveExplorationResetAsync(
+                    activeProfileFrontierId!,
+                    activeProfileCommanderName,
+                    activeProfileIsOdyssey,
+                    target,
+                    point,
+                    CancellationToken.None
+                );
+                Task apply = ExplorationHistory.ApplySurveyResetPointAsync(point);
+                ApplyExplorationResetToState(scope);
+                UpdateExplorationDisplay(explorationState.CreateSnapshot());
+                await apply;
+                ExplorationStatusMessage = "Survey totals and their starting point were saved.";
             }
-            // Shutdown drains this owned operation before disposing its stores. Finish the
-            // accepted reset through profile persistence even if shutdown began during I/O.
-            switch (scope)
+            else
             {
-                case ExplorationResetScope.Odometer:
-                    explorationState.ResetOdometer();
-                    break;
-                case ExplorationResetScope.Value:
-                    explorationState.ResetSurveyValue();
-                    break;
-                default:
-                    explorationState.ResetSurveyValue();
-                    explorationState.ResetOdometer();
-                    break;
+                ApplyExplorationResetToState(scope);
+                ExplorationSnapshot snapshot = explorationState.CreateSnapshot();
+                UpdateExplorationDisplay(snapshot);
+                await SaveExplorationAsync(snapshot);
             }
-            ExplorationSnapshot snapshot = explorationState.CreateSnapshot();
-            UpdateExplorationDisplay(snapshot);
-            await SaveExplorationAsync(snapshot);
         }
         catch (Exception exception)
             when (exception
@@ -139,6 +178,24 @@ public sealed partial class MainWindowViewModel
             {
                 ExplorationStatusMessage = "Survey totals could not be reset: " + exception.Message;
             }
+        }
+    }
+
+    private ExplorationSnapshot SnapshotAfterExplorationReset(ExplorationResetScope scope) =>
+        scope == ExplorationResetScope.Everything
+            ? ExplorationSnapshot.Empty
+            : new(0, explorationState.DistanceTravelled, explorationState.JumpCount, 0, 0, 0);
+
+    private void ApplyExplorationResetToState(ExplorationResetScope scope)
+    {
+        if (scope != ExplorationResetScope.Odometer)
+        {
+            explorationState.ResetSurveyValue();
+        }
+
+        if (scope != ExplorationResetScope.Value)
+        {
+            explorationState.ResetOdometer();
         }
     }
 }

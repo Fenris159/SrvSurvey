@@ -31,7 +31,7 @@ public sealed partial class ExplorationHistoryCatalog
 
     private const string LedgerFilter = """
         WHERE (@status IS NULL OR status=@status)
-            AND instr(lower(system_name||char(10)||COALESCE(system_names,'')),lower(@search))>0
+            AND instr(lower(CASE WHEN status=3 THEN COALESCE(system_names,'') ELSE system_name END),lower(@search))>0
             AND (@from IS NULL OR last_time>=@from) AND (@through IS NULL OR last_time<=@through)
         """;
 

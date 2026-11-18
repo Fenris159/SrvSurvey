@@ -75,7 +75,7 @@ public sealed partial class ExplorationHistoryCatalog
             token.ThrowIfCancellationRequested();
             rows.Add(ReadRow(reader));
         }
-        long? selectedId = FindSelectedRow(connection, query.SelectionAnchor);
+        long? selectedId = FindCollectedRow(connection, query.SelectionAnchor);
         var page = new ExplorationHistoryPage(
             rows,
             total,

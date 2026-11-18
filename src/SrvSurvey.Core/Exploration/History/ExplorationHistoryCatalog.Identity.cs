@@ -90,6 +90,9 @@ public sealed partial class ExplorationHistoryCatalog
             INSERT OR IGNORE INTO metadata(key,value)
                 SELECT @canonicalGuard,value FROM metadata WHERE key=@placeholderGuard;
             DELETE FROM metadata WHERE key=@placeholderGuard;
+            INSERT OR IGNORE INTO pending_landings(body_key,source_id,offset,hash)
+                SELECT @canonical,source_id,offset,hash FROM pending_landings WHERE body_key=@placeholder;
+            DELETE FROM pending_landings WHERE body_key=@placeholder;
             DELETE FROM bodies WHERE key=@placeholder;
             UPDATE bodies SET body_id=@id WHERE key=@canonical;
             """,

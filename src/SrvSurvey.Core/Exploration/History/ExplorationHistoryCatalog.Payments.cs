@@ -27,10 +27,12 @@ public sealed partial class ExplorationHistoryCatalog
             CultureInfo.InvariantCulture,
             out double distance
         );
-        double added = Number(entry.Payload, "JumpDist") ?? 0;
-        if (!double.IsFinite(added) || added < 0)
+        double? recorded = Number(entry.Payload, "JumpDist");
+        double added = recorded ?? 0;
+        if (recorded is null || !double.IsFinite(added) || added < 0 || !double.IsFinite(distance + added))
         {
             added = 0;
+            SetMetadata(connection, "receipt_trip_distance_unknown", "1");
         }
         SetMetadata(connection, ReceiptJumpsKey, checked(jumps + 1).ToString(CultureInfo.InvariantCulture));
         SetMetadata(connection, ReceiptDistanceKey, (distance + added).ToString("R", CultureInfo.InvariantCulture));
@@ -70,39 +72,10 @@ public sealed partial class ExplorationHistoryCatalog
             ("@actual", actual),
             ("@systems", string.Join('\n', systems)),
             ("@jumps", jumps),
-            ("@distance", distance)
+            ("@distance", ReadMetadata(connection, "receipt_trip_distance_unknown") is null ? distance : null)
         );
         SetMetadata(connection, ReceiptJumpsKey, "0");
         SetMetadata(connection, ReceiptDistanceKey, "0");
-    }
-
-    /// <summary>Starts a survey-value period without changing collected history, payment receipts, or the odometer.</summary>
-    public Task<ExplorationHistorySummary> ResetSurveyValueAsync(CancellationToken cancellationToken = default) =>
-        Task.Run(() => ResetSurveyValue(cancellationToken), cancellationToken);
-
-    private ExplorationHistorySummary ResetSurveyValue(CancellationToken token)
-    {
-        token.ThrowIfCancellationRequested();
-        using SqliteConnection connection = Open();
-        using SqliteTransaction transaction = connection.BeginTransaction();
-        if (!ReadSummary(connection).IsComplete)
-        {
-            throw new InvalidOperationException(
-                "Finish exploration history recovery before resetting the automatically tracked value."
-            );
-        }
-        // Keep the consumed frontier, not just credited observations: an older duplicate scan
-        // can become the contributor during replay, but must remain outside this survey period.
-        Execute(
-            connection,
-            """
-            DELETE FROM survey_value_checkpoints;
-            INSERT INTO survey_value_checkpoints(source_name,first_time,offset)
-            SELECT name,first_time,last_offset FROM sources;
-            """
-        );
-        ExplorationHistorySummary summary = ReadSummary(connection);
-        transaction.Commit();
-        return summary;
+        Execute(connection, "DELETE FROM metadata WHERE key='receipt_trip_distance_unknown';");
     }
 }

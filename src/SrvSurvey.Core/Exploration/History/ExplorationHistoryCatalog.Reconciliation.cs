@@ -317,6 +317,7 @@ public sealed partial class ExplorationHistoryCatalog
             if (owned.BatchId is { } existing)
             {
                 RecordObservation(connection, existing, body, entry.EventName, reference);
+                AttachPendingLanding(connection, existing, body);
             }
             return;
         }
@@ -342,14 +343,16 @@ public sealed partial class ExplorationHistoryCatalog
             batch = Convert.ToInt64(insert.ExecuteScalar(), CultureInfo.InvariantCulture);
         }
         RecordObservation(connection, batch, body, entry.EventName, reference);
+        AttachPendingLanding(connection, batch, body);
         Execute(
             connection,
-            "INSERT INTO value_credits(batch_id,source_id,offset,hash,amount) VALUES(@batch,@source,@offset,@hash,@amount);",
+            "INSERT INTO value_credits(batch_id,source_id,offset,hash,amount,timestamp) VALUES(@batch,@source,@offset,@hash,@amount,@time);",
             (BatchParameter, batch),
             (SourceParameter, reference.SourceId),
             (OffsetParameter, reference.Offset),
             (HashParameter, reference.Hash),
-            ("@amount", unpaid - owned.PendingValue)
+            ("@amount", unpaid - owned.PendingValue),
+            (TimeParameter, Timestamp(entry.Timestamp))
         );
         if (scanContext is not null)
         {
@@ -450,6 +453,7 @@ public sealed partial class ExplorationHistoryCatalog
             Execute(
                 connection,
                 """
+                DELETE FROM pending_landings WHERE body_key IN (SELECT body.key FROM bodies body JOIN systems s ON s.key=body.system_key WHERE s.name=@name COLLATE NOCASE);
                 UPDATE bodies SET paid_value=paid_value+pending_value,pending_value=0,batch_id=NULL
                 WHERE system_key IN (SELECT key FROM systems WHERE name=@name COLLATE NOCASE);
                 UPDATE batches SET status=1,settled_time=@time,settlement_id=@settlement
@@ -519,6 +523,7 @@ public sealed partial class ExplorationHistoryCatalog
                 """
                 UPDATE batches SET status=2,settled_time=@time,settlement_id=@settlement WHERE status=0;
                 UPDATE bodies SET pending_value=0,batch_id=NULL;
+                DELETE FROM pending_landings;
                 DELETE FROM metadata WHERE key LIKE @unknown;
                 """,
                 (TimeParameter, string.IsNullOrEmpty(died) ? Timestamp(entry.Timestamp) : died),
@@ -550,6 +555,10 @@ public sealed partial class ExplorationHistoryCatalog
             {
                 RecordObservation(connection, batch, body, "PlanetaryLanding", reference);
             }
+        }
+        else if (entry.EventName == "Touchdown" && Flag(entry.Payload, "OnPlanet"))
+        {
+            RetainPendingLanding(connection, system!, body, entry, reference);
         }
     }
 }

@@ -103,6 +103,8 @@ public sealed partial class ExplorationHistoryViewModelTests
         model.SetCommander("F100", "History Commander", true, true);
         await model.PendingSynchronization;
         Assert.Equal(3, model.Rows.Count);
+        model.SetClipboardWriter(_ => Task.CompletedTask);
+        Assert.True(model.Rows.Single(row => !row.IsPaid).CopySystemNameCommand.CanExecute(null));
         Assert.Contains("44,343 CR", model.ActualSalesText);
         Assert.Contains("1", model.ActualSalesText);
         model.SelectedStatus = ExplorationHistoryViewModel.StatusOptions.Single(option =>

@@ -117,13 +117,18 @@ public sealed partial class ExplorationHistoryCatalog
                 system_key TEXT PRIMARY KEY REFERENCES systems(key), flags INTEGER NOT NULL);
             CREATE TABLE IF NOT EXISTS sale_receipts (
                 settlement_id INTEGER PRIMARY KEY REFERENCES settlements(id), actual_earnings INTEGER,
-                system_names TEXT NOT NULL, jumps INTEGER NOT NULL, distance REAL NOT NULL);
+                system_names TEXT NOT NULL, jumps INTEGER NOT NULL, distance REAL);
             CREATE TABLE IF NOT EXISTS value_credits (
                 batch_id INTEGER NOT NULL REFERENCES batches(id), source_id INTEGER NOT NULL REFERENCES sources(id),
-                offset INTEGER NOT NULL, hash TEXT NOT NULL, amount INTEGER NOT NULL,
+                offset INTEGER NOT NULL, hash TEXT NOT NULL, amount INTEGER NOT NULL, timestamp TEXT,
                 PRIMARY KEY(source_id,offset,hash));
+            CREATE TABLE IF NOT EXISTS pending_landings (
+                body_key TEXT PRIMARY KEY REFERENCES bodies(key), source_id INTEGER NOT NULL REFERENCES sources(id),
+                offset INTEGER NOT NULL, hash TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS survey_value_checkpoints (
-                source_name TEXT PRIMARY KEY COLLATE NOCASE, first_time TEXT, offset INTEGER NOT NULL);
+                source_name TEXT PRIMARY KEY COLLATE NOCASE, offset INTEGER NOT NULL, hash TEXT NOT NULL, valid INTEGER NOT NULL DEFAULT 0);
+            CREATE TABLE IF NOT EXISTS survey_value_period (
+                id INTEGER PRIMARY KEY CHECK(id=1), point_id TEXT NOT NULL, reset_utc TEXT NOT NULL);
             PRAGMA user_version=6;
             """
         );
@@ -253,15 +258,13 @@ public sealed partial class ExplorationHistoryCatalog
         using SqliteCommand tracked = Command(
             connection,
             """
-            WITH reset_frontier AS (
-                SELECT source_name,first_time FROM survey_value_checkpoints ORDER BY first_time DESC,source_name DESC LIMIT 1)
             SELECT COALESCE(SUM(c.amount),0) FROM value_credits c
             JOIN batches b ON b.id=c.batch_id JOIN sources s ON s.id=c.source_id
-            WHERE b.status=0 AND NOT EXISTS(SELECT 1 FROM survey_value_checkpoints e
-                WHERE e.source_name=s.name COLLATE NOCASE AND c.offset<=e.offset)
-            AND (EXISTS(SELECT 1 FROM survey_value_checkpoints e WHERE e.source_name=s.name COLLATE NOCASE)
-                OR NOT EXISTS(SELECT 1 FROM reset_frontier f WHERE COALESCE(s.first_time,'')<COALESCE(f.first_time,'')
-                    OR (COALESCE(s.first_time,'')=COALESCE(f.first_time,'') AND s.name<=f.source_name)));
+            WHERE b.status=0 AND (
+                NOT EXISTS(SELECT 1 FROM survey_value_period)
+                OR EXISTS(SELECT 1 FROM survey_value_checkpoints e WHERE e.source_name=s.name COLLATE NOCASE AND e.valid=1 AND c.offset>e.offset)
+                OR (NOT EXISTS(SELECT 1 FROM survey_value_checkpoints e WHERE e.source_name=s.name COLLATE NOCASE)
+                    AND c.timestamp>(SELECT reset_utc FROM survey_value_period WHERE id=1)));
             """
         );
         using SqliteCommand sources = Command(connection, "SELECT COUNT(*) FROM sources;");
@@ -274,6 +277,7 @@ public sealed partial class ExplorationHistoryCatalog
         bool hasDataEvidence =
             counts.Sum() > 0
             || Convert.ToInt64(losses.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
+        bool surveyValueAvailable = IsSurveyValueAvailable(connection);
         return new ExplorationHistorySummary
         {
             UnsoldValue = values[0],
@@ -291,10 +295,10 @@ public sealed partial class ExplorationHistoryCatalog
                 missingPayouts.ExecuteScalar(),
                 System.Globalization.CultureInfo.InvariantCulture
             ),
-            TrackedUnsoldValue = Convert.ToInt64(
-                tracked.ExecuteScalar(),
-                System.Globalization.CultureInfo.InvariantCulture
-            ),
+            IsSurveyValueAvailable = surveyValueAvailable,
+            TrackedUnsoldValue = surveyValueAvailable
+                ? Convert.ToInt64(tracked.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture)
+                : null,
             SourceFiles = Convert.ToInt32(sources.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture),
             HasCommanderHistory = ReadMetadata(connection, "commander_seen") == "1" && hasDataEvidence,
             IsComplete =

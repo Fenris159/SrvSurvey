@@ -7369,8 +7369,8 @@
       "translation": "Bestätigen Sie das Zurücksetzen des Exp-Werts"
     },
     {
-      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
-      "translation": "Bestätigen Sie „Exp-Wert zurücksetzen“, um geschätzte Credits sowie gescannte, DSS- und gelandete Zählungen zu löschen. Die automatische Verfolgung wird von diesem neuen Startpunkt aus fortgesetzt."
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Bestätigen Sie „Exp-Wert zurücksetzen“, um geschätzte Credits sowie gescannte, DSS- und gelandete Zählungen zu löschen."
     },
     {
       "source": "Confirm Reset Odometer",
@@ -31197,6 +31197,10 @@
       "translation": "Umfragesummen"
     },
     {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Die Umfragesummen und ihr Ausgangspunkt wurden gespeichert."
+    },
+    {
       "source": "Survey totals could not be reset: {0}",
       "translation": "Umfragesummen konnten nicht zurückgesetzt werden: {0}"
     },
@@ -34227,6 +34231,10 @@
     {
       "source": "The survey start point was not changed.",
       "translation": "Der Startpunkt der Umfrage wurde nicht geändert."
+    },
+    {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "Der Ausgangspunkt der Umfrage konnte nicht überprüft werden. Stellen Sie die ursprünglichen Journale wieder her oder setzen Sie den geschätzten Wert zurück, um eine neue Periode zu beginnen."
     },
     {
       "source": "The system could not be copied: {0}",
@@ -39633,10 +39641,6 @@
       "translation": "lander01"
     },
     {
-      "source": "landings unavailable",
-      "translation": "Landungen nicht verfügbar"
-    },
-    {
       "source": "lang",
       "translation": "lang"
     },
@@ -41933,6 +41937,10 @@
       "translation": "{0} Hyperraumsprünge, {1} ly reiste"
     },
     {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} Hyperraumsprünge; Entfernung nicht verfügbar"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} inkompatible oder unvollständige Legacy-Kataloge wurden sicher ignoriert; siehe Protokolle."
     },
@@ -41991,10 +41999,6 @@
     {
       "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
       "translation": "{0} landbare Aufbauten für {1}. {2}{3}{4}.{5}"
-    },
-    {
-      "source": "{0} landed",
-      "translation": "{0} gelandet"
     },
     {
       "source": "{0} landings",
@@ -42341,8 +42345,12 @@
       "translation": "{0} gescannt"
     },
     {
-      "source": "{0} scanned, {1} DSS, {2}",
-      "translation": "{0} gescannt, {1} DSS, {2}"
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} gescannt, {1} DSS, {2} gelandet"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} gescannt, {1} DSS; Landungen nicht verfügbar"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -50287,8 +50295,8 @@
       "translation": "Confirmar restablecer valor de Exp."
     },
     {
-      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
-      "translation": "Confirme Restablecer valor de exp para borrar los créditos estimados y los recuentos escaneados, DSS y aterrizados. El seguimiento automático continúa desde este nuevo punto de partida."
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Confirme Restablecer valor de exp para borrar los créditos estimados y los recuentos escaneados, DSS y aterrizados."
     },
     {
       "source": "Confirm Reset Odometer",
@@ -74115,6 +74123,10 @@
       "translation": "Totales de la encuesta"
     },
     {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Se guardaron los totales de la encuesta y su punto de partida."
+    },
+    {
       "source": "Survey totals could not be reset: {0}",
       "translation": "No se pudieron restablecer los totales de la encuesta: {0}"
     },
@@ -77145,6 +77157,10 @@
     {
       "source": "The survey start point was not changed.",
       "translation": "El punto de inicio de la encuesta no fue cambiado."
+    },
+    {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "No se pudo verificar el punto de partida de la encuesta. Restaure los diarios originales o restablezca el valor estimado para comenzar un nuevo período."
     },
     {
       "source": "The system could not be copied: {0}",
@@ -82551,10 +82567,6 @@
       "translation": "módulo de aterrizaje01"
     },
     {
-      "source": "landings unavailable",
-      "translation": "aterrizajes no disponibles"
-    },
-    {
       "source": "lang",
       "translation": "idioma"
     },
@@ -84851,6 +84863,10 @@
       "translation": "{0} saltos hiperespaciales, {1} ly viajados"
     },
     {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "Saltos hiperespaciales {0}; distancia no disponible"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} catálogos heredados incompatibles o incompletos se ignoraron de forma segura; ver registros."
     },
@@ -84909,10 +84925,6 @@
     {
       "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
       "translation": "{0} carrocerías aterrizables para {1}. {2}{3}{4}.{5}"
-    },
-    {
-      "source": "{0} landed",
-      "translation": "{0} aterrizó"
     },
     {
       "source": "{0} landings",
@@ -85259,8 +85271,12 @@
       "translation": "{0} escaneado"
     },
     {
-      "source": "{0} scanned, {1} DSS, {2}",
-      "translation": "{0} escaneado, {1} DSS, {2}"
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} escaneado, {1} DSS, {2} aterrizado"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} escaneado, {1} DSS; aterrizajes no disponibles"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -93205,8 +93221,8 @@
       "translation": "Confirmer la réinitialisation de la valeur d'expérience"
     },
     {
-      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
-      "translation": "Confirmez Réinitialiser la valeur d'exp pour effacer les crédits estimés et les décomptes numérisés, DSS et débarqués. Le suivi automatique se poursuit à partir de ce nouveau point de départ."
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Confirmez Réinitialiser la valeur d'exp pour effacer les crédits estimés et les décomptes numérisés, DSS et débarqués."
     },
     {
       "source": "Confirm Reset Odometer",
@@ -117033,6 +117049,10 @@
       "translation": "Totaux de l'enquête"
     },
     {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Les totaux de l'enquête et leur point de départ ont été enregistrés."
+    },
+    {
       "source": "Survey totals could not be reset: {0}",
       "translation": "Les totaux de l'enquête n'ont pas pu être réinitialisés : {0}"
     },
@@ -120063,6 +120083,10 @@
     {
       "source": "The survey start point was not changed.",
       "translation": "Le point de départ de l'enquête n'a pas été modifié."
+    },
+    {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "Le point de départ de l'enquête n'a pas pu être vérifié. Restaurez les journaux d'origine ou réinitialisez la valeur estimée pour démarrer une nouvelle période."
     },
     {
       "source": "The system could not be copied: {0}",
@@ -125469,10 +125493,6 @@
       "translation": "atterrisseur01"
     },
     {
-      "source": "landings unavailable",
-      "translation": "atterrissages indisponibles"
-    },
-    {
       "source": "lang",
       "translation": "langue"
     },
@@ -127769,6 +127789,10 @@
       "translation": "Sauts hyperespace {0}, {1} parcouru"
     },
     {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "Sauts hyperespace {0} ; distance indisponible"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} les catalogues hérités incompatibles ou incomplets ont été ignorés en toute sécurité ; voir les journaux."
     },
@@ -127827,10 +127851,6 @@
     {
       "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
       "translation": "Carrosseries atterrissables {0} pour {1}. {2}{3}{4}.{5}"
-    },
-    {
-      "source": "{0} landed",
-      "translation": "{0} a atterri"
     },
     {
       "source": "{0} landings",
@@ -128177,8 +128197,12 @@
       "translation": "{0} scanné"
     },
     {
-      "source": "{0} scanned, {1} DSS, {2}",
-      "translation": "{0} numérisé, {1} DSS, {2}"
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} scanné, {1} DSS, {2} atterri"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} numérisé, {1} DSS ; atterrissages indisponibles"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -136123,8 +136147,8 @@
       "translation": "Confirme o valor de redefinição de Exp"
     },
     {
-      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
-      "translation": "Confirme Redefinir valor de Exp para limpar créditos estimados e contagens digitalizadas, DSS e desembarcadas. O rastreamento automático continua a partir deste novo ponto de partida."
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Confirme Redefinir valor de Exp para limpar créditos estimados e contagens digitalizadas, DSS e desembarcadas."
     },
     {
       "source": "Confirm Reset Odometer",
@@ -159951,6 +159975,10 @@
       "translation": "Totais da pesquisa"
     },
     {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Os totais da pesquisa e seu ponto de partida foram salvos."
+    },
+    {
       "source": "Survey totals could not be reset: {0}",
       "translation": "Não foi possível redefinir os totais da pesquisa: {0}"
     },
@@ -162981,6 +163009,10 @@
     {
       "source": "The survey start point was not changed.",
       "translation": "O ponto de início da pesquisa não foi alterado."
+    },
+    {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "O ponto de partida da pesquisa não pôde ser verificado. Restaure os diários originais ou redefina o valor estimado para iniciar um novo período."
     },
     {
       "source": "The system could not be copied: {0}",
@@ -168387,10 +168419,6 @@
       "translation": "lander01"
     },
     {
-      "source": "landings unavailable",
-      "translation": "desembarques indisponíveis"
-    },
-    {
       "source": "lang",
       "translation": "idioma"
     },
@@ -170687,6 +170715,10 @@
       "translation": "{0} salta no hiperespaço, {1} viajou rapidamente"
     },
     {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} saltos no hiperespaço; distância indisponível"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} catálogos legados incompatíveis ou incompletos foram ignorados com segurança; veja os registros."
     },
@@ -170745,10 +170777,6 @@
     {
       "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
       "translation": "Corpos pousáveis ​​{0} para {1}. {2}{3}{4}.{5}"
-    },
-    {
-      "source": "{0} landed",
-      "translation": "{0} pousou"
     },
     {
       "source": "{0} landings",
@@ -171095,8 +171123,12 @@
       "translation": "{0} verificado"
     },
     {
-      "source": "{0} scanned, {1} DSS, {2}",
-      "translation": "{0} digitalizado, {1} DSS, {2}"
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} digitalizado, {1} DSS, {2} pousado"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} digitalizado, {1} DSS; desembarques indisponíveis"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -179041,8 +179073,8 @@
       "translation": "Подтвердите сброс значения опыта"
     },
     {
-      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
-      "translation": "Подтвердите сброс значения опыта, чтобы очистить расчетные кредиты, а также счетчики сканирований, DSS и полученных результатов. Автоматическое отслеживание продолжается с этой новой отправной точки."
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Подтвердите сброс значения опыта, чтобы очистить расчетные кредиты, а также счетчики сканирований, DSS и полученных результатов."
     },
     {
       "source": "Confirm Reset Odometer",
@@ -202869,6 +202901,10 @@
       "translation": "Итоги опроса"
     },
     {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Итоги опросов и их отправная точка были сохранены."
+    },
+    {
       "source": "Survey totals could not be reset: {0}",
       "translation": "Не удалось сбросить итоги опроса: {0}."
     },
@@ -205899,6 +205935,10 @@
     {
       "source": "The survey start point was not changed.",
       "translation": "Начальная точка съемки не изменилась."
+    },
+    {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "Не удалось проверить начальную точку опроса. Восстановите исходные журналы или сбросьте расчетное значение, чтобы начать новый период."
     },
     {
       "source": "The system could not be copied: {0}",
@@ -211305,10 +211345,6 @@
       "translation": "посадочный модуль01"
     },
     {
-      "source": "landings unavailable",
-      "translation": "лендинги недоступны"
-    },
-    {
       "source": "lang",
       "translation": "язык"
     },
@@ -213605,6 +213641,10 @@
       "translation": "{0} прыгает в гиперпространство, {1} путешествует"
     },
     {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} гиперпространственные прыжки; расстояние недоступно"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} несовместимые или неполные устаревшие каталоги были безопасно проигнорированы; см. журналы."
     },
@@ -213663,10 +213703,6 @@
     {
       "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
       "translation": "Посадочные корпуса {0} для {1}. {2}{3}{4}.{5}"
-    },
-    {
-      "source": "{0} landed",
-      "translation": "{0} приземлился"
     },
     {
       "source": "{0} landings",
@@ -214013,8 +214049,12 @@
       "translation": "{0} отсканировано"
     },
     {
-      "source": "{0} scanned, {1} DSS, {2}",
-      "translation": "{0} сканируется, {1} DSS, {2}"
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} просканирован, {1} DSS, {2} приземлился"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} сканируется, {1} DSS; лендинги недоступны"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -221959,8 +221999,8 @@
       "translation": "确认重置经验值"
     },
     {
-      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
-      "translation": "确认重置经验值以清除估计积分和扫描、DSS 和落地计数。自动跟踪从这个新起点继续进行。"
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "确认重置经验值以清除估计积分和扫描、DSS 和落地计数。"
     },
     {
       "source": "Confirm Reset Odometer",
@@ -245787,6 +245827,10 @@
       "translation": "调查总计"
     },
     {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "调查总数及其起点已保存。"
+    },
+    {
       "source": "Survey totals could not be reset: {0}",
       "translation": "无法重置调查总数：{0}"
     },
@@ -248817,6 +248861,10 @@
     {
       "source": "The survey start point was not changed.",
       "translation": "调查起点没有改变。"
+    },
+    {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "调查起点无法核实。恢复原始日记帐或重置估计值以开始新期间。"
     },
     {
       "source": "The system could not be copied: {0}",
@@ -254223,10 +254271,6 @@
       "translation": "登陆器01"
     },
     {
-      "source": "landings unavailable",
-      "translation": "无法着陆"
-    },
-    {
       "source": "lang",
       "translation": "郎"
     },
@@ -256523,6 +256567,10 @@
       "translation": "{0} 超空间跳跃，{1} 旅行"
     },
     {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} 超空间跳跃；距离不可用"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} 不兼容或不完整的旧目录被安全忽略；查看日志。"
     },
@@ -256581,10 +256629,6 @@
     {
       "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
       "translation": "{0} 适用于 {1} 的可着陆车身。 {2}{3}{4}.{5}"
-    },
-    {
-      "source": "{0} landed",
-      "translation": "{0} 已落地"
     },
     {
       "source": "{0} landings",
@@ -256931,8 +256975,12 @@
       "translation": "{0} 已扫描"
     },
     {
-      "source": "{0} scanned, {1} DSS, {2}",
-      "translation": "{0} 扫描、{1} DSS、{2}"
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} 扫描，{1} DSS，{2} 落地"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} 扫描，{1} DSS；无法着陆"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -264877,8 +264925,8 @@
       "translation": "* CONFIRM RESET EXP VALUE >>>!"
     },
     {
-      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
-      "translation": "* CONFIRM RESET EXP VALUE TO CLEAR ESTIMATED CREDITS AND SCANNED, DSS, AND LANDED COUNTS. AUTOMATIC TRACKING CONTINUES FROM THIS NEW STARTING POINT. >>>!"
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "* CONFIRM RESET EXP VALUE TO CLEAR ESTIMATED CREDITS AND SCANNED, DSS, AND LANDED COUNTS. >>>!"
     },
     {
       "source": "Confirm Reset Odometer",
@@ -288705,6 +288753,10 @@
       "translation": "* SURVEY TOTALS >>>!"
     },
     {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "* SURVEY TOTALS AND THEIR STARTING POINT WERE SAVED. >>>!"
+    },
+    {
       "source": "Survey totals could not be reset: {0}",
       "translation": "* SURVEY TOTALS COULD NOT BE RESET: {0} >>>!"
     },
@@ -291735,6 +291787,10 @@
     {
       "source": "The survey start point was not changed.",
       "translation": "* THE SURVEY START POINT WAS NOT CHANGED. >>>!"
+    },
+    {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "* THE SURVEY STARTING POINT COULD NOT BE VERIFIED. RESTORE THE ORIGINAL JOURNALS OR RESET ESTIMATED VALUE TO START A NEW PERIOD. >>>!"
     },
     {
       "source": "The system could not be copied: {0}",
@@ -297141,10 +297197,6 @@
       "translation": "* LANDER01 >>>!"
     },
     {
-      "source": "landings unavailable",
-      "translation": "* LANDINGS UNAVAILABLE >>>!"
-    },
-    {
       "source": "lang",
       "translation": "* LANG >>>!"
     },
@@ -299441,6 +299493,10 @@
       "translation": "* {0} HYPERSPACE JUMPS, {1} LY TRAVELLED >>>!"
     },
     {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "* {0} HYPERSPACE JUMPS; DISTANCE UNAVAILABLE >>>!"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "* {0} INCOMPATIBLE OR INCOMPLETE LEGACY CATALOG(S) WERE IGNORED SAFELY; SEE LOGS. >>>!"
     },
@@ -299499,10 +299555,6 @@
     {
       "source": "{0} landable bodies for {1}. {2}{3}{4}.{5}",
       "translation": "* {0} LANDABLE BODIES FOR {1}. {2}{3}{4}.{5} >>>!"
-    },
-    {
-      "source": "{0} landed",
-      "translation": "* {0} LANDED >>>!"
     },
     {
       "source": "{0} landings",
@@ -299849,8 +299901,12 @@
       "translation": "* {0} SCANNED >>>!"
     },
     {
-      "source": "{0} scanned, {1} DSS, {2}",
-      "translation": "* {0} SCANNED, {1} DSS, {2} >>>!"
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "* {0} SCANNED, {1} DSS, {2} LANDED >>>!"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "* {0} SCANNED, {1} DSS; LANDINGS UNAVAILABLE >>>!"
     },
     {
       "source": "{0} scanned, {1} mapped",

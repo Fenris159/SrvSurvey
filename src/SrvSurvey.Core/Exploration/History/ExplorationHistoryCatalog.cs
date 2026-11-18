@@ -8,8 +8,14 @@ public sealed partial class ExplorationHistoryCatalog
 {
     private readonly string frontierId;
     private readonly bool isLive;
+    private readonly TimeProvider timeProvider;
 
-    public ExplorationHistoryCatalog(string dataDirectory, string frontierId, bool isLive)
+    public ExplorationHistoryCatalog(
+        string dataDirectory,
+        string frontierId,
+        bool isLive,
+        TimeProvider? timeProvider = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
@@ -27,6 +33,7 @@ public sealed partial class ExplorationHistoryCatalog
         }
         this.frontierId = frontierId.ToUpperInvariant();
         this.isLive = isLive;
+        this.timeProvider = timeProvider ?? TimeProvider.System;
         FilePath = Path.Combine(
             Path.GetFullPath(dataDirectory),
             "commanders",

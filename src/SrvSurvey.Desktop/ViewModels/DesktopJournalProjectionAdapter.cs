@@ -591,6 +591,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     tick.ScansLostToDeath
                 );
                 dependencies.ExplorationHistory.Observe(context.JournalEvents);
+                state.RememberConsumedExplorationRecords(context.JournalEvents);
             }
         );
         operations[JournalProjectionOperation.ExplorationPersistence] = (_, tick) =>

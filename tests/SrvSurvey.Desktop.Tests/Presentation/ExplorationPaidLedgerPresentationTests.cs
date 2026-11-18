@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -13,11 +14,19 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 public sealed partial class ExplorationHistoryPresentationTests
 {
     [AvaloniaTheory]
-    [InlineData("blue-dark", 1120)]
-    [InlineData("blue-light", 760)]
-    [InlineData("monochrome-dark", 900)]
-    public async Task PaidReceiptUsesTheLedgerColumnsAndExposesItsDetailsInEachTheme(string theme, int width)
+    [InlineData("blue-dark", 1120, "en-US", "+500,000 CR")]
+    [InlineData("blue-light", 760, "en-US", "+500,000 CR")]
+    [InlineData("blue-light", 760, "de-DE", "+500.000 CR")]
+    [InlineData("monochrome-dark", 900, "en-US", "+500,000 CR")]
+    public async Task PaidReceiptUsesTheLedgerColumnsAndExposesItsDetailsInEachTheme(
+        string theme,
+        int width,
+        string culture,
+        string expectedPayout
+    )
     {
+        CultureInfo originalCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
         using var fixture = new Fixture(theme);
         await fixture.PrepareAsync();
         ExplorationHistoryViewModel model = fixture.Main.ExplorationHistory;
@@ -50,7 +59,7 @@ public sealed partial class ExplorationHistoryPresentationTests
             TextBlock value = receipt
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
-                .Single(block => block.Text == "+500,000 CR");
+                .Single(block => block.Text == expectedPayout);
             TextBlock status = receipt.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Text == "Paid");
             Assert.Equal(2, Grid.GetColumnSpan(Assert.IsType<StackPanel>(title.Parent)));
             Assert.Equal(3, Grid.GetColumn(Assert.IsType<StackPanel>(value.Parent)));
@@ -82,6 +91,7 @@ public sealed partial class ExplorationHistoryPresentationTests
         finally
         {
             window.Close();
+            CultureInfo.CurrentCulture = originalCulture;
         }
     }
 
