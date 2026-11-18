@@ -148,7 +148,14 @@ public sealed partial class ExplorationHistoryCatalog
                 );
                 return marker with
                 {
-                    CatalogGeneration = IsCurrentSurveyBoundary(source, marker, token) ? catalogGeneration : null,
+                    CatalogGeneration =
+                        catalogGeneration is not null
+                        && (
+                            marker.CatalogGeneration == catalogGeneration
+                            || IsCurrentSurveyBoundary(source, marker, token)
+                        )
+                            ? catalogGeneration
+                            : null,
                 };
             })
             .ToArray();

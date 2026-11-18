@@ -7,6 +7,8 @@ namespace SrvSurvey.Core.Exploration.History;
 
 public sealed partial class ExplorationHistoryCatalog
 {
+    private const string BodyNameProperty = "BodyName";
+
     private sealed record BodyOwnership(long PaidValue, long PendingValue, long? BatchId, OriginalReference? Scan);
 
     private void ApplyEntry(
@@ -169,7 +171,7 @@ public sealed partial class ExplorationHistoryCatalog
     private static string? BodyKey(SqliteConnection connection, string systemKey, JsonElement root)
     {
         long? id = Integer(root, "BodyID");
-        string? name = Text(root, "BodyName") ?? Text(root, "Body");
+        string? name = Text(root, BodyNameProperty) ?? Text(root, "Body");
         string? key = name is not null ? systemKey + ":n:" + name : null;
         if (id is { } value)
         {
@@ -209,10 +211,15 @@ public sealed partial class ExplorationHistoryCatalog
         {
             return;
         }
+        int candidate = CalculateValue(root, context.IsLive == true, false, false);
         string? system = EnsureSystem(connection, context, root);
         string? body = system is null ? null : BodyKey(connection, system, root);
         if (body is null)
         {
+            if (candidate > 0)
+            {
+                RecordAmbiguousValuation(connection, system, root);
+            }
             return;
         }
         Execute(
@@ -223,13 +230,12 @@ public sealed partial class ExplorationHistoryCatalog
             """,
             ("@key", body),
             (SystemParameter, system),
-            (NameParameter, Text(root, "BodyName") ?? Text(root, "Body")),
+            (NameParameter, Text(root, BodyNameProperty) ?? Text(root, "Body")),
             ("@bodyId", Integer(root, "BodyID")),
             (SourceParameter, reference.SourceId),
             (OffsetParameter, reference.Offset),
             (HashParameter, reference.Hash)
         );
-        int candidate = CalculateValue(root, context.IsLive == true, false, false);
         ApplyValue(connection, system!, body, entry, reference, candidate, null);
     }
 
@@ -244,6 +250,7 @@ public sealed partial class ExplorationHistoryCatalog
         string? body = system is null ? null : BodyKey(connection, system, entry.Payload);
         if (body is null)
         {
+            RecordAmbiguousValuation(connection, system, entry.Payload);
             return;
         }
         BodyOwnership owned = ReadBody(connection, body);
@@ -262,7 +269,7 @@ public sealed partial class ExplorationHistoryCatalog
                     "INSERT OR IGNORE INTO bodies(key,system_key,name,body_id) VALUES(@key,@system,@name,@id);",
                     ("@key", body),
                     (SystemParameter, system),
-                    (NameParameter, Text(entry.Payload, "BodyName") ?? Text(entry.Payload, "Body")),
+                    (NameParameter, Text(entry.Payload, BodyNameProperty) ?? Text(entry.Payload, "Body")),
                     ("@id", Integer(entry.Payload, "BodyID"))
                 );
                 SetMetadata(connection, UnknownMappingPrefix + body, system!);
@@ -280,6 +287,22 @@ public sealed partial class ExplorationHistoryCatalog
         {
             Execute(connection, "DELETE FROM metadata WHERE key=@key;", ("@key", UnknownMappingPrefix + body));
         }
+    }
+
+    private static void RecordAmbiguousValuation(SqliteConnection connection, string? system, JsonElement root)
+    {
+        string? name = Text(root, BodyNameProperty) ?? Text(root, "Body");
+        if (system is null || name is null)
+        {
+            return;
+        }
+        // Either known ID may receive a later mapping; neither resolves this ambiguous event.
+        SetMetadata(connection, UnknownMappingPrefix + "ambiguous:" + system + ":n:" + name, system);
+        SetMetadata(
+            connection,
+            "notice",
+            "Some exploration events do not identify a single body. Their values remain incomplete."
+        );
     }
 
     private static int CalculateValue(JsonElement scan, bool live, bool mapped, bool efficient) =>

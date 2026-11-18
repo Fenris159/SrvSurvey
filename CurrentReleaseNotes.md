@@ -29,7 +29,10 @@ tracking pauses until history recovery or a new explicit reset.
 - **Reliable history:** Duplicate journal delivery does not duplicate receipts.
   Older sales are backfilled from available journals; missing payout or travel
   details are marked unavailable. Resetting totals preserves the scan details
-  needed for later DSS events, and shutdown waits for in-progress confirmed resets before closing.
+  needed for later DSS events. Ambiguous body names keep valuations marked incomplete
+  until their data is settled or the journal is corrected. Archived journal cursors
+  retain verification while their cached coordinates remain unchanged. Shutdown
+  waits for in-progress confirmed resets before closing.
 
 - **Journey report exports:** Input image files are closed before the completed
   report folder is published, improving export reliability on Windows.

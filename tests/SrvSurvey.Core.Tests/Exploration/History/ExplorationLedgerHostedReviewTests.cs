@@ -295,4 +295,94 @@ public sealed partial class ExplorationHistoryCatalogTests
         Assert.Equal(1, paid.Payment!.LandedBodies);
         Assert.Equal(1, paid.ScannedBodies);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AnAmbiguousMappingRemainsIncompleteUntilItsSystemIsSettled(bool promotedNameKey)
+    {
+        using var fixture = new HistoryFixture();
+        var entries = new List<string> { Location("Alpha", 100, 0) };
+        if (promotedNameKey)
+        {
+            entries.Add(
+                """{"event":"Scan","SystemAddress":100,"BodyName":"Shared planet","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}"""
+            );
+        }
+        entries.AddRange([
+            """{"event":"Scan","SystemAddress":100,"BodyID":0,"BodyName":"Shared planet","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Shared planet","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+            """{"event":"SAAScanComplete","SystemAddress":100,"BodyName":"Shared planet","ProbesUsed":5,"EfficiencyTarget":6}""",
+        ]);
+        fixture.Write(entries);
+        ExplorationHistorySummary unresolved = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.False(unresolved.IsComplete);
+        Assert.Equal(898400, unresolved.UnsoldValue);
+        ExplorationHistoryRow row = Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows);
+        Assert.Equal(2, row.ScannedBodies);
+        Assert.Equal(0, row.MappedBodies);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Catalog.ResetSurveyValueAsync());
+        var reopened = new ExplorationHistoryCatalog(fixture.Data, "F100", true);
+        Assert.False((await reopened.SynchronizeAsync([fixture.Journals])).IsComplete);
+        ExplorationHistorySummary identified = await fixture.Catalog.ObserveAsync(
+            fixture.Append([
+                """{"event":"SAAScanComplete","SystemAddress":100,"BodyID":0,"BodyName":"Shared planet","ProbesUsed":5,"EfficiencyTarget":6}""",
+            ]),
+            [fixture.Journals]
+        );
+        Assert.False(identified.IsComplete);
+        Assert.Equal(3149741, identified.UnsoldValue);
+        ExplorationHistorySummary settled = await fixture.Catalog.ObserveAsync(
+            fixture.Append(["""{"event":"SellExplorationData","Systems":["Alpha"],"TotalEarnings":3000000}"""]),
+            [fixture.Journals]
+        );
+        Assert.True(settled.IsComplete);
+        Assert.Equal(0, settled.UnsoldValue);
+        ExplorationHistoryRow paid = Assert.Single(
+            (await fixture.Catalog.QueryAsync(new(ExplorationDataStatus.Paid))).Rows
+        );
+        Assert.Equal(2, paid.ScannedBodies);
+        Assert.Equal(1, paid.MappedBodies);
+    }
+
+    [Fact]
+    public async Task AnAmbiguousPositiveScanCannotSilentlyCompleteTheValuation()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([
+            Location("Alpha", 100, 0),
+            Star(100),
+            """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Test star","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}""",
+            """{"event":"Scan","SystemAddress":100,"BodyName":"Test star","StarType":"NS","StellarMass":1.4,"WasDiscovered":false,"WasMapped":false}""",
+        ]);
+        ExplorationHistorySummary summary = await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        Assert.False(summary.IsComplete);
+        Assert.Equal(46212, summary.UnsoldValue);
+        Assert.Equal(2, Assert.Single((await fixture.Catalog.QueryAsync(new())).Rows).ScannedBodies);
+    }
+
+    [Fact]
+    public async Task RecapturingAnArchivedInteriorCursorPreservesItsCurrentGenerationProof()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Alpha", 100, 0), Star(100)]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        ExplorationSurveyResetPoint consumed = await fixture.Catalog.CaptureSurveyResetPointAsync();
+        await fixture.Catalog.ObserveAsync(
+            fixture.Append([
+                """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Alpha 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
+            ]),
+            [fixture.Journals]
+        );
+        File.Delete(fixture.JournalPath);
+        ExplorationSurveyResetPoint recaptured = await fixture.Catalog.CaptureSurveyResetPointAsync(consumed.Sources);
+        ExplorationHistorySummary result = await fixture.Catalog.ApplySurveyResetPointAsync(recaptured);
+        Assert.True(result.IsSurveyValueAvailable);
+        Assert.Equal(449200, result.TrackedUnsoldValue);
+        Assert.Equal(472306, result.UnsoldValue);
+        var reopened = new ExplorationHistoryCatalog(fixture.Data, "F100", true);
+        ExplorationHistorySummary persisted = await reopened.ReadSummaryAsync();
+        Assert.True(persisted.IsSurveyValueAvailable);
+        Assert.Equal(449200, persisted.TrackedUnsoldValue);
+    }
 }
