@@ -22,6 +22,7 @@ public sealed partial class ExplorationHistoryCatalog
             return;
         }
         SetMetadata(connection, "commander_seen", "1");
+        ApplyReceiptTravel(connection, entry);
         ApplyNotableDiscovery(connection, context, entry);
         switch (entry.EventName)
         {
@@ -341,6 +342,15 @@ public sealed partial class ExplorationHistoryCatalog
             batch = Convert.ToInt64(insert.ExecuteScalar(), CultureInfo.InvariantCulture);
         }
         RecordObservation(connection, batch, body, entry.EventName, reference);
+        Execute(
+            connection,
+            "INSERT INTO value_credits(batch_id,source_id,offset,hash,amount) VALUES(@batch,@source,@offset,@hash,@amount);",
+            (BatchParameter, batch),
+            (SourceParameter, reference.SourceId),
+            (OffsetParameter, reference.Offset),
+            (HashParameter, reference.Hash),
+            ("@amount", unpaid - owned.PendingValue)
+        );
         if (scanContext is not null)
         {
             RecordObservation(connection, batch, body, "ScanContext", scanContext);
@@ -452,6 +462,7 @@ public sealed partial class ExplorationHistoryCatalog
                 ("@settlement", settlement)
             );
         }
+        RecordPaymentReceipt(connection, settlement, entry, names);
     }
 
     private static IEnumerable<string> SoldSystems(JsonElement root)
@@ -535,6 +546,10 @@ public sealed partial class ExplorationHistoryCatalog
         if (owned.BatchId is { } batch)
         {
             RecordObservation(connection, batch, body, entry.EventName, reference);
+            if (entry.EventName == "Touchdown" && Flag(entry.Payload, "OnPlanet"))
+            {
+                RecordObservation(connection, batch, body, "PlanetaryLanding", reference);
+            }
         }
     }
 }

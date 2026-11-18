@@ -7,6 +7,7 @@ public enum ExplorationDataStatus
     Unsold,
     Sold,
     Lost,
+    Paid,
 }
 
 [Flags]
@@ -31,7 +32,11 @@ public sealed record ExplorationHistoryQuery(
     DateTimeOffset? FromUtc = null,
     DateTimeOffset? ThroughUtc = null,
     ExplorationHistoryAnchor? SelectionAnchor = null
-);
+)
+{
+    /// <summary>Includes payment receipts alongside collected data; the Paid filter also selects receipts explicitly.</summary>
+    public bool IncludePayments { get; init; }
+}
 
 public sealed record ExplorationHistorySummary
 {
@@ -39,6 +44,9 @@ public sealed record ExplorationHistorySummary
     public long SoldValue { get; init; }
     public long LostValue { get; init; }
     public long SaleEarnings { get; init; }
+    public long? ActualSaleEarnings { get; init; }
+    public long? TrackedUnsoldValue { get; init; }
+    public int UnrecordedPayouts { get; init; }
     public int UnsoldSystems { get; init; }
     public int SoldSystems { get; init; }
     public int LostSystems { get; init; }
@@ -70,7 +78,17 @@ public sealed record ExplorationHistoryRow
     public int ScannedBodies { get; init; }
     public int MappedBodies { get; init; }
     public ExplorationNotables Notables { get; init; }
+    public ExplorationPaymentDetails? Payment { get; init; }
 }
+
+public sealed record ExplorationPaymentDetails(
+    long? ActualEarnings,
+    int? JumpCount,
+    double? DistanceTravelled,
+    int? LandedBodies,
+    IReadOnlyList<string> Systems,
+    bool HasBodyDetails
+);
 
 public sealed record ExplorationHistoryPage(
     IReadOnlyList<ExplorationHistoryRow> Rows,

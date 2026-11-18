@@ -342,6 +342,8 @@ public sealed partial class ExplorationHistoryCatalog
         Execute(
             connection,
             """
+            DELETE FROM sale_receipts;
+            DELETE FROM value_credits;
             DELETE FROM collection_anchors;
             DELETE FROM observations;
             DELETE FROM bodies;

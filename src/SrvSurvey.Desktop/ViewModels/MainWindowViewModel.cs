@@ -168,7 +168,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private string explorationDistance = "0.0 ly";
     private string explorationBodies = "Scanned: 0, DSS: 0, Landed: 0";
     private string explorationStatusMessage = "Waiting for commander profile.";
-    private bool isResetExplorationPending;
     private string unclaimedBioRewards = "0 CR";
     private string unclaimedBioScans = "0 samples";
     private string organicScanProgress = "Ready for sample 1 of 3";
@@ -1004,6 +1003,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 () => activeProfileFrontierId is not null
             );
             ResetExplorationCommand = resetExplorationCommand;
+            resetExplorationOdometerCommand = new AsyncCommand(
+                ResetExplorationOdometerAsync,
+                () => activeProfileFrontierId is not null
+            );
+            resetExplorationValueCommand = new AsyncCommand(
+                ResetExplorationValueAsync,
+                () => activeProfileFrontierId is not null
+            );
             cancelResetExplorationCommand = new AsyncCommand(
                 CancelResetExplorationAsync,
                 () => IsResetExplorationPending
@@ -2038,20 +2045,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public ICommand CancelResetExplorationCommand { get; }
 
-    public bool IsResetExplorationPending
-    {
-        get => isResetExplorationPending;
-        private set
-        {
-            if (SetField(ref isResetExplorationPending, value))
-            {
-                OnPropertyChanged(nameof(ResetExplorationButtonText));
-                cancelResetExplorationCommand.RaiseCanExecuteChanged();
-            }
-        }
-    }
+    public bool IsResetExplorationPending => pendingExplorationReset is not null;
 
-    public string ResetExplorationButtonText => IsResetExplorationPending ? "Confirm reset" : "Reset totals";
+    public string ResetExplorationButtonText =>
+        pendingExplorationReset == ExplorationResetScope.Everything
+            ? "Confirm Reset Everything"
+            : "Reset Everything Above";
 
     public string UnclaimedBioRewards
     {
@@ -3046,6 +3045,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         activeProfileCommanderName = journalState.CommanderName ?? result.Data?.CommanderName;
         activeProfileIsOdyssey = isOdyssey;
         resetExplorationCommand.RaiseCanExecuteChanged();
+        resetExplorationOdometerCommand.RaiseCanExecuteChanged();
+        resetExplorationValueCommand.RaiseCanExecuteChanged();
+        SetPendingExplorationReset(null);
         resetExobiologyCommand.RaiseCanExecuteChanged();
         clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
 
@@ -3965,27 +3967,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             && long.TryParse(address.GetString(), out systemAddress);
     }
 
-    public async Task ResetExplorationAsync()
-    {
-        if (!IsResetExplorationPending)
-        {
-            IsResetExplorationPending = true;
-            ExplorationStatusMessage = ExplorationHistory.AutoResetEstimatedValue
-                ? "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance."
-                : "Select Confirm reset to clear all six exploration totals.";
-            return;
-        }
-
-        explorationState.Reset();
-        ExplorationSnapshot snapshot = explorationState.CreateSnapshot();
-        UpdateExplorationDisplay(snapshot);
-        IsResetExplorationPending = false;
-        await SaveExplorationAsync(snapshot);
-    }
+    public Task ResetExplorationAsync() => ResetExplorationAsync(ExplorationResetScope.Everything);
 
     private Task CancelResetExplorationAsync()
     {
-        IsResetExplorationPending = false;
+        SetPendingExplorationReset(null);
         ExplorationStatusMessage = "Reset cancelled; totals were not changed.";
         return Task.CompletedTask;
     }

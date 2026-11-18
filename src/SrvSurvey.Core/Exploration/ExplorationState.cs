@@ -107,6 +107,28 @@ public sealed class ExplorationState
         landedBodies.Clear();
     }
 
+    public void ResetOdometer()
+    {
+        JumpCount = 0;
+        DistanceTravelled = 0;
+    }
+
+    public void ResetSurveyValue()
+    {
+        EstimatedRewards = 0;
+        ScanCount = 0;
+        DetailedSurfaceScanCount = 0;
+        LandedBodyCount = 0;
+        estimatedRewardsBySystem = null;
+        landedBodies.Clear();
+        // Later DSS events require the earlier scan's physical and discovery metadata.
+        foreach (BodyExplorationState body in bodies.Values)
+        {
+            body.Reward = 0;
+            body.IsMapped = false;
+        }
+    }
+
     private void ApplyScan(JsonElement root)
     {
         BodyKey? key = GetBodyKey(root);

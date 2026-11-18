@@ -3322,6 +3322,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Actual payout",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Add",
     "IsFormat": false,
     "SourceKinds": [
@@ -8423,6 +8431,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
   },
   {
+    "Text": "Body totals from identified sold systems in the available journals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Body totals unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Body type",
     "IsFormat": false,
     "SourceKinds": [
@@ -12495,6 +12519,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Clear estimated credits and scanned, DSS, and landed counts.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
+  },
+  {
+    "Text": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
+  },
+  {
+    "Text": "Clear hyperspace jumps and distance travelled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
+  },
+  {
     "Text": "Clear key",
     "IsFormat": false,
     "SourceKinds": [
@@ -14710,6 +14758,54 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
+    "Text": "Confirm Reset Everything",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
+    "Text": "Confirm Reset Exp Value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
+    "Text": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts. Automatic tracking continues from this new starting point.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
+    "Text": "Confirm Reset Odometer",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
+    "Text": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
     "Text": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14821,14 +14917,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
-  },
-  {
-    "Text": "Confirm reset",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Confirm restore",
@@ -21856,14 +21944,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationWishListViewModel.cs"
   },
   {
-    "Text": "Estimated value of unsold cartographic data in this commander\u0027s available journals.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
-  },
-  {
     "Text": "Evacuation shelter",
     "IsFormat": false,
     "SourceKinds": [
@@ -22321,6 +22401,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Exploration data sold",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Exploration history",
     "IsFormat": false,
     "SourceKinds": [
@@ -22367,6 +22455,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiscordCarrierMessageEditorViewModel.cs"
+  },
+  {
+    "Text": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Exploration screenshots",
@@ -29323,6 +29419,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "Identified sold bodies",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
     "Text": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31419,6 +31523,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
+  },
+  {
     "Text": "Jump-route progress",
     "IsFormat": false,
     "SourceKinds": [
@@ -32737,14 +32849,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/LegacyProfileOptionViewModel.cs"
-  },
-  {
-    "Text": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
   },
   {
     "Text": "LegacyImport",
@@ -39443,6 +39547,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusEditorViewModel.cs"
   },
   {
+    "Text": "No matching entries",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -39473,14 +39585,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SphereLimitViewModel.cs"
-  },
-  {
-    "Text": "No matching systems",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "No matching systems found.",
@@ -43764,7 +43868,15 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
+    "Text": "Paid {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Painite",
@@ -43973,6 +44085,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSessionOverlayViewModel.cs"
+  },
+  {
+    "Text": "Payout not recorded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "Peach",
@@ -49431,6 +49551,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
+    "Text": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Recorded systems required for averages",
     "IsFormat": false,
     "SourceKinds": [
@@ -51241,6 +51369,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "Reset Everything Above",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Reset Exp Value",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
+    "Text": "Reset Odometer",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
+  },
+  {
     "Text": "Reset VR orientation",
     "IsFormat": false,
     "SourceKinds": [
@@ -51327,14 +51479,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ThemeView.axaml"
-  },
-  {
-    "Text": "Reset totals",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
     "Text": "Reset {0} text and icon scales to 0%. Use the top \u2713 to save and close.",
@@ -55765,22 +55909,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
   },
   {
-    "Text": "Select Confirm reset to clear all six exploration totals.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
     "Text": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile\u0027s separate EDSM state.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56125,14 +56253,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationWishListWindow.axaml"
   },
   {
-    "Text": "Select a system to inspect its collected data",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
-  },
-  {
     "Text": "Select a threshold group to delete.",
     "IsFormat": false,
     "SourceKinds": [
@@ -56163,6 +56283,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Select an entry to inspect its records",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
   },
   {
     "Text": "Select an equipped module",
@@ -56308,6 +56436,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Select the commander again before resetting exploration value.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -59107,6 +59243,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Sold systems",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "Sold systems not identified in the journal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "Some Canonn settlement data was ignored: {0}",
@@ -62455,6 +62607,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationView.axaml"
+  },
+  {
+    "Text": "Survey totals could not be reset: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.ExplorationReset.cs"
   },
   {
     "Text": "Survey will start at {0}.",
@@ -70420,6 +70580,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Travel since previous sale",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "Travel since the previous exploration sale, independent of manual odometer resets.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Travel totals unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "Travel, search, Guardian, colonization, messages",
     "IsFormat": false,
     "SourceKinds": [
@@ -71597,6 +71781,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "Unsupported VR pointer event.",
@@ -79312,6 +79504,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
   },
   {
+    "Text": "landings unavailable",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "lang",
     "IsFormat": false,
     "SourceKinds": [
@@ -83897,6 +84097,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
+    "Text": "{0} hyperspace jumps, {1} ly travelled",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
+  },
+  {
     "Text": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
     "IsFormat": true,
     "SourceKinds": [
@@ -84015,6 +84223,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "{0} landed",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{0} landings",
@@ -84703,6 +84919,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "{0} scanned, {1} DSS, {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.cs"
   },
   {
     "Text": "{0} scanned, {1} mapped",
