@@ -6,8 +6,8 @@ RC77.21 adds granular survey resets and exploration sale receipts.
 
 This release upgrades the exploration history catalog to schema 6. RC77.20 cannot
 open the upgraded catalog. Keep a pre-upgrade copy of your data folder if you may
-need to roll back. Missing original journals can pause automatic value tracking
-until history recovery finishes.
+need to roll back. If journal ordering cannot be verified, automatic value
+tracking pauses until history recovery or a new explicit reset.
 
 ## What's changed
 

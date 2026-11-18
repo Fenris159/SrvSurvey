@@ -7,6 +7,9 @@ namespace SrvSurvey.Core.Exploration.History;
 
 public sealed record ExplorationSurveySourceCheckpoint(string SourceName, long Offset, string Hash)
 {
+    /// <summary>The catalog coordinate generation in which this particular cursor has been proven.</summary>
+    public string? CatalogGeneration { get; init; }
+
     public bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(SourceName)
@@ -15,6 +18,7 @@ public sealed record ExplorationSurveySourceCheckpoint(string SourceName, long O
             && !SourceName.Contains('\\')
             && !SourceName.Contains(':')
             && Offset >= -1
+            && (CatalogGeneration is null || Guid.TryParseExact(CatalogGeneration, "N", out _))
             && Hash is not null
             && (Offset == -1 || (Hash is { Length: 64 } && Hash.All(Uri.IsHexDigit)));
     }

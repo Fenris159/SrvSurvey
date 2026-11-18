@@ -5,9 +5,43 @@ namespace SrvSurvey.Core.Exploration.History;
 
 public sealed partial class ExplorationHistoryCatalog
 {
+    // Unknown sources need both wall time and the saved source frontier because
+    // journal timestamps have only second precision. NULL means ordering is unproven.
+    private const string SurveyCreditScopeSql = """
+        WITH survey_credit_scope AS (
+            SELECT c.amount,b.status,
+                CASE
+                    WHEN p.id IS NULL THEN 1
+                    WHEN e.source_name IS NOT NULL THEN
+                        CASE WHEN e.valid<>1 THEN NULL WHEN c.offset>e.offset THEN 1 ELSE 0 END
+                    WHEN c.timestamp>p.reset_utc THEN 1
+                    WHEN c.timestamp IS NULL THEN NULL
+                    WHEN substr(c.timestamp,1,19)<>substr(p.reset_utc,1,19) THEN 0
+                    WHEN substr(COALESCE(s.first_time,''),1,19)=substr(p.reset_utc,1,19)
+                        AND NOT EXISTS(
+                            SELECT 1 FROM survey_value_checkpoints f LEFT JOIN sources known ON known.name=f.source_name COLLATE NOCASE
+                            WHERE f.offset>=0 AND (known.id IS NULL OR known.first_time IS NULL OR known.first_time>s.first_time
+                                OR (known.first_time=s.first_time AND known.name>=s.name))
+                        ) THEN 1
+                    ELSE NULL
+                END AS in_period
+            FROM value_credits c JOIN batches b ON b.id=c.batch_id JOIN sources s ON s.id=c.source_id
+            LEFT JOIN survey_value_period p ON p.id=1
+            LEFT JOIN survey_value_checkpoints e ON e.source_name=s.name COLLATE NOCASE
+        )
+
+        """;
+
     private sealed record SurveySource(string Name, string Path, long Length, bool AllowCachedBoundary = false);
 
-    private sealed record SurveyIndexedSource(string Name, long Offset, string Hash, string? FirstTime);
+    private sealed record SurveyIndexedSource(
+        string Name,
+        long Offset,
+        string Hash,
+        string? FirstTime,
+        string Path,
+        long Length
+    );
 
     /// <summary>A supplied consumer frontier leaves omitted sources unread; callers may explicitly acknowledge older closed journals.</summary>
     public Task<ExplorationSurveyResetPoint> CaptureSurveyResetPointAsync(
@@ -90,7 +124,8 @@ public sealed partial class ExplorationHistoryCatalog
             : sources
                 .Where(source =>
                     consumed.Any(item =>
-                        string.Equals(item.SourceName, source.Name, StringComparison.OrdinalIgnoreCase)
+                        item.Offset >= 0
+                        && string.Equals(item.SourceName, source.Name, StringComparison.OrdinalIgnoreCase)
                     )
                 )
                 .OrderBy(source => source.FirstTime, StringComparer.Ordinal)
@@ -102,12 +137,21 @@ public sealed partial class ExplorationHistoryCatalog
                 "Refresh exploration history until the consumed journal source is available before resetting value."
             );
         }
+        string? catalogGeneration = ReadMetadata(connection, CatalogGenerationKey);
         ExplorationSurveySourceCheckpoint[] points = sources
             .Select(source =>
-                SurveyCheckpointForConsumer(source, consumed, includeEarlierSources ? latestConsumed : null)
-            )
+            {
+                ExplorationSurveySourceCheckpoint marker = SurveyCheckpointForConsumer(
+                    source,
+                    consumed,
+                    includeEarlierSources ? latestConsumed : null
+                );
+                return marker with
+                {
+                    CatalogGeneration = IsCurrentSurveyBoundary(source, marker, token) ? catalogGeneration : null,
+                };
+            })
             .ToArray();
-        string? catalogGeneration = ReadMetadata(connection, CatalogGenerationKey);
         DateTimeOffset now = timeProvider.GetUtcNow();
         string identity = ContentHash(
             JsonSerializer.Serialize(
@@ -128,7 +172,7 @@ public sealed partial class ExplorationHistoryCatalog
     {
         using SqliteCommand command = Command(
             connection,
-            "SELECT name,last_offset,last_hash,first_time FROM sources ORDER BY name;"
+            "SELECT name,last_offset,last_hash,first_time,path,next_offset FROM sources ORDER BY name;"
         );
         using SqliteDataReader reader = command.ExecuteReader();
         var sources = new List<SurveyIndexedSource>();
@@ -139,7 +183,9 @@ public sealed partial class ExplorationHistoryCatalog
                     reader.GetString(0),
                     reader.GetInt64(1),
                     reader.GetString(2),
-                    reader.IsDBNull(3) ? null : reader.GetString(3)
+                    reader.IsDBNull(3) ? null : reader.GetString(3),
+                    reader.GetString(4),
+                    reader.GetInt64(5)
                 )
             );
         }
@@ -152,6 +198,13 @@ public sealed partial class ExplorationHistoryCatalog
         SurveyIndexedSource? latestAcknowledged
     )
     {
+        ExplorationSurveySourceCheckpoint? explicitCursor = consumed?.SingleOrDefault(item =>
+            string.Equals(item.SourceName, source.Name, StringComparison.OrdinalIgnoreCase)
+        );
+        if (explicitCursor is not null)
+        {
+            return explicitCursor;
+        }
         bool earlier =
             latestAcknowledged is not null
             && (
@@ -165,9 +218,28 @@ public sealed partial class ExplorationHistoryCatalog
         {
             return new(source.Name, source.Offset, source.Hash);
         }
-        return consumed.SingleOrDefault(item =>
-                string.Equals(item.SourceName, source.Name, StringComparison.OrdinalIgnoreCase)
-            ) ?? new(source.Name, -1, string.Empty);
+        return new(source.Name, -1, string.Empty);
+    }
+
+    private static bool IsCurrentSurveyBoundary(
+        SurveyIndexedSource source,
+        ExplorationSurveySourceCheckpoint marker,
+        CancellationToken token
+    )
+    {
+        if (marker.Offset < 0 || (marker.Offset == source.Offset && marker.Hash == source.Hash))
+        {
+            return true;
+        }
+        try
+        {
+            JournalLine? line = ReadLines(source.Path, marker.Offset, token, source.Length).FirstOrDefault();
+            return line?.Content is { } text && ContentHash(text) == marker.Hash;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private void ApplySurveyResetPoint(
@@ -210,13 +282,19 @@ public sealed partial class ExplorationHistoryCatalog
             );
         }
 
-        bool sameCatalog =
-            point.CatalogGeneration is not null
-            && point.CatalogGeneration == ReadMetadata(connection, CatalogGenerationKey);
-        VerifySurveyCheckpoints(connection, ReadSurveySources(connection, sameCatalog), canReanchor: false, token);
+        string? generation = ReadMetadata(connection, CatalogGenerationKey);
+        var trusted = point
+            .Sources.Where(marker =>
+                generation is not null
+                && point.CatalogGeneration == generation
+                && marker.CatalogGeneration == generation
+            )
+            .Select(marker => marker.SourceName)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        VerifySurveyCheckpoints(connection, ReadSurveySources(connection, trusted), canReanchor: false, token);
     }
 
-    private static SurveySource[] ReadSurveySources(SqliteConnection connection, bool allowCachedBoundary)
+    private static SurveySource[] ReadSurveySources(SqliteConnection connection, HashSet<string> trustedSources)
     {
         using SqliteCommand command = Command(
             connection,
@@ -226,7 +304,8 @@ public sealed partial class ExplorationHistoryCatalog
         var sources = new List<SurveySource>();
         while (reader.Read())
         {
-            sources.Add(new(reader.GetString(0), reader.GetString(1), reader.GetInt64(2), allowCachedBoundary));
+            string name = reader.GetString(0);
+            sources.Add(new(name, reader.GetString(1), reader.GetInt64(2), trustedSources.Contains(name)));
         }
 
         return sources.ToArray();
@@ -329,12 +408,11 @@ public sealed partial class ExplorationHistoryCatalog
     {
         using SqliteCommand command = Command(
             connection,
-            """
-            SELECT NOT EXISTS(SELECT 1 FROM survey_value_checkpoints WHERE valid=0)
-            AND NOT EXISTS(SELECT 1 FROM value_credits c JOIN batches b ON b.id=c.batch_id JOIN sources s ON s.id=c.source_id
-                WHERE b.status=0 AND c.timestamp IS NULL AND EXISTS(SELECT 1 FROM survey_value_period)
-                AND NOT EXISTS(SELECT 1 FROM survey_value_checkpoints e WHERE e.source_name=s.name COLLATE NOCASE));
-            """
+            SurveyCreditScopeSql
+                + """
+                SELECT NOT EXISTS(SELECT 1 FROM survey_value_checkpoints WHERE valid=0)
+                AND NOT EXISTS(SELECT 1 FROM survey_credit_scope WHERE status=0 AND in_period IS NULL);
+                """
         );
         return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) != 0;
     }

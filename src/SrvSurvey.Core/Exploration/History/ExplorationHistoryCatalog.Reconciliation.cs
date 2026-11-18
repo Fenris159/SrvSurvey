@@ -175,7 +175,8 @@ public sealed partial class ExplorationHistoryCatalog
         {
             key = systemKey + ":i:" + value.ToString(CultureInfo.InvariantCulture);
         }
-        return KnownBodyKey(connection, systemKey, id, name) ?? key;
+        string? known = KnownBodyKey(connection, systemKey, id, name, out bool ambiguous);
+        return id is null && ambiguous ? null : known ?? key;
     }
 
     private static BodyOwnership ReadBody(SqliteConnection connection, string key)

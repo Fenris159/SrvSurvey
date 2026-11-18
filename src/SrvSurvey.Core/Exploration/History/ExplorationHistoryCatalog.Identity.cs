@@ -29,8 +29,15 @@ public sealed partial class ExplorationHistoryCatalog
     }
 
     /// <summary>Body names bridge missing identifiers while keys keep paid ownership, observations, and collection anchors stable.</summary>
-    private static string? KnownBodyKey(SqliteConnection connection, string system, long? id, string? name)
+    private static string? KnownBodyKey(
+        SqliteConnection connection,
+        string system,
+        long? id,
+        string? name,
+        out bool ambiguous
+    )
     {
+        ambiguous = false;
         if (id is not null)
         {
             using SqliteCommand byId = Command(
@@ -51,9 +58,13 @@ public sealed partial class ExplorationHistoryCatalog
             ("@name", name),
             ("@id", id)
         );
-        string? key = UniqueKey(byName);
+        string? key = UniqueKey(byName, out ambiguous);
         if (key is not null && id is not null)
         {
+            if (HasCompetingBodyId(connection, system, name, id.Value))
+            {
+                return null;
+            }
             Execute(connection, "UPDATE bodies SET body_id=@id WHERE key=@key;", ("@id", id), ("@key", key));
         }
         return key;
@@ -77,7 +88,7 @@ public sealed partial class ExplorationHistoryCatalog
             (NameParameter, name)
         );
         string? canonical = UniqueKey(alias);
-        if (canonical is null)
+        if (canonical is null || HasCompetingBodyId(connection, system, name, id))
         {
             return placeholder;
         }
@@ -115,6 +126,18 @@ public sealed partial class ExplorationHistoryCatalog
         return canonical;
     }
 
+    private static bool HasCompetingBodyId(SqliteConnection connection, string system, string? name, long id)
+    {
+        using SqliteCommand command = Command(
+            connection,
+            "SELECT EXISTS(SELECT 1 FROM bodies WHERE system_key=@system AND name=@name COLLATE NOCASE AND body_id IS NOT NULL AND body_id<>@id);",
+            (SystemParameter, system),
+            (NameParameter, name),
+            ("@id", id)
+        );
+        return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) != 0;
+    }
+
     private static bool IsUnvaluedBodyPlaceholder(SqliteConnection connection, string body)
     {
         using SqliteCommand command = Command(
@@ -125,14 +148,18 @@ public sealed partial class ExplorationHistoryCatalog
         return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) == 1;
     }
 
-    private static string? UniqueKey(SqliteCommand command)
+    private static string? UniqueKey(SqliteCommand command) => UniqueKey(command, out _);
+
+    private static string? UniqueKey(SqliteCommand command, out bool ambiguous)
     {
+        ambiguous = false;
         using SqliteDataReader reader = command.ExecuteReader();
         if (!reader.Read())
         {
             return null;
         }
         string key = reader.GetString(0);
-        return reader.Read() ? null : key;
+        ambiguous = reader.Read();
+        return ambiguous ? null : key;
     }
 }

@@ -273,15 +273,10 @@ public sealed partial class ExplorationHistoryCatalog
         );
         using SqliteCommand tracked = Command(
             connection,
-            """
-            SELECT COALESCE(SUM(c.amount),0) FROM value_credits c
-            JOIN batches b ON b.id=c.batch_id JOIN sources s ON s.id=c.source_id
-            WHERE b.status=0 AND (
-                NOT EXISTS(SELECT 1 FROM survey_value_period)
-                OR EXISTS(SELECT 1 FROM survey_value_checkpoints e WHERE e.source_name=s.name COLLATE NOCASE AND e.valid=1 AND c.offset>e.offset)
-                OR (NOT EXISTS(SELECT 1 FROM survey_value_checkpoints e WHERE e.source_name=s.name COLLATE NOCASE)
-                    AND c.timestamp>(SELECT reset_utc FROM survey_value_period WHERE id=1)));
-            """
+            SurveyCreditScopeSql
+                + """
+                SELECT COALESCE(SUM(amount),0) FROM survey_credit_scope WHERE status=0 AND in_period=1;
+                """
         );
         using SqliteCommand sources = Command(connection, "SELECT COUNT(*) FROM sources;");
         using SqliteCommand losses = Command(connection, "SELECT COUNT(*) FROM settlements WHERE kind='loss';");
