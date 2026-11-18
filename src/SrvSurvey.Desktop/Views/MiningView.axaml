@@ -493,11 +493,11 @@
                 <TextBlock Text="Selected session" Classes="card-title" TextWrapping="Wrap"/>
                 <TextBlock Text="Choose a session above to edit notes, attach screenshots or export its report." Classes="muted" TextWrapping="Wrap" IsVisible="{Binding SelectedSession, Converter={x:Static converters:ObjectConverters.IsNull}}"/>
                 <StackPanel Spacing="6" IsVisible="{Binding SelectedSession, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
-                  <TextBlock Text="{Binding SelectedSession.System}" Classes="card-title" TextWrapping="Wrap"/>
+                  <TextBlock Text="{Binding SelectedSessionSystem}" Classes="card-title" TextWrapping="Wrap"/>
                   <WrapPanel>
-                    <TextBlock Text="{Binding SelectedSession.Ring}" Classes="muted" TextWrapping="Wrap" Margin="0,0,16,0"/>
-                    <TextBlock Text="{Binding SelectedSession.Started}" Classes="muted" Margin="0,0,16,0"/>
-                    <TextBlock Text="{Binding SelectedSession.Ship}" Classes="muted"/>
+                    <TextBlock Text="{Binding SelectedSessionRing}" Classes="muted" TextWrapping="Wrap" Margin="0,0,16,0"/>
+                    <TextBlock Text="{Binding SelectedSessionStarted}" Classes="muted" Margin="0,0,16,0"/>
+                    <TextBlock Text="{Binding SelectedSessionShip}" Classes="muted"/>
                   </WrapPanel>
                 </StackPanel>
                 <controls:ResponsiveColumnsPanel IsVisible="{Binding SelectedSession, Converter={x:Static converters:ObjectConverters.IsNotNull}}" x:Name="ReportDetailColumns" MinimumColumnWidth="380" MaximumColumns="2" Spacing="24">

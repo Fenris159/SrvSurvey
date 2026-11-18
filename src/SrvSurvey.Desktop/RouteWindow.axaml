@@ -228,6 +228,11 @@
 
             <ItemsControl x:Name="RouteHopItems"
                           ItemsSource="{Binding Hops}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <VirtualizingStackPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:RouteHopItemViewModel">
                   <Border Classes="card" Padding="12" Margin="0,0,0,8">

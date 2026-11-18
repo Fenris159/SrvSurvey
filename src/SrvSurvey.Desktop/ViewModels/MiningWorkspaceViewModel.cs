@@ -621,11 +621,20 @@ public sealed partial class MiningWorkspaceViewModel : WorkspaceObservable, IDis
             if (Set(ref selectedSession, value))
             {
                 Notes = value?.Notes ?? "";
+                Changed(nameof(SelectedSessionSystem));
+                Changed(nameof(SelectedSessionRing));
+                Changed(nameof(SelectedSessionStarted));
+                Changed(nameof(SelectedSessionShip));
                 Changed(nameof(RefinerySummary));
                 Changed(nameof(ReportScreenshots));
             }
         }
     }
+    public string SelectedSessionSystem => SelectedSession?.System ?? "";
+    public string SelectedSessionRing => SelectedSession?.Ring ?? "";
+    public DateTimeOffset? SelectedSessionStarted => SelectedSession?.Started;
+    public string SelectedSessionShip => SelectedSession?.Ship ?? "";
+
     public MiningRing? SelectedRing
     {
         get => selectedRing;
