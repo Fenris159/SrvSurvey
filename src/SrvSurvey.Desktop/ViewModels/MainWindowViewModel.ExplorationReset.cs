@@ -10,7 +10,7 @@ public sealed partial class MainWindowViewModel
 {
     private readonly AsyncCommand resetExplorationOdometerCommand;
     private readonly AsyncCommand resetExplorationValueCommand;
-    private bool activeExplorationProfileReady;
+    private bool activeCommanderProfileReady;
     private long explorationResetGeneration;
 
     private sealed record ExplorationResetIntent(string Owner, bool IsLive, long Generation, bool IsConfirmation);
@@ -46,14 +46,14 @@ public sealed partial class MainWindowViewModel
         cancelResetExplorationCommand.RaiseCanExecuteChanged();
     }
 
-    private bool CanResetExploration() => activeProfileFrontierId is not null && activeExplorationProfileReady;
+    private bool CanEditCommanderProfile() => activeProfileFrontierId is not null && activeCommanderProfileReady;
 
     private async Task ResetExplorationAsync(ExplorationResetScope scope)
     {
         ExplorationResetIntent intent;
         lock (journalUpdateLifetime)
         {
-            if (disposed || !activeExplorationProfileReady || activeProfileFrontierId is null)
+            if (disposed || !activeCommanderProfileReady || activeProfileFrontierId is null)
             {
                 return;
             }
@@ -71,7 +71,7 @@ public sealed partial class MainWindowViewModel
             try
             {
                 if (
-                    activeExplorationProfileReady
+                    activeCommanderProfileReady
                     && (!disposed || intent.IsConfirmation)
                     && intent.Generation == explorationResetGeneration
                     && string.Equals(intent.Owner, activeProfileFrontierId, StringComparison.OrdinalIgnoreCase)
@@ -127,7 +127,7 @@ public sealed partial class MainWindowViewModel
                 await ApplyMonitorUpdateAsync(pending, isManualRefresh: false, CancellationToken.None);
             }
             if (
-                !activeExplorationProfileReady
+                !activeCommanderProfileReady
                 || acceptedGeneration != explorationResetGeneration
                 || !string.Equals(intent.Owner, activeProfileFrontierId, StringComparison.OrdinalIgnoreCase)
                 || intent.IsLive != activeProfileIsOdyssey

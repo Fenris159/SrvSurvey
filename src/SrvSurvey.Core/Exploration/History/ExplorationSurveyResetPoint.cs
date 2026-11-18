@@ -15,6 +15,7 @@ public sealed record ExplorationSurveySourceCheckpoint(string SourceName, long O
             && !SourceName.Contains('\\')
             && !SourceName.Contains(':')
             && Offset >= -1
+            && Hash is not null
             && (Offset == -1 || (Hash is { Length: 64 } && Hash.All(Uri.IsHexDigit)));
     }
 
@@ -51,10 +52,13 @@ public sealed record ExplorationSurveyResetPoint(
     IReadOnlyList<ExplorationSurveySourceCheckpoint> Sources
 )
 {
+    public string? CatalogGeneration { get; init; }
+
     public bool IsValidForScope(string owner, bool live)
     {
         return !string.IsNullOrWhiteSpace(Id)
             && CreatedAt != default
+            && (CatalogGeneration is null || Guid.TryParseExact(CatalogGeneration, "N", out _))
             && string.Equals(FrontierId, owner, StringComparison.OrdinalIgnoreCase)
             && IsLive == live
             && Sources is not null

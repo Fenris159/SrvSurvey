@@ -215,15 +215,19 @@ public sealed partial class ExplorationHistoryViewModelTests
     }
 
     [Theory]
-    [InlineData("odometer")]
-    [InlineData("value")]
-    [InlineData("everything")]
-    public async Task ManualResetsDoNotChangeTheTravelRecordedOnTheNextPaidReceipt(string scope)
+    [InlineData("odometer", false)]
+    [InlineData("value", false)]
+    [InlineData("everything", false)]
+    [InlineData("value", true)]
+    [InlineData("everything", true)]
+    public async Task ManualResetsDoNotChangeTheTravelRecordedOnTheNextPaidReceipt(string scope, bool automatic)
     {
         using var fixture = new Fixture();
         await using MainWindowViewModel main = CreateLedgerMain(fixture);
         await main.RefreshAsync();
         await main.ExplorationHistory.PendingSynchronization;
+        main.ExplorationHistory.AutoResetEstimatedValue = automatic;
+        await main.ExplorationHistory.PendingPreferenceSave;
         await File.AppendAllLinesAsync(
             fixture.JournalPath("F100"),
             [
@@ -241,6 +245,11 @@ public sealed partial class ExplorationHistoryViewModelTests
         };
         await reset();
         await reset();
+        Assert.Equal(automatic, main.ExplorationHistory.AutoResetEstimatedValue);
+        if (automatic)
+        {
+            Assert.NotNull((await fixture.Profiles.LoadAsync("F100", true)).Data!.ExplorationSurveyStart);
+        }
         await File.AppendAllLinesAsync(
             fixture.JournalPath("F100"),
             [

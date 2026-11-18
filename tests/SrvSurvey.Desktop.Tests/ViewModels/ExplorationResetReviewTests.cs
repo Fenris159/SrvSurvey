@@ -123,6 +123,72 @@ public sealed partial class ExplorationHistoryViewModelTests
     }
 
     [Fact]
+    public async Task AValueResetAcknowledgesOlderHistoryWhenOnlyTheLatestJournalWasMonitored()
+    {
+        using var fixture = new Fixture();
+        await File.WriteAllLinesAsync(
+            Path.Combine(fixture.Journals, "Journal.2026-10-01T130000.01.log"),
+            [
+                """{"timestamp":"2026-10-01T13:00:00Z","event":"Fileheader","Odyssey":true}""",
+                """{"timestamp":"2026-10-01T13:00:01Z","event":"Commander","FID":"F100","Name":"History Commander"}""",
+                """{"timestamp":"2026-10-01T13:01:00Z","event":"Location","StarSystem":"Beta","SystemAddress":200}""",
+                """{"timestamp":"2026-10-01T13:02:00Z","event":"Scan","SystemAddress":200,"BodyID":0,"BodyName":"Beta A","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}""",
+            ]
+        );
+        await using MainWindowViewModel main = CreateLedgerMain(fixture);
+        await main.RefreshAsync();
+        await main.ExplorationHistory.PendingSynchronization;
+        main.ExplorationHistory.AutoResetEstimatedValue = true;
+        await main.ExplorationHistory.PendingPreferenceSave;
+        Assert.Equal(46212, main.ExplorationHistory.AutomaticEstimatedValue);
+        await main.ResetExplorationValueAsync();
+        await main.ResetExplorationValueAsync();
+        Assert.Equal(0, main.ExplorationHistory.AutomaticEstimatedValue);
+        Assert.Equal(2, main.ExplorationHistory.Rows.Count);
+        Assert.All(main.ExplorationHistory.Rows, row => Assert.Equal(23106, row.Data.EstimatedValue));
+    }
+
+    [Fact]
+    public async Task InvalidResetMetadataCannotWriteThePreviousCommandersOrganicStateIntoAnotherProfile()
+    {
+        using var fixture = new Fixture();
+        await fixture.Profiles.SaveExobiologyAsync(
+            "F100",
+            "History Commander",
+            true,
+            new SrvSurvey.Core.Exobiology.ExobiologySnapshot(null, null, null, 500, ["999_1_2310101_500_False"], 0)
+        );
+        string otherPath = Path.Combine(fixture.Data, "F200-live.json");
+        const string other =
+            """{"fid":"F200","commander":"Second Commander","organicRewards":321,"scannedBioEntryIds":["888_1_2310101_321_False"],"explorationSurveyStart":"invalid-object"}""";
+        await File.WriteAllTextAsync(otherPath, other);
+        await using MainWindowViewModel main = CreateLedgerMain(fixture);
+        await main.RefreshAsync();
+        Assert.Equal("500 CR", main.UnclaimedBioRewards);
+        await File.AppendAllLinesAsync(
+            fixture.JournalPath("F100"),
+            [
+                """{"timestamp":"2026-10-01T14:00:00Z","event":"Commander","FID":"F200","Name":"Second Commander"}""",
+                """{"timestamp":"2026-10-01T14:01:00Z","event":"ScanOrganic","ScanType":"Log","Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;","SystemAddress":200,"Body":1}""",
+            ]
+        );
+        await main.RefreshAsync();
+        System.Text.Json.Nodes.JsonObject savedOther = System
+            .Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(otherPath))!
+            .AsObject();
+        Assert.Equal(321, savedOther["organicRewards"]!.GetValue<long>());
+        Assert.Equal(
+            "888_1_2310101_321_False",
+            Assert.Single(savedOther["scannedBioEntryIds"]!.AsArray())!.GetValue<string>()
+        );
+        Assert.Equal(500, (await fixture.Profiles.LoadAsync("F100", true)).Data!.Exobiology.OrganicRewards);
+        Assert.Equal("0 CR", main.UnclaimedBioRewards);
+        Assert.False(main.ResetExobiologyCommand.CanExecute(null));
+        await main.ResetExobiologyAsync();
+        Assert.False(main.IsResetExobiologyPending);
+    }
+
+    [Fact]
     public async Task AResetIncludesHistorysVisibleUnreadScanInTheSharedStartingPoint()
     {
         using var fixture = new Fixture();

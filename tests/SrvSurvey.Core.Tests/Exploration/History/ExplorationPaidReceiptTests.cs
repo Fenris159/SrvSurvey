@@ -104,11 +104,28 @@ public sealed partial class ExplorationHistoryCatalogTests
     public async Task ResettingTheAutomaticValuePreservesTheLedgerAndCountsOnlyNewUnsoldCreditsAfterRestartAndReplay()
     {
         using var fixture = new HistoryFixture();
-        fixture.Write([Location("Ledger Alpha", 100, 0), Star(100)]);
+        fixture.Write([
+            Location("Previous sale", 200, 0),
+            """{"event":"FSDJump","JumpDist":3.5}""",
+            Star(200),
+            """{"event":"SellExplorationData","Systems":["Previous sale"],"TotalEarnings":12345}""",
+            Location("Ledger Alpha", 100, 0),
+            Star(100),
+        ]);
         await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        ExplorationHistoryRow originalReceipt = Assert.Single(
+            (await fixture.Catalog.QueryAsync(new(ExplorationDataStatus.Paid))).Rows
+        );
         ExplorationHistorySummary reset = await fixture.Catalog.ResetSurveyValueAsync();
         Assert.Equal(23106, reset.UnsoldValue);
         Assert.Equal(0, reset.TrackedUnsoldValue);
+        ExplorationHistoryRow retained = Assert.Single(
+            (await fixture.Catalog.QueryAsync(new(ExplorationDataStatus.Paid))).Rows
+        );
+        Assert.Equal(originalReceipt.Anchor, retained.Anchor);
+        Assert.Equal(12345, retained.Payment!.ActualEarnings);
+        Assert.Equal(1, retained.Payment.JumpCount);
+        Assert.Equal(3.5, retained.Payment.DistanceTravelled);
 
         JournalEventEnvelope[] scan = fixture.Append([
             """{"event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Ledger Alpha 1","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1,"WasDiscovered":false,"WasMapped":false}""",
@@ -139,7 +156,7 @@ public sealed partial class ExplorationHistoryCatalogTests
         );
         Assert.Equal(0, next.TrackedUnsoldValue);
         ExplorationHistoryPage ledger = await reopened.QueryAsync(new() { IncludePayments = true });
-        Assert.Equal(2, ledger.TotalRows);
+        Assert.Equal(4, ledger.TotalRows);
         Assert.Equal(600000, ledger.Rows[0].Payment!.ActualEarnings);
         Assert.Equal(472306, ledger.Rows[1].EstimatedValue);
     }

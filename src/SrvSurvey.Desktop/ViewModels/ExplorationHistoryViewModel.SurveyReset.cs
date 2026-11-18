@@ -15,7 +15,13 @@ public sealed partial class ExplorationHistoryViewModel
         ExplorationHistoryCatalog? current = catalog;
         await PendingSynchronization;
         RequireSurveyResetContext(current, version, token);
-        return await TrackIo(current!.CaptureSurveyResetPointAsync(consumed, CancellationToken.None));
+        return await TrackIo(
+            current!.CaptureSurveyResetPointAsync(
+                consumed,
+                includeEarlierSources: true,
+                cancellationToken: CancellationToken.None
+            )
+        );
     }
 
     public Task ApplySurveyResetPointAsync(ExplorationSurveyResetPoint point)

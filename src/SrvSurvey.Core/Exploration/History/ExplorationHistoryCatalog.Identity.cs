@@ -59,7 +59,7 @@ public sealed partial class ExplorationHistoryCatalog
         return key;
     }
 
-    /// <summary>An ID-only mapping placeholder must not replace a previously valued name-only body.</summary>
+    /// <summary>Only an unvalued placeholder can merge into the proven body that owns scans and payments.</summary>
     private static string ReconcileBodyPlaceholder(
         SqliteConnection connection,
         string placeholder,
@@ -71,18 +71,23 @@ public sealed partial class ExplorationHistoryCatalog
         using SqliteCommand alias = Command(
             connection,
             """
-            SELECT key FROM bodies WHERE system_key=@system AND name=@name COLLATE NOCASE AND body_id IS NULL
-                AND EXISTS(SELECT 1 FROM bodies WHERE key=@placeholder AND scan_source_id IS NULL
-                    AND paid_value=0 AND pending_value=0 AND batch_id IS NULL) LIMIT 2;
+            SELECT key FROM bodies WHERE system_key=@system AND name=@name COLLATE NOCASE AND body_id IS NULL LIMIT 2;
             """,
             (SystemParameter, system),
-            (NameParameter, name),
-            ("@placeholder", placeholder)
+            (NameParameter, name)
         );
         string? canonical = UniqueKey(alias);
         if (canonical is null)
         {
             return placeholder;
+        }
+        if (!IsUnvaluedBodyPlaceholder(connection, placeholder))
+        {
+            if (!IsUnvaluedBodyPlaceholder(connection, canonical))
+            {
+                return placeholder;
+            }
+            (canonical, placeholder) = (placeholder, canonical);
         }
         Execute(
             connection,
@@ -94,15 +99,30 @@ public sealed partial class ExplorationHistoryCatalog
                 SELECT @canonical,source_id,offset,hash FROM pending_landings WHERE body_key=@placeholder;
             DELETE FROM pending_landings WHERE body_key=@placeholder;
             DELETE FROM bodies WHERE key=@placeholder;
-            UPDATE bodies SET body_id=@id WHERE key=@canonical;
+            UPDATE bodies SET body_id=@id,name=COALESCE(name,@name) WHERE key=@canonical;
             """,
             ("@canonicalGuard", UnknownMappingPrefix + canonical),
             ("@placeholderGuard", UnknownMappingPrefix + placeholder),
             ("@placeholder", placeholder),
             ("@id", id),
+            (NameParameter, name),
             ("@canonical", canonical)
         );
+        if (ReadBody(connection, canonical).BatchId is { } batch)
+        {
+            AttachPendingLanding(connection, batch, canonical);
+        }
         return canonical;
+    }
+
+    private static bool IsUnvaluedBodyPlaceholder(SqliteConnection connection, string body)
+    {
+        using SqliteCommand command = Command(
+            connection,
+            "SELECT COUNT(*) FROM bodies WHERE key=@body AND scan_source_id IS NULL AND paid_value=0 AND pending_value=0 AND batch_id IS NULL;",
+            (BodyParameter, body)
+        );
+        return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) == 1;
     }
 
     private static string? UniqueKey(SqliteCommand command)

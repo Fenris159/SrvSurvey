@@ -24,7 +24,8 @@ until history recovery finishes.
   credited payout in the Estimate column, travel since the previous sale, and
   scanned, DSS, and landed totals for identified sold systems. Manual survey
   resets do not change receipt travel totals. Select a receipt for its systems
-  and original sale record.
+  and original sale record. Date filters use collection dates for data rows and
+  sale dates for Paid receipts.
 - **Reliable history:** Duplicate journal delivery does not duplicate receipts.
   Older sales are backfilled from available journals; missing payout or travel
   details are marked unavailable. Resetting totals preserves the scan details

@@ -362,6 +362,7 @@ public sealed partial class ExplorationHistoryCatalog
             DELETE FROM metadata WHERE key NOT IN ('commander','galaxy');
             """
         );
+        EnsureCatalogGeneration(connection);
     }
 
     private void IndexSource(

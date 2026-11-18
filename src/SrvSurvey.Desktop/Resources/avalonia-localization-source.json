@@ -13205,10 +13205,9 @@
     "Text": "Collected",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningActivityOverlayViewModel.cs"
   },
   {
     "Text": "Collected engineering materials",
@@ -13217,14 +13216,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
-  },
-  {
-    "Text": "Collected from (UTC)",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Collected material",
@@ -13249,6 +13240,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
+  },
+  {
+    "Text": "Collection date for exploration data; sale date for Paid receipts.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Collector limpet",
@@ -17427,6 +17426,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+  },
+  {
+    "Text": "Date",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
+  },
+  {
+    "Text": "Date from (UTC)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Days",
@@ -54074,6 +54089,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/BiologyVariantColorConverter.cs"
+  },
+  {
+    "Text": "Sale date",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/ExplorationHistoryView.axaml"
   },
   {
     "Text": "Salvage operation",

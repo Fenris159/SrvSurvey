@@ -13,6 +13,7 @@ public sealed partial class ExplorationHistoryCatalog
     private const string BatchParameter = "@batch";
     private const string ValuationVersionKey = "valuation_version";
     private const string CurrentValuationVersion = "7";
+    private const string CatalogGenerationKey = "catalog_generation";
     private const string PendingDiscoveryKey = "pending_discovery";
     private const string RecoveryConfirmationKey = "recovery_confirmation";
     private const string ReconciliationPendingKey = "reconciliation_pending";
@@ -67,6 +68,7 @@ public sealed partial class ExplorationHistoryCatalog
         Execute(connection, "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;");
         if (schemaVersion == CurrentSchemaVersion)
         {
+            EnsureCatalogGeneration(connection);
             return true;
         }
         using SqliteTransaction transaction = connection.BeginTransaction();
@@ -158,8 +160,22 @@ public sealed partial class ExplorationHistoryCatalog
         {
             SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
         }
+        EnsureCatalogGeneration(connection);
         transaction.Commit();
         return true;
+    }
+
+    private static void EnsureCatalogGeneration(SqliteConnection connection)
+    {
+        if (ReadMetadata(connection, CatalogGenerationKey) is null)
+        {
+            Execute(
+                connection,
+                "INSERT OR IGNORE INTO metadata(key,value) VALUES(@name,@value);",
+                (NameParameter, CatalogGenerationKey),
+                ("@value", Guid.NewGuid().ToString("N"))
+            );
+        }
     }
 
     private void ValidateScope(SqliteConnection connection)

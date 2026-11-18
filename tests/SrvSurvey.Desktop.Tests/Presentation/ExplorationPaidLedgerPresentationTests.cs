@@ -52,6 +52,15 @@ public sealed partial class ExplorationHistoryPresentationTests
                 border => border.Classes.Contains("history-row")
             );
             Assert.Contains("paid", receipt.Classes);
+            Assert.Contains(
+                view.GetVisualDescendants().OfType<TextBlock>(),
+                block => block.Text == "Date" && block.IsEffectivelyVisible
+            );
+            Assert.Contains(view.GetVisualDescendants().OfType<TextBlock>(), block => block.Text == "Date from (UTC)");
+            Assert.Contains(
+                receipt.GetVisualDescendants().OfType<TextBlock>(),
+                block => block.Text == "Sale date" && block.IsEffectivelyVisible
+            );
             TextBlock title = receipt
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
@@ -83,6 +92,24 @@ public sealed partial class ExplorationHistoryPresentationTests
             Assert.Contains("500000", model.RawJson);
             using WriteableBitmap? details = window.CaptureRenderedFrame();
             SavePreview(details!, $"paid-details-{theme}-{width}");
+            TextBlock payout = Assert.Single(
+                view.GetVisualDescendants().OfType<TextBlock>(),
+                block =>
+                    block.DataContext is ExplorationHistoryFact { Label: "Actual payout" }
+                    && block.Text == expectedPayout
+            );
+            Assert.True(payout.IsEffectivelyVisible);
+            TextBlock systems = Assert.Single(
+                view.GetVisualDescendants().OfType<TextBlock>(),
+                block =>
+                    block.DataContext is ExplorationHistoryFact { Label: "Sold systems" }
+                    && block.Text != "Sold systems"
+            );
+            Assert.True(systems.IsEffectivelyVisible);
+            Assert.Equal(
+                "Survey system 1, Survey system 2, Survey system 3, Survey system 4, Survey system 5, Survey system 6, Survey system 7, Survey system 8, Survey system 9, Survey system 10, Survey system 11, Survey system 12, Survey system 13, Survey system 14, Survey system 15, Survey system 16, Survey system 17, Survey system 18, Survey system 19, Survey system 20, Survey system 21, Survey system 22, Survey system 23, Survey system 24, Survey system 25",
+                systems.Text
+            );
             Assert.Equal(
                 "Survey system 1, Survey system 2, Survey system 3",
                 string.Join(", ", model.SelectedRow!.Data.Payment!.Systems.Take(3))
@@ -120,6 +147,29 @@ public sealed partial class ExplorationHistoryPresentationTests
             Assert.Equal("Reset Exp Value", value.Content);
             Assert.Same(everything.Parent, odometer.Parent);
             Assert.Same(everything.Parent, value.Parent);
+            WrapPanel actions = view.FindControl<WrapPanel>("SurveyResetActions")!;
+            double actionsTop = actions.TranslatePoint(default, view)!.Value.Y;
+            foreach (
+                string label in new[]
+                {
+                    "ESTIMATED EXPLORATION VALUE",
+                    "Hyperspace jumps",
+                    "Distance travelled",
+                    "Bodies",
+                }
+            )
+            {
+                TextBlock metric = Assert.Single(
+                    view.GetVisualDescendants().OfType<TextBlock>(),
+                    block => block.Text == label
+                );
+                Border card = metric
+                    .GetVisualAncestors()
+                    .OfType<Border>()
+                    .First(border => border.Classes.Contains("card"));
+                double cardBottom = card.TranslatePoint(default, view)!.Value.Y + card.Bounds.Height;
+                Assert.True(cardBottom <= actionsTop, $"{label} must remain above the reset actions.");
+            }
             Click(window, odometer);
             Assert.Equal("Confirm Reset Odometer", odometer.Content);
             Assert.Equal("Reset Everything Above", everything.Content);

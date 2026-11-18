@@ -116,7 +116,7 @@
               </ComboBox>
             </StackPanel>
             <StackPanel Margin="0,0,16,8" Spacing="6">
-              <TextBlock Classes="muted" FontSize="12" Text="Collected from (UTC)"/>
+              <TextBlock Classes="muted" FontSize="12" Text="Date from (UTC)"/>
               <CalendarDatePicker Width="190" SelectedDate="{Binding FromDate, Mode=TwoWay}" PlaceholderText="Any start date"/>
             </StackPanel>
             <StackPanel Margin="0,0,16,8" Spacing="6">
@@ -132,7 +132,7 @@
       <Grid RowDefinitions="Auto,*">
         <Border BorderBrush="{DynamicResource RavenBorderBrush}" BorderThickness="0,0,0,1" Padding="16,10,32,10">
           <Grid ColumnDefinitions="110,1.5*,*,132,90" ColumnSpacing="12">
-            <TextBlock Classes="muted" FontSize="12" Text="Collected"/>
+            <TextBlock Classes="muted" FontSize="12" Text="Date" ToolTip.Tip="Collection date for exploration data; sale date for Paid receipts."/>
             <TextBlock Grid.Column="1" Classes="muted" FontSize="12" Text="System and contents" TextWrapping="Wrap"/>
             <TextBlock Grid.Column="2" Classes="muted" FontSize="12" Text="Notable" ToolTip.Tip="Discoveries recorded for this system across its journal history. Tags do not add to the credit estimate."/>
             <TextBlock Grid.Column="3" Classes="muted" FontSize="12" Text="Estimate" HorizontalAlignment="Right"/>
@@ -149,6 +149,7 @@
                     <StackPanel Spacing="5">
                       <TextBlock Text="{Binding CollectedDate}"/>
                       <TextBlock Classes="muted" FontSize="12" Text="{Binding CollectedTime}"/>
+                      <TextBlock Classes="muted" FontSize="12" Text="Sale date" IsVisible="{Binding IsPaid}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="5" IsVisible="{Binding IsCollection}">
                       <Button Classes="system-link" Command="{Binding CopySystemNameCommand}" ToolTip.Tip="Copy system name" AutomationProperties.Name="{Binding SystemName}">

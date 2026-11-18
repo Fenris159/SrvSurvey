@@ -6593,10 +6593,6 @@
       "translation": "Gesammelte technische Materialien"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Gesammelt von (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Gesammeltes Material"
     },
@@ -6607,6 +6603,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Gesammelt: {0}x {1}, neue Gesamtzahl {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Erhebungsdatum für Explorationsdaten; Verkaufsdatum für bezahlte Quittungen."
     },
     {
       "source": "Collector limpet",
@@ -8687,6 +8687,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Datennutzung und Lizenzierung"
+    },
+    {
+      "source": "Date",
+      "translation": "Datum"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Datum von (UTC)"
     },
     {
       "source": "Days",
@@ -26943,6 +26951,10 @@
     {
       "source": "Sage",
       "translation": "Salbei"
+    },
+    {
+      "source": "Sale date",
+      "translation": "Verkaufsdatum"
     },
     {
       "source": "Salvage operation",
@@ -49519,10 +49531,6 @@
       "translation": "Materiales de ingeniería recopilados."
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Recogido de (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Material recolectado"
     },
@@ -49533,6 +49541,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Recopilado: {0}x {1}, nuevo total {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Fecha de recopilación de datos de exploración; fecha de venta para recibos pagados."
     },
     {
       "source": "Collector limpet",
@@ -51613,6 +51625,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Uso de datos y licencias"
+    },
+    {
+      "source": "Date",
+      "translation": "Fecha"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Fecha de (UTC)"
     },
     {
       "source": "Days",
@@ -69869,6 +69889,10 @@
     {
       "source": "Sage",
       "translation": "Sabio"
+    },
+    {
+      "source": "Sale date",
+      "translation": "fecha de venta"
     },
     {
       "source": "Salvage operation",
@@ -92445,10 +92469,6 @@
       "translation": "Matériaux d'ingénierie collectés"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Collecté depuis (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Matériel collecté"
     },
@@ -92459,6 +92479,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Collectés : {0}x {1}, nouveau total {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Date de collecte des données d'exploration ; date de vente pour les reçus payés."
     },
     {
       "source": "Collector limpet",
@@ -94539,6 +94563,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Utilisation des données et licences"
+    },
+    {
+      "source": "Date",
+      "translation": "Date"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Date de (UTC)"
     },
     {
       "source": "Days",
@@ -112795,6 +112827,10 @@
     {
       "source": "Sage",
       "translation": "Sage"
+    },
+    {
+      "source": "Sale date",
+      "translation": "Date de vente"
     },
     {
       "source": "Salvage operation",
@@ -135371,10 +135407,6 @@
       "translation": "Materiais de engenharia coletados"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Coletado de (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Material coletado"
     },
@@ -135385,6 +135417,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Coletado: {0}x {1}, novo total {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Data de coleta dos dados de exploração; data de venda para recibos pagos."
     },
     {
       "source": "Collector limpet",
@@ -137465,6 +137501,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Uso e licenciamento de dados"
+    },
+    {
+      "source": "Date",
+      "translation": "Data"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Data de (UTC)"
     },
     {
       "source": "Days",
@@ -155721,6 +155765,10 @@
     {
       "source": "Sage",
       "translation": "Sábio"
+    },
+    {
+      "source": "Sale date",
+      "translation": "Data de venda"
     },
     {
       "source": "Salvage operation",
@@ -178297,10 +178345,6 @@
       "translation": "Сборник инженерных материалов"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Получено из (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Собранный материал"
     },
@@ -178311,6 +178355,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Собрано: {0}x {1}, новая сумма {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Дата сбора данных разведки; дата продажи оплаченных квитанций."
     },
     {
       "source": "Collector limpet",
@@ -180391,6 +180439,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Использование данных и лицензирование"
+    },
+    {
+      "source": "Date",
+      "translation": "Дата"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Дата с (UTC)"
     },
     {
       "source": "Days",
@@ -198647,6 +198703,10 @@
     {
       "source": "Sage",
       "translation": "Мудрец"
+    },
+    {
+      "source": "Sale date",
+      "translation": "Дата продажи"
     },
     {
       "source": "Salvage operation",
@@ -221223,10 +221283,6 @@
       "translation": "收集的工程材料"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "收集自 (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "收集材料"
     },
@@ -221237,6 +221293,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "已收集：{0}x {1}，新总数 {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "勘探数据的收集日期；已付款收据的销售日期。"
     },
     {
       "source": "Collector limpet",
@@ -223317,6 +223377,14 @@
     {
       "source": "Data use and licensing",
       "translation": "数据使用和许可"
+    },
+    {
+      "source": "Date",
+      "translation": "日期"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "日期（UTC）"
     },
     {
       "source": "Days",
@@ -241573,6 +241641,10 @@
     {
       "source": "Sage",
       "translation": "圣人"
+    },
+    {
+      "source": "Sale date",
+      "translation": "发售日期"
     },
     {
       "source": "Salvage operation",
@@ -264149,10 +264221,6 @@
       "translation": "* COLLECTED ENGINEERING MATERIALS >>>!"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "* COLLECTED FROM (UTC) >>>!"
-    },
-    {
       "source": "Collected material",
       "translation": "* COLLECTED MATERIAL >>>!"
     },
@@ -264163,6 +264231,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "* COLLECTED: {0}X {1}, NEW TOTAL {2} >>>!"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "* COLLECTION DATE FOR EXPLORATION DATA; SALE DATE FOR PAID RECEIPTS. >>>!"
     },
     {
       "source": "Collector limpet",
@@ -266243,6 +266315,14 @@
     {
       "source": "Data use and licensing",
       "translation": "* DATA USE AND LICENSING >>>!"
+    },
+    {
+      "source": "Date",
+      "translation": "* DATE >>>!"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "* DATE FROM (UTC) >>>!"
     },
     {
       "source": "Days",
@@ -284499,6 +284579,10 @@
     {
       "source": "Sage",
       "translation": "* SAGE >>>!"
+    },
+    {
+      "source": "Sale date",
+      "translation": "* SALE DATE >>>!"
     },
     {
       "source": "Salvage operation",

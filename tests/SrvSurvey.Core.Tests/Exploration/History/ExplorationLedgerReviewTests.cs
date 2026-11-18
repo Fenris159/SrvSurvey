@@ -274,6 +274,7 @@ public sealed partial class ExplorationHistoryCatalogTests
     [InlineData(2)]
     [InlineData(3)]
     [InlineData(4)]
+    [InlineData(5)]
     public async Task AnInvalidResetIntentCannotReplaceAValidProfile(int invalidKind)
     {
         using var fixture = new HistoryFixture();
@@ -287,6 +288,7 @@ public sealed partial class ExplorationHistoryCatalogTests
             1 => [source with { SourceName = "../other.log" }],
             2 => [source with { Offset = -2 }],
             3 => [source with { Hash = "not-a-record-hash" }],
+            5 => [new(source.SourceName, -1, null!)],
             _ => [source, source],
         };
         var profiles = new CommanderProfileStore(fixture.Data);
