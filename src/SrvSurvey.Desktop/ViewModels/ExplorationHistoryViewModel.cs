@@ -113,6 +113,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         new("All data", null),
         new("Unsold", ExplorationDataStatus.Unsold),
         new("Sold", ExplorationDataStatus.Sold),
+        new("Paid", ExplorationDataStatus.Paid),
         new("Lost", ExplorationDataStatus.Lost),
     ];
     public const int PageSize = 50;
@@ -181,17 +182,26 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
     public bool HasRows => Rows.Count > 0;
     public string PageDescription =>
         totalRows == 0
-            ? "No matching systems"
+            ? "No matching entries"
             : $"{pageOffset + 1:N0}–{Math.Min(pageOffset + PageSize, totalRows):N0} of {totalRows:N0} entries";
     public string UnsoldText => $"{summary.UnsoldValue:N0} CR";
     public string SoldText => $"{summary.SoldValue:N0} CR";
     public string LostText => $"{summary.LostValue:N0} CR";
-    public string ActualSalesText => $"Recorded sale earnings: {summary.SaleEarnings:N0} CR";
+    public string ActualSalesText =>
+        summary.UnrecordedPayouts == 0
+            ? $"Recorded sale earnings: {summary.ActualSaleEarnings ?? summary.SaleEarnings:N0} CR"
+            : $"Recorded sale earnings: {summary.ActualSaleEarnings ?? summary.SaleEarnings:N0} CR; {summary.UnrecordedPayouts:N0} payout total(s) not recorded.";
     public string UnsoldCount => $"{summary.UnsoldSystems:N0} unsold entries";
     public string SoldCount => $"{summary.SoldSystems:N0} sold entries";
     public string LostCount => $"{summary.LostSystems:N0} lost entries";
     public long? AutomaticEstimatedValue =>
-        AutoResetEstimatedValue && summary.HasCommanderHistory && summary.IsComplete ? summary.UnsoldValue : null;
+        AutoResetEstimatedValue
+        && pendingSurveyResetPoint is null
+        && summary.HasCommanderHistory
+        && summary.IsComplete
+        && summary.IsSurveyValueAvailable
+            ? summary.TrackedUnsoldValue ?? summary.UnsoldValue
+            : null;
     public string ValueModeDescription
     {
         get
@@ -200,9 +210,13 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             {
                 return "Survey estimate accumulated since the last manual reset.";
             }
+            if (!summary.IsSurveyValueAvailable)
+            {
+                return "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.";
+            }
             if (AutomaticEstimatedValue is not null)
             {
-                return "Estimated value of unsold cartographic data in this commander's available journals.";
+                return "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.";
             }
             return IsBusy
                 ? "Preparing the journal-derived unsold balance. The saved estimate is shown until history is available."
@@ -285,7 +299,13 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         }
     }
 
-    public void SetCommander(string? id, string? name, bool live, bool autoReset)
+    public void SetCommander(
+        string? id,
+        string? name,
+        bool live,
+        bool autoReset,
+        ExplorationSurveyResetPoint? surveyStart = null
+    )
     {
         if (disposed)
         {
@@ -295,6 +315,12 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         {
             commanderName = name;
             Changed(nameof(CommanderLabel));
+            if (surveyStart is not null)
+            {
+                pendingSurveyResetPoint = surveyStart;
+                NotifyBalance();
+                PendingSynchronization = QueueSynchronizationAsync([], full: true);
+            }
             return;
         }
         contextCancellation.Cancel();
@@ -307,6 +333,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         commanderName = name;
         isLive = live;
         autoResetEstimatedValue = autoReset;
+        pendingSurveyResetPoint = surveyStart;
         pageOffset = 0;
         totalRows = 0;
         searchText = string.Empty;
@@ -399,6 +426,21 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
             if (!Current(version, token))
             {
                 return;
+            }
+            if (pendingSurveyResetPoint is { } point)
+            {
+                candidate = await TrackIo(current.ApplySurveyResetPointAsync(point, token));
+                if (!Current(version, token))
+                {
+                    return;
+                }
+
+                if (pendingSurveyResetPoint?.Id == point.Id)
+                {
+                    pendingSurveyResetPoint = null;
+                }
+
+                queryGeneration++;
             }
             summary = candidate;
             NotifyBalance();
@@ -575,7 +617,10 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                 )
                 : null,
             selection
-        );
+        )
+        {
+            IncludePayments = true,
+        };
 
     private void ApplyPage(ExplorationHistoryPage page, ExplorationHistoryAnchor? requestedSelection)
     {
@@ -586,7 +631,10 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         Rows = page
             .Rows.Select(row => new ExplorationHistoryRowViewModel(
                 row,
-                new HistoryCommand(() => CopyNameAsync(row.SystemName), () => clipboardWriter is not null && !disposed)
+                new HistoryCommand(
+                    () => CopyNameAsync(row.SystemName),
+                    () => row.Status != ExplorationDataStatus.Paid && clipboardWriter is not null && !disposed
+                )
             ))
             .ToArray();
         ExplorationHistoryRowViewModel? restored = restoreSelection
@@ -598,7 +646,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
                 selected,
                 new HistoryCommand(
                     () => CopyNameAsync(selected.SystemName),
-                    () => clipboardWriter is not null && !disposed
+                    () => selected.Status != ExplorationDataStatus.Paid && clipboardWriter is not null && !disposed
                 )
             );
         }
@@ -849,12 +897,56 @@ public sealed class ExplorationHistoryRowViewModel(ExplorationHistoryRow data, I
     public ExplorationHistoryRow Data { get; } = data;
     public ICommand CopySystemNameCommand { get; } = copySystemNameCommand;
     public string SystemName => Data.SystemName;
+    public string Title => IsPaid ? "Exploration data sold" : SystemName;
+    public bool IsPaid => Data.Status == ExplorationDataStatus.Paid;
+    public bool IsCollection => !IsPaid;
     public string CollectedDate =>
         Data.LastCollected?.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "Unknown date";
     public string CollectedTime =>
         Data.LastCollected?.UtcDateTime.ToString("HH:mm 'UTC'", CultureInfo.InvariantCulture) ?? string.Empty;
-    public string Estimate => $"{Data.EstimatedValue:N0} CR";
-    public string Contents => $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} mapped";
+    public string Estimate
+    {
+        get
+        {
+            if (!IsPaid)
+            {
+                return $"{Data.EstimatedValue:N0} CR";
+            }
+            return Data.Payment?.ActualEarnings is { } actual
+                ? string.Concat("+", $"{actual:N0} CR")
+                : "Payout not recorded";
+        }
+    }
+    public string ValueCaption => IsPaid && Data.Payment?.ActualEarnings is not null ? "Actual payout" : string.Empty;
+    public string Contents
+    {
+        get
+        {
+            if (!IsPaid)
+            {
+                return $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} mapped";
+            }
+            if (Data.Payment is not { HasBodyDetails: true } payment)
+            {
+                return "Body totals unavailable";
+            }
+            return payment.LandedBodies is { } count
+                ? $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} DSS, {count:N0} landed"
+                : $"{Data.ScannedBodies:N0} scanned, {Data.MappedBodies:N0} DSS; landings unavailable";
+        }
+    }
+    public string ReceiptTravel =>
+        Data.Payment switch
+        {
+            { JumpCount: { } jumps, DistanceTravelled: { } distance } =>
+                $"{jumps:N0} hyperspace jumps, {distance:N1} ly travelled",
+            { JumpCount: { } jumps } => $"{jumps:N0} hyperspace jumps; distance unavailable",
+            _ => "Travel totals unavailable",
+        };
+    public string ReceiptSystems =>
+        Data.Payment?.Systems is { Count: > 0 } systems
+            ? string.Join(", ", systems)
+            : "Sold systems not identified in the journal";
     public IReadOnlyList<ExplorationNotableTagViewModel> NotableTags { get; } =
         ExplorationNotableTagViewModel.From(data.Notables);
     public bool HasNotables => NotableTags.Count > 0;
@@ -866,6 +958,8 @@ public sealed class ExplorationHistoryRowViewModel(ExplorationHistoryRow data, I
     public bool IsUnsold => Data.Status == ExplorationDataStatus.Unsold;
     public bool IsLost => Data.Status == ExplorationDataStatus.Lost;
     public string Status => Data.Status.ToString();
-    public string SettlementDate =>
+    public string SettlementDate => IsPaid ? string.Empty : FormatSettlementDate();
+
+    private string FormatSettlementDate() =>
         Data.SettledAt?.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture) ?? string.Empty;
 }

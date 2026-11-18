@@ -12,12 +12,13 @@ public sealed partial class ExplorationHistoryCatalog
     private const string HashParameter = "@hash";
     private const string BatchParameter = "@batch";
     private const string ValuationVersionKey = "valuation_version";
-    private const string CurrentValuationVersion = "6";
+    private const string CurrentValuationVersion = "7";
+    private const string CatalogGenerationKey = "catalog_generation";
     private const string PendingDiscoveryKey = "pending_discovery";
     private const string RecoveryConfirmationKey = "recovery_confirmation";
     private const string ReconciliationPendingKey = "reconciliation_pending";
     private const string UnknownMappingPrefix = "unconfirmed_mapping:";
-    private const int CurrentSchemaVersion = 5;
+    private const int CurrentSchemaVersion = 6;
 
     private SqliteConnection Open(bool initialize = true)
     {
@@ -67,6 +68,7 @@ public sealed partial class ExplorationHistoryCatalog
         Execute(connection, "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;");
         if (schemaVersion == CurrentSchemaVersion)
         {
+            EnsureCatalogGeneration(connection);
             return true;
         }
         using SqliteTransaction transaction = connection.BeginTransaction();
@@ -115,7 +117,21 @@ public sealed partial class ExplorationHistoryCatalog
                 SELECT batch_id,source_id,offset,hash FROM observations WHERE kind IN ('Scan','SAAScanComplete');
             CREATE TABLE IF NOT EXISTS notable_systems (
                 system_key TEXT PRIMARY KEY REFERENCES systems(key), flags INTEGER NOT NULL);
-            PRAGMA user_version=5;
+            CREATE TABLE IF NOT EXISTS sale_receipts (
+                settlement_id INTEGER PRIMARY KEY REFERENCES settlements(id), actual_earnings INTEGER,
+                system_names TEXT NOT NULL, jumps INTEGER NOT NULL, distance REAL);
+            CREATE TABLE IF NOT EXISTS value_credits (
+                batch_id INTEGER NOT NULL REFERENCES batches(id), source_id INTEGER NOT NULL REFERENCES sources(id),
+                offset INTEGER NOT NULL, hash TEXT NOT NULL, amount INTEGER NOT NULL, timestamp TEXT,
+                PRIMARY KEY(source_id,offset,hash));
+            CREATE TABLE IF NOT EXISTS pending_landings (
+                body_key TEXT PRIMARY KEY REFERENCES bodies(key), source_id INTEGER NOT NULL REFERENCES sources(id),
+                offset INTEGER NOT NULL, hash TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS survey_value_checkpoints (
+                source_name TEXT PRIMARY KEY COLLATE NOCASE, offset INTEGER NOT NULL, hash TEXT NOT NULL, valid INTEGER NOT NULL DEFAULT 0);
+            CREATE TABLE IF NOT EXISTS survey_value_period (
+                id INTEGER PRIMARY KEY CHECK(id=1), point_id TEXT NOT NULL, reset_utc TEXT NOT NULL);
+            PRAGMA user_version=6;
             """
         );
         using SqliteCommand bodyNameColumn = Command(
@@ -144,8 +160,22 @@ public sealed partial class ExplorationHistoryCatalog
         {
             SetMetadata(connection, ValuationVersionKey, CurrentValuationVersion);
         }
+        EnsureCatalogGeneration(connection);
         transaction.Commit();
         return true;
+    }
+
+    private static void EnsureCatalogGeneration(SqliteConnection connection)
+    {
+        if (ReadMetadata(connection, CatalogGenerationKey) is null)
+        {
+            Execute(
+                connection,
+                "INSERT OR IGNORE INTO metadata(key,value) VALUES(@name,@value);",
+                (NameParameter, CatalogGenerationKey),
+                ("@value", Guid.NewGuid().ToString("N"))
+            );
+        }
     }
 
     private void ValidateScope(SqliteConnection connection)
@@ -233,6 +263,21 @@ public sealed partial class ExplorationHistoryCatalog
             connection,
             "SELECT COALESCE(SUM(earnings),0) FROM settlements WHERE kind='sale';"
         );
+        using SqliteCommand actualEarnings = Command(
+            connection,
+            "SELECT COALESCE(SUM(actual_earnings),0) FROM sale_receipts;"
+        );
+        using SqliteCommand missingPayouts = Command(
+            connection,
+            "SELECT COUNT(*) FROM settlements t LEFT JOIN sale_receipts r ON r.settlement_id=t.id WHERE t.kind='sale' AND r.actual_earnings IS NULL;"
+        );
+        using SqliteCommand tracked = Command(
+            connection,
+            SurveyCreditScopeSql
+                + """
+                SELECT COALESCE(SUM(amount),0) FROM survey_credit_scope WHERE status=0 AND in_period=1;
+                """
+        );
         using SqliteCommand sources = Command(connection, "SELECT COUNT(*) FROM sources;");
         using SqliteCommand losses = Command(connection, "SELECT COUNT(*) FROM settlements WHERE kind='loss';");
         using SqliteCommand unknownMappings = Command(
@@ -243,6 +288,7 @@ public sealed partial class ExplorationHistoryCatalog
         bool hasDataEvidence =
             counts.Sum() > 0
             || Convert.ToInt64(losses.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
+        bool surveyValueAvailable = IsSurveyValueAvailable(connection);
         return new ExplorationHistorySummary
         {
             UnsoldValue = values[0],
@@ -252,6 +298,18 @@ public sealed partial class ExplorationHistoryCatalog
             SoldSystems = counts[1],
             LostSystems = counts[2],
             SaleEarnings = Convert.ToInt64(earnings.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture),
+            ActualSaleEarnings = Convert.ToInt64(
+                actualEarnings.ExecuteScalar(),
+                System.Globalization.CultureInfo.InvariantCulture
+            ),
+            UnrecordedPayouts = Convert.ToInt32(
+                missingPayouts.ExecuteScalar(),
+                System.Globalization.CultureInfo.InvariantCulture
+            ),
+            IsSurveyValueAvailable = surveyValueAvailable,
+            TrackedUnsoldValue = surveyValueAvailable
+                ? Convert.ToInt64(tracked.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture)
+                : null,
             SourceFiles = Convert.ToInt32(sources.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture),
             HasCommanderHistory = ReadMetadata(connection, "commander_seen") == "1" && hasDataEvidence,
             IsComplete =

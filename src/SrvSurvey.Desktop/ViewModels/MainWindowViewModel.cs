@@ -168,7 +168,6 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private string explorationDistance = "0.0 ly";
     private string explorationBodies = "Scanned: 0, DSS: 0, Landed: 0";
     private string explorationStatusMessage = "Waiting for commander profile.";
-    private bool isResetExplorationPending;
     private string unclaimedBioRewards = "0 CR";
     private string unclaimedBioScans = "0 samples";
     private string organicScanProgress = "Ready for sample 1 of 3";
@@ -999,24 +998,20 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             journalProjections = CreateJournalProjection();
             RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
             ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
-            resetExplorationCommand = new AsyncCommand(
-                ResetExplorationAsync,
-                () => activeProfileFrontierId is not null
-            );
+            resetExplorationCommand = new AsyncCommand(ResetExplorationAsync, CanEditCommanderProfile);
             ResetExplorationCommand = resetExplorationCommand;
+            resetExplorationOdometerCommand = new AsyncCommand(ResetExplorationOdometerAsync, CanEditCommanderProfile);
+            resetExplorationValueCommand = new AsyncCommand(ResetExplorationValueAsync, CanEditCommanderProfile);
             cancelResetExplorationCommand = new AsyncCommand(
                 CancelResetExplorationAsync,
                 () => IsResetExplorationPending
             );
             CancelResetExplorationCommand = cancelResetExplorationCommand;
-            resetExobiologyCommand = new AsyncCommand(ResetExobiologyAsync, () => activeProfileFrontierId is not null);
+            resetExobiologyCommand = new AsyncCommand(ResetExobiologyAsync, CanEditCommanderProfile);
             ResetExobiologyCommand = resetExobiologyCommand;
             cancelResetExobiologyCommand = new AsyncCommand(CancelResetExobiologyAsync, () => IsResetExobiologyPending);
             CancelResetExobiologyCommand = cancelResetExobiologyCommand;
-            clearSurfaceTrackersCommand = new AsyncCommand(
-                ClearSurfaceTrackersAsync,
-                () => activeProfileFrontierId is not null
-            );
+            clearSurfaceTrackersCommand = new AsyncCommand(ClearSurfaceTrackersAsync, CanEditCommanderProfile);
             ClearSurfaceTrackersCommand = clearSurfaceTrackersCommand;
             toggleFirstFootfallCommand = new AsyncCommand(
                 async () =>
@@ -2038,20 +2033,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     public ICommand CancelResetExplorationCommand { get; }
 
-    public bool IsResetExplorationPending
-    {
-        get => isResetExplorationPending;
-        private set
-        {
-            if (SetField(ref isResetExplorationPending, value))
-            {
-                OnPropertyChanged(nameof(ResetExplorationButtonText));
-                cancelResetExplorationCommand.RaiseCanExecuteChanged();
-            }
-        }
-    }
+    public bool IsResetExplorationPending => pendingExplorationReset is not null;
 
-    public string ResetExplorationButtonText => IsResetExplorationPending ? "Confirm reset" : "Reset totals";
+    public string ResetExplorationButtonText =>
+        pendingExplorationReset == ExplorationResetScope.Everything
+            ? "Confirm Reset Everything"
+            : "Reset Everything Above";
 
     public string UnclaimedBioRewards
     {
@@ -3025,6 +3012,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         if (
             string.Equals(activeProfileFrontierId, journalState.FrontierId, StringComparison.OrdinalIgnoreCase)
             && activeProfileIsOdyssey == isOdyssey
+            && activeCommanderProfileReady
         )
         {
             activeProfileCommanderName = journalState.CommanderName ?? activeProfileCommanderName;
@@ -3045,13 +3033,22 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         activeProfileFrontierId = journalState.FrontierId;
         activeProfileCommanderName = journalState.CommanderName ?? result.Data?.CommanderName;
         activeProfileIsOdyssey = isOdyssey;
+        activeCommanderProfileReady = result.Data is not null;
         resetExplorationCommand.RaiseCanExecuteChanged();
+        resetExplorationOdometerCommand.RaiseCanExecuteChanged();
+        resetExplorationValueCommand.RaiseCanExecuteChanged();
+        SetPendingExplorationReset(null);
+        IsResetExobiologyPending = false;
         resetExobiologyCommand.RaiseCanExecuteChanged();
         clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
 
         if (result.Data is null)
         {
             ExplorationHistory.SetCommander(null, null, isOdyssey, false);
+            explorationState.Reset();
+            UpdateExplorationDisplay(ExplorationSnapshot.Empty);
+            exobiologyState.Reset();
+            UpdateExobiologyDisplay(ExobiologySnapshot.Empty);
             await boxelSurveyStats.SwitchCommanderAsync(journalState.FrontierId, CancellationToken.None);
             projectionState.ProfileRavenApiKey = null;
             Inara.SetCommanderProfile(null, journalState.CommanderName, isOdyssey, inaraApiKey: null);
@@ -3094,7 +3091,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             result.Data.FrontierId,
             activeProfileCommanderName,
             result.Data.IsOdyssey,
-            result.Data.AutoResetExplorationValue
+            result.Data.AutoResetExplorationValue,
+            result.Data.ExplorationSurveyStart
         );
         exobiologyState.Reset(result.Data.Exobiology);
         SurfaceSurvey.Reset(result.Data.Exobiology);
@@ -3139,7 +3137,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private async Task SaveExplorationAsync(ExplorationSnapshot snapshot)
     {
-        if (activeProfileFrontierId is null)
+        if (activeProfileFrontierId is null || !activeCommanderProfileReady)
         {
             return;
         }
@@ -3181,7 +3179,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private async Task SaveExobiologyAsync(ExobiologySnapshot snapshot)
     {
-        if (activeProfileFrontierId is null)
+        if (activeProfileFrontierId is null || !activeCommanderProfileReady)
         {
             return;
         }
@@ -3965,33 +3963,21 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             && long.TryParse(address.GetString(), out systemAddress);
     }
 
-    public async Task ResetExplorationAsync()
-    {
-        if (!IsResetExplorationPending)
-        {
-            IsResetExplorationPending = true;
-            ExplorationStatusMessage = ExplorationHistory.AutoResetEstimatedValue
-                ? "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance."
-                : "Select Confirm reset to clear all six exploration totals.";
-            return;
-        }
-
-        explorationState.Reset();
-        ExplorationSnapshot snapshot = explorationState.CreateSnapshot();
-        UpdateExplorationDisplay(snapshot);
-        IsResetExplorationPending = false;
-        await SaveExplorationAsync(snapshot);
-    }
+    public Task ResetExplorationAsync() => ResetExplorationAsync(ExplorationResetScope.Everything);
 
     private Task CancelResetExplorationAsync()
     {
-        IsResetExplorationPending = false;
+        SetPendingExplorationReset(null);
         ExplorationStatusMessage = "Reset cancelled; totals were not changed.";
         return Task.CompletedTask;
     }
 
     public async Task ResetExobiologyAsync()
     {
+        if (!CanEditCommanderProfile())
+        {
+            return;
+        }
         if (!IsResetExobiologyPending)
         {
             IsResetExobiologyPending = true;

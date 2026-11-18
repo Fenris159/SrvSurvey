@@ -8,7 +8,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed partial class ExplorationHistoryViewModel
 {
     private IReadOnlyList<ExplorationHistoryBodyViewModel> bodies = [];
-    private string detailTitle = "Select a system to inspect its collected data";
+    private string detailTitle = "Select an entry to inspect its records";
     private string detailStatus = string.Empty;
     private string rawJson = string.Empty;
     private long detailGeneration;
@@ -35,14 +35,29 @@ public sealed partial class ExplorationHistoryViewModel
         private set => Set(ref rawJson, value);
     }
     public string DetailLocation =>
-        SelectedRow is { } row
+        SelectedRow is { IsPaid: false } row
             ? $"{row.Position}; system address {row.Data.SystemAddress?.ToString(CultureInfo.InvariantCulture) ?? "unavailable"}."
             : string.Empty;
     public string DetailPeriod =>
-        SelectedRow is { } row
-            ? $"Collected {FormatTime(row.Data.FirstCollected)} to {FormatTime(row.Data.LastCollected)}. {row.Status} {row.SettlementDate}".Trim()
-            : string.Empty;
+        SelectedRow switch
+        {
+            { IsPaid: true } row => $"Paid {FormatTime(row.Data.LastCollected)}",
+            { } row =>
+                $"Collected {FormatTime(row.Data.FirstCollected)} to {FormatTime(row.Data.LastCollected)}. {row.Status} {row.SettlementDate}".Trim(),
+            _ => string.Empty,
+        };
     public bool HasSelection => SelectedRow is not null;
+    public bool HasPaymentSelection => SelectedRow?.IsPaid == true;
+    public IReadOnlyList<ExplorationHistoryFact> PaymentFacts =>
+        SelectedRow is { IsPaid: true } row
+            ?
+            [
+                new("Actual payout", row.Estimate),
+                new("Travel since previous sale", row.ReceiptTravel),
+                new("Identified sold bodies", row.Contents),
+                new("Sold systems", row.ReceiptSystems),
+            ]
+            : [];
 
     private async Task LoadDetailsAsync(ExplorationHistoryRowViewModel? row)
     {
@@ -60,8 +75,10 @@ public sealed partial class ExplorationHistoryViewModel
         Bodies = [];
         RawJson = string.Empty;
         DetailStatus = string.Empty;
-        DetailTitle = row?.SystemName ?? "Select a system to inspect its collected data";
+        DetailTitle = row?.Title ?? "Select an entry to inspect its records";
         Changed(nameof(HasSelection));
+        Changed(nameof(HasPaymentSelection));
+        Changed(nameof(PaymentFacts));
         Changed(nameof(DetailLocation));
         Changed(nameof(DetailPeriod));
         ExplorationHistoryCatalog? current = catalog;
@@ -83,20 +100,14 @@ public sealed partial class ExplorationHistoryViewModel
             }
             Bodies = BuildBodies(details.Events);
             RawJson = string.Join(Environment.NewLine, details.Events.Select(entry => entry.RawJson));
-            DetailStatus = details.Notice ?? $"{row.Status}: {row.Estimate} estimated from {row.Contents}.";
-            JournalEventEnvelope? sale = details.Events.LastOrDefault(entry =>
-                entry.EventName is "SellExplorationData" or "MultiSellExplorationData"
-            );
-            if (
-                sale is not null
-                && sale.Payload.TryGetProperty("TotalEarnings", out JsonElement earnings)
-                && earnings.ValueKind == JsonValueKind.Number
-                && earnings.TryGetInt64(out long amount)
-            )
-            {
-                DetailStatus +=
-                    $" Recorded transaction earnings: {amount:N0} CR. This receipt may include other systems.";
-            }
+            DetailStatus =
+                details.Notice
+                ?? (
+                    row.IsPaid
+                        ? "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale."
+                        : $"{row.Status}: {row.Estimate} estimated from {row.Contents}."
+                );
+            DetailStatus += DescribeRecordedSale(row, details.Events);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
@@ -116,6 +127,27 @@ public sealed partial class ExplorationHistoryViewModel
                 cancelDetailsAsync = null;
             }
         }
+    }
+
+    private static string DescribeRecordedSale(
+        ExplorationHistoryRowViewModel row,
+        IReadOnlyList<JournalEventEnvelope> entries
+    )
+    {
+        JournalEventEnvelope? sale = entries.LastOrDefault(entry =>
+            entry.EventName is "SellExplorationData" or "MultiSellExplorationData"
+        );
+        if (
+            !row.IsPaid
+            && sale is not null
+            && sale.Payload.TryGetProperty("TotalEarnings", out JsonElement earnings)
+            && earnings.ValueKind == JsonValueKind.Number
+            && earnings.TryGetInt64(out long amount)
+        )
+        {
+            return $" Recorded transaction earnings: {amount:N0} CR. This receipt may include other systems.";
+        }
+        return string.Empty;
     }
 
     private async Task<bool> CancelPreviousDetailsAsync(long version, long request, CancellationToken token)

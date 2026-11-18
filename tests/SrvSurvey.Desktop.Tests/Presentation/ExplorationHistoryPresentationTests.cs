@@ -20,7 +20,7 @@ using SrvSurvey.Desktop.Views;
 namespace SrvSurvey.Desktop.Tests.Presentation;
 
 [Collection(AvaloniaHeadlessTestCollection.Name)]
-public sealed class ExplorationHistoryPresentationTests
+public sealed partial class ExplorationHistoryPresentationTests
 {
     private static readonly string[] NotableLabels = ["ELW", "WW", "AW", "TFC", "GGG", "NSP", "NS", "BH"];
     private static readonly string[] NotableDescriptions =
@@ -175,11 +175,13 @@ public sealed class ExplorationHistoryPresentationTests
             Button name = row.GetVisualDescendants()
                 .OfType<Button>()
                 .Single(button => button.Classes.Contains("system-link"));
-            TextBlock estimate = row.Children.OfType<TextBlock>().Single(text => Grid.GetColumn(text) == 3);
+            TextBlock estimate = row.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(text => text.Classes.Contains("history-estimate"));
             Point nameRight = name.TranslatePoint(new Point(name.Bounds.Width, 0), row)!.Value;
             Assert.True(name.Bounds.Width > 0 && nameRight.X <= tagColumn.Bounds.X - 10);
             Point tagsRight = tags.TranslatePoint(new Point(tags.Bounds.Width, 0), row)!.Value;
-            Assert.True(tags.Bounds.Width > 0 && tagsRight.X <= estimate.Bounds.X - 10);
+            Assert.True(tags.Bounds.Width > 0 && tagsRight.X <= estimate.TranslatePoint(default, row)!.Value.X - 10);
             foreach (
                 Border tag in tags.GetVisualDescendants()
                     .OfType<Border>()
@@ -401,8 +403,8 @@ public sealed class ExplorationHistoryPresentationTests
             }
             Assert.Equal(wraps, lines.Count > 1);
             Grid row = discoveries.GetVisualAncestors().OfType<Grid>().First();
-            TextBlock estimate = row
-                .Children.OfType<TextBlock>()
+            TextBlock estimate = row.GetVisualDescendants()
+                .OfType<TextBlock>()
                 .Single(block => block.Classes.Contains("history-estimate"));
             Button system = row.GetVisualDescendants()
                 .OfType<Button>()
@@ -472,8 +474,8 @@ public sealed class ExplorationHistoryPresentationTests
             Button next = view.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "Next"));
             Click(window, next);
             await model.PendingQuery;
-            Assert.Equal("51–75 of 75 entries", model.PageDescription);
-            Assert.Equal(25, model.Rows.Count);
+            Assert.Equal("51–76 of 76 entries", model.PageDescription);
+            Assert.Equal(26, model.Rows.Count);
             Dispatcher.UIThread.RunJobs();
             using WriteableBitmap? lastPage = window.CaptureRenderedFrame();
             Assert.False(
@@ -485,7 +487,7 @@ public sealed class ExplorationHistoryPresentationTests
                 .Single(button => Equals(button.Content, "Previous"));
             Click(window, previousPage);
             await model.PendingQuery;
-            Assert.Equal("1–50 of 75 entries", model.PageDescription);
+            Assert.Equal("1–50 of 76 entries", model.PageDescription);
             TextBox search = view.GetVisualDescendants()
                 .OfType<TextBox>()
                 .Single(box => box.Name == "HistorySystemSearch");

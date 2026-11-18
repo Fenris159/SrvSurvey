@@ -6,7 +6,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
-public sealed class ExplorationHistoryViewModelTests
+public sealed partial class ExplorationHistoryViewModelTests
 {
     [Theory]
     [InlineData(true)]
@@ -472,7 +472,7 @@ public sealed class ExplorationHistoryViewModelTests
         Assert.Equal("23,106 CR", main.EstimatedExplorationValue);
         await main.ResetExplorationAsync();
         Assert.Equal(
-            "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
+            "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
             main.ExplorationStatusMessage
         );
         main.CancelResetExplorationCommand.Execute(null);

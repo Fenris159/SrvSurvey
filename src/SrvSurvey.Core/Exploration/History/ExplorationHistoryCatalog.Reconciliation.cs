@@ -7,6 +7,8 @@ namespace SrvSurvey.Core.Exploration.History;
 
 public sealed partial class ExplorationHistoryCatalog
 {
+    private const string BodyNameProperty = "BodyName";
+
     private sealed record BodyOwnership(long PaidValue, long PendingValue, long? BatchId, OriginalReference? Scan);
 
     private void ApplyEntry(
@@ -22,6 +24,7 @@ public sealed partial class ExplorationHistoryCatalog
             return;
         }
         SetMetadata(connection, "commander_seen", "1");
+        ApplyReceiptTravel(connection, entry);
         ApplyNotableDiscovery(connection, context, entry);
         switch (entry.EventName)
         {
@@ -168,13 +171,14 @@ public sealed partial class ExplorationHistoryCatalog
     private static string? BodyKey(SqliteConnection connection, string systemKey, JsonElement root)
     {
         long? id = Integer(root, "BodyID");
-        string? name = Text(root, "BodyName") ?? Text(root, "Body");
+        string? name = Text(root, BodyNameProperty) ?? Text(root, "Body");
         string? key = name is not null ? systemKey + ":n:" + name : null;
         if (id is { } value)
         {
             key = systemKey + ":i:" + value.ToString(CultureInfo.InvariantCulture);
         }
-        return KnownBodyKey(connection, systemKey, id, name) ?? key;
+        string? known = KnownBodyKey(connection, systemKey, id, name, out bool ambiguous);
+        return id is null && ambiguous ? null : known ?? key;
     }
 
     private static BodyOwnership ReadBody(SqliteConnection connection, string key)
@@ -207,10 +211,15 @@ public sealed partial class ExplorationHistoryCatalog
         {
             return;
         }
+        int candidate = CalculateValue(root, context.IsLive == true, false, false);
         string? system = EnsureSystem(connection, context, root);
         string? body = system is null ? null : BodyKey(connection, system, root);
         if (body is null)
         {
+            if (candidate > 0)
+            {
+                RecordAmbiguousValuation(connection, system, root);
+            }
             return;
         }
         Execute(
@@ -221,13 +230,12 @@ public sealed partial class ExplorationHistoryCatalog
             """,
             ("@key", body),
             (SystemParameter, system),
-            (NameParameter, Text(root, "BodyName") ?? Text(root, "Body")),
+            (NameParameter, Text(root, BodyNameProperty) ?? Text(root, "Body")),
             ("@bodyId", Integer(root, "BodyID")),
             (SourceParameter, reference.SourceId),
             (OffsetParameter, reference.Offset),
             (HashParameter, reference.Hash)
         );
-        int candidate = CalculateValue(root, context.IsLive == true, false, false);
         ApplyValue(connection, system!, body, entry, reference, candidate, null);
     }
 
@@ -242,6 +250,7 @@ public sealed partial class ExplorationHistoryCatalog
         string? body = system is null ? null : BodyKey(connection, system, entry.Payload);
         if (body is null)
         {
+            RecordAmbiguousValuation(connection, system, entry.Payload);
             return;
         }
         BodyOwnership owned = ReadBody(connection, body);
@@ -260,7 +269,7 @@ public sealed partial class ExplorationHistoryCatalog
                     "INSERT OR IGNORE INTO bodies(key,system_key,name,body_id) VALUES(@key,@system,@name,@id);",
                     ("@key", body),
                     (SystemParameter, system),
-                    (NameParameter, Text(entry.Payload, "BodyName") ?? Text(entry.Payload, "Body")),
+                    (NameParameter, Text(entry.Payload, BodyNameProperty) ?? Text(entry.Payload, "Body")),
                     ("@id", Integer(entry.Payload, "BodyID"))
                 );
                 SetMetadata(connection, UnknownMappingPrefix + body, system!);
@@ -278,6 +287,22 @@ public sealed partial class ExplorationHistoryCatalog
         {
             Execute(connection, "DELETE FROM metadata WHERE key=@key;", ("@key", UnknownMappingPrefix + body));
         }
+    }
+
+    private static void RecordAmbiguousValuation(SqliteConnection connection, string? system, JsonElement root)
+    {
+        string? name = Text(root, BodyNameProperty) ?? Text(root, "Body");
+        if (system is null || name is null)
+        {
+            return;
+        }
+        // Either known ID may receive a later mapping; neither resolves this ambiguous event.
+        SetMetadata(connection, UnknownMappingPrefix + "ambiguous:" + system + ":n:" + name, system);
+        SetMetadata(
+            connection,
+            "notice",
+            "Some exploration events do not identify a single body. Their values remain incomplete."
+        );
     }
 
     private static int CalculateValue(JsonElement scan, bool live, bool mapped, bool efficient) =>
@@ -316,6 +341,7 @@ public sealed partial class ExplorationHistoryCatalog
             if (owned.BatchId is { } existing)
             {
                 RecordObservation(connection, existing, body, entry.EventName, reference);
+                AttachPendingLanding(connection, existing, body);
             }
             return;
         }
@@ -341,6 +367,17 @@ public sealed partial class ExplorationHistoryCatalog
             batch = Convert.ToInt64(insert.ExecuteScalar(), CultureInfo.InvariantCulture);
         }
         RecordObservation(connection, batch, body, entry.EventName, reference);
+        AttachPendingLanding(connection, batch, body);
+        Execute(
+            connection,
+            "INSERT INTO value_credits(batch_id,source_id,offset,hash,amount,timestamp) VALUES(@batch,@source,@offset,@hash,@amount,@time);",
+            (BatchParameter, batch),
+            (SourceParameter, reference.SourceId),
+            (OffsetParameter, reference.Offset),
+            (HashParameter, reference.Hash),
+            ("@amount", unpaid - owned.PendingValue),
+            (TimeParameter, Timestamp(entry.Timestamp))
+        );
         if (scanContext is not null)
         {
             RecordObservation(connection, batch, body, "ScanContext", scanContext);
@@ -440,6 +477,7 @@ public sealed partial class ExplorationHistoryCatalog
             Execute(
                 connection,
                 """
+                DELETE FROM pending_landings WHERE body_key IN (SELECT body.key FROM bodies body JOIN systems s ON s.key=body.system_key WHERE s.name=@name COLLATE NOCASE);
                 UPDATE bodies SET paid_value=paid_value+pending_value,pending_value=0,batch_id=NULL
                 WHERE system_key IN (SELECT key FROM systems WHERE name=@name COLLATE NOCASE);
                 UPDATE batches SET status=1,settled_time=@time,settlement_id=@settlement
@@ -452,6 +490,7 @@ public sealed partial class ExplorationHistoryCatalog
                 ("@settlement", settlement)
             );
         }
+        RecordPaymentReceipt(connection, settlement, entry, names);
     }
 
     private static IEnumerable<string> SoldSystems(JsonElement root)
@@ -508,6 +547,7 @@ public sealed partial class ExplorationHistoryCatalog
                 """
                 UPDATE batches SET status=2,settled_time=@time,settlement_id=@settlement WHERE status=0;
                 UPDATE bodies SET pending_value=0,batch_id=NULL;
+                DELETE FROM pending_landings;
                 DELETE FROM metadata WHERE key LIKE @unknown;
                 """,
                 (TimeParameter, string.IsNullOrEmpty(died) ? Timestamp(entry.Timestamp) : died),
@@ -535,6 +575,14 @@ public sealed partial class ExplorationHistoryCatalog
         if (owned.BatchId is { } batch)
         {
             RecordObservation(connection, batch, body, entry.EventName, reference);
+            if (entry.EventName == "Touchdown" && Flag(entry.Payload, "OnPlanet"))
+            {
+                RecordObservation(connection, batch, body, "PlanetaryLanding", reference);
+            }
+        }
+        else if (entry.EventName == "Touchdown" && Flag(entry.Payload, "OnPlanet"))
+        {
+            RetainPendingLanding(connection, system!, body, entry, reference);
         }
     }
 }

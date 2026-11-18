@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Exploration.History;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -10,6 +11,9 @@ internal sealed class JournalProjectionState
     internal JournalSessionState Session { get; } = new();
 
     internal ExplorationState Exploration { get; } = new();
+
+    internal Dictionary<string, ExplorationSurveySourceCheckpoint> ConsumedExplorationRecords { get; } =
+        new(StringComparer.OrdinalIgnoreCase);
 
     internal ExobiologyState Exobiology { get; set; } = null!;
 
@@ -51,4 +55,15 @@ internal sealed class JournalProjectionState
     internal bool ProfileHasExplorationTotals { get; set; }
 
     internal bool ProfileIsOdyssey { get; set; } = true;
+
+    internal void RememberConsumedExplorationRecords(IReadOnlyList<JournalEventEnvelope> entries)
+    {
+        foreach (JournalEventEnvelope entry in entries)
+        {
+            if (ExplorationSurveySourceCheckpoint.FromEntry(entry) is { } boundary)
+            {
+                ConsumedExplorationRecords[boundary.SourceName] = boundary;
+            }
+        }
+    }
 }

@@ -1613,12 +1613,17 @@ public sealed partial class ExplorationHistoryCatalogTests
             "SrvSurvey-exploration-history-" + Guid.NewGuid()
         );
 
-        public HistoryFixture()
+        public HistoryFixture(TimeProvider? timeProvider = null)
         {
             Data = Path.Combine(directory, "data");
             Journals = Path.Combine(directory, "journals");
             Directory.CreateDirectory(Journals);
-            Catalog = new ExplorationHistoryCatalog(Data, "F100", true);
+            Catalog = new ExplorationHistoryCatalog(
+                Data,
+                "F100",
+                true,
+                timeProvider ?? new FrozenLedgerTime(new(2026, 10, 1, 14, 0, 0, TimeSpan.Zero))
+            );
         }
 
         public string Data { get; }
@@ -1645,9 +1650,10 @@ public sealed partial class ExplorationHistoryCatalogTests
             File.WriteAllLines(JournalPath, all);
         }
 
-        public JournalEventEnvelope[] Append(IReadOnlyList<string> entries)
+        public JournalEventEnvelope[] Append(IReadOnlyList<string> entries, string? path = null)
         {
-            long offset = new FileInfo(JournalPath).Length;
+            string sourcePath = path ?? JournalPath;
+            long offset = new FileInfo(sourcePath).Length;
             var observed = new List<JournalEventEnvelope>();
             foreach (string entry in entries)
             {
@@ -1657,12 +1663,12 @@ public sealed partial class ExplorationHistoryCatalogTests
                     parsed! with
                     {
                         SourceRecordIdentity =
-                            Path.GetFileName(JournalPath)
+                            Path.GetFileName(sourcePath)
                             + ":"
                             + offset.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     }
                 );
-                File.AppendAllText(JournalPath, line + "\n", new UTF8Encoding(false));
+                File.AppendAllText(sourcePath, line + "\n", new UTF8Encoding(false));
                 offset += Encoding.UTF8.GetByteCount(line + "\n");
             }
             return observed.ToArray();

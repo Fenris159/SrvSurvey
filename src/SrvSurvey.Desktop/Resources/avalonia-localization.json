@@ -1661,6 +1661,10 @@
       "translation": "Aktivitätsbezogene Referenz für die Chat-Nachrichten SrvSurvey wird derzeit erkannt, einschließlich Beispielen, Anforderungen und Löschverhalten."
     },
     {
+      "source": "Actual payout",
+      "translation": "Tatsächliche Auszahlung"
+    },
+    {
       "source": "Add",
       "translation": "Hinzufügen"
     },
@@ -4205,6 +4209,14 @@
       "translation": "Fließtext"
     },
     {
+      "source": "Body totals from identified sold systems in the available journals.",
+      "translation": "Gesamtsummen aus identifizierten verkauften Systemen in den verfügbaren Journalen."
+    },
+    {
+      "source": "Body totals unavailable",
+      "translation": "Gesamtsummen nicht verfügbar"
+    },
+    {
       "source": "Body type",
       "translation": "Körpertyp"
     },
@@ -6233,6 +6245,18 @@
       "translation": "Klar gestempelt; Nicht beanspruchte Belohnungen wurden nicht geändert."
     },
     {
+      "source": "Clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Löschen Sie geschätzte Credits sowie gescannte, DSS- und gelandete Zählungen."
+    },
+    {
+      "source": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+      "translation": "Löschen Sie geschätzte Credits, Hyperraumsprünge, Distanz und alle Körperwerte."
+    },
+    {
+      "source": "Clear hyperspace jumps and distance travelled.",
+      "translation": "Klare Hyperraumsprünge und zurückgelegte Distanz."
+    },
+    {
       "source": "Clear key",
       "translation": "Schlüssel löschen"
     },
@@ -6569,10 +6593,6 @@
       "translation": "Gesammelte technische Materialien"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Gesammelt von (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Gesammeltes Material"
     },
@@ -6583,6 +6603,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Gesammelt: {0}x {1}, neue Gesamtzahl {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Erhebungsdatum für Explorationsdaten; Verkaufsdatum für bezahlte Quittungen."
     },
     {
       "source": "Collector limpet",
@@ -7333,6 +7357,30 @@
       "translation": "Bestätigen"
     },
     {
+      "source": "Confirm Reset Everything",
+      "translation": "Bestätigen Sie „Alles zurücksetzen“."
+    },
+    {
+      "source": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+      "translation": "Bestätigen Sie „Alles zurücksetzen“, um alle sechs Umfragesummen zu löschen. Der Explorationsverlauf und die Zahlungsbelege werden aufbewahrt."
+    },
+    {
+      "source": "Confirm Reset Exp Value",
+      "translation": "Bestätigen Sie das Zurücksetzen des Exp-Werts"
+    },
+    {
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Bestätigen Sie „Exp-Wert zurücksetzen“, um geschätzte Credits sowie gescannte, DSS- und gelandete Zählungen zu löschen."
+    },
+    {
+      "source": "Confirm Reset Odometer",
+      "translation": "Bestätigen Sie das Zurücksetzen des Kilometerzählers"
+    },
+    {
+      "source": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+      "translation": "Bestätigen Sie „Kilometerzähler zurücksetzen“, um Hyperraumsprünge und die zurückgelegte Distanz zu löschen."
+    },
+    {
       "source": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
       "translation": "Bestätigen Sie, dass sich der ausgewählte Ordner und das aktuelle Journal auf den Commander beziehen, den Sie spielen."
     },
@@ -7387,10 +7435,6 @@
     {
       "source": "Confirm removal",
       "translation": "Bestätigen Sie das Entfernen"
-    },
-    {
-      "source": "Confirm reset",
-      "translation": "Bestätigen Sie das Zurücksetzen"
     },
     {
       "source": "Confirm restore",
@@ -8643,6 +8687,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Datennutzung und Lizenzierung"
+    },
+    {
+      "source": "Date",
+      "translation": "Datum"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Datum von (UTC)"
     },
     {
       "source": "Days",
@@ -10893,10 +10945,6 @@
       "translation": "Geschätzte verbleibende Fahrten: {0}"
     },
     {
-      "source": "Estimated value of unsold cartographic data in this commander's available journals.",
-      "translation": "Geschätzter Wert der nicht verkauften kartografischen Daten in den verfügbaren Zeitschriften dieses Kommandanten."
-    },
-    {
       "source": "Evacuation shelter",
       "translation": "Evakuierungsunterkunft"
     },
@@ -11125,6 +11173,10 @@
       "translation": "Explorationsdaten"
     },
     {
+      "source": "Exploration data sold",
+      "translation": "Explorationsdaten verkauft"
+    },
+    {
       "source": "Exploration history",
       "translation": "Erkundungsgeschichte"
     },
@@ -11147,6 +11199,10 @@
     {
       "source": "Exploration route: Sol → Lave → Colonia",
       "translation": "Erkundungsroute: Sol → Lave → Colonia"
+    },
+    {
+      "source": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+      "translation": "Quittung für den Explorationsverkauf. Die Gesamtsummen umfassen identifizierte verkaufte Systeme; Der Reisepreis umfasst die verfügbaren Zeitschriften seit dem letzten Verkauf."
     },
     {
       "source": "Exploration screenshots",
@@ -14613,6 +14669,10 @@
       "translation": "Idealer Zufahrtskorridor"
     },
     {
+      "source": "Identified sold bodies",
+      "translation": "Identifizierte verkaufte Leichen"
+    },
+    {
       "source": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
       "translation": "Identifiziert einen Wächter/Standortpunkt oder ein aufgezeichnetes Element im Codex-Stil in kompakten Overlay-Zeilen."
     },
@@ -15657,6 +15717,10 @@
       "translation": "Sprungzieldaten bereit"
     },
     {
+      "source": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+      "translation": "Springen, Scannen, Kartieren, Landen, Distanz und geschätzte Belohnungssummen."
+    },
+    {
       "source": "Jump-route progress",
       "translation": "Fortschritt der Sprungroute"
     },
@@ -16311,10 +16375,6 @@
     {
       "source": "Legacy profile ({0} files)",
       "translation": "Legacy-Profil ({0} Dateien)"
-    },
-    {
-      "source": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-      "translation": "Legacy-kompatibler Sprung, Scan, Kartierung, Landung, Distanz und geschätzte Belohnungssummen."
     },
     {
       "source": "LegacyImport",
@@ -19649,6 +19709,10 @@
       "translation": "Es wurden keine passenden Träger gefunden. Versuchen Sie es mit einem Namen oder Rufzeichen."
     },
     {
+      "source": "No matching entries",
+      "translation": "Keine passenden Einträge"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Es sind noch keine passenden bestückten Module verfügbar. Es ist ein vollständiges Loadout-Ereignis erforderlich. Gespeicherte Aufgaben bleiben bearbeitbar."
     },
@@ -19663,10 +19727,6 @@
     {
       "source": "No matching system was returned by Spansh.",
       "translation": "Von Spansh wurde kein passendes System zurückgegeben."
-    },
-    {
-      "source": "No matching systems",
-      "translation": "Keine passenden Systeme"
     },
     {
       "source": "No matching systems found.",
@@ -21805,6 +21865,10 @@
       "translation": "Bezahlt"
     },
     {
+      "source": "Paid {0}",
+      "translation": "Bezahlt {0}"
+    },
+    {
       "source": "Painite",
       "translation": "Painit"
     },
@@ -21907,6 +21971,10 @@
     {
       "source": "Paused",
       "translation": "Angehalten"
+    },
+    {
+      "source": "Payout not recorded",
+      "translation": "Auszahlung nicht erfasst"
     },
     {
       "source": "Peach",
@@ -24629,6 +24697,10 @@
       "translation": "Erfasste Verkaufserlöse: {0} CR"
     },
     {
+      "source": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+      "translation": "Erfasste Verkaufserlöse: {0} CR; {1} Auszahlungssumme(n) nicht erfasst."
+    },
+    {
       "source": "Recorded systems required for averages",
       "translation": "Für Durchschnittswerte sind aufgezeichnete Systeme erforderlich"
     },
@@ -25533,6 +25605,18 @@
       "translation": "Zurücksetzen"
     },
     {
+      "source": "Reset Everything Above",
+      "translation": "Alles oben zurücksetzen"
+    },
+    {
+      "source": "Reset Exp Value",
+      "translation": "Exp-Wert zurücksetzen"
+    },
+    {
+      "source": "Reset Odometer",
+      "translation": "Kilometerzähler zurücksetzen"
+    },
+    {
       "source": "Reset VR orientation",
       "translation": "VR-Ausrichtung zurücksetzen"
     },
@@ -25575,10 +25659,6 @@
     {
       "source": "Reset to default colors",
       "translation": "Auf Standardfarben zurücksetzen"
-    },
-    {
-      "source": "Reset totals",
-      "translation": "Summen zurücksetzen"
     },
     {
       "source": "Reset {0} text and icon scales to 0%. Use the top ✓ to save and close.",
@@ -26873,6 +26953,10 @@
       "translation": "Salbei"
     },
     {
+      "source": "Sale date",
+      "translation": "Verkaufsdatum"
+    },
+    {
       "source": "Salvage operation",
       "translation": "Bergungsaktion"
     },
@@ -27785,14 +27869,6 @@
       "translation": "Wählen Sie „Entfernung bestätigen“, um den lokalen Entwicklungsfortschritt zu entfernen. Zuerst wird die Statusdatei gesichert."
     },
     {
-      "source": "Select Confirm reset to clear all six exploration totals.",
-      "translation": "Wählen Sie „Zurücksetzen bestätigen“, um alle sechs Erkundungssummen zu löschen."
-    },
-    {
-      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-      "translation": "Wählen Sie „Zurücksetzen bestätigen“, um die gespeicherten Umfragesummen zu löschen. Durch die automatische Nachverfolgung bleibt der aus dem Journal abgeleitete, nicht verkaufte Saldo erhalten."
-    },
-    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Wählen Sie „Deaktivieren“ und bestätigen Sie, um den API-Schlüssel zu entfernen und die ausstehende Lieferung für diesen Commander abzubrechen. Beim Wechseln von Commanders wird der separate Status EDSM dieses Profils geladen."
     },
@@ -27965,10 +28041,6 @@
       "translation": "Wählen Sie in den Suchmärkten einen Bahnhof oder Waren aus, um Ihre Einkaufsliste zu erstellen."
     },
     {
-      "source": "Select a system to inspect its collected data",
-      "translation": "Wählen Sie ein System aus, um die gesammelten Daten zu überprüfen"
-    },
-    {
       "source": "Select a threshold group to delete.",
       "translation": "Wählen Sie eine Schwellenwertgruppe zum Löschen aus."
     },
@@ -27983,6 +28055,10 @@
     {
       "source": "Select an announcement preset to delete.",
       "translation": "Wählen Sie eine Ansagevoreinstellung zum Löschen aus."
+    },
+    {
+      "source": "Select an entry to inspect its records",
+      "translation": "Wählen Sie einen Eintrag aus, um seine Datensätze zu überprüfen"
     },
     {
       "source": "Select an equipped module",
@@ -28055,6 +28131,10 @@
     {
       "source": "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
       "translation": "Wählen Sie die Active Commander-Karte aus und verwenden Sie dann die Verbindungssteuerung Frontier, um die offizielle Anmeldeseite zu öffnen."
+    },
+    {
+      "source": "Select the commander again before resetting exploration value.",
+      "translation": "Wählen Sie den Kommandanten erneut aus, bevor Sie den Erkundungswert zurücksetzen."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -29451,6 +29531,14 @@
     {
       "source": "Sold estimate",
       "translation": "Schätzung verkauft"
+    },
+    {
+      "source": "Sold systems",
+      "translation": "Verkaufte Systeme"
+    },
+    {
+      "source": "Sold systems not identified in the journal",
+      "translation": "Verkaufte Systeme werden im Journal nicht aufgeführt"
     },
     {
       "source": "Some Canonn settlement data was ignored: {0}",
@@ -31119,6 +31207,14 @@
     {
       "source": "Survey totals",
       "translation": "Umfragesummen"
+    },
+    {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Die Umfragesummen und ihr Ausgangspunkt wurden gespeichert."
+    },
+    {
+      "source": "Survey totals could not be reset: {0}",
+      "translation": "Umfragesummen konnten nicht zurückgesetzt werden: {0}"
     },
     {
       "source": "Survey will start at {0}.",
@@ -34149,6 +34245,10 @@
       "translation": "Der Startpunkt der Umfrage wurde nicht geändert."
     },
     {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "Der Ausgangspunkt der Umfrage konnte nicht überprüft werden. Stellen Sie die ursprünglichen Journale wieder her oder setzen Sie den geschätzten Wert zurück, um eine neue Periode zu beginnen."
+    },
+    {
       "source": "The system could not be copied: {0}",
       "translation": "Das System konnte nicht kopiert werden: {0}"
     },
@@ -35097,6 +35197,18 @@
       "translation": "Reisen und suchen"
     },
     {
+      "source": "Travel since previous sale",
+      "translation": "Reisen seit dem letzten Verkauf"
+    },
+    {
+      "source": "Travel since the previous exploration sale, independent of manual odometer resets.",
+      "translation": "Reisen seit dem letzten Erkundungsverkauf, unabhängig von manuellen Kilometerzähler-Resets."
+    },
+    {
+      "source": "Travel totals unavailable",
+      "translation": "Reisesummen nicht verfügbar"
+    },
+    {
       "source": "Travel, search, Guardian, colonization, messages",
       "translation": "Reisen, Suche, Wächter, Kolonisierung, Nachrichten"
     },
@@ -35683,6 +35795,10 @@
     {
       "source": "Unsold estimate",
       "translation": "Unverkaufte Schätzung"
+    },
+    {
+      "source": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+      "translation": "Im aktuellen Erhebungszeitraum erfasster unverkaufter Wert, angepasst nach Verkäufen und bestätigten Schiffsverlusten."
     },
     {
       "source": "Unsupported VR pointer event.",
@@ -41829,6 +41945,14 @@
       "translation": "{0} geologische Signale nicht identifiziert"
     },
     {
+      "source": "{0} hyperspace jumps, {1} ly travelled",
+      "translation": "{0} Hyperraumsprünge, {1} ly reiste"
+    },
+    {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} Hyperraumsprünge; Entfernung nicht verfügbar"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} inkompatible oder unvollständige Legacy-Kataloge wurden sicher ignoriert; siehe Protokolle."
     },
@@ -42231,6 +42355,14 @@
     {
       "source": "{0} scanned",
       "translation": "{0} gescannt"
+    },
+    {
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} gescannt, {1} DSS, {2} gelandet"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} gescannt, {1} DSS; Landungen nicht verfügbar"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -44465,6 +44597,10 @@
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
       "translation": "La referencia actividad por actividad para los mensajes de chat SrvSurvey reconoce actualmente, incluidos ejemplos, requisitos y comportamiento de limpieza."
+    },
+    {
+      "source": "Actual payout",
+      "translation": "Pago real"
     },
     {
       "source": "Add",
@@ -47011,6 +47147,14 @@
       "translation": "Texto del cuerpo"
     },
     {
+      "source": "Body totals from identified sold systems in the available journals.",
+      "translation": "Totales corporales de sistemas vendidos identificados en las revistas disponibles."
+    },
+    {
+      "source": "Body totals unavailable",
+      "translation": "Totales corporales no disponibles"
+    },
+    {
       "source": "Body type",
       "translation": "tipo de cuerpo"
     },
@@ -49039,6 +49183,18 @@
       "translation": "Borrar cancelado; Las recompensas no reclamadas no fueron cambiadas."
     },
     {
+      "source": "Clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Borre los créditos estimados y los recuentos escaneados, DSS y aterrizados."
+    },
+    {
+      "source": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+      "translation": "Borre los créditos estimados, los saltos hiperespaciales, la distancia y todos los totales corporales."
+    },
+    {
+      "source": "Clear hyperspace jumps and distance travelled.",
+      "translation": "Despeja saltos hiperespaciales y distancia recorrida."
+    },
+    {
       "source": "Clear key",
       "translation": "Borrar clave"
     },
@@ -49375,10 +49531,6 @@
       "translation": "Materiales de ingeniería recopilados."
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Recogido de (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Material recolectado"
     },
@@ -49389,6 +49541,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Recopilado: {0}x {1}, nuevo total {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Fecha de recopilación de datos de exploración; fecha de venta para recibos pagados."
     },
     {
       "source": "Collector limpet",
@@ -50139,6 +50295,30 @@
       "translation": "Confirmar"
     },
     {
+      "source": "Confirm Reset Everything",
+      "translation": "Confirmar Restablecer todo"
+    },
+    {
+      "source": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+      "translation": "Confirme Restablecer todo para borrar los seis totales de la encuesta. Se conservan el historial de exploración y los recibos de pago."
+    },
+    {
+      "source": "Confirm Reset Exp Value",
+      "translation": "Confirmar restablecer valor de Exp."
+    },
+    {
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Confirme Restablecer valor de exp para borrar los créditos estimados y los recuentos escaneados, DSS y aterrizados."
+    },
+    {
+      "source": "Confirm Reset Odometer",
+      "translation": "Confirmar restablecer odómetro"
+    },
+    {
+      "source": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+      "translation": "Confirme Restablecer odómetro para borrar los saltos al hiperespacio y la distancia recorrida."
+    },
+    {
       "source": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
       "translation": "Confirmar Carpeta seleccionada y Diario actual se refieren al comandante que estás jugando."
     },
@@ -50193,10 +50373,6 @@
     {
       "source": "Confirm removal",
       "translation": "Confirmar eliminación"
-    },
-    {
-      "source": "Confirm reset",
-      "translation": "Confirmar reinicio"
     },
     {
       "source": "Confirm restore",
@@ -51449,6 +51625,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Uso de datos y licencias"
+    },
+    {
+      "source": "Date",
+      "translation": "Fecha"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Fecha de (UTC)"
     },
     {
       "source": "Days",
@@ -53699,10 +53883,6 @@
       "translation": "Viajes estimados restantes: {0}"
     },
     {
-      "source": "Estimated value of unsold cartographic data in this commander's available journals.",
-      "translation": "Valor estimado de los datos cartográficos no vendidos en los diarios disponibles de este comandante."
-    },
-    {
       "source": "Evacuation shelter",
       "translation": "Refugio de evacuación"
     },
@@ -53931,6 +54111,10 @@
       "translation": "Datos de exploración"
     },
     {
+      "source": "Exploration data sold",
+      "translation": "Datos de exploración vendidos"
+    },
+    {
       "source": "Exploration history",
       "translation": "Historia de la exploración"
     },
@@ -53953,6 +54137,10 @@
     {
       "source": "Exploration route: Sol → Lave → Colonia",
       "translation": "Ruta de exploración: Sol → Lave → Colonia"
+    },
+    {
+      "source": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+      "translation": "Recibo de venta de exploración. Los totales de carrocería cubren los sistemas vendidos identificados; El viaje cubre los diarios disponibles desde la venta anterior."
     },
     {
       "source": "Exploration screenshots",
@@ -57419,6 +57607,10 @@
       "translation": "Corredor de aproximación ideal"
     },
     {
+      "source": "Identified sold bodies",
+      "translation": "Cuerpos vendidos identificados"
+    },
+    {
       "source": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
       "translation": "Identifica un punto de guardián/sitio o un elemento de estilo Codex registrado en filas superpuestas compactas."
     },
@@ -58463,6 +58655,10 @@
       "translation": "Saltar datos de destino listos"
     },
     {
+      "source": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+      "translation": "Salta, escanea, mapea, aterriza, distancia y totales de recompensa estimados."
+    },
+    {
       "source": "Jump-route progress",
       "translation": "Progreso de la ruta de salto"
     },
@@ -59117,10 +59313,6 @@
     {
       "source": "Legacy profile ({0} files)",
       "translation": "Perfil heredado ({0} archivos)"
-    },
-    {
-      "source": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-      "translation": "Salto, escaneo, mapeo, aterrizaje, distancia y totales de recompensa estimados compatibles con Legacy."
     },
     {
       "source": "LegacyImport",
@@ -62455,6 +62647,10 @@
       "translation": "No se encontraron operadores coincidentes. Pruebe con un nombre o indicativo."
     },
     {
+      "source": "No matching entries",
+      "translation": "No hay entradas coincidentes"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Aún no hay disponibles módulos equipados a juego. Se necesita un evento de equipamiento completo; Las tareas guardadas siguen siendo editables."
     },
@@ -62469,10 +62665,6 @@
     {
       "source": "No matching system was returned by Spansh.",
       "translation": "Spansh no devolvió ningún sistema coincidente."
-    },
-    {
-      "source": "No matching systems",
-      "translation": "No hay sistemas coincidentes"
     },
     {
       "source": "No matching systems found.",
@@ -64611,6 +64803,10 @@
       "translation": "Pagado"
     },
     {
+      "source": "Paid {0}",
+      "translation": "Pagado {0}"
+    },
+    {
       "source": "Painite",
       "translation": "Painita"
     },
@@ -64713,6 +64909,10 @@
     {
       "source": "Paused",
       "translation": "En pausa"
+    },
+    {
+      "source": "Payout not recorded",
+      "translation": "Pago no registrado"
     },
     {
       "source": "Peach",
@@ -67435,6 +67635,10 @@
       "translation": "Ganancias por ventas registradas: {0} CR"
     },
     {
+      "source": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+      "translation": "Ganancias por ventas registradas: {0} CR; Total(es) de pago de {1} no registrados."
+    },
+    {
       "source": "Recorded systems required for averages",
       "translation": "Sistemas registrados requeridos para promedios."
     },
@@ -68339,6 +68543,18 @@
       "translation": "Reiniciar"
     },
     {
+      "source": "Reset Everything Above",
+      "translation": "Restablecer todo lo anterior"
+    },
+    {
+      "source": "Reset Exp Value",
+      "translation": "Restablecer valor de Exp."
+    },
+    {
+      "source": "Reset Odometer",
+      "translation": "Restablecer odómetro"
+    },
+    {
       "source": "Reset VR orientation",
       "translation": "Restablecer la orientación de la realidad virtual"
     },
@@ -68381,10 +68597,6 @@
     {
       "source": "Reset to default colors",
       "translation": "Restablecer los colores predeterminados"
-    },
-    {
-      "source": "Reset totals",
-      "translation": "Restablecer totales"
     },
     {
       "source": "Reset {0} text and icon scales to 0%. Use the top ✓ to save and close.",
@@ -69679,6 +69891,10 @@
       "translation": "Sabio"
     },
     {
+      "source": "Sale date",
+      "translation": "fecha de venta"
+    },
+    {
       "source": "Salvage operation",
       "translation": "Operación de salvamento"
     },
@@ -70591,14 +70807,6 @@
       "translation": "Seleccione Confirmar eliminación para eliminar el progreso del desarrollo local. Primero se realiza una copia de seguridad del archivo de estado."
     },
     {
-      "source": "Select Confirm reset to clear all six exploration totals.",
-      "translation": "Seleccione Confirmar reinicio para borrar los seis totales de exploración."
-    },
-    {
-      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-      "translation": "Seleccione Confirmar reinicio para borrar los totales de la encuesta guardados. El seguimiento automático mantiene el saldo no vendido derivado del diario."
-    },
-    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Seleccione Desactivar y confirme para eliminar la clave API y cancelar la entrega pendiente para ese Commander. Al cambiar de comandante se carga el estado independiente de ese perfil EDSM."
     },
@@ -70771,10 +70979,6 @@
       "translation": "Seleccione una estación o productos en Buscar mercados para crear su lista de compras."
     },
     {
-      "source": "Select a system to inspect its collected data",
-      "translation": "Seleccione un sistema para inspeccionar sus datos recopilados"
-    },
-    {
       "source": "Select a threshold group to delete.",
       "translation": "Seleccione un grupo de umbral para eliminar."
     },
@@ -70789,6 +70993,10 @@
     {
       "source": "Select an announcement preset to delete.",
       "translation": "Seleccione un anuncio preestablecido para eliminar."
+    },
+    {
+      "source": "Select an entry to inspect its records",
+      "translation": "Seleccione una entrada para inspeccionar sus registros"
     },
     {
       "source": "Select an equipped module",
@@ -70861,6 +71069,10 @@
     {
       "source": "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
       "translation": "Seleccione la tarjeta Active Commander, luego use el control de conexión Frontier para abrir la página de inicio de sesión oficial."
+    },
+    {
+      "source": "Select the commander again before resetting exploration value.",
+      "translation": "Selecciona al comandante nuevamente antes de restablecer el valor de exploración."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -72257,6 +72469,14 @@
     {
       "source": "Sold estimate",
       "translation": "Estimación vendida"
+    },
+    {
+      "source": "Sold systems",
+      "translation": "Sistemas vendidos"
+    },
+    {
+      "source": "Sold systems not identified in the journal",
+      "translation": "Sistemas vendidos no identificados en la revista."
     },
     {
       "source": "Some Canonn settlement data was ignored: {0}",
@@ -73925,6 +74145,14 @@
     {
       "source": "Survey totals",
       "translation": "Totales de la encuesta"
+    },
+    {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Se guardaron los totales de la encuesta y su punto de partida."
+    },
+    {
+      "source": "Survey totals could not be reset: {0}",
+      "translation": "No se pudieron restablecer los totales de la encuesta: {0}"
     },
     {
       "source": "Survey will start at {0}.",
@@ -76955,6 +77183,10 @@
       "translation": "El punto de inicio de la encuesta no fue cambiado."
     },
     {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "No se pudo verificar el punto de partida de la encuesta. Restaure los diarios originales o restablezca el valor estimado para comenzar un nuevo período."
+    },
+    {
       "source": "The system could not be copied: {0}",
       "translation": "No se pudo copiar el sistema: {0}"
     },
@@ -77903,6 +78135,18 @@
       "translation": "Viajar y buscar"
     },
     {
+      "source": "Travel since previous sale",
+      "translation": "Viaje desde venta anterior"
+    },
+    {
+      "source": "Travel since the previous exploration sale, independent of manual odometer resets.",
+      "translation": "Viaje desde la venta de exploración anterior, independientemente de los reinicios manuales del odómetro."
+    },
+    {
+      "source": "Travel totals unavailable",
+      "translation": "Totales de viajes no disponibles"
+    },
+    {
       "source": "Travel, search, Guardian, colonization, messages",
       "translation": "Viajes, búsqueda, guardián, colonización, mensajes."
     },
@@ -78489,6 +78733,10 @@
     {
       "source": "Unsold estimate",
       "translation": "Estimación no vendida"
+    },
+    {
+      "source": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+      "translation": "Valor no vendido recopilado en el período actual de la encuesta, ajustado después de las ventas y las pérdidas confirmadas de los buques."
     },
     {
       "source": "Unsupported VR pointer event.",
@@ -84635,6 +84883,14 @@
       "translation": "{0} señales geológicas no identificadas"
     },
     {
+      "source": "{0} hyperspace jumps, {1} ly travelled",
+      "translation": "{0} saltos hiperespaciales, {1} ly viajados"
+    },
+    {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "Saltos hiperespaciales {0}; distancia no disponible"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} catálogos heredados incompatibles o incompletos se ignoraron de forma segura; ver registros."
     },
@@ -85037,6 +85293,14 @@
     {
       "source": "{0} scanned",
       "translation": "{0} escaneado"
+    },
+    {
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} escaneado, {1} DSS, {2} aterrizado"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} escaneado, {1} DSS; aterrizajes no disponibles"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -87271,6 +87535,10 @@
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
       "translation": "Référence activité par activité pour les messages de discussion SrvSurvey actuellement reconnue, y compris des exemples, des exigences et un comportement d'effacement."
+    },
+    {
+      "source": "Actual payout",
+      "translation": "Paiement réel"
     },
     {
       "source": "Add",
@@ -89817,6 +90085,14 @@
       "translation": "Corps du texte"
     },
     {
+      "source": "Body totals from identified sold systems in the available journals.",
+      "translation": "Totaux corporels des systèmes vendus identifiés dans les journaux disponibles."
+    },
+    {
+      "source": "Body totals unavailable",
+      "translation": "Totaux corporels indisponibles"
+    },
+    {
       "source": "Body type",
       "translation": "Type de corps"
     },
@@ -91845,6 +92121,18 @@
       "translation": "Effacement annulé ; les récompenses non réclamées n'ont pas été modifiées."
     },
     {
+      "source": "Clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Effacez les crédits estimés et les décomptes numérisés, DSS et débarqués."
+    },
+    {
+      "source": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+      "translation": "Effacez les crédits estimés, les sauts en hyperespace, la distance et tous les totaux corporels."
+    },
+    {
+      "source": "Clear hyperspace jumps and distance travelled.",
+      "translation": "Effacer les sauts dans l'hyperespace et la distance parcourue."
+    },
+    {
       "source": "Clear key",
       "translation": "Effacer la clé"
     },
@@ -92181,10 +92469,6 @@
       "translation": "Matériaux d'ingénierie collectés"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Collecté depuis (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Matériel collecté"
     },
@@ -92195,6 +92479,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Collectés : {0}x {1}, nouveau total {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Date de collecte des données d'exploration ; date de vente pour les reçus payés."
     },
     {
       "source": "Collector limpet",
@@ -92945,6 +93233,30 @@
       "translation": "Confirmer"
     },
     {
+      "source": "Confirm Reset Everything",
+      "translation": "Confirmer Réinitialiser tout"
+    },
+    {
+      "source": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+      "translation": "Confirmez Réinitialiser tout pour effacer les six totaux de l'enquête. L’historique d’exploration et les reçus de paiement sont conservés."
+    },
+    {
+      "source": "Confirm Reset Exp Value",
+      "translation": "Confirmer la réinitialisation de la valeur d'expérience"
+    },
+    {
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Confirmez Réinitialiser la valeur d'exp pour effacer les crédits estimés et les décomptes numérisés, DSS et débarqués."
+    },
+    {
+      "source": "Confirm Reset Odometer",
+      "translation": "Confirmer la réinitialisation du compteur kilométrique"
+    },
+    {
+      "source": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+      "translation": "Confirmez Réinitialiser l'odomètre pour effacer les sauts dans l'hyperespace et la distance parcourue."
+    },
+    {
       "source": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
       "translation": "Confirmez le dossier sélectionné et le journal actuel font référence au Commander que vous jouez."
     },
@@ -92999,10 +93311,6 @@
     {
       "source": "Confirm removal",
       "translation": "Confirmer la suppression"
-    },
-    {
-      "source": "Confirm reset",
-      "translation": "Confirmer la réinitialisation"
     },
     {
       "source": "Confirm restore",
@@ -94255,6 +94563,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Utilisation des données et licences"
+    },
+    {
+      "source": "Date",
+      "translation": "Date"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Date de (UTC)"
     },
     {
       "source": "Days",
@@ -96505,10 +96821,6 @@
       "translation": "Estimation des trajets restants : {0}"
     },
     {
-      "source": "Estimated value of unsold cartographic data in this commander's available journals.",
-      "translation": "Valeur estimée des données cartographiques invendues dans les journaux disponibles de ce commandant."
-    },
-    {
       "source": "Evacuation shelter",
       "translation": "Abri d'évacuation"
     },
@@ -96737,6 +97049,10 @@
       "translation": "Données d'exploration"
     },
     {
+      "source": "Exploration data sold",
+      "translation": "Données d'exploration vendues"
+    },
+    {
       "source": "Exploration history",
       "translation": "Histoire des explorations"
     },
@@ -96759,6 +97075,10 @@
     {
       "source": "Exploration route: Sol → Lave → Colonia",
       "translation": "Itinéraire d'exploration : Sol → Lave → Colonia"
+    },
+    {
+      "source": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+      "translation": "Reçu de vente d’exploration. Les totaux corporels couvrent les systèmes vendus identifiés ; travel couvre les revues disponibles depuis la vente précédente."
     },
     {
       "source": "Exploration screenshots",
@@ -100225,6 +100545,10 @@
       "translation": "Couloir d'approche idéal"
     },
     {
+      "source": "Identified sold bodies",
+      "translation": "Carrosseries vendues identifiées"
+    },
+    {
       "source": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
       "translation": "Identifie un point Guardian/site ou un élément de style Codex enregistré dans des lignes superposées compactes."
     },
@@ -101269,6 +101593,10 @@
       "translation": "Données de cible de saut prêtes"
     },
     {
+      "source": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+      "translation": "Saut, numérisation, cartographie, atterrissage, distance et totaux de récompenses estimés."
+    },
+    {
       "source": "Jump-route progress",
       "translation": "Progression du parcours de saut"
     },
@@ -101923,10 +102251,6 @@
     {
       "source": "Legacy profile ({0} files)",
       "translation": "Profil hérité ({0} fichiers)"
-    },
-    {
-      "source": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-      "translation": "Saut, scan, cartographie, atterrissage, distance et totaux de récompenses compatibles avec l'héritage."
     },
     {
       "source": "LegacyImport",
@@ -105261,6 +105585,10 @@
       "translation": "Aucun transporteur correspondant n'a été trouvé. Essayez un nom ou un indicatif."
     },
     {
+      "source": "No matching entries",
+      "translation": "Aucune entrée correspondante"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Aucun module équipé correspondant n’est encore disponible. Un événement Loadout complet est nécessaire ; les devoirs enregistrés restent modifiables."
     },
@@ -105275,10 +105603,6 @@
     {
       "source": "No matching system was returned by Spansh.",
       "translation": "Aucun système correspondant n'a été renvoyé par Spansh."
-    },
-    {
-      "source": "No matching systems",
-      "translation": "Aucun système de correspondance"
     },
     {
       "source": "No matching systems found.",
@@ -107417,6 +107741,10 @@
       "translation": "Payé"
     },
     {
+      "source": "Paid {0}",
+      "translation": "Payé {0}"
+    },
+    {
       "source": "Painite",
       "translation": "Painite"
     },
@@ -107519,6 +107847,10 @@
     {
       "source": "Paused",
       "translation": "En pause"
+    },
+    {
+      "source": "Payout not recorded",
+      "translation": "Paiement non enregistré"
     },
     {
       "source": "Peach",
@@ -110241,6 +110573,10 @@
       "translation": "Bénéfice de vente enregistré : {0} CR"
     },
     {
+      "source": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+      "translation": "Bénéfice de vente enregistré : {0} CR ; Le(s) total(s) des paiements {1} n'ont pas été enregistrés."
+    },
+    {
       "source": "Recorded systems required for averages",
       "translation": "Systèmes enregistrés requis pour les moyennes"
     },
@@ -111145,6 +111481,18 @@
       "translation": "Réinitialiser"
     },
     {
+      "source": "Reset Everything Above",
+      "translation": "Réinitialiser tout ce qui précède"
+    },
+    {
+      "source": "Reset Exp Value",
+      "translation": "Réinitialiser la valeur d'expérience"
+    },
+    {
+      "source": "Reset Odometer",
+      "translation": "Réinitialiser le compteur kilométrique"
+    },
+    {
       "source": "Reset VR orientation",
       "translation": "Réinitialiser l'orientation VR"
     },
@@ -111187,10 +111535,6 @@
     {
       "source": "Reset to default colors",
       "translation": "Réinitialiser les couleurs par défaut"
-    },
-    {
-      "source": "Reset totals",
-      "translation": "Réinitialiser les totaux"
     },
     {
       "source": "Reset {0} text and icon scales to 0%. Use the top ✓ to save and close.",
@@ -112485,6 +112829,10 @@
       "translation": "Sage"
     },
     {
+      "source": "Sale date",
+      "translation": "Date de vente"
+    },
+    {
       "source": "Salvage operation",
       "translation": "Opération de sauvetage"
     },
@@ -113397,14 +113745,6 @@
       "translation": "Sélectionnez Confirmer la suppression pour supprimer la progression du développement local. Le fichier d'état est sauvegardé en premier."
     },
     {
-      "source": "Select Confirm reset to clear all six exploration totals.",
-      "translation": "Sélectionnez Confirmer la réinitialisation pour effacer les six totaux d’exploration."
-    },
-    {
-      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-      "translation": "Sélectionnez Confirmer la réinitialisation pour effacer les totaux d'enquête enregistrés. Le suivi automatique conserve le solde invendu dérivé du journal."
-    },
-    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Sélectionnez Désactiver et confirmez pour supprimer la clé API et annuler la livraison en attente pour ce Commander. Changer de commandant charge l'état distinct de ce profil EDSM."
     },
@@ -113577,10 +113917,6 @@
       "translation": "Sélectionnez une station ou des produits dans Search Markets pour créer votre liste de courses."
     },
     {
-      "source": "Select a system to inspect its collected data",
-      "translation": "Sélectionnez un système pour inspecter ses données collectées"
-    },
-    {
       "source": "Select a threshold group to delete.",
       "translation": "Sélectionnez un groupe de seuils à supprimer."
     },
@@ -113595,6 +113931,10 @@
     {
       "source": "Select an announcement preset to delete.",
       "translation": "Sélectionnez un préréglage d'annonce à supprimer."
+    },
+    {
+      "source": "Select an entry to inspect its records",
+      "translation": "Sélectionnez une entrée pour inspecter ses enregistrements"
     },
     {
       "source": "Select an equipped module",
@@ -113667,6 +114007,10 @@
     {
       "source": "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
       "translation": "Sélectionnez la carte Active Commander, puis utilisez le contrôle de connexion Frontier pour ouvrir la page de connexion officielle."
+    },
+    {
+      "source": "Select the commander again before resetting exploration value.",
+      "translation": "Sélectionnez à nouveau le commandant avant de réinitialiser la valeur d'exploration."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -115063,6 +115407,14 @@
     {
       "source": "Sold estimate",
       "translation": "Estimation vendue"
+    },
+    {
+      "source": "Sold systems",
+      "translation": "Systèmes vendus"
+    },
+    {
+      "source": "Sold systems not identified in the journal",
+      "translation": "Systèmes vendus non identifiés dans le journal"
     },
     {
       "source": "Some Canonn settlement data was ignored: {0}",
@@ -116731,6 +117083,14 @@
     {
       "source": "Survey totals",
       "translation": "Totaux de l'enquête"
+    },
+    {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Les totaux de l'enquête et leur point de départ ont été enregistrés."
+    },
+    {
+      "source": "Survey totals could not be reset: {0}",
+      "translation": "Les totaux de l'enquête n'ont pas pu être réinitialisés : {0}"
     },
     {
       "source": "Survey will start at {0}.",
@@ -119761,6 +120121,10 @@
       "translation": "Le point de départ de l'enquête n'a pas été modifié."
     },
     {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "Le point de départ de l'enquête n'a pas pu être vérifié. Restaurez les journaux d'origine ou réinitialisez la valeur estimée pour démarrer une nouvelle période."
+    },
+    {
       "source": "The system could not be copied: {0}",
       "translation": "Le système n'a pas pu être copié : {0}"
     },
@@ -120709,6 +121073,18 @@
       "translation": "Voyage et recherche"
     },
     {
+      "source": "Travel since previous sale",
+      "translation": "Voyage depuis la vente précédente"
+    },
+    {
+      "source": "Travel since the previous exploration sale, independent of manual odometer resets.",
+      "translation": "Voyage depuis la vente d'exploration précédente, indépendamment des réinitialisations manuelles du compteur kilométrique."
+    },
+    {
+      "source": "Travel totals unavailable",
+      "translation": "Totaux de voyages indisponibles"
+    },
+    {
       "source": "Travel, search, Guardian, colonization, messages",
       "translation": "Voyage, recherche, Gardien, colonisation, messages"
     },
@@ -121295,6 +121671,10 @@
     {
       "source": "Unsold estimate",
       "translation": "Estimation des invendus"
+    },
+    {
+      "source": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+      "translation": "Valeur des invendus collectée au cours de la période d'enquête en cours, ajustée après ventes et pertes de navires confirmées."
     },
     {
       "source": "Unsupported VR pointer event.",
@@ -127441,6 +127821,14 @@
       "translation": "{0} signaux géologiques non identifiés"
     },
     {
+      "source": "{0} hyperspace jumps, {1} ly travelled",
+      "translation": "Sauts hyperespace {0}, {1} parcouru"
+    },
+    {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "Sauts hyperespace {0} ; distance indisponible"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} les catalogues hérités incompatibles ou incomplets ont été ignorés en toute sécurité ; voir les journaux."
     },
@@ -127843,6 +128231,14 @@
     {
       "source": "{0} scanned",
       "translation": "{0} scanné"
+    },
+    {
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} scanné, {1} DSS, {2} atterri"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} numérisé, {1} DSS ; atterrissages indisponibles"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -130077,6 +130473,10 @@
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
       "translation": "Referência atividade por atividade para as mensagens de bate-papo SrvSurvey reconhecidas atualmente, incluindo exemplos, requisitos e comportamento de compensação."
+    },
+    {
+      "source": "Actual payout",
+      "translation": "Pagamento real"
     },
     {
       "source": "Add",
@@ -132623,6 +133023,14 @@
       "translation": "Corpo do texto"
     },
     {
+      "source": "Body totals from identified sold systems in the available journals.",
+      "translation": "Totais de corpos de sistemas vendidos identificados nos periódicos disponíveis."
+    },
+    {
+      "source": "Body totals unavailable",
+      "translation": "Totais de corpos indisponíveis"
+    },
+    {
       "source": "Body type",
       "translation": "Tipo de corpo"
     },
@@ -134651,6 +135059,18 @@
       "translation": "Limpar cancelado; recompensas não reclamadas não foram alteradas."
     },
     {
+      "source": "Clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Limpe os créditos estimados e as contagens digitalizadas, DSS e desembarcadas."
+    },
+    {
+      "source": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+      "translation": "Limpe os créditos estimados, saltos no hiperespaço, distância e todos os totais do corpo."
+    },
+    {
+      "source": "Clear hyperspace jumps and distance travelled.",
+      "translation": "Saltos claros no hiperespaço e distância percorrida."
+    },
+    {
       "source": "Clear key",
       "translation": "Limpar chave"
     },
@@ -134987,10 +135407,6 @@
       "translation": "Materiais de engenharia coletados"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Coletado de (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Material coletado"
     },
@@ -135001,6 +135417,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Coletado: {0}x {1}, novo total {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Data de coleta dos dados de exploração; data de venda para recibos pagos."
     },
     {
       "source": "Collector limpet",
@@ -135751,6 +136171,30 @@
       "translation": "Confirmar"
     },
     {
+      "source": "Confirm Reset Everything",
+      "translation": "Confirme a redefinição de tudo"
+    },
+    {
+      "source": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+      "translation": "Confirme Redefinir tudo para limpar todos os seis totais da pesquisa. O histórico de exploração e os recibos de pagamento são retidos."
+    },
+    {
+      "source": "Confirm Reset Exp Value",
+      "translation": "Confirme o valor de redefinição de Exp"
+    },
+    {
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Confirme Redefinir valor de Exp para limpar créditos estimados e contagens digitalizadas, DSS e desembarcadas."
+    },
+    {
+      "source": "Confirm Reset Odometer",
+      "translation": "Confirmar reinicialização do odômetro"
+    },
+    {
+      "source": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+      "translation": "Confirme a reinicialização do odômetro para limpar os saltos do hiperespaço e a distância percorrida."
+    },
+    {
       "source": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
       "translation": "Confirme que a pasta selecionada e o diário atual referem-se ao Commander que você está jogando."
     },
@@ -135805,10 +136249,6 @@
     {
       "source": "Confirm removal",
       "translation": "Confirmar remoção"
-    },
-    {
-      "source": "Confirm reset",
-      "translation": "Confirmar redefinição"
     },
     {
       "source": "Confirm restore",
@@ -137061,6 +137501,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Uso e licenciamento de dados"
+    },
+    {
+      "source": "Date",
+      "translation": "Data"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Data de (UTC)"
     },
     {
       "source": "Days",
@@ -139311,10 +139759,6 @@
       "translation": "Estimativa de viagens restantes: {0}"
     },
     {
-      "source": "Estimated value of unsold cartographic data in this commander's available journals.",
-      "translation": "Valor estimado dos dados cartográficos não vendidos nos diários disponíveis deste comandante."
-    },
-    {
       "source": "Evacuation shelter",
       "translation": "Abrigo de evacuação"
     },
@@ -139543,6 +139987,10 @@
       "translation": "Dados de exploração"
     },
     {
+      "source": "Exploration data sold",
+      "translation": "Dados de exploração vendidos"
+    },
+    {
       "source": "Exploration history",
       "translation": "História de exploração"
     },
@@ -139565,6 +140013,10 @@
     {
       "source": "Exploration route: Sol → Lave → Colonia",
       "translation": "Rota de exploração: Sol → Lave → Colônia"
+    },
+    {
+      "source": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+      "translation": "Recibo de venda de exploração. Os totais do corpo cobrem os sistemas vendidos identificados; viagens cobrem os diários disponíveis desde a venda anterior."
     },
     {
       "source": "Exploration screenshots",
@@ -143031,6 +143483,10 @@
       "translation": "Corredor de abordagem ideal"
     },
     {
+      "source": "Identified sold bodies",
+      "translation": "Corpos vendidos identificados"
+    },
+    {
       "source": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
       "translation": "Identifica um ponto Guardião/local ou um item registrado no estilo Codex em linhas de sobreposição compactas."
     },
@@ -144075,6 +144531,10 @@
       "translation": "Saltar dados de destino prontos"
     },
     {
+      "source": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+      "translation": "Salto, varredura, mapeamento, pouso, distância e totais estimados de recompensa."
+    },
+    {
       "source": "Jump-route progress",
       "translation": "Progresso da rota de salto"
     },
@@ -144729,10 +145189,6 @@
     {
       "source": "Legacy profile ({0} files)",
       "translation": "Perfil legado ({0} arquivos)"
-    },
-    {
-      "source": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-      "translation": "Salto, varredura, mapeamento, pouso, distância e totais estimados de recompensa compatíveis com legado."
     },
     {
       "source": "LegacyImport",
@@ -148067,6 +148523,10 @@
       "translation": "Nenhuma operadora correspondente foi encontrada. Experimente um nome ou indicativo."
     },
     {
+      "source": "No matching entries",
+      "translation": "Nenhuma entrada correspondente"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Nenhum módulo equipado correspondente está disponível ainda. É necessário um evento Loadout completo; as atribuições salvas permanecem editáveis."
     },
@@ -148081,10 +148541,6 @@
     {
       "source": "No matching system was returned by Spansh.",
       "translation": "Nenhum sistema correspondente foi retornado por Spansh."
-    },
-    {
-      "source": "No matching systems",
-      "translation": "Nenhum sistema correspondente"
     },
     {
       "source": "No matching systems found.",
@@ -150223,6 +150679,10 @@
       "translation": "Pago"
     },
     {
+      "source": "Paid {0}",
+      "translation": "Pago {0}"
+    },
+    {
       "source": "Painite",
       "translation": "Painita"
     },
@@ -150325,6 +150785,10 @@
     {
       "source": "Paused",
       "translation": "Pausado"
+    },
+    {
+      "source": "Payout not recorded",
+      "translation": "Pagamento não registrado"
     },
     {
       "source": "Peach",
@@ -153047,6 +153511,10 @@
       "translation": "Ganhos de vendas registrados: {0} CR"
     },
     {
+      "source": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+      "translation": "Lucro de venda registrado: {0} CR; Total(is) de pagamentos {1} não registrados."
+    },
+    {
       "source": "Recorded systems required for averages",
       "translation": "Sistemas registrados necessários para médias"
     },
@@ -153951,6 +154419,18 @@
       "translation": "Redefinir"
     },
     {
+      "source": "Reset Everything Above",
+      "translation": "Redefinir tudo acima"
+    },
+    {
+      "source": "Reset Exp Value",
+      "translation": "Redefinir valor de Exp"
+    },
+    {
+      "source": "Reset Odometer",
+      "translation": "Redefinir odômetro"
+    },
+    {
       "source": "Reset VR orientation",
       "translation": "Redefinir orientação VR"
     },
@@ -153993,10 +154473,6 @@
     {
       "source": "Reset to default colors",
       "translation": "Redefinir para as cores padrão"
-    },
-    {
-      "source": "Reset totals",
-      "translation": "Redefinir totais"
     },
     {
       "source": "Reset {0} text and icon scales to 0%. Use the top ✓ to save and close.",
@@ -155291,6 +155767,10 @@
       "translation": "Sábio"
     },
     {
+      "source": "Sale date",
+      "translation": "Data de venda"
+    },
+    {
       "source": "Salvage operation",
       "translation": "Operação de salvamento"
     },
@@ -156203,14 +156683,6 @@
       "translation": "Selecione Confirmar remoção para remover o progresso do desenvolvimento local. O backup do arquivo de estado é feito primeiro."
     },
     {
-      "source": "Select Confirm reset to clear all six exploration totals.",
-      "translation": "Selecione Confirmar redefinição para limpar todos os seis totais de exploração."
-    },
-    {
-      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-      "translation": "Selecione Confirmar redefinição para limpar os totais de pesquisa salvos. O rastreamento automático mantém o saldo não vendido derivado do diário."
-    },
-    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Selecione Desativar e confirme para remover a chave de API e cancelar a entrega pendente desse Commander. Switching Commanders carrega o estado separado desse perfil EDSM."
     },
@@ -156383,10 +156855,6 @@
       "translation": "Selecione uma estação ou mercadorias em Search Markets para criar sua ShoppingList."
     },
     {
-      "source": "Select a system to inspect its collected data",
-      "translation": "Selecione um sistema para inspecionar seus dados coletados"
-    },
-    {
       "source": "Select a threshold group to delete.",
       "translation": "Selecione um grupo de limite para excluir."
     },
@@ -156401,6 +156869,10 @@
     {
       "source": "Select an announcement preset to delete.",
       "translation": "Selecione uma predefinição de anúncio para excluir."
+    },
+    {
+      "source": "Select an entry to inspect its records",
+      "translation": "Selecione uma entrada para inspecionar seus registros"
     },
     {
       "source": "Select an equipped module",
@@ -156473,6 +156945,10 @@
     {
       "source": "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
       "translation": "Selecione a placa Active Commander e use o controle de conexão Frontier para abrir a página de login oficial."
+    },
+    {
+      "source": "Select the commander again before resetting exploration value.",
+      "translation": "Selecione o comandante novamente antes de redefinir o valor da exploração."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -157869,6 +158345,14 @@
     {
       "source": "Sold estimate",
       "translation": "Estimativa vendida"
+    },
+    {
+      "source": "Sold systems",
+      "translation": "Sistemas vendidos"
+    },
+    {
+      "source": "Sold systems not identified in the journal",
+      "translation": "Sistemas vendidos não identificados no diário"
     },
     {
       "source": "Some Canonn settlement data was ignored: {0}",
@@ -159537,6 +160021,14 @@
     {
       "source": "Survey totals",
       "translation": "Totais da pesquisa"
+    },
+    {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Os totais da pesquisa e seu ponto de partida foram salvos."
+    },
+    {
+      "source": "Survey totals could not be reset: {0}",
+      "translation": "Não foi possível redefinir os totais da pesquisa: {0}"
     },
     {
       "source": "Survey will start at {0}.",
@@ -162567,6 +163059,10 @@
       "translation": "O ponto de início da pesquisa não foi alterado."
     },
     {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "O ponto de partida da pesquisa não pôde ser verificado. Restaure os diários originais ou redefina o valor estimado para iniciar um novo período."
+    },
+    {
       "source": "The system could not be copied: {0}",
       "translation": "O sistema não pôde ser copiado: {0}"
     },
@@ -163515,6 +164011,18 @@
       "translation": "Viajar e pesquisar"
     },
     {
+      "source": "Travel since previous sale",
+      "translation": "Viagem desde a venda anterior"
+    },
+    {
+      "source": "Travel since the previous exploration sale, independent of manual odometer resets.",
+      "translation": "Viagem desde a venda de exploração anterior, independente de redefinições manuais do hodômetro."
+    },
+    {
+      "source": "Travel totals unavailable",
+      "translation": "Totais de viagens indisponíveis"
+    },
+    {
       "source": "Travel, search, Guardian, colonization, messages",
       "translation": "Viagem, pesquisa, Guardião, colonização, mensagens"
     },
@@ -164101,6 +164609,10 @@
     {
       "source": "Unsold estimate",
       "translation": "Estimativa não vendida"
+    },
+    {
+      "source": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+      "translation": "Valor não vendido coletado no período atual da pesquisa, ajustado após vendas e perdas confirmadas de navios."
     },
     {
       "source": "Unsupported VR pointer event.",
@@ -170247,6 +170759,14 @@
       "translation": "{0} sinais geológicos não identificados"
     },
     {
+      "source": "{0} hyperspace jumps, {1} ly travelled",
+      "translation": "{0} salta no hiperespaço, {1} viajou rapidamente"
+    },
+    {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} saltos no hiperespaço; distância indisponível"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} catálogos legados incompatíveis ou incompletos foram ignorados com segurança; veja os registros."
     },
@@ -170649,6 +171169,14 @@
     {
       "source": "{0} scanned",
       "translation": "{0} verificado"
+    },
+    {
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} digitalizado, {1} DSS, {2} pousado"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} digitalizado, {1} DSS; desembarques indisponíveis"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -172883,6 +173411,10 @@
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
       "translation": "Справочник по действиям для сообщений чата SrvSurvey, которые в настоящее время распознаются, включая примеры, требования и поведение при очистке."
+    },
+    {
+      "source": "Actual payout",
+      "translation": "Фактическая выплата"
     },
     {
       "source": "Add",
@@ -175429,6 +175961,14 @@
       "translation": "Основной текст"
     },
     {
+      "source": "Body totals from identified sold systems in the available journals.",
+      "translation": "Итоговые данные о телах идентифицированных проданных систем в доступных журналах."
+    },
+    {
+      "source": "Body totals unavailable",
+      "translation": "Итоговые данные по телу недоступны."
+    },
+    {
       "source": "Body type",
       "translation": "Тип телосложения"
     },
@@ -177457,6 +177997,18 @@
       "translation": "Очистить отменено; невостребованные награды не изменены."
     },
     {
+      "source": "Clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Очистите расчетные кредиты, а также отсканированные данные, DSS и подсчеты полученных результатов."
+    },
+    {
+      "source": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+      "translation": "Очистите предполагаемые кредиты, прыжки в гиперпространство, расстояние и все общие данные по телам."
+    },
+    {
+      "source": "Clear hyperspace jumps and distance travelled.",
+      "translation": "Четкие гиперпространственные прыжки и пройденное расстояние."
+    },
+    {
       "source": "Clear key",
       "translation": "Очистить ключ"
     },
@@ -177793,10 +178345,6 @@
       "translation": "Сборник инженерных материалов"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "Получено из (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "Собранный материал"
     },
@@ -177807,6 +178355,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "Собрано: {0}x {1}, новая сумма {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "Дата сбора данных разведки; дата продажи оплаченных квитанций."
     },
     {
       "source": "Collector limpet",
@@ -178557,6 +179109,30 @@
       "translation": "Подтвердить"
     },
     {
+      "source": "Confirm Reset Everything",
+      "translation": "Подтвердить Сбросить все"
+    },
+    {
+      "source": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+      "translation": "Подтвердите «Сбросить все», чтобы очистить все шесть итогов опроса. История разведки и квитанции об оплате сохраняются."
+    },
+    {
+      "source": "Confirm Reset Exp Value",
+      "translation": "Подтвердите сброс значения опыта"
+    },
+    {
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "Подтвердите сброс значения опыта, чтобы очистить расчетные кредиты, а также счетчики сканирований, DSS и полученных результатов."
+    },
+    {
+      "source": "Confirm Reset Odometer",
+      "translation": "Подтвердить сброс одометра"
+    },
+    {
+      "source": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+      "translation": "Подтвердите сброс одометра, чтобы сбросить гиперпространственные прыжки и пройденное расстояние."
+    },
+    {
       "source": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
       "translation": "Подтвердите выбранную папку и текущий журнал относятся к Commander, в который вы играете."
     },
@@ -178611,10 +179187,6 @@
     {
       "source": "Confirm removal",
       "translation": "Подтвердить удаление"
-    },
-    {
-      "source": "Confirm reset",
-      "translation": "Подтвердить сброс"
     },
     {
       "source": "Confirm restore",
@@ -179867,6 +180439,14 @@
     {
       "source": "Data use and licensing",
       "translation": "Использование данных и лицензирование"
+    },
+    {
+      "source": "Date",
+      "translation": "Дата"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "Дата с (UTC)"
     },
     {
       "source": "Days",
@@ -182117,10 +182697,6 @@
       "translation": "Примерное количество оставшихся поездок: {0}."
     },
     {
-      "source": "Estimated value of unsold cartographic data in this commander's available journals.",
-      "translation": "Приблизительная стоимость непроданных картографических данных в доступных журналах этого командира."
-    },
-    {
       "source": "Evacuation shelter",
       "translation": "Эвакуационное убежище"
     },
@@ -182349,6 +182925,10 @@
       "translation": "Данные разведки"
     },
     {
+      "source": "Exploration data sold",
+      "translation": "Проданные данные разведки"
+    },
+    {
       "source": "Exploration history",
       "translation": "История исследований"
     },
@@ -182371,6 +182951,10 @@
     {
       "source": "Exploration route: Sol → Lave → Colonia",
       "translation": "Маршрут исследования: Соль → Лаве → Колония."
+    },
+    {
+      "source": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+      "translation": "Квитанция о продаже геологоразведочных работ. Итоговые суммы включают идентифицированные проданные системы; Travel охватывает доступные журналы с момента предыдущей продажи."
     },
     {
       "source": "Exploration screenshots",
@@ -185837,6 +186421,10 @@
       "translation": "Идеальный коридор подхода"
     },
     {
+      "source": "Identified sold bodies",
+      "translation": "Выявленные проданные тела"
+    },
+    {
       "source": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
       "translation": "Идентифицирует точку Хранителя/объекта или записанный элемент в стиле Кодекса в компактных наложенных строках."
     },
@@ -186881,6 +187469,10 @@
       "translation": "Данные о цели прыжка готовы"
     },
     {
+      "source": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+      "translation": "Прыжок, сканирование, картографирование, приземление, расстояние и предполагаемая общая сумма вознаграждений."
+    },
+    {
       "source": "Jump-route progress",
       "translation": "Прогресс по маршруту прыжка"
     },
@@ -187535,10 +188127,6 @@
     {
       "source": "Legacy profile ({0} files)",
       "translation": "Устаревший профиль (файлы {0})"
-    },
-    {
-      "source": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-      "translation": "Совместимые с предыдущими версиями прыжки, сканирование, картографирование, приземление, расстояние и предполагаемая общая сумма вознаграждений."
     },
     {
       "source": "LegacyImport",
@@ -190873,6 +191461,10 @@
       "translation": "Подходящих операторов связи не обнаружено. Попробуйте имя или позывной."
     },
     {
+      "source": "No matching entries",
+      "translation": "Нет соответствующих записей"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "Подходящих оборудованных модулей пока нет. Требуется полное событие Loadout; сохраненные задания остаются доступными для редактирования."
     },
@@ -190887,10 +191479,6 @@
     {
       "source": "No matching system was returned by Spansh.",
       "translation": "Spansh не вернула соответствующую систему."
-    },
-    {
-      "source": "No matching systems",
-      "translation": "Нет соответствующих систем"
     },
     {
       "source": "No matching systems found.",
@@ -193029,6 +193617,10 @@
       "translation": "Платный"
     },
     {
+      "source": "Paid {0}",
+      "translation": "Оплачено {0}"
+    },
+    {
       "source": "Painite",
       "translation": "Пейнит"
     },
@@ -193131,6 +193723,10 @@
     {
       "source": "Paused",
       "translation": "Приостановлено"
+    },
+    {
+      "source": "Payout not recorded",
+      "translation": "Выплата не зафиксирована"
     },
     {
       "source": "Peach",
@@ -195853,6 +196449,10 @@
       "translation": "Зарегистрированный доход от продаж: {0} CR"
     },
     {
+      "source": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+      "translation": "Зарегистрированный доход от продаж: {0} CR; {1} Сумма выплат не записана."
+    },
+    {
       "source": "Recorded systems required for averages",
       "translation": "Зарегистрированные системы, необходимые для средних значений"
     },
@@ -196757,6 +197357,18 @@
       "translation": "Сброс"
     },
     {
+      "source": "Reset Everything Above",
+      "translation": "Сбросить все вышеперечисленное"
+    },
+    {
+      "source": "Reset Exp Value",
+      "translation": "Сбросить значение опыта"
+    },
+    {
+      "source": "Reset Odometer",
+      "translation": "Сбросить одометр"
+    },
+    {
       "source": "Reset VR orientation",
       "translation": "Сбросить ориентацию VR"
     },
@@ -196799,10 +197411,6 @@
     {
       "source": "Reset to default colors",
       "translation": "Сбросить цвета по умолчанию"
-    },
-    {
-      "source": "Reset totals",
-      "translation": "Сбросить итоги"
     },
     {
       "source": "Reset {0} text and icon scales to 0%. Use the top ✓ to save and close.",
@@ -198097,6 +198705,10 @@
       "translation": "Мудрец"
     },
     {
+      "source": "Sale date",
+      "translation": "Дата продажи"
+    },
+    {
       "source": "Salvage operation",
       "translation": "Спасательная операция"
     },
@@ -199009,14 +199621,6 @@
       "translation": "Выберите «Подтвердить удаление», чтобы удалить прогресс локальной разработки. Сначала создается резервная копия файла состояния."
     },
     {
-      "source": "Select Confirm reset to clear all six exploration totals.",
-      "translation": "Выберите «Подтвердить сброс», чтобы очистить все шесть итогов исследования."
-    },
-    {
-      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-      "translation": "Выберите «Подтвердить сброс», чтобы удалить сохраненные итоги опроса. Автоматическое отслеживание сохраняет непроданный остаток, полученный из журнала."
-    },
-    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "Выберите «Отключить» и подтвердите, чтобы удалить ключ API и отменить ожидающую доставку для этого Commander. Коммандеры переключения загружают отдельное состояние этого профиля EDSM."
     },
@@ -199189,10 +199793,6 @@
       "translation": "Выберите станцию ​​или товары на поисковых рынках, чтобы создать свой список покупок."
     },
     {
-      "source": "Select a system to inspect its collected data",
-      "translation": "Выберите систему для проверки собранных данных"
-    },
-    {
       "source": "Select a threshold group to delete.",
       "translation": "Выберите группу порогов для удаления."
     },
@@ -199207,6 +199807,10 @@
     {
       "source": "Select an announcement preset to delete.",
       "translation": "Выберите набор настроек объявлений, который нужно удалить."
+    },
+    {
+      "source": "Select an entry to inspect its records",
+      "translation": "Выберите запись, чтобы просмотреть ее записи"
     },
     {
       "source": "Select an equipped module",
@@ -199279,6 +199883,10 @@
     {
       "source": "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
       "translation": "Выберите карту Active Commander, затем используйте элемент управления соединением Frontier, чтобы открыть официальную страницу входа."
+    },
+    {
+      "source": "Select the commander again before resetting exploration value.",
+      "translation": "Прежде чем сбросить значение исследования, выберите командира еще раз."
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -200675,6 +201283,14 @@
     {
       "source": "Sold estimate",
       "translation": "Продано смета"
+    },
+    {
+      "source": "Sold systems",
+      "translation": "Проданные системы"
+    },
+    {
+      "source": "Sold systems not identified in the journal",
+      "translation": "Проданные системы, не указанные в журнале"
     },
     {
       "source": "Some Canonn settlement data was ignored: {0}",
@@ -202343,6 +202959,14 @@
     {
       "source": "Survey totals",
       "translation": "Итоги опроса"
+    },
+    {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "Итоги опросов и их отправная точка были сохранены."
+    },
+    {
+      "source": "Survey totals could not be reset: {0}",
+      "translation": "Не удалось сбросить итоги опроса: {0}."
     },
     {
       "source": "Survey will start at {0}.",
@@ -205373,6 +205997,10 @@
       "translation": "Начальная точка съемки не изменилась."
     },
     {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "Не удалось проверить начальную точку опроса. Восстановите исходные журналы или сбросьте расчетное значение, чтобы начать новый период."
+    },
+    {
       "source": "The system could not be copied: {0}",
       "translation": "Не удалось скопировать систему: {0}."
     },
@@ -206321,6 +206949,18 @@
       "translation": "Путешествие и поиск"
     },
     {
+      "source": "Travel since previous sale",
+      "translation": "Путешествие с момента предыдущей продажи"
+    },
+    {
+      "source": "Travel since the previous exploration sale, independent of manual odometer resets.",
+      "translation": "Путешествуйте с момента предыдущей исследовательской продажи, независимо от ручного сброса одометра."
+    },
+    {
+      "source": "Travel totals unavailable",
+      "translation": "Общие сведения о поездках недоступны."
+    },
+    {
       "source": "Travel, search, Guardian, colonization, messages",
       "translation": "Путешествие, поиск, Хранитель, колонизация, сообщения"
     },
@@ -206907,6 +207547,10 @@
     {
       "source": "Unsold estimate",
       "translation": "Непроданная оценка"
+    },
+    {
+      "source": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+      "translation": "Непроданная стоимость, собранная за текущий период обследования, скорректированная после продажи и подтвержденных потерь судна."
     },
     {
       "source": "Unsupported VR pointer event.",
@@ -213053,6 +213697,14 @@
       "translation": "{0} геологические сигналы неопознаны"
     },
     {
+      "source": "{0} hyperspace jumps, {1} ly travelled",
+      "translation": "{0} прыгает в гиперпространство, {1} путешествует"
+    },
+    {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} гиперпространственные прыжки; расстояние недоступно"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} несовместимые или неполные устаревшие каталоги были безопасно проигнорированы; см. журналы."
     },
@@ -213455,6 +214107,14 @@
     {
       "source": "{0} scanned",
       "translation": "{0} отсканировано"
+    },
+    {
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} просканирован, {1} DSS, {2} приземлился"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} сканируется, {1} DSS; лендинги недоступны"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -215689,6 +216349,10 @@
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
       "translation": "当前可识别的聊天消息 SrvSurvey 的逐个活动参考，包括示例、要求和清除行为。"
+    },
+    {
+      "source": "Actual payout",
+      "translation": "实际支出"
     },
     {
       "source": "Add",
@@ -218235,6 +218899,14 @@
       "translation": "正文"
     },
     {
+      "source": "Body totals from identified sold systems in the available journals.",
+      "translation": "可用期刊中已识别的已售系统的正文总数。"
+    },
+    {
+      "source": "Body totals unavailable",
+      "translation": "身体总数不可用"
+    },
+    {
       "source": "Body type",
       "translation": "体型"
     },
@@ -220263,6 +220935,18 @@
       "translation": "清除取消；无人认领的奖励没有改变。"
     },
     {
+      "source": "Clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "清除估计积分和扫描、DSS 和落地计数。"
+    },
+    {
+      "source": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+      "translation": "清除估计的积分、超空间跳跃、距离和所有身体总计。"
+    },
+    {
+      "source": "Clear hyperspace jumps and distance travelled.",
+      "translation": "清晰的超空间跳跃和行进距离。"
+    },
+    {
       "source": "Clear key",
       "translation": "清除键"
     },
@@ -220599,10 +221283,6 @@
       "translation": "收集的工程材料"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "收集自 (UTC)"
-    },
-    {
       "source": "Collected material",
       "translation": "收集材料"
     },
@@ -220613,6 +221293,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "已收集：{0}x {1}，新总数 {2}"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "勘探数据的收集日期；已付款收据的销售日期。"
     },
     {
       "source": "Collector limpet",
@@ -221363,6 +222047,30 @@
       "translation": "确认"
     },
     {
+      "source": "Confirm Reset Everything",
+      "translation": "确认重置一切"
+    },
+    {
+      "source": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+      "translation": "确认重置所有内容以清除所有六个调查总计。勘探历史和付款收据均被保留。"
+    },
+    {
+      "source": "Confirm Reset Exp Value",
+      "translation": "确认重置经验值"
+    },
+    {
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "确认重置经验值以清除估计积分和扫描、DSS 和落地计数。"
+    },
+    {
+      "source": "Confirm Reset Odometer",
+      "translation": "确认重置里程表"
+    },
+    {
+      "source": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+      "translation": "确认重置里程表以清除超空间跳跃和行驶距离。"
+    },
+    {
       "source": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
       "translation": "确认所选文件夹和当前日志指的是您正在玩的指挥官。"
     },
@@ -221417,10 +222125,6 @@
     {
       "source": "Confirm removal",
       "translation": "确认删除"
-    },
-    {
-      "source": "Confirm reset",
-      "translation": "确认重置"
     },
     {
       "source": "Confirm restore",
@@ -222673,6 +223377,14 @@
     {
       "source": "Data use and licensing",
       "translation": "数据使用和许可"
+    },
+    {
+      "source": "Date",
+      "translation": "日期"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "日期（UTC）"
     },
     {
       "source": "Days",
@@ -224923,10 +225635,6 @@
       "translation": "预计剩余行程：{0}"
     },
     {
-      "source": "Estimated value of unsold cartographic data in this commander's available journals.",
-      "translation": "该指挥官可用日志中未售出的地图数据的估计价值。"
-    },
-    {
       "source": "Evacuation shelter",
       "translation": "避难所"
     },
@@ -225155,6 +225863,10 @@
       "translation": "勘探数据"
     },
     {
+      "source": "Exploration data sold",
+      "translation": "出售勘探数据"
+    },
+    {
       "source": "Exploration history",
       "translation": "勘探历史"
     },
@@ -225177,6 +225889,10 @@
     {
       "source": "Exploration route: Sol → Lave → Colonia",
       "translation": "探索路线：Sol → Lave → Colonia"
+    },
+    {
+      "source": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+      "translation": "勘探销售收据。主体总数涵盖已识别的已售系统；旅行涵盖了自上次销售以来可用的期刊。"
     },
     {
       "source": "Exploration screenshots",
@@ -228643,6 +229359,10 @@
       "translation": "理想的引道走廊"
     },
     {
+      "source": "Identified sold bodies",
+      "translation": "已确定的出售机构"
+    },
+    {
       "source": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
       "translation": "标识紧凑覆盖行中的监护人/站点点或记录的 Codex 样式项目。"
     },
@@ -229687,6 +230407,10 @@
       "translation": "跳转目标数据准备就绪"
     },
     {
+      "source": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+      "translation": "跳跃、扫描、测绘、着陆、距离和估计奖励总计。"
+    },
+    {
       "source": "Jump-route progress",
       "translation": "跳转路线进度"
     },
@@ -230341,10 +231065,6 @@
     {
       "source": "Legacy profile ({0} files)",
       "translation": "旧配置文件（{0} 文件）"
-    },
-    {
-      "source": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-      "translation": "兼容旧版的跳跃、扫描、绘图、着陆、距离和估计奖励总计。"
     },
     {
       "source": "LegacyImport",
@@ -233679,6 +234399,10 @@
       "translation": "未找到匹配的运营商。尝试输入名称或呼号。"
     },
     {
+      "source": "No matching entries",
+      "translation": "没有匹配的条目"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "目前还没有匹配的配备模块。需要完整的 Loadout 事件；保存的作业仍然可以编辑。"
     },
@@ -233693,10 +234417,6 @@
     {
       "source": "No matching system was returned by Spansh.",
       "translation": "Spansh 未返回匹配的系统。"
-    },
-    {
-      "source": "No matching systems",
-      "translation": "没有匹配系统"
     },
     {
       "source": "No matching systems found.",
@@ -235835,6 +236555,10 @@
       "translation": "付费"
     },
     {
+      "source": "Paid {0}",
+      "translation": "已付款 {0}"
+    },
+    {
       "source": "Painite",
       "translation": "潘尼特"
     },
@@ -235937,6 +236661,10 @@
     {
       "source": "Paused",
       "translation": "已暂停"
+    },
+    {
+      "source": "Payout not recorded",
+      "translation": "未记录付款"
     },
     {
       "source": "Peach",
@@ -238659,6 +239387,10 @@
       "translation": "记录的销售收入：{0} CR"
     },
     {
+      "source": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+      "translation": "记录的销售收入：{0} CR； {1} 未记录支付总额。"
+    },
+    {
       "source": "Recorded systems required for averages",
       "translation": "平均值所需的记录系统"
     },
@@ -239563,6 +240295,18 @@
       "translation": "重置"
     },
     {
+      "source": "Reset Everything Above",
+      "translation": "重置以上所有内容"
+    },
+    {
+      "source": "Reset Exp Value",
+      "translation": "重置经验值"
+    },
+    {
+      "source": "Reset Odometer",
+      "translation": "重置里程表"
+    },
+    {
       "source": "Reset VR orientation",
       "translation": "重置 VR 方向"
     },
@@ -239605,10 +240349,6 @@
     {
       "source": "Reset to default colors",
       "translation": "重置为默认颜色"
-    },
-    {
-      "source": "Reset totals",
-      "translation": "重置总数"
     },
     {
       "source": "Reset {0} text and icon scales to 0%. Use the top ✓ to save and close.",
@@ -240903,6 +241643,10 @@
       "translation": "圣人"
     },
     {
+      "source": "Sale date",
+      "translation": "发售日期"
+    },
+    {
       "source": "Salvage operation",
       "translation": "打捞作业"
     },
@@ -241815,14 +242559,6 @@
       "translation": "选择确认删除以删除本地开发进度。首先备份状态文件。"
     },
     {
-      "source": "Select Confirm reset to clear all six exploration totals.",
-      "translation": "选择确认重置以清除所有六个探索总数。"
-    },
-    {
-      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-      "translation": "选择确认重置以清除保存的调查总计。自动跟踪保持日记帐衍生的未售出余额。"
-    },
-    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "选择禁用并确认删除 API 密钥并取消该指挥官的待交付。切换命令加载该配置文件的单独 EDSM 状态。"
     },
@@ -241995,10 +242731,6 @@
       "translation": "在“搜索市场”中选择一个站点或商品来构建您的购物清单。"
     },
     {
-      "source": "Select a system to inspect its collected data",
-      "translation": "选择一个系统来检查其收集的数据"
-    },
-    {
       "source": "Select a threshold group to delete.",
       "translation": "选择要删除的阈值组。"
     },
@@ -242013,6 +242745,10 @@
     {
       "source": "Select an announcement preset to delete.",
       "translation": "选择要删除的公告预设。"
+    },
+    {
+      "source": "Select an entry to inspect its records",
+      "translation": "选择一个条目以检查其记录"
     },
     {
       "source": "Select an equipped module",
@@ -242085,6 +242821,10 @@
     {
       "source": "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
       "translation": "选择Active Commander卡，然后使用Frontier连接控件打开官方登录页面。"
+    },
+    {
+      "source": "Select the commander again before resetting exploration value.",
+      "translation": "在重置探索值之前再次选择指挥官。"
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -243481,6 +244221,14 @@
     {
       "source": "Sold estimate",
       "translation": "售出预估"
+    },
+    {
+      "source": "Sold systems",
+      "translation": "出售的系统"
+    },
+    {
+      "source": "Sold systems not identified in the journal",
+      "translation": "日志中未注明的已售系统"
     },
     {
       "source": "Some Canonn settlement data was ignored: {0}",
@@ -245149,6 +245897,14 @@
     {
       "source": "Survey totals",
       "translation": "调查总计"
+    },
+    {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "调查总数及其起点已保存。"
+    },
+    {
+      "source": "Survey totals could not be reset: {0}",
+      "translation": "无法重置调查总数：{0}"
     },
     {
       "source": "Survey will start at {0}.",
@@ -248179,6 +248935,10 @@
       "translation": "调查起点没有改变。"
     },
     {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "调查起点无法核实。恢复原始日记帐或重置估计值以开始新期间。"
+    },
+    {
       "source": "The system could not be copied: {0}",
       "translation": "无法复制系统：{0}"
     },
@@ -249127,6 +249887,18 @@
       "translation": "旅行和搜索"
     },
     {
+      "source": "Travel since previous sale",
+      "translation": "自上次销售以来的旅行"
+    },
+    {
+      "source": "Travel since the previous exploration sale, independent of manual odometer resets.",
+      "translation": "自上次探索销售以来的旅行，独立于手动里程表重置。"
+    },
+    {
+      "source": "Travel totals unavailable",
+      "translation": "旅行总数不可用"
+    },
+    {
       "source": "Travel, search, Guardian, colonization, messages",
       "translation": "旅行、搜索、守护、殖民、消息"
     },
@@ -249713,6 +250485,10 @@
     {
       "source": "Unsold estimate",
       "translation": "未售出预估"
+    },
+    {
+      "source": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+      "translation": "当前调查期间收集的未售出价值，经售后调整和确认的船舶损失。"
     },
     {
       "source": "Unsupported VR pointer event.",
@@ -255859,6 +256635,14 @@
       "translation": "{0} 地质信号未识别"
     },
     {
+      "source": "{0} hyperspace jumps, {1} ly travelled",
+      "translation": "{0} 超空间跳跃，{1} 旅行"
+    },
+    {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "{0} 超空间跳跃；距离不可用"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "{0} 不兼容或不完整的旧目录被安全忽略；查看日志。"
     },
@@ -256261,6 +257045,14 @@
     {
       "source": "{0} scanned",
       "translation": "{0} 已扫描"
+    },
+    {
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "{0} 扫描，{1} DSS，{2} 落地"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "{0} 扫描，{1} DSS；无法着陆"
     },
     {
       "source": "{0} scanned, {1} mapped",
@@ -258495,6 +259287,10 @@
     {
       "source": "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
       "translation": "* ACTIVITY-BY-ACTIVITY REFERENCE FOR THE CHAT MESSAGES SRVSURVEY CURRENTLY RECOGNIZES, INCLUDING EXAMPLES, REQUIREMENTS, AND CLEARING BEHAVIOR. >>>!"
+    },
+    {
+      "source": "Actual payout",
+      "translation": "* ACTUAL PAYOUT >>>!"
     },
     {
       "source": "Add",
@@ -261041,6 +261837,14 @@
       "translation": "* BODY TEXT >>>!"
     },
     {
+      "source": "Body totals from identified sold systems in the available journals.",
+      "translation": "* BODY TOTALS FROM IDENTIFIED SOLD SYSTEMS IN THE AVAILABLE JOURNALS. >>>!"
+    },
+    {
+      "source": "Body totals unavailable",
+      "translation": "* BODY TOTALS UNAVAILABLE >>>!"
+    },
+    {
       "source": "Body type",
       "translation": "* BODY TYPE >>>!"
     },
@@ -263069,6 +263873,18 @@
       "translation": "* CLEAR CANCELLED; UNCLAIMED REWARDS WERE NOT CHANGED. >>>!"
     },
     {
+      "source": "Clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "* CLEAR ESTIMATED CREDITS AND SCANNED, DSS, AND LANDED COUNTS. >>>!"
+    },
+    {
+      "source": "Clear estimated credits, hyperspace jumps, distance, and all body totals.",
+      "translation": "* CLEAR ESTIMATED CREDITS, HYPERSPACE JUMPS, DISTANCE, AND ALL BODY TOTALS. >>>!"
+    },
+    {
+      "source": "Clear hyperspace jumps and distance travelled.",
+      "translation": "* CLEAR HYPERSPACE JUMPS AND DISTANCE TRAVELLED. >>>!"
+    },
+    {
       "source": "Clear key",
       "translation": "* CLEAR KEY >>>!"
     },
@@ -263405,10 +264221,6 @@
       "translation": "* COLLECTED ENGINEERING MATERIALS >>>!"
     },
     {
-      "source": "Collected from (UTC)",
-      "translation": "* COLLECTED FROM (UTC) >>>!"
-    },
-    {
       "source": "Collected material",
       "translation": "* COLLECTED MATERIAL >>>!"
     },
@@ -263419,6 +264231,10 @@
     {
       "source": "Collected: {0}x {1}, new total {2}",
       "translation": "* COLLECTED: {0}X {1}, NEW TOTAL {2} >>>!"
+    },
+    {
+      "source": "Collection date for exploration data; sale date for Paid receipts.",
+      "translation": "* COLLECTION DATE FOR EXPLORATION DATA; SALE DATE FOR PAID RECEIPTS. >>>!"
     },
     {
       "source": "Collector limpet",
@@ -264169,6 +264985,30 @@
       "translation": "* CONFIRM >>>!"
     },
     {
+      "source": "Confirm Reset Everything",
+      "translation": "* CONFIRM RESET EVERYTHING >>>!"
+    },
+    {
+      "source": "Confirm Reset Everything to clear all six survey totals. Exploration history and payment receipts are retained.",
+      "translation": "* CONFIRM RESET EVERYTHING TO CLEAR ALL SIX SURVEY TOTALS. EXPLORATION HISTORY AND PAYMENT RECEIPTS ARE RETAINED. >>>!"
+    },
+    {
+      "source": "Confirm Reset Exp Value",
+      "translation": "* CONFIRM RESET EXP VALUE >>>!"
+    },
+    {
+      "source": "Confirm Reset Exp Value to clear estimated credits and scanned, DSS, and landed counts.",
+      "translation": "* CONFIRM RESET EXP VALUE TO CLEAR ESTIMATED CREDITS AND SCANNED, DSS, AND LANDED COUNTS. >>>!"
+    },
+    {
+      "source": "Confirm Reset Odometer",
+      "translation": "* CONFIRM RESET ODOMETER >>>!"
+    },
+    {
+      "source": "Confirm Reset Odometer to clear hyperspace jumps and distance travelled.",
+      "translation": "* CONFIRM RESET ODOMETER TO CLEAR HYPERSPACE JUMPS AND DISTANCE TRAVELLED. >>>!"
+    },
+    {
       "source": "Confirm Selected folder and Current journal refer to the Commander you are playing.",
       "translation": "* CONFIRM SELECTED FOLDER AND CURRENT JOURNAL REFER TO THE COMMANDER YOU ARE PLAYING. >>>!"
     },
@@ -264223,10 +265063,6 @@
     {
       "source": "Confirm removal",
       "translation": "* CONFIRM REMOVAL >>>!"
-    },
-    {
-      "source": "Confirm reset",
-      "translation": "* CONFIRM RESET >>>!"
     },
     {
       "source": "Confirm restore",
@@ -265479,6 +266315,14 @@
     {
       "source": "Data use and licensing",
       "translation": "* DATA USE AND LICENSING >>>!"
+    },
+    {
+      "source": "Date",
+      "translation": "* DATE >>>!"
+    },
+    {
+      "source": "Date from (UTC)",
+      "translation": "* DATE FROM (UTC) >>>!"
     },
     {
       "source": "Days",
@@ -267729,10 +268573,6 @@
       "translation": "* ESTIMATED TRIPS REMAINING: {0} >>>!"
     },
     {
-      "source": "Estimated value of unsold cartographic data in this commander's available journals.",
-      "translation": "* ESTIMATED VALUE OF UNSOLD CARTOGRAPHIC DATA IN THIS COMMANDER'S AVAILABLE JOURNALS. >>>!"
-    },
-    {
       "source": "Evacuation shelter",
       "translation": "* EVACUATION SHELTER >>>!"
     },
@@ -267961,6 +268801,10 @@
       "translation": "* EXPLORATION DATA >>>!"
     },
     {
+      "source": "Exploration data sold",
+      "translation": "* EXPLORATION DATA SOLD >>>!"
+    },
+    {
       "source": "Exploration history",
       "translation": "* EXPLORATION HISTORY >>>!"
     },
@@ -267983,6 +268827,10 @@
     {
       "source": "Exploration route: Sol → Lave → Colonia",
       "translation": "* EXPLORATION ROUTE: SOL → LAVE → COLONIA >>>!"
+    },
+    {
+      "source": "Exploration sale receipt. Body totals cover identified sold systems; travel covers the available journals since the previous sale.",
+      "translation": "* EXPLORATION SALE RECEIPT. BODY TOTALS COVER IDENTIFIED SOLD SYSTEMS; TRAVEL COVERS THE AVAILABLE JOURNALS SINCE THE PREVIOUS SALE. >>>!"
     },
     {
       "source": "Exploration screenshots",
@@ -271449,6 +272297,10 @@
       "translation": "* IDEAL APPROACH CORRIDOR >>>!"
     },
     {
+      "source": "Identified sold bodies",
+      "translation": "* IDENTIFIED SOLD BODIES >>>!"
+    },
+    {
       "source": "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
       "translation": "* IDENTIFIES A GUARDIAN/SITE POINT OR A RECORDED CODEX-STYLE ITEM IN COMPACT OVERLAY ROWS. >>>!"
     },
@@ -272493,6 +273345,10 @@
       "translation": "* JUMP TARGET DATA READY >>>!"
     },
     {
+      "source": "Jump, scan, mapping, landing, distance, and estimated reward totals.",
+      "translation": "* JUMP, SCAN, MAPPING, LANDING, DISTANCE, AND ESTIMATED REWARD TOTALS. >>>!"
+    },
+    {
       "source": "Jump-route progress",
       "translation": "* JUMP-ROUTE PROGRESS >>>!"
     },
@@ -273147,10 +274003,6 @@
     {
       "source": "Legacy profile ({0} files)",
       "translation": "* LEGACY PROFILE ({0} FILES) >>>!"
-    },
-    {
-      "source": "Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals.",
-      "translation": "* LEGACY-COMPATIBLE JUMP, SCAN, MAPPING, LANDING, DISTANCE, AND ESTIMATED REWARD TOTALS. >>>!"
     },
     {
       "source": "LegacyImport",
@@ -276485,6 +277337,10 @@
       "translation": "* NO MATCHING CARRIERS WERE FOUND. TRY A NAME OR CALLSIGN. >>>!"
     },
     {
+      "source": "No matching entries",
+      "translation": "* NO MATCHING ENTRIES >>>!"
+    },
+    {
       "source": "No matching equipped modules are available yet. A full Loadout event is needed; saved assignments remain editable.",
       "translation": "* NO MATCHING EQUIPPED MODULES ARE AVAILABLE YET. A FULL LOADOUT EVENT IS NEEDED; SAVED ASSIGNMENTS REMAIN EDITABLE. >>>!"
     },
@@ -276499,10 +277355,6 @@
     {
       "source": "No matching system was returned by Spansh.",
       "translation": "* NO MATCHING SYSTEM WAS RETURNED BY SPANSH. >>>!"
-    },
-    {
-      "source": "No matching systems",
-      "translation": "* NO MATCHING SYSTEMS >>>!"
     },
     {
       "source": "No matching systems found.",
@@ -278641,6 +279493,10 @@
       "translation": "* PAID >>>!"
     },
     {
+      "source": "Paid {0}",
+      "translation": "* PAID {0} >>>!"
+    },
+    {
       "source": "Painite",
       "translation": "* PAINITE >>>!"
     },
@@ -278743,6 +279599,10 @@
     {
       "source": "Paused",
       "translation": "* PAUSED >>>!"
+    },
+    {
+      "source": "Payout not recorded",
+      "translation": "* PAYOUT NOT RECORDED >>>!"
     },
     {
       "source": "Peach",
@@ -281465,6 +282325,10 @@
       "translation": "* RECORDED SALE EARNINGS: {0} CR >>>!"
     },
     {
+      "source": "Recorded sale earnings: {0} CR; {1} payout total(s) not recorded.",
+      "translation": "* RECORDED SALE EARNINGS: {0} CR; {1} PAYOUT TOTAL(S) NOT RECORDED. >>>!"
+    },
+    {
       "source": "Recorded systems required for averages",
       "translation": "* RECORDED SYSTEMS REQUIRED FOR AVERAGES >>>!"
     },
@@ -282369,6 +283233,18 @@
       "translation": "* RESET >>>!"
     },
     {
+      "source": "Reset Everything Above",
+      "translation": "* RESET EVERYTHING ABOVE >>>!"
+    },
+    {
+      "source": "Reset Exp Value",
+      "translation": "* RESET EXP VALUE >>>!"
+    },
+    {
+      "source": "Reset Odometer",
+      "translation": "* RESET ODOMETER >>>!"
+    },
+    {
       "source": "Reset VR orientation",
       "translation": "* RESET VR ORIENTATION >>>!"
     },
@@ -282411,10 +283287,6 @@
     {
       "source": "Reset to default colors",
       "translation": "* RESET TO DEFAULT COLORS >>>!"
-    },
-    {
-      "source": "Reset totals",
-      "translation": "* RESET TOTALS >>>!"
     },
     {
       "source": "Reset {0} text and icon scales to 0%. Use the top ✓ to save and close.",
@@ -283709,6 +284581,10 @@
       "translation": "* SAGE >>>!"
     },
     {
+      "source": "Sale date",
+      "translation": "* SALE DATE >>>!"
+    },
+    {
       "source": "Salvage operation",
       "translation": "* SALVAGE OPERATION >>>!"
     },
@@ -284621,14 +285497,6 @@
       "translation": "* SELECT CONFIRM REMOVAL TO REMOVE LOCAL DEVELOPMENT PROGRESS. THE STATE FILE IS BACKED UP FIRST. >>>!"
     },
     {
-      "source": "Select Confirm reset to clear all six exploration totals.",
-      "translation": "* SELECT CONFIRM RESET TO CLEAR ALL SIX EXPLORATION TOTALS. >>>!"
-    },
-    {
-      "source": "Select Confirm reset to clear the saved survey totals. Automatic tracking keeps the journal-derived unsold balance.",
-      "translation": "* SELECT CONFIRM RESET TO CLEAR THE SAVED SURVEY TOTALS. AUTOMATIC TRACKING KEEPS THE JOURNAL-DERIVED UNSOLD BALANCE. >>>!"
-    },
-    {
       "source": "Select Disable and confirm to remove the API key and cancel pending delivery for that Commander. Switching Commanders loads that profile's separate EDSM state.",
       "translation": "* SELECT DISABLE AND CONFIRM TO REMOVE THE API KEY AND CANCEL PENDING DELIVERY FOR THAT COMMANDER. SWITCHING COMMANDERS LOADS THAT PROFILE'S SEPARATE EDSM STATE. >>>!"
     },
@@ -284801,10 +285669,6 @@
       "translation": "* SELECT A STATION OR COMMODITIES IN SEARCH MARKETS TO BUILD YOUR SHOPPINGLIST. >>>!"
     },
     {
-      "source": "Select a system to inspect its collected data",
-      "translation": "* SELECT A SYSTEM TO INSPECT ITS COLLECTED DATA >>>!"
-    },
-    {
       "source": "Select a threshold group to delete.",
       "translation": "* SELECT A THRESHOLD GROUP TO DELETE. >>>!"
     },
@@ -284819,6 +285683,10 @@
     {
       "source": "Select an announcement preset to delete.",
       "translation": "* SELECT AN ANNOUNCEMENT PRESET TO DELETE. >>>!"
+    },
+    {
+      "source": "Select an entry to inspect its records",
+      "translation": "* SELECT AN ENTRY TO INSPECT ITS RECORDS >>>!"
     },
     {
       "source": "Select an equipped module",
@@ -284891,6 +285759,10 @@
     {
       "source": "Select the Active Commander card, then use the Frontier connection control to open the official sign-in page.",
       "translation": "* SELECT THE ACTIVE COMMANDER CARD, THEN USE THE FRONTIER CONNECTION CONTROL TO OPEN THE OFFICIAL SIGN-IN PAGE. >>>!"
+    },
+    {
+      "source": "Select the commander again before resetting exploration value.",
+      "translation": "* SELECT THE COMMANDER AGAIN BEFORE RESETTING EXPLORATION VALUE. >>>!"
     },
     {
       "source": "Select the ruins layout with the active fire group, then use the configured confirmation control twice.",
@@ -286287,6 +287159,14 @@
     {
       "source": "Sold estimate",
       "translation": "* SOLD ESTIMATE >>>!"
+    },
+    {
+      "source": "Sold systems",
+      "translation": "* SOLD SYSTEMS >>>!"
+    },
+    {
+      "source": "Sold systems not identified in the journal",
+      "translation": "* SOLD SYSTEMS NOT IDENTIFIED IN THE JOURNAL >>>!"
     },
     {
       "source": "Some Canonn settlement data was ignored: {0}",
@@ -287955,6 +288835,14 @@
     {
       "source": "Survey totals",
       "translation": "* SURVEY TOTALS >>>!"
+    },
+    {
+      "source": "Survey totals and their starting point were saved.",
+      "translation": "* SURVEY TOTALS AND THEIR STARTING POINT WERE SAVED. >>>!"
+    },
+    {
+      "source": "Survey totals could not be reset: {0}",
+      "translation": "* SURVEY TOTALS COULD NOT BE RESET: {0} >>>!"
     },
     {
       "source": "Survey will start at {0}.",
@@ -290985,6 +291873,10 @@
       "translation": "* THE SURVEY START POINT WAS NOT CHANGED. >>>!"
     },
     {
+      "source": "The survey starting point could not be verified. Restore the original journals or reset estimated value to start a new period.",
+      "translation": "* THE SURVEY STARTING POINT COULD NOT BE VERIFIED. RESTORE THE ORIGINAL JOURNALS OR RESET ESTIMATED VALUE TO START A NEW PERIOD. >>>!"
+    },
+    {
       "source": "The system could not be copied: {0}",
       "translation": "* THE SYSTEM COULD NOT BE COPIED: {0} >>>!"
     },
@@ -291933,6 +292825,18 @@
       "translation": "* TRAVEL AND SEARCH >>>!"
     },
     {
+      "source": "Travel since previous sale",
+      "translation": "* TRAVEL SINCE PREVIOUS SALE >>>!"
+    },
+    {
+      "source": "Travel since the previous exploration sale, independent of manual odometer resets.",
+      "translation": "* TRAVEL SINCE THE PREVIOUS EXPLORATION SALE, INDEPENDENT OF MANUAL ODOMETER RESETS. >>>!"
+    },
+    {
+      "source": "Travel totals unavailable",
+      "translation": "* TRAVEL TOTALS UNAVAILABLE >>>!"
+    },
+    {
       "source": "Travel, search, Guardian, colonization, messages",
       "translation": "* TRAVEL, SEARCH, GUARDIAN, COLONIZATION, MESSAGES >>>!"
     },
@@ -292519,6 +293423,10 @@
     {
       "source": "Unsold estimate",
       "translation": "* UNSOLD ESTIMATE >>>!"
+    },
+    {
+      "source": "Unsold value collected in the current survey period, adjusted after sales and confirmed ship losses.",
+      "translation": "* UNSOLD VALUE COLLECTED IN THE CURRENT SURVEY PERIOD, ADJUSTED AFTER SALES AND CONFIRMED SHIP LOSSES. >>>!"
     },
     {
       "source": "Unsupported VR pointer event.",
@@ -298665,6 +299573,14 @@
       "translation": "* {0} GEOLOGICAL SIGNALS UNIDENTIFIED >>>!"
     },
     {
+      "source": "{0} hyperspace jumps, {1} ly travelled",
+      "translation": "* {0} HYPERSPACE JUMPS, {1} LY TRAVELLED >>>!"
+    },
+    {
+      "source": "{0} hyperspace jumps; distance unavailable",
+      "translation": "* {0} HYPERSPACE JUMPS; DISTANCE UNAVAILABLE >>>!"
+    },
+    {
       "source": "{0} incompatible or incomplete legacy catalog(s) were ignored safely; see logs.",
       "translation": "* {0} INCOMPATIBLE OR INCOMPLETE LEGACY CATALOG(S) WERE IGNORED SAFELY; SEE LOGS. >>>!"
     },
@@ -299067,6 +299983,14 @@
     {
       "source": "{0} scanned",
       "translation": "* {0} SCANNED >>>!"
+    },
+    {
+      "source": "{0} scanned, {1} DSS, {2} landed",
+      "translation": "* {0} SCANNED, {1} DSS, {2} LANDED >>>!"
+    },
+    {
+      "source": "{0} scanned, {1} DSS; landings unavailable",
+      "translation": "* {0} SCANNED, {1} DSS; LANDINGS UNAVAILABLE >>>!"
     },
     {
       "source": "{0} scanned, {1} mapped",

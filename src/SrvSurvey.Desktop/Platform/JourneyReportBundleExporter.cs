@@ -96,8 +96,9 @@ public static class JourneyReportBundleExporter
 
     private static void WritePreview(string source, string target, string caption)
     {
+        using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read);
         using SKBitmap original =
-            SKBitmap.Decode(source) ?? throw new InvalidDataException($"Screenshot '{caption}' could not be decoded.");
+            SKBitmap.Decode(input) ?? throw new InvalidDataException($"Screenshot '{caption}' could not be decoded.");
         double scale = Math.Min(1, Math.Min(640d / original.Width, 400d / original.Height));
         var size = new SKImageInfo(
             Math.Max(1, (int)(original.Width * scale)),

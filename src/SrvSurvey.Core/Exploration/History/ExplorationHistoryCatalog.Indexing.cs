@@ -220,6 +220,12 @@ public sealed partial class ExplorationHistoryCatalog
         }
         token.ThrowIfCancellationRequested();
         VerifyDeferredProgress(connection, required, sources, token);
+        VerifySurveyCheckpoints(
+            connection,
+            sources.Select(source => new SurveySource(source.Name, source.Path, source.Length)).ToArray(),
+            canReanchor: true,
+            token
+        );
     }
 
     private static bool NeedsRebuild(SqliteConnection connection, JournalSource[] sources, CancellationToken token)
@@ -342,6 +348,9 @@ public sealed partial class ExplorationHistoryCatalog
         Execute(
             connection,
             """
+            DELETE FROM sale_receipts;
+            DELETE FROM value_credits;
+            DELETE FROM pending_landings;
             DELETE FROM collection_anchors;
             DELETE FROM observations;
             DELETE FROM bodies;
@@ -353,6 +362,7 @@ public sealed partial class ExplorationHistoryCatalog
             DELETE FROM metadata WHERE key NOT IN ('commander','galaxy');
             """
         );
+        EnsureCatalogGeneration(connection);
     }
 
     private void IndexSource(

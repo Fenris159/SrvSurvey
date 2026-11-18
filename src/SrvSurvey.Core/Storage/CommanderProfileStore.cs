@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Exploration.History;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Search;
 
@@ -16,6 +17,7 @@ namespace SrvSurvey.Core.Storage;
 )]
 public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearchProfileStore
 {
+    private const string SurveyResetProperty = "explorationSurveyStart";
     private const string ExplorationRewardsBySystemProperty = "explRewardsBySystem";
     private const string ExplorationRewardsProperty = "explRewards";
     private const string DistanceTravelledProperty = "distanceTravelled";
@@ -84,6 +86,29 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         }
 
         JsonObject root = readResult.Root;
+        ExplorationSurveyResetPoint? surveyStart;
+        try
+        {
+            surveyStart = root[SurveyResetProperty]?.Deserialize<ExplorationSurveyResetPoint>(SerializerOptions);
+        }
+        catch (JsonException exception)
+        {
+            return new CommanderProfileLoadResult(
+                path,
+                true,
+                null,
+                "The saved survey starting point could not be read: " + exception.Message
+            );
+        }
+        if (surveyStart is not null && !surveyStart.IsValidForScope(frontierId, isOdyssey))
+        {
+            return new CommanderProfileLoadResult(
+                path,
+                true,
+                null,
+                "The saved survey starting point is invalid for this commander and galaxy."
+            );
+        }
         var data = new CommanderProfileData(
             GetString(root, "fid") ?? frontierId,
             GetString(root, "commander"),
@@ -108,7 +133,10 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             GetString(root, "edsmCommanderName"),
             GetString(root, "edsmApiKey"),
             GetBoolean(root, "autoResetExplorationValue") ?? false
-        );
+        )
+        {
+            ExplorationSurveyStart = surveyStart,
+        };
         return new CommanderProfileLoadResult(path, true, data, null)
         {
             HasExplorationTotals = root.Any(field => ExplorationFields.Contains(field.Key)),
@@ -128,19 +156,49 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 frontierId,
                 commanderName,
                 isOdyssey,
-                root =>
-                {
-                    root[ExplorationRewardsProperty] = exploration.EstimatedRewards;
-                    root[DistanceTravelledProperty] = exploration.DistanceTravelled;
-                    root[JumpCountProperty] = exploration.JumpCount;
-                    root[ScanCountProperty] = exploration.ScanCount;
-                    root[DssCountProperty] = exploration.DetailedSurfaceScanCount;
-                    root[LandedCountProperty] = exploration.LandedBodyCount;
-                    WriteExplorationRewardsBySystem(root, exploration);
-                },
+                root => WriteExploration(root, exploration),
                 cancellationToken
             )
             .ConfigureAwait(false);
+    }
+
+    public Task SaveExplorationResetAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        ExplorationSnapshot exploration,
+        ExplorationSurveyResetPoint point,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(exploration);
+        ArgumentNullException.ThrowIfNull(point);
+        if (!point.IsValidForScope(frontierId, isOdyssey))
+        {
+            throw new InvalidDataException("The survey starting point belongs to another commander or galaxy.");
+        }
+        return SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root =>
+            {
+                WriteExploration(root, exploration);
+                root[SurveyResetProperty] = JsonSerializer.SerializeToNode(point, SerializerOptions);
+            },
+            cancellationToken
+        );
+    }
+
+    private static void WriteExploration(JsonObject root, ExplorationSnapshot exploration)
+    {
+        root[ExplorationRewardsProperty] = exploration.EstimatedRewards;
+        root[DistanceTravelledProperty] = exploration.DistanceTravelled;
+        root[JumpCountProperty] = exploration.JumpCount;
+        root[ScanCountProperty] = exploration.ScanCount;
+        root[DssCountProperty] = exploration.DetailedSurfaceScanCount;
+        root[LandedCountProperty] = exploration.LandedBodyCount;
+        WriteExplorationRewardsBySystem(root, exploration);
     }
 
     public Task SaveExplorationTrackingAsync(
@@ -1037,7 +1095,10 @@ public sealed record CommanderProfileData(
     string? EdsmCommanderName = null,
     string? EdsmApiKey = null,
     bool AutoResetExplorationValue = false
-);
+)
+{
+    public ExplorationSurveyResetPoint? ExplorationSurveyStart { get; init; }
+}
 
 public sealed record CommanderProfileLoadResult(string Path, bool Exists, CommanderProfileData? Data, string? Error)
 {

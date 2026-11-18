@@ -7,19 +7,26 @@ namespace SrvSurvey.Core.Exploration.History;
 public sealed partial class ExplorationHistoryCatalog
 {
     private const string UnavailableHistoryMessage = "History is not available.";
-    private const string RowProjection = """
+    private const string BatchColumns = """
         SELECT b.id,s.name,s.address,s.x,s.y,s.z,b.first_time,b.last_time,b.settled_time,b.status,b.estimate,b.scans,b.maps,
             original.name,anchor.offset,anchor.hash,COALESCE(notable.flags,0)
+        """;
+    private const string BatchTables = """
         FROM batches b JOIN systems s ON s.key=b.system_key
         LEFT JOIN collection_anchors anchor ON anchor.id=(
             SELECT id FROM collection_anchors WHERE batch_id=b.id ORDER BY id LIMIT 1)
         LEFT JOIN sources original ON original.id=anchor.source_id
         LEFT JOIN notable_systems notable ON notable.system_key=s.key
         """;
+    private const string RowProjection = BatchColumns + "\n" + BatchTables;
 
     private ExplorationHistoryPage Query(ExplorationHistoryQuery query, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(query);
+        if (query.IncludePayments || query.Status == ExplorationDataStatus.Paid)
+        {
+            return QueryLedger(query, token);
+        }
         token.ThrowIfCancellationRequested();
         if (!File.Exists(FilePath))
         {
@@ -68,7 +75,7 @@ public sealed partial class ExplorationHistoryCatalog
             token.ThrowIfCancellationRequested();
             rows.Add(ReadRow(reader));
         }
-        long? selectedId = FindSelectedRow(connection, query.SelectionAnchor);
+        long? selectedId = FindCollectedRow(connection, query.SelectionAnchor);
         var page = new ExplorationHistoryPage(
             rows,
             total,
@@ -102,7 +109,10 @@ public sealed partial class ExplorationHistoryCatalog
         return reader.Read() ? ReadRow(reader) : null;
     }
 
-    private static long? FindSelectedRow(SqliteConnection connection, ExplorationHistoryAnchor? anchor)
+    private static long? FindSelectedRow(SqliteConnection connection, ExplorationHistoryAnchor? anchor) =>
+        FindCollectedRow(connection, anchor) ?? FindPaymentRow(connection, anchor);
+
+    private static long? FindCollectedRow(SqliteConnection connection, ExplorationHistoryAnchor? anchor)
     {
         if (anchor is null)
         {
@@ -170,10 +180,12 @@ public sealed partial class ExplorationHistoryCatalog
         using (
             SqliteCommand command = Command(
                 connection,
-                """
-                SELECT source_id,offset,hash FROM observations WHERE batch_id=@batch
-                UNION SELECT t.source_id,t.offset,t.hash FROM settlements t JOIN batches b ON b.settlement_id=t.id WHERE b.id=@batch;
-                """,
+                rowId < 0
+                    ? "SELECT source_id,offset,hash FROM settlements WHERE id=-@batch AND kind='sale';"
+                    : """
+                    SELECT source_id,offset,hash FROM observations WHERE batch_id=@batch
+                    UNION SELECT t.source_id,t.offset,t.hash FROM settlements t JOIN batches b ON b.settlement_id=t.id WHERE b.id=@batch;
+                    """,
                 ("@batch", rowId)
             )
         )
