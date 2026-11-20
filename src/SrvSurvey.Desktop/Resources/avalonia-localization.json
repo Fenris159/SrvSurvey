@@ -20597,6 +20597,10 @@
       "translation": "Öffnen Sie Overlay-Positionen bearbeiten und wählen Sie Mining. Ziehen Sie den Aufnahmerahmen um alle sechs Kreise und ihre vollständigen Bereitstellungsbalken; Ändern Sie die Größe in der unteren rechten Ecke."
     },
     {
+      "source": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+      "translation": "Öffnen Sie „Erkundungsgeschichte“ und wählen Sie „Verlauf aktualisieren“. Stellen Sie bei Aufforderung die Originaljournale wieder her, aktivieren Sie das Bestätigungsfeld und wählen Sie „Setzen Sie die Wiederherstellung des Verlaufs fort“. Kehren Sie danach zu „Umfragesummen“ zurück und versuchen Sie das Zurücksetzen erneut."
+    },
+    {
       "source": "Open FC Route Workspace",
       "translation": "Öffnen Sie den FC-Route-Arbeitsbereich"
     },
@@ -25789,6 +25793,10 @@
       "translation": "Wiederherstellung und Rollback konnten nicht abgeschlossen werden. Die Wiederherstellung wird beim Start erneut versucht. Die Rollback-Kopie wurde beibehalten."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Stellen Sie alle fehlenden früheren Teile von {0} im überwachten Journalordner wieder her. Starten Sie eine neue Elite Dangerous-Sitzung mit diesem Commander und öffnen Sie SrvSurvey dann erneut."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Stellen Sie die automatische Kartenskalierung wieder her."
     },
@@ -25835,6 +25843,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Ausgewähltes Backup wiederherstellen"
+    },
+    {
+      "source": "Restore the complete journal {0} or re-add its folder.",
+      "translation": "Stellen Sie das vollständige Journal {0} wieder her oder fügen Sie seinen Ordner erneut hinzu."
     },
     {
       "source": "Restore this event's default",
@@ -63551,6 +63563,10 @@
       "translation": "Abra Editar posiciones de superposición y elija Minería. Arrastre el marco de captura alrededor de los seis círculos y sus barras de despliegue completas; cambiar el tamaño desde la esquina inferior derecha."
     },
     {
+      "source": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+      "translation": "Abre «Historia de la exploración» y selecciona «Actualizar historial». Si se te solicita, restaura los diarios originales, marca la casilla de confirmación y elige «Reanudar la recuperación del historial». Cuando termine la recuperación, vuelve a «Totales de la encuesta» e intenta restablecerlos de nuevo."
+    },
+    {
       "source": "Open FC Route Workspace",
       "translation": "Abrir espacio de trabajo de ruta FC"
     },
@@ -68743,6 +68759,10 @@
       "translation": "No se pudo completar la restauración y la reversión. La recuperación se volverá a intentar al inicio; se retuvo la copia revertida."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Restaura las partes anteriores de {0} que falten en la carpeta de diarios supervisada. Inicia una sesión nueva de Elite Dangerous con este comandante y vuelve a abrir SrvSurvey."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Restaurar la escala automática del mapa."
     },
@@ -68789,6 +68809,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Restaurar la copia de seguridad seleccionada"
+    },
+    {
+      "source": "Restore the complete journal {0} or re-add its folder.",
+      "translation": "Restaura el diario completo {0} o vuelve a añadir su carpeta."
     },
     {
       "source": "Restore this event's default",
@@ -106505,6 +106529,10 @@
       "translation": "Ouvrez Modifier les positions de superposition et choisissez Exploitation minière. Faites glisser le cadre de capture autour des six cercles et de leurs barres de déploiement complètes ; redimensionner à partir du coin inférieur droit."
     },
     {
+      "source": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+      "translation": "Ouvrez « Histoire des explorations » et sélectionnez « Actualiser l'historique ». Si l’application vous le demande, restaurez les journaux d’origine, cochez la case de confirmation et choisissez « Reprendre la récupération de l'historique ». Une fois la récupération terminée, revenez à « Totaux de l'enquête » et réessayez la réinitialisation."
+    },
+    {
       "source": "Open FC Route Workspace",
       "translation": "Espace de travail d’itinéraire FC ouvert"
     },
@@ -111697,6 +111725,10 @@
       "translation": "La restauration et la restauration n'ont pas pu être terminées. La récupération sera réessayée au démarrage ; la copie de restauration a été conservée."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Restaurez les parties précédentes manquantes de {0} dans le dossier de journaux surveillé. Démarrez une nouvelle session Elite Dangerous avec ce commandant, puis rouvrez SrvSurvey."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Restaurez la mise à l'échelle automatique de la carte."
     },
@@ -111743,6 +111775,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Restaurer la sauvegarde sélectionnée"
+    },
+    {
+      "source": "Restore the complete journal {0} or re-add its folder.",
+      "translation": "Restaurez le journal complet {0} ou ajoutez à nouveau son dossier."
     },
     {
       "source": "Restore this event's default",
@@ -149459,6 +149495,10 @@
       "translation": "Abra Editar posições de sobreposição e escolha Mineração. Arraste o quadro de captura em torno de todos os seis círculos e suas barras de implantação completas; redimensione a partir do canto inferior direito."
     },
     {
+      "source": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+      "translation": "Abra «História de exploração» e selecione «Atualizar histórico». Se solicitado, restaure os diários originais, marque a caixa de confirmação e escolha «Retomar recuperação do histórico». Ao terminar a recuperação, volte a «Totais da pesquisa» e tente redefini-los novamente."
+    },
+    {
       "source": "Open FC Route Workspace",
       "translation": "Abra o espaço de trabalho da rota FC"
     },
@@ -154651,6 +154691,10 @@
       "translation": "A restauração e a reversão não foram concluídas. A recuperação tentará novamente na inicialização; a cópia de reversão foi retida."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Restaure as partes anteriores de {0} que estiverem faltando na pasta de diários monitorada. Inicie uma nova sessão do Elite Dangerous com este comandante e reabra o SrvSurvey."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Restaure o dimensionamento automático do mapa."
     },
@@ -154697,6 +154741,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Restaurar backup selecionado"
+    },
+    {
+      "source": "Restore the complete journal {0} or re-add its folder.",
+      "translation": "Restaure o diário completo {0} ou adicione novamente a pasta dele."
     },
     {
       "source": "Restore this event's default",
@@ -192413,6 +192461,10 @@
       "translation": "Откройте «Редактировать позиции наложения» и выберите «Майнинг». Перетащите рамку захвата вокруг всех шести кругов и их полных полосок развертывания; изменить размер в правом нижнем углу."
     },
     {
+      "source": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+      "translation": "Откройте «История исследований» и выберите «Обновить историю». Если появится запрос, восстановите исходные журналы, установите флажок подтверждения и выберите «Возобновить восстановление истории». После восстановления вернитесь в «Итоги опроса» и повторите сброс."
+    },
+    {
       "source": "Open FC Route Workspace",
       "translation": "Открыть рабочую область маршрута FC"
     },
@@ -197605,6 +197657,10 @@
       "translation": "Восстановление и откат не удалось завершить. Восстановление повторит попытку при запуске; копия отката была сохранена."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Восстановите недостающие предыдущие части {0} в отслеживаемой папке журналов. Начните новый сеанс Elite Dangerous за этого командира, затем заново откройте SrvSurvey."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Восстановить автоматическое масштабирование карты."
     },
@@ -197651,6 +197707,10 @@
     {
       "source": "Restore selected backup",
       "translation": "Восстановить выбранную резервную копию"
+    },
+    {
+      "source": "Restore the complete journal {0} or re-add its folder.",
+      "translation": "Восстановите полный журнал {0} или добавьте его папку заново."
     },
     {
       "source": "Restore this event's default",
@@ -235367,6 +235427,10 @@
       "translation": "打开编辑叠加位置并选择挖掘。将捕获框拖动到所有六个圆圈及其完整的部署栏周围；从右下角调整大小。"
     },
     {
+      "source": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+      "translation": "打开“勘探历史”并选择“刷新历史记录”。如果出现提示，请还原原始日志、勾选确认框，然后选择“恢复历史记录恢复”。恢复完成后，返回“调查总计”并重试重置。"
+    },
+    {
       "source": "Open FC Route Workspace",
       "translation": "打开 FC 路由工作区"
     },
@@ -240559,6 +240623,10 @@
       "translation": "恢复和回滚无法完成。恢复将在启动时重试；回滚副本被保留。"
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "将 {0} 缺失的前序日志分段恢复到受监控的日志文件夹。使用此指挥官开始新的 Elite Dangerous 游戏会话，然后重新打开 SrvSurvey。"
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "恢复自动地图缩放。"
     },
@@ -240605,6 +240673,10 @@
     {
       "source": "Restore selected backup",
       "translation": "恢复选定的备份"
+    },
+    {
+      "source": "Restore the complete journal {0} or re-add its folder.",
+      "translation": "请还原完整日志 {0} 或重新添加其所在文件夹。"
     },
     {
       "source": "Restore this event's default",
@@ -278321,6 +278393,10 @@
       "translation": "* OPEN EDIT OVERLAY POSITIONS AND CHOOSE MINING. DRAG THE CAPTURE FRAME AROUND ALL SIX CIRCLES AND THEIR COMPLETE DEPLOYMENT BARS; RESIZE FROM THE LOWER-RIGHT CORNER. >>>!"
     },
     {
+      "source": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+      "translation": "* OPEN EXPLORATION HISTORY AND SELECT REFRESH HISTORY. IF PROMPTED, RESTORE THE ORIGINAL JOURNALS, SELECT THE CONFIRMATION CHECKBOX, AND CHOOSE RESUME HISTORY RECOVERY. WHEN RECOVERY FINISHES, GO BACK TO SURVEY TOTALS AND RETRY THE RESET. >>>!"
+    },
+    {
       "source": "Open FC Route Workspace",
       "translation": "* OPEN FC ROUTE WORKSPACE >>>!"
     },
@@ -283513,6 +283589,10 @@
       "translation": "* RESTORE AND ROLLBACK COULD NOT COMPLETE. RECOVERY WILL RETRY AT STARTUP; THE ROLLBACK COPY WAS RETAINED. >>>!"
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "* RESTORE ANY MISSING EARLIER PARTS OF {0} TO THE MONITORED JOURNAL FOLDER. START A NEW ELITE DANGEROUS SESSION AS THIS COMMANDER, THEN REOPEN SRVSURVEY. >>>!"
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "* RESTORE AUTOMATIC MAP SCALING. >>>!"
     },
@@ -283559,6 +283639,10 @@
     {
       "source": "Restore selected backup",
       "translation": "* RESTORE SELECTED BACKUP >>>!"
+    },
+    {
+      "source": "Restore the complete journal {0} or re-add its folder.",
+      "translation": "* RESTORE THE COMPLETE JOURNAL {0} OR RE-ADD ITS FOLDER. >>>!"
     },
     {
       "source": "Restore this event's default",

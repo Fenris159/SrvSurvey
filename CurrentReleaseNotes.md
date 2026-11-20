@@ -1,7 +1,7 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.23
+# SrvSurvey-XP 2.1.3.0-rc.77.24
 
-RC77.23 keeps manual fuel inputs in carrier route forecasts and fixes delayed
-typing on GNOME XWayland desktops that use standard keyboard layouts.
+RC77.24 fixes an Exploration issue that could leave body counts stuck after
+resetting survey totals.
 
 ## Before upgrading
 
@@ -13,12 +13,13 @@ explicit reset.
 
 ## What's changed
 
-- **Carrier route fuel forecasts** use the tank fuel, stored tritium, and used
-  capacity submitted in Spansh Search. The waypoint table and shortfall warning
-  use the same starting values. Select **Refresh** to recalculate the remaining
-  route from the live carrier readings at your current waypoint. Undoing a
-  replacement search restores the saved route and its live forecast.
-- **Responsive typing on GNOME XWayland** applies on normal startup when the
-  desktop uses standard keyboard layouts. SrvSurvey reads those keystrokes
-  directly to avoid IBus delays. Configured input methods remain available,
-  and global shortcuts continue to use their separate keyboard listeners.
+- **Reset Everything Above** and **Reset Exp Value** now clear scanned, DSS,
+  and landed counts when the journal index is complete, even if a missing
+  scan prevents valuation of a mapping record. Paid receipts stay in
+  Exploration History. Automatic value tracking resumes from the new starting
+  point when valuation can continue.
+- **Recovery guidance** in Survey totals explains how to refresh Exploration
+  History, resume recovery when prompted, and retry the reset. If a continued
+  journal cannot be verified, the warning names the affected part and tells
+  you how to restore the earlier journals and start a fresh game session
+  before reopening SrvSurvey.

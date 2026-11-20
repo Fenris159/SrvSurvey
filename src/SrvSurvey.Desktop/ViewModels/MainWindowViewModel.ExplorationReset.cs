@@ -138,7 +138,7 @@ public sealed partial class MainWindowViewModel
             if (scope != ExplorationResetScope.Odometer && ExplorationHistory.AutoResetEstimatedValue)
             {
                 ExplorationSurveyResetPoint point = await ExplorationHistory.CaptureSurveyResetPointAsync(
-                    projectionState.ConsumedExplorationRecords.Values.ToArray()
+                    projectionState.GetConsumedExplorationRecords(intent.Owner, intent.IsLive)
                 );
                 ExplorationSnapshot target = SnapshotAfterExplorationReset(scope);
                 // The profile owns the reset intent and totals in one atomic file write. If

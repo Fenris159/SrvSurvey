@@ -41344,6 +41344,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.SurveyReset.cs"
+  },
+  {
     "Text": "Open FC Route Workspace",
     "IsFormat": false,
     "SourceKinds": [
@@ -51752,6 +51760,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.SurveyReset.cs"
+  },
+  {
     "Text": "Restore automatic map scaling.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51846,6 +51862,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ProfileSyncView.axaml"
+  },
+  {
+    "Text": "Restore the complete journal {0} or re-add its folder.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.SurveyReset.cs"
   },
   {
     "Text": "Restore this event\u0027s default",

@@ -16,6 +16,11 @@ public sealed record JournalEventEnvelope(
     [Newtonsoft.Json.JsonIgnore]
     public string? SourceRecordIdentity { get; init; }
 
+    /// <summary>Preserves the owning session across a continuation verified by the live monitor.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public bool IsVerifiedJournalContinuation { get; init; }
+
     /// <summary>Matches identical-content occurrences in same-named journal copies, even when byte positions shift.</summary>
     [System.Text.Json.Serialization.JsonIgnore]
     [Newtonsoft.Json.JsonIgnore]
