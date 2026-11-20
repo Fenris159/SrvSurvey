@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Exploration.History;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Exploration.History;
 
@@ -17,6 +18,80 @@ public sealed partial class ExplorationHistoryCatalogTests
         ExplorationHistorySummary reset = await fixture.Catalog.ApplySurveyResetPointAsync(point);
         Assert.Equal(449200, reset.TrackedUnsoldValue);
         Assert.Equal(472306, reset.UnsoldValue);
+    }
+
+    [Fact]
+    public async Task AConsumedJournalMissingFromTheIndexBlocksResetEvenWhenAnotherIsIndexed()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Alpha", 100, 0), Star(100)]);
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        ExplorationSurveyResetPoint indexed = await fixture.Catalog.CaptureSurveyResetPointAsync();
+        await WriteLedgerSourceAsync(fixture, "150000", "15", "Beta", 200);
+        string newJournal = Path.Combine(fixture.Journals, "Journal.2026-10-01T150000.01.log");
+        JournalEventEnvelope entry = Assert.Single(
+            fixture.Append(["""{"event":"StartJump","JumpType":"Hyperspace"}"""], newJournal)
+        );
+        File.Delete(newJournal);
+        await fixture.Catalog.ObserveAsync([entry], [fixture.Journals]);
+
+        ExplorationSurveySourceCheckpoint consumed = ExplorationSurveySourceCheckpoint.FromEntry(entry)!;
+        ExplorationSurveyResetRecoveryException error =
+            await Assert.ThrowsAsync<ExplorationSurveyResetRecoveryException>(() =>
+                fixture.Catalog.CaptureSurveyResetPointAsync(
+                    [.. indexed.Sources, consumed],
+                    includeEarlierSources: true
+                )
+            );
+        Assert.Equal(Path.GetFileName(newJournal), error.JournalName);
+    }
+
+    [Fact]
+    public async Task AReplacedIndexedRecordCannotAnchorTheResetEvenWhenItMatchesTheCachedTip()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Alpha", 100, 0), Star(100)]);
+        JournalEventEnvelope entry = Assert.Single(
+            fixture.Append(["""{"event":"StartJump","JumpType":"Hyperspace","StarSystem":"Alpha"}"""])
+        );
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        string contents = await File.ReadAllTextAsync(fixture.JournalPath);
+        string replacement = entry.RawJson.Replace("Alpha", "Delta", StringComparison.Ordinal);
+        await File.WriteAllTextAsync(
+            fixture.JournalPath,
+            contents.Replace(entry.RawJson, replacement, StringComparison.Ordinal)
+        );
+
+        ExplorationSurveySourceCheckpoint cursor = ExplorationSurveySourceCheckpoint.FromEntry(entry)!;
+        ExplorationSurveyResetRecoveryException error =
+            await Assert.ThrowsAsync<ExplorationSurveyResetRecoveryException>(() =>
+                fixture.Catalog.CaptureSurveyResetPointAsync([cursor], includeEarlierSources: true)
+            );
+        Assert.Equal(Path.GetFileName(fixture.JournalPath), error.JournalName);
+    }
+
+    [Fact]
+    public async Task AnUnobservedOlderJournalDoesNotBlockSavingTheActiveJournalReset()
+    {
+        using var fixture = new HistoryFixture();
+        fixture.Write([Location("Alpha", 100, 0), Star(100)]);
+        await WriteLedgerSourceAsync(fixture, "150000", "15", "Beta", 200);
+        string activeJournal = Path.Combine(fixture.Journals, "Journal.2026-10-01T150000.01.log");
+        JournalEventEnvelope entry = Assert.Single(
+            fixture.Append(["""{"event":"StartJump","JumpType":"Hyperspace"}"""], activeJournal)
+        );
+        await fixture.Catalog.SynchronizeAsync([fixture.Journals]);
+        string header = (await File.ReadAllLinesAsync(fixture.JournalPath))[0];
+        await File.WriteAllLinesAsync(fixture.JournalPath, [header]);
+
+        ExplorationSurveySourceCheckpoint cursor = ExplorationSurveySourceCheckpoint.FromEntry(entry)!;
+        ExplorationSurveyResetPoint reset = await fixture.Catalog.CaptureSurveyResetPointAsync(
+            [cursor],
+            includeEarlierSources: true
+        );
+        ExplorationHistorySummary summary = await fixture.Catalog.ApplySurveyResetPointAsync(reset);
+        Assert.Equal(46212, summary.UnsoldValue);
+        Assert.False(summary.IsSurveyValueAvailable);
     }
 
     [Fact]

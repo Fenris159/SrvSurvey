@@ -591,7 +591,6 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
                     tick.ScansLostToDeath
                 );
                 dependencies.ExplorationHistory.Observe(context.JournalEvents);
-                state.RememberConsumedExplorationRecords(context.JournalEvents);
             }
         );
         operations[JournalProjectionOperation.ExplorationPersistence] = (_, tick) =>
@@ -696,6 +695,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
         {
             state.Session.Apply(journalEvent);
+            state.RememberConsumedExplorationRecord(journalEvent);
             UpdateProviderCargoSessionBoundary(journalEvent);
         }
 

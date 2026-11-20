@@ -1,10 +1,12 @@
 using SrvSurvey.Core.Exploration.History;
+using SrvSurvey.Desktop.Localization;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed partial class ExplorationHistoryViewModel
 {
     private ExplorationSurveyResetPoint? pendingSurveyResetPoint;
+    private bool refreshRequiredBeforeSurveyReset;
 
     public async Task<ExplorationSurveyResetPoint> CaptureSurveyResetPointAsync(
         IReadOnlyList<ExplorationSurveySourceCheckpoint> consumed
@@ -15,13 +17,21 @@ public sealed partial class ExplorationHistoryViewModel
         ExplorationHistoryCatalog? current = catalog;
         await PendingSynchronization;
         RequireSurveyResetContext(current, version, token);
-        return await TrackIo(
-            current!.CaptureSurveyResetPointAsync(
-                consumed,
-                includeEarlierSources: true,
-                cancellationToken: CancellationToken.None
-            )
-        );
+        EnsureHistoryReadyForSurveyReset();
+        try
+        {
+            return await TrackIo(
+                current!.CaptureSurveyResetPointAsync(
+                    consumed,
+                    includeEarlierSources: true,
+                    cancellationToken: CancellationToken.None
+                )
+            );
+        }
+        catch (ExplorationSurveyResetRecoveryException exception)
+        {
+            throw new InvalidOperationException(SurveyResetRecoveryMessage(exception.JournalName), exception);
+        }
     }
 
     public Task ApplySurveyResetPointAsync(ExplorationSurveyResetPoint point)
@@ -47,7 +57,11 @@ public sealed partial class ExplorationHistoryViewModel
         ExplorationHistoryCatalog? current = catalog;
         await previous;
         RequireSurveyResetContext(current, version, token);
-        point ??= await TrackIo(current!.CaptureSurveyResetPointAsync(cancellationToken: CancellationToken.None));
+        if (point is null)
+        {
+            EnsureHistoryReadyForSurveyReset();
+            point = await TrackIo(current!.CaptureSurveyResetPointAsync(cancellationToken: CancellationToken.None));
+        }
         if (!Current(version, token))
         {
             return;
@@ -80,6 +94,26 @@ public sealed partial class ExplorationHistoryViewModel
         {
             throw new InvalidOperationException("Select the commander again before resetting exploration value.");
         }
+    }
+
+    private void EnsureHistoryReadyForSurveyReset()
+    {
+        if (refreshRequiredBeforeSurveyReset)
+        {
+            throw new InvalidOperationException(SurveyResetRecoveryMessage());
+        }
+    }
+
+    private static string SurveyResetRecoveryMessage(string? journalName = null)
+    {
+        string guidance = LocalizationCatalog.Translate(
+            "Open Exploration history and select Refresh history. If prompted, restore the original journals, select the confirmation checkbox, and choose Resume history recovery. When recovery finishes, go back to Survey totals and retry the reset."
+        );
+        return journalName is null
+            ? guidance
+            : LocalizationCatalog.Translate($"Restore the complete journal {journalName} or re-add its folder.")
+                + " "
+                + guidance;
     }
 
     private static async Task RetainResetCompletionAsync(Task reset)

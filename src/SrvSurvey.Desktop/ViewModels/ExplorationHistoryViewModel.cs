@@ -334,6 +334,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         isLive = live;
         autoResetEstimatedValue = autoReset;
         pendingSurveyResetPoint = surveyStart;
+        refreshRequiredBeforeSurveyReset = false;
         pageOffset = 0;
         totalRows = 0;
         searchText = string.Empty;
@@ -442,6 +443,10 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
 
                 queryGeneration++;
             }
+            if (full)
+            {
+                refreshRequiredBeforeSurveyReset = false;
+            }
             summary = candidate;
             NotifyBalance();
             StatusMessage = CatalogStatusMessage();
@@ -497,6 +502,7 @@ public sealed partial class ExplorationHistoryViewModel : INotifyPropertyChanged
         {
             return;
         }
+        refreshRequiredBeforeSurveyReset = true;
         queryGeneration++;
         summary = summary with { IsComplete = false };
         NotifyBalance();

@@ -312,13 +312,7 @@ public sealed partial class ExplorationHistoryCatalog
                 : null,
             SourceFiles = Convert.ToInt32(sources.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture),
             HasCommanderHistory = ReadMetadata(connection, "commander_seen") == "1" && hasDataEvidence,
-            IsComplete =
-                ReadMetadata(connection, "complete") == "1"
-                && ReadMetadata(connection, ValuationVersionKey) == CurrentValuationVersion
-                && unknownMappings.ExecuteScalar() is null
-                && ReadMetadata(connection, ReconciliationPendingKey) is null
-                && ReadMetadata(connection, RecoveryConfirmationKey) is null
-                && ReadMetadata(connection, PendingDiscoveryKey) is null,
+            IsComplete = HasCompleteSourceIndex(connection) && unknownMappings.ExecuteScalar() is null,
             RecoveryIdentity = ReadMetadata(connection, ReconciliationPendingKey) is { } pending
                 ? ContentHash(pending)
                 : null,
@@ -328,4 +322,11 @@ public sealed partial class ExplorationHistoryCatalog
                 : ReadMetadata(connection, "notice"),
         };
     }
+
+    private static bool HasCompleteSourceIndex(SqliteConnection connection) =>
+        ReadMetadata(connection, "complete") == "1"
+        && ReadMetadata(connection, ValuationVersionKey) == CurrentValuationVersion
+        && ReadMetadata(connection, ReconciliationPendingKey) is null
+        && ReadMetadata(connection, RecoveryConfirmationKey) is null
+        && ReadMetadata(connection, PendingDiscoveryKey) is null;
 }

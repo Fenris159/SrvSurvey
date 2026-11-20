@@ -5,6 +5,16 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Exploration.History;
 
+public sealed class ExplorationSurveyResetRecoveryException(string? journalName = null)
+    : InvalidOperationException(
+        journalName is null
+            ? "The exploration journal index needs recovery."
+            : $"The journal position for {journalName} could not be verified."
+    )
+{
+    public string? JournalName { get; } = journalName;
+}
+
 public sealed record ExplorationSurveySourceCheckpoint(string SourceName, long Offset, string Hash)
 {
     /// <summary>The catalog coordinate generation in which this particular cursor has been proven.</summary>

@@ -614,6 +614,7 @@ public sealed partial class JournalDirectoryMonitor
                 SourcePreviousContentIdentity = previousJournalContentIdentity,
                 SourceRecordIdentity =
                     Path.GetFileName(currentJournalPath) + ":" + byteOffset.ToString(CultureInfo.InvariantCulture),
+                IsVerifiedJournalContinuation = currentJournalIsContinuation,
                 SourceContentIdentity = journalEvent.CaptureContentIdentity(
                     Path.GetFileName(currentJournalPath)!,
                     currentJournalContentOccurrences
