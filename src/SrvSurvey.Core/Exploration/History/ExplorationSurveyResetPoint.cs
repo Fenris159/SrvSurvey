@@ -5,7 +5,10 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Exploration.History;
 
-public sealed class ExplorationSurveyResetRecoveryException(string? journalName = null)
+public sealed class ExplorationSurveyResetRecoveryException(
+    string? journalName = null,
+    bool requiresJournalReopen = false
+)
     : InvalidOperationException(
         journalName is null
             ? "The exploration journal index needs recovery."
@@ -13,6 +16,7 @@ public sealed class ExplorationSurveyResetRecoveryException(string? journalName 
     )
 {
     public string? JournalName { get; } = journalName;
+    public bool RequiresJournalReopen { get; } = requiresJournalReopen;
 }
 
 public sealed record ExplorationSurveySourceCheckpoint(string SourceName, long Offset, string Hash)

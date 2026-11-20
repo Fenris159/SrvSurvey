@@ -529,6 +529,152 @@ public sealed partial class ExplorationHistoryViewModelTests
         Assert.Equal("46,212 CR", main.ExplorationHistory.UnsoldText);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AnUnassignedContinuationRequiresRecoveryBeforeResetAndWorksAfterReopening(
+        bool restoredPartIsNewer
+    )
+    {
+        using var fixture = new Fixture();
+        string first = fixture.JournalPath("F100");
+        string second = first.Replace(".01.log", ".02.log", StringComparison.Ordinal);
+        File.SetLastWriteTimeUtc(first, new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
+        await using (MainWindowViewModel main = CreateLedgerMain(fixture))
+        {
+            await main.RefreshAsync();
+            await main.ExplorationHistory.PendingSynchronization;
+            main.ExplorationHistory.AutoResetEstimatedValue = true;
+            await main.ExplorationHistory.PendingPreferenceSave;
+            File.Move(first, first + ".saved");
+            await File.WriteAllLinesAsync(
+                second,
+                [
+                    """{"timestamp":"2026-10-01T13:00:00Z","event":"Fileheader","part":2,"Odyssey":true}""",
+                    """{"timestamp":"2026-10-01T13:01:00Z","event":"Scan","StarSystem":"Alpha Survey","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey B","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}""",
+                ]
+            );
+            File.SetLastWriteTimeUtc(second, new DateTime(2026, 10, 1, 13, 0, 0, DateTimeKind.Utc));
+            await main.RefreshAsync();
+            await main.ExplorationHistory.PendingSynchronization;
+            Assert.Equal("46,212 CR", main.EstimatedExplorationValue);
+            string bodyCounts = main.ExplorationBodies;
+
+            await main.ResetExplorationValueAsync();
+            await main.ResetExplorationValueAsync();
+
+            Assert.Equal("46,212 CR", main.EstimatedExplorationValue);
+            Assert.Equal(bodyCounts, main.ExplorationBodies);
+            Assert.Contains(Path.GetFileName(second), main.ExplorationStatusMessage);
+            Assert.Contains("reopen SrvSurvey", main.ExplorationStatusMessage);
+        }
+
+        File.Move(first + ".saved", first);
+        if (restoredPartIsNewer)
+        {
+            File.SetLastWriteTimeUtc(first, new DateTime(2026, 10, 1, 14, 0, 0, DateTimeKind.Utc));
+            await using (MainWindowViewModel beforeNewSession = CreateLedgerMain(fixture))
+            {
+                await beforeNewSession.RefreshAsync();
+                await beforeNewSession.ExplorationHistory.PendingSynchronization;
+                await beforeNewSession.ResetExplorationValueAsync();
+                await beforeNewSession.ResetExplorationValueAsync();
+                Assert.Equal("46,212 CR", beforeNewSession.EstimatedExplorationValue);
+                Assert.Contains("Start a new Elite Dangerous session", beforeNewSession.ExplorationStatusMessage);
+            }
+            string newSession = Path.Combine(fixture.Journals, "Journal.2026-10-01T150000.01.log");
+            await WriteSurveySessionAsync(newSession, "15");
+            File.SetLastWriteTimeUtc(newSession, new DateTime(2026, 10, 1, 15, 0, 0, DateTimeKind.Utc));
+        }
+
+        await using MainWindowViewModel reopened = CreateLedgerMain(fixture);
+        await reopened.RefreshAsync();
+        await reopened.ExplorationHistory.PendingSynchronization;
+        await reopened.ResetExplorationValueAsync();
+        await reopened.ResetExplorationValueAsync();
+
+        Assert.Equal("0 CR", reopened.EstimatedExplorationValue);
+        Assert.Equal("Scanned: 0, DSS: 0, Landed: 0", reopened.ExplorationBodies);
+        Assert.Equal("46,212 CR", reopened.ExplorationHistory.UnsoldText);
+    }
+
+    [Fact]
+    public async Task APreviouslyReadContinuationWithUnverifiedNewCreditsBlocksReset()
+    {
+        using var fixture = new Fixture();
+        string first = fixture.JournalPath("F100");
+        string second = first.Replace(".01.log", ".02.log", StringComparison.Ordinal);
+        File.SetLastWriteTimeUtc(first, new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc));
+        await File.WriteAllLinesAsync(
+            second,
+            [
+                """{"timestamp":"2026-10-01T13:00:00Z","event":"Fileheader","part":2,"Odyssey":true}""",
+                """{"timestamp":"2026-10-01T13:01:00Z","event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey B","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}""",
+            ]
+        );
+        File.SetLastWriteTimeUtc(second, new DateTime(2026, 10, 1, 13, 0, 0, DateTimeKind.Utc));
+        await using MainWindowViewModel main = CreateLedgerMain(fixture);
+        await main.RefreshAsync();
+        await main.ExplorationHistory.PendingSynchronization;
+        main.ExplorationHistory.AutoResetEstimatedValue = true;
+        await main.ExplorationHistory.PendingPreferenceSave;
+        Assert.Equal("46,212 CR", main.EstimatedExplorationValue);
+
+        string olderSession = Path.Combine(fixture.Journals, "Journal.2026-10-01T110000.01.log");
+        await WriteSurveySessionAsync(olderSession, "11");
+        File.SetLastWriteTimeUtc(olderSession, new DateTime(2026, 10, 1, 14, 0, 0, DateTimeKind.Utc));
+        await main.RefreshAsync();
+        await main.ExplorationHistory.PendingSynchronization;
+        File.Move(first, first + ".saved");
+        await File.AppendAllLinesAsync(
+            second,
+            [
+                """{"timestamp":"2026-10-01T14:30:00Z","event":"Scan","SystemAddress":100,"BodyID":2,"BodyName":"Alpha Survey C","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}""",
+            ]
+        );
+        File.SetLastWriteTimeUtc(second, new DateTime(2026, 10, 1, 15, 0, 0, DateTimeKind.Utc));
+        await main.RefreshAsync();
+        await main.ExplorationHistory.PendingSynchronization;
+        Assert.Equal("69,318 CR", main.EstimatedExplorationValue);
+
+        await main.ResetExplorationValueAsync();
+        await main.ResetExplorationValueAsync();
+
+        Assert.Equal("69,318 CR", main.EstimatedExplorationValue);
+        Assert.Contains(Path.GetFileName(second), main.ExplorationStatusMessage);
+    }
+
+    [Fact]
+    public async Task AnUnreadContinuationWithOnlySoldCreditsAllowsResetAndPreservesTheReceipt()
+    {
+        using var fixture = new Fixture();
+        string first = fixture.JournalPath("F100");
+        string second = first.Replace(".01.log", ".02.log", StringComparison.Ordinal);
+        await File.WriteAllLinesAsync(
+            second,
+            [
+                """{"timestamp":"2026-10-01T13:00:00Z","event":"Fileheader","part":2,"Odyssey":true}""",
+                """{"timestamp":"2026-10-01T13:01:00Z","event":"Scan","SystemAddress":100,"BodyID":1,"BodyName":"Alpha Survey B","StarType":"NS","StellarMass":1.4,"WasDiscovered":true,"WasMapped":true}""",
+                """{"timestamp":"2026-10-01T13:02:00Z","event":"SellExplorationData","Systems":["Alpha Survey"],"TotalEarnings":81429}""",
+            ]
+        );
+        File.SetLastWriteTimeUtc(second, new DateTime(2026, 10, 1, 13, 0, 0, DateTimeKind.Utc));
+        File.SetLastWriteTimeUtc(first, new DateTime(2026, 10, 1, 14, 0, 0, DateTimeKind.Utc));
+        await using MainWindowViewModel main = CreateLedgerMain(fixture);
+        await main.RefreshAsync();
+        await main.ExplorationHistory.PendingSynchronization;
+        main.ExplorationHistory.AutoResetEstimatedValue = true;
+        await main.ExplorationHistory.PendingPreferenceSave;
+        Assert.Equal("+81,429 CR", Assert.Single(main.ExplorationHistory.Rows, row => row.IsPaid).Estimate);
+
+        await main.ResetExplorationValueAsync();
+        await main.ResetExplorationValueAsync();
+
+        Assert.Equal("Scanned: 0, DSS: 0, Landed: 0", main.ExplorationBodies);
+        Assert.Equal("0 CR", main.EstimatedExplorationValue);
+        Assert.Equal("+81,429 CR", Assert.Single(main.ExplorationHistory.Rows, row => row.IsPaid).Estimate);
+    }
+
     [Fact]
     public async Task ClosingDuringAConfirmedResetFinishesBothTheSavedTotalsAndAutomaticStartingPoint()
     {
@@ -558,6 +704,15 @@ public sealed partial class ExplorationHistoryViewModelTests
         Assert.True(saved.Data.AutoResetExplorationValue);
         Assert.Equal(0, (await catalog.ReadSummaryAsync()).TrackedUnsoldValue);
     }
+
+    private static Task WriteSurveySessionAsync(string path, string hour) =>
+        File.WriteAllLinesAsync(
+            path,
+            [
+                $$"""{"timestamp":"2026-10-01T{{hour}}:00:00Z","event":"Fileheader","gameversion":"4.0.0","Odyssey":true}""",
+                $$"""{"timestamp":"2026-10-01T{{hour}}:00:01Z","event":"Commander","FID":"F100","Name":"History Commander"}""",
+            ]
+        );
 
     private static MainWindowViewModel CreateLedgerMain(Fixture fixture) =>
         MainWindowViewModelTestBuilder.Create(

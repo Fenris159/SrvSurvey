@@ -19,4 +19,7 @@ explicit reset.
   Exploration History. Automatic value tracking resumes from the new starting
   point when valuation can continue.
 - **Recovery guidance** in Survey totals explains how to refresh Exploration
-  History, resume recovery when prompted, and retry the reset.
+  History, resume recovery when prompted, and retry the reset. If a continued
+  journal cannot be verified, the warning names the affected part and tells
+  you how to restore the earlier journals and start a fresh game session
+  before reopening SrvSurvey.

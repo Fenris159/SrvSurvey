@@ -25793,6 +25793,10 @@
       "translation": "Wiederherstellung und Rollback konnten nicht abgeschlossen werden. Die Wiederherstellung wird beim Start erneut versucht. Die Rollback-Kopie wurde beibehalten."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Stellen Sie alle fehlenden früheren Teile von {0} im überwachten Journalordner wieder her. Starten Sie eine neue Elite Dangerous-Sitzung mit diesem Commander und öffnen Sie SrvSurvey dann erneut."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Stellen Sie die automatische Kartenskalierung wieder her."
     },
@@ -68753,6 +68757,10 @@
     {
       "source": "Restore and rollback could not complete. Recovery will retry at startup; the rollback copy was retained.",
       "translation": "No se pudo completar la restauración y la reversión. La recuperación se volverá a intentar al inicio; se retuvo la copia revertida."
+    },
+    {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Restaura las partes anteriores de {0} que falten en la carpeta de diarios supervisada. Inicia una sesión nueva de Elite Dangerous con este comandante y vuelve a abrir SrvSurvey."
     },
     {
       "source": "Restore automatic map scaling.",
@@ -111717,6 +111725,10 @@
       "translation": "La restauration et la restauration n'ont pas pu être terminées. La récupération sera réessayée au démarrage ; la copie de restauration a été conservée."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Restaurez les parties précédentes manquantes de {0} dans le dossier de journaux surveillé. Démarrez une nouvelle session Elite Dangerous avec ce commandant, puis rouvrez SrvSurvey."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Restaurez la mise à l'échelle automatique de la carte."
     },
@@ -154677,6 +154689,10 @@
     {
       "source": "Restore and rollback could not complete. Recovery will retry at startup; the rollback copy was retained.",
       "translation": "A restauração e a reversão não foram concluídas. A recuperação tentará novamente na inicialização; a cópia de reversão foi retida."
+    },
+    {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Restaure as partes anteriores de {0} que estiverem faltando na pasta de diários monitorada. Inicie uma nova sessão do Elite Dangerous com este comandante e reabra o SrvSurvey."
     },
     {
       "source": "Restore automatic map scaling.",
@@ -197641,6 +197657,10 @@
       "translation": "Восстановление и откат не удалось завершить. Восстановление повторит попытку при запуске; копия отката была сохранена."
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "Восстановите недостающие предыдущие части {0} в отслеживаемой папке журналов. Начните новый сеанс Elite Dangerous за этого командира, затем заново откройте SrvSurvey."
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "Восстановить автоматическое масштабирование карты."
     },
@@ -240603,6 +240623,10 @@
       "translation": "恢复和回滚无法完成。恢复将在启动时重试；回滚副本被保留。"
     },
     {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "将 {0} 缺失的前序日志分段恢复到受监控的日志文件夹。使用此指挥官开始新的 Elite Dangerous 游戏会话，然后重新打开 SrvSurvey。"
+    },
+    {
       "source": "Restore automatic map scaling.",
       "translation": "恢复自动地图缩放。"
     },
@@ -283563,6 +283587,10 @@
     {
       "source": "Restore and rollback could not complete. Recovery will retry at startup; the rollback copy was retained.",
       "translation": "* RESTORE AND ROLLBACK COULD NOT COMPLETE. RECOVERY WILL RETRY AT STARTUP; THE ROLLBACK COPY WAS RETAINED. >>>!"
+    },
+    {
+      "source": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+      "translation": "* RESTORE ANY MISSING EARLIER PARTS OF {0} TO THE MONITORED JOURNAL FOLDER. START A NEW ELITE DANGEROUS SESSION AS THIS COMMANDER, THEN REOPEN SRVSURVEY. >>>!"
     },
     {
       "source": "Restore automatic map scaling.",

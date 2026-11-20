@@ -51760,6 +51760,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "Restore any missing earlier parts of {0} to the monitored journal folder. Start a new Elite Dangerous session as this commander, then reopen SrvSurvey.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.SurveyReset.cs"
+  },
+  {
     "Text": "Restore automatic map scaling.",
     "IsFormat": false,
     "SourceKinds": [
