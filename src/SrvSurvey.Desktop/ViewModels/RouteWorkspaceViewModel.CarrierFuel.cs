@@ -16,6 +16,7 @@ public sealed partial class RouteWorkspaceViewModel
     private FollowRouteCarrierKind selectedCarrierKind;
     private FleetCarrierFuelSnapshot? latestCarrierFuel;
     private FleetCarrierFuelSnapshot? passFuel;
+    private bool hasUnsavedCarrierSearchForecast;
     private int fuelStartIndex;
     private FleetCarrierFuelPlan? capturedFuelPlan;
     private FollowRouteHop[] forecastSource = [];
@@ -148,6 +149,7 @@ public sealed partial class RouteWorkspaceViewModel
     private void ClearCarrierForecast()
     {
         passFuel = null;
+        hasUnsavedCarrierSearchForecast = false;
         capturedFuelPlan = null;
         forecastSource = [];
         IsFuelWarningVisible = false;
@@ -163,14 +165,52 @@ public sealed partial class RouteWorkspaceViewModel
         OnPropertyChanged(nameof(CarrierFuelSummary));
     }
 
-    /// <summary>Called on generation, refresh, selection and pass boundaries, never on an ordinary arrival.</summary>
-    private void CaptureCarrierFuel(JournalEventEnvelope? through = null)
+    /// <summary>Uses the submitted manual quantities for the forecast of a newly plotted route.</summary>
+    private FleetCarrierFuelSnapshot? ReadSpanshStartingFuel(SpanshPlannerRequest request)
+    {
+        if (request.Planner.Kind != SpanshRouteKind.FleetCarrier)
+        {
+            return null;
+        }
+
+        ILookup<string, string> fields = request.Parameters.ToLookup(pair => pair.Key, pair => pair.Value);
+        if (fields["calculate_starting_fuel"].FirstOrDefault() != "0")
+        {
+            return null;
+        }
+
+        return new FleetCarrierFuelSnapshot(
+            selectedCarrierKind,
+            string.Empty,
+            null,
+            fields["source"].FirstOrDefault() ?? string.Empty,
+            Tonnes("fuel_loaded"),
+            Tonnes("tritium_stored"),
+            Tonnes("capacity_used"),
+            utcNow()
+        );
+
+        double? Tonnes(string key) =>
+            double.TryParse(
+                fields[key].FirstOrDefault(),
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out double value
+            )
+                ? value
+                : null;
+    }
+
+    /// <summary>Captures a forecast at generation, refresh, selection and pass boundaries.</summary>
+    private void CaptureCarrierFuel(JournalEventEnvelope? through = null, FleetCarrierFuelSnapshot? plannedFuel = null)
     {
         if (!IsFleetCarrierWorkspace || !HasRoute)
         {
             return;
         }
-        passFuel = ReadCarrierFuel(through);
+        FleetCarrierFuelSnapshot? observedFuel = ReadCarrierFuel(through);
+        passFuel = plannedFuel ?? observedFuel;
+        hasUnsavedCarrierSearchForecast = plannedFuel is not null;
         fuelStartIndex = Math.Clamp(lastReachedIndex, 0, draftHops.Length - 1);
         forecastSource = [];
         capturedFuelPlan = null;

@@ -52,6 +52,23 @@ Install the X11 runtime packages listed in [INSTALL_LINUX.md](INSTALL_LINUX.md#d
 
 Enable XWayland or log into an Xorg session. This build uses Avalonia’s X11 backend for overlays, capture, and window tracking.
 
+## Typing is delayed in SrvSurvey on XWayland
+
+On GNOME XWayland, SrvSurvey uses standard keyboard layouts directly when
+the desktop has no input method configured. This avoids passing ordinary
+keystrokes through IBus. The fix applies on normal startup.
+
+If text entry is still slow only in SrvSurvey, close it and try launching the
+AppImage with Avalonia’s input method disabled for that launch. Use the path
+to your installed AppImage:
+
+```bash
+AVALONIA_IM_MODULE=none ./SrvSurvey.AppImage
+```
+
+This can help when the desktop input method delays ordinary keystrokes. If you
+need an input method to compose text, launch SrvSurvey without the override.
+
 ## Journal files not found
 
 Current builds search Steam (including extra Steam libraries), Heroic/Epic,

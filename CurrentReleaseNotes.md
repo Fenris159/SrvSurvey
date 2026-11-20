@@ -1,7 +1,7 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.22
+# SrvSurvey-XP 2.1.3.0-rc.77.23
 
-RC77.22 improves long-route workspace responsiveness and fixes Mining session
-selection warnings.
+RC77.23 keeps manual fuel inputs in carrier route forecasts and fixes delayed
+typing on GNOME XWayland desktops that use standard keyboard layouts.
 
 ## Before upgrading
 
@@ -13,11 +13,12 @@ explicit reset.
 
 ## What's changed
 
-- **Faster route workspaces:** Regular and Fleet Carrier route windows create
-  visible waypoint rows on demand instead of building the entire route table
-  before opening. All waypoints remain available when scrolling, including
-  their progress, copy, deletion, and biology controls.
-- **Quiet Mining session details:** Opening reports without a selected session,
-  or clearing the selection, no longer produces the four null-binding warnings.
-  Selecting another session refreshes its system, ring, date, and ship details
-  while preserving the existing date display.
+- **Carrier route fuel forecasts** use the tank fuel, stored tritium, and used
+  capacity submitted in Spansh Search. The waypoint table and shortfall warning
+  use the same starting values. Select **Refresh** to recalculate the remaining
+  route from the live carrier readings at your current waypoint. Undoing a
+  replacement search restores the saved route and its live forecast.
+- **Responsive typing on GNOME XWayland** applies on normal startup when the
+  desktop uses standard keyboard layouts. SrvSurvey reads those keystrokes
+  directly to avoid IBus delays. Configured input methods remain available,
+  and global shortcuts continue to use their separate keyboard listeners.
