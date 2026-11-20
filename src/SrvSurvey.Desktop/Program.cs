@@ -4,6 +4,7 @@ using Avalonia;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Frontier;
@@ -94,6 +95,11 @@ internal static class Program
         bool useSoftwareRendering = IsSoftwareRenderingRequested(
             Environment.GetEnvironmentVariable(SoftwareRenderingEnvironmentVariable)
         );
+        bool useNativeTextInput = LinuxTextInput.UseNativeTextInput(displayCapabilities.Host);
+        if (useNativeTextInput)
+        {
+            applicationLog.Append("XWayland text input: using standard keyboard layouts directly.");
+        }
         applicationLog.Append(
             useSoftwareRendering
                 ? "Application renderer: software (diagnostic override)."
@@ -109,7 +115,7 @@ internal static class Program
         Trace.Listeners.Add(traceListener);
         try
         {
-            BuildAvaloniaApp(useSoftwareRendering).StartWithClassicDesktopLifetime(args);
+            BuildAvaloniaApp(useSoftwareRendering, useNativeTextInput).StartWithClassicDesktopLifetime(args);
         }
         catch (Exception exception)
         {
@@ -213,7 +219,8 @@ internal static class Program
         return true;
     }
 
-    public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(useSoftwareRendering: false);
+    public static AppBuilder BuildAvaloniaApp() =>
+        BuildAvaloniaApp(useSoftwareRendering: false, useNativeTextInput: false);
 
     internal static bool IsSoftwareRenderingRequested(string? value) =>
         value is not null
@@ -223,7 +230,7 @@ internal static class Program
             || string.Equals(value, "software", StringComparison.OrdinalIgnoreCase)
         );
 
-    private static AppBuilder BuildAvaloniaApp(bool useSoftwareRendering)
+    private static AppBuilder BuildAvaloniaApp(bool useSoftwareRendering, bool useNativeTextInput)
     {
         AppBuilder builder = AppBuilder.Configure<App>().UsePlatformDetect();
         if (useSoftwareRendering && OperatingSystem.IsWindows())
@@ -232,16 +239,17 @@ internal static class Program
         }
         else if (OperatingSystem.IsLinux())
         {
-            builder = builder.With(CreateX11Options(useSoftwareRendering));
+            builder = builder.With(CreateX11Options(useSoftwareRendering, useNativeTextInput));
         }
 
         return builder.WithInterFont().With(SrvSurveyFontConfiguration.CreateOptions()).LogToTrace();
     }
 
-    internal static X11PlatformOptions CreateX11Options(bool useSoftwareRendering)
+    internal static X11PlatformOptions CreateX11Options(bool useSoftwareRendering, bool useNativeTextInput = false)
     {
         var options = new X11PlatformOptions
         {
+            EnableIme = !useNativeTextInput,
             UseDBusMenu = false,
             // Keep tooltips, combo-box drop-downs, and flyouts in the owning
             // window. OverlayPopupPlacementBehavior compensates for Avalonia's

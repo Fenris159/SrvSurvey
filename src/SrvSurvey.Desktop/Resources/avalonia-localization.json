@@ -717,6 +717,10 @@
       "translation": "<--Auswahl deaktivieren"
     },
     {
+      "source": "@im=ibus",
+      "translation": "@im=ibus"
+    },
+    {
       "source": "A 3",
       "translation": "Eine 3"
     },
@@ -37729,6 +37733,10 @@
       "translation": "XID"
     },
     {
+      "source": "XMODIFIERS",
+      "translation": "XMODIFIERS"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland ist vorhanden, aber Click-through- oder Game-Window-Tracking konnte nicht initialisiert werden; Getrennte Overlays sind deaktiviert."
     },
@@ -39297,6 +39305,10 @@
       "translation": "geologisch"
     },
     {
+      "source": "get org.gnome.desktop.input-sources sources",
+      "translation": "get org.gnome.desktop.input-sources sources"
+    },
+    {
       "source": "getting-started",
       "translation": "Erste Schritte"
     },
@@ -39491,6 +39503,10 @@
     {
       "source": "hull",
       "translation": "Rumpf"
+    },
+    {
+      "source": "ibus",
+      "translation": "ibus"
     },
     {
       "source": "icons",
@@ -43653,6 +43669,10 @@
     {
       "source": "<--Uncheck Selection",
       "translation": "<--Desmarcar selección"
+    },
+    {
+      "source": "@im=ibus",
+      "translation": "@im=ibus"
     },
     {
       "source": "A 3",
@@ -80667,6 +80687,10 @@
       "translation": "xid"
     },
     {
+      "source": "XMODIFIERS",
+      "translation": "XMODIFIERS"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland está presente, pero no se pudo inicializar el seguimiento de clics o ventanas de juego; las superposiciones separadas están deshabilitadas."
     },
@@ -82235,6 +82259,10 @@
       "translation": "geológico"
     },
     {
+      "source": "get org.gnome.desktop.input-sources sources",
+      "translation": "get org.gnome.desktop.input-sources sources"
+    },
+    {
       "source": "getting-started",
       "translation": "empezando"
     },
@@ -82429,6 +82457,10 @@
     {
       "source": "hull",
       "translation": "casco"
+    },
+    {
+      "source": "ibus",
+      "translation": "ibus"
     },
     {
       "source": "icons",
@@ -86591,6 +86623,10 @@
     {
       "source": "<--Uncheck Selection",
       "translation": "<--Décochez la sélection"
+    },
+    {
+      "source": "@im=ibus",
+      "translation": "@im=ibus"
     },
     {
       "source": "A 3",
@@ -123605,6 +123641,10 @@
       "translation": "XID"
     },
     {
+      "source": "XMODIFIERS",
+      "translation": "XMODIFIERS"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland est présent, mais le suivi des clics ou de la fenêtre de jeu n'a pas pu être initialisé ; les superpositions détachées sont désactivées."
     },
@@ -125173,6 +125213,10 @@
       "translation": "géologique"
     },
     {
+      "source": "get org.gnome.desktop.input-sources sources",
+      "translation": "get org.gnome.desktop.input-sources sources"
+    },
+    {
       "source": "getting-started",
       "translation": "commencer"
     },
@@ -125367,6 +125411,10 @@
     {
       "source": "hull",
       "translation": "coque"
+    },
+    {
+      "source": "ibus",
+      "translation": "ibus"
     },
     {
       "source": "icons",
@@ -129529,6 +129577,10 @@
     {
       "source": "<--Uncheck Selection",
       "translation": "<--Desmarcar seleção"
+    },
+    {
+      "source": "@im=ibus",
+      "translation": "@im=ibus"
     },
     {
       "source": "A 3",
@@ -166543,6 +166595,10 @@
       "translation": "XID"
     },
     {
+      "source": "XMODIFIERS",
+      "translation": "XMODIFIERS"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "O XWayland está presente, mas o rastreamento de cliques ou da janela do jogo não pôde ser inicializado; as sobreposições desanexadas estão desativadas."
     },
@@ -168111,6 +168167,10 @@
       "translation": "geológico"
     },
     {
+      "source": "get org.gnome.desktop.input-sources sources",
+      "translation": "get org.gnome.desktop.input-sources sources"
+    },
+    {
       "source": "getting-started",
       "translation": "primeiros passos"
     },
@@ -168305,6 +168365,10 @@
     {
       "source": "hull",
       "translation": "casco"
+    },
+    {
+      "source": "ibus",
+      "translation": "ibus"
     },
     {
       "source": "icons",
@@ -172467,6 +172531,10 @@
     {
       "source": "<--Uncheck Selection",
       "translation": "<--Снять выделение"
+    },
+    {
+      "source": "@im=ibus",
+      "translation": "@im=ibus"
     },
     {
       "source": "A 3",
@@ -209481,6 +209549,10 @@
       "translation": "XID"
     },
     {
+      "source": "XMODIFIERS",
+      "translation": "XMODIFIERS"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland присутствует, но отслеживание кликов или игровых окон не может быть инициализировано; отдельные наложения отключены."
     },
@@ -211049,6 +211121,10 @@
       "translation": "геологический"
     },
     {
+      "source": "get org.gnome.desktop.input-sources sources",
+      "translation": "get org.gnome.desktop.input-sources sources"
+    },
+    {
       "source": "getting-started",
       "translation": "начало работы"
     },
@@ -211243,6 +211319,10 @@
     {
       "source": "hull",
       "translation": "корпус"
+    },
+    {
+      "source": "ibus",
+      "translation": "ibus"
     },
     {
       "source": "icons",
@@ -215405,6 +215485,10 @@
     {
       "source": "<--Uncheck Selection",
       "translation": "<--取消选中选择"
+    },
+    {
+      "source": "@im=ibus",
+      "translation": "@im=ibus"
     },
     {
       "source": "A 3",
@@ -252419,6 +252503,10 @@
       "translation": "西德"
     },
     {
+      "source": "XMODIFIERS",
+      "translation": "XMODIFIERS"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "XWayland 存在，但无法初始化点击或游戏窗口跟踪；分离的叠加层被禁用。"
     },
@@ -253987,6 +254075,10 @@
       "translation": "地质学的"
     },
     {
+      "source": "get org.gnome.desktop.input-sources sources",
+      "translation": "get org.gnome.desktop.input-sources sources"
+    },
+    {
       "source": "getting-started",
       "translation": "入门"
     },
@@ -254181,6 +254273,10 @@
     {
       "source": "hull",
       "translation": "船体"
+    },
+    {
+      "source": "ibus",
+      "translation": "ibus"
     },
     {
       "source": "icons",
@@ -258343,6 +258439,10 @@
     {
       "source": "<--Uncheck Selection",
       "translation": "* <--UNCHECK SELECTION >>>!"
+    },
+    {
+      "source": "@im=ibus",
+      "translation": "* @IM=IBUS >>>!"
     },
     {
       "source": "A 3",
@@ -295357,6 +295457,10 @@
       "translation": "* XID >>>!"
     },
     {
+      "source": "XMODIFIERS",
+      "translation": "* XMODIFIERS >>>!"
+    },
+    {
       "source": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
       "translation": "* XWAYLAND IS PRESENT, BUT CLICK-THROUGH OR GAME-WINDOW TRACKING COULD NOT BE INITIALIZED; DETACHED OVERLAYS ARE DISABLED. >>>!"
     },
@@ -296925,6 +297029,10 @@
       "translation": "* GEOLOGICAL >>>!"
     },
     {
+      "source": "get org.gnome.desktop.input-sources sources",
+      "translation": "* GET ORG.GNOME.DESKTOP.INPUT-SOURCES SOURCES >>>!"
+    },
+    {
       "source": "getting-started",
       "translation": "* GETTING-STARTED >>>!"
     },
@@ -297119,6 +297227,10 @@
     {
       "source": "hull",
       "translation": "* HULL >>>!"
+    },
+    {
+      "source": "ibus",
+      "translation": "* IBUS >>>!"
     },
     {
       "source": "icons",

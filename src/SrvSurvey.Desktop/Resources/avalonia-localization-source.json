@@ -1433,6 +1433,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "@im=ibus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/LinuxTextInput.cs"
+  },
+  {
     "Text": "A 3",
     "IsFormat": false,
     "SourceKinds": [
@@ -75694,6 +75702,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/LinuxWindowOperationsMenu.cs"
   },
   {
+    "Text": "XMODIFIERS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/LinuxTextInput.cs"
+  },
+  {
     "Text": "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
     "IsFormat": false,
     "SourceKinds": [
@@ -78831,6 +78847,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "get org.gnome.desktop.input-sources sources",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/LinuxTextInput.cs"
+  },
+  {
     "Text": "getting-started",
     "IsFormat": false,
     "SourceKinds": [
@@ -79221,6 +79245,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "ibus",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/LinuxTextInput.cs"
   },
   {
     "Text": "icons",

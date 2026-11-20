@@ -93,6 +93,115 @@ public sealed class FleetCarrierRouteFuelTests : IAsyncLifetime
         Assert.DoesNotContain("SQU-002", reopened.CarrierFuelSummary);
     }
 
+    [Fact]
+    public async Task CarrierSearchUsesEnteredFuelUntilTheForecastIsRefreshedFromTheCarrier()
+    {
+        var planner = new Results
+        {
+            RouteHops = Enumerable
+                .Range(0, 221)
+                .Select(index => new FollowRouteHop(
+                    index == 0 ? "A" : $"Waypoint {index}",
+                    index + 1,
+                    new GalacticCoordinate(index * 500, 0, 0),
+                    null,
+                    false,
+                    false
+                ))
+                .ToArray(),
+        };
+        FrontierAccountSnapshot account = Account(tank: 850, stock: 0);
+        RouteWorkspaceViewModel model = await Create(() => account, planner);
+        model.PrepareCarrierSearch();
+        Assert.Equal("850", Field(model, "fuel_loaded").Value);
+        Assert.Equal("0", Field(model, "tritium_stored").Value);
+        Field(model, "destinations").Value = "Waypoint 220";
+        Field(model, "capacity_used").Number = 12021;
+        Field(model, "fuel_loaded").Number = 1000;
+        Field(model, "tritium_stored").Number = 9001;
+
+        Assert.True(await model.SpanshSearch!.SearchAsync());
+        Assert.Contains(KeyValuePair.Create("fuel_loaded", "1000"), planner.Request!.Parameters);
+        Assert.Contains(KeyValuePair.Create("tritium_stored", "9001"), planner.Request.Parameters);
+        Assert.True(model.IsFuelWarningVisible);
+        model.DismissDialogs();
+        Assert.Equal(1000, model.Hops[0].Hop.Carrier!.FuelRemainingTonnes);
+        Assert.Equal(9001, model.Hops[0].Hop.Carrier!.TritiumInMarketTonnes);
+        Assert.Equal(100, model.Hops[1].Hop.Carrier!.FuelUsedTonnes);
+        Assert.Contains("Depot: 850 t", model.CarrierFuelSummary);
+
+        await model.RefreshAsync();
+        Assert.Equal(850, model.Hops[0].Hop.Carrier!.FuelRemainingTonnes);
+        Assert.Equal(0, model.Hops[0].Hop.Carrier!.TritiumInMarketTonnes);
+        Assert.Equal(1, model.ReachedCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UndoingACarrierSearchRestoresTheSavedRouteWithLiveFuel(bool differentWaypoints)
+    {
+        var planner = new Results();
+        FrontierAccountSnapshot account = Account(tank: 850, stock: 0);
+        RouteWorkspaceViewModel model = await Create(() => account, planner);
+        await Import(model);
+        bool savedWasActive = !differentWaypoints;
+        model.IsActive = savedWasActive;
+        model.SaveAsName = "Saved trip";
+        await model.ConfirmSaveAsAsync();
+        Assert.False(model.DiscardCommand.CanExecute(null));
+
+        if (differentWaypoints)
+        {
+            planner.RouteHops =
+            [
+                new("A", 1, new(0, 0, 0), null, false, false),
+                new("Alternate", 4, new(400, 0, 0), null, false, false),
+            ];
+        }
+        model.PrepareCarrierSearch();
+        Field(model, "destinations").Value = differentWaypoints ? "Alternate" : "C";
+        Field(model, "capacity_used").Number = 12021;
+        Field(model, "fuel_loaded").Number = 1000;
+        Field(model, "tritium_stored").Number = 9001;
+        Assert.True(await model.SpanshSearch!.SearchAsync());
+        Assert.True(model.IsActive);
+        Assert.Equal(1000, model.Hops[0].Hop.Carrier!.FuelRemainingTonnes);
+        Assert.True(model.DiscardCommand.CanExecute(null));
+
+        await model.DiscardAsync();
+
+        Assert.Equal(["A", "B", "C"], model.Hops.Select(hop => hop.Name));
+        Assert.Equal(savedWasActive, model.IsActive);
+        Assert.Equal(850, model.Hops[0].Hop.Carrier!.FuelRemainingTonnes);
+        Assert.Equal(0, model.Hops[0].Hop.Carrier!.TritiumInMarketTonnes);
+        Assert.Equal(1, model.ReachedCount);
+    }
+
+    [Fact]
+    public async Task UndoingAutoCopyKeepsTheSavedRoutesManualFuelForecast()
+    {
+        FrontierAccountSnapshot account = Account(tank: 850, stock: 0);
+        RouteWorkspaceViewModel model = await Create(() => account);
+        model.PrepareCarrierSearch();
+        Field(model, "destinations").Value = "C";
+        Field(model, "capacity_used").Number = 12021;
+        Field(model, "fuel_loaded").Number = 1000;
+        Field(model, "tritium_stored").Number = 9001;
+        Assert.True(await model.SpanshSearch!.SearchAsync());
+        model.SaveAsName = "Planned trip";
+        await model.ConfirmSaveAsAsync();
+        Assert.Equal(1000, model.Hops[0].Hop.Carrier!.FuelRemainingTonnes);
+        bool savedAutoCopy = model.AutoCopy;
+        model.AutoCopy = !savedAutoCopy;
+
+        await model.DiscardAsync();
+
+        Assert.Equal(savedAutoCopy, model.AutoCopy);
+        Assert.Equal(1000, model.Hops[0].Hop.Carrier!.FuelRemainingTonnes);
+        Assert.Equal(9001, model.Hops[0].Hop.Carrier!.TritiumInMarketTonnes);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -501,6 +610,7 @@ public sealed class FleetCarrierRouteFuelTests : IAsyncLifetime
     private sealed class Results : ISpanshRouteClient, ISpanshPlannerClient
     {
         public bool Closed { get; init; }
+        public IReadOnlyList<FollowRouteHop>? RouteHops { get; set; }
         public SpanshPlannerRequest? Request { get; private set; }
 
         public Task<SpanshRouteReference> SubmitAsync(
@@ -519,6 +629,10 @@ public sealed class FleetCarrierRouteFuelTests : IAsyncLifetime
             CancellationToken cancellationToken = default
         )
         {
+            if (RouteHops is not null)
+            {
+                return Task.FromResult(RouteHops);
+            }
             FollowRouteHop first = new("A", 1, new GalacticCoordinate(0, 0, 0), "Keep notes", false, false);
             FollowRouteHop[] hops =
             [

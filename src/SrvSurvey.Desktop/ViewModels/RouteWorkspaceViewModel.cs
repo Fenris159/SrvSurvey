@@ -139,7 +139,10 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         openWindowCommand = new AsyncCommand(OpenWindowAsync, CanOpenWindow);
         refreshCommand = new AsyncCommand(RefreshAsync, HasProfileAndNotBusy);
         saveCommand = new AsyncCommand(SaveAsync, () => CanSaveChanges);
-        discardCommand = new AsyncCommand(DiscardAsync, () => IsDirty && !IsBusy && !IsDialogVisible);
+        discardCommand = new AsyncCommand(
+            DiscardAsync,
+            () => !IsBusy && !IsDialogVisible && (IsDirty || (HasSavedRoute && hasUnsavedCarrierSearchForecast))
+        );
         copyNextHopCommand = new AsyncCommand(
             CopyNextHopAsync,
             () => NextHop is not null && clipboardWriter is not null && !IsBusy
@@ -1415,7 +1418,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
                 StatusMessage = "Spansh returned a route with no systems.";
                 return false;
             }
-            ApplyImportedHops(importedHops, reference.Kind);
+            ApplyImportedHops(importedHops, reference.Kind, ReadSpanshStartingFuel(request));
             StatusMessage = $"Imported {importedHops.Count:N0} systems from Spansh. Review it, then use Save As...";
             await RetainWorkspaceAsync();
             return true;
@@ -1570,6 +1573,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
                     CarrierKind = selectedCarrierKind,
                 }
             );
+            hasUnsavedCarrierSearchForecast = false;
             ApplyDocument(saved, requestAutoCopyOwnership: true);
             await RetainWorkspaceAsync();
             StatusMessage = saved.IsComplete
@@ -1600,7 +1604,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
 
         if (!HasSavedRoute)
         {
-            ApplyDocument(loadedRoute);
+            RestoreRouteOnUndo(loadedRoute);
             StatusMessage = "The new route draft was restored to its initial state.";
             await RetainWorkspaceAsync();
             return;
@@ -1616,7 +1620,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
                 return;
             }
 
-            ApplyDocument(result.Route, requestAutoCopyOwnership: true);
+            RestoreRouteOnUndo(result.Route, requestAutoCopyOwnership: true);
             StatusMessage = "Changes were undone to the route's last saved state.";
             await RetainWorkspaceAsync();
         }
@@ -1627,6 +1631,28 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    /// <summary>Rebases fuel when Undo discards a search forecast or changes the itinerary it forecasts.</summary>
+    private void RestoreRouteOnUndo(FollowRouteDocument route, bool requestAutoCopyOwnership = false)
+    {
+        bool rebaseCarrierFuel =
+            IsFleetCarrierWorkspace
+            && (
+                hasUnsavedCarrierSearchForecast
+                || route.CarrierKind != selectedCarrierKind
+                || route.IsReversed != isReversed
+                || !route.Hops.SequenceEqual(SourceHops)
+            );
+        if (rebaseCarrierFuel)
+        {
+            ClearCarrierForecast();
+        }
+        ApplyDocument(route, requestAutoCopyOwnership);
+        if (rebaseCarrierFuel)
+        {
+            CaptureCarrierFuel();
         }
     }
 
@@ -1718,6 +1744,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             IsBusy = true;
             FollowRouteDocument saved = await routeService.SaveAsAsync(snapshot, SaveAsName);
             HasSavedRoute = true;
+            hasUnsavedCarrierSearchForecast = false;
             ApplyDocument(saved, requestAutoCopyOwnership: true);
             CloseDialogs();
             await RefreshCatalogAsync();
@@ -2258,7 +2285,11 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplyImportedHops(IReadOnlyList<FollowRouteHop> importedHops, SpanshRouteKind? sourceKind = null)
+    private void ApplyImportedHops(
+        IReadOnlyList<FollowRouteHop> importedHops,
+        SpanshRouteKind? sourceKind = null,
+        FleetCarrierFuelSnapshot? plannedFuel = null
+    )
     {
         if (loadedRoute is not null)
         {
@@ -2284,7 +2315,7 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
             AutoCopy,
             nextIsReversed: false
         );
-        CaptureCarrierFuel();
+        CaptureCarrierFuel(plannedFuel: plannedFuel);
         if (HasRoute && AutoCopy)
         {
             AutoCopySelected?.Invoke(this, EventArgs.Empty);
