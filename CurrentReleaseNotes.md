@@ -1,7 +1,7 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.24
+# SrvSurvey-XP 2.1.3.0-rc.77.25
 
-RC77.24 fixes an Exploration issue that could leave body counts stuck after
-resetting survey totals.
+RC77.25 fixes automatic screenshot conversion so Steam captures are only
+included when **Process Steam screenshots** is enabled.
 
 ## Before upgrading
 
@@ -13,13 +13,13 @@ explicit reset.
 
 ## What's changed
 
-- **Reset Everything Above** and **Reset Exp Value** now clear scanned, DSS,
-  and landed counts when the journal index is complete, even if a missing
-  scan prevents valuation of a mapping record. Paid receipts stay in
-  Exploration History. Automatic value tracking resumes from the new starting
-  point when valuation can continue.
-- **Recovery guidance** in Survey totals explains how to refresh Exploration
-  History, resume recovery when prompted, and retry the reset. If a continued
-  journal cannot be verified, the warning names the affected part and tells
-  you how to restore the earlier journals and start a fresh game session
-  before reopening SrvSurvey.
+- **Process Steam screenshots** now strictly controls whether Steam JPEG
+  captures are admitted or drained by the screenshot processor. Turning it off
+  pauses any pending or restart-recovered Steam captures while **Enable
+  screenshot processing** continues converting Elite BMP and HighRes captures.
+- **In-flight Steam scans** now evaluate your current screenshot settings
+  before queuing captures, preventing a capture from converting if you disable
+  processing while a scan is running.
+- **Screenshot settings controls** disable the Steam inclusion checkbox and
+  folder buttons when **Enable screenshot processing** is off, and update the
+  Steam folder description to reflect both toggles accurately.
