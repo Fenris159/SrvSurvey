@@ -25,6 +25,7 @@ public sealed partial class ScreenshotProcessingViewModel
             }
             Update(preferences with { ProcessSteamScreenshots = value });
             lastSteamScan = null;
+            lastSteamWarning = null;
             RefreshSteamSource();
         }
     }
@@ -35,13 +36,21 @@ public sealed partial class ScreenshotProcessingViewModel
     {
         get
         {
+            if (!Enabled)
+            {
+                return "Enable screenshot processing above to convert game or Steam screenshots.";
+            }
+            if (!ProcessSteamScreenshots)
+            {
+                return SteamSourceFolder.Length > 0
+                    ? "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder."
+                    : "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.";
+            }
             if (SteamSourceFolder.Length > 0)
             {
                 return "Steam JPEGs are matched by capture time to journal locations. Captures without a matching session are left untouched.";
             }
-            return ProcessSteamScreenshots
-                ? "No unambiguous Steam screenshot folder was detected. Choose the Elite screenshot folder for your Steam account."
-                : "Enable Steam processing to detect the screenshot folder for your Steam account.";
+            return "No unambiguous Steam screenshot folder was detected. Choose the Elite screenshot folder for your Steam account.";
         }
     }
 
@@ -101,7 +110,6 @@ public sealed partial class ScreenshotProcessingViewModel
             return ScreenshotProcessingResult.Empty;
         }
         string source = SteamSourceFolder;
-        ScreenshotProcessingPreferences capturedPreferences = preferences with { SourceFolder = source };
         var conversions = new List<ScreenshotConversion>();
         var warnings = new List<string>();
         try
@@ -116,9 +124,10 @@ public sealed partial class ScreenshotProcessingViewModel
             warnings.AddRange(batch.Warnings);
             if (batch.Captures.Count > 0)
             {
+                ScreenshotProcessingPreferences currentPreferences = preferences with { SourceFolder = source };
                 ScreenshotProcessingResult converted = await processingService.ProcessLiveAsync(
                     batch.Captures.Select(capture => capture.Entry).ToArray(),
-                    capturedPreferences,
+                    currentPreferences,
                     null,
                     cancellationToken: cancellationToken
                 );

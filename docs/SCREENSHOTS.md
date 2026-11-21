@@ -63,7 +63,8 @@ verified; failures retain the original. Persistent processing receipts prevent
 the same capture from being converted repeatedly. Occupied output filenames that
 cannot be read are left untouched, and a new capture uses a distinct suffix.
 Disabling processing pauses
-pending work. Faster lossless encoding preserves decoded image quality, though
+all pending work; disabling **Process Steam screenshots** pauses pending Steam
+captures while game BMP processing continues. Faster lossless encoding preserves decoded image quality, though
 PNG file sizes can be larger than with slower compression.
 
 Source folders and the PNG destination stay local during portable profile sync.

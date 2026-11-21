@@ -42,7 +42,7 @@ public sealed partial class ScreenshotProcessingService
         {
             recoveryWarnings.Add("Pending screenshots could not be recovered: " + exception.Message);
         }
-        pendingCount = pending.Count;
+        UpdatePendingCounts();
         recoveryWarningCount = recoveryWarnings.Count;
     }
 

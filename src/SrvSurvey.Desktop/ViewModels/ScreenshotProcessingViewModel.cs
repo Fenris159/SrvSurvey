@@ -128,7 +128,15 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
     public bool Enabled
     {
         get => preferences.Enabled;
-        set => Update(preferences with { Enabled = value });
+        set
+        {
+            if (value == preferences.Enabled)
+            {
+                return;
+            }
+            Update(preferences with { Enabled = value });
+            OnPropertyChanged(nameof(SteamSourceDescription));
+        }
     }
 
     public bool AddBanner
@@ -278,7 +286,8 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
             InitializeOutputFolder();
         }
         ScreenshotProcessingResult result =
-            processingService.HasPendingWork || journalEvents.Any(entry => entry.EventName == "Screenshot")
+            processingService.HasPendingWorkFor(preferences.ProcessSteamScreenshots)
+            || journalEvents.Any(entry => entry.EventName == "Screenshot")
                 ? await processingService.ProcessLiveAsync(
                     journalEvents,
                     preferences,

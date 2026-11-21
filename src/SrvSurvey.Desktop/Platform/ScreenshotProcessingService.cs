@@ -14,6 +14,7 @@ public interface IScreenshotProcessingService
     int PendingCount => 0;
     bool IsGameWindowAvailable => false;
     bool HasPendingWork => PendingCount > 0;
+    bool HasPendingWorkFor(bool includeSteam) => HasPendingWork;
 
     Task<ScreenshotProcessingResult> ProcessLiveAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
@@ -54,6 +55,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
     );
     private int pendingCount;
+    private int pendingNativeCount;
     private string? nextAttempt;
     private readonly TimeProvider retryClock;
     private long processingPass;
@@ -64,6 +66,10 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     public int PendingCount => Volatile.Read(ref pendingCount);
     public bool IsGameWindowAvailable => gameClientWidthProvider() is > 0;
     public bool HasPendingWork => PendingCount > 0 || Volatile.Read(ref recoveryWarningCount) > 0;
+
+    public bool HasPendingWorkFor(bool includeSteam) =>
+        (includeSteam ? PendingCount : Volatile.Read(ref pendingNativeCount)) > 0
+        || Volatile.Read(ref recoveryWarningCount) > 0;
 
     private readonly SemaphoreSlim processingLock = new(1, 1);
     private readonly Func<string, string, bool> tryPublishImage;
@@ -160,13 +166,20 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
             Volatile.Write(ref recoveryWarningCount, 0);
             processingPass++;
             Enqueue(journalEvents, preferences, commanderName, guardianContexts, navigationContext, warnings, live);
-            return await DrainAsync(warnings, live, cancellationToken).ConfigureAwait(false);
+            return await DrainAsync(warnings, live, preferences.ProcessSteamScreenshots, cancellationToken)
+                .ConfigureAwait(false);
         }
         finally
         {
-            Volatile.Write(ref pendingCount, pending.Count);
+            UpdatePendingCounts();
             processingLock.Release();
         }
+    }
+
+    private void UpdatePendingCounts()
+    {
+        Volatile.Write(ref pendingCount, pending.Count);
+        Volatile.Write(ref pendingNativeCount, pending.Values.Count(capture => !IsSteamCapture(capture.Request.Entry)));
     }
 
     private void Enqueue(
@@ -182,17 +195,17 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         int admitted = 0;
         foreach (JournalEventEnvelope entry in journalEvents.Where(entry => entry.EventName == "Screenshot"))
         {
+            bool isSteam = IsSteamCapture(entry);
+            if (isSteam && !preferences.ProcessSteamScreenshots)
+            {
+                continue;
+            }
             string key = GetCaptureKey(entry, preferences, commanderName);
             if (completed.Contains(key) || pending.ContainsKey(key))
             {
                 continue;
             }
-            if (
-                live
-                && pendingQueueDirectory is not null
-                && IsSteamCapture(entry)
-                && admitted++ >= LiveSteamAdmissionLimit
-            )
+            if (live && pendingQueueDirectory is not null && isSteam && admitted++ >= LiveSteamAdmissionLimit)
             {
                 // Deferred Steam originals remain discoverable on the next scan.
                 continue;
@@ -288,11 +301,12 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     private async Task<ScreenshotProcessingResult> DrainAsync(
         List<string> warnings,
         bool live,
+        bool includeSteam,
         CancellationToken cancellationToken
     )
     {
         var conversions = new List<ScreenshotConversion>();
-        foreach ((string key, PendingScreenshot capture) in GetPendingWork(live))
+        foreach ((string key, PendingScreenshot capture) in GetPendingWork(live, includeSteam))
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -343,9 +357,11 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         return new ScreenshotProcessingResult(conversions, warnings) { PendingCount = pending.Count };
     }
 
-    private IEnumerable<KeyValuePair<string, PendingScreenshot>> GetPendingWork(bool live)
+    private IEnumerable<KeyValuePair<string, PendingScreenshot>> GetPendingWork(bool live, bool includeSteam)
     {
-        KeyValuePair<string, PendingScreenshot>[] work = pending.ToArray();
+        KeyValuePair<string, PendingScreenshot>[] work = includeSteam
+            ? pending.ToArray()
+            : pending.Where(item => !IsSteamCapture(item.Value.Request.Entry)).ToArray();
         if (work.Length == 0)
         {
             yield break;
