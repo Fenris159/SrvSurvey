@@ -5589,6 +5589,10 @@
       "translation": "Alle markieren"
     },
     {
+      "source": "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.",
+      "translation": "Überprüfen Sie „Steam-Screenshots verarbeiten“, um den Steam-JPEG-Ordner von Elite zu erkennen und einzubinden."
+    },
+    {
       "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
       "translation": "Aktivieren Sie „Anzeigen“, um die Anforderungen eines Projekts in die Frachtliste aufzunehmen, und speichern Sie dann Ihre Auswahl. Market Search verwendet seine eigenen Select Projects-Tags."
     },
@@ -10533,10 +10537,6 @@
       "translation": "Aktivieren Sie den Stealth-Modus, bevor Sie die Gegend erkunden. Ausstehende Berichte bleiben über alle Anwendungssitzungen hinweg in einer dauerhaften lokalen Warteschlange."
     },
     {
-      "source": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-      "translation": "Aktivieren Sie die Steam-Verarbeitung, um den Screenshot-Ordner für Ihr Steam-Konto zu erkennen."
-    },
-    {
       "source": "Enable Surface mining",
       "translation": "Aktivieren Sie Surface Mining"
     },
@@ -10607,6 +10607,10 @@
     {
       "source": "Enable screenshot processing",
       "translation": "Aktivieren Sie die Screenshot-Verarbeitung"
+    },
+    {
+      "source": "Enable screenshot processing above to convert game or Steam screenshots.",
+      "translation": "Aktivieren Sie oben die Screenshot-Verarbeitung, um Spiel- oder Steam-Screenshots zu konvertieren."
     },
     {
       "source": "Enable the limit to evaluate the current system",
@@ -30705,6 +30709,10 @@
       "translation": "Steam Link und Meta Horizon Link sind Windows-Routen. Für das PC-VR-Streaming von Virtual Desktop ist außerdem Windows erforderlich."
     },
     {
+      "source": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+      "translation": "Die Steam-Screenshot-Verarbeitung ist deaktiviert. Aktivieren Sie „Steam-Screenshots verarbeiten“, um Steam-JPEGs aus diesem Ordner einzuschließen."
+    },
+    {
       "source": "Steam screenshots could not be processed; originals were retained: {0}",
       "translation": "Steam-Screenshots konnten nicht verarbeitet werden; Originale wurden beibehalten: {0}"
     },
@@ -48555,6 +48563,10 @@
       "translation": "Verificar todo"
     },
     {
+      "source": "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.",
+      "translation": "Verifique las capturas de pantalla de Process Steam para detectar e incluir la carpeta Steam JPEG de Elite."
+    },
+    {
       "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
       "translation": "Marque Mostrar para incluir las necesidades de un proyecto en la lista de carga y luego guarde su selección. Market Search utiliza sus propias etiquetas Seleccionar proyectos."
     },
@@ -53499,10 +53511,6 @@
       "translation": "Habilite el modo sigiloso antes de explorar. Los informes pendientes permanecen en una cola local persistente durante todas las sesiones de la aplicación."
     },
     {
-      "source": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-      "translation": "Habilite el procesamiento de Steam para detectar la carpeta de capturas de pantalla de su cuenta de Steam."
-    },
-    {
       "source": "Enable Surface mining",
       "translation": "Habilitar minería a cielo abierto"
     },
@@ -53573,6 +53581,10 @@
     {
       "source": "Enable screenshot processing",
       "translation": "Habilitar el procesamiento de capturas de pantalla"
+    },
+    {
+      "source": "Enable screenshot processing above to convert game or Steam screenshots.",
+      "translation": "Habilite el procesamiento de capturas de pantalla arriba para convertir capturas de pantalla de juegos o Steam."
     },
     {
       "source": "Enable the limit to evaluate the current system",
@@ -73671,6 +73683,10 @@
       "translation": "Steam Link y Meta Horizon Link son rutas de Windows. La transmisión PC-VR de Virtual Desktop también requiere Windows."
     },
     {
+      "source": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+      "translation": "El procesamiento de captura de pantalla de Steam está desactivado. Marque Procesar capturas de pantalla de Steam para incluir archivos JPEG de Steam de esta carpeta."
+    },
+    {
       "source": "Steam screenshots could not be processed; originals were retained: {0}",
       "translation": "No se pudieron procesar las capturas de pantalla de Steam; Se conservaron los originales: {0}."
     },
@@ -91521,6 +91537,10 @@
       "translation": "Tout vérifier"
     },
     {
+      "source": "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.",
+      "translation": "Vérifiez les captures d'écran de Process Steam pour détecter et inclure le dossier Steam JPEG d'Elite."
+    },
+    {
       "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
       "translation": "Cochez Afficher pour inclure les besoins d'un projet dans la liste des marchandises, puis enregistrez votre sélection. Market Search utilise ses propres balises Select Projects."
     },
@@ -96465,10 +96485,6 @@
       "translation": "Activez le mode furtif avant d’explorer. Les rapports en attente restent dans une file d'attente locale persistante au fil des sessions d'application."
     },
     {
-      "source": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-      "translation": "Activez le traitement Steam pour détecter le dossier de capture d'écran de votre compte Steam."
-    },
-    {
       "source": "Enable Surface mining",
       "translation": "Activer l'exploitation minière à ciel ouvert"
     },
@@ -96539,6 +96555,10 @@
     {
       "source": "Enable screenshot processing",
       "translation": "Activer le traitement des captures d'écran"
+    },
+    {
+      "source": "Enable screenshot processing above to convert game or Steam screenshots.",
+      "translation": "Activez le traitement des captures d'écran ci-dessus pour convertir les captures d'écran du jeu ou de Steam."
     },
     {
       "source": "Enable the limit to evaluate the current system",
@@ -116637,6 +116657,10 @@
       "translation": "Steam Link et Meta Horizon Link sont des routes Windows. Le streaming PC-VR de Virtual Desktop nécessite également Windows."
     },
     {
+      "source": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+      "translation": "Le traitement des captures d'écran Steam est désactivé. Cochez Traiter les captures d'écran Steam pour inclure les fichiers JPEG Steam de ce dossier."
+    },
+    {
       "source": "Steam screenshots could not be processed; originals were retained: {0}",
       "translation": "Les captures d'écran Steam n'ont pas pu être traitées ; les originaux ont été conservés : {0}"
     },
@@ -134487,6 +134511,10 @@
       "translation": "Verifique tudo"
     },
     {
+      "source": "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.",
+      "translation": "Verifique as capturas de tela do Process Steam para detectar e incluir a pasta Steam JPEG do Elite."
+    },
+    {
       "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
       "translation": "Marque Mostrar para incluir as necessidades de um projeto na lista de carga e salve sua seleção. Market Search usa suas próprias tags Select Projects."
     },
@@ -139431,10 +139459,6 @@
       "translation": "Ative o modo furtivo antes de explorar. Os relatórios pendentes permanecem em uma fila local persistente durante as sessões do aplicativo."
     },
     {
-      "source": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-      "translation": "Ative o processamento do Steam para detectar a pasta de captura de tela da sua conta Steam."
-    },
-    {
       "source": "Enable Surface mining",
       "translation": "Habilitar mineração de superfície"
     },
@@ -139505,6 +139529,10 @@
     {
       "source": "Enable screenshot processing",
       "translation": "Ativar processamento de captura de tela"
+    },
+    {
+      "source": "Enable screenshot processing above to convert game or Steam screenshots.",
+      "translation": "Ative o processamento de capturas de tela acima para converter capturas de tela do jogo ou do Steam."
     },
     {
       "source": "Enable the limit to evaluate the current system",
@@ -159603,6 +159631,10 @@
       "translation": "Steam Link e Meta Horizon Link são rotas do Windows. O streaming PC-VR do Virtual Desktop também requer Windows."
     },
     {
+      "source": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+      "translation": "O processamento de capturas de tela do Steam está desativado. Verifique Processar capturas de tela do Steam para incluir JPEGs do Steam desta pasta."
+    },
+    {
       "source": "Steam screenshots could not be processed; originals were retained: {0}",
       "translation": "As capturas de tela do Steam não puderam ser processadas; originais foram retidos: {0}"
     },
@@ -177453,6 +177485,10 @@
       "translation": "Проверить все"
     },
     {
+      "source": "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.",
+      "translation": "Проверьте скриншоты процесса обработки Steam, чтобы обнаружить и включить папку Elite Steam JPEG."
+    },
+    {
       "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
       "translation": "Установите флажок «Показать», чтобы включить потребности проекта в список грузов, затем сохраните выбор. Market Search использует собственные теги Select Projects."
     },
@@ -182397,10 +182433,6 @@
       "translation": "Включите режим скрытности перед исследованием. Ожидающие отчеты остаются в постоянной локальной очереди между сеансами приложения."
     },
     {
-      "source": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-      "translation": "Включите обработку Steam, чтобы обнаружить папку скриншотов для вашей учетной записи Steam."
-    },
-    {
       "source": "Enable Surface mining",
       "translation": "Включить поверхностный майнинг"
     },
@@ -182471,6 +182503,10 @@
     {
       "source": "Enable screenshot processing",
       "translation": "Включить обработку скриншотов"
+    },
+    {
+      "source": "Enable screenshot processing above to convert game or Steam screenshots.",
+      "translation": "Включите обработку скриншотов выше, чтобы конвертировать скриншоты игры или Steam."
     },
     {
       "source": "Enable the limit to evaluate the current system",
@@ -202569,6 +202605,10 @@
       "translation": "Steam Link и Meta Horizon Link — это маршруты Windows. Для потоковой передачи PC-VR Virtual Desktop также требуется Windows."
     },
     {
+      "source": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+      "translation": "Обработка скриншотов Steam отключена. Проверьте снимки экрана «Обработка Steam», чтобы включить файлы Steam JPEG из этой папки."
+    },
+    {
       "source": "Steam screenshots could not be processed; originals were retained: {0}",
       "translation": "Скриншоты Steam не удалось обработать; оригиналы сохранены: {0}"
     },
@@ -220419,6 +220459,10 @@
       "translation": "检查全部"
     },
     {
+      "source": "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.",
+      "translation": "检查 Process Steam 屏幕截图以检测并包含 Elite 的 Steam JPEG 文件夹。"
+    },
+    {
       "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
       "translation": "选中显示以将项目的需求包含在货物列表中，然后保存您的选择。 Market Search 使用自己的 Select Projects 标签。"
     },
@@ -225363,10 +225407,6 @@
       "translation": "在探索之前启用隐身模式。待处理的报告跨应用程序会话保留在持久的本地队列中。"
     },
     {
-      "source": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-      "translation": "启用 Steam 处理以检测您的 Steam 帐户的屏幕截图文件夹。"
-    },
-    {
       "source": "Enable Surface mining",
       "translation": "启用露天采矿"
     },
@@ -225437,6 +225477,10 @@
     {
       "source": "Enable screenshot processing",
       "translation": "启用屏幕截图处理"
+    },
+    {
+      "source": "Enable screenshot processing above to convert game or Steam screenshots.",
+      "translation": "启用上面的屏幕截图处理来转换游戏或 Steam 屏幕截图。"
     },
     {
       "source": "Enable the limit to evaluate the current system",
@@ -245535,6 +245579,10 @@
       "translation": "Steam Link 和 Meta Horizo​​n Link 是 Windows 路由。 Virtual Desktop 的 PC-VR 流媒体也需要 Windows。"
     },
     {
+      "source": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+      "translation": "Steam 屏幕截图处理已关闭。检查处理 Steam 屏幕截图以包含此文件夹中的 Steam JPEG。"
+    },
+    {
       "source": "Steam screenshots could not be processed; originals were retained: {0}",
       "translation": "Steam 截图无法处理；保留原件：{0}"
     },
@@ -263385,6 +263433,10 @@
       "translation": "* CHECK ALL >>>!"
     },
     {
+      "source": "Check Process Steam screenshots to detect and include Elite's Steam JPEG folder.",
+      "translation": "* CHECK PROCESS STEAM SCREENSHOTS TO DETECT AND INCLUDE ELITE'S STEAM JPEG FOLDER. >>>!"
+    },
+    {
       "source": "Check Show to include a project's needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
       "translation": "* CHECK SHOW TO INCLUDE A PROJECT'S NEEDS IN THE CARGO LIST, THEN SAVE YOUR SELECTION. MARKET SEARCH USES ITS OWN SELECT PROJECTS TAGS. >>>!"
     },
@@ -268329,10 +268381,6 @@
       "translation": "* ENABLE STEALTH MODE BEFORE EXPLORING. PENDING REPORTS STAY IN A PERSISTENT LOCAL QUEUE ACROSS APPLICATION SESSIONS. >>>!"
     },
     {
-      "source": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-      "translation": "* ENABLE STEAM PROCESSING TO DETECT THE SCREENSHOT FOLDER FOR YOUR STEAM ACCOUNT. >>>!"
-    },
-    {
       "source": "Enable Surface mining",
       "translation": "* ENABLE SURFACE MINING >>>!"
     },
@@ -268403,6 +268451,10 @@
     {
       "source": "Enable screenshot processing",
       "translation": "* ENABLE SCREENSHOT PROCESSING >>>!"
+    },
+    {
+      "source": "Enable screenshot processing above to convert game or Steam screenshots.",
+      "translation": "* ENABLE SCREENSHOT PROCESSING ABOVE TO CONVERT GAME OR STEAM SCREENSHOTS. >>>!"
     },
     {
       "source": "Enable the limit to evaluate the current system",
@@ -288499,6 +288551,10 @@
     {
       "source": "Steam Link and Meta Horizon Link are Windows routes. Virtual Desktop's PC-VR streaming also requires Windows.",
       "translation": "* STEAM LINK AND META HORIZON LINK ARE WINDOWS ROUTES. VIRTUAL DESKTOP'S PC-VR STREAMING ALSO REQUIRES WINDOWS. >>>!"
+    },
+    {
+      "source": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+      "translation": "* STEAM SCREENSHOT PROCESSING IS OFF. CHECK PROCESS STEAM SCREENSHOTS TO INCLUDE STEAM JPEGS FROM THIS FOLDER. >>>!"
     },
     {
       "source": "Steam screenshots could not be processed; originals were retained: {0}",

@@ -11206,6 +11206,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayExceptionsWindow.axaml"
   },
   {
+    "Text": "Check Process Steam screenshots to detect and include Elite\u0027s Steam JPEG folder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
+  },
+  {
     "Text": "Check Show to include a project\u0027s needs in the cargo list, then save your selection. Market Search uses its own Select Projects tags.",
     "IsFormat": false,
     "SourceKinds": [
@@ -21133,14 +21141,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Enable Steam processing to detect the screenshot folder for your Steam account.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
-  },
-  {
     "Text": "Enable Surface mining",
     "IsFormat": false,
     "SourceKinds": [
@@ -21284,6 +21284,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Enable screenshot processing above to convert game or Steam screenshots.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
   },
   {
     "Text": "Enable the limit to evaluate the current system",
@@ -61619,6 +61627,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Steam screenshot processing is off. Check Process Steam screenshots to include Steam JPEGs from this folder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ScreenshotProcessingViewModel.Steam.cs"
   },
   {
     "Text": "Steam screenshots could not be processed; originals were retained: {0}",

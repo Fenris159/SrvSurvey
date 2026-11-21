@@ -120,6 +120,107 @@ public sealed class SteamScreenshotProcessingTests : IDisposable
         Assert.False(File.Exists(source));
     }
 
+    [Fact]
+    public async Task SteamCapturesAreIgnoredAndPausedWhenSteamProcessingIsDisabledWhileNativeBitmapsConvert()
+    {
+        Directory.CreateDirectory(directory);
+        string steamSource = Path.Combine(directory, "steam");
+        string bmpSource = Path.Combine(directory, "bmp");
+        string output = Path.Combine(directory, "converted");
+        string queue = Path.Combine(directory, "queue");
+        Directory.CreateDirectory(steamSource);
+        Directory.CreateDirectory(bmpSource);
+
+        string blockedSteam = Path.Combine(steamSource, "blocked.jpg");
+        await File.WriteAllBytesAsync(blockedSteam, [1, 2, 3]);
+        string readySteam = Path.Combine(steamSource, "ready.jpg");
+        WriteJpeg(readySteam);
+        string highResBmp = Path.Combine(bmpSource, "HighResScreenShot_2026-11-21.bmp");
+        ScreenshotProcessingServiceTests.CreateBitmap(highResBmp, SKColors.Cyan);
+
+        ScreenshotProcessingPreferences steamDisabled = ScreenshotProcessingPreferences.CreateDefaults() with
+        {
+            Enabled = true,
+            ProcessSteamScreenshots = false,
+            SourceFolder = bmpSource,
+            TargetFolder = output,
+            AddBanner = false,
+            DeleteOriginal = true,
+        };
+        var initial = new ScreenshotProcessingService(() => 1920, (_, _) => Task.CompletedTask, queue);
+
+        ScreenshotProcessingResult ignored = await initial.ProcessAsync([Capture(readySteam)], steamDisabled, "Test");
+        Assert.Empty(ignored.Conversions);
+        Assert.Empty(ignored.Warnings);
+        Assert.Equal(0, initial.PendingCount);
+        Assert.False(initial.HasPendingWorkFor(includeSteam: false));
+        Assert.True(File.Exists(readySteam));
+
+        ScreenshotProcessingPreferences steamEnabled = steamDisabled with
+        {
+            ProcessSteamScreenshots = true,
+            SourceFolder = steamSource,
+        };
+        ScreenshotProcessingResult queued = await initial.ProcessLiveAsync(
+            [Capture(blockedSteam), Capture(readySteam)],
+            steamEnabled,
+            "Test"
+        );
+        Assert.Single(queued.Conversions);
+        Assert.Equal(1, initial.PendingCount);
+
+        WriteJpeg(blockedSteam);
+        var restarted = new ScreenshotProcessingService(() => 1920, (_, _) => Task.CompletedTask, queue);
+        Assert.Equal(1, restarted.PendingCount);
+        Assert.True(restarted.HasPendingWork);
+        Assert.True(restarted.HasPendingWorkFor(includeSteam: true));
+        Assert.False(restarted.HasPendingWorkFor(includeSteam: false));
+
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"timestamp":"1970-01-01T05:07:00Z","event":"Screenshot","Filename":"HighResScreenShot_2026-11-21.bmp","Width":3840,"System":"Sol","Body":"Earth"}""",
+                out JournalEventEnvelope? highResEvent,
+                out string? error
+            ),
+            error
+        );
+        ScreenshotProcessingResult nativeOnly = await restarted.ProcessLiveAsync(
+            [highResEvent!],
+            steamDisabled,
+            "Test"
+        );
+        ScreenshotConversion highResConversion = Assert.Single(nativeOnly.Conversions);
+        Assert.EndsWith(
+            "Earth (1970-01-01 050700) (HighRes).png",
+            highResConversion.OutputPath,
+            StringComparison.Ordinal
+        );
+        Assert.True(File.Exists(blockedSteam));
+        Assert.Equal(1, restarted.PendingCount);
+        Assert.False(restarted.HasPendingWorkFor(includeSteam: false));
+
+        ScreenshotProcessingResult idleWhileDisabled = await restarted.ProcessLiveAsync([], steamDisabled, "Test");
+        Assert.Empty(idleWhileDisabled.Conversions);
+        Assert.Empty(idleWhileDisabled.Warnings);
+        Assert.True(File.Exists(blockedSteam));
+
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"timestamp":"1970-01-01T05:08:00Z","event":"Screenshot","Filename":"missing.bmp","System":"Sol","Body":"Earth"}""",
+                out JournalEventEnvelope? missingBmpEvent,
+                out error
+            ),
+            error
+        );
+        await restarted.ProcessLiveAsync([missingBmpEvent!], steamDisabled, "Test");
+        Assert.Equal(2, restarted.PendingCount);
+        Assert.True(restarted.HasPendingWorkFor(includeSteam: false));
+
+        ScreenshotProcessingResult resumed = await restarted.ProcessLiveAsync([], steamEnabled, "Test");
+        Assert.Equal(blockedSteam, Assert.Single(resumed.Conversions).SourcePath);
+        Assert.False(File.Exists(blockedSteam));
+    }
+
     internal static void WriteJpeg(string path)
     {
         using var bitmap = new SKBitmap(320, 180);

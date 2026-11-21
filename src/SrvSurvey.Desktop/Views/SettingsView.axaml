@@ -465,6 +465,7 @@
 
           <StackPanel Spacing="8">
             <CheckBox x:Name="ProcessSteamScreenshotsCheckBox"
+                      IsEnabled="{Binding ScreenshotProcessing.Enabled}"
                       IsChecked="{Binding ScreenshotProcessing.ProcessSteamScreenshots, Mode=TwoWay}"
                       Content="Process Steam screenshots" />
             <TextBlock Classes="muted" TextWrapping="Wrap"
@@ -472,9 +473,13 @@
             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
               <SelectableTextBlock Text="{Binding ScreenshotProcessing.SteamSourceFolder}"
                                    VerticalAlignment="Center" TextWrapping="Wrap" />
-              <Button Grid.Column="1" Classes="secondary"
+              <Button x:Name="ChooseSteamScreenshotSourceFolderButton"
+                      Grid.Column="1" Classes="secondary"
+                      IsEnabled="{Binding ScreenshotProcessing.Enabled}"
                       Click="ChooseSteamScreenshotSourceFolder_Click" Content="Choose Steam folder" />
-              <Button Grid.Column="2" Classes="secondary"
+              <Button x:Name="DetectSteamScreenshotSourceFolderButton"
+                      Grid.Column="2" Classes="secondary"
+                      IsEnabled="{Binding ScreenshotProcessing.Enabled}"
                       Click="DetectSteamScreenshotSourceFolder_Click" Content="Detect automatically" />
             </Grid>
             <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding ScreenshotProcessing.SteamSourceDescription}" />

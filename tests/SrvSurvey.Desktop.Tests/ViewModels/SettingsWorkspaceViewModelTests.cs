@@ -88,4 +88,26 @@ public sealed class SettingsWorkspaceViewModelTests
         Assert.NotNull(view.FindControl<Control>("EnableWaylandFirstFootfallCheckBox"));
         Assert.NotNull(view.FindControl<Control>("EnableWaylandSurfaceMiningRigCheckBox"));
     }
+
+    [AvaloniaFact]
+    public void SteamScreenshotControlsAreScopedToScreenshotProcessingEnabled()
+    {
+        var view = new SettingsView();
+        CheckBox steamCheckBox = Assert.IsType<CheckBox>(
+            view.FindControl<CheckBox>("ProcessSteamScreenshotsCheckBox"),
+            exactMatch: false
+        );
+        Button chooseButton = Assert.IsType<Button>(
+            view.FindControl<Button>("ChooseSteamScreenshotSourceFolderButton"),
+            exactMatch: false
+        );
+        Button detectButton = Assert.IsType<Button>(
+            view.FindControl<Button>("DetectSteamScreenshotSourceFolderButton"),
+            exactMatch: false
+        );
+
+        Assert.NotNull(steamCheckBox);
+        Assert.NotNull(chooseButton);
+        Assert.NotNull(detectButton);
+    }
 }
