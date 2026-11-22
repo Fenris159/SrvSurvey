@@ -106,6 +106,20 @@ public sealed class LinuxVrRuntimeInspector
             );
         }
 
+        if (wantsWivrn && activeRuntime == LinuxOpenXrActiveRuntime.Monado)
+        {
+            return VrRuntimeProbe.HeadsetUnavailable(
+                $"The active OpenXR runtime is Monado, not {targetName}. Connect your headset in {targetName} or point ~/.config/openxr/1/active_runtime.json to {manifestHint}."
+            );
+        }
+
+        if (!wantsWivrn && activeRuntime == LinuxOpenXrActiveRuntime.WiVRn)
+        {
+            return VrRuntimeProbe.HeadsetUnavailable(
+                $"The active OpenXR runtime is WiVRn, not {targetName}. Connect your headset in {targetName} or point ~/.config/openxr/1/active_runtime.json to {manifestHint}."
+            );
+        }
+
         if (wantsWivrn && !IsWivrnActive() && activeRuntime != LinuxOpenXrActiveRuntime.WiVRn)
         {
             return VrRuntimeProbe.HeadsetUnavailable(
@@ -142,8 +156,8 @@ public sealed class LinuxVrRuntimeInspector
             TryAddFullPath(candidates, configured);
         }
 
-        candidates.Add(Path.Combine(baseDirectory, "OpenXR", LinuxOpenXrLibraryFileName));
-        candidates.Add(Path.Combine(baseDirectory, LinuxOpenXrLibraryFileName));
+        candidates.Add(CombinePosixPath(baseDirectory, "OpenXR", LinuxOpenXrLibraryFileName));
+        candidates.Add(CombinePosixPath(baseDirectory, LinuxOpenXrLibraryFileName));
         string runtimeIdentifier = RuntimeInformation.ProcessArchitecture switch
         {
             Architecture.X64 => "linux-x64",
@@ -153,7 +167,7 @@ public sealed class LinuxVrRuntimeInspector
         if (!string.IsNullOrEmpty(runtimeIdentifier))
         {
             candidates.Add(
-                Path.Combine(baseDirectory, "runtimes", runtimeIdentifier, "native", LinuxOpenXrLibraryFileName)
+                CombinePosixPath(baseDirectory, "runtimes", runtimeIdentifier, "native", LinuxOpenXrLibraryFileName)
             );
         }
 
@@ -162,19 +176,32 @@ public sealed class LinuxVrRuntimeInspector
 
     public string? DetectConfiguredOpenVrShim()
     {
-        string? overrideShim = IdentifyOpenVrShim(getEnvironmentVariable("VR_OVERRIDE"));
-        if (overrideShim is not null)
+        string? libraryShim = IdentifyOpenVrShim(
+            getEnvironmentVariable(OpenVrNativeLibraryResolver.LibraryEnvironmentVariable)
+        );
+        if (libraryShim is not null)
         {
-            return overrideShim;
+            return libraryShim;
         }
 
-        string? configDirectory = GetXdgConfigDirectory();
-        if (string.IsNullOrWhiteSpace(configDirectory))
+        string? vrOverride = getEnvironmentVariable("VR_OVERRIDE");
+        if (!string.IsNullOrWhiteSpace(vrOverride))
         {
-            return null;
+            return IdentifyOpenVrShim(vrOverride);
         }
 
-        string vrPathsFile = Path.Combine(configDirectory, "openvr", "openvrpaths.vrpath");
+        string? vrPathsFile = getEnvironmentVariable("VR_PATHREG_OVERRIDE")?.Trim();
+        if (string.IsNullOrEmpty(vrPathsFile))
+        {
+            string? configDirectory = GetXdgConfigDirectory();
+            if (string.IsNullOrWhiteSpace(configDirectory))
+            {
+                return null;
+            }
+
+            vrPathsFile = CombinePosixPath(configDirectory, "openvr", "openvrpaths.vrpath");
+        }
+
         string? contents = readAllText(vrPathsFile);
         return ParseOpenVrPathsForShim(contents);
     }
@@ -205,8 +232,8 @@ public sealed class LinuxVrRuntimeInspector
         string? runtimeDir = getEnvironmentVariable("XDG_RUNTIME_DIR");
         return !string.IsNullOrWhiteSpace(runtimeDir)
             && (
-                fileExists(Path.Combine(runtimeDir, "wivrn", "comp_ipc"))
-                || fileExists(Path.Combine(runtimeDir, "wivrn_comp_ipc"))
+                fileExists(CombinePosixPath(runtimeDir, "wivrn", "comp_ipc"))
+                || fileExists(CombinePosixPath(runtimeDir, "wivrn_comp_ipc"))
             );
     }
 
@@ -218,7 +245,7 @@ public sealed class LinuxVrRuntimeInspector
         }
 
         string? runtimeDir = getEnvironmentVariable("XDG_RUNTIME_DIR");
-        return !string.IsNullOrWhiteSpace(runtimeDir) && fileExists(Path.Combine(runtimeDir, "monado_comp_ipc"));
+        return !string.IsNullOrWhiteSpace(runtimeDir) && fileExists(CombinePosixPath(runtimeDir, "monado_comp_ipc"));
     }
 
     internal static string? IdentifyOpenVrShim(string? path)
@@ -253,21 +280,19 @@ public sealed class LinuxVrRuntimeInspector
 
         try
         {
-            if (JsonNode.Parse(json) is not JsonObject root || root["runtime"] is not JsonArray runtimes)
+            if (
+                JsonNode.Parse(json) is not JsonObject root
+                || root["runtime"] is not JsonArray runtimes
+                || runtimes.Count == 0
+            )
             {
                 return null;
             }
 
-            foreach (JsonNode? entry in runtimes)
+            // OpenVR selects the first runtime entry; subsequent entries are historical fallbacks.
+            if (runtimes[0] is JsonValue value && value.TryGetValue<string>(out string? runtimePath))
             {
-                if (entry is JsonValue value && value.TryGetValue<string>(out string? runtimePath))
-                {
-                    string? shim = IdentifyOpenVrShim(runtimePath);
-                    if (shim is not null)
-                    {
-                        return shim;
-                    }
-                }
+                return IdentifyOpenVrShim(runtimePath);
             }
         }
         catch (JsonException)
@@ -327,10 +352,33 @@ public sealed class LinuxVrRuntimeInspector
         string? configDirectory = GetXdgConfigDirectory();
         if (!string.IsNullOrWhiteSpace(configDirectory))
         {
-            yield return Path.Combine(configDirectory, "openxr", "1", "active_runtime.json");
+            yield return CombinePosixPath(configDirectory, "openxr", "1", "active_runtime.json");
         }
 
-        yield return "/etc/xdg/openxr/1/active_runtime.json";
+        string? xdgConfigDirs = getEnvironmentVariable("XDG_CONFIG_DIRS");
+        if (string.IsNullOrWhiteSpace(xdgConfigDirs))
+        {
+            yield return "/etc/xdg/openxr/1/active_runtime.json";
+        }
+        else
+        {
+            bool yieldedAny = false;
+            foreach (
+                string rawDir in xdgConfigDirs.Split(
+                    ':',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+                )
+            )
+            {
+                yieldedAny = true;
+                yield return CombinePosixPath(rawDir, "openxr", "1", "active_runtime.json");
+            }
+
+            if (!yieldedAny)
+            {
+                yield return "/etc/xdg/openxr/1/active_runtime.json";
+            }
+        }
     }
 
     private string? GetXdgConfigDirectory()
@@ -342,14 +390,32 @@ public sealed class LinuxVrRuntimeInspector
         }
 
         string profile = getUserProfile();
-        return string.IsNullOrWhiteSpace(profile) ? null : Path.Combine(profile, ".config");
+        return string.IsNullOrWhiteSpace(profile) ? null : CombinePosixPath(profile, ".config");
+    }
+
+    private static string CombinePosixPath(string first, params string[] rest)
+    {
+        string result = first.TrimEnd('/');
+        foreach (string segment in rest)
+        {
+            result = $"{result}/{segment.Trim('/')}";
+        }
+
+        return result;
     }
 
     private static void TryAddFullPath(List<string> candidates, string rawPath)
     {
+        string trimmed = rawPath.Trim();
+        if (trimmed.StartsWith('/') && Path.DirectorySeparatorChar != '/')
+        {
+            candidates.Add(trimmed);
+            return;
+        }
+
         try
         {
-            candidates.Add(Path.GetFullPath(rawPath));
+            candidates.Add(Path.GetFullPath(trimmed));
         }
         catch (Exception exception)
             when (exception is ArgumentException or NotSupportedException or PathTooLongException)

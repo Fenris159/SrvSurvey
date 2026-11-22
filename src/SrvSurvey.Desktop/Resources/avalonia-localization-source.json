@@ -65495,7 +65495,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
+    "Text": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -69480,6 +69496,14 @@
   },
   {
     "Text": "The {0} overlay session disconnected.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The {0} overlay session ended during startup.",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -73793,7 +73817,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
-    "Text": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
+    "Text": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"

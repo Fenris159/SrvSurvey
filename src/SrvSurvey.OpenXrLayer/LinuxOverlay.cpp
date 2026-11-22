@@ -137,18 +137,86 @@ bool ValidateOverlayPacketStructure(std::span<const uint8_t> bytes)
     return true;
 }
 
+uint8_t SrgbByteToLinearByte(uint8_t value)
+{
+    static const std::array<uint8_t, 256> lut = []() {
+        std::array<uint8_t, 256> table{};
+        for (int i = 0; i < 256; ++i)
+        {
+            double c = static_cast<double>(i) / 255.0;
+            double linear = (c <= 0.04045) ? (c / 12.92) : std::pow((c + 0.055) / 1.055, 2.4);
+            table[static_cast<size_t>(i)] = static_cast<uint8_t>(std::lround(std::clamp(linear, 0.0, 1.0) * 255.0));
+        }
+        return table;
+    }();
+    return lut[value];
+}
+
+uint32_t XrVersionToVulkanApiVersion(XrVersion version)
+{
+    uint32_t major = static_cast<uint32_t>(std::min<uint64_t>(XR_VERSION_MAJOR(version), 127));
+    uint32_t minor = static_cast<uint32_t>(std::min<uint64_t>(XR_VERSION_MINOR(version), 1023));
+    return VK_MAKE_API_VERSION(0, major, minor, 0);
+}
+
+bool SelectVulkanApiVersion(PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr, XrVersion minRequired,
+                            XrVersion maxSupported, uint32_t &outApiVersion, std::string &outError)
+{
+    uint32_t minVk = minRequired != 0 ? XrVersionToVulkanApiVersion(minRequired) : VK_API_VERSION_1_0;
+    uint32_t maxVk = maxSupported != 0 ? XrVersionToVulkanApiVersion(maxSupported) : 0;
+    if (maxSupported != 0 && minVk > maxVk)
+    {
+        outError = "The OpenXR runtime reported an invalid Vulkan API version range.";
+        return false;
+    }
+
+    uint32_t loaderVersion = VK_API_VERSION_1_0;
+    PFN_vkEnumerateInstanceVersion enumerateInstanceVersion = nullptr;
+    if (BindVkInstance(vkGetInstanceProcAddr, VK_NULL_HANDLE, "vkEnumerateInstanceVersion", enumerateInstanceVersion))
+    {
+        uint32_t queriedVersion = 0;
+        if (enumerateInstanceVersion(&queriedVersion) == VK_SUCCESS && queriedVersion != 0)
+        {
+            loaderVersion =
+                VK_MAKE_API_VERSION(0, VK_API_VERSION_MAJOR(queriedVersion), VK_API_VERSION_MINOR(queriedVersion), 0);
+        }
+    }
+
+    if (minVk > loaderVersion)
+    {
+        outError = "The installed Vulkan loader is older than the OpenXR runtime's minimum required Vulkan version.";
+        return false;
+    }
+
+    uint32_t effectiveMax = maxSupported != 0 ? std::min(maxVk, loaderVersion) : loaderVersion;
+    if (minVk > effectiveMax)
+    {
+        outError = "No compatible Vulkan API version is supported by both the OpenXR runtime and Vulkan loader.";
+        return false;
+    }
+
+    outApiVersion = std::clamp(static_cast<uint32_t>(VK_API_VERSION_1_1), minVk, effectiveMax);
+    return true;
+}
+
 bool MatchesPixels(const SwapchainTexture &texture, const Descriptor &descriptor, const uint8_t *source,
-                   bool swapRedBlue)
+                   bool swapRedBlue, bool convertSrgbToLinear)
 {
     if (texture.pixels.size() != descriptor.length)
         return false;
-    if (!swapRedBlue && descriptor.alpha == 1.0f)
+    if (!swapRedBlue && !convertSrgbToLinear && descriptor.alpha == 1.0f)
         return std::memcmp(texture.pixels.data(), source, descriptor.length) == 0;
     for (size_t i = 0; i < texture.pixels.size(); i += 4)
     {
         uint8_t r = swapRedBlue ? source[i + 2] : source[i];
         uint8_t g = source[i + 1];
         uint8_t b = swapRedBlue ? source[i] : source[i + 2];
+        if (convertSrgbToLinear)
+        {
+            r = SrgbByteToLinearByte(r);
+            g = SrgbByteToLinearByte(g);
+            b = SrgbByteToLinearByte(b);
+        }
         auto a = static_cast<uint8_t>(static_cast<float>(source[i + 3]) * descriptor.alpha);
         if (texture.pixels[i] != r || texture.pixels[i + 1] != g || texture.pixels[i + 2] != b ||
             texture.pixels[i + 3] != a)
@@ -295,8 +363,13 @@ bool MatchesRuntimeFilter(const std::string &runtimeName, const std::string &exp
         return lowerName.find("wivrn") != std::string::npos || lowerName.find("monado") != std::string::npos;
     }
     if (lowerExpected == "monado")
-        return lowerName.find("monado") != std::string::npos || lowerName.find("wivrn") != std::string::npos;
+        return lowerName.find("monado") != std::string::npos;
     return lowerName.find(lowerExpected) != std::string::npos;
+}
+
+bool IsSrgbSwapchainFormat(int64_t format)
+{
+    return format == VK_FORMAT_R8G8B8A8_SRGB || format == VK_FORMAT_B8G8R8A8_SRGB;
 }
 
 int64_t SelectSwapchainFormat(const std::vector<int64_t> &formats, bool &swapRedBlue)
@@ -605,12 +678,28 @@ ProbeResult OverlaySession::Initialize()
         return {OverlayStatus::Error, static_cast<int32_t>(XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED), runtimeName,
                 "The OpenXR runtime does not support an RGBA8 or BGRA8 Vulkan swapchain format."};
     }
+    swapchainIsSrgb = IsSrgbSwapchainFormat(swapchainFormat);
 
     SetStatus(OverlayStatus::Ok, 0, 0, "Linux OpenXR overlay session is active.");
     if (startWorkerThread)
     {
         stopRequested.store(false);
-        worker = std::thread(&OverlaySession::WorkerLoop, this);
+        try
+        {
+            worker = std::thread(&OverlaySession::WorkerLoop, this);
+        }
+        catch (const std::exception &ex)
+        {
+            CleanupResources();
+            return {OverlayStatus::Error, 0, runtimeName,
+                    std::string("Could not start the Linux OpenXR overlay worker thread: ") + ex.what()};
+        }
+        catch (...)
+        {
+            CleanupResources();
+            return {OverlayStatus::Error, 0, runtimeName,
+                    "Could not start the Linux OpenXR overlay worker thread."};
+        }
     }
 
     return {OverlayStatus::Ok, 0, runtimeName, "Linux OpenXR overlay session is active."};
@@ -717,6 +806,11 @@ ProbeResult OverlaySession::CreateVulkanContext(bool useVulkanEnable2)
         if (XR_FAILED(xrRes))
             return {OverlayStatus::Error, static_cast<int32_t>(xrRes), {}, "Could not query Vulkan graphics requirements."};
 
+        std::string versionError;
+        if (!SelectVulkanApiVersion(loader.vkGetInstanceProcAddr, reqs.minApiVersionSupported,
+                                    reqs.maxApiVersionSupported, appInfo.apiVersion, versionError))
+            return {OverlayStatus::Error, 0, {}, versionError};
+
         VkInstanceCreateInfo vkInstInfo{};
         vkInstInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         vkInstInfo.pApplicationInfo = &appInfo;
@@ -751,6 +845,11 @@ ProbeResult OverlaySession::CreateVulkanContext(bool useVulkanEnable2)
         XrResult xrRes = xr.getVulkanRequirements1(instance, systemId, &reqs);
         if (XR_FAILED(xrRes))
             return {OverlayStatus::Error, static_cast<int32_t>(xrRes), {}, "Could not query Vulkan graphics requirements."};
+
+        std::string versionError;
+        if (!SelectVulkanApiVersion(loader.vkGetInstanceProcAddr, reqs.minApiVersionSupported,
+                                    reqs.maxApiVersionSupported, appInfo.apiVersion, versionError))
+            return {OverlayStatus::Error, 0, {}, versionError};
 
         uint32_t extLen = 0;
         xrRes = xr.getVulkanInstanceExtensions(instance, systemId, 0, &extLen, nullptr);
@@ -801,19 +900,7 @@ ProbeResult OverlaySession::CreateVulkanContext(bool useVulkanEnable2)
         }
     }
     if (!foundQueue)
-    {
-        for (uint32_t i = 0; i < familyCount; ++i)
-        {
-            if (families[i].queueCount > 0 && (families[i].queueFlags & VK_QUEUE_TRANSFER_BIT) != 0)
-            {
-                queueFamilyIndex = i;
-                foundQueue = true;
-                break;
-            }
-        }
-    }
-    if (!foundQueue)
-        return {OverlayStatus::Error, 0, {}, "No suitable Vulkan graphics or transfer queue family was found."};
+        return {OverlayStatus::Error, 0, {}, "No suitable Vulkan graphics queue family was found."};
 
     float queuePriority = 1.0f;
     VkDeviceQueueCreateInfo queueInfo{};
@@ -950,7 +1037,7 @@ bool OverlaySession::EnsureStagingCapacity(VkDeviceSize requiredBytes)
     }
 
     if (vk.bindBufferMemory(vkDevice, staging.buffer, staging.memory, 0) != VK_SUCCESS ||
-        vk.mapMemory(vkDevice, staging.memory, 0, requiredBytes, 0, &staging.mapped) != VK_SUCCESS)
+        vk.mapMemory(vkDevice, staging.memory, 0, VK_WHOLE_SIZE, 0, &staging.mapped) != VK_SUCCESS)
     {
         DestroyStagingBuffer();
         return false;
@@ -973,6 +1060,18 @@ void OverlaySession::DestroyStagingBuffer()
     staging = {};
 }
 
+void OverlaySession::RetireSwapchain(SwapchainTexture &texture)
+{
+    if (texture.handle != XR_NULL_HANDLE)
+    {
+        if (vkDevice != VK_NULL_HANDLE && vk.deviceWaitIdle)
+            vk.deviceWaitIdle(vkDevice);
+        if (xr.destroySwapchain)
+            xr.destroySwapchain(texture.handle);
+    }
+    texture = {};
+}
+
 void OverlaySession::DestroySwapchains()
 {
     if (vkDevice != VK_NULL_HANDLE && vk.deviceWaitIdle)
@@ -988,6 +1087,7 @@ void OverlaySession::DestroySwapchains()
 
 void OverlaySession::CleanupResources()
 {
+    ClearHeadPose();
     DestroySwapchains();
     DestroyStagingBuffer();
     if (localSpace != XR_NULL_HANDLE && xr.destroySpace)
@@ -1002,12 +1102,13 @@ void OverlaySession::CleanupResources()
     }
     if (session != XR_NULL_HANDLE && xr.destroySession)
     {
-        if (sessionRunning && xr.endSession)
-            xr.endSession(session);
         xr.destroySession(session);
         session = XR_NULL_HANDLE;
     }
     sessionRunning = false;
+    anchored = false;
+    hasPendingSpaceChange = false;
+    pendingSpaceChange = 0;
     if (vkDevice != VK_NULL_HANDLE)
     {
         if (uploadFence != VK_NULL_HANDLE && vk.destroyFence)
@@ -1049,8 +1150,9 @@ bool OverlaySession::PublishPacket(std::span<const uint8_t> packet)
 {
     if (!ValidateOverlayPacketStructure(packet))
         return false;
+    auto nextPacket = std::make_shared<const std::vector<uint8_t>>(packet.begin(), packet.end());
     std::lock_guard lock(packetMutex);
-    latestPacket.assign(packet.begin(), packet.end());
+    latestPacket = std::move(nextPacket);
     ++latestPacketSequence;
     return true;
 }
@@ -1081,6 +1183,12 @@ void OverlaySession::SetStatus(OverlayStatus status, int32_t xrError, uint32_t r
     currentStatus.message = message;
 }
 
+void OverlaySession::ClearHeadPose()
+{
+    std::lock_guard lock(statusMutex);
+    currentHeadPose = {};
+}
+
 void OverlaySession::WorkerLoop()
 {
     while (!stopRequested.load())
@@ -1090,6 +1198,7 @@ void OverlaySession::WorkerLoop()
         if (!sessionRunning && !stopRequested.load())
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
+    ClearHeadPose();
 }
 
 bool OverlaySession::StepOnce()
@@ -1111,6 +1220,7 @@ bool OverlaySession::PollEvents()
             return true;
         if (XR_FAILED(result))
         {
+            ClearHeadPose();
             SetStatus(OverlayStatus::SessionLost, static_cast<int32_t>(result), 0,
                       "The OpenXR overlay event stream failed (OpenXR error " + std::to_string(result) + ").");
             return false;
@@ -1118,12 +1228,18 @@ bool OverlaySession::PollEvents()
 
         if (event.type == XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING)
         {
+            ClearHeadPose();
             SetStatus(OverlayStatus::SessionLost, 0, 0, "The OpenXR runtime disconnected.");
             return false;
         }
         if (event.type == XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING)
         {
-            anchored = false;
+            const auto *change = reinterpret_cast<const XrEventDataReferenceSpaceChangePending *>(&event);
+            if (change->referenceSpaceType == XR_REFERENCE_SPACE_TYPE_LOCAL)
+            {
+                pendingSpaceChange = change->changeTime;
+                hasPendingSpaceChange = true;
+            }
         }
         else if (event.type == XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX)
         {
@@ -1140,6 +1256,7 @@ bool OverlaySession::PollEvents()
                 XrResult beginRes = xr.beginSession(session, &beginInfo);
                 if (XR_FAILED(beginRes))
                 {
+                    ClearHeadPose();
                     SetStatus(OverlayStatus::Error, static_cast<int32_t>(beginRes), 0,
                               "Could not begin the OpenXR overlay session (OpenXR error " + std::to_string(beginRes) + ").");
                     return false;
@@ -1148,6 +1265,7 @@ bool OverlaySession::PollEvents()
             }
             else if (stateChanged->state == XR_SESSION_STATE_STOPPING)
             {
+                ClearHeadPose();
                 if (sessionRunning)
                 {
                     xr.endSession(session);
@@ -1157,6 +1275,7 @@ bool OverlaySession::PollEvents()
             else if (stateChanged->state == XR_SESSION_STATE_EXITING ||
                      stateChanged->state == XR_SESSION_STATE_LOSS_PENDING)
             {
+                ClearHeadPose();
                 SetStatus(OverlayStatus::SessionLost, 0, 0, "The OpenXR overlay session ended.");
                 return false;
             }
@@ -1164,20 +1283,19 @@ bool OverlaySession::PollEvents()
     }
 }
 
-bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height)
+bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height, int32_t &outXrError,
+                                     std::string &outError)
 {
     if (texture.handle != XR_NULL_HANDLE && (texture.width != width || texture.height != height))
     {
-        if (vk.deviceWaitIdle)
-            vk.deviceWaitIdle(vkDevice);
-        xr.destroySwapchain(texture.handle);
-        texture = {};
+        RetireSwapchain(texture);
     }
     if (texture.handle != XR_NULL_HANDLE)
         return true;
 
     XrSwapchainCreateInfo info{XR_TYPE_SWAPCHAIN_CREATE_INFO};
-    info.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT;
+    info.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_SAMPLED_BIT |
+                      XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT;
     info.format = swapchainFormat;
     info.sampleCount = 1;
     info.width = width;
@@ -1189,8 +1307,8 @@ bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, 
     XrResult res = xr.createSwapchain(session, &info, &texture.handle);
     if (XR_FAILED(res))
     {
-        SetStatus(OverlayStatus::Error, static_cast<int32_t>(res), 0,
-                  "Could not create a Vulkan OpenXR swapchain (OpenXR error " + std::to_string(res) + ").");
+        outXrError = static_cast<int32_t>(res);
+        outError = "Could not create a Vulkan OpenXR swapchain (OpenXR error " + std::to_string(res) + ").";
         return false;
     }
 
@@ -1198,8 +1316,9 @@ bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, 
     res = xr.enumerateSwapchainImages(texture.handle, 0, &imageCount, nullptr);
     if (XR_FAILED(res) || imageCount == 0)
     {
-        xr.destroySwapchain(texture.handle);
-        texture = {};
+        RetireSwapchain(texture);
+        outXrError = static_cast<int32_t>(res);
+        outError = "Could not enumerate OpenXR swapchain images.";
         return false;
     }
 
@@ -1208,8 +1327,9 @@ bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, 
                                       reinterpret_cast<XrSwapchainImageBaseHeader *>(texture.images.data()));
     if (XR_FAILED(res))
     {
-        xr.destroySwapchain(texture.handle);
-        texture = {};
+        RetireSwapchain(texture);
+        outXrError = static_cast<int32_t>(res);
+        outError = "Could not read OpenXR swapchain images.";
         return false;
     }
 
@@ -1219,16 +1339,17 @@ bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, 
 }
 
 bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &descriptor, uint32_t sequence,
-                                 const uint8_t *pixels)
+                                 const uint8_t *pixels, int32_t &outXrError, std::string &outError)
 {
-    if (!EnsureSwapchain(texture, descriptor.width, descriptor.height))
+    if (!EnsureSwapchain(texture, descriptor.width, descriptor.height, outXrError, outError))
         return false;
 
-    if (texture.ready && !texture.acquired)
+    const bool convertSrgbToLinear = !swapchainIsSrgb;
+    if (texture.ready && !texture.acquired && !texture.waited)
     {
         if (texture.sourceSequence == sequence)
             return true;
-        if (MatchesPixels(texture, descriptor, pixels, swapRedBlue))
+        if (MatchesPixels(texture, descriptor, pixels, swapRedBlue, convertSrgbToLinear))
         {
             texture.sourceSequence = sequence;
             return true;
@@ -1240,39 +1361,80 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
         XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
         XrResult res = xr.acquireSwapchainImage(texture.handle, &acquireInfo, &texture.acquiredIndex);
         if (XR_FAILED(res))
+        {
+            outXrError = static_cast<int32_t>(res);
+            outError = "Could not acquire an OpenXR swapchain image (OpenXR error " + std::to_string(res) + ").";
             return false;
+        }
         texture.acquired = true;
+        texture.waited = false;
     }
 
-    XrSwapchainImageWaitInfo waitInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
-    waitInfo.timeout = 0;
-    XrResult waitRes = xr.waitSwapchainImage(texture.handle, &waitInfo);
-    if (waitRes == XR_TIMEOUT_EXPIRED)
-        return true;
-    if (XR_FAILED(waitRes) || texture.acquiredIndex >= texture.images.size())
-        return false;
+    if (!texture.waited)
+    {
+        XrSwapchainImageWaitInfo waitInfo{XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
+        waitInfo.timeout = 0;
+        XrResult waitRes = xr.waitSwapchainImage(texture.handle, &waitInfo);
+        if (waitRes == XR_TIMEOUT_EXPIRED)
+            return true;
+        if (XR_FAILED(waitRes) || texture.acquiredIndex >= texture.images.size())
+        {
+            outXrError = XR_FAILED(waitRes) ? static_cast<int32_t>(waitRes) : 0;
+            outError = XR_FAILED(waitRes)
+                           ? "Could not wait for an OpenXR swapchain image (OpenXR error " + std::to_string(waitRes) + ")."
+                           : "OpenXR returned an out-of-range swapchain image index.";
+            RetireSwapchain(texture);
+            return false;
+        }
+        texture.waited = true;
+    }
 
     texture.pixels.resize(descriptor.length);
     for (size_t i = 0; i < descriptor.length; i += 4)
     {
-        texture.pixels[i] = swapRedBlue ? pixels[i + 2] : pixels[i];
-        texture.pixels[i + 1] = pixels[i + 1];
-        texture.pixels[i + 2] = swapRedBlue ? pixels[i] : pixels[i + 2];
+        uint8_t r = swapRedBlue ? pixels[i + 2] : pixels[i];
+        uint8_t g = pixels[i + 1];
+        uint8_t b = swapRedBlue ? pixels[i] : pixels[i + 2];
+        if (convertSrgbToLinear)
+        {
+            r = SrgbByteToLinearByte(r);
+            g = SrgbByteToLinearByte(g);
+            b = SrgbByteToLinearByte(b);
+        }
+        texture.pixels[i] = r;
+        texture.pixels[i + 1] = g;
+        texture.pixels[i + 2] = b;
         texture.pixels[i + 3] = static_cast<uint8_t>(static_cast<float>(pixels[i + 3]) * descriptor.alpha);
     }
 
     if (!EnsureStagingCapacity(descriptor.length))
+    {
+        outXrError = 0;
+        outError = "Could not allocate Vulkan staging memory for the overlay upload.";
         return false;
+    }
 
     std::memcpy(staging.mapped, texture.pixels.data(), descriptor.length);
-    if (!staging.hostCoherent && vk.flushMappedMemoryRanges)
+    if (!staging.hostCoherent)
     {
+        if (!vk.flushMappedMemoryRanges)
+        {
+            outXrError = 0;
+            outError = "Vulkan device does not expose vkFlushMappedMemoryRanges for non-coherent staging memory.";
+            return false;
+        }
+
         VkMappedMemoryRange range{};
         range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
         range.memory = staging.memory;
         range.offset = 0;
         range.size = VK_WHOLE_SIZE;
-        vk.flushMappedMemoryRanges(vkDevice, 1, &range);
+        if (vk.flushMappedMemoryRanges(vkDevice, 1, &range) != VK_SUCCESS)
+        {
+            outXrError = 0;
+            outError = "Could not flush non-coherent Vulkan staging memory.";
+            return false;
+        }
     }
 
     VkImage dstImage = texture.images[texture.acquiredIndex].image;
@@ -1281,7 +1443,12 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
     cmdBegin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     cmdBegin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     if (vk.beginCommandBuffer(commandBuffer, &cmdBegin) != VK_SUCCESS)
+    {
+        outXrError = 0;
+        outError = "Could not begin the Vulkan upload command buffer.";
+        RetireSwapchain(texture);
         return false;
+    }
 
     VkImageMemoryBarrier toTransfer{};
     toTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -1301,21 +1468,27 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
     region.imageExtent = {descriptor.width, descriptor.height, 1};
     vk.cmdCopyBufferToImage(commandBuffer, staging.buffer, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    VkImageMemoryBarrier toShader{};
-    toShader.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    toShader.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    toShader.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    toShader.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    toShader.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    toShader.image = dstImage;
-    toShader.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    toShader.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    toShader.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    vk.cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
-                          nullptr, 0, nullptr, 1, &toShader);
+    VkImageMemoryBarrier toColorAttachment{};
+    toColorAttachment.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    toColorAttachment.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    toColorAttachment.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    toColorAttachment.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    toColorAttachment.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    toColorAttachment.image = dstImage;
+    toColorAttachment.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    toColorAttachment.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    toColorAttachment.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    vk.cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1,
+                          &toColorAttachment);
 
     if (vk.endCommandBuffer(commandBuffer) != VK_SUCCESS)
+    {
+        outXrError = 0;
+        outError = "Could not finish the Vulkan upload command buffer.";
+        RetireSwapchain(texture);
         return false;
+    }
 
     vk.resetFences(vkDevice, 1, &uploadFence);
     VkSubmitInfo submit{};
@@ -1323,15 +1496,32 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
     submit.commandBufferCount = 1;
     submit.pCommandBuffers = &commandBuffer;
     if (vk.queueSubmit(vkQueue, 1, &submit, uploadFence) != VK_SUCCESS)
+    {
+        outXrError = 0;
+        outError = "Could not submit the Vulkan overlay upload.";
+        RetireSwapchain(texture);
         return false;
+    }
     if (vk.waitForFences(vkDevice, 1, &uploadFence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
+    {
+        outXrError = 0;
+        outError = "Could not wait for the Vulkan overlay upload fence.";
+        RetireSwapchain(texture);
         return false;
+    }
 
     XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
-    if (XR_FAILED(xr.releaseSwapchainImage(texture.handle, &releaseInfo)))
+    XrResult releaseRes = xr.releaseSwapchainImage(texture.handle, &releaseInfo);
+    if (XR_FAILED(releaseRes))
+    {
+        outXrError = static_cast<int32_t>(releaseRes);
+        outError = "Could not release an OpenXR swapchain image (OpenXR error " + std::to_string(releaseRes) + ").";
+        RetireSwapchain(texture);
         return false;
+    }
 
     texture.acquired = false;
+    texture.waited = false;
     texture.ready = true;
     texture.sourceSequence = sequence;
     return true;
@@ -1344,6 +1534,7 @@ bool OverlaySession::RenderFrame()
     XrResult res = xr.waitFrame(session, &waitInfo, &frameState);
     if (XR_FAILED(res))
     {
+        ClearHeadPose();
         SetStatus(OverlayStatus::SessionLost, static_cast<int32_t>(res), 0,
                   "OpenXR waitFrame failed (OpenXR error " + std::to_string(res) + ").");
         return false;
@@ -1353,23 +1544,31 @@ bool OverlaySession::RenderFrame()
     res = xr.beginFrame(session, &beginInfo);
     if (XR_FAILED(res))
     {
+        ClearHeadPose();
         SetStatus(OverlayStatus::SessionLost, static_cast<int32_t>(res), 0,
                   "OpenXR beginFrame failed (OpenXR error " + std::to_string(res) + ").");
         return false;
     }
 
-    std::vector<uint8_t> packetCopy;
+    std::shared_ptr<const std::vector<uint8_t>> packetSnapshot;
     uint32_t packetSequence = 0;
     {
         std::lock_guard lock(packetMutex);
-        packetCopy = latestPacket;
+        packetSnapshot = latestPacket;
         packetSequence = latestPacketSequence;
     }
 
     Header header{};
-    bool hasPacket = packetCopy.size() >= sizeof(Header);
+    bool hasPacket = packetSnapshot && packetSnapshot->size() >= sizeof(Header);
     if (hasPacket)
-        std::memcpy(&header, packetCopy.data(), sizeof(header));
+        std::memcpy(&header, packetSnapshot->data(), sizeof(header));
+
+    if (hasPendingSpaceChange && frameState.predictedDisplayTime >= pendingSpaceChange)
+    {
+        anchored = false;
+        hasPendingSpaceChange = false;
+        pendingSpaceChange = 0;
+    }
 
     XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
     bool headValid = false;
@@ -1403,23 +1602,41 @@ bool OverlaySession::RenderFrame()
         std::lock_guard lock(statusMutex);
         currentHeadPose = pose;
     }
+    else
+    {
+        ClearHeadPose();
+    }
 
     std::vector<XrCompositionLayerQuad> quads;
     std::vector<const XrCompositionLayerBaseHeader *> layerPtrs;
     std::vector<uint64_t> activeIds;
+    bool uploadFailed = false;
+    int32_t uploadXrError = 0;
+    std::string uploadErrorMessage;
 
-    if (frameState.shouldRender == XR_TRUE && mainSessionVisible && hasPacket && anchored)
+    if (frameState.shouldRender == XR_TRUE && mainSessionVisible && hasPacket && anchored &&
+        header.originRevision == originRevision)
     {
         uint32_t limit = std::min(header.count, maxLayers);
         quads.reserve(limit);
         for (uint32_t i = 0; i < limit; ++i)
         {
             Descriptor d{};
-            std::memcpy(&d, packetCopy.data() + sizeof(Header) + i * sizeof(Descriptor), sizeof(d));
+            std::memcpy(&d, packetSnapshot->data() + sizeof(Header) + i * sizeof(Descriptor), sizeof(d));
             activeIds.push_back(d.id);
             SwapchainTexture &texture = textures[d.id];
-            if (!UploadPanel(texture, d, packetSequence, packetCopy.data() + d.offset))
+            int32_t panelXrError = 0;
+            std::string panelError;
+            if (!UploadPanel(texture, d, packetSequence, packetSnapshot->data() + d.offset, panelXrError, panelError))
+            {
+                if (!uploadFailed)
+                {
+                    uploadFailed = true;
+                    uploadXrError = panelXrError;
+                    uploadErrorMessage = std::move(panelError);
+                }
                 continue;
+            }
             if (!texture.ready)
                 continue;
 
@@ -1443,12 +1660,7 @@ bool OverlaySession::RenderFrame()
     {
         if (std::find(activeIds.begin(), activeIds.end(), it->first) == activeIds.end())
         {
-            if (it->second.handle != XR_NULL_HANDLE)
-            {
-                if (vk.deviceWaitIdle)
-                    vk.deviceWaitIdle(vkDevice);
-                xr.destroySwapchain(it->second.handle);
-            }
+            RetireSwapchain(it->second);
             it = textures.erase(it);
         }
         else
@@ -1469,12 +1681,22 @@ bool OverlaySession::RenderFrame()
     res = xr.endFrame(session, &endInfo);
     if (XR_FAILED(res))
     {
+        ClearHeadPose();
         SetStatus(OverlayStatus::Error, static_cast<int32_t>(res), 0,
                   "OpenXR endFrame failed (OpenXR error " + std::to_string(res) + ").");
         return false;
     }
 
-    SetStatus(OverlayStatus::Ok, 0, static_cast<uint32_t>(layerPtrs.size()), "Linux OpenXR overlay session is active.");
+    if (uploadFailed)
+    {
+        SetStatus(OverlayStatus::Error, uploadXrError, static_cast<uint32_t>(layerPtrs.size()),
+                  uploadErrorMessage.empty() ? "Could not upload an overlay panel texture." : uploadErrorMessage);
+    }
+    else
+    {
+        SetStatus(OverlayStatus::Ok, 0, static_cast<uint32_t>(layerPtrs.size()),
+                  "Linux OpenXR overlay session is active.");
+    }
     return true;
 }
 
@@ -1488,105 +1710,181 @@ extern "C"
 int32_t srvsurvey_linux_openxr_probe(const char *expectedRuntime, int32_t *outStatus, int32_t *outXrError,
                                      char *outMessage, int32_t messageCapacity)
 {
-    DynamicLoaders &loaders = GetSystemLoaders();
-    if (loaders.failureStatus != OverlayStatus::Ok)
+    try
+    {
+        DynamicLoaders &loaders = GetSystemLoaders();
+        if (loaders.failureStatus != OverlayStatus::Ok)
+        {
+            if (outStatus)
+                *outStatus = static_cast<int32_t>(loaders.failureStatus);
+            if (outXrError)
+                *outXrError = 0;
+            CopyMessage(loaders.failureMessage, outMessage, messageCapacity);
+            return 0;
+        }
+
+        ProbeResult result = ProbeOverlayRuntime(loaders.loader, expectedRuntime ? expectedRuntime : "");
+        if (outStatus)
+            *outStatus = static_cast<int32_t>(result.status);
+        if (outXrError)
+            *outXrError = result.xrError;
+        CopyMessage(result.message, outMessage, messageCapacity);
+        return result.status == OverlayStatus::Ok ? 1 : 0;
+    }
+    catch (const std::exception &ex)
     {
         if (outStatus)
-            *outStatus = static_cast<int32_t>(loaders.failureStatus);
+            *outStatus = static_cast<int32_t>(OverlayStatus::Error);
         if (outXrError)
             *outXrError = 0;
-        CopyMessage(loaders.failureMessage, outMessage, messageCapacity);
+        CopyMessage(std::string("Linux OpenXR probe failed: ") + ex.what(), outMessage, messageCapacity);
         return 0;
     }
-
-    ProbeResult result = ProbeOverlayRuntime(loaders.loader, expectedRuntime ? expectedRuntime : "");
-    if (outStatus)
-        *outStatus = static_cast<int32_t>(result.status);
-    if (outXrError)
-        *outXrError = result.xrError;
-    CopyMessage(result.message, outMessage, messageCapacity);
-    return result.status == OverlayStatus::Ok ? 1 : 0;
+    catch (...)
+    {
+        if (outStatus)
+            *outStatus = static_cast<int32_t>(OverlayStatus::Error);
+        if (outXrError)
+            *outXrError = 0;
+        CopyMessage("Linux OpenXR probe failed unexpectedly.", outMessage, messageCapacity);
+        return 0;
+    }
 }
 
 void *srvsurvey_linux_openxr_create(const char *expectedRuntime, int32_t *outStatus, int32_t *outXrError,
                                     char *outMessage, int32_t messageCapacity)
 {
-    DynamicLoaders &loaders = GetSystemLoaders();
-    if (loaders.failureStatus != OverlayStatus::Ok)
+    try
+    {
+        DynamicLoaders &loaders = GetSystemLoaders();
+        if (loaders.failureStatus != OverlayStatus::Ok)
+        {
+            if (outStatus)
+                *outStatus = static_cast<int32_t>(loaders.failureStatus);
+            if (outXrError)
+                *outXrError = 0;
+            CopyMessage(loaders.failureMessage, outMessage, messageCapacity);
+            return nullptr;
+        }
+
+        auto session = std::make_unique<OverlaySession>(loaders.loader, expectedRuntime ? expectedRuntime : "", true);
+        ProbeResult result = session->Initialize();
+        if (outStatus)
+            *outStatus = static_cast<int32_t>(result.status);
+        if (outXrError)
+            *outXrError = result.xrError;
+        CopyMessage(result.message, outMessage, messageCapacity);
+        if (result.status != OverlayStatus::Ok)
+            return nullptr;
+        return session.release();
+    }
+    catch (const std::exception &ex)
     {
         if (outStatus)
-            *outStatus = static_cast<int32_t>(loaders.failureStatus);
+            *outStatus = static_cast<int32_t>(OverlayStatus::Error);
         if (outXrError)
             *outXrError = 0;
-        CopyMessage(loaders.failureMessage, outMessage, messageCapacity);
+        CopyMessage(std::string("Could not create the Linux OpenXR overlay session: ") + ex.what(), outMessage,
+                    messageCapacity);
         return nullptr;
     }
-
-    auto session = std::make_unique<OverlaySession>(loaders.loader, expectedRuntime ? expectedRuntime : "", true);
-    ProbeResult result = session->Initialize();
-    if (outStatus)
-        *outStatus = static_cast<int32_t>(result.status);
-    if (outXrError)
-        *outXrError = result.xrError;
-    CopyMessage(result.message, outMessage, messageCapacity);
-    if (result.status != OverlayStatus::Ok)
+    catch (...)
+    {
+        if (outStatus)
+            *outStatus = static_cast<int32_t>(OverlayStatus::Error);
+        if (outXrError)
+            *outXrError = 0;
+        CopyMessage("Could not create the Linux OpenXR overlay session.", outMessage, messageCapacity);
         return nullptr;
-    return session.release();
+    }
 }
 
 int32_t srvsurvey_linux_openxr_publish(void *handle, const uint8_t *packet, uint32_t packetLength)
 {
-    if (!handle || !packet || packetLength == 0)
+    try
+    {
+        if (!handle || !packet || packetLength == 0)
+            return 0;
+        auto *session = static_cast<OverlaySession *>(handle);
+        return session->PublishPacket({packet, packetLength}) ? 1 : 0;
+    }
+    catch (...)
+    {
         return 0;
-    auto *session = static_cast<OverlaySession *>(handle);
-    return session->PublishPacket({packet, packetLength}) ? 1 : 0;
+    }
 }
 
 int32_t srvsurvey_linux_openxr_get_status(void *handle, int32_t *outState, int32_t *outXrError,
                                           uint32_t *outRenderedCount, uint32_t *outMaxLayers, char *outMessage,
                                           int32_t messageCapacity)
 {
-    if (!handle)
+    try
+    {
+        if (!handle)
+            return 0;
+        auto *session = static_cast<OverlaySession *>(handle);
+        RuntimeStatus status = session->GetStatus();
+        if (outState)
+            *outState = static_cast<int32_t>(status.status);
+        if (outXrError)
+            *outXrError = status.xrError;
+        if (outRenderedCount)
+            *outRenderedCount = status.renderedCount;
+        if (outMaxLayers)
+            *outMaxLayers = status.maxLayers;
+        CopyMessage(status.message, outMessage, messageCapacity);
+        return status.status == OverlayStatus::Ok ? 1 : 0;
+    }
+    catch (...)
+    {
+        if (outState)
+            *outState = static_cast<int32_t>(OverlayStatus::Error);
+        if (outXrError)
+            *outXrError = 0;
+        CopyMessage("Could not query Linux OpenXR overlay status.", outMessage, messageCapacity);
         return 0;
-    auto *session = static_cast<OverlaySession *>(handle);
-    RuntimeStatus status = session->GetStatus();
-    if (outState)
-        *outState = static_cast<int32_t>(status.status);
-    if (outXrError)
-        *outXrError = status.xrError;
-    if (outRenderedCount)
-        *outRenderedCount = status.renderedCount;
-    if (outMaxLayers)
-        *outMaxLayers = status.maxLayers;
-    CopyMessage(status.message, outMessage, messageCapacity);
-    return status.status == OverlayStatus::Ok ? 1 : 0;
+    }
 }
 
 int32_t srvsurvey_linux_openxr_get_head_pose(void *handle, uint32_t expectedOriginRevision, float *outPosX,
                                              float *outPosY, float *outPosZ, float *outYaw)
 {
-    if (!handle)
+    try
+    {
+        if (!handle)
+            return 0;
+        auto *session = static_cast<OverlaySession *>(handle);
+        HeadPose pose = session->GetHeadPose(expectedOriginRevision);
+        if (!pose.valid)
+            return 0;
+        if (outPosX)
+            *outPosX = pose.position[0];
+        if (outPosY)
+            *outPosY = pose.position[1];
+        if (outPosZ)
+            *outPosZ = pose.position[2];
+        if (outYaw)
+            *outYaw = pose.yaw;
+        return 1;
+    }
+    catch (...)
+    {
         return 0;
-    auto *session = static_cast<OverlaySession *>(handle);
-    HeadPose pose = session->GetHeadPose(expectedOriginRevision);
-    if (!pose.valid)
-        return 0;
-    if (outPosX)
-        *outPosX = pose.position[0];
-    if (outPosY)
-        *outPosY = pose.position[1];
-    if (outPosZ)
-        *outPosZ = pose.position[2];
-    if (outYaw)
-        *outYaw = pose.yaw;
-    return 1;
+    }
 }
 
 void srvsurvey_linux_openxr_destroy(void *handle)
 {
-    if (!handle)
-        return;
-    delete static_cast<OverlaySession *>(handle);
+    try
+    {
+        if (!handle)
+            return;
+        delete static_cast<OverlaySession *>(handle);
+    }
+    catch (...)
+    {
+        // Never allow exceptions to unwind across the C ABI boundary.
+    }
 }
 
 } // extern "C"

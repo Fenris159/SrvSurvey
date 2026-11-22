@@ -125,11 +125,33 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.Contains("Session creation failed", failedInit.Message);
 
         backend.CreateOutcome = new(new nint(77), LinuxOpenXrNativeStatus.Ok, 0, "Created");
+        // Startup status check tears down the session if it already entered a non-Ok state.
+        backend.SessionStatus = new(LinuxOpenXrNativeStatus.SessionLost, 0, 0, 16, "Session ended immediately");
+        VrRuntimeResult earlyLoss = runtime.Initialize();
+        Assert.False(earlyLoss.Succeeded);
+        Assert.False(runtime.IsInitialized);
+        Assert.Contains("Session ended immediately", earlyLoss.Message);
+        Assert.Equal(1, backend.DestroyCalls);
+
+        backend.SessionStatus = new(LinuxOpenXrNativeStatus.Error, 0, 0, 16, " ");
+        VrRuntimeResult blankEarlyLoss = runtime.Initialize();
+        Assert.False(blankEarlyLoss.Succeeded);
+        Assert.Contains("ended during startup", blankEarlyLoss.Message);
+        Assert.Equal(2, backend.DestroyCalls);
+
+        backend.SessionStatus = new(LinuxOpenXrNativeStatus.Ok, 0, 0, 16, "Active");
         Assert.True(runtime.Initialize().Succeeded);
 
-        // Invalid frame fails encode gracefully without crashing.
+        // Publish a valid panel, then remove it while another panel fails encoding: native submission must be cleared.
+        Assert.True(runtime.PublishOverlay("Good", ValidFrame(), ValidCalibration(), 1f).Succeeded);
+        Assert.True(runtime.CompleteFrame().Succeeded);
+        Assert.Equal(1u, BinaryPrimitives.ReadUInt32LittleEndian(backend.LastPacket.AsSpan(24)));
+
+        runtime.RemoveOverlay("Good");
         Assert.True(runtime.PublishOverlay("Bad", new VrOverlayFrame(0, 0, []), ValidCalibration(), 1f).Succeeded);
         Assert.False(runtime.CompleteFrame().Succeeded);
+        Assert.NotNull(backend.LastPacket);
+        Assert.Equal(0u, BinaryPrimitives.ReadUInt32LittleEndian(backend.LastPacket.AsSpan(24)));
 
         // Native publish rejection returns failure.
         runtime.RemoveOverlay("Bad");

@@ -49,6 +49,8 @@ public interface ILinuxOpenXrOverlayBackend
 /// <summary>Direct Linux OpenXR overlay runtime using XR_EXTX_overlay and headless Vulkan for WiVRn and Monado.</summary>
 public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
 {
+    private static readonly IReadOnlyDictionary<string, OpenXrOverlayFrame> EmptyFrames =
+        new Dictionary<string, OpenXrOverlayFrame>();
     private readonly string profileId;
     private readonly string expectedRuntime;
     private readonly ILinuxOpenXrOverlayBackend backend;
@@ -153,6 +155,16 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
 
         sessionHandle = created.Handle;
         LinuxOpenXrSessionStatus status = backend.GetStatus(sessionHandle);
+        if (status.Status != LinuxOpenXrNativeStatus.Ok)
+        {
+            Shutdown();
+            return VrRuntimeResult.Failure(
+                string.IsNullOrWhiteSpace(status.Message)
+                    ? $"The {DisplayName} overlay session ended during startup."
+                    : status.Message
+            );
+        }
+
         if (status.MaxLayers > 0)
         {
             maximumOverlays = Math.Clamp((int)status.MaxLayers, 1, OpenXrFramePacket.MaximumOverlays);
@@ -197,6 +209,8 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         }
         catch (Exception exception) when (exception is InvalidDataException or ArgumentException or OverflowException)
         {
+            byte[] emptyPacket = OpenXrFramePacket.Encode(EmptyFrames, originRevision);
+            _ = backend.Publish(sessionHandle, emptyPacket);
             return VrRuntimeResult.Failure($"Could not encode overlay frames for {DisplayName}: {exception.Message}");
         }
     }

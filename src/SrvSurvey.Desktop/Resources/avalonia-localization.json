@@ -32637,8 +32637,16 @@
       "translation": "Die aktive OpenVR Laufzeit ist für die Verwendung von {0} konfiguriert, das VR-Spiele in OpenXR übersetzt und keine prozessübergreifenden OpenVR Overlays unterstützt. Das Herstellen einer Verbindung über OpenVR kann zum Absturz aktiver Spiele führen. Wählen Sie stattdessen die Route WiVRn oder Monado (Linux OpenXR)."
     },
     {
+      "source": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "Die aktive Laufzeit OpenXR ist Monado, nicht {0}. Schließen Sie Ihr Headset an {1} an oder verknüpfen Sie ~/.config/openxr/1/active_runtime.json mit {2}."
+    },
+    {
       "source": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "Die aktive Laufzeit OpenXR ist SteamVR, nicht {0}. Schließen Sie Ihr Headset an {1} an oder verknüpfen Sie ~/.config/openxr/1/active_runtime.json mit {2}."
+    },
+    {
+      "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "Die aktive Laufzeit OpenXR ist WiVRn, nicht {0}. Schließen Sie Ihr Headset an {1} an oder verknüpfen Sie ~/.config/openxr/1/active_runtime.json mit {2}."
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",
@@ -34631,6 +34639,10 @@
     {
       "source": "The {0} overlay session disconnected.",
       "translation": "Die {0}-Overlay-Sitzung wurde getrennt."
+    },
+    {
+      "source": "The {0} overlay session ended during startup.",
+      "translation": "Die Overlay-Sitzung {0} wurde während des Startvorgangs beendet."
     },
     {
       "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -36781,8 +36793,8 @@
       "translation": "VR-Verbindung fehlgeschlagen"
     },
     {
-      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
-      "translation": "VR-Verbindung fehlgeschlagen: Starten Sie die ausgewählte VR-Sitzung neu und verwenden Sie „Verbindung prüfen“. Bestätigen Sie unter Linux, dass libopenxr_loader.so.1 und libvulkan.so.1 für WiVRn/Monado installiert sind, oder installieren Sie SrvSurvey neu, wenn die Paketunterstützung als nicht verfügbar gemeldet wird."
+      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+      "translation": "VR-Verbindung fehlgeschlagen: Starten Sie die ausgewählte VR-Sitzung neu und verwenden Sie „Verbindung prüfen“. Vergewissern Sie sich unter Linux, dass libopenxr_loader.so.1 und libvulkan.so.1 für WiVRn/Monado installiert sind, und starten Sie SrvSurvey neu, nachdem Sie fehlende Loader installiert haben, oder installieren Sie SrvSurvey neu, wenn die Paketunterstützung als nicht verfügbar gemeldet wird."
     },
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
@@ -75855,8 +75867,16 @@
       "translation": "El tiempo de ejecución activo OpenVR está configurado para usar {0}, que traduce juegos de realidad virtual a OpenXR y no admite superposiciones entre procesos OpenVR. La conexión a través de OpenVR puede bloquear los juegos activos; elija la ruta WiVRn o Monado (Linux OpenXR) en su lugar."
     },
     {
+      "source": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "El tiempo de ejecución activo OpenXR es Monado, no {0}. Conecte sus auriculares en {1} o apunte ~/.config/openxr/1/active_runtime.json a {2}."
+    },
+    {
       "source": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "El tiempo de ejecución activo OpenXR es SteamVR, no {0}. Conecte sus auriculares en {1} o apunte ~/.config/openxr/1/active_runtime.json a {2}."
+    },
+    {
+      "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "El tiempo de ejecución activo OpenXR es WiVRn, no {0}. Conecte sus auriculares en {1} o apunte ~/.config/openxr/1/active_runtime.json a {2}."
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",
@@ -77849,6 +77869,10 @@
     {
       "source": "The {0} overlay session disconnected.",
       "translation": "La sesión de superposición {0} se desconectó."
+    },
+    {
+      "source": "The {0} overlay session ended during startup.",
+      "translation": "La sesión de superposición {0} finalizó durante el inicio."
     },
     {
       "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -79999,8 +80023,8 @@
       "translation": "La conexión de realidad virtual falló"
     },
     {
-      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
-      "translation": "La conexión de VR falló: reinicie la sesión de VR seleccionada y use Comprobar conexión. En Linux, confirme que libopenxr_loader.so.1 y libvulkan.so.1 estén instalados para WiVRn/Monado, o reinstale SrvSurvey si se informa que el soporte del paquete no está disponible."
+      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+      "translation": "La conexión de VR falló: reinicie la sesión de VR seleccionada y use Comprobar conexión. En Linux, confirme que libopenxr_loader.so.1 y libvulkan.so.1 estén instalados para WiVRn/Monado y reinicie SrvSurvey después de instalar los cargadores que faltan, o reinstale SrvSurvey si se informa que el soporte del paquete no está disponible."
     },
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
@@ -119073,8 +119097,16 @@
       "translation": "Le runtime actif OpenVR est configuré pour utiliser {0}, qui traduit les jeux VR en OpenXR et ne prend pas en charge les superpositions inter-processus OpenVR. La connexion via OpenVR peut faire planter les jeux actifs ; choisissez plutôt la route WiVRn ou Monado (Linux OpenXR)."
     },
     {
+      "source": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "Le moteur d'exécution actif OpenXR est Monado et non {0}. Connectez votre casque en {1} ou pointez ~/.config/openxr/1/active_runtime.json à {2}."
+    },
+    {
       "source": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "Le moteur d'exécution actif OpenXR est SteamVR et non {0}. Connectez votre casque en {1} ou pointez ~/.config/openxr/1/active_runtime.json à {2}."
+    },
+    {
+      "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "Le moteur d'exécution actif OpenXR est WiVRn et non {0}. Connectez votre casque en {1} ou pointez ~/.config/openxr/1/active_runtime.json à {2}."
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",
@@ -121067,6 +121099,10 @@
     {
       "source": "The {0} overlay session disconnected.",
       "translation": "La session de superposition {0} s'est déconnectée."
+    },
+    {
+      "source": "The {0} overlay session ended during startup.",
+      "translation": "La session de superposition {0} s'est terminée au démarrage."
     },
     {
       "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -123217,8 +123253,8 @@
       "translation": "La connexion VR a échoué"
     },
     {
-      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
-      "translation": "Échec de la connexion VR : redémarrez la session VR sélectionnée et utilisez Vérifier la connexion. Sous Linux, vérifiez que libopenxr_loader.so.1 et libvulkan.so.1 sont installés pour WiVRn/Monado, ou réinstallez SrvSurvey si le support packagé est signalé comme indisponible."
+      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+      "translation": "Échec de la connexion VR : redémarrez la session VR sélectionnée et utilisez Vérifier la connexion. Sous Linux, vérifiez que libopenxr_loader.so.1 et libvulkan.so.1 sont installés pour WiVRn/Monado et redémarrez SrvSurvey après avoir installé les chargeurs manquants, ou réinstallez SrvSurvey si le support packagé est signalé comme indisponible."
     },
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
@@ -162291,8 +162327,16 @@
       "translation": "O tempo de execução ativo OpenVR está configurado para usar {0}, que converte jogos VR em OpenXR e não oferece suporte a sobreposições de processo cruzado OpenVR. A conexão por meio de OpenVR pode travar jogos ativos; escolha a rota WiVRn ou Monado (Linux OpenXR)."
     },
     {
+      "source": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "O tempo de execução ativo OpenXR é Monado, não {0}. Conecte seu fone de ouvido em {1} ou aponte ~/.config/openxr/1/active_runtime.json para {2}."
+    },
+    {
       "source": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "O tempo de execução ativo OpenXR é SteamVR, não {0}. Conecte seu fone de ouvido em {1} ou aponte ~/.config/openxr/1/active_runtime.json para {2}."
+    },
+    {
+      "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "O tempo de execução ativo OpenXR é WiVRn, não {0}. Conecte seu fone de ouvido em {1} ou aponte ~/.config/openxr/1/active_runtime.json para {2}."
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",
@@ -164285,6 +164329,10 @@
     {
       "source": "The {0} overlay session disconnected.",
       "translation": "A sessão de sobreposição {0} foi desconectada."
+    },
+    {
+      "source": "The {0} overlay session ended during startup.",
+      "translation": "A sessão de sobreposição {0} terminou durante a inicialização."
     },
     {
       "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -166435,8 +166483,8 @@
       "translation": "Falha na conexão VR"
     },
     {
-      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
-      "translation": "Falha na conexão VR: reinicie a sessão VR selecionada e use Verificar conexão. No Linux, confirme libopenxr_loader.so.1 e libvulkan.so.1 estão instalados para WiVRn/Monado ou reinstale SrvSurvey se o suporte do pacote for relatado como indisponível."
+      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+      "translation": "Falha na conexão VR: reinicie a sessão VR selecionada e use Verificar conexão. No Linux, confirme libopenxr_loader.so.1 e libvulkan.so.1 estão instalados para WiVRn/Monado e reinicie SrvSurvey após instalar carregadores ausentes ou reinstale SrvSurvey se o suporte do pacote for relatado como indisponível."
     },
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
@@ -205509,8 +205557,16 @@
       "translation": "Активная среда выполнения OpenVR настроена на использование {0}, который преобразует VR-игры в OpenXR и не поддерживает межпроцессные наложения OpenVR. Подключение через OpenVR может привести к сбою активных игр; вместо этого выберите маршрут WiVRn или Monado (Linux OpenXR)."
     },
     {
+      "source": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "Активной средой выполнения OpenXR является Monado, а не {0}. Подключите гарнитуру к {1} или укажите ~/.config/openxr/1/active_runtime.json к {2}."
+    },
+    {
       "source": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "Активная среда выполнения OpenXR — SteamVR, а не {0}. Подключите гарнитуру к {1} или укажите ~/.config/openxr/1/active_runtime.json к {2}."
+    },
+    {
+      "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "Активной средой выполнения OpenXR является WiVRn, а не {0}. Подключите гарнитуру к {1} или укажите ~/.config/openxr/1/active_runtime.json к {2}."
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",
@@ -207503,6 +207559,10 @@
     {
       "source": "The {0} overlay session disconnected.",
       "translation": "Сеанс наложения {0} отключен."
+    },
+    {
+      "source": "The {0} overlay session ended during startup.",
+      "translation": "Сеанс наложения {0} завершился во время запуска."
     },
     {
       "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -209653,8 +209713,8 @@
       "translation": "Не удалось подключиться к VR"
     },
     {
-      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
-      "translation": "Не удалось подключиться к VR: перезапустите выбранный сеанс VR и используйте «Проверить соединение». В Linux убедитесь, что libopenxr_loader.so.1 и libvulkan.so.1 установлены для WiVRn/Monado, или переустановите SrvSurvey, если пакетная поддержка недоступна."
+      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+      "translation": "Не удалось подключиться к VR: перезапустите выбранный сеанс VR и используйте «Проверить соединение». В Linux убедитесь, что libopenxr_loader.so.1 и libvulkan.so.1 установлены для WiVRn/Monado, и перезапустите SrvSurvey после установки отсутствующих загрузчиков или переустановите SrvSurvey, если пакетная поддержка недоступна."
     },
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
@@ -248727,8 +248787,16 @@
       "translation": "活动OpenVR运行时配置为使用{0}，它将VR游戏转换为OpenXR并且不支持跨进程OpenVR覆盖。通过OpenVR连接可能会使正在运行的游戏崩溃；选择 WiVRn 或 Monado (Linux OpenXR) 路由。"
     },
     {
+      "source": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "活动OpenXR运行时是 Monado，而不是 {0}。将耳机连接到 {1} 或将 ~/.config/openxr/1/active_runtime.json 指向 {2}。"
+    },
+    {
       "source": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "活动的 OpenXR 运行时是 SteamVR，而不是 {0}。将耳机连接到 {1} 或将 ~/.config/openxr/1/active_runtime.json 指向 {2}。"
+    },
+    {
+      "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "活动OpenXR运行时是WiVRn，而不是{0}。将耳机连接到 {1} 或将 ~/.config/openxr/1/active_runtime.json 指向 {2}。"
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",
@@ -250721,6 +250789,10 @@
     {
       "source": "The {0} overlay session disconnected.",
       "translation": "{0} 覆盖会话已断开。"
+    },
+    {
+      "source": "The {0} overlay session ended during startup.",
+      "translation": "{0} 覆盖会话在启动期间结束。"
     },
     {
       "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -252871,8 +252943,8 @@
       "translation": "VR连接失败"
     },
     {
-      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
-      "translation": "VR 连接失败：重新启动选定的 VR 会话并使用检查连接。在 Linux 上，确认已为 WiVRn/Monado 安装 libopenxr_loader.so.1 和 libvulkan.so.1，或者如果报告打包支持不可用，请重新安装 SrvSurvey。"
+      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+      "translation": "VR 连接失败：重新启动选定的 VR 会话并使用检查连接。在 Linux 上，确认已为 WiVRn/Monado 安装 libopenxr_loader.so.1 和 libvulkan.so.1，并在安装缺少的加载程序后重新启动 SrvSurvey，或者如果报告打包支持不可用，请重新安装 SrvSurvey。"
     },
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
@@ -291945,8 +292017,16 @@
       "translation": "* THE ACTIVE OPENVR RUNTIME IS CONFIGURED TO USE {0}, WHICH TRANSLATES VR GAMES TO OPENXR AND DOES NOT SUPPORT CROSS-PROCESS OPENVR OVERLAYS. CONNECTING THROUGH OPENVR CAN CRASH ACTIVE GAMES; CHOOSE THE WIVRN OR MONADO (LINUX OPENXR) ROUTE INSTEAD. >>>!"
     },
     {
+      "source": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "* THE ACTIVE OPENXR RUNTIME IS MONADO, NOT {0}. CONNECT YOUR HEADSET IN {1} OR POINT ~/.CONFIG/OPENXR/1/ACTIVE_RUNTIME.JSON TO {2}. >>>!"
+    },
+    {
       "source": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "* THE ACTIVE OPENXR RUNTIME IS STEAMVR, NOT {0}. CONNECT YOUR HEADSET IN {1} OR POINT ~/.CONFIG/OPENXR/1/ACTIVE_RUNTIME.JSON TO {2}. >>>!"
+    },
+    {
+      "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+      "translation": "* THE ACTIVE OPENXR RUNTIME IS WIVRN, NOT {0}. CONNECT YOUR HEADSET IN {1} OR POINT ~/.CONFIG/OPENXR/1/ACTIVE_RUNTIME.JSON TO {2}. >>>!"
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",
@@ -293939,6 +294019,10 @@
     {
       "source": "The {0} overlay session disconnected.",
       "translation": "* THE {0} OVERLAY SESSION DISCONNECTED. >>>!"
+    },
+    {
+      "source": "The {0} overlay session ended during startup.",
+      "translation": "* THE {0} OVERLAY SESSION ENDED DURING STARTUP. >>>!"
     },
     {
       "source": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -296089,8 +296173,8 @@
       "translation": "* VR CONNECTION FAILED >>>!"
     },
     {
-      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
-      "translation": "* VR CONNECTION FAILED: RESTART THE SELECTED VR SESSION AND USE CHECK CONNECTION. ON LINUX, CONFIRM LIBOPENXR_LOADER.SO.1 AND LIBVULKAN.SO.1 ARE INSTALLED FOR WIVRN/MONADO, OR REINSTALL SRVSURVEY IF PACKAGED SUPPORT IS REPORTED UNAVAILABLE. >>>!"
+      "source": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+      "translation": "* VR CONNECTION FAILED: RESTART THE SELECTED VR SESSION AND USE CHECK CONNECTION. ON LINUX, CONFIRM LIBOPENXR_LOADER.SO.1 AND LIBVULKAN.SO.1 ARE INSTALLED FOR WIVRN/MONADO AND RESTART SRVSURVEY AFTER INSTALLING MISSING LOADERS, OR REINSTALL SRVSURVEY IF PACKAGED SUPPORT IS REPORTED UNAVAILABLE. >>>!"
     },
     {
       "source": "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",

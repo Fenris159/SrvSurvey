@@ -53,7 +53,7 @@ public sealed class LinuxVrRuntimeInspectorTests
     [Fact]
     public void OpenVrSafetyBlocksShimConfiguredInOpenVrPathsFile()
     {
-        const string vrPathJson = """{"runtime":["/usr/lib/xrizer"]}""";
+        const string vrPathJson = """{"runtime":["/usr/lib/xrizer","/opt/SteamVR"]}""";
         var inspector = new LinuxVrRuntimeInspector(
             isLinux: () => true,
             getEnvironmentVariable: key => key == "XDG_CONFIG_HOME" ? "/home/pilot/.xdg" : null,
@@ -67,6 +67,67 @@ public sealed class LinuxVrRuntimeInspectorTests
         Assert.NotNull(probe);
         Assert.False(probe.RuntimeAvailable);
         Assert.Contains("xrizer", probe.Message);
+
+        // OpenVR selects only the first entry; historical shim entries after SteamVR must not block SteamVR.
+        const string steamFirstJson = """{"runtime":["/opt/SteamVR","/usr/lib/xrizer"]}""";
+        var steamFirstInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key => key == "XDG_CONFIG_HOME" ? "/home/pilot/.xdg" : null,
+            readAllText: path => path == "/home/pilot/.xdg/openvr/openvrpaths.vrpath" ? steamFirstJson : null,
+            fileExists: _ => false,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        Assert.Null(steamFirstInspector.CheckOpenVrSafety(isCustomRuntime: false));
+    }
+
+    [Fact]
+    public void OpenVrSafetyHonorsLibraryOverrideNonShimVrOverrideAndPathRegOverride()
+    {
+        // SRVSURVEY_OPENVR_LIBRARY pointing at a shim blocks even with SteamVR registered and vrserver running.
+        var libraryShimInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key =>
+                key == OpenVrNativeLibraryResolver.LibraryEnvironmentVariable
+                    ? "/opt/OpenComposite/bin/linux64/libopenvr_api.so"
+                    : null,
+            readAllText: _ => """{"runtime":["/opt/SteamVR"]}""",
+            fileExists: _ => false,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        VrRuntimeProbe? libShimProbe = libraryShimInspector.CheckOpenVrSafety(isCustomRuntime: false);
+        Assert.NotNull(libShimProbe);
+        Assert.False(libShimProbe.RuntimeAvailable);
+        Assert.Contains("OpenComposite", libShimProbe.Message);
+
+        // Non-shim VR_OVERRIDE takes precedence over an inactive xrizer entry in openvrpaths.vrpath.
+        var steamOverrideInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key => key == "VR_OVERRIDE" ? "/opt/SteamVR" : null,
+            readAllText: _ => """{"runtime":["/usr/lib/xrizer"]}""",
+            fileExists: _ => false,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        Assert.Null(steamOverrideInspector.CheckOpenVrSafety(isCustomRuntime: false));
+
+        // VR_PATHREG_OVERRIDE takes precedence over default openvrpaths.vrpath.
+        var pathRegInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key => key == "VR_PATHREG_OVERRIDE" ? "/custom/openvrpaths.vrpath" : null,
+            readAllText: path =>
+                path == "/custom/openvrpaths.vrpath"
+                    ? """{"runtime":["/usr/lib/xrizer"]}"""
+                    : """{"runtime":["/opt/SteamVR"]}""",
+            fileExists: _ => false,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        VrRuntimeProbe? pathRegProbe = pathRegInspector.CheckOpenVrSafety(isCustomRuntime: false);
+        Assert.NotNull(pathRegProbe);
+        Assert.False(pathRegProbe.RuntimeAvailable);
+        Assert.Contains("xrizer", pathRegProbe.Message);
     }
 
     [Fact]
@@ -205,6 +266,76 @@ public sealed class LinuxVrRuntimeInspectorTests
         );
         Assert.Null(activeMonadoInspector.CheckLinuxOpenXrPreflight(VrPlatformProfileCatalog.MonadoOpenXrProfileId));
         Assert.Equal(LinuxOpenXrActiveRuntime.Monado, activeMonadoInspector.DetectActiveOpenXrRuntime());
+
+        // Positively identified Monado manifest must be rejected for WiVRn even if wivrn-server is running.
+        var monadoMismatchInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: _ => null,
+            readAllText: path =>
+                path == "/home/pilot/.config/openxr/1/active_runtime.json"
+                    ? """{"runtime":{"name":"Monado","library_path":"/usr/lib/libopenxr_monado.so"}}"""
+                    : null,
+            fileExists: _ => false,
+            isProcessRunning: name => name == "wivrn-server",
+            getUserProfile: () => "/home/pilot"
+        );
+        VrRuntimeProbe? monadoForWivrn = monadoMismatchInspector.CheckLinuxOpenXrPreflight(
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId
+        );
+        Assert.NotNull(monadoForWivrn);
+        Assert.Contains("Monado, not WiVRn", monadoForWivrn.Message);
+
+        // Positively identified WiVRn manifest must be rejected for Monado even if monado-service is running.
+        var wivrnMismatchInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: _ => null,
+            readAllText: path =>
+                path == "/home/pilot/.config/openxr/1/active_runtime.json"
+                    ? """{"runtime":{"name":"WiVRn","library_path":"/usr/lib/libopenxr_wivrn.so"}}"""
+                    : null,
+            fileExists: _ => false,
+            isProcessRunning: name => name == "monado-service",
+            getUserProfile: () => "/home/pilot"
+        );
+        VrRuntimeProbe? wivrnForMonado = wivrnMismatchInspector.CheckLinuxOpenXrPreflight(
+            VrPlatformProfileCatalog.MonadoOpenXrProfileId
+        );
+        Assert.NotNull(wivrnForMonado);
+        Assert.Contains("WiVRn, not Monado", wivrnForMonado.Message);
+
+        // XDG_CONFIG_DIRS is searched in order and replaces the default /etc/xdg lookup when set.
+        var xdgConfigDirsInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key => key == "XDG_CONFIG_DIRS" ? "/custom/first:/custom/second" : null,
+            readAllText: path =>
+                path switch
+                {
+                    "/custom/second/openxr/1/active_runtime.json" =>
+                        """{"runtime":{"name":"WiVRn","library_path":"/usr/lib/libopenxr_wivrn.so"}}""",
+                    "/etc/xdg/openxr/1/active_runtime.json" =>
+                        """{"runtime":{"name":"SteamVR","library_path":"/opt/steamxr.so"}}""",
+                    _ => null,
+                },
+            fileExists: _ => false,
+            isProcessRunning: name => name == "wivrn-server",
+            getUserProfile: () => "/home/pilot"
+        );
+        Assert.Equal(LinuxOpenXrActiveRuntime.WiVRn, xdgConfigDirsInspector.DetectActiveOpenXrRuntime());
+        Assert.Null(xdgConfigDirsInspector.CheckLinuxOpenXrPreflight(VrPlatformProfileCatalog.WivrnOpenXrProfileId));
+
+        // XDG_CONFIG_DIRS containing only colons falls back to /etc/xdg.
+        var emptySegmentsInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key => key == "XDG_CONFIG_DIRS" ? ":::" : null,
+            readAllText: path =>
+                path == "/etc/xdg/openxr/1/active_runtime.json"
+                    ? """{"runtime":{"name":"Monado","library_path":"/usr/lib/libopenxr_monado.so"}}"""
+                    : null,
+            fileExists: _ => false,
+            isProcessRunning: name => name == "monado-service",
+            getUserProfile: () => "/home/pilot"
+        );
+        Assert.Equal(LinuxOpenXrActiveRuntime.Monado, emptySegmentsInspector.DetectActiveOpenXrRuntime());
     }
 
     [Fact]

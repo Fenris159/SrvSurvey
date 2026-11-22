@@ -1656,7 +1656,7 @@ public static class GuideCatalog
             [
                 "Waiting: for SteamVR routes, confirm SteamVR (vrserver) is running and the headset is in that session. For VDXR, register the SrvSurvey OpenXR layer, restart Elite, and confirm Runtime: VDXR. For WiVRn or Monado on Linux, confirm wivrn-server or monado-service is running, the headset is connected, and ~/.config/openxr/1/active_runtime.json points to WiVRn or Monado.",
                 "Blocked OpenVR shim on Linux: if openvrpaths.vrpath or VR_OVERRIDE points to xrizer or OpenComposite, switch SrvSurvey's route to WiVRn or Monado (Linux OpenXR) instead of SteamVR.",
-                "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado, or reinstall SrvSurvey if packaged support is reported unavailable.",
+                "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
                 "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart the VR runtime, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
                 "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
                 "Connected but one panel is absent: verify that panel's normal visibility switch, vehicle exception, and game-state trigger.",

@@ -87,6 +87,7 @@ struct SwapchainTexture
     uint32_t sourceSequence = 0;
     uint32_t acquiredIndex = 0;
     bool acquired = false;
+    bool waited = false;
     bool ready = false;
 };
 
@@ -101,6 +102,7 @@ struct StagingBuffer
 
 bool MatchesRuntimeFilter(const std::string &runtimeName, const std::string &expectedRuntime);
 int64_t SelectSwapchainFormat(const std::vector<int64_t> &formats, bool &swapRedBlue);
+bool IsSrgbSwapchainFormat(int64_t format);
 ProbeResult ProbeOverlayRuntime(const OpenXrLoader &loader, const std::string &expectedRuntime);
 
 class OverlaySession
@@ -199,14 +201,18 @@ class OverlaySession
     uint32_t FindMemoryType(uint32_t typeBits, VkMemoryPropertyFlags required, bool &isHostCoherent) const;
     bool EnsureStagingCapacity(VkDeviceSize requiredBytes);
     void DestroyStagingBuffer();
+    void RetireSwapchain(SwapchainTexture &texture);
     void DestroySwapchains();
     void CleanupResources();
     void WorkerLoop();
     bool PollEvents();
     bool RenderFrame();
-    bool EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height);
-    bool UploadPanel(SwapchainTexture &texture, const Descriptor &descriptor, uint32_t sequence, const uint8_t *pixels);
+    bool EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height, int32_t &outXrError,
+                         std::string &outError);
+    bool UploadPanel(SwapchainTexture &texture, const Descriptor &descriptor, uint32_t sequence, const uint8_t *pixels,
+                     int32_t &outXrError, std::string &outError);
     void SetStatus(OverlayStatus status, int32_t xrError, uint32_t renderedCount, const std::string &message);
+    void ClearHeadPose();
 
     OpenXrLoader loader;
     std::string expectedRuntime;
@@ -233,17 +239,20 @@ class OverlaySession
 
     int64_t swapchainFormat = 0;
     bool swapRedBlue = false;
+    bool swapchainIsSrgb = true;
     uint32_t maxLayers = MaximumOverlays;
     std::map<uint64_t, SwapchainTexture> textures;
 
     bool sessionRunning = false;
     bool mainSessionVisible = true;
     bool anchored = false;
+    bool hasPendingSpaceChange = false;
+    XrTime pendingSpaceChange = 0;
     uint32_t originRevision = 0;
     XrPosef anchor{{0, 0, 0, 1}, {0, 0, 0}};
 
     mutable std::mutex packetMutex;
-    std::vector<uint8_t> latestPacket;
+    std::shared_ptr<const std::vector<uint8_t>> latestPacket;
     uint32_t latestPacketSequence = 0;
 
     mutable std::mutex statusMutex;

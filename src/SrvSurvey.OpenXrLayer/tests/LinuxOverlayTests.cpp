@@ -32,19 +32,41 @@ struct MockRuntime
     std::vector<int64_t> swapchainFormats = {VK_FORMAT_B8G8R8A8_SRGB};
     std::deque<XrEventDataBuffer> events;
 
+    XrVersion minVkVersion = XR_MAKE_VERSION(1, 0, 0);
+    XrVersion maxVkVersion = XR_MAKE_VERSION(1, 3, 0);
+    uint32_t loaderVkVersion = VK_API_VERSION_1_3;
+    bool exposeEnumerateInstanceVersion = true;
+    uint32_t requestedVkApiVersion = 0;
+
     bool sawOverlaySessionCreateInfo = false;
     uint32_t overlayPlacement = 0;
     bool sawVulkanRequirements = false;
     bool beganSession = false;
     bool endedSession = false;
+    bool destroyedSession = false;
+    XrSessionState currentSessionState = XR_SESSION_STATE_IDLE;
     int endFrameCount = 0;
     uint32_t lastSubmittedLayerCount = 0;
     XrCompositionLayerQuad lastSubmittedQuad{};
+    XrSwapchainUsageFlags lastSwapchainUsageFlags = 0;
+    VkImageLayout lastBarrierNewLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkDeviceSize lastMapSize = 0;
+    bool hostCoherentMemory = true;
+    VkResult flushResult = VK_SUCCESS;
+    int flushCount = 0;
     int createdSwapchains = 0;
     int destroyedSwapchains = 0;
+    int acquireCount = 0;
+    int waitCount = 0;
+    int releaseCount = 0;
     int uploadedCopies = 0;
+    bool failBufferAlloc = false;
+    XrResult createSwapchainResult = XR_SUCCESS;
+    XrResult waitSwapchainResult = XR_SUCCESS;
     std::vector<uint8_t> stagingMemory;
     XrPosef headPose{{0, 0, 0, 1}, {1.0f, 1.5f, -0.5f}};
+    bool headPoseValid = true;
+    XrTime nextPredictedDisplayTime = 1000;
 };
 
 MockRuntime *gMock = nullptr;
@@ -106,13 +128,16 @@ XrResult MockEnumerateBlendModes(XrInstance, XrSystemId, XrViewConfigurationType
 XrResult MockGetVulkanRequirements2(XrInstance, XrSystemId, XrGraphicsRequirementsVulkan2KHR *reqs)
 {
     gMock->sawVulkanRequirements = true;
-    reqs->minApiVersionSupported = XR_MAKE_VERSION(1, 0, 0);
-    reqs->maxApiVersionSupported = XR_MAKE_VERSION(1, 3, 0);
+    reqs->minApiVersionSupported = gMock->minVkVersion;
+    reqs->maxApiVersionSupported = gMock->maxVkVersion;
     return XR_SUCCESS;
 }
 
-XrResult MockCreateVulkanInstance(XrInstance, const XrVulkanInstanceCreateInfoKHR *, VkInstance *out, VkResult *vkRes)
+XrResult MockCreateVulkanInstance(XrInstance, const XrVulkanInstanceCreateInfoKHR *info, VkInstance *out,
+                                  VkResult *vkRes)
 {
+    if (info && info->vulkanCreateInfo && info->vulkanCreateInfo->pApplicationInfo)
+        gMock->requestedVkApiVersion = info->vulkanCreateInfo->pApplicationInfo->apiVersion;
     *out = reinterpret_cast<VkInstance>(0x2001);
     *vkRes = VK_SUCCESS;
     return XR_SUCCESS;
@@ -134,8 +159,8 @@ XrResult MockCreateVulkanDevice(XrInstance, const XrVulkanDeviceCreateInfoKHR *,
 XrResult MockGetVulkanRequirements1(XrInstance, XrSystemId, XrGraphicsRequirementsVulkanKHR *reqs)
 {
     gMock->sawVulkanRequirements = true;
-    reqs->minApiVersionSupported = XR_MAKE_VERSION(1, 0, 0);
-    reqs->maxApiVersionSupported = XR_MAKE_VERSION(1, 3, 0);
+    reqs->minApiVersionSupported = gMock->minVkVersion;
+    reqs->maxApiVersionSupported = gMock->maxVkVersion;
     return XR_SUCCESS;
 }
 
@@ -182,6 +207,7 @@ XrResult MockCreateSession(XrInstance, const XrSessionCreateInfo *info, XrSessio
 
 XrResult MockDestroySession(XrSession)
 {
+    gMock->destroyedSession = true;
     return XR_SUCCESS;
 }
 
@@ -193,6 +219,8 @@ XrResult MockBeginSession(XrSession, const XrSessionBeginInfo *)
 
 XrResult MockEndSession(XrSession)
 {
+    if (gMock->currentSessionState != XR_SESSION_STATE_STOPPING)
+        return XR_ERROR_SESSION_NOT_STOPPING;
     gMock->endedSession = true;
     return XR_SUCCESS;
 }
@@ -203,6 +231,8 @@ XrResult MockPollEvent(XrInstance, XrEventDataBuffer *out)
         return XR_EVENT_UNAVAILABLE;
     *out = gMock->events.front();
     gMock->events.pop_front();
+    if (out->type == XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED)
+        gMock->currentSessionState = reinterpret_cast<const XrEventDataSessionStateChanged *>(out)->state;
     return XR_SUCCESS;
 }
 
@@ -219,6 +249,11 @@ XrResult MockDestroySpace(XrSpace)
 
 XrResult MockLocateSpace(XrSpace, XrSpace, XrTime, XrSpaceLocation *loc)
 {
+    if (!gMock->headPoseValid)
+    {
+        loc->locationFlags = 0;
+        return XR_SUCCESS;
+    }
     loc->locationFlags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT;
     loc->pose = gMock->headPose;
     return XR_SUCCESS;
@@ -234,8 +269,12 @@ XrResult MockEnumerateSwapchainFormats(XrSession, uint32_t cap, uint32_t *out, i
     return XR_SUCCESS;
 }
 
-XrResult MockCreateSwapchain(XrSession, const XrSwapchainCreateInfo *, XrSwapchain *out)
+XrResult MockCreateSwapchain(XrSession, const XrSwapchainCreateInfo *info, XrSwapchain *out)
 {
+    if (gMock->createSwapchainResult != XR_SUCCESS)
+        return gMock->createSwapchainResult;
+    if (info)
+        gMock->lastSwapchainUsageFlags = info->usageFlags;
     ++gMock->createdSwapchains;
     *out = reinterpret_cast<XrSwapchain>(0x3000 + gMock->createdSwapchains);
     return XR_SUCCESS;
@@ -261,23 +300,26 @@ XrResult MockEnumerateSwapchainImages(XrSwapchain, uint32_t cap, uint32_t *out, 
 
 XrResult MockAcquireSwapchainImage(XrSwapchain, const XrSwapchainImageAcquireInfo *, uint32_t *index)
 {
+    ++gMock->acquireCount;
     *index = 0;
     return XR_SUCCESS;
 }
 
 XrResult MockWaitSwapchainImage(XrSwapchain, const XrSwapchainImageWaitInfo *)
 {
-    return XR_SUCCESS;
+    ++gMock->waitCount;
+    return gMock->waitSwapchainResult;
 }
 
 XrResult MockReleaseSwapchainImage(XrSwapchain, const XrSwapchainImageReleaseInfo *)
 {
+    ++gMock->releaseCount;
     return XR_SUCCESS;
 }
 
 XrResult MockWaitFrame(XrSession, const XrFrameWaitInfo *, XrFrameState *state)
 {
-    state->predictedDisplayTime = 1000;
+    state->predictedDisplayTime = gMock->nextPredictedDisplayTime;
     state->predictedDisplayPeriod = 11111111;
     state->shouldRender = XR_TRUE;
     return XR_SUCCESS;
@@ -336,8 +378,15 @@ XrResult MockXrGetInstanceProcAddr(XrInstance, const char *name, PFN_xrVoidFunct
     return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
-VkResult MockVkCreateInstance(const VkInstanceCreateInfo *, const VkAllocationCallbacks *, VkInstance *out)
+VkResult MockVkEnumerateInstanceVersion(uint32_t *pApiVersion)
 {
+    *pApiVersion = gMock->loaderVkVersion;
+    return VK_SUCCESS;
+}
+VkResult MockVkCreateInstance(const VkInstanceCreateInfo *info, const VkAllocationCallbacks *, VkInstance *out)
+{
+    if (info && info->pApplicationInfo)
+        gMock->requestedVkApiVersion = info->pApplicationInfo->apiVersion;
     *out = reinterpret_cast<VkInstance>(0x2001);
     return VK_SUCCESS;
 }
@@ -354,7 +403,8 @@ void MockVkGetQueueFamilyProperties(VkPhysicalDevice, uint32_t *count, VkQueueFa
 void MockVkGetMemoryProperties(VkPhysicalDevice, VkPhysicalDeviceMemoryProperties *props)
 {
     props->memoryTypeCount = 1;
-    props->memoryTypes[0].propertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    props->memoryTypes[0].propertyFlags =
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | (gMock->hostCoherentMemory ? VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : 0);
 }
 VkResult MockVkCreateDevice(VkPhysicalDevice, const VkDeviceCreateInfo *, const VkAllocationCallbacks *, VkDevice *out)
 {
@@ -380,9 +430,11 @@ VkResult MockVkResetCommandBuffer(VkCommandBuffer, VkCommandBufferResetFlags) { 
 VkResult MockVkBeginCommandBuffer(VkCommandBuffer, const VkCommandBufferBeginInfo *) { return VK_SUCCESS; }
 VkResult MockVkEndCommandBuffer(VkCommandBuffer) { return VK_SUCCESS; }
 void MockVkCmdPipelineBarrier(VkCommandBuffer, VkPipelineStageFlags, VkPipelineStageFlags, VkDependencyFlags, uint32_t,
-                              const VkMemoryBarrier *, uint32_t, const VkBufferMemoryBarrier *, uint32_t,
-                              const VkImageMemoryBarrier *)
+                              const VkMemoryBarrier *, uint32_t, const VkBufferMemoryBarrier *, uint32_t imageCount,
+                              const VkImageMemoryBarrier *imageBarriers)
 {
+    if (imageCount > 0 && imageBarriers)
+        gMock->lastBarrierNewLayout = imageBarriers[imageCount - 1].newLayout;
 }
 void MockVkCmdCopyBufferToImage(VkCommandBuffer, VkBuffer, VkImage, VkImageLayout, uint32_t, const VkBufferImageCopy *)
 {
@@ -399,6 +451,8 @@ VkResult MockVkWaitForFences(VkDevice, uint32_t, const VkFence *, VkBool32, uint
 VkResult MockVkQueueSubmit(VkQueue, uint32_t, const VkSubmitInfo *, VkFence) { return VK_SUCCESS; }
 VkResult MockVkCreateBuffer(VkDevice, const VkBufferCreateInfo *info, const VkAllocationCallbacks *, VkBuffer *out)
 {
+    if (gMock->failBufferAlloc)
+        return VK_ERROR_OUT_OF_HOST_MEMORY;
     gMock->stagingMemory.resize(static_cast<size_t>(info->size));
     *out = reinterpret_cast<VkBuffer>(0x2008);
     return VK_SUCCESS;
@@ -406,8 +460,8 @@ VkResult MockVkCreateBuffer(VkDevice, const VkBufferCreateInfo *info, const VkAl
 void MockVkDestroyBuffer(VkDevice, VkBuffer, const VkAllocationCallbacks *) {}
 void MockVkGetBufferMemoryRequirements(VkDevice, VkBuffer, VkMemoryRequirements *reqs)
 {
-    reqs->size = gMock->stagingMemory.size();
-    reqs->alignment = 4;
+    reqs->size = std::max<VkDeviceSize>(256, gMock->stagingMemory.size());
+    reqs->alignment = 256;
     reqs->memoryTypeBits = 1;
 }
 VkResult MockVkAllocateMemory(VkDevice, const VkMemoryAllocateInfo *, const VkAllocationCallbacks *,
@@ -418,12 +472,18 @@ VkResult MockVkAllocateMemory(VkDevice, const VkMemoryAllocateInfo *, const VkAl
 }
 void MockVkFreeMemory(VkDevice, VkDeviceMemory, const VkAllocationCallbacks *) {}
 VkResult MockVkBindBufferMemory(VkDevice, VkBuffer, VkDeviceMemory, VkDeviceSize) { return VK_SUCCESS; }
-VkResult MockVkMapMemory(VkDevice, VkDeviceMemory, VkDeviceSize, VkDeviceSize, VkMemoryMapFlags, void **ppData)
+VkResult MockVkMapMemory(VkDevice, VkDeviceMemory, VkDeviceSize, VkDeviceSize size, VkMemoryMapFlags, void **ppData)
 {
+    gMock->lastMapSize = size;
     *ppData = gMock->stagingMemory.data();
     return VK_SUCCESS;
 }
 void MockVkUnmapMemory(VkDevice, VkDeviceMemory) {}
+VkResult MockVkFlushMappedMemoryRanges(VkDevice, uint32_t, const VkMappedMemoryRange *)
+{
+    ++gMock->flushCount;
+    return gMock->flushResult;
+}
 
 PFN_vkVoidFunction MockVkGetDeviceProcAddr(VkDevice, const char *name)
 {
@@ -454,6 +514,7 @@ PFN_vkVoidFunction MockVkGetDeviceProcAddr(VkDevice, const char *name)
     if (auto p = match("vkBindBufferMemory", MockVkBindBufferMemory)) return p;
     if (auto p = match("vkMapMemory", MockVkMapMemory)) return p;
     if (auto p = match("vkUnmapMemory", MockVkUnmapMemory)) return p;
+    if (auto p = match("vkFlushMappedMemoryRanges", MockVkFlushMappedMemoryRanges)) return p;
     return nullptr;
 }
 
@@ -462,6 +523,10 @@ PFN_vkVoidFunction MockVkGetInstanceProcAddr(VkInstance, const char *name)
     auto match = [&](const char *expected, auto ptr) -> PFN_vkVoidFunction {
         return std::strcmp(name, expected) == 0 ? reinterpret_cast<PFN_vkVoidFunction>(ptr) : nullptr;
     };
+    if (gMock->exposeEnumerateInstanceVersion)
+    {
+        if (auto p = match("vkEnumerateInstanceVersion", MockVkEnumerateInstanceVersion)) return p;
+    }
     if (auto p = match("vkCreateInstance", MockVkCreateInstance)) return p;
     if (auto p = match("vkDestroyInstance", MockVkDestroyInstance)) return p;
     if (auto p = match("vkGetPhysicalDeviceQueueFamilyProperties", MockVkGetQueueFamilyProperties)) return p;
@@ -588,6 +653,10 @@ void TestOverlaySessionLifecycleAndBgraSwizzle()
     REQUIRE(mock.endFrameCount == 1);
     REQUIRE(mock.lastSubmittedLayerCount == 1);
     REQUIRE(mock.uploadedCopies == 1);
+    REQUIRE((mock.lastSwapchainUsageFlags & XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT) != 0);
+    REQUIRE((mock.lastSwapchainUsageFlags & XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT) != 0);
+    REQUIRE(mock.lastBarrierNewLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    REQUIRE(mock.lastMapSize == VK_WHOLE_SIZE);
     REQUIRE(mock.lastSubmittedQuad.size.width == 0.8f);
     REQUIRE(mock.lastSubmittedQuad.size.height == 0.4f);
     REQUIRE((mock.lastSubmittedQuad.layerFlags & XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT) != 0);
@@ -632,13 +701,15 @@ void TestOverlaySessionLifecycleAndBgraSwizzle()
     REQUIRE(session.StepOnce());
     REQUIRE(mock.lastSubmittedLayerCount == 0);
 
-    // Session loss ends loop cleanly.
+    // Session loss ends loop cleanly, invalidates head pose, and destroys session without calling xrEndSession.
     PushSessionState(XR_SESSION_STATE_LOSS_PENDING);
     REQUIRE(!session.StepOnce());
     REQUIRE(session.GetStatus().status == OverlayStatus::SessionLost);
+    REQUIRE(!session.GetHeadPose(1).valid);
 
     session.Shutdown();
-    REQUIRE(mock.endedSession);
+    REQUIRE(mock.destroyedSession);
+    REQUIRE(!mock.endedSession);
 }
 
 void TestVulkanEnable1Fallback()
@@ -646,12 +717,15 @@ void TestVulkanEnable1Fallback()
     MockRuntime mock;
     mock.extensions = {XR_EXTX_OVERLAY_EXTENSION_NAME, XR_KHR_VULKAN_ENABLE_EXTENSION_NAME};
     mock.swapchainFormats = {VK_FORMAT_R8G8B8A8_SRGB};
+    mock.minVkVersion = XR_MAKE_VERSION(1, 2, 0);
+    mock.maxVkVersion = XR_MAKE_VERSION(1, 3, 0);
     gMock = &mock;
 
     OverlaySession session(MakeMockLoader(), "monado", false);
     REQUIRE(session.Initialize().status == OverlayStatus::Ok);
     REQUIRE(mock.sawOverlaySessionCreateInfo);
     REQUIRE(mock.sawVulkanRequirements);
+    REQUIRE(mock.requestedVkApiVersion == VK_API_VERSION_1_2);
 
     PushSessionState(XR_SESSION_STATE_READY);
     REQUIRE(session.PublishPacket(BuildPacket(0, 7, 1, 1, 1.0f)));
@@ -663,6 +737,217 @@ void TestVulkanEnable1Fallback()
     session.Shutdown();
 }
 
+void TestVulkanApiVersionNegotiation()
+{
+    // Runtime requiring Vulkan 1.2 receives 1.2 when loader supports 1.3.
+    {
+        MockRuntime mock;
+        mock.minVkVersion = XR_MAKE_VERSION(1, 2, 0);
+        mock.maxVkVersion = XR_MAKE_VERSION(1, 3, 0);
+        mock.loaderVkVersion = VK_API_VERSION_1_3;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        REQUIRE(mock.requestedVkApiVersion == VK_API_VERSION_1_2);
+        session.Shutdown();
+    }
+
+    // Runtime capped at Vulkan 1.0 receives 1.0 even when loader supports 1.3.
+    {
+        MockRuntime mock;
+        mock.minVkVersion = XR_MAKE_VERSION(1, 0, 0);
+        mock.maxVkVersion = XR_MAKE_VERSION(1, 0, 0);
+        mock.loaderVkVersion = VK_API_VERSION_1_3;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        REQUIRE(mock.requestedVkApiVersion == VK_API_VERSION_1_0);
+        session.Shutdown();
+    }
+
+    // Loader older than runtime minimum fails cleanly.
+    {
+        MockRuntime mock;
+        mock.minVkVersion = XR_MAKE_VERSION(1, 2, 0);
+        mock.maxVkVersion = XR_MAKE_VERSION(1, 3, 0);
+        mock.exposeEnumerateInstanceVersion = false; // Vulkan 1.0 loader
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Error);
+    }
+}
+
+void TestUnormSrgbConversionAndNonCoherentFlush()
+{
+    MockRuntime mock;
+    mock.swapchainFormats = {VK_FORMAT_R8G8B8A8_UNORM};
+    mock.hostCoherentMemory = false;
+    gMock = &mock;
+
+    OverlaySession session(MakeMockLoader(), "wivrn", false);
+    REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+
+    PushSessionState(XR_SESSION_STATE_READY);
+    REQUIRE(session.PublishPacket(BuildPacket(0, 99, 1, 1, 1.0f)));
+
+    // Failed non-coherent flush must fail upload and expose Error status rather than Ok.
+    mock.flushResult = VK_ERROR_OUT_OF_DEVICE_MEMORY;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.flushCount == 1);
+    REQUIRE(mock.lastSubmittedLayerCount == 0);
+    REQUIRE(session.GetStatus().status == OverlayStatus::Error);
+
+    // Recover on next frame without calling xrWaitSwapchainImage a second time.
+    int waitsAfterFailure = mock.waitCount;
+    mock.flushResult = VK_SUCCESS;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.waitCount == waitsAfterFailure);
+    REQUIRE(mock.flushCount == 2);
+    REQUIRE(mock.lastMapSize == VK_WHOLE_SIZE);
+    REQUIRE(mock.lastSubmittedLayerCount == 1);
+    REQUIRE(session.GetStatus().status == OverlayStatus::Ok);
+
+    // Source sRGB (200, 100, 50, 250) converts to linear (~147, ~32, ~8) while preserving alpha 250.
+    REQUIRE(mock.stagingMemory.size() >= 4);
+    REQUIRE(mock.stagingMemory[0] == 147);
+    REQUIRE(mock.stagingMemory[1] >= 32 && mock.stagingMemory[1] <= 33);
+    REQUIRE(mock.stagingMemory[2] == 8);
+    REQUIRE(mock.stagingMemory[3] == 250);
+
+    // Unchanged frame with UNORM conversion still matches and skips re-upload.
+    int copiesBefore = mock.uploadedCopies;
+    REQUIRE(session.PublishPacket(BuildPacket(0, 99, 1, 1, 1.0f)));
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.uploadedCopies == copiesBefore);
+    session.Shutdown();
+}
+
+void TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate()
+{
+    MockRuntime mock;
+    mock.nextPredictedDisplayTime = 1000;
+    mock.headPose = {{0, 0, 0, 1}, {1.0f, 1.5f, -0.5f}};
+    gMock = &mock;
+
+    OverlaySession session(MakeMockLoader(), "wivrn", false);
+    REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+    PushSessionState(XR_SESSION_STATE_READY);
+    REQUIRE(session.PublishPacket(BuildPacket(0, 42, 2, 1, 1.0f)));
+    REQUIRE(session.StepOnce());
+    REQUIRE(session.GetHeadPose(0).valid);
+    REQUIRE(std::abs(session.GetHeadPose(0).position[0]) < 1e-4f);
+
+    // Schedule LOCAL reference-space change for time 2000.
+    XrEventDataBuffer spaceBuf{XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING};
+    auto *change = reinterpret_cast<XrEventDataReferenceSpaceChangePending *>(&spaceBuf);
+    change->type = XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING;
+    change->referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
+    change->changeTime = 2000;
+    mock.events.push_back(spaceBuf);
+
+    // Frame at t=1500 precedes changeTime: must NOT re-anchor yet.
+    mock.nextPredictedDisplayTime = 1500;
+    mock.headPose.position.x = 3.0f;
+    REQUIRE(session.StepOnce());
+    HeadPose beforeChange = session.GetHeadPose(0);
+    REQUIRE(beforeChange.valid);
+    REQUIRE(std::abs(beforeChange.position[0] - 2.0f) < 1e-4f);
+
+    // Frame at t=2000 reaches changeTime: must re-anchor now.
+    mock.nextPredictedDisplayTime = 2000;
+    REQUIRE(session.StepOnce());
+    HeadPose afterChange = session.GetHeadPose(0);
+    REQUIRE(afterChange.valid);
+    REQUIRE(std::abs(afterChange.position[0]) < 1e-4f);
+
+    // Non-LOCAL (STAGE) reference-space change must NOT invalidate LOCAL anchor.
+    change->referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
+    change->changeTime = 2500;
+    mock.events.push_back(spaceBuf);
+    mock.nextPredictedDisplayTime = 3000;
+    mock.headPose.position.x = 5.0f;
+    REQUIRE(session.StepOnce());
+    REQUIRE(std::abs(session.GetHeadPose(0).position[0] - 2.0f) < 1e-4f);
+
+    // Losing tracking clears cached head pose validity.
+    mock.headPoseValid = false;
+    mock.nextPredictedDisplayTime = 3500;
+    REQUIRE(session.StepOnce());
+    REQUIRE(!session.GetHeadPose(0).valid);
+
+    // Origin revision reset while tracking is invalid must withhold quads until valid pose re-anchors.
+    REQUIRE(session.PublishPacket(BuildPacket(1, 42, 2, 1, 1.0f)));
+    mock.nextPredictedDisplayTime = 4000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.lastSubmittedLayerCount == 0);
+    REQUIRE(!session.GetHeadPose(1).valid);
+
+    // Restoring tracking re-anchors to revision 1 and resumes submitting quads.
+    mock.headPoseValid = true;
+    mock.nextPredictedDisplayTime = 4500;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.lastSubmittedLayerCount == 1);
+    REQUIRE(session.GetHeadPose(1).valid);
+
+    // STOPPING calls xrEndSession legally and invalidates cached head pose.
+    PushSessionState(XR_SESSION_STATE_STOPPING);
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.endedSession);
+    REQUIRE(!session.GetHeadPose(1).valid);
+    session.Shutdown();
+}
+
+void TestPostWaitStagingFailureRecoveryAndUploadErrors()
+{
+    MockRuntime mock;
+    gMock = &mock;
+
+    OverlaySession session(MakeMockLoader(), "wivrn", false);
+    REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+    PushSessionState(XR_SESSION_STATE_READY);
+    REQUIRE(session.PublishPacket(BuildPacket(0, 11, 2, 1, 1.0f)));
+
+    // XR_TIMEOUT_EXPIRED retries wait without re-acquiring and keeps session status Ok.
+    mock.waitSwapchainResult = XR_TIMEOUT_EXPIRED;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.acquireCount == 1);
+    REQUIRE(mock.waitCount == 1);
+    REQUIRE(mock.releaseCount == 0);
+    REQUIRE(mock.lastSubmittedLayerCount == 0);
+    REQUIRE(session.GetStatus().status == OverlayStatus::Ok);
+
+    // Wait succeeds, then staging allocation fails -> status must be Error (not Ok), and image stays waited.
+    mock.waitSwapchainResult = XR_SUCCESS;
+    mock.failBufferAlloc = true;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.acquireCount == 1);
+    REQUIRE(mock.waitCount == 2);
+    REQUIRE(mock.releaseCount == 0);
+    REQUIRE(mock.lastSubmittedLayerCount == 0);
+    REQUIRE(session.GetStatus().status == OverlayStatus::Error);
+
+    // Staging recovers on next frame -> completes upload without duplicate wait, releases, and restores Ok status.
+    mock.failBufferAlloc = false;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.acquireCount == 1);
+    REQUIRE(mock.waitCount == 2);
+    REQUIRE(mock.releaseCount == 1);
+    REQUIRE(mock.lastSubmittedLayerCount == 1);
+    REQUIRE(session.GetStatus().status == OverlayStatus::Ok);
+
+    // Swapchain creation error on a new panel exposes Error status and xrError (not overwritten with Ok).
+    mock.createSwapchainResult = XR_ERROR_LIMIT_REACHED;
+    REQUIRE(session.PublishPacket(BuildPacket(0, 12, 2, 1, 1.0f)));
+    REQUIRE(session.StepOnce());
+    RuntimeStatus failedStatus = session.GetStatus();
+    REQUIRE(failedStatus.status == OverlayStatus::Error);
+    REQUIRE(failedStatus.xrError == static_cast<int32_t>(XR_ERROR_LIMIT_REACHED));
+    session.Shutdown();
+}
+
 } // namespace
 
 int main()
@@ -670,6 +955,10 @@ int main()
     TestProbeContracts();
     TestOverlaySessionLifecycleAndBgraSwizzle();
     TestVulkanEnable1Fallback();
+    TestVulkanApiVersionNegotiation();
+    TestUnormSrgbConversionAndNonCoherentFlush();
+    TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate();
+    TestPostWaitStagingFailureRecoveryAndUploadErrors();
     std::cout << "All LinuxOpenXrOverlay tests passed.\n";
     return 0;
 }
