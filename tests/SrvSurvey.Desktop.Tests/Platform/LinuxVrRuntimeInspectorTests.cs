@@ -112,6 +112,48 @@ public sealed class LinuxVrRuntimeInspectorTests
         );
         Assert.Null(missingLibraryOverrideInspector.CheckOpenVrSafety(isCustomRuntime: false));
 
+        // Existing relative override with a leading space matches OpenVrNativeLibraryResolver without trimming.
+        const string spacedRelativeShim = " xrizer/libopenvr_api.so";
+        string expectedSpacedPath = Path.GetFullPath(spacedRelativeShim);
+        var leadingSpaceShimInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key =>
+                key == OpenVrNativeLibraryResolver.LibraryEnvironmentVariable ? spacedRelativeShim : null,
+            readAllText: _ => """{"runtime":["/opt/SteamVR"]}""",
+            fileExists: path => path == expectedSpacedPath,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        VrRuntimeProbe? spacedProbe = leadingSpaceShimInspector.CheckOpenVrSafety(isCustomRuntime: false);
+        Assert.NotNull(spacedProbe);
+        Assert.False(spacedProbe.RuntimeAvailable);
+        Assert.Contains("xrizer", spacedProbe.Message);
+
+        // Nonexistent override with a trailing space must not match an existing trimmed sibling path.
+        var trailingSpaceMissingInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key =>
+                key == OpenVrNativeLibraryResolver.LibraryEnvironmentVariable ? $"{openCompositeLibrary} " : null,
+            readAllText: _ => """{"runtime":["/opt/SteamVR"]}""",
+            fileExists: path => path == openCompositeLibrary,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        Assert.Null(trailingSpaceMissingInspector.CheckOpenVrSafety(isCustomRuntime: false));
+
+        // Malformed SRVSURVEY_OPENVR_LIBRARY override (NUL character) is ignored without throwing.
+        var malformedLibraryInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key =>
+                key == OpenVrNativeLibraryResolver.LibraryEnvironmentVariable ? "/opt/xrizer\0/libopenvr_api.so" : null,
+            readAllText: _ => """{"runtime":["/opt/SteamVR"]}""",
+            fileExists: _ => true,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        Assert.Null(malformedLibraryInspector.CheckOpenVrSafety(isCustomRuntime: false));
+        Assert.NotEmpty(OpenVrNativeLibraryResolver.GetLinuxCandidates());
+
         // Non-shim VR_OVERRIDE takes precedence over an inactive xrizer entry in openvrpaths.vrpath.
         var steamOverrideInspector = new LinuxVrRuntimeInspector(
             isLinux: () => true,

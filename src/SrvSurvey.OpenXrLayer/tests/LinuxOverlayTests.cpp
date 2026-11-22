@@ -60,6 +60,14 @@ struct MockRuntime
     int queueSubmitCount = 0;
     int createdSwapchains = 0;
     int destroyedSwapchains = 0;
+    int destroyedBuffers = 0;
+    int freedMemories = 0;
+    int unmappedMemories = 0;
+    int destroyedFences = 0;
+    int destroyedCommandPools = 0;
+    int destroyedDevices = 0;
+    int destroyedVkInstances = 0;
+    int destroyedXrInstances = 0;
     int acquireCount = 0;
     int waitCount = 0;
     int releaseCount = 0;
@@ -97,6 +105,7 @@ XrResult MockCreateInstance(const XrInstanceCreateInfo *, XrInstance *out)
 
 XrResult MockDestroyInstance(XrInstance)
 {
+    ++gMock->destroyedXrInstances;
     return XR_SUCCESS;
 }
 
@@ -395,7 +404,7 @@ VkResult MockVkCreateInstance(const VkInstanceCreateInfo *info, const VkAllocati
     *out = reinterpret_cast<VkInstance>(0x2001);
     return VK_SUCCESS;
 }
-void MockVkDestroyInstance(VkInstance, const VkAllocationCallbacks *) {}
+void MockVkDestroyInstance(VkInstance, const VkAllocationCallbacks *) { ++gMock->destroyedVkInstances; }
 void MockVkGetQueueFamilyProperties(VkPhysicalDevice, uint32_t *count, VkQueueFamilyProperties *props)
 {
     *count = 1;
@@ -416,7 +425,7 @@ VkResult MockVkCreateDevice(VkPhysicalDevice, const VkDeviceCreateInfo *, const 
     *out = reinterpret_cast<VkDevice>(0x2003);
     return VK_SUCCESS;
 }
-void MockVkDestroyDevice(VkDevice, const VkAllocationCallbacks *) {}
+void MockVkDestroyDevice(VkDevice, const VkAllocationCallbacks *) { ++gMock->destroyedDevices; }
 VkResult MockVkDeviceWaitIdle(VkDevice) { return gMock->deviceWaitIdleResult; }
 void MockVkGetDeviceQueue(VkDevice, uint32_t, uint32_t, VkQueue *out) { *out = reinterpret_cast<VkQueue>(0x2004); }
 VkResult MockVkCreateCommandPool(VkDevice, const VkCommandPoolCreateInfo *, const VkAllocationCallbacks *,
@@ -425,7 +434,10 @@ VkResult MockVkCreateCommandPool(VkDevice, const VkCommandPoolCreateInfo *, cons
     *out = reinterpret_cast<VkCommandPool>(0x2005);
     return VK_SUCCESS;
 }
-void MockVkDestroyCommandPool(VkDevice, VkCommandPool, const VkAllocationCallbacks *) {}
+void MockVkDestroyCommandPool(VkDevice, VkCommandPool, const VkAllocationCallbacks *)
+{
+    ++gMock->destroyedCommandPools;
+}
 VkResult MockVkAllocateCommandBuffers(VkDevice, const VkCommandBufferAllocateInfo *, VkCommandBuffer *out)
 {
     *out = reinterpret_cast<VkCommandBuffer>(0x2006);
@@ -450,7 +462,7 @@ VkResult MockVkCreateFence(VkDevice, const VkFenceCreateInfo *, const VkAllocati
     *out = reinterpret_cast<VkFence>(0x2007);
     return VK_SUCCESS;
 }
-void MockVkDestroyFence(VkDevice, VkFence, const VkAllocationCallbacks *) {}
+void MockVkDestroyFence(VkDevice, VkFence, const VkAllocationCallbacks *) { ++gMock->destroyedFences; }
 VkResult MockVkResetFences(VkDevice, uint32_t, const VkFence *) { return VK_SUCCESS; }
 VkResult MockVkWaitForFences(VkDevice, uint32_t, const VkFence *, VkBool32, uint64_t)
 {
@@ -469,7 +481,7 @@ VkResult MockVkCreateBuffer(VkDevice, const VkBufferCreateInfo *info, const VkAl
     *out = reinterpret_cast<VkBuffer>(0x2008);
     return VK_SUCCESS;
 }
-void MockVkDestroyBuffer(VkDevice, VkBuffer, const VkAllocationCallbacks *) {}
+void MockVkDestroyBuffer(VkDevice, VkBuffer, const VkAllocationCallbacks *) { ++gMock->destroyedBuffers; }
 void MockVkGetBufferMemoryRequirements(VkDevice, VkBuffer, VkMemoryRequirements *reqs)
 {
     reqs->size = std::max<VkDeviceSize>(256, gMock->stagingMemory.size());
@@ -482,7 +494,7 @@ VkResult MockVkAllocateMemory(VkDevice, const VkMemoryAllocateInfo *, const VkAl
     *out = reinterpret_cast<VkDeviceMemory>(0x2009);
     return VK_SUCCESS;
 }
-void MockVkFreeMemory(VkDevice, VkDeviceMemory, const VkAllocationCallbacks *) {}
+void MockVkFreeMemory(VkDevice, VkDeviceMemory, const VkAllocationCallbacks *) { ++gMock->freedMemories; }
 VkResult MockVkBindBufferMemory(VkDevice, VkBuffer, VkDeviceMemory, VkDeviceSize) { return VK_SUCCESS; }
 VkResult MockVkMapMemory(VkDevice, VkDeviceMemory, VkDeviceSize, VkDeviceSize size, VkMemoryMapFlags, void **ppData)
 {
@@ -490,7 +502,7 @@ VkResult MockVkMapMemory(VkDevice, VkDeviceMemory, VkDeviceSize, VkDeviceSize si
     *ppData = gMock->stagingMemory.data();
     return VK_SUCCESS;
 }
-void MockVkUnmapMemory(VkDevice, VkDeviceMemory) {}
+void MockVkUnmapMemory(VkDevice, VkDeviceMemory) { ++gMock->unmappedMemories; }
 VkResult MockVkFlushMappedMemoryRanges(VkDevice, uint32_t, const VkMappedMemoryRange *)
 {
     ++gMock->flushCount;
@@ -990,6 +1002,42 @@ void TestInFlightUploadWaitFailureSafety()
 
         session.Shutdown();
         REQUIRE(mock.destroyedSwapchains == 0);
+        REQUIRE(mock.destroyedBuffers == 0);
+        REQUIRE(mock.freedMemories == 0);
+        REQUIRE(mock.unmappedMemories == 0);
+        REQUIRE(mock.destroyedFences == 0);
+        REQUIRE(mock.destroyedCommandPools == 0);
+        REQUIRE(mock.destroyedDevices == 0);
+        REQUIRE(mock.destroyedVkInstances == 0);
+        REQUIRE(mock.destroyedXrInstances == 0);
+        REQUIRE(!mock.destroyedSession);
+    }
+
+    // When vkDeviceWaitIdle reports VK_ERROR_DEVICE_LOST, Vulkan considers pending work abandoned so full teardown is safe.
+    {
+        MockRuntime mock;
+        mock.waitForFencesResult = VK_ERROR_DEVICE_LOST;
+        mock.deviceWaitIdleResult = VK_ERROR_DEVICE_LOST;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        REQUIRE(session.PublishPacket(BuildPacket(0, 151, 1, 1, 1.0f)));
+
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.destroyedSwapchains == 1);
+        REQUIRE(session.GetStatus().status == OverlayStatus::Error);
+
+        session.Shutdown();
+        REQUIRE(mock.destroyedBuffers == 1);
+        REQUIRE(mock.freedMemories == 1);
+        REQUIRE(mock.unmappedMemories == 1);
+        REQUIRE(mock.destroyedFences == 1);
+        REQUIRE(mock.destroyedCommandPools == 1);
+        REQUIRE(mock.destroyedDevices == 1);
+        REQUIRE(mock.destroyedVkInstances == 1);
+        REQUIRE(mock.destroyedXrInstances == 1);
         REQUIRE(mock.destroyedSession);
     }
 

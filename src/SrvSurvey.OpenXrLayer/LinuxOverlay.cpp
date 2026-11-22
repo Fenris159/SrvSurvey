@@ -1026,6 +1026,9 @@ bool OverlaySession::EnsureStagingCapacity(VkDeviceSize requiredBytes)
     if (staging.buffer != VK_NULL_HANDLE && staging.capacity >= requiredBytes)
         return true;
 
+    if (gpuWorkInFlight && !WaitForGpuIdle())
+        return false;
+
     DestroyStagingBuffer();
 
     VkBufferCreateInfo bufferInfo{};
@@ -1088,12 +1091,13 @@ bool OverlaySession::WaitForGpuIdle()
     }
     if (!vk.deviceWaitIdle)
         return !gpuWorkInFlight;
-    if (vk.deviceWaitIdle(vkDevice) == VK_SUCCESS)
+    VkResult result = vk.deviceWaitIdle(vkDevice);
+    if (result == VK_SUCCESS || result == VK_ERROR_DEVICE_LOST)
     {
         gpuWorkInFlight = false;
         return true;
     }
-    return false;
+    return !gpuWorkInFlight;
 }
 
 bool OverlaySession::RetireSwapchain(SwapchainTexture &texture)
@@ -1111,7 +1115,6 @@ bool OverlaySession::RetireSwapchain(SwapchainTexture &texture)
 
 void OverlaySession::DestroySwapchains()
 {
-    // xrDestroySwapchain requires submitted GPU work to be complete; on failure, leave teardown to xrDestroySession.
     if (WaitForGpuIdle())
     {
         for (auto &[id, texture] : textures)
@@ -1127,6 +1130,26 @@ void OverlaySession::DestroySwapchains()
 void OverlaySession::CleanupResources()
 {
     ClearHeadPose();
+    if (!WaitForGpuIdle())
+    {
+        // GPU work completion is unconfirmed (for example VK_ERROR_OUT_OF_HOST_MEMORY while an upload is in flight).
+        // Detach without destroying GPU-referenced Vulkan or OpenXR handles to avoid use-after-free teardown.
+        textures.clear();
+        staging = {};
+        localSpace = XR_NULL_HANDLE;
+        viewSpace = XR_NULL_HANDLE;
+        session = XR_NULL_HANDLE;
+        sessionRunning = false;
+        anchored = false;
+        pendingLocalSpaceChanges.clear();
+        uploadFence = VK_NULL_HANDLE;
+        commandPool = VK_NULL_HANDLE;
+        commandBuffer = VK_NULL_HANDLE;
+        vkDevice = VK_NULL_HANDLE;
+        vkInstance = VK_NULL_HANDLE;
+        instance = XR_NULL_HANDLE;
+        return;
+    }
     DestroySwapchains();
     DestroyStagingBuffer();
     if (localSpace != XR_NULL_HANDLE && xr.destroySpace)

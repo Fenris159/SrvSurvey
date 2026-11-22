@@ -178,8 +178,7 @@ public sealed class LinuxVrRuntimeInspector
     {
         string? libraryOverride = getEnvironmentVariable(OpenVrNativeLibraryResolver.LibraryEnvironmentVariable);
         if (
-            !string.IsNullOrWhiteSpace(libraryOverride)
-            && TryNormalizePath(libraryOverride, out string resolvedLibraryPath)
+            OpenVrNativeLibraryResolver.TryResolveConfiguredPath(libraryOverride, out string resolvedLibraryPath)
             && fileExists(resolvedLibraryPath)
         )
         {

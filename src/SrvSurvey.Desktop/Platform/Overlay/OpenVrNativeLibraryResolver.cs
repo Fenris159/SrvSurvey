@@ -35,17 +35,9 @@ public static class OpenVrNativeLibraryResolver
     {
         var candidates = new List<string>();
         string? configured = Environment.GetEnvironmentVariable(LibraryEnvironmentVariable);
-        if (!string.IsNullOrWhiteSpace(configured))
+        if (TryResolveConfiguredPath(configured, out string resolvedConfiguredPath))
         {
-            try
-            {
-                candidates.Add(Path.GetFullPath(configured));
-            }
-            catch (Exception exception)
-                when (exception is ArgumentException or NotSupportedException or PathTooLongException)
-            {
-                // Leave invalid user input out of the resolver candidates.
-            }
+            candidates.Add(resolvedConfiguredPath);
         }
 
         candidates.Add(Path.Combine(AppContext.BaseDirectory, LinuxLibraryFileName));
@@ -117,6 +109,34 @@ public static class OpenVrNativeLibraryResolver
     public static string? FindExistingLinuxLibrary()
     {
         return OperatingSystem.IsLinux() ? GetLinuxCandidates().FirstOrDefault(File.Exists) : null;
+    }
+
+    internal static bool TryResolveConfiguredPath(string? configured, out string resolvedPath)
+    {
+        if (string.IsNullOrWhiteSpace(configured))
+        {
+            resolvedPath = string.Empty;
+            return false;
+        }
+
+        if (configured.StartsWith('/') && Path.DirectorySeparatorChar != '/')
+        {
+            resolvedPath = configured;
+            return true;
+        }
+
+        try
+        {
+            resolvedPath = Path.GetFullPath(configured);
+            return true;
+        }
+        catch (Exception exception)
+            when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            // Leave invalid user input out of the resolver candidates.
+            resolvedPath = string.Empty;
+            return false;
+        }
     }
 
     private static nint ResolveLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
