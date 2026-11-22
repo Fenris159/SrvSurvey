@@ -1,7 +1,8 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.25
+# SrvSurvey-XP 2.1.3.0-rc.77.26
 
-RC77.25 fixes automatic screenshot conversion so Steam captures are only
-included when **Process Steam screenshots** is enabled.
+RC77.26 adds experimental Linux OpenXR VR overlay support for WiVRn and Monado
+and adds a Linux OpenVR safety guard to prevent crashes when OpenVR shims such
+as xrizer or OpenComposite are active.
 
 ## Before upgrading
 
@@ -13,13 +14,16 @@ explicit reset.
 
 ## What's changed
 
-- **Process Steam screenshots** now strictly controls whether Steam JPEG
-  captures are admitted or drained by the screenshot processor. Turning it off
-  pauses any pending or restart-recovered Steam captures while **Enable
-  screenshot processing** continues converting Elite BMP and HighRes captures.
-- **In-flight Steam scans** now evaluate your current screenshot settings
-  before queuing captures, preventing a capture from converting if you disable
-  processing while a scan is running.
-- **Screenshot settings controls** disable the Steam inclusion checkbox and
-  folder buttons when **Enable screenshot processing** is off, and update the
-  Steam folder description to reflect both toggles accurately.
+- **WiVRn and Monado (Linux OpenXR, experimental)** VR platform profiles are
+  now available on Linux, using a packaged native OpenXR (`XR_EXTX_overlay` +
+  Vulkan) helper library (`libSrvSurveyLinuxOpenXrOverlay.so`) to project HUD
+  panels directly over active OpenXR sessions with head-pose tracking and
+  origin reset support.
+- **Linux OpenVR shim crash guard** inspects `SRVSURVEY_OPENVR_LIBRARY`,
+  `VR_OVERRIDE`, `VR_PATHREG_OVERRIDE` / `openvrpaths.vrpath`, and running
+  WiVRn/Monado/SteamVR services before probing OpenVR, blocking unsafe probes
+  that could crash games running through xrizer or OpenComposite and directing
+  you to the Linux OpenXR route instead.
+- **VR Overlay settings and setup guides** now surface Linux OpenXR runtime
+  preflight diagnostics, per-platform calibration storage, and a dedicated
+  Linux WiVRn/Monado setup guide.

@@ -119,7 +119,7 @@ public static class OpenVrNativeLibraryResolver
             return false;
         }
 
-        if (configured.StartsWith('/') && Path.DirectorySeparatorChar != '/')
+        if (configured.StartsWith('/') && Path.DirectorySeparatorChar != '/' && !configured.Contains('\0'))
         {
             resolvedPath = configured;
             return true;
