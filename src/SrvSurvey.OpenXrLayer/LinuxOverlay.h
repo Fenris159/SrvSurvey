@@ -13,6 +13,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -201,16 +202,17 @@ class OverlaySession
     uint32_t FindMemoryType(uint32_t typeBits, VkMemoryPropertyFlags required, bool &isHostCoherent) const;
     bool EnsureStagingCapacity(VkDeviceSize requiredBytes);
     void DestroyStagingBuffer();
-    void RetireSwapchain(SwapchainTexture &texture);
+    bool WaitForGpuIdle();
+    bool RetireSwapchain(SwapchainTexture &texture);
     void DestroySwapchains();
     void CleanupResources();
     void WorkerLoop();
     bool PollEvents();
     bool RenderFrame();
     bool EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height, int32_t &outXrError,
-                         std::string &outError);
+                         std::string &outError, bool &outFatal);
     bool UploadPanel(SwapchainTexture &texture, const Descriptor &descriptor, uint32_t sequence, const uint8_t *pixels,
-                     int32_t &outXrError, std::string &outError);
+                     int32_t &outXrError, std::string &outError, bool &outFatal);
     void SetStatus(OverlayStatus status, int32_t xrError, uint32_t renderedCount, const std::string &message);
     void ClearHeadPose();
 
@@ -240,14 +242,14 @@ class OverlaySession
     int64_t swapchainFormat = 0;
     bool swapRedBlue = false;
     bool swapchainIsSrgb = true;
+    bool gpuWorkInFlight = false;
     uint32_t maxLayers = MaximumOverlays;
     std::map<uint64_t, SwapchainTexture> textures;
 
     bool sessionRunning = false;
     bool mainSessionVisible = true;
     bool anchored = false;
-    bool hasPendingSpaceChange = false;
-    XrTime pendingSpaceChange = 0;
+    std::vector<XrTime> pendingLocalSpaceChanges;
     uint32_t originRevision = 0;
     XrPosef anchor{{0, 0, 0, 1}, {0, 0, 0}};
 

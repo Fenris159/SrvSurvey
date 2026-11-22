@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /source
 
 COPY global.json SrvSurvey.slnx ./

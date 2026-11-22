@@ -84,15 +84,14 @@ public sealed class LinuxVrRuntimeInspectorTests
     [Fact]
     public void OpenVrSafetyHonorsLibraryOverrideNonShimVrOverrideAndPathRegOverride()
     {
-        // SRVSURVEY_OPENVR_LIBRARY pointing at a shim blocks even with SteamVR registered and vrserver running.
+        const string openCompositeLibrary = "/opt/OpenComposite/bin/linux64/libopenvr_api.so";
+        // Existing SRVSURVEY_OPENVR_LIBRARY pointing at a shim blocks even with SteamVR registered and vrserver running.
         var libraryShimInspector = new LinuxVrRuntimeInspector(
             isLinux: () => true,
             getEnvironmentVariable: key =>
-                key == OpenVrNativeLibraryResolver.LibraryEnvironmentVariable
-                    ? "/opt/OpenComposite/bin/linux64/libopenvr_api.so"
-                    : null,
+                key == OpenVrNativeLibraryResolver.LibraryEnvironmentVariable ? openCompositeLibrary : null,
             readAllText: _ => """{"runtime":["/opt/SteamVR"]}""",
-            fileExists: _ => false,
+            fileExists: path => path == openCompositeLibrary,
             isProcessRunning: name => name == "vrserver",
             getUserProfile: () => "/home/pilot"
         );
@@ -100,6 +99,18 @@ public sealed class LinuxVrRuntimeInspectorTests
         Assert.NotNull(libShimProbe);
         Assert.False(libShimProbe.RuntimeAvailable);
         Assert.Contains("OpenComposite", libShimProbe.Message);
+
+        // Nonexistent SRVSURVEY_OPENVR_LIBRARY is skipped by OpenVrNativeLibraryResolver and must not block SteamVR.
+        var missingLibraryOverrideInspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: key =>
+                key == OpenVrNativeLibraryResolver.LibraryEnvironmentVariable ? openCompositeLibrary : null,
+            readAllText: _ => """{"runtime":["/opt/SteamVR"]}""",
+            fileExists: _ => false,
+            isProcessRunning: name => name == "vrserver",
+            getUserProfile: () => "/home/pilot"
+        );
+        Assert.Null(missingLibraryOverrideInspector.CheckOpenVrSafety(isCustomRuntime: false));
 
         // Non-shim VR_OVERRIDE takes precedence over an inactive xrizer entry in openvrpaths.vrpath.
         var steamOverrideInspector = new LinuxVrRuntimeInspector(

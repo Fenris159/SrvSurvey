@@ -225,13 +225,32 @@ bool MatchesPixels(const SwapchainTexture &texture, const Descriptor &descriptor
     return true;
 }
 
-void CopyMessage(const std::string &source, char *destination, int32_t capacity)
+void CopyMessage(std::string_view source, char *destination, int32_t capacity) noexcept
 {
     if (!destination || capacity <= 0)
         return;
     size_t copyLength = std::min(source.size(), static_cast<size_t>(capacity - 1));
-    std::memcpy(destination, source.data(), copyLength);
+    if (copyLength > 0)
+        std::memcpy(destination, source.data(), copyLength);
     destination[copyLength] = '\0';
+}
+
+void CopyExceptionMessage(std::string_view prefix, const char *detail, char *destination, int32_t capacity) noexcept
+{
+    if (!destination || capacity <= 0)
+        return;
+    size_t remaining = static_cast<size_t>(capacity - 1);
+    size_t prefixLen = std::min(prefix.size(), remaining);
+    if (prefixLen > 0)
+        std::memcpy(destination, prefix.data(), prefixLen);
+    remaining -= prefixLen;
+    size_t detailLen = 0;
+    if (detail && *detail != '\0' && remaining > 0)
+    {
+        detailLen = std::min(std::strlen(detail), remaining);
+        std::memcpy(destination + prefixLen, detail, detailLen);
+    }
+    destination[prefixLen + detailLen] = '\0';
 }
 
 struct DynamicLoaders
@@ -1060,27 +1079,47 @@ void OverlaySession::DestroyStagingBuffer()
     staging = {};
 }
 
-void OverlaySession::RetireSwapchain(SwapchainTexture &texture)
+bool OverlaySession::WaitForGpuIdle()
+{
+    if (vkDevice == VK_NULL_HANDLE)
+    {
+        gpuWorkInFlight = false;
+        return true;
+    }
+    if (!vk.deviceWaitIdle)
+        return !gpuWorkInFlight;
+    if (vk.deviceWaitIdle(vkDevice) == VK_SUCCESS)
+    {
+        gpuWorkInFlight = false;
+        return true;
+    }
+    return false;
+}
+
+bool OverlaySession::RetireSwapchain(SwapchainTexture &texture)
 {
     if (texture.handle != XR_NULL_HANDLE)
     {
-        if (vkDevice != VK_NULL_HANDLE && vk.deviceWaitIdle)
-            vk.deviceWaitIdle(vkDevice);
+        if (!WaitForGpuIdle())
+            return false;
         if (xr.destroySwapchain)
             xr.destroySwapchain(texture.handle);
     }
     texture = {};
+    return true;
 }
 
 void OverlaySession::DestroySwapchains()
 {
-    if (vkDevice != VK_NULL_HANDLE && vk.deviceWaitIdle)
-        vk.deviceWaitIdle(vkDevice);
-    for (auto &[id, texture] : textures)
+    // xrDestroySwapchain requires submitted GPU work to be complete; on failure, leave teardown to xrDestroySession.
+    if (WaitForGpuIdle())
     {
-        (void)id;
-        if (texture.handle != XR_NULL_HANDLE && xr.destroySwapchain)
-            xr.destroySwapchain(texture.handle);
+        for (auto &[id, texture] : textures)
+        {
+            (void)id;
+            if (texture.handle != XR_NULL_HANDLE && xr.destroySwapchain)
+                xr.destroySwapchain(texture.handle);
+        }
     }
     textures.clear();
 }
@@ -1107,8 +1146,8 @@ void OverlaySession::CleanupResources()
     }
     sessionRunning = false;
     anchored = false;
-    hasPendingSpaceChange = false;
-    pendingSpaceChange = 0;
+    gpuWorkInFlight = false;
+    pendingLocalSpaceChanges.clear();
     if (vkDevice != VK_NULL_HANDLE)
     {
         if (uploadFence != VK_NULL_HANDLE && vk.destroyFence)
@@ -1237,8 +1276,7 @@ bool OverlaySession::PollEvents()
             const auto *change = reinterpret_cast<const XrEventDataReferenceSpaceChangePending *>(&event);
             if (change->referenceSpaceType == XR_REFERENCE_SPACE_TYPE_LOCAL)
             {
-                pendingSpaceChange = change->changeTime;
-                hasPendingSpaceChange = true;
+                pendingLocalSpaceChanges.push_back(change->changeTime);
             }
         }
         else if (event.type == XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX)
@@ -1284,11 +1322,17 @@ bool OverlaySession::PollEvents()
 }
 
 bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height, int32_t &outXrError,
-                                     std::string &outError)
+                                     std::string &outError, bool &outFatal)
 {
     if (texture.handle != XR_NULL_HANDLE && (texture.width != width || texture.height != height))
     {
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+        {
+            outXrError = 0;
+            outError = "Could not confirm Vulkan GPU idle before resizing an overlay swapchain.";
+            outFatal = true;
+            return false;
+        }
     }
     if (texture.handle != XR_NULL_HANDLE)
         return true;
@@ -1316,7 +1360,8 @@ bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, 
     res = xr.enumerateSwapchainImages(texture.handle, 0, &imageCount, nullptr);
     if (XR_FAILED(res) || imageCount == 0)
     {
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+            outFatal = true;
         outXrError = static_cast<int32_t>(res);
         outError = "Could not enumerate OpenXR swapchain images.";
         return false;
@@ -1327,7 +1372,8 @@ bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, 
                                       reinterpret_cast<XrSwapchainImageBaseHeader *>(texture.images.data()));
     if (XR_FAILED(res))
     {
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+            outFatal = true;
         outXrError = static_cast<int32_t>(res);
         outError = "Could not read OpenXR swapchain images.";
         return false;
@@ -1339,9 +1385,9 @@ bool OverlaySession::EnsureSwapchain(SwapchainTexture &texture, uint32_t width, 
 }
 
 bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &descriptor, uint32_t sequence,
-                                 const uint8_t *pixels, int32_t &outXrError, std::string &outError)
+                                 const uint8_t *pixels, int32_t &outXrError, std::string &outError, bool &outFatal)
 {
-    if (!EnsureSwapchain(texture, descriptor.width, descriptor.height, outXrError, outError))
+    if (!EnsureSwapchain(texture, descriptor.width, descriptor.height, outXrError, outError, outFatal))
         return false;
 
     const bool convertSrgbToLinear = !swapchainIsSrgb;
@@ -1383,7 +1429,8 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
             outError = XR_FAILED(waitRes)
                            ? "Could not wait for an OpenXR swapchain image (OpenXR error " + std::to_string(waitRes) + ")."
                            : "OpenXR returned an out-of-range swapchain image index.";
-            RetireSwapchain(texture);
+            if (!RetireSwapchain(texture))
+                outFatal = true;
             return false;
         }
         texture.waited = true;
@@ -1446,7 +1493,8 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
     {
         outXrError = 0;
         outError = "Could not begin the Vulkan upload command buffer.";
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+            outFatal = true;
         return false;
     }
 
@@ -1486,7 +1534,8 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
     {
         outXrError = 0;
         outError = "Could not finish the Vulkan upload command buffer.";
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+            outFatal = true;
         return false;
     }
 
@@ -1499,16 +1548,20 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
     {
         outXrError = 0;
         outError = "Could not submit the Vulkan overlay upload.";
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+            outFatal = true;
         return false;
     }
+    gpuWorkInFlight = true;
     if (vk.waitForFences(vkDevice, 1, &uploadFence, VK_TRUE, UINT64_MAX) != VK_SUCCESS)
     {
         outXrError = 0;
         outError = "Could not wait for the Vulkan overlay upload fence.";
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+            outFatal = true;
         return false;
     }
+    gpuWorkInFlight = false;
 
     XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
     XrResult releaseRes = xr.releaseSwapchainImage(texture.handle, &releaseInfo);
@@ -1516,7 +1569,8 @@ bool OverlaySession::UploadPanel(SwapchainTexture &texture, const Descriptor &de
     {
         outXrError = static_cast<int32_t>(releaseRes);
         outError = "Could not release an OpenXR swapchain image (OpenXR error " + std::to_string(releaseRes) + ").";
-        RetireSwapchain(texture);
+        if (!RetireSwapchain(texture))
+            outFatal = true;
         return false;
     }
 
@@ -1563,11 +1617,19 @@ bool OverlaySession::RenderFrame()
     if (hasPacket)
         std::memcpy(&header, packetSnapshot->data(), sizeof(header));
 
-    if (hasPendingSpaceChange && frameState.predictedDisplayTime >= pendingSpaceChange)
+    if (!pendingLocalSpaceChanges.empty())
     {
-        anchored = false;
-        hasPendingSpaceChange = false;
-        pendingSpaceChange = 0;
+        bool triggered = false;
+        std::erase_if(pendingLocalSpaceChanges, [&](XrTime changeTime) {
+            if (frameState.predictedDisplayTime >= changeTime)
+            {
+                triggered = true;
+                return true;
+            }
+            return false;
+        });
+        if (triggered)
+            anchored = false;
     }
 
     XrSpaceLocation headLocation{XR_TYPE_SPACE_LOCATION};
@@ -1611,6 +1673,7 @@ bool OverlaySession::RenderFrame()
     std::vector<const XrCompositionLayerBaseHeader *> layerPtrs;
     std::vector<uint64_t> activeIds;
     bool uploadFailed = false;
+    bool uploadFatal = false;
     int32_t uploadXrError = 0;
     std::string uploadErrorMessage;
 
@@ -1627,13 +1690,20 @@ bool OverlaySession::RenderFrame()
             SwapchainTexture &texture = textures[d.id];
             int32_t panelXrError = 0;
             std::string panelError;
-            if (!UploadPanel(texture, d, packetSequence, packetSnapshot->data() + d.offset, panelXrError, panelError))
+            bool panelFatal = false;
+            if (!UploadPanel(texture, d, packetSequence, packetSnapshot->data() + d.offset, panelXrError, panelError,
+                             panelFatal))
             {
                 if (!uploadFailed)
                 {
                     uploadFailed = true;
                     uploadXrError = panelXrError;
                     uploadErrorMessage = std::move(panelError);
+                }
+                if (panelFatal)
+                {
+                    uploadFatal = true;
+                    break;
                 }
                 continue;
             }
@@ -1655,22 +1725,35 @@ bool OverlaySession::RenderFrame()
         }
     }
 
-    // Retire swapchains for panels no longer present.
-    for (auto it = textures.begin(); it != textures.end();)
+    // Retire swapchains for panels no longer present unless GPU completion is unconfirmed.
+    if (!uploadFatal)
     {
-        if (std::find(activeIds.begin(), activeIds.end(), it->first) == activeIds.end())
+        for (auto it = textures.begin(); it != textures.end();)
         {
-            RetireSwapchain(it->second);
-            it = textures.erase(it);
-        }
-        else
-        {
-            ++it;
+            if (std::find(activeIds.begin(), activeIds.end(), it->first) == activeIds.end())
+            {
+                if (!RetireSwapchain(it->second))
+                {
+                    uploadFailed = true;
+                    uploadFatal = true;
+                    if (uploadErrorMessage.empty())
+                        uploadErrorMessage = "Could not confirm Vulkan GPU idle before retiring an overlay swapchain.";
+                    break;
+                }
+                it = textures.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
         }
     }
 
-    for (const XrCompositionLayerQuad &quad : quads)
-        layerPtrs.push_back(reinterpret_cast<const XrCompositionLayerBaseHeader *>(&quad));
+    if (!uploadFatal)
+    {
+        for (const XrCompositionLayerQuad &quad : quads)
+            layerPtrs.push_back(reinterpret_cast<const XrCompositionLayerBaseHeader *>(&quad));
+    }
 
     XrFrameEndInfo endInfo{XR_TYPE_FRAME_END_INFO};
     endInfo.displayTime = frameState.predictedDisplayTime;
@@ -1684,6 +1767,15 @@ bool OverlaySession::RenderFrame()
         ClearHeadPose();
         SetStatus(OverlayStatus::Error, static_cast<int32_t>(res), 0,
                   "OpenXR endFrame failed (OpenXR error " + std::to_string(res) + ").");
+        return false;
+    }
+
+    if (uploadFatal)
+    {
+        ClearHeadPose();
+        SetStatus(OverlayStatus::Error, uploadXrError, 0,
+                  uploadErrorMessage.empty() ? "Vulkan overlay upload completion could not be confirmed."
+                                             : uploadErrorMessage);
         return false;
     }
 
@@ -1737,7 +1829,7 @@ int32_t srvsurvey_linux_openxr_probe(const char *expectedRuntime, int32_t *outSt
             *outStatus = static_cast<int32_t>(OverlayStatus::Error);
         if (outXrError)
             *outXrError = 0;
-        CopyMessage(std::string("Linux OpenXR probe failed: ") + ex.what(), outMessage, messageCapacity);
+        CopyExceptionMessage("Linux OpenXR probe failed: ", ex.what(), outMessage, messageCapacity);
         return 0;
     }
     catch (...)
@@ -1784,8 +1876,8 @@ void *srvsurvey_linux_openxr_create(const char *expectedRuntime, int32_t *outSta
             *outStatus = static_cast<int32_t>(OverlayStatus::Error);
         if (outXrError)
             *outXrError = 0;
-        CopyMessage(std::string("Could not create the Linux OpenXR overlay session: ") + ex.what(), outMessage,
-                    messageCapacity);
+        CopyExceptionMessage("Could not create the Linux OpenXR overlay session: ", ex.what(), outMessage,
+                             messageCapacity);
         return nullptr;
     }
     catch (...)

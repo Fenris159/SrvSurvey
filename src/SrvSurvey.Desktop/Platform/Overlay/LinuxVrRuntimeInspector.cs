@@ -176,12 +176,18 @@ public sealed class LinuxVrRuntimeInspector
 
     public string? DetectConfiguredOpenVrShim()
     {
-        string? libraryShim = IdentifyOpenVrShim(
-            getEnvironmentVariable(OpenVrNativeLibraryResolver.LibraryEnvironmentVariable)
-        );
-        if (libraryShim is not null)
+        string? libraryOverride = getEnvironmentVariable(OpenVrNativeLibraryResolver.LibraryEnvironmentVariable);
+        if (
+            !string.IsNullOrWhiteSpace(libraryOverride)
+            && TryNormalizePath(libraryOverride, out string resolvedLibraryPath)
+            && fileExists(resolvedLibraryPath)
+        )
         {
-            return libraryShim;
+            string? libraryShim = IdentifyOpenVrShim(resolvedLibraryPath);
+            if (libraryShim is not null)
+            {
+                return libraryShim;
+            }
         }
 
         string? vrOverride = getEnvironmentVariable("VR_OVERRIDE");
@@ -406,21 +412,32 @@ public sealed class LinuxVrRuntimeInspector
 
     private static void TryAddFullPath(List<string> candidates, string rawPath)
     {
+        if (TryNormalizePath(rawPath, out string normalized))
+        {
+            candidates.Add(normalized);
+        }
+    }
+
+    private static bool TryNormalizePath(string rawPath, out string normalizedPath)
+    {
         string trimmed = rawPath.Trim();
         if (trimmed.StartsWith('/') && Path.DirectorySeparatorChar != '/')
         {
-            candidates.Add(trimmed);
-            return;
+            normalizedPath = trimmed;
+            return true;
         }
 
         try
         {
-            candidates.Add(Path.GetFullPath(trimmed));
+            normalizedPath = Path.GetFullPath(trimmed);
+            return true;
         }
         catch (Exception exception)
             when (exception is ArgumentException or NotSupportedException or PathTooLongException)
         {
             // Ignore malformed environment overrides.
+            normalizedPath = string.Empty;
+            return false;
         }
     }
 

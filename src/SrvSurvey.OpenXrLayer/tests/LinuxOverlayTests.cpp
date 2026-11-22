@@ -43,6 +43,7 @@ struct MockRuntime
     bool sawVulkanRequirements = false;
     bool beganSession = false;
     bool endedSession = false;
+    int endSessionAttempts = 0;
     bool destroyedSession = false;
     XrSessionState currentSessionState = XR_SESSION_STATE_IDLE;
     int endFrameCount = 0;
@@ -53,7 +54,10 @@ struct MockRuntime
     VkDeviceSize lastMapSize = 0;
     bool hostCoherentMemory = true;
     VkResult flushResult = VK_SUCCESS;
+    VkResult waitForFencesResult = VK_SUCCESS;
+    VkResult deviceWaitIdleResult = VK_SUCCESS;
     int flushCount = 0;
+    int queueSubmitCount = 0;
     int createdSwapchains = 0;
     int destroyedSwapchains = 0;
     int acquireCount = 0;
@@ -219,6 +223,7 @@ XrResult MockBeginSession(XrSession, const XrSessionBeginInfo *)
 
 XrResult MockEndSession(XrSession)
 {
+    ++gMock->endSessionAttempts;
     if (gMock->currentSessionState != XR_SESSION_STATE_STOPPING)
         return XR_ERROR_SESSION_NOT_STOPPING;
     gMock->endedSession = true;
@@ -412,7 +417,7 @@ VkResult MockVkCreateDevice(VkPhysicalDevice, const VkDeviceCreateInfo *, const 
     return VK_SUCCESS;
 }
 void MockVkDestroyDevice(VkDevice, const VkAllocationCallbacks *) {}
-VkResult MockVkDeviceWaitIdle(VkDevice) { return VK_SUCCESS; }
+VkResult MockVkDeviceWaitIdle(VkDevice) { return gMock->deviceWaitIdleResult; }
 void MockVkGetDeviceQueue(VkDevice, uint32_t, uint32_t, VkQueue *out) { *out = reinterpret_cast<VkQueue>(0x2004); }
 VkResult MockVkCreateCommandPool(VkDevice, const VkCommandPoolCreateInfo *, const VkAllocationCallbacks *,
                                  VkCommandPool *out)
@@ -447,8 +452,15 @@ VkResult MockVkCreateFence(VkDevice, const VkFenceCreateInfo *, const VkAllocati
 }
 void MockVkDestroyFence(VkDevice, VkFence, const VkAllocationCallbacks *) {}
 VkResult MockVkResetFences(VkDevice, uint32_t, const VkFence *) { return VK_SUCCESS; }
-VkResult MockVkWaitForFences(VkDevice, uint32_t, const VkFence *, VkBool32, uint64_t) { return VK_SUCCESS; }
-VkResult MockVkQueueSubmit(VkQueue, uint32_t, const VkSubmitInfo *, VkFence) { return VK_SUCCESS; }
+VkResult MockVkWaitForFences(VkDevice, uint32_t, const VkFence *, VkBool32, uint64_t)
+{
+    return gMock->waitForFencesResult;
+}
+VkResult MockVkQueueSubmit(VkQueue, uint32_t, const VkSubmitInfo *, VkFence)
+{
+    ++gMock->queueSubmitCount;
+    return VK_SUCCESS;
+}
 VkResult MockVkCreateBuffer(VkDevice, const VkBufferCreateInfo *info, const VkAllocationCallbacks *, VkBuffer *out)
 {
     if (gMock->failBufferAlloc)
@@ -709,6 +721,7 @@ void TestOverlaySessionLifecycleAndBgraSwizzle()
 
     session.Shutdown();
     REQUIRE(mock.destroyedSession);
+    REQUIRE(mock.endSessionAttempts == 0);
     REQUIRE(!mock.endedSession);
 }
 
@@ -840,15 +853,17 @@ void TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate()
     REQUIRE(session.GetHeadPose(0).valid);
     REQUIRE(std::abs(session.GetHeadPose(0).position[0]) < 1e-4f);
 
-    // Schedule LOCAL reference-space change for time 2000.
+    // Schedule two LOCAL reference-space changes in the same event batch (t=2000 and t=4000).
     XrEventDataBuffer spaceBuf{XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING};
     auto *change = reinterpret_cast<XrEventDataReferenceSpaceChangePending *>(&spaceBuf);
     change->type = XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING;
     change->referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
     change->changeTime = 2000;
     mock.events.push_back(spaceBuf);
+    change->changeTime = 4000;
+    mock.events.push_back(spaceBuf);
 
-    // Frame at t=1500 precedes changeTime: must NOT re-anchor yet.
+    // Frame at t=1500 precedes both changeTimes: must NOT re-anchor yet.
     mock.nextPredictedDisplayTime = 1500;
     mock.headPose.position.x = 3.0f;
     REQUIRE(session.StepOnce());
@@ -856,38 +871,53 @@ void TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate()
     REQUIRE(beforeChange.valid);
     REQUIRE(std::abs(beforeChange.position[0] - 2.0f) < 1e-4f);
 
-    // Frame at t=2000 reaches changeTime: must re-anchor now.
-    mock.nextPredictedDisplayTime = 2000;
+    // Frame at t=3000 crosses t=2000 (while t=4000 stays pending): must re-anchor now.
+    mock.nextPredictedDisplayTime = 3000;
     REQUIRE(session.StepOnce());
-    HeadPose afterChange = session.GetHeadPose(0);
-    REQUIRE(afterChange.valid);
-    REQUIRE(std::abs(afterChange.position[0]) < 1e-4f);
+    HeadPose afterFirstChange = session.GetHeadPose(0);
+    REQUIRE(afterFirstChange.valid);
+    REQUIRE(std::abs(afterFirstChange.position[0]) < 1e-4f);
+
+    // Frame at t=3500 precedes t=4000: must keep the t=3000 anchor.
+    mock.nextPredictedDisplayTime = 3500;
+    mock.headPose.position.x = 4.5f;
+    REQUIRE(session.StepOnce());
+    HeadPose betweenChanges = session.GetHeadPose(0);
+    REQUIRE(betweenChanges.valid);
+    REQUIRE(std::abs(betweenChanges.position[0] - 1.5f) < 1e-4f);
+
+    // Frame at t=4000 crosses the second pending change: must re-anchor again.
+    mock.nextPredictedDisplayTime = 4000;
+    REQUIRE(session.StepOnce());
+    HeadPose afterSecondChange = session.GetHeadPose(0);
+    REQUIRE(afterSecondChange.valid);
+    REQUIRE(std::abs(afterSecondChange.position[0]) < 1e-4f);
 
     // Non-LOCAL (STAGE) reference-space change must NOT invalidate LOCAL anchor.
     change->referenceSpaceType = XR_REFERENCE_SPACE_TYPE_STAGE;
-    change->changeTime = 2500;
+    change->changeTime = 4200;
     mock.events.push_back(spaceBuf);
-    mock.nextPredictedDisplayTime = 3000;
-    mock.headPose.position.x = 5.0f;
+    mock.nextPredictedDisplayTime = 4300;
+    mock.headPose.position.x = 6.5f;
     REQUIRE(session.StepOnce());
     REQUIRE(std::abs(session.GetHeadPose(0).position[0] - 2.0f) < 1e-4f);
 
     // Losing tracking clears cached head pose validity.
     mock.headPoseValid = false;
-    mock.nextPredictedDisplayTime = 3500;
+    mock.nextPredictedDisplayTime = 4500;
     REQUIRE(session.StepOnce());
     REQUIRE(!session.GetHeadPose(0).valid);
 
     // Origin revision reset while tracking is invalid must withhold quads until valid pose re-anchors.
     REQUIRE(session.PublishPacket(BuildPacket(1, 42, 2, 1, 1.0f)));
-    mock.nextPredictedDisplayTime = 4000;
+    mock.nextPredictedDisplayTime = 5000;
     REQUIRE(session.StepOnce());
     REQUIRE(mock.lastSubmittedLayerCount == 0);
     REQUIRE(!session.GetHeadPose(1).valid);
 
     // Restoring tracking re-anchors to revision 1 and resumes submitting quads.
     mock.headPoseValid = true;
-    mock.nextPredictedDisplayTime = 4500;
+    mock.nextPredictedDisplayTime = 5500;
     REQUIRE(session.StepOnce());
     REQUIRE(mock.lastSubmittedLayerCount == 1);
     REQUIRE(session.GetHeadPose(1).valid);
@@ -895,9 +925,96 @@ void TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate()
     // STOPPING calls xrEndSession legally and invalidates cached head pose.
     PushSessionState(XR_SESSION_STATE_STOPPING);
     REQUIRE(session.StepOnce());
+    REQUIRE(mock.endSessionAttempts == 1);
     REQUIRE(mock.endedSession);
     REQUIRE(!session.GetHeadPose(1).valid);
     session.Shutdown();
+}
+
+std::vector<uint8_t> BuildTwoPanelPacket(uint32_t originRevision, uint64_t idA, uint64_t idB)
+{
+    uint32_t pixelBytes = 4;
+    uint32_t total = sizeof(Header) + 2 * sizeof(Descriptor) + 2 * pixelBytes;
+    std::vector<uint8_t> packet(total, 0);
+    Header header{};
+    header.magic = Magic;
+    header.version = Version;
+    header.length = total;
+    header.count = 2;
+    header.originRevision = originRevision;
+    std::memcpy(packet.data(), &header, sizeof(header));
+
+    auto writeDesc = [&](uint32_t index, uint64_t id, uint32_t offset) {
+        Descriptor d{};
+        d.id = id;
+        d.width = 1;
+        d.height = 1;
+        d.offset = offset;
+        d.length = pixelBytes;
+        d.widthMeters = 0.8f;
+        d.heightMeters = 0.4f;
+        d.position[2] = -1.0f;
+        d.orientation[3] = 1.0f;
+        d.alpha = 1.0f;
+        std::memcpy(packet.data() + sizeof(Header) + index * sizeof(Descriptor), &d, sizeof(d));
+        packet[offset] = 200;
+        packet[offset + 1] = 100;
+        packet[offset + 2] = 50;
+        packet[offset + 3] = 255;
+    };
+    writeDesc(0, idA, sizeof(Header) + 2 * sizeof(Descriptor));
+    writeDesc(1, idB, sizeof(Header) + 2 * sizeof(Descriptor) + pixelBytes);
+    return packet;
+}
+
+void TestInFlightUploadWaitFailureSafety()
+{
+    // When vkWaitForFences fails AND vkDeviceWaitIdle also fails, do not destroy in-flight swapchains
+    // or reuse the pending command buffer/fence for subsequent panels; stop the session cleanly.
+    {
+        MockRuntime mock;
+        mock.waitForFencesResult = VK_ERROR_OUT_OF_HOST_MEMORY;
+        mock.deviceWaitIdleResult = VK_ERROR_OUT_OF_HOST_MEMORY;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 101, 102)));
+
+        REQUIRE(!session.StepOnce());
+        REQUIRE(mock.queueSubmitCount == 1);
+        REQUIRE(mock.destroyedSwapchains == 0);
+        REQUIRE(mock.lastSubmittedLayerCount == 0);
+        REQUIRE(session.GetStatus().status == OverlayStatus::Error);
+
+        session.Shutdown();
+        REQUIRE(mock.destroyedSwapchains == 0);
+        REQUIRE(mock.destroyedSession);
+    }
+
+    // When vkWaitForFences fails but vkDeviceWaitIdle succeeds, retiring and recovering on the next frame is safe.
+    {
+        MockRuntime mock;
+        mock.waitForFencesResult = VK_ERROR_OUT_OF_HOST_MEMORY;
+        mock.deviceWaitIdleResult = VK_SUCCESS;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        REQUIRE(session.PublishPacket(BuildPacket(0, 201, 1, 1, 1.0f)));
+
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.destroyedSwapchains == 1);
+        REQUIRE(session.GetStatus().status == OverlayStatus::Error);
+
+        mock.waitForFencesResult = VK_SUCCESS;
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+        REQUIRE(session.GetStatus().status == OverlayStatus::Ok);
+        session.Shutdown();
+    }
 }
 
 void TestPostWaitStagingFailureRecoveryAndUploadErrors()
@@ -959,6 +1076,7 @@ int main()
     TestUnormSrgbConversionAndNonCoherentFlush();
     TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate();
     TestPostWaitStagingFailureRecoveryAndUploadErrors();
+    TestInFlightUploadWaitFailureSafety();
     std::cout << "All LinuxOpenXrOverlay tests passed.\n";
     return 0;
 }
