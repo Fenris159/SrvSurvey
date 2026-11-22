@@ -33,12 +33,20 @@ public sealed class VrPlatformPickerTests
         {
             window.Show();
             picker.Focus();
-            Assert.Equal(8, picker.ItemCount);
+            Assert.Equal(10, picker.ItemCount);
             Assert.False(picker.IsDropDownOpen);
             window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
             Assert.Equal(VrPlatformProfileCatalog.MetaAlvrProfileId, picker.SelectedProfile?.Id);
             window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+            Assert.Equal(VrPlatformProfileCatalog.WivrnOpenXrProfileId, picker.SelectedProfile?.Id);
+            window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+            Assert.Equal(VrPlatformProfileCatalog.MonadoOpenXrProfileId, picker.SelectedProfile?.Id);
+            window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
             Assert.Equal(VrPlatformProfileCatalog.CustomOpenVrProfileId, picker.SelectedProfile?.Id);
+            window.KeyPress(Key.Up, RawInputModifiers.None, PhysicalKey.ArrowUp, null);
+            Assert.Equal(VrPlatformProfileCatalog.MonadoOpenXrProfileId, picker.SelectedProfile?.Id);
+            window.KeyPress(Key.Up, RawInputModifiers.None, PhysicalKey.ArrowUp, null);
+            Assert.Equal(VrPlatformProfileCatalog.WivrnOpenXrProfileId, picker.SelectedProfile?.Id);
             window.KeyPress(Key.Up, RawInputModifiers.None, PhysicalKey.ArrowUp, null);
             Assert.Equal(VrPlatformProfileCatalog.MetaAlvrProfileId, picker.SelectedProfile?.Id);
             picker.IsDropDownOpen = true;
@@ -116,7 +124,7 @@ public sealed class VrPlatformPickerTests
                 .TranslatePoint(new Point(picker.Bounds.Width / 2, picker.Bounds.Height / 2), window)!
                 .Value;
             window.MouseWheel(center, new Vector(0, -1));
-            Assert.Equal(VrPlatformProfileCatalog.CustomOpenVrProfileId, picker.SelectedProfile?.Id);
+            Assert.Equal(VrPlatformProfileCatalog.WivrnOpenXrProfileId, picker.SelectedProfile?.Id);
         }
         finally
         {
@@ -154,7 +162,7 @@ public sealed class VrPlatformPickerTests
             }
             Assert.Equal(VrPlatformProfileCatalog.MetaAlvrProfileId, picker.SelectedProfile?.Id);
             window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
-            Assert.Equal(VrPlatformProfileCatalog.CustomOpenVrProfileId, picker.SelectedProfile?.Id);
+            Assert.Equal(VrPlatformProfileCatalog.WivrnOpenXrProfileId, picker.SelectedProfile?.Id);
             picker.SelectedProfile = null;
             Assert.Null(picker.SelectedItem);
             picker.Profiles = [];
@@ -196,7 +204,7 @@ public sealed class VrPlatformPickerTests
                 using WriteableBitmap? frame = window.CaptureRenderedFrame();
                 Assert.NotNull(frame);
                 Assert.Same(viewModel.VrOverlay.SelectedPlatformProfile, picker.SelectedProfile);
-                Assert.Equal(8, picker.ItemCount);
+                Assert.Equal(10, picker.ItemCount);
                 foreach (ComboBoxItem item in picker.Items.OfType<ComboBoxItem>())
                 {
                     VrPlatformProfile profile = Assert.IsType<VrPlatformProfile>(item.Content);

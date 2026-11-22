@@ -10,6 +10,8 @@ public static class VrPlatformProfileCatalog
     public const string MetaVirtualDesktopProfileId = "meta-virtual-desktop";
     public const string MetaVdxrProfileId = "meta-vdxr";
     public const string MetaAlvrProfileId = "meta-alvr";
+    public const string WivrnOpenXrProfileId = "wivrn-openxr";
+    public const string MonadoOpenXrProfileId = "monado-openxr";
     public const string WindowsMixedRealityProfileId = "wmr-via-steamvr";
     public const string CustomOpenVrProfileId = "custom-openvr";
 
@@ -88,6 +90,30 @@ public static class VrPlatformProfileCatalog
             ]
         ),
         new(
+            WivrnOpenXrProfileId,
+            "WiVRn (Linux OpenXR, experimental)",
+            "Quest, Pico, and standalone headsets streaming over WiVRn on Linux",
+            "Direct Linux OpenXR overlay (XR_EXTX_overlay) to WiVRn",
+            "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
+            [
+                "Start WiVRn (wivrn-server), connect your headset, and confirm WiVRn is the active OpenXR runtime.",
+                "Launch Elite Dangerous through WiVRn (for example using xrizer or OpenComposite in Steam launch options).",
+                "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
+            ]
+        ),
+        new(
+            MonadoOpenXrProfileId,
+            "Monado (Linux OpenXR, experimental)",
+            "PC VR headsets running through Monado or Envision on Linux",
+            "Direct Linux OpenXR overlay (XR_EXTX_overlay) to Monado",
+            "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
+            [
+                "Start monado-service (or your Envision profile) and confirm Monado is the active OpenXR runtime.",
+                "Connect and wake your headset, then launch Elite Dangerous through Monado.",
+                "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
+            ]
+        ),
+        new(
             WindowsMixedRealityProfileId,
             "Windows Mixed Reality",
             "Reverb G2 and other Windows Mixed Reality headsets on supported Windows installations",
@@ -142,6 +168,12 @@ public static class VrPlatformProfileCatalog
             .ToArray();
     }
 
+    public static bool IsLinuxOpenXrProfile(string? profileId) =>
+        profileId is WivrnOpenXrProfileId or MonadoOpenXrProfileId;
+
+    public static bool UsesSeatedDefaults(string? profileId) =>
+        profileId is MetaVdxrProfileId or WivrnOpenXrProfileId or MonadoOpenXrProfileId;
+
     private static string GetUnavailableReason(
         string profileId,
         OSPlatform platform,
@@ -153,7 +185,18 @@ public static class VrPlatformProfileCatalog
         {
             return "VR overlays require Windows or Linux.";
         }
-        bool supportsLinux = profileId is SteamVrProfileId or MetaAlvrProfileId or CustomOpenVrProfileId;
+        bool linuxOnly = IsLinuxOpenXrProfile(profileId);
+        if (platform == OSPlatform.Windows && linuxOnly)
+        {
+            return "Linux only.";
+        }
+        bool supportsLinux =
+            profileId
+            is SteamVrProfileId
+                or MetaAlvrProfileId
+                or WivrnOpenXrProfileId
+                or MonadoOpenXrProfileId
+                or CustomOpenVrProfileId;
         if (platform == OSPlatform.Linux && !supportsLinux)
         {
             return "Windows only.";

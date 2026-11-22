@@ -37,6 +37,25 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     }
 
     [Theory]
+    [InlineData(VrPlatformProfileCatalog.WivrnOpenXrProfileId)]
+    [InlineData(VrPlatformProfileCatalog.MonadoOpenXrProfileId)]
+    public void LinuxOpenXrRoutesUseSeatedDefaultsAndIsolateSavedPlacements(string profile)
+    {
+        (string Data, string Factory) paths = CreateFiles();
+        var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
+
+        VrOverlayCalibrationCatalog catalog = store.Load(profile);
+        Assert.Equal(8, catalog.FactoryDefaults["PlotJumpInfo"].Scale);
+
+        var custom = new VrOverlayCalibration(6.5f, new Vector3(1, 2, 9), Vector3.Zero);
+        store.Save("PlotJumpInfo", custom, null, profile);
+
+        Assert.Equal(6.5f, store.Load(profile).Defaults["PlotJumpInfo"].Scale);
+        Assert.Equal(12, store.Load().Defaults["PlotJumpInfo"].Scale);
+        Assert.Equal(12, store.Load(VrPlatformProfileCatalog.MetaVdxrProfileId).Defaults["PlotJumpInfo"].Scale);
+    }
+
+    [Theory]
     [InlineData("PlotBioStatus", "{ s: 5, p: <0, 3.5, 10>, r: <-15, 0, 0>}")]
     [InlineData("PlotSysStatus", "{ s: 3.5, p: <-5.5, -3, 9>, r: <15, -25, 0>}")]
     [InlineData("PlotBioSystem", "{ s: 5, p: <-6.5, 0.5, 9>, r: <0, -35, 0>}")]

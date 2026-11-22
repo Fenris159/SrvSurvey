@@ -207,13 +207,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --install artifacts/openxr-build --config Release --prefix artifacts/openxr-layer
 
-      - name: Test OpenXR frame protocol on Linux
+      - name: Build and test Linux OpenXR overlay helper
         if: matrix.rid == 'linux-x64'
         shell: bash
         run: |
           cmake -S src/SrvSurvey.OpenXrLayer -B artifacts/openxr-build -DCMAKE_BUILD_TYPE=Release
           cmake --build artifacts/openxr-build
           ctest --test-dir artifacts/openxr-build --output-on-failure
+          cmake --install artifacts/openxr-build --prefix artifacts/openxr-linux
 
       - name: Test
         # Linux PR validation already ran the full solution with retained TRX and coverage.

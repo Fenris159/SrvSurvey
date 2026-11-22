@@ -48,6 +48,8 @@ public interface IVrOverlayRuntime : IDisposable
 
 public sealed class OpenVrRuntime : IVrOverlayRuntime
 {
+    private readonly LinuxVrRuntimeInspector linuxInspector;
+    private readonly Func<bool> isCustomRuntime;
     private readonly Dictionary<string, ulong> handles = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (double X, double Y)> pointerPositions = new(StringComparer.Ordinal);
     private CVRSystem? system;
@@ -55,6 +57,12 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
     private float headsetYawOffset;
     private Matrix4x4 headsetOrientationOffset = Matrix4x4.Identity;
     private bool interactionEnabled;
+
+    public OpenVrRuntime(LinuxVrRuntimeInspector? linuxInspector = null, Func<bool>? isCustomRuntime = null)
+    {
+        this.linuxInspector = linuxInspector ?? LinuxVrRuntimeInspector.Default;
+        this.isCustomRuntime = isCustomRuntime ?? (() => false);
+    }
 
     public bool IsInitialized => system is not null && overlay is not null;
 
@@ -81,6 +89,13 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
 
     public VrRuntimeProbe Probe()
     {
+        VrRuntimeProbe? safetyBlock = linuxInspector.CheckOpenVrSafety(isCustomRuntime());
+        if (safetyBlock is not null)
+        {
+            Shutdown();
+            return safetyBlock;
+        }
+
         try
         {
             OpenVrNativeLibraryResolver.Register();
@@ -111,6 +126,13 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
         if (IsInitialized)
         {
             return VrRuntimeResult.Success("OpenVR is active.");
+        }
+
+        VrRuntimeProbe? safetyBlock = linuxInspector.CheckOpenVrSafety(isCustomRuntime());
+        if (safetyBlock is not null)
+        {
+            Shutdown();
+            return VrRuntimeResult.Failure(safetyBlock.Message);
         }
 
         try

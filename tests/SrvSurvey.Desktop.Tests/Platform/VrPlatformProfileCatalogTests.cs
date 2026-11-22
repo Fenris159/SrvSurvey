@@ -8,7 +8,7 @@ public sealed class VrPlatformProfileCatalogTests
     [Fact]
     public void EveryConnectionRouteExplainsCompatibilityAndActivation()
     {
-        Assert.Equal(8, VrPlatformProfileCatalog.All.Count);
+        Assert.Equal(10, VrPlatformProfileCatalog.All.Count);
         Assert.Equal(
             VrPlatformProfileCatalog.All.Count,
             VrPlatformProfileCatalog.All.Select(profile => profile.Id).Distinct(StringComparer.Ordinal).Count()
@@ -63,7 +63,7 @@ public sealed class VrPlatformProfileCatalogTests
     }
 
     [Theory]
-    [InlineData("linux", Architecture.X64, 0, 3)]
+    [InlineData("linux", Architecture.X64, 0, 5)]
     [InlineData("windows", Architecture.X64, 22000, 8)]
     [InlineData("windows", Architecture.X64, 26100, 7)]
     [InlineData("windows", Architecture.Arm64, 26100, 6)]
@@ -101,11 +101,38 @@ public sealed class VrPlatformProfileCatalogTests
                 {
                     VrPlatformProfileCatalog.SteamVrProfileId,
                     VrPlatformProfileCatalog.MetaAlvrProfileId,
+                    VrPlatformProfileCatalog.WivrnOpenXrProfileId,
+                    VrPlatformProfileCatalog.MonadoOpenXrProfileId,
                     VrPlatformProfileCatalog.CustomOpenVrProfileId,
                 },
                 profiles.Where(profile => profile.IsAvailable).Select(profile => profile.Id)
             );
         }
+        else if (platform == OSPlatform.Windows)
+        {
+            Assert.All(
+                profiles.Where(profile => VrPlatformProfileCatalog.IsLinuxOpenXrProfile(profile.Id)),
+                profile =>
+                {
+                    Assert.False(profile.IsAvailable);
+                    Assert.Equal("Linux only.", profile.UnavailableReason);
+                }
+            );
+        }
+    }
+
+    [Fact]
+    public void LinuxOpenXrRoutesUseSeatedDefaultsAndDocumentXrExtxOverlay()
+    {
+        VrPlatformProfile wivrn = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+        VrPlatformProfile monado = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MonadoOpenXrProfileId);
+
+        Assert.True(VrPlatformProfileCatalog.IsLinuxOpenXrProfile(wivrn.Id));
+        Assert.True(VrPlatformProfileCatalog.IsLinuxOpenXrProfile(monado.Id));
+        Assert.True(VrPlatformProfileCatalog.UsesSeatedDefaults(wivrn.Id));
+        Assert.True(VrPlatformProfileCatalog.UsesSeatedDefaults(monado.Id));
+        Assert.Contains("XR_EXTX_overlay", wivrn.CompatibilityNote, StringComparison.Ordinal);
+        Assert.Contains("XR_EXTX_overlay", monado.CompatibilityNote, StringComparison.Ordinal);
     }
 
     private static IEnumerable<string> AllIds() => VrPlatformProfileCatalog.All.Select(profile => profile.Id);

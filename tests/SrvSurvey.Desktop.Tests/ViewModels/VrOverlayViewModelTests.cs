@@ -320,6 +320,32 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.True(viewModel.Enabled);
     }
 
+    [Fact]
+    public void LinuxOpenXrRoutesWorkOnLinuxAndAreRejectedOnWindows()
+    {
+        VrOverlayViewModel windowsModel = CreateViewModel(OSPlatform.Windows);
+        windowsModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId
+        );
+        Assert.Equal(VrPlatformProfileCatalog.SteamVrProfileId, windowsModel.SelectedPlatformProfile.Id);
+
+        VrOverlayViewModel linuxModel = CreateViewModel(OSPlatform.Linux);
+        linuxModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId
+        );
+        Assert.Equal(VrPlatformProfileCatalog.WivrnOpenXrProfileId, linuxModel.SelectedPlatformProfile.Id);
+        Assert.Contains("Linux OpenXR", linuxModel.PlatformSupportMessage);
+        Assert.True(linuxModel.BeginAdjustment());
+        linuxModel.SelectedOverlayName = "PlotJumpInfo";
+        Assert.Equal(8, linuxModel.Scale);
+
+        linuxModel.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(
+            VrPlatformProfileCatalog.MonadoOpenXrProfileId
+        );
+        Assert.Equal(VrPlatformProfileCatalog.MonadoOpenXrProfileId, linuxModel.SelectedPlatformProfile.Id);
+        Assert.Contains("Linux OpenXR", linuxModel.PlatformSupportMessage);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

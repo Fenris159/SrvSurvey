@@ -39,7 +39,7 @@ public sealed class VrOverlayCalibrationStore
         Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>> overrides = LoadModes(
             GetOverrideDirectory(null)
         );
-        if (profileId == VrPlatformProfileCatalog.MetaVdxrProfileId)
+        if (VrPlatformProfileCatalog.UsesSeatedDefaults(profileId))
         {
             ApplySeatedDefaults(defaults, factoryDefaults);
             Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>> routeModes = LoadModes(
@@ -119,7 +119,7 @@ public sealed class VrOverlayCalibrationStore
         using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
         OverlayLayoutFileAccess.Recover(dataDirectory);
         string? normalizedMode = NormalizeMode(mode);
-        if (profileId == VrPlatformProfileCatalog.MetaVdxrProfileId)
+        if (VrPlatformProfileCatalog.UsesSeatedDefaults(profileId))
         {
             return SaveOverride(plotterName, calibration, normalizedMode ?? DefaultCalibrationMode, profileId);
         }
@@ -205,9 +205,13 @@ public sealed class VrOverlayCalibrationStore
     private const string DefaultCalibrationMode = "Default";
 
     private string GetOverrideDirectory(string? profileId) =>
-        profileId == VrPlatformProfileCatalog.MetaVdxrProfileId
-            ? Path.Combine(dataDirectory, "vr", "vdxr")
-            : Path.Combine(dataDirectory, "vr");
+        profileId switch
+        {
+            VrPlatformProfileCatalog.MetaVdxrProfileId => Path.Combine(dataDirectory, "vr", "vdxr"),
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId => Path.Combine(dataDirectory, "vr", "wivrn"),
+            VrPlatformProfileCatalog.MonadoOpenXrProfileId => Path.Combine(dataDirectory, "vr", "monado"),
+            _ => Path.Combine(dataDirectory, "vr"),
+        };
 
     private static Dictionary<string, VrOverlayCalibration> LoadFile(string path, bool allowDesktopPrefix)
     {
