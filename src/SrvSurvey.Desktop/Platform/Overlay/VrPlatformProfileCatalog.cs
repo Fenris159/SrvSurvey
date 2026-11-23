@@ -94,11 +94,11 @@ public static class VrPlatformProfileCatalog
             "WiVRn (Linux OpenXR, experimental)",
             "Quest, Pico, and standalone headsets streaming over WiVRn on Linux",
             "Direct Linux OpenXR overlay (XR_EXTX_overlay) to WiVRn",
-            "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
+            "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
             [
                 "Start WiVRn (wivrn-server), connect your headset, and confirm WiVRn is the active OpenXR runtime.",
                 "Launch Elite Dangerous through WiVRn (for example using xrizer or OpenComposite in Steam launch options).",
-                "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
+                "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
             ]
         ),
         new(
@@ -106,11 +106,11 @@ public static class VrPlatformProfileCatalog
             "Monado (Linux OpenXR, experimental)",
             "PC VR headsets running through Monado or Envision on Linux",
             "Direct Linux OpenXR overlay (XR_EXTX_overlay) to Monado",
-            "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
+            "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
             [
                 "Start monado-service (or your Envision profile) and confirm Monado is the active OpenXR runtime.",
                 "Connect and wake your headset, then launch Elite Dangerous through Monado.",
-                "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
+                "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
             ]
         ),
         new(

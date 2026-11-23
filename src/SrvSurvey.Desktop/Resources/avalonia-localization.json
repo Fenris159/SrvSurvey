@@ -277,6 +277,10 @@
       "translation": "1,8 km Anflugdistanz"
     },
     {
+      "source": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+      "translation": "10-cm-Einheiten, zum Anpassen scrollen (Umschalttaste fein, Strg-Taste grob)"
+    },
+    {
       "source": "10.89 M - 34.34 M",
       "translation": "10,89 Mio. - 34,34 Mio"
     },
@@ -1213,10 +1217,6 @@
       "translation": "Aktivitäten"
     },
     {
-      "source": "ADJUSTMENT STEP",
-      "translation": "EINSTELLSCHRITT"
-    },
-    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALIGN GUARDIAN SITE URSPRUNG"
     },
@@ -2015,6 +2015,10 @@
     {
       "source": "All needs are covered.",
       "translation": "Alle Bedürfnisse werden abgedeckt."
+    },
+    {
+      "source": "All overlays",
+      "translation": "Alle Overlays"
     },
     {
       "source": "All platinum",
@@ -7617,6 +7621,10 @@
       "translation": "Verbinden Sie Ihr Frontier-Konto, bevor Sie diese Seite aktualisieren."
     },
     {
+      "source": "Connect {0} before enabling controller interaction.",
+      "translation": "Verbinden Sie {0}, bevor Sie die Controller-Interaktion aktivieren."
+    },
+    {
       "source": "Connect {0} before resetting the overlay origin.",
       "translation": "Verbinden Sie {0}, bevor Sie den Overlay-Ursprung zurücksetzen."
     },
@@ -7757,12 +7765,12 @@
       "translation": "Controller {0}"
     },
     {
-      "source": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-      "translation": "Controller-Zeiger-Interaktion wird unter Linux OpenXR (WiVRn/Monado) noch nicht unterstützt. Verwenden Sie Desktop-VR-Einstellungen oder passen Sie Overlays an."
-    },
-    {
       "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
       "translation": "Controller-Zeiger-Interaktion ist aktiviert; Verwenden Sie die Verknüpfung erneut, um die Klickrate wiederherzustellen."
+    },
+    {
+      "source": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+      "translation": "Controller-Zeiger-Interaktion ist auf {0} nicht verfügbar (OpenXR Fehler {1})."
     },
     {
       "source": "ControllerDeviceId",
@@ -9893,6 +9901,18 @@
       "translation": "Ziehen Sie jeden nummerierten roten Punkt auf seinen Kreismittelpunkt: 1–3 in der oberen Reihe, 4–6 in der unteren Reihe. Jede Mitte kann separat eingestellt werden."
     },
     {
+      "source": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+      "translation": "Ziehmodus aktiv: Zeigen Sie auf ein beliebiges sichtbares Vorschaufenster, halten Sie den Auslöser gedrückt, um zu ziehen, und verwenden Sie den Daumenstift, um die Tiefe anzupassen."
+    },
+    {
+      "source": "Drag mode off.",
+      "translation": "Drag-Modus aus."
+    },
+    {
+      "source": "Drag panels in VR",
+      "translation": "Ziehen Sie Panels in VR"
+    },
+    {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Ziehen Sie die umrandeten Vorschaubilder auf die gewünschten Monitore und Positionen. Vorschauinhalte stammen aus einem falschen Spielstatus, der wie echte Overlay-Daten aussieht."
     },
@@ -10569,8 +10589,8 @@
       "translation": "Aktivieren Sie SrvSurvey VR-Overlays und warten Sie auf eine verbundene VDXR Sitzung. Platzieren Sie die Panels mit den Kalibrierungskontrollen. Verwenden Sie „VR-Overlay-Interaktion umschalten“, um mit einem Quest-Controller zu zeigen und zu klicken."
     },
     {
-      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
-      "translation": "Aktivieren Sie SrvSurvey VR-Overlays unten und verwenden Sie Overlays anpassen oder VR-Ausrichtung zurücksetzen, um Panels in Ihrem Cockpit zu platzieren."
+      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Aktivieren Sie SrvSurvey die VR-Overlays unten und verwenden Sie „Overlays anpassen“, „VR-Ausrichtung zurücksetzen“ oder „VR-Overlay-Interaktion umschalten“, um Panels in Ihrem Cockpit zu platzieren und anzuklicken."
     },
     {
       "source": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
@@ -11173,12 +11193,12 @@
       "translation": "Die experimentelle EDVR-Controller-Interaktion ist aktiviert. Zeigen Sie auf ein Panel und klicken Sie mit dem Auslöser."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
-      "translation": "Experimentelle Linux-Route OpenXR ohne SteamVR. Verwendet Monados nativen Compositor XR_EXTX_overlay mit Headless Vulkan. Die Interaktion mit Controller-Zeigern wird noch nicht unterstützt."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Experimentelle Linux-Route OpenXR ohne SteamVR. Verwendet Monados nativen Compositor XR_EXTX_overlay mit Headless Vulkan. Unterstützt die Controller-Zeiger-Interaktion über die Toggle VR-Overlay-Interaktion."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
-      "translation": "Experimentelle Linux-Route OpenXR ohne SteamVR. Verwendet WiVRns nativen Compositor XR_EXTX_overlay mit Headless Vulkan, sodass Elite Dangerous WiVRn (mit xrizer oder OpenComposite) ohne OpenVR Overlay-Abstürze ausführen kann. Die Interaktion mit Controller-Zeigern wird noch nicht unterstützt."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Experimentelle Linux-Route OpenXR ohne SteamVR. Verwendet WiVRns nativen Compositor XR_EXTX_overlay mit Headless Vulkan, sodass Elite Dangerous WiVRn (mit xrizer oder OpenComposite) ohne OpenVR Overlay-Abstürze ausführen kann. Unterstützt die Controller-Zeiger-Interaktion über die Toggle VR-Overlay-Interaktion."
     },
     {
       "source": "Experimental rig bar detection",
@@ -19189,6 +19209,10 @@
       "translation": "Nächstes zu durchsuchendes Feld: {0}"
     },
     {
+      "source": "Next category",
+      "translation": "Nächste Kategorie"
+    },
+    {
       "source": "Next entry",
       "translation": "Nächster Eintrag"
     },
@@ -20403,6 +20427,10 @@
     {
       "source": "OVERLAY",
       "translation": "Überlagerung"
+    },
+    {
+      "source": "OVERLAY CATEGORY",
+      "translation": "OVERLAY-KATEGORIE"
     },
     {
       "source": "OVERLAY SIZE",
@@ -22205,12 +22233,12 @@
       "translation": "Piratenangriff"
     },
     {
-      "source": "Pitch (degrees)",
-      "translation": "Tonhöhe (Grad)"
+      "source": "Pitch",
+      "translation": "Tonhöhe"
     },
     {
-      "source": "Place in front of me",
-      "translation": "Platz vor mir"
+      "source": "Place in front",
+      "translation": "Vorne platzieren"
     },
     {
       "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
@@ -22533,6 +22561,10 @@
       "translation": "Plugin-Quelle"
     },
     {
+      "source": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+      "translation": "Zeigen Sie auf ein beliebiges sichtbares Vorschaufenster, halten Sie den Auslöser gedrückt, um es zu verschieben, und neigen Sie den Stick, um die Tiefe zu erhöhen."
+    },
+    {
       "source": "Point name",
       "translation": "Punktname"
     },
@@ -22573,16 +22605,16 @@
       "translation": "Português (Brasilien)"
     },
     {
-      "source": "Position X (10 cm units)",
-      "translation": "Position X (10-cm-Einheiten)"
+      "source": "Pos X",
+      "translation": "Pos. X"
     },
     {
-      "source": "Position Y (10 cm units)",
-      "translation": "Position Y (10-cm-Einheiten)"
+      "source": "Pos Y",
+      "translation": "Pos Y"
     },
     {
-      "source": "Position Z (10 cm units)",
-      "translation": "Position Z (10-cm-Einheiten)"
+      "source": "Pos Z",
+      "translation": "Pos Z"
     },
     {
       "source": "Position editor cleanup failed",
@@ -22967,6 +22999,10 @@
     {
       "source": "Previous body",
       "translation": "Vorheriger Himmelskörper"
+    },
+    {
+      "source": "Previous category",
+      "translation": "Vorherige Kategorie"
     },
     {
       "source": "Previous entry",
@@ -26445,8 +26481,8 @@
       "translation": "Felsig | 268.661 CR/t"
     },
     {
-      "source": "Roll (degrees)",
-      "translation": "Rolle (Grad)"
+      "source": "Roll",
+      "translation": "Rollen"
     },
     {
       "source": "Rollback backup: {0}",
@@ -26471,6 +26507,10 @@
     {
       "source": "RotateAlphaAerial",
       "translation": "RotateAlphaAerial"
+    },
+    {
+      "source": "Rotation",
+      "translation": "Drehung"
     },
     {
       "source": "Rounder HUD outlines",
@@ -27217,10 +27257,6 @@
       "translation": "Lesezeichen speichern"
     },
     {
-      "source": "Save calibration",
-      "translation": "Kalibrierung speichern"
-    },
-    {
       "source": "Save change",
       "translation": "Änderung speichern"
     },
@@ -27497,6 +27533,10 @@
       "translation": "{0} Overlay-Einstellung(en) gespeichert. Sichtbare Overlays werden sofort aktualisiert.{1}"
     },
     {
+      "source": "Saved {0} overlays ({1}).",
+      "translation": "Gespeicherte {0}-Overlays ({1})."
+    },
+    {
       "source": "Saved {0} screenshots.",
       "translation": "{0}-Screenshots gespeichert."
     },
@@ -27547,6 +27587,10 @@
     {
       "source": "Scale",
       "translation": "Skala"
+    },
+    {
+      "source": "Scale & Position",
+      "translation": "Skalieren und positionieren"
     },
     {
       "source": "Scale from the operating-system baseline in 5% steps.",
@@ -30925,6 +30969,10 @@
       "translation": "StellarMass"
     },
     {
+      "source": "Step",
+      "translation": "Schritt"
+    },
+    {
       "source": "Still to plan: {0}",
       "translation": "Noch in Planung: {0}"
     },
@@ -33321,6 +33369,10 @@
       "translation": "Sowohl der Installationsvorgang als auch die Kandidatenbereinigung sind fehlgeschlagen."
     },
     {
+      "source": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+      "translation": "Das installierte libSrvSurveyLinuxOpenXrOverlay.so unterstützt keine Controller-Zeiger-Interaktion. Aktualisieren oder neu erstellen SrvSurvey."
+    },
+    {
       "source": "The installed release notes are missing from this build.",
       "translation": "Die installierten Versionshinweise fehlen in diesem Build."
     },
@@ -34207,10 +34259,6 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "Der ausgewählte Marker konnte nicht gespeichert werden:"
-    },
-    {
-      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-      "translation": "Das ausgewählte Panel zeigt Beispieldaten. Normale Schritte: 5 cm und 1°. Wählen Sie im Headset „Fein“ oder „Grob“ oder halten Sie die Umschalttaste für fein bzw. die Strg-Taste für grob gedrückt. Scrollen Sie über eine Zahl, um sie anzupassen."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -36617,8 +36665,8 @@
       "translation": "Verwenden Sie diese Verknüpfung, um vorhandene Live-Overlays anklickbar und ziehbar zu machen. Verwenden Sie es erneut, um Positionen zu speichern und den Click-through-Modus wiederherzustellen; Der vollständige Editor wird nie geöffnet."
     },
     {
-      "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-      "translation": "Verwenden Sie diese Verknüpfung, um SteamVR oder VDXR Overlays zwischen Click-through und Controller-Zeiger-Interaktion umzuschalten. Zeigen Sie auf VDXR auf ein Panel: Klicken Sie auslösen, klicken Sie mit der rechten Maustaste und scrollen Sie mit dem Daumen. Verwenden Sie die Verknüpfung erneut, um den Klickmodus wiederherzustellen."
+      "source": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Verwenden Sie diese Verknüpfung, um SteamVR, VDXR, WiVRn oder Monado-Overlays zwischen Click-through und Controller-Zeiger-Interaktion zu wechseln. Zeigen Sie auf OpenXR-Routen (VDXR, WiVRn, Monado) auf ein Panel: Triggerklicks, Griff-Rechtsklicks und Scrollen mit dem Daumenstift oder Trackpad. Verwenden Sie die Verknüpfung erneut, um den Klickmodus wiederherzustellen."
     },
     {
       "source": "UseAutomaticSourceFolder",
@@ -36737,10 +36785,6 @@
       "translation": "VDXR: Registrieren Sie die Ebene OpenXR aus dem Windows x64-Paket und starten Sie Elite dann neu. Direct3D 11 ist erforderlich."
     },
     {
-      "source": "VEHICLE / GAME MODE",
-      "translation": "FAHRZEUG-/SPIELMODUS"
-    },
-    {
       "source": "VISIT",
       "translation": "BESUCH"
     },
@@ -36829,10 +36873,6 @@
       "translation": "VR-Overlays sind wieder durchklickbar."
     },
     {
-      "source": "VR overlays are click-through.",
-      "translation": "VR-Overlays sind durchklickbar."
-    },
-    {
       "source": "VR overlays are disabled.",
       "translation": "VR-Overlays sind deaktiviert."
     },
@@ -36845,8 +36885,8 @@
       "translation": "VR-Overlays erfordern Windows oder Linux."
     },
     {
-      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
-      "translation": "VR-Overlays bleiben durchklickbar, bis Sie die Controller-Zeiger-Interaktion auf der ausgewählten Route SteamVR oder VDXR explizit aktivieren."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
+      "translation": "VR-Overlays bleiben durchklickbar, bis Sie die Controller-Zeiger-Interaktion auf der ausgewählten SteamVR, VDXR, WiVRn- oder Monado-Route explizit aktivieren."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -37957,8 +37997,8 @@
       "translation": "Ja"
     },
     {
-      "source": "Yaw (degrees)",
-      "translation": "Gier (Grad)"
+      "source": "Yaw",
+      "translation": "Gieren"
     },
     {
       "source": "Years",
@@ -38971,6 +39011,10 @@
     {
       "source": "default",
       "translation": "Standard"
+    },
+    {
+      "source": "degrees",
+      "translation": "Grad"
     },
     {
       "source": "depleted",
@@ -42173,6 +42217,10 @@
       "translation": "{0} hat beigetragen"
     },
     {
+      "source": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "Die Controller-Interaktion {0} ist aktiviert. Zeigen Sie auf ein Panel und klicken Sie mit dem Auslöser."
+    },
+    {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} konnte nicht geöffnet werden: {1}"
     },
@@ -43507,6 +43555,10 @@
       "translation": "Distancia de aproximación de 1,8 km."
     },
     {
+      "source": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+      "translation": "Unidades de 10 cm, desplácese para ajustar (Mayús fina, Ctrl grueso)"
+    },
+    {
       "source": "10.89 M - 34.34 M",
       "translation": "10,89 millones - 34,34 millones"
     },
@@ -44443,10 +44495,6 @@
       "translation": "actividades"
     },
     {
-      "source": "ADJUSTMENT STEP",
-      "translation": "PASO DE AJUSTE"
-    },
-    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALINEAR EL ORIGEN DEL SITIO GUARDIAN"
     },
@@ -45245,6 +45293,10 @@
     {
       "source": "All needs are covered.",
       "translation": "Todas las necesidades están cubiertas."
+    },
+    {
+      "source": "All overlays",
+      "translation": "Todas las superposiciones"
     },
     {
       "source": "All platinum",
@@ -50847,6 +50899,10 @@
       "translation": "Conecte su cuenta Frontier antes de actualizar esta página."
     },
     {
+      "source": "Connect {0} before enabling controller interaction.",
+      "translation": "Conecte {0} antes de habilitar la interacción del controlador."
+    },
+    {
       "source": "Connect {0} before resetting the overlay origin.",
       "translation": "Conecte {0} antes de restablecer el origen de superposición."
     },
@@ -50987,12 +51043,12 @@
       "translation": "Controlador {0}"
     },
     {
-      "source": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-      "translation": "La interacción controlador-puntero aún no es compatible con Linux OpenXR (WiVRn/Monado). Utilice la configuración de realidad virtual del escritorio o ajuste las superposiciones."
-    },
-    {
       "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
       "translation": "La interacción controlador-puntero está activada; use su acceso directo nuevamente para restaurar el clic."
+    },
+    {
+      "source": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+      "translation": "La interacción controlador-puntero no está disponible en {0} (OpenXR error {1})."
     },
     {
       "source": "ControllerDeviceId",
@@ -53123,6 +53179,18 @@
       "translation": "Arrastre cada punto rojo numerado hasta el centro de su círculo: 1 a 3 en la fila superior, 4 a 6 en la inferior. Cada centro se puede ajustar por separado."
     },
     {
+      "source": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+      "translation": "Modo de arrastre activo: apunte a cualquier panel de vista previa visible, mantenga presionado el gatillo para arrastrar y use el joystick para ajustar la profundidad."
+    },
+    {
+      "source": "Drag mode off.",
+      "translation": "Modo de arrastre desactivado."
+    },
+    {
+      "source": "Drag panels in VR",
+      "translation": "Arrastrar paneles en realidad virtual"
+    },
+    {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Arrastre las vistas previas con bordes a los monitores y posiciones deseados. El contenido de la vista previa proviene de un estado de juego falso con forma de datos superpuestos reales."
     },
@@ -53799,8 +53867,8 @@
       "translation": "Habilite SrvSurvey las superposiciones de realidad virtual y espere una sesión conectada VDXR. Coloque los paneles con los controles de calibración. Utilice la interacción de superposición Toggle VR para apuntar y hacer clic con un controlador Quest."
     },
     {
-      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
-      "translation": "Habilite SrvSurvey las superposiciones de realidad virtual a continuación y use Ajustar superposiciones o Restablecer la orientación de la realidad virtual para colocar paneles en su cabina."
+      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Habilite SrvSurvey las superposiciones de realidad virtual a continuación y use Ajustar superposiciones, Restablecer orientación de realidad virtual o Alternar interacción de superposición de realidad virtual para colocar y hacer clic en paneles en su cabina."
     },
     {
       "source": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
@@ -54403,12 +54471,12 @@
       "translation": "La interacción del controlador EDVR experimental está habilitada. Apunte a un panel y use el disparador para hacer clic."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
-      "translation": "Ruta experimental de Linux OpenXR sin SteamVR. Utiliza el compositor nativo de Monado XR_EXTX_overlay con Vulkan sin cabeza. La interacción del puntero del controlador aún no es compatible."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Ruta experimental de Linux OpenXR sin SteamVR. Utiliza el compositor nativo de Monado XR_EXTX_overlay con Vulkan sin cabeza. Admite la interacción controlador-puntero a través de la interacción de superposición Toggle VR."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
-      "translation": "Ruta experimental de Linux OpenXR sin SteamVR. Utiliza el compositor nativo de WiVRn XR_EXTX_overlay con Vulkan sin cabeza para que Elite Dangerous pueda ejecutarse a través de WiVRn (con xrizer o OpenComposite) sin fallas de superposición OpenVR. La interacción del puntero del controlador aún no es compatible."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Ruta experimental de Linux OpenXR sin SteamVR. Utiliza el compositor nativo de WiVRn XR_EXTX_overlay con Vulkan sin cabeza para que Elite Dangerous pueda ejecutarse a través de WiVRn (con xrizer o OpenComposite) sin fallas de superposición OpenVR. Admite la interacción controlador-puntero a través de la interacción de superposición Toggle VR."
     },
     {
       "source": "Experimental rig bar detection",
@@ -62419,6 +62487,10 @@
       "translation": "Siguiente cuadro para buscar: {0}"
     },
     {
+      "source": "Next category",
+      "translation": "Siguiente categoría"
+    },
+    {
       "source": "Next entry",
       "translation": "Próxima entrada"
     },
@@ -63633,6 +63705,10 @@
     {
       "source": "OVERLAY",
       "translation": "cubrir"
+    },
+    {
+      "source": "OVERLAY CATEGORY",
+      "translation": "CATEGORÍA DE SUPERPOSICIÓN"
     },
     {
       "source": "OVERLAY SIZE",
@@ -65435,12 +65511,12 @@
       "translation": "Ataque pirata"
     },
     {
-      "source": "Pitch (degrees)",
-      "translation": "Paso (grados)"
+      "source": "Pitch",
+      "translation": "Paso"
     },
     {
-      "source": "Place in front of me",
-      "translation": "Colócalo frente a mí"
+      "source": "Place in front",
+      "translation": "colocar al frente"
     },
     {
       "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
@@ -65763,6 +65839,10 @@
       "translation": "Fuente del complemento"
     },
     {
+      "source": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+      "translation": "Apunte a cualquier panel de vista previa visible, mantenga presionado el gatillo para moverlo e incline el joystick para obtener profundidad."
+    },
+    {
       "source": "Point name",
       "translation": "Nombre del punto"
     },
@@ -65803,16 +65883,16 @@
       "translation": "Português (Brasil)"
     },
     {
-      "source": "Position X (10 cm units)",
-      "translation": "Posición X (unidades de 10 cm)"
+      "source": "Pos X",
+      "translation": "Pos X"
     },
     {
-      "source": "Position Y (10 cm units)",
-      "translation": "Posición Y (unidades de 10 cm)"
+      "source": "Pos Y",
+      "translation": "Pos. Y"
     },
     {
-      "source": "Position Z (10 cm units)",
-      "translation": "Posición Z (unidades de 10 cm)"
+      "source": "Pos Z",
+      "translation": "Pos. Z"
     },
     {
       "source": "Position editor cleanup failed",
@@ -66197,6 +66277,10 @@
     {
       "source": "Previous body",
       "translation": "Cuerpo anterior"
+    },
+    {
+      "source": "Previous category",
+      "translation": "Categoría anterior"
     },
     {
       "source": "Previous entry",
@@ -69675,8 +69759,8 @@
       "translation": "Rocoso | 268.661 CR/t"
     },
     {
-      "source": "Roll (degrees)",
-      "translation": "Rollo (grados)"
+      "source": "Roll",
+      "translation": "Rollo"
     },
     {
       "source": "Rollback backup: {0}",
@@ -69701,6 +69785,10 @@
     {
       "source": "RotateAlphaAerial",
       "translation": "GirarAlfaAérea"
+    },
+    {
+      "source": "Rotation",
+      "translation": "Rotación"
     },
     {
       "source": "Rounder HUD outlines",
@@ -70447,10 +70535,6 @@
       "translation": "Guardar marcador"
     },
     {
-      "source": "Save calibration",
-      "translation": "Guardar calibración"
-    },
-    {
       "source": "Save change",
       "translation": "Guardar cambio"
     },
@@ -70727,6 +70811,10 @@
       "translation": "Configuración de superposición {0} guardada. Las superposiciones visibles se actualizan inmediatamente.{1}"
     },
     {
+      "source": "Saved {0} overlays ({1}).",
+      "translation": "Superposiciones {0} guardadas ({1})."
+    },
+    {
       "source": "Saved {0} screenshots.",
       "translation": "Capturas de pantalla guardadas de {0}."
     },
@@ -70777,6 +70865,10 @@
     {
       "source": "Scale",
       "translation": "Escala"
+    },
+    {
+      "source": "Scale & Position",
+      "translation": "Escala y posición"
     },
     {
       "source": "Scale from the operating-system baseline in 5% steps.",
@@ -74155,6 +74247,10 @@
       "translation": "masa estelar"
     },
     {
+      "source": "Step",
+      "translation": "Paso"
+    },
+    {
       "source": "Still to plan: {0}",
       "translation": "Aún por planificar: {0}"
     },
@@ -76551,6 +76647,10 @@
       "translation": "Tanto la operación de instalación como la limpieza del candidato fallaron."
     },
     {
+      "source": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+      "translation": "El instalado libSrvSurveyLinuxOpenXrOverlay.so no admite la interacción controlador-puntero. Actualizar o reconstruir SrvSurvey."
+    },
+    {
       "source": "The installed release notes are missing from this build.",
       "translation": "Faltan las notas de la versión instaladas en esta compilación."
     },
@@ -77437,10 +77537,6 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "El marcador seleccionado no se pudo guardar:"
-    },
-    {
-      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-      "translation": "El panel seleccionado muestra datos de muestra. Pasos normales: 5 cm y 1°. Elija Fino o Grueso en el auricular, o mantenga presionada la tecla Mayús para fino / Ctrl para grueso. Desplácese sobre un número para ajustarlo."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -79847,8 +79943,8 @@
       "translation": "Utilice este acceso directo para hacer que se pueda hacer clic y arrastrar las superposiciones en vivo existentes. Úselo nuevamente para guardar posiciones y restaurar el modo de clic; nunca abre el editor completo."
     },
     {
-      "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-      "translation": "Utilice este acceso directo para cambiar SteamVR o VDXR superposiciones entre clic y interacción controlador-puntero. En VDXR, apunte a un panel: clics del disparador, clics con el botón derecho y desplazamientos con el joystick. Utilice el acceso directo nuevamente para restaurar el modo de clic."
+      "source": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Utilice este acceso directo para cambiar las superposiciones SteamVR, VDXR, WiVRn o Monado entre clic y interacción controlador-puntero. En las rutas OpenXR (VDXR, WiVRn, Monado), apunte a un panel: clics del disparador, clics con el botón derecho y desplazamientos con el joystick o el panel táctil. Utilice el acceso directo nuevamente para restaurar el modo de clic."
     },
     {
       "source": "UseAutomaticSourceFolder",
@@ -79967,10 +80063,6 @@
       "translation": "VDXR: registre la capa OpenXR del paquete de Windows x64, luego reinicie Elite. Se requiere Direct3D 11."
     },
     {
-      "source": "VEHICLE / GAME MODE",
-      "translation": "VEHÍCULO / MODO JUEGO"
-    },
-    {
       "source": "VISIT",
       "translation": "VISITA"
     },
@@ -80059,10 +80151,6 @@
       "translation": "Se puede hacer clic nuevamente en las superposiciones de realidad virtual."
     },
     {
-      "source": "VR overlays are click-through.",
-      "translation": "Las superposiciones de realidad virtual son mediante clic."
-    },
-    {
       "source": "VR overlays are disabled.",
       "translation": "Las superposiciones de realidad virtual están deshabilitadas."
     },
@@ -80075,8 +80163,8 @@
       "translation": "Las superposiciones de realidad virtual requieren Windows o Linux."
     },
     {
-      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
-      "translation": "Las superposiciones de realidad virtual permanecen activas hasta que habilites explícitamente la interacción entre el controlador y el puntero en la ruta seleccionada SteamVR o VDXR."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
+      "translation": "Las superposiciones de realidad virtual permanecen activas hasta que habilite explícitamente la interacción entre el controlador y el puntero en la ruta seleccionada SteamVR, VDXR, WiVRn o Monado."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -81187,8 +81275,8 @@
       "translation": "Sí"
     },
     {
-      "source": "Yaw (degrees)",
-      "translation": "Guiñada (grados)"
+      "source": "Yaw",
+      "translation": "Guiñada"
     },
     {
       "source": "Years",
@@ -82201,6 +82289,10 @@
     {
       "source": "default",
       "translation": "predeterminado"
+    },
+    {
+      "source": "degrees",
+      "translation": "grados"
     },
     {
       "source": "depleted",
@@ -85403,6 +85495,10 @@
       "translation": "{0} contribuyó"
     },
     {
+      "source": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "La interacción del controlador {0} está habilitada. Apunte a un panel y use el disparador para hacer clic."
+    },
+    {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} no se pudo abrir: {1}"
     },
@@ -86737,6 +86833,10 @@
       "translation": "Distance d'approche de 1,8 km"
     },
     {
+      "source": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+      "translation": "Unités de 10 cm, faites défiler pour ajuster (Maj fin, Ctrl grossier)"
+    },
+    {
       "source": "10.89 M - 34.34 M",
       "translation": "10,89 M - 34,34 M"
     },
@@ -87673,10 +87773,6 @@
       "translation": "activités"
     },
     {
-      "source": "ADJUSTMENT STEP",
-      "translation": "ÉTAPE DE RÉGLAGE"
-    },
-    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALIGNER L'ORIGINE DU SITE GUARDIAN"
     },
@@ -88475,6 +88571,10 @@
     {
       "source": "All needs are covered.",
       "translation": "Tous les besoins sont couverts."
+    },
+    {
+      "source": "All overlays",
+      "translation": "Toutes les superpositions"
     },
     {
       "source": "All platinum",
@@ -94077,6 +94177,10 @@
       "translation": "Connectez votre compte Frontier avant d'actualiser cette page."
     },
     {
+      "source": "Connect {0} before enabling controller interaction.",
+      "translation": "Connectez {0} avant d’activer l’interaction du contrôleur."
+    },
+    {
       "source": "Connect {0} before resetting the overlay origin.",
       "translation": "Connectez {0} avant de réinitialiser l’origine de la superposition."
     },
@@ -94217,12 +94321,12 @@
       "translation": "Contrôleur {0}"
     },
     {
-      "source": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-      "translation": "L'interaction contrôleur-pointeur n'est pas encore prise en charge sous Linux OpenXR (WiVRn/Monado). Utilisez les paramètres VR du bureau ou ajustez les superpositions."
-    },
-    {
       "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
       "translation": "L'interaction contrôleur-pointeur est activée ; utilisez à nouveau son raccourci pour restaurer le clic."
+    },
+    {
+      "source": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+      "translation": "L'interaction contrôleur-pointeur n'est pas disponible sur {0} (OpenXR erreur {1})."
     },
     {
       "source": "ControllerDeviceId",
@@ -96353,6 +96457,18 @@
       "translation": "Faites glisser chaque point rouge numéroté sur le centre de son cercle : 1 à 3 sur la rangée du haut, 4 à 6 sur la rangée du bas. Chaque centre peut être ajusté séparément."
     },
     {
+      "source": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+      "translation": "Mode glisser actif : pointez sur n'importe quel panneau d'aperçu visible, maintenez la gâchette enfoncée pour faire glisser et utilisez la manette pour régler la profondeur."
+    },
+    {
+      "source": "Drag mode off.",
+      "translation": "Mode glisser désactivé."
+    },
+    {
+      "source": "Drag panels in VR",
+      "translation": "Faites glisser les panneaux en VR"
+    },
+    {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Faites glisser les aperçus bordés vers les moniteurs et les positions souhaités. Le contenu de l'aperçu provient d'un faux état de jeu façonné comme de véritables données de superposition."
     },
@@ -97029,8 +97145,8 @@
       "translation": "Activez les superpositions VR SrvSurvey et attendez une session connectée VDXR. Placez les panneaux avec les contrôles d’étalonnage. Utilisez l’interaction de superposition Toggle VR pour pointer et cliquer avec un contrôleur Quest."
     },
     {
-      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
-      "translation": "Activez SrvSurvey les superpositions VR ci-dessous et utilisez Ajuster les superpositions ou Réinitialiser l'orientation VR pour placer des panneaux dans votre cockpit."
+      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Activez SrvSurvey les superpositions VR ci-dessous et utilisez Ajuster les superpositions, Réinitialiser l'orientation VR ou Activer l'interaction de superposition VR pour placer et cliquer sur les panneaux dans votre cockpit."
     },
     {
       "source": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
@@ -97633,12 +97749,12 @@
       "translation": "L’interaction expérimentale du contrôleur EDVR est activée. Pointez sur un panneau et utilisez la gâchette pour cliquer."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
-      "translation": "Route Linux expérimentale OpenXR sans SteamVR. Utilise le compositeur natif de Monado XR_EXTX_overlay avec Vulkan sans tête. L'interaction du pointeur du contrôleur n'est pas encore prise en charge."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Route Linux expérimentale OpenXR sans SteamVR. Utilise le compositeur natif de Monado XR_EXTX_overlay avec Vulkan sans tête. Prend en charge l’interaction contrôleur-pointeur via l’interaction de superposition Toggle VR."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
-      "translation": "Route Linux expérimentale OpenXR sans SteamVR. Utilise le compositeur natif de WiVRn XR_EXTX_overlay avec Vulkan sans tête afin que Elite Dangerous puisse fonctionner via WiVRn (avec xrizer ou OpenComposite) sans crash de superposition OpenVR. L'interaction du pointeur du contrôleur n'est pas encore prise en charge."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Route Linux expérimentale OpenXR sans SteamVR. Utilise le compositeur natif de WiVRn XR_EXTX_overlay avec Vulkan sans tête afin que Elite Dangerous puisse fonctionner via WiVRn (avec xrizer ou OpenComposite) sans crash de superposition OpenVR. Prend en charge l’interaction contrôleur-pointeur via l’interaction de superposition Toggle VR."
     },
     {
       "source": "Experimental rig bar detection",
@@ -105649,6 +105765,10 @@
       "translation": "Zone suivante dans laquelle rechercher : {0}"
     },
     {
+      "source": "Next category",
+      "translation": "Catégorie suivante"
+    },
+    {
       "source": "Next entry",
       "translation": "Entrée suivante"
     },
@@ -106863,6 +106983,10 @@
     {
       "source": "OVERLAY",
       "translation": "recouvrir"
+    },
+    {
+      "source": "OVERLAY CATEGORY",
+      "translation": "CATÉGORIE DE SUPERPOSITION"
     },
     {
       "source": "OVERLAY SIZE",
@@ -108665,12 +108789,12 @@
       "translation": "Attaque de pirates"
     },
     {
-      "source": "Pitch (degrees)",
-      "translation": "Pas (degrés)"
+      "source": "Pitch",
+      "translation": "Pas"
     },
     {
-      "source": "Place in front of me",
-      "translation": "Place devant moi"
+      "source": "Place in front",
+      "translation": "Placer devant"
     },
     {
       "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
@@ -108993,6 +109117,10 @@
       "translation": "Source du plugin"
     },
     {
+      "source": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+      "translation": "Pointez sur n’importe quel panneau d’aperçu visible, maintenez la gâchette pour le déplacer et inclinez la manette pour obtenir de la profondeur."
+    },
+    {
       "source": "Point name",
       "translation": "Nom du point"
     },
@@ -109033,16 +109161,16 @@
       "translation": "Portugais (Brésil)"
     },
     {
-      "source": "Position X (10 cm units)",
-      "translation": "Position X (unités de 10 cm)"
+      "source": "Pos X",
+      "translation": "Pos X"
     },
     {
-      "source": "Position Y (10 cm units)",
-      "translation": "Position Y (unités de 10 cm)"
+      "source": "Pos Y",
+      "translation": "Pos Y"
     },
     {
-      "source": "Position Z (10 cm units)",
-      "translation": "Position Z (unités de 10 cm)"
+      "source": "Pos Z",
+      "translation": "Pos Z"
     },
     {
       "source": "Position editor cleanup failed",
@@ -109427,6 +109555,10 @@
     {
       "source": "Previous body",
       "translation": "Corps précédent"
+    },
+    {
+      "source": "Previous category",
+      "translation": "Catégorie précédente"
     },
     {
       "source": "Previous entry",
@@ -112905,8 +113037,8 @@
       "translation": "Rocheux | 268 661 CR/t"
     },
     {
-      "source": "Roll (degrees)",
-      "translation": "Rouleau (degrés)"
+      "source": "Roll",
+      "translation": "Rouler"
     },
     {
       "source": "Rollback backup: {0}",
@@ -112931,6 +113063,10 @@
     {
       "source": "RotateAlphaAerial",
       "translation": "RotationAlphaAérien"
+    },
+    {
+      "source": "Rotation",
+      "translation": "Rotation"
     },
     {
       "source": "Rounder HUD outlines",
@@ -113677,10 +113813,6 @@
       "translation": "Enregistrer le favori"
     },
     {
-      "source": "Save calibration",
-      "translation": "Enregistrer l'étalonnage"
-    },
-    {
       "source": "Save change",
       "translation": "Enregistrer la modification"
     },
@@ -113957,6 +114089,10 @@
       "translation": "{0} paramètre(s) de superposition enregistré(s). Les superpositions visibles sont mises à jour immédiatement.{1}"
     },
     {
+      "source": "Saved {0} overlays ({1}).",
+      "translation": "Superpositions {0} enregistrées ({1})."
+    },
+    {
       "source": "Saved {0} screenshots.",
       "translation": "Captures d'écran {0} enregistrées."
     },
@@ -114007,6 +114143,10 @@
     {
       "source": "Scale",
       "translation": "Échelle"
+    },
+    {
+      "source": "Scale & Position",
+      "translation": "Échelle et position"
     },
     {
       "source": "Scale from the operating-system baseline in 5% steps.",
@@ -117385,6 +117525,10 @@
       "translation": "Masse stellaire"
     },
     {
+      "source": "Step",
+      "translation": "Étape"
+    },
+    {
       "source": "Still to plan: {0}",
       "translation": "Reste à planifier : {0}"
     },
@@ -119781,6 +119925,10 @@
       "translation": "L’opération d’installation et le nettoyage du candidat ont tous deux échoué."
     },
     {
+      "source": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+      "translation": "Le système installé libSrvSurveyLinuxOpenXrOverlay.so ne prend pas en charge l'interaction contrôleur-pointeur. Mettre à jour ou reconstruire SrvSurvey."
+    },
+    {
       "source": "The installed release notes are missing from this build.",
       "translation": "Les notes de version installées sont absentes de cette version."
     },
@@ -120667,10 +120815,6 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "Le marqueur sélectionné n'a pas pu être enregistré :"
-    },
-    {
-      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-      "translation": "Le panneau sélectionné affiche des exemples de données. Pas normaux : 5 cm et 1°. Choisissez Fin ou Grossier dans le casque, ou maintenez Shift pour fin/Ctrl pour grossier. Faites défiler un numéro pour l'ajuster."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -123077,8 +123221,8 @@
       "translation": "Utilisez ce raccourci pour rendre les superpositions en direct existantes cliquables et déplaçables. Utilisez-le à nouveau pour enregistrer les positions et restaurer le mode clic ; il n'ouvre jamais l'éditeur complet."
     },
     {
-      "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-      "translation": "Utilisez ce raccourci pour basculer les superpositions SteamVR ou VDXR entre le clic et l'interaction contrôleur-pointeur. Sur VDXR, pointez sur un panneau : clics de déclenchement, clics droits de la poignée et défilement de la manette. Utilisez à nouveau le raccourci pour restaurer le mode clic."
+      "source": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Utilisez ce raccourci pour basculer entre les superpositions SteamVR, VDXR, WiVRn ou Monado entre le clic et l'interaction contrôleur-pointeur. Sur les itinéraires OpenXR (VDXR, WiVRn, Monado), pointez sur un panneau : clics de déclenchement, clics droits de la poignée et défilement de la manette ou du trackpad. Utilisez à nouveau le raccourci pour restaurer le mode clic."
     },
     {
       "source": "UseAutomaticSourceFolder",
@@ -123197,10 +123341,6 @@
       "translation": "VDXR : enregistrez la couche OpenXR du package Windows x64, puis redémarrez Elite. Direct3D 11 est requis."
     },
     {
-      "source": "VEHICLE / GAME MODE",
-      "translation": "VÉHICULE / MODE DE JEU"
-    },
-    {
       "source": "VISIT",
       "translation": "VISITE"
     },
@@ -123289,10 +123429,6 @@
       "translation": "Les superpositions VR sont à nouveau cliquables."
     },
     {
-      "source": "VR overlays are click-through.",
-      "translation": "Les superpositions VR sont cliquables."
-    },
-    {
       "source": "VR overlays are disabled.",
       "translation": "Les superpositions VR sont désactivées."
     },
@@ -123305,8 +123441,8 @@
       "translation": "Les superpositions VR nécessitent Windows ou Linux."
     },
     {
-      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
-      "translation": "Les superpositions VR restent cliquables jusqu'à ce que vous activiez explicitement l'interaction contrôleur-pointeur sur l'itinéraire sélectionné SteamVR ou VDXR."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
+      "translation": "Les superpositions VR restent cliquables jusqu'à ce que vous activiez explicitement l'interaction contrôleur-pointeur sur l'itinéraire sélectionné SteamVR, VDXR, WiVRn ou Monado."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -124417,8 +124553,8 @@
       "translation": "Oui"
     },
     {
-      "source": "Yaw (degrees)",
-      "translation": "Lacet (degrés)"
+      "source": "Yaw",
+      "translation": "Embardée"
     },
     {
       "source": "Years",
@@ -125431,6 +125567,10 @@
     {
       "source": "default",
       "translation": "par défaut"
+    },
+    {
+      "source": "degrees",
+      "translation": "degrés"
     },
     {
       "source": "depleted",
@@ -128633,6 +128773,10 @@
       "translation": "{0} a contribué"
     },
     {
+      "source": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "L’interaction du contrôleur {0} est activée. Pointez sur un panneau et utilisez la gâchette pour cliquer."
+    },
+    {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} n'a pas pu être ouvert : {1}"
     },
@@ -129967,6 +130111,10 @@
       "translation": "Distância de aproximação de 1,8 km"
     },
     {
+      "source": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+      "translation": "Unidades de 10 cm, role para ajustar (Shift fino, Ctrl grosso)"
+    },
+    {
       "source": "10.89 M - 34.34 M",
       "translation": "10,89m - 34,34m"
     },
@@ -130903,10 +131051,6 @@
       "translation": "atividades"
     },
     {
-      "source": "ADJUSTMENT STEP",
-      "translation": "ETAPA DE AJUSTE"
-    },
-    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ALINHAR ORIGEM DO SITE GUARDIAN"
     },
@@ -131705,6 +131849,10 @@
     {
       "source": "All needs are covered.",
       "translation": "Todas as necessidades são atendidas."
+    },
+    {
+      "source": "All overlays",
+      "translation": "Todas as sobreposições"
     },
     {
       "source": "All platinum",
@@ -137307,6 +137455,10 @@
       "translation": "Conecte sua conta Frontier antes de atualizar esta página."
     },
     {
+      "source": "Connect {0} before enabling controller interaction.",
+      "translation": "Conecte {0} antes de ativar a interação do controlador."
+    },
+    {
       "source": "Connect {0} before resetting the overlay origin.",
       "translation": "Conecte {0} antes de redefinir a origem da sobreposição."
     },
@@ -137447,12 +137599,12 @@
       "translation": "Controlador {0}"
     },
     {
-      "source": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-      "translation": "A interação controlador-ponteiro ainda não é suportada no Linux OpenXR (WiVRn/Monado). Use as configurações de VR da área de trabalho ou ajuste as sobreposições."
-    },
-    {
       "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
       "translation": "A interação controlador-ponteiro está ativada; use seu atalho novamente para restaurar o clique."
+    },
+    {
+      "source": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+      "translation": "A interação controlador-ponteiro não está disponível em {0} (OpenXR erro {1})."
     },
     {
       "source": "ControllerDeviceId",
@@ -139583,6 +139735,18 @@
       "translation": "Arraste cada ponto vermelho numerado para o centro do círculo: 1–3 na linha superior, 4–6 na linha inferior. Cada centro pode ser ajustado separadamente."
     },
     {
+      "source": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+      "translation": "Modo de arrastar ativo: aponte para qualquer painel de visualização visível, segure o gatilho para arrastar e use o botão para ajustar a profundidade."
+    },
+    {
+      "source": "Drag mode off.",
+      "translation": "Modo arrastar desativado."
+    },
+    {
+      "source": "Drag panels in VR",
+      "translation": "Arraste painéis em VR"
+    },
+    {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Arraste as visualizações com bordas para os monitores e posições desejadas. O conteúdo de visualização vem de um estado de jogo falso em forma de dados de sobreposição reais."
     },
@@ -140259,8 +140423,8 @@
       "translation": "Ative as sobreposições de VR SrvSurvey e aguarde uma sessão conectada VDXR. Coloque painéis com os controles de calibração. Use a interação Toggle VR overlay para apontar e clicar com um controlador Quest."
     },
     {
-      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
-      "translation": "Ative as sobreposições de VR SrvSurvey abaixo e use Ajustar sobreposições ou Redefinir orientação de VR para colocar painéis em seu cockpit."
+      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Habilite SrvSurvey sobreposições de VR abaixo e use Ajustar sobreposições, Redefinir orientação de VR ou Alternar interação de sobreposição de VR para colocar e clicar em painéis em seu cockpit."
     },
     {
       "source": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
@@ -140863,12 +141027,12 @@
       "translation": "A interação experimental do controlador EDVR está habilitada. Aponte para um painel e use o gatilho para clicar."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
-      "translation": "Rota experimental do Linux OpenXR sem SteamVR. Usa o compositor nativo da Monado XR_EXTX_overlay com Vulkan sem cabeça. A interação do ponteiro do controlador ainda não é suportada."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Rota experimental do Linux OpenXR sem SteamVR. Usa o compositor nativo da Monado XR_EXTX_overlay com Vulkan sem cabeça. Suporta interação controlador-ponteiro por meio da interação Toggle VR overlay."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
-      "translation": "Rota experimental do Linux OpenXR sem SteamVR. Usa o compositor nativo do WiVRn XR_EXTX_overlay com Vulkan sem cabeça para que Elite Dangerous possa ser executado através do WiVRn (com xrizer ou OpenComposite) sem travamentos de sobreposição OpenVR. A interação do ponteiro do controlador ainda não é suportada."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Rota experimental do Linux OpenXR sem SteamVR. Usa o compositor nativo do WiVRn XR_EXTX_overlay com Vulkan sem cabeça para que Elite Dangerous possa ser executado através do WiVRn (com xrizer ou OpenComposite) sem travamentos de sobreposição OpenVR. Suporta interação controlador-ponteiro por meio da interação Toggle VR overlay."
     },
     {
       "source": "Experimental rig bar detection",
@@ -148879,6 +149043,10 @@
       "translation": "Próximo boxel a ser pesquisado: {0}"
     },
     {
+      "source": "Next category",
+      "translation": "Próxima categoria"
+    },
+    {
       "source": "Next entry",
       "translation": "Próxima entrada"
     },
@@ -150093,6 +150261,10 @@
     {
       "source": "OVERLAY",
       "translation": "sobreposição"
+    },
+    {
+      "source": "OVERLAY CATEGORY",
+      "translation": "CATEGORIA DE SOBREPOSIÇÃO"
     },
     {
       "source": "OVERLAY SIZE",
@@ -151895,12 +152067,12 @@
       "translation": "Ataque pirata"
     },
     {
-      "source": "Pitch (degrees)",
-      "translation": "Passo (graus)"
+      "source": "Pitch",
+      "translation": "Tom"
     },
     {
-      "source": "Place in front of me",
-      "translation": "Coloque na minha frente"
+      "source": "Place in front",
+      "translation": "Coloque na frente"
     },
     {
       "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
@@ -152223,6 +152395,10 @@
       "translation": "Fonte do plug-in"
     },
     {
+      "source": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+      "translation": "Aponte para qualquer painel de visualização visível, segure o gatilho para movê-lo e incline o botão para obter profundidade."
+    },
+    {
       "source": "Point name",
       "translation": "Nome do ponto"
     },
@@ -152263,16 +152439,16 @@
       "translation": "Português (Brasil)"
     },
     {
-      "source": "Position X (10 cm units)",
-      "translation": "Posição X (unidades de 10 cm)"
+      "source": "Pos X",
+      "translation": "Pos X"
     },
     {
-      "source": "Position Y (10 cm units)",
-      "translation": "Posição Y (unidades de 10 cm)"
+      "source": "Pos Y",
+      "translation": "Pos Y"
     },
     {
-      "source": "Position Z (10 cm units)",
-      "translation": "Posição Z (unidades de 10 cm)"
+      "source": "Pos Z",
+      "translation": "Posição Z"
     },
     {
       "source": "Position editor cleanup failed",
@@ -152657,6 +152833,10 @@
     {
       "source": "Previous body",
       "translation": "Corpo anterior"
+    },
+    {
+      "source": "Previous category",
+      "translation": "Categoria anterior"
     },
     {
       "source": "Previous entry",
@@ -156135,8 +156315,8 @@
       "translation": "Rochoso | 268.661 CR/t"
     },
     {
-      "source": "Roll (degrees)",
-      "translation": "Rolar (graus)"
+      "source": "Roll",
+      "translation": "Rolar"
     },
     {
       "source": "Rollback backup: {0}",
@@ -156161,6 +156341,10 @@
     {
       "source": "RotateAlphaAerial",
       "translation": "GirarAlfaAéreo"
+    },
+    {
+      "source": "Rotation",
+      "translation": "Rotação"
     },
     {
       "source": "Rounder HUD outlines",
@@ -156907,10 +157091,6 @@
       "translation": "Salvar favorito"
     },
     {
-      "source": "Save calibration",
-      "translation": "Salvar calibração"
-    },
-    {
       "source": "Save change",
       "translation": "Salvar alteração"
     },
@@ -157187,6 +157367,10 @@
       "translation": "{0} configurações de sobreposição salvas. As sobreposições visíveis são atualizadas imediatamente.{1}"
     },
     {
+      "source": "Saved {0} overlays ({1}).",
+      "translation": "Sobreposições {0} salvas ({1})."
+    },
+    {
       "source": "Saved {0} screenshots.",
       "translation": "Capturas de tela {0} salvas."
     },
@@ -157237,6 +157421,10 @@
     {
       "source": "Scale",
       "translation": "Escala"
+    },
+    {
+      "source": "Scale & Position",
+      "translation": "Escala e posição"
     },
     {
       "source": "Scale from the operating-system baseline in 5% steps.",
@@ -160615,6 +160803,10 @@
       "translation": "Massa Estelar"
     },
     {
+      "source": "Step",
+      "translation": "Etapa"
+    },
+    {
       "source": "Still to plan: {0}",
       "translation": "Ainda a planejar: {0}"
     },
@@ -163011,6 +163203,10 @@
       "translation": "A operação de instalação e a limpeza do candidato falharam."
     },
     {
+      "source": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+      "translation": "O instalado libSrvSurveyLinuxOpenXrOverlay.so não suporta interação controlador-ponteiro. Atualizar ou reconstruir SrvSurvey."
+    },
+    {
       "source": "The installed release notes are missing from this build.",
       "translation": "As notas de versão instaladas estão faltando nesta compilação."
     },
@@ -163897,10 +164093,6 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "O marcador selecionado não pôde ser salvo:"
-    },
-    {
-      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-      "translation": "O painel selecionado mostra dados de amostra. Passos normais: 5 cm e 1°. Escolha Fino ou Grosso no fone de ouvido ou segure Shift para fino / Ctrl para grosso. Role sobre um número para ajustá-lo."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -166307,8 +166499,8 @@
       "translation": "Use este atalho para tornar as sobreposições ao vivo existentes clicáveis ​​e arrastáveis. Use-o novamente para salvar posições e restaurar o modo click-through; nunca abre o editor completo."
     },
     {
-      "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-      "translation": "Use este atalho para alternar as sobreposições SteamVR ou VDXR entre clique e interação do ponteiro do controlador. Em VDXR, aponte para um painel: cliques no gatilho, cliques com o botão direito do mouse e rolagens do polegar. Use o atalho novamente para restaurar o modo click-through."
+      "source": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Use este atalho para alternar as sobreposições SteamVR, VDXR, WiVRn ou Monado entre clique e interação do ponteiro do controlador. Em rotas OpenXR (VDXR, WiVRn, Monado), aponte para um painel: cliques no gatilho, cliques com o botão direito do mouse e rolagens do polegar ou do trackpad. Use o atalho novamente para restaurar o modo click-through."
     },
     {
       "source": "UseAutomaticSourceFolder",
@@ -166427,10 +166619,6 @@
       "translation": "VDXR: registre a camada OpenXR do pacote Windows x64 e reinicie o Elite. Direct3D 11 é necessário."
     },
     {
-      "source": "VEHICLE / GAME MODE",
-      "translation": "VEÍCULO / MODO DE JOGO"
-    },
-    {
       "source": "VISIT",
       "translation": "VISITE"
     },
@@ -166519,10 +166707,6 @@
       "translation": "As sobreposições de VR são clicadas novamente."
     },
     {
-      "source": "VR overlays are click-through.",
-      "translation": "As sobreposições de VR são clicadas."
-    },
-    {
       "source": "VR overlays are disabled.",
       "translation": "As sobreposições de VR estão desativadas."
     },
@@ -166535,8 +166719,8 @@
       "translation": "As sobreposições de VR requerem Windows ou Linux."
     },
     {
-      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
-      "translation": "As sobreposições de VR permanecem clicadas até que você habilite explicitamente a interação controlador-ponteiro na rota selecionada SteamVR ou VDXR."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
+      "translation": "As sobreposições de VR permanecem clicadas até que você habilite explicitamente a interação controlador-ponteiro na rota selecionada SteamVR, VDXR, WiVRn ou Monado."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -167647,8 +167831,8 @@
       "translation": "sim"
     },
     {
-      "source": "Yaw (degrees)",
-      "translation": "Guinada (graus)"
+      "source": "Yaw",
+      "translation": "Guinada"
     },
     {
       "source": "Years",
@@ -168661,6 +168845,10 @@
     {
       "source": "default",
       "translation": "padrão"
+    },
+    {
+      "source": "degrees",
+      "translation": "graus"
     },
     {
       "source": "depleted",
@@ -171863,6 +172051,10 @@
       "translation": "{0} contribuiu"
     },
     {
+      "source": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "A interação do controlador {0} está habilitada. Aponte para um painel e use o gatilho para clicar."
+    },
+    {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} não pôde ser aberto: {1}"
     },
@@ -173197,6 +173389,10 @@
       "translation": "Расстояние подхода 1,8 км"
     },
     {
+      "source": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+      "translation": "10 см, прокрутите для настройки (Shift точно, Ctrl грубо)"
+    },
+    {
       "source": "10.89 M - 34.34 M",
       "translation": "10,89 М - 34,34 М"
     },
@@ -174133,10 +174329,6 @@
       "translation": "деятельность"
     },
     {
-      "source": "ADJUSTMENT STEP",
-      "translation": "ЭТАП РЕГУЛИРОВКИ"
-    },
-    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "ВЫРАВНИТЬ ПРОИСХОЖДЕНИЕ САЙТА GUARDIAN"
     },
@@ -174935,6 +175127,10 @@
     {
       "source": "All needs are covered.",
       "translation": "Все потребности покрыты."
+    },
+    {
+      "source": "All overlays",
+      "translation": "Все наложения"
     },
     {
       "source": "All platinum",
@@ -180537,6 +180733,10 @@
       "translation": "Подключите свою учетную запись Frontier перед обновлением этой страницы."
     },
     {
+      "source": "Connect {0} before enabling controller interaction.",
+      "translation": "Подключите {0} перед включением взаимодействия с контроллером."
+    },
+    {
       "source": "Connect {0} before resetting the overlay origin.",
       "translation": "Подключите {0} перед сбросом источника наложения."
     },
@@ -180677,12 +180877,12 @@
       "translation": "Контроллер {0}"
     },
     {
-      "source": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-      "translation": "Взаимодействие контроллера и указателя пока не поддерживается в Linux OpenXR (WiVRn/Monado). Используйте настройки VR на рабочем столе или настройте наложения."
-    },
-    {
       "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
       "translation": "Взаимодействие контроллер-указатель включено; используйте его ярлык еще раз, чтобы восстановить кликабельность."
+    },
+    {
+      "source": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+      "translation": "Взаимодействие контроллера и указателя недоступно для {0} (OpenXR ошибка {1})."
     },
     {
       "source": "ControllerDeviceId",
@@ -182813,6 +183013,18 @@
       "translation": "Перетащите каждую пронумерованную красную точку в центр ее круга: 1–3 в верхнем ряду, 4–6 в нижнем. Каждый центр можно настроить отдельно."
     },
     {
+      "source": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+      "translation": "Активен режим перетаскивания: наведите курсор на любую видимую панель предварительного просмотра, удерживайте триггер для перетаскивания и используйте джойстик для регулировки глубины."
+    },
+    {
+      "source": "Drag mode off.",
+      "translation": "Режим перетаскивания выключить."
+    },
+    {
+      "source": "Drag panels in VR",
+      "translation": "Перетаскивание панелей в VR"
+    },
+    {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "Перетащите границы предварительного просмотра на нужные мониторы и в нужные позиции. Содержимое предварительного просмотра создается из ложного состояния игры, имеющего форму реальных данных наложения."
     },
@@ -183489,8 +183701,8 @@
       "translation": "Включите SrvSurvey наложения VR и дождитесь подключения VDXR сеанса. Разместите панели с элементами управления калибровкой. Используйте взаимодействие наложения Toggle VR, чтобы указать и щелкнуть контроллером Quest."
     },
     {
-      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
-      "translation": "Включите SrvSurvey наложения VR ниже и используйте «Настроить наложения» или «Сбросить ориентацию VR», чтобы разместить панели в кабине."
+      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Включите SrvSurvey наложения VR ниже и используйте функции «Настроить наложения», «Сбросить ориентацию VR» или «Переключить наложение VR», чтобы разместить и щелкнуть панели в кабине."
     },
     {
       "source": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
@@ -184093,12 +184305,12 @@
       "translation": "Включено экспериментальное взаимодействие с контроллером EDVR. Наведите курсор на панель и нажмите триггер."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
-      "translation": "Экспериментальный маршрут Linux OpenXR без SteamVR. Использует собственный композитор Monado XR_EXTX_overlay с безголовым Vulkan. Взаимодействие с указателем контроллера пока не поддерживается."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Экспериментальный маршрут Linux OpenXR без SteamVR. Использует собственный композитор Monado XR_EXTX_overlay с безголовым Vulkan. Поддерживает взаимодействие контроллера и указателя через взаимодействие наложения Toggle VR."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
-      "translation": "Экспериментальный маршрут Linux OpenXR без SteamVR. Использует собственный композитор WiVRn XR_EXTX_overlay с безголовым Vulkan, поэтому Elite Dangerous может работать через WiVRn (с xrizer или OpenComposite) без сбоев наложения OpenVR. Взаимодействие с указателем контроллера пока не поддерживается."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Экспериментальный маршрут Linux OpenXR без SteamVR. Использует собственный композитор WiVRn XR_EXTX_overlay с безголовым Vulkan, поэтому Elite Dangerous может работать через WiVRn (с xrizer или OpenComposite) без сбоев наложения OpenVR. Поддерживает взаимодействие контроллера и указателя через взаимодействие наложения Toggle VR."
     },
     {
       "source": "Experimental rig bar detection",
@@ -192109,6 +192321,10 @@
       "translation": "Следующий бокс для поиска: {0}"
     },
     {
+      "source": "Next category",
+      "translation": "Следующая категория"
+    },
+    {
       "source": "Next entry",
       "translation": "Следующая запись"
     },
@@ -193323,6 +193539,10 @@
     {
       "source": "OVERLAY",
       "translation": "наложение"
+    },
+    {
+      "source": "OVERLAY CATEGORY",
+      "translation": "КАТЕГОРИЯ НАВЕРХИЯ"
     },
     {
       "source": "OVERLAY SIZE",
@@ -195125,12 +195345,12 @@
       "translation": "Пиратская атака"
     },
     {
-      "source": "Pitch (degrees)",
-      "translation": "Шаг (градусы)"
+      "source": "Pitch",
+      "translation": "Подача"
     },
     {
-      "source": "Place in front of me",
-      "translation": "Поместите передо мной"
+      "source": "Place in front",
+      "translation": "Место впереди"
     },
     {
       "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
@@ -195453,6 +195673,10 @@
       "translation": "Источник плагина"
     },
     {
+      "source": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+      "translation": "Наведите курсор на любую видимую панель предварительного просмотра, удерживайте триггер, чтобы переместить ее, и наклоните джойстик для увеличения глубины."
+    },
+    {
       "source": "Point name",
       "translation": "Имя точки"
     },
@@ -195493,16 +195717,16 @@
       "translation": "Португальский (Бразилия)"
     },
     {
-      "source": "Position X (10 cm units)",
-      "translation": "Позиция X (блоки по 10 см)"
+      "source": "Pos X",
+      "translation": "Позиция X"
     },
     {
-      "source": "Position Y (10 cm units)",
-      "translation": "Позиция Y (размеры 10 см)"
+      "source": "Pos Y",
+      "translation": "Позиция Y"
     },
     {
-      "source": "Position Z (10 cm units)",
-      "translation": "Позиция Z (размеры 10 см)"
+      "source": "Pos Z",
+      "translation": "Позиция Z"
     },
     {
       "source": "Position editor cleanup failed",
@@ -195887,6 +196111,10 @@
     {
       "source": "Previous body",
       "translation": "Предыдущее тело"
+    },
+    {
+      "source": "Previous category",
+      "translation": "Предыдущая категория"
     },
     {
       "source": "Previous entry",
@@ -199365,8 +199593,8 @@
       "translation": "Рокки | 268 661 CR/т"
     },
     {
-      "source": "Roll (degrees)",
-      "translation": "Крен (градусы)"
+      "source": "Roll",
+      "translation": "Рулон"
     },
     {
       "source": "Rollback backup: {0}",
@@ -199391,6 +199619,10 @@
     {
       "source": "RotateAlphaAerial",
       "translation": "ПоворотАльфаВоздушная"
+    },
+    {
+      "source": "Rotation",
+      "translation": "Вращение"
     },
     {
       "source": "Rounder HUD outlines",
@@ -200137,10 +200369,6 @@
       "translation": "Сохранить закладку"
     },
     {
-      "source": "Save calibration",
-      "translation": "Сохранить калибровку"
-    },
-    {
       "source": "Save change",
       "translation": "Сохранить изменения"
     },
@@ -200417,6 +200645,10 @@
       "translation": "Сохранены настройки наложения {0}. Видимые наложения обновляются немедленно.{1}"
     },
     {
+      "source": "Saved {0} overlays ({1}).",
+      "translation": "Сохранены накладки {0} ({1})."
+    },
+    {
       "source": "Saved {0} screenshots.",
       "translation": "Сохранены скриншоты {0}."
     },
@@ -200467,6 +200699,10 @@
     {
       "source": "Scale",
       "translation": "Шкала"
+    },
+    {
+      "source": "Scale & Position",
+      "translation": "Масштаб и положение"
     },
     {
       "source": "Scale from the operating-system baseline in 5% steps.",
@@ -203845,6 +204081,10 @@
       "translation": "StellarMass"
     },
     {
+      "source": "Step",
+      "translation": "Шаг"
+    },
+    {
       "source": "Still to plan: {0}",
       "translation": "Еще в планах: {0}"
     },
@@ -206241,6 +206481,10 @@
       "translation": "Операция установки и очистка кандидатов завершились неудачно."
     },
     {
+      "source": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+      "translation": "Установленный libSrvSurveyLinuxOpenXrOverlay.so не поддерживает взаимодействие контроллер-указатель. Обновите или пересоберите SrvSurvey."
+    },
+    {
       "source": "The installed release notes are missing from this build.",
       "translation": "В этой сборке отсутствуют установленные примечания к выпуску."
     },
@@ -207127,10 +207371,6 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "Выбранный маркер не удалось сохранить:"
-    },
-    {
-      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-      "translation": "На выбранной панели отображаются образцы данных. Обычные шаги: 5 см и 1°. Выберите «Точный» или «Грубый» в гарнитуре или удерживайте Shift для точного или Ctrl для грубого. Прокрутите число, чтобы настроить его."
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -209537,8 +209777,8 @@
       "translation": "Используйте этот ярлык, чтобы сделать существующие живые наложения кликабельными и перетаскиваемыми. Используйте его еще раз, чтобы сохранить позиции и восстановить режим кликабельности; он никогда не открывает полный редактор."
     },
     {
-      "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-      "translation": "Используйте этот ярлык для переключения наложений SteamVR или VDXR между кликом и взаимодействием указателя контроллера. На VDXR наведите указатель мыши на панель: щелчки триггера, щелчок правой кнопкой мыши и прокрутка с помощью джойстика. Используйте ярлык еще раз, чтобы восстановить режим перехода по клику."
+      "source": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "Используйте этот ярлык для переключения наложений SteamVR, VDXR, WiVRn или Monado между кликом и взаимодействием указателя контроллера. На маршрутах OpenXR (VDXR, WiVRn, Monado) наводите указатель на панель: запускайте щелчки, захватывайте щелчки правой кнопкой мыши и прокручивайте с помощью джойстика или трекпада. Используйте ярлык еще раз, чтобы восстановить режим перехода по клику."
     },
     {
       "source": "UseAutomaticSourceFolder",
@@ -209657,10 +209897,6 @@
       "translation": "VDXR: зарегистрируйте слой OpenXR из пакета Windows x64, затем перезапустите Elite. Требуется Direct3D 11."
     },
     {
-      "source": "VEHICLE / GAME MODE",
-      "translation": "АВТОМОБИЛЬ/РЕЖИМ ИГРЫ"
-    },
-    {
       "source": "VISIT",
       "translation": "ПОСЕТИТЬ"
     },
@@ -209749,10 +209985,6 @@
       "translation": "Оверлеи VR снова стали кликабельными."
     },
     {
-      "source": "VR overlays are click-through.",
-      "translation": "Оверлеи VR являются кликабельными."
-    },
-    {
       "source": "VR overlays are disabled.",
       "translation": "Оверлеи VR отключены."
     },
@@ -209765,8 +209997,8 @@
       "translation": "Для наложений VR требуется Windows или Linux."
     },
     {
-      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
-      "translation": "Наложения виртуальной реальности остаются интерактивными до тех пор, пока вы явно не включите взаимодействие контроллера и указателя на выбранном SteamVR или VDXR маршруте."
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
+      "translation": "Наложения VR остаются интерактивными до тех пор, пока вы явно не включите взаимодействие контроллера и указателя на выбранном маршруте SteamVR, VDXR, WiVRn или Monado."
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -210877,8 +211109,8 @@
       "translation": "да"
     },
     {
-      "source": "Yaw (degrees)",
-      "translation": "Отклонение от курса (градусы)"
+      "source": "Yaw",
+      "translation": "рыскание"
     },
     {
       "source": "Years",
@@ -211891,6 +212123,10 @@
     {
       "source": "default",
       "translation": "по умолчанию"
+    },
+    {
+      "source": "degrees",
+      "translation": "степени"
     },
     {
       "source": "depleted",
@@ -215093,6 +215329,10 @@
       "translation": "{0} внес свой вклад"
     },
     {
+      "source": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "Взаимодействие с контроллером {0} включено. Наведите курсор на панель и нажмите триггер."
+    },
+    {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} не удалось открыть: {1}"
     },
@@ -216427,6 +216667,10 @@
       "translation": "1.8公里接近距离"
     },
     {
+      "source": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+      "translation": "10 cm 单位，滚动调整（Shift 微调，Ctrl 粗调）"
+    },
+    {
       "source": "10.89 M - 34.34 M",
       "translation": "10.89米 - 34.34米"
     },
@@ -217363,10 +217607,6 @@
       "translation": "活动"
     },
     {
-      "source": "ADJUSTMENT STEP",
-      "translation": "调整步骤"
-    },
-    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "对齐监护人网站来源"
     },
@@ -218165,6 +218405,10 @@
     {
       "source": "All needs are covered.",
       "translation": "所有需求都得到满足。"
+    },
+    {
+      "source": "All overlays",
+      "translation": "所有叠加层"
     },
     {
       "source": "All platinum",
@@ -223767,6 +224011,10 @@
       "translation": "刷新此页面之前请连接您的 Frontier 帐户。"
     },
     {
+      "source": "Connect {0} before enabling controller interaction.",
+      "translation": "在启用控制器交互之前连接 {0}。"
+    },
+    {
       "source": "Connect {0} before resetting the overlay origin.",
       "translation": "在重置覆盖原点之前连接 {0}。"
     },
@@ -223907,12 +224155,12 @@
       "translation": "控制器 {0}"
     },
     {
-      "source": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-      "translation": "Linux OpenXR (WiVRn/Monado) 尚不支持控制器指针交互。使用桌面 VR 设置或调整叠加。"
-    },
-    {
       "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
       "translation": "控制器-指针交互已开启；再次使用其快捷方式恢复点击。"
+    },
+    {
+      "source": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+      "translation": "{0} 上控制器指针交互不可用（OpenXR 错误 {1}）。"
     },
     {
       "source": "ControllerDeviceId",
@@ -226043,6 +226291,18 @@
       "translation": "将每个编号的红点拖动到其圆中心：1-3 穿过顶行，4-6 穿过底部。每个中心都可以单独调整。"
     },
     {
+      "source": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+      "translation": "拖动模式处于活动状态：指向任何可见的预览面板，按住触发器进行拖动，然后使用拇指操纵杆调整深度。"
+    },
+    {
+      "source": "Drag mode off.",
+      "translation": "拖动模式关闭。"
+    },
+    {
+      "source": "Drag panels in VR",
+      "translation": "VR 中的拖动面板"
+    },
+    {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "将带边框的预览拖动到所需的监视器和位置。预览内容来自形状像真实叠加数据的虚假游戏状态。"
     },
@@ -226719,8 +226979,8 @@
       "translation": "启用 SrvSurvey VR 覆盖并等待连接的 VDXR 会话。将面板与校准控件放置在一起。使用切换 VR 叠加交互来通过 Quest 控制器进行指向和单击。"
     },
     {
-      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
-      "translation": "启用下面的 SrvSurvey VR 覆盖并使用调整覆盖或重置 VR 方向将面板放置在驾驶舱中。"
+      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "启用下面的 SrvSurvey VR 覆盖并使用调整覆盖、重置 VR 方向或切换 VR 覆盖交互来放置并单击驾驶舱中的面板。"
     },
     {
       "source": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
@@ -227323,12 +227583,12 @@
       "translation": "实验性 EDVR 控制器交互已启用。指向面板并使用触发器单击。"
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
-      "translation": "实验性 Linux OpenXR 路线没有 SteamVR。使用 Monado 的原生 XR_EXTX_overlay 合成器和无头 Vulkan。尚不支持控制器指针交互。"
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "实验性 Linux OpenXR 路线没有 SteamVR。使用 Monado 的原生 XR_EXTX_overlay 合成器和无头 Vulkan。通过切换 VR 叠加交互支持控制器指针交互。"
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
-      "translation": "实验性 Linux OpenXR 路线没有 SteamVR。使用 WiVRn 的本机 XR_EXTX_overlay 合成器和无头 Vulkan，因此 Elite Dangerous 可以通过 WiVRn（使用 xrizer 或 OpenComposite）运行，而不会 OpenVR 覆盖崩溃。尚不支持控制器指针交互。"
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "实验性 Linux OpenXR 路线没有 SteamVR。使用 WiVRn 的本机 XR_EXTX_overlay 合成器和无头 Vulkan，因此 Elite Dangerous 可以通过 WiVRn（使用 xrizer 或 OpenComposite）运行，而不会 OpenVR 覆盖崩溃。通过切换 VR 叠加交互支持控制器指针交互。"
     },
     {
       "source": "Experimental rig bar detection",
@@ -235339,6 +235599,10 @@
       "translation": "要搜索的下一个框：{0}"
     },
     {
+      "source": "Next category",
+      "translation": "下一类别"
+    },
+    {
       "source": "Next entry",
       "translation": "下一个条目"
     },
@@ -236553,6 +236817,10 @@
     {
       "source": "OVERLAY",
       "translation": "覆盖"
+    },
+    {
+      "source": "OVERLAY CATEGORY",
+      "translation": "覆盖类别"
     },
     {
       "source": "OVERLAY SIZE",
@@ -238355,12 +238623,12 @@
       "translation": "海盗袭击"
     },
     {
-      "source": "Pitch (degrees)",
-      "translation": "螺距（度）"
+      "source": "Pitch",
+      "translation": "沥青"
     },
     {
-      "source": "Place in front of me",
-      "translation": "放在我面前"
+      "source": "Place in front",
+      "translation": "放在前面"
     },
     {
       "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
@@ -238683,6 +238951,10 @@
       "translation": "插件源码"
     },
     {
+      "source": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+      "translation": "指向任何可见的预览面板，按住扳机移动它，然后倾斜操纵杆以获得深度。"
+    },
+    {
       "source": "Point name",
       "translation": "点名称"
     },
@@ -238723,16 +238995,16 @@
       "translation": "葡萄牙语（巴西）"
     },
     {
-      "source": "Position X (10 cm units)",
-      "translation": "位置 X（10 厘米单位）"
+      "source": "Pos X",
+      "translation": "X位置"
     },
     {
-      "source": "Position Y (10 cm units)",
-      "translation": "位置 Y（10 厘米单位）"
+      "source": "Pos Y",
+      "translation": "位置 Y"
     },
     {
-      "source": "Position Z (10 cm units)",
-      "translation": "位置 Z（10 厘米单位）"
+      "source": "Pos Z",
+      "translation": "位置 Z"
     },
     {
       "source": "Position editor cleanup failed",
@@ -239117,6 +239389,10 @@
     {
       "source": "Previous body",
       "translation": "上一个天体"
+    },
+    {
+      "source": "Previous category",
+      "translation": "上一类别"
     },
     {
       "source": "Previous entry",
@@ -242595,8 +242871,8 @@
       "translation": "洛基 | 268,661 冷轧/吨"
     },
     {
-      "source": "Roll (degrees)",
-      "translation": "滚动（度）"
+      "source": "Roll",
+      "translation": "卷"
     },
     {
       "source": "Rollback backup: {0}",
@@ -242621,6 +242897,10 @@
     {
       "source": "RotateAlphaAerial",
       "translation": "旋转Alpha天线"
+    },
+    {
+      "source": "Rotation",
+      "translation": "旋转"
     },
     {
       "source": "Rounder HUD outlines",
@@ -243367,10 +243647,6 @@
       "translation": "保存书签"
     },
     {
-      "source": "Save calibration",
-      "translation": "保存校准"
-    },
-    {
       "source": "Save change",
       "translation": "保存更改"
     },
@@ -243647,6 +243923,10 @@
       "translation": "已保存 {0} 叠加设置。可见叠加层立即更新。{1}"
     },
     {
+      "source": "Saved {0} overlays ({1}).",
+      "translation": "已保存 {0} 叠加 ({1})。"
+    },
+    {
       "source": "Saved {0} screenshots.",
       "translation": "已保存 {0} 屏幕截图。"
     },
@@ -243697,6 +243977,10 @@
     {
       "source": "Scale",
       "translation": "规模"
+    },
+    {
+      "source": "Scale & Position",
+      "translation": "比例和位置"
     },
     {
       "source": "Scale from the operating-system baseline in 5% steps.",
@@ -247075,6 +247359,10 @@
       "translation": "恒星质量"
     },
     {
+      "source": "Step",
+      "translation": "步"
+    },
+    {
       "source": "Still to plan: {0}",
       "translation": "尚待计划：{0}"
     },
@@ -249471,6 +249759,10 @@
       "translation": "安装操作和候选清理均失败。"
     },
     {
+      "source": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+      "translation": "安装的libSrvSurveyLinuxOpenXrOverlay.so不支持控制器指针交互。更新或重建SrvSurvey。"
+    },
+    {
       "source": "The installed release notes are missing from this build.",
       "translation": "此版本中缺少已安装的发行说明。"
     },
@@ -250357,10 +250649,6 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "无法保存所选标记："
-    },
-    {
-      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-      "translation": "所选面板显示示例数据。正常步长：5 厘米和 1°。在耳机中选择“精细”或“粗略”，或按住 Shift 进行精细/按住 Ctrl 进行粗调。滚动数字进行调整。"
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -252767,8 +253055,8 @@
       "translation": "使用此快捷方式可以使现有的实时叠加可单击和拖动。再次使用它可以保存位置并恢复点击模式；它永远不会打开完整的编辑器。"
     },
     {
-      "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-      "translation": "使用此快捷方式可在点击和控制器指针交互之间切换 SteamVR 或 VDXR 覆盖。在 VDXR 上，指向面板：触发单击、握柄右键单击和摇杆滚动。再次使用该快捷方式可恢复点击模式。"
+      "source": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "使用此快捷方式可在点击和控制器指针交互之间切换 SteamVR、VDXR、WiVRn 或 Monado 覆盖。在 OpenXR 路线（VDXR、WiVRn、Monado）上，指向面板：触发单击、右键单击以及摇杆或触控板滚动。再次使用该快捷方式可恢复点击模式。"
     },
     {
       "source": "UseAutomaticSourceFolder",
@@ -252887,10 +253175,6 @@
       "translation": "VDXR：从 Windows x64 包注册 OpenXR 层，然后重新启动 Elite。需要 Direct3D 11。"
     },
     {
-      "source": "VEHICLE / GAME MODE",
-      "translation": "车辆/游戏模式"
-    },
-    {
       "source": "VISIT",
       "translation": "参观"
     },
@@ -252979,10 +253263,6 @@
       "translation": "VR 叠加层再次可点击。"
     },
     {
-      "source": "VR overlays are click-through.",
-      "translation": "VR 叠加层是点击式的。"
-    },
-    {
       "source": "VR overlays are disabled.",
       "translation": "VR 叠加被禁用。"
     },
@@ -252995,8 +253275,8 @@
       "translation": "VR 覆盖需要 Windows 或 Linux。"
     },
     {
-      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
-      "translation": "VR 叠加层将保持点击状态，直到您在选定的 SteamVR 或 VDXR 路线上明确启用控制器指针交互。"
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
+      "translation": "VR 叠加层将保持点击状态，直到您在选定的 SteamVR、VDXR、WiVRn 或 Monado 路线上明确启用控制器指针交互。"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -254107,8 +254387,8 @@
       "translation": "是的"
     },
     {
-      "source": "Yaw (degrees)",
-      "translation": "偏航（度）"
+      "source": "Yaw",
+      "translation": "偏航"
     },
     {
       "source": "Years",
@@ -255121,6 +255401,10 @@
     {
       "source": "default",
       "translation": "默认"
+    },
+    {
+      "source": "degrees",
+      "translation": "度"
     },
     {
       "source": "depleted",
@@ -258323,6 +258607,10 @@
       "translation": "{0} 贡献了"
     },
     {
+      "source": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "{0} 控制器交互已启用。指向面板并使用触发器单击。"
+    },
+    {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} 无法打开：{1}"
     },
@@ -259657,6 +259945,10 @@
       "translation": "* 1.8 KM APPROACH DISTANCE >>>!"
     },
     {
+      "source": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+      "translation": "* 10 CM UNITS, SCROLL TO ADJUST (SHIFT FINE, CTRL COARSE) >>>!"
+    },
+    {
       "source": "10.89 M - 34.34 M",
       "translation": "* 10.89 M - 34.34 M >>>!"
     },
@@ -260593,10 +260885,6 @@
       "translation": "* ACTIVITIES >>>!"
     },
     {
-      "source": "ADJUSTMENT STEP",
-      "translation": "* ADJUSTMENT STEP >>>!"
-    },
-    {
       "source": "ALIGN GUARDIAN SITE ORIGIN",
       "translation": "* ALIGN GUARDIAN SITE ORIGIN >>>!"
     },
@@ -261395,6 +261683,10 @@
     {
       "source": "All needs are covered.",
       "translation": "* ALL NEEDS ARE COVERED. >>>!"
+    },
+    {
+      "source": "All overlays",
+      "translation": "* ALL OVERLAYS >>>!"
     },
     {
       "source": "All platinum",
@@ -266997,6 +267289,10 @@
       "translation": "* CONNECT YOUR FRONTIER ACCOUNT BEFORE REFRESHING THIS PAGE. >>>!"
     },
     {
+      "source": "Connect {0} before enabling controller interaction.",
+      "translation": "* CONNECT {0} BEFORE ENABLING CONTROLLER INTERACTION. >>>!"
+    },
+    {
       "source": "Connect {0} before resetting the overlay origin.",
       "translation": "* CONNECT {0} BEFORE RESETTING THE OVERLAY ORIGIN. >>>!"
     },
@@ -267137,12 +267433,12 @@
       "translation": "* CONTROLLER {0} >>>!"
     },
     {
-      "source": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-      "translation": "* CONTROLLER-POINTER INTERACTION IS NOT YET SUPPORTED ON LINUX OPENXR (WIVRN/MONADO). USE DESKTOP VR SETTINGS OR ADJUST OVERLAYS. >>>!"
-    },
-    {
       "source": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
       "translation": "* CONTROLLER-POINTER INTERACTION IS ON; USE ITS SHORTCUT AGAIN TO RESTORE CLICK-THROUGH. >>>!"
+    },
+    {
+      "source": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+      "translation": "* CONTROLLER-POINTER INTERACTION IS UNAVAILABLE ON {0} (OPENXR ERROR {1}). >>>!"
     },
     {
       "source": "ControllerDeviceId",
@@ -269273,6 +269569,18 @@
       "translation": "* DRAG EACH NUMBERED RED DOT ONTO ITS CIRCLE CENTRE: 1–3 ACROSS THE TOP ROW, 4–6 ACROSS THE BOTTOM. EACH CENTRE CAN BE ADJUSTED SEPARATELY. >>>!"
     },
     {
+      "source": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+      "translation": "* DRAG MODE ACTIVE: POINT AT ANY VISIBLE PREVIEW PANEL, HOLD TRIGGER TO DRAG, AND USE THE THUMBSTICK TO ADJUST DEPTH. >>>!"
+    },
+    {
+      "source": "Drag mode off.",
+      "translation": "* DRAG MODE OFF. >>>!"
+    },
+    {
+      "source": "Drag panels in VR",
+      "translation": "* DRAG PANELS IN VR >>>!"
+    },
+    {
       "source": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
       "translation": "* DRAG THE BORDERED PREVIEWS TO THE DESIRED MONITORS AND POSITIONS. PREVIEW CONTENT COMES FROM A FALSE GAME STATE SHAPED LIKE REAL OVERLAY DATA. >>>!"
     },
@@ -269949,8 +270257,8 @@
       "translation": "* ENABLE SRVSURVEY VR OVERLAYS AND WAIT FOR A CONNECTED VDXR SESSION. PLACE PANELS WITH THE CALIBRATION CONTROLS. USE TOGGLE VR OVERLAY INTERACTION TO POINT AND CLICK WITH A QUEST CONTROLLER. >>>!"
     },
     {
-      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
-      "translation": "* ENABLE SRVSURVEY VR OVERLAYS BELOW AND USE ADJUST OVERLAYS OR RESET VR ORIENTATION TO PLACE PANELS IN YOUR COCKPIT. >>>!"
+      "source": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "* ENABLE SRVSURVEY VR OVERLAYS BELOW AND USE ADJUST OVERLAYS, RESET VR ORIENTATION, OR TOGGLE VR OVERLAY INTERACTION TO PLACE AND CLICK PANELS IN YOUR COCKPIT. >>>!"
     },
     {
       "source": "Enable Stealth Mode before exploring. Pending reports stay in a persistent local queue across application sessions.",
@@ -270553,12 +270861,12 @@
       "translation": "* EXPERIMENTAL EDVR CONTROLLER INTERACTION IS ENABLED. POINT AT A PANEL AND USE THE TRIGGER TO CLICK. >>>!"
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
-      "translation": "* EXPERIMENTAL LINUX OPENXR ROUTE WITHOUT STEAMVR. USES MONADO'S NATIVE XR_EXTX_OVERLAY COMPOSITOR WITH HEADLESS VULKAN. CONTROLLER POINTER INTERACTION IS NOT YET SUPPORTED. >>>!"
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses Monado's native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "* EXPERIMENTAL LINUX OPENXR ROUTE WITHOUT STEAMVR. USES MONADO'S NATIVE XR_EXTX_OVERLAY COMPOSITOR WITH HEADLESS VULKAN. SUPPORTS CONTROLLER-POINTER INTERACTION VIA TOGGLE VR OVERLAY INTERACTION. >>>!"
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
-      "translation": "* EXPERIMENTAL LINUX OPENXR ROUTE WITHOUT STEAMVR. USES WIVRN'S NATIVE XR_EXTX_OVERLAY COMPOSITOR WITH HEADLESS VULKAN SO ELITE DANGEROUS CAN RUN THROUGH WIVRN (WITH XRIZER OR OPENCOMPOSITE) WITHOUT OPENVR OVERLAY CRASHES. CONTROLLER POINTER INTERACTION IS NOT YET SUPPORTED. >>>!"
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "* EXPERIMENTAL LINUX OPENXR ROUTE WITHOUT STEAMVR. USES WIVRN'S NATIVE XR_EXTX_OVERLAY COMPOSITOR WITH HEADLESS VULKAN SO ELITE DANGEROUS CAN RUN THROUGH WIVRN (WITH XRIZER OR OPENCOMPOSITE) WITHOUT OPENVR OVERLAY CRASHES. SUPPORTS CONTROLLER-POINTER INTERACTION VIA TOGGLE VR OVERLAY INTERACTION. >>>!"
     },
     {
       "source": "Experimental rig bar detection",
@@ -278569,6 +278877,10 @@
       "translation": "* NEXT BOXEL TO SEARCH: {0} >>>!"
     },
     {
+      "source": "Next category",
+      "translation": "* NEXT CATEGORY >>>!"
+    },
+    {
       "source": "Next entry",
       "translation": "* NEXT ENTRY >>>!"
     },
@@ -279783,6 +280095,10 @@
     {
       "source": "OVERLAY",
       "translation": "* OVERLAY >>>!"
+    },
+    {
+      "source": "OVERLAY CATEGORY",
+      "translation": "* OVERLAY CATEGORY >>>!"
     },
     {
       "source": "OVERLAY SIZE",
@@ -281585,12 +281901,12 @@
       "translation": "* PIRATE ATTACK >>>!"
     },
     {
-      "source": "Pitch (degrees)",
-      "translation": "* PITCH (DEGREES) >>>!"
+      "source": "Pitch",
+      "translation": "* PITCH >>>!"
     },
     {
-      "source": "Place in front of me",
-      "translation": "* PLACE IN FRONT OF ME >>>!"
+      "source": "Place in front",
+      "translation": "* PLACE IN FRONT >>>!"
     },
     {
       "source": "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
@@ -281913,6 +282229,10 @@
       "translation": "* PLUGIN SOURCE >>>!"
     },
     {
+      "source": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+      "translation": "* POINT AT ANY VISIBLE PREVIEW PANEL, HOLD TRIGGER TO MOVE IT, AND TILT THE THUMBSTICK FOR DEPTH. >>>!"
+    },
+    {
       "source": "Point name",
       "translation": "* POINT NAME >>>!"
     },
@@ -281953,16 +282273,16 @@
       "translation": "* PORTUGUÊS (BRASIL) >>>!"
     },
     {
-      "source": "Position X (10 cm units)",
-      "translation": "* POSITION X (10 CM UNITS) >>>!"
+      "source": "Pos X",
+      "translation": "* POS X >>>!"
     },
     {
-      "source": "Position Y (10 cm units)",
-      "translation": "* POSITION Y (10 CM UNITS) >>>!"
+      "source": "Pos Y",
+      "translation": "* POS Y >>>!"
     },
     {
-      "source": "Position Z (10 cm units)",
-      "translation": "* POSITION Z (10 CM UNITS) >>>!"
+      "source": "Pos Z",
+      "translation": "* POS Z >>>!"
     },
     {
       "source": "Position editor cleanup failed",
@@ -282347,6 +282667,10 @@
     {
       "source": "Previous body",
       "translation": "* PREVIOUS BODY >>>!"
+    },
+    {
+      "source": "Previous category",
+      "translation": "* PREVIOUS CATEGORY >>>!"
     },
     {
       "source": "Previous entry",
@@ -285825,8 +286149,8 @@
       "translation": "* ROCKY | 268,661 CR/T >>>!"
     },
     {
-      "source": "Roll (degrees)",
-      "translation": "* ROLL (DEGREES) >>>!"
+      "source": "Roll",
+      "translation": "* ROLL >>>!"
     },
     {
       "source": "Rollback backup: {0}",
@@ -285851,6 +286175,10 @@
     {
       "source": "RotateAlphaAerial",
       "translation": "* ROTATEALPHAAERIAL >>>!"
+    },
+    {
+      "source": "Rotation",
+      "translation": "* ROTATION >>>!"
     },
     {
       "source": "Rounder HUD outlines",
@@ -286597,10 +286925,6 @@
       "translation": "* SAVE BOOKMARK >>>!"
     },
     {
-      "source": "Save calibration",
-      "translation": "* SAVE CALIBRATION >>>!"
-    },
-    {
       "source": "Save change",
       "translation": "* SAVE CHANGE >>>!"
     },
@@ -286877,6 +287201,10 @@
       "translation": "* SAVED {0} OVERLAY SETTING(S). VISIBLE OVERLAYS UPDATE IMMEDIATELY.{1} >>>!"
     },
     {
+      "source": "Saved {0} overlays ({1}).",
+      "translation": "* SAVED {0} OVERLAYS ({1}). >>>!"
+    },
+    {
       "source": "Saved {0} screenshots.",
       "translation": "* SAVED {0} SCREENSHOTS. >>>!"
     },
@@ -286927,6 +287255,10 @@
     {
       "source": "Scale",
       "translation": "* SCALE >>>!"
+    },
+    {
+      "source": "Scale & Position",
+      "translation": "* SCALE & POSITION >>>!"
     },
     {
       "source": "Scale from the operating-system baseline in 5% steps.",
@@ -290305,6 +290637,10 @@
       "translation": "* STELLARMASS >>>!"
     },
     {
+      "source": "Step",
+      "translation": "* STEP >>>!"
+    },
+    {
       "source": "Still to plan: {0}",
       "translation": "* STILL TO PLAN: {0} >>>!"
     },
@@ -292701,6 +293037,10 @@
       "translation": "* THE INSTALLATION OPERATION AND CANDIDATE CLEANUP BOTH FAILED. >>>!"
     },
     {
+      "source": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+      "translation": "* THE INSTALLED LIBSRVSURVEYLINUXOPENXROVERLAY.SO DOES NOT SUPPORT CONTROLLER-POINTER INTERACTION. UPDATE OR REBUILD SRVSURVEY. >>>!"
+    },
+    {
       "source": "The installed release notes are missing from this build.",
       "translation": "* THE INSTALLED RELEASE NOTES ARE MISSING FROM THIS BUILD. >>>!"
     },
@@ -293587,10 +293927,6 @@
     {
       "source": "The selected marker could not be saved:",
       "translation": "* THE SELECTED MARKER COULD NOT BE SAVED: >>>!"
-    },
-    {
-      "source": "The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-      "translation": "* THE SELECTED PANEL SHOWS SAMPLE DATA. NORMAL STEPS: 5 CM AND 1°. CHOOSE FINE OR COARSE IN THE HEADSET, OR HOLD SHIFT FOR FINE / CTRL FOR COARSE. SCROLL OVER A NUMBER TO ADJUST IT. >>>!"
     },
     {
       "source": "The selected profile UI settings are not valid JSON.",
@@ -295997,8 +296333,8 @@
       "translation": "* USE THIS SHORTCUT TO MAKE EXISTING LIVE OVERLAYS CLICKABLE AND DRAGGABLE. USE IT AGAIN TO SAVE POSITIONS AND RESTORE CLICK-THROUGH MODE; IT NEVER OPENS THE FULL EDITOR. >>>!"
     },
     {
-      "source": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
-      "translation": "* USE THIS SHORTCUT TO SWITCH STEAMVR OR VDXR OVERLAYS BETWEEN CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. ON VDXR, POINT AT A PANEL: TRIGGER CLICKS, GRIP RIGHT-CLICKS, AND THUMBSTICK SCROLLS. USE THE SHORTCUT AGAIN TO RESTORE CLICK-THROUGH MODE. >>>!"
+      "source": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
+      "translation": "* USE THIS SHORTCUT TO SWITCH STEAMVR, VDXR, WIVRN, OR MONADO OVERLAYS BETWEEN CLICK-THROUGH AND CONTROLLER-POINTER INTERACTION. ON OPENXR ROUTES (VDXR, WIVRN, MONADO), POINT AT A PANEL: TRIGGER CLICKS, GRIP RIGHT-CLICKS, AND THUMBSTICK OR TRACKPAD SCROLLS. USE THE SHORTCUT AGAIN TO RESTORE CLICK-THROUGH MODE. >>>!"
     },
     {
       "source": "UseAutomaticSourceFolder",
@@ -296117,10 +296453,6 @@
       "translation": "* VDXR: REGISTER THE OPENXR LAYER FROM THE WINDOWS X64 PACKAGE, THEN RESTART ELITE. DIRECT3D 11 IS REQUIRED. >>>!"
     },
     {
-      "source": "VEHICLE / GAME MODE",
-      "translation": "* VEHICLE / GAME MODE >>>!"
-    },
-    {
       "source": "VISIT",
       "translation": "* VISIT >>>!"
     },
@@ -296209,10 +296541,6 @@
       "translation": "* VR OVERLAYS ARE CLICK-THROUGH AGAIN. >>>!"
     },
     {
-      "source": "VR overlays are click-through.",
-      "translation": "* VR OVERLAYS ARE CLICK-THROUGH. >>>!"
-    },
-    {
       "source": "VR overlays are disabled.",
       "translation": "* VR OVERLAYS ARE DISABLED. >>>!"
     },
@@ -296225,8 +296553,8 @@
       "translation": "* VR OVERLAYS REQUIRE WINDOWS OR LINUX. >>>!"
     },
     {
-      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
-      "translation": "* VR OVERLAYS STAY CLICK-THROUGH UNTIL YOU EXPLICITLY ENABLE CONTROLLER-POINTER INTERACTION ON THE SELECTED STEAMVR OR VDXR ROUTE. >>>!"
+      "source": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
+      "translation": "* VR OVERLAYS STAY CLICK-THROUGH UNTIL YOU EXPLICITLY ENABLE CONTROLLER-POINTER INTERACTION ON THE SELECTED STEAMVR, VDXR, WIVRN, OR MONADO ROUTE. >>>!"
     },
     {
       "source": "VR override '{0}/{1}' could not be verified before saving.",
@@ -297337,8 +297665,8 @@
       "translation": "* YES >>>!"
     },
     {
-      "source": "Yaw (degrees)",
-      "translation": "* YAW (DEGREES) >>>!"
+      "source": "Yaw",
+      "translation": "* YAW >>>!"
     },
     {
       "source": "Years",
@@ -298351,6 +298679,10 @@
     {
       "source": "default",
       "translation": "* DEFAULT >>>!"
+    },
+    {
+      "source": "degrees",
+      "translation": "* DEGREES >>>!"
     },
     {
       "source": "depleted",
@@ -301551,6 +301883,10 @@
     {
       "source": "{0} contributed",
       "translation": "* {0} CONTRIBUTED >>>!"
+    },
+    {
+      "source": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+      "translation": "* {0} CONTROLLER INTERACTION IS ENABLED. POINT AT A PANEL AND USE THE TRIGGER TO CLICK. >>>!"
     },
     {
       "source": "{0} could not be opened: {1}",

@@ -8,6 +8,8 @@ public sealed class VrOverlayInputRouter : IDisposable
     private readonly Pointer pointer = new(1, PointerType.Mouse, true);
     private readonly Dictionary<string, RawInputModifiers> modifiers = new(StringComparer.Ordinal);
 
+    public bool HasCapture => pointer.Captured is not null;
+
     public void Dispatch(RegisteredOverlayWindow registration, VrOverlayPointerEvent pointerEvent)
     {
         ArgumentNullException.ThrowIfNull(registration);

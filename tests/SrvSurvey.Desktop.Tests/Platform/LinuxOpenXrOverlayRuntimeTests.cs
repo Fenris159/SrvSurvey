@@ -92,8 +92,9 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.Equal(0u, BinaryPrimitives.ReadUInt32LittleEndian(backend.LastPacket.AsSpan(24)));
 
         Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
-        Assert.False(runtime.SetInteractionEnabled(true).Succeeded);
+        Assert.True(runtime.SetInteractionEnabled(true).Succeeded);
         Assert.Empty(runtime.PollPointerEvents());
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
 
         // Live probe stays ready while native session is Ok, then shuts down cleanly on SessionLost.
         backend.SessionStatus = new(LinuxOpenXrNativeStatus.Ok, 0, 0, 8, "Active");
@@ -176,6 +177,170 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
     }
 
     [Fact]
+    public void InteractionEnablesDisablesPollsScaledPointerEventsAndHandlesFailures()
+    {
+        var backend = new StubBackend
+        {
+            CreateOutcome = new(new nint(456), LinuxOpenXrNativeStatus.Ok, 0, "Created"),
+            SessionStatus = new(LinuxOpenXrNativeStatus.Ok, 0, 1, 16, "Active"),
+        };
+        using var runtime = new LinuxOpenXrOverlayRuntime(
+            VrPlatformProfileCatalog.MonadoOpenXrProfileId,
+            backend,
+            ActiveLinuxInspector("monado-service")
+        );
+
+        // Before initialization, enabling interaction fails cleanly while disabling is a safe no-op.
+        Assert.False(runtime.SetInteractionEnabled(true).Succeeded);
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        Assert.Empty(runtime.PollPointerEvents());
+        Assert.Equal(0, backend.SetInteractionCalls);
+
+        Assert.True(runtime.Initialize().Succeeded);
+
+        // Native failure surfaces native message or fallback with OpenXR error code.
+        backend.InteractionOutcome = new(false, -15, "Controller actions unavailable");
+        VrRuntimeResult failedWithMessage = runtime.SetInteractionEnabled(true);
+        Assert.False(failedWithMessage.Succeeded);
+        Assert.Contains("Controller actions unavailable", failedWithMessage.Message);
+        Assert.Empty(runtime.PollPointerEvents());
+
+        backend.InteractionOutcome = new(false, -15, " ");
+        VrRuntimeResult failedFallback = runtime.SetInteractionEnabled(true);
+        Assert.False(failedFallback.Succeeded);
+        Assert.Contains("-15", failedFallback.Message);
+
+        // Native success supports custom and fallback messages.
+        backend.InteractionOutcome = new(true, 0, " ");
+        VrRuntimeResult enabledFallback = runtime.SetInteractionEnabled(true);
+        Assert.True(enabledFallback.Succeeded);
+        Assert.Contains("Monado / OpenXR", enabledFallback.Message);
+
+        backend.InteractionOutcome = new(true, 0, "Pointer active");
+        VrRuntimeResult enabledCustom = runtime.SetInteractionEnabled(true);
+        Assert.True(enabledCustom.Succeeded);
+        Assert.Equal("Pointer active", enabledCustom.Message);
+
+        // Publish panels with explicit PointerWidth/PointerHeight and fallback Width/Height.
+        var scaledFrame = new VrOverlayFrame(2, 1, [255, 0, 0, 255, 0, 255, 0, 255], 400, 200);
+        Assert.True(runtime.PublishOverlay("PlotAdjustVR", scaledFrame, ValidCalibration(), 1f).Succeeded);
+        Assert.True(runtime.PublishOverlay("PlotJumpInfo", ValidFrame(), ValidCalibration(), 1f).Succeeded);
+
+        ulong adjustId = OpenXrFramePacket.GetOverlayId("PlotAdjustVR");
+        ulong jumpId = OpenXrFramePacket.GetOverlayId("PlotJumpInfo");
+        backend.PointerEvents =
+        [
+            new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.Move, 0.5f, 0.25f, 0, 0),
+            new OpenXrPointerEvent(jumpId, VrOverlayPointerEventKind.Wheel, 0.5f, 1.0f, 0.25f, -0.5f),
+            new OpenXrPointerEvent(999999UL, VrOverlayPointerEventKind.LeftButtonDown, 0.1f, 0.1f, 0, 0),
+            new OpenXrPointerEvent(0UL, VrOverlayPointerEventKind.Reset, 0, 0, 0, 0),
+        ];
+
+        IReadOnlyList<VrOverlayPointerEvent> polled = runtime.PollPointerEvents();
+        Assert.Equal(4, polled.Count);
+        Assert.Equal("PlotAdjustVR", polled[0].PlotterName);
+        Assert.Equal(VrOverlayPointerEventKind.Move, polled[0].Kind);
+        Assert.Equal(200, polled[0].X, 3);
+        Assert.Equal(50, polled[0].Y, 3);
+
+        Assert.Equal("PlotJumpInfo", polled[1].PlotterName);
+        Assert.Equal(VrOverlayPointerEventKind.Wheel, polled[1].Kind);
+        Assert.Equal(1, polled[1].X, 3);
+        Assert.Equal(1, polled[1].Y, 3);
+        Assert.Equal(0.25, polled[1].WheelX, 3);
+        Assert.Equal(-0.5, polled[1].WheelY, 3);
+
+        Assert.Equal(VrOverlayPointerEventKind.Reset, polled[2].Kind);
+        Assert.Equal(string.Empty, polled[2].PlotterName);
+        Assert.Equal(VrOverlayPointerEventKind.Reset, polled[3].Kind);
+
+        // Removing an overlay invalidates its identity and yields Reset if a stale event arrives.
+        runtime.RemoveOverlay("PlotJumpInfo");
+        backend.PointerEvents = [new OpenXrPointerEvent(jumpId, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0)];
+        IReadOnlyList<VrOverlayPointerEvent> afterRemove = runtime.PollPointerEvents();
+        Assert.Single(afterRemove);
+        Assert.Equal(VrOverlayPointerEventKind.Reset, afterRemove[0].Kind);
+
+        // Disabling interaction forwards false to the backend and stops polling.
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        Assert.False(backend.LastInteractionEnabled);
+        Assert.Empty(runtime.PollPointerEvents());
+
+        // Shutdown clears active interaction state.
+        Assert.True(runtime.SetInteractionEnabled(true).Succeeded);
+        runtime.Shutdown();
+        Assert.Empty(runtime.PollPointerEvents());
+    }
+
+    [Fact]
+    public void NativePointerEventConversionFiltersInvalidAndOutOfRangeValues()
+    {
+        Assert.Empty(NativeLinuxOpenXrOverlayBackend.ConvertPointerEvents([]));
+
+        NativeLinuxOpenXrOverlayBackend.NativePointerEvent[] raw =
+        [
+            new()
+            {
+                Id = 1,
+                Kind = (uint)VrOverlayPointerEventKind.Move,
+                X = 0.5f,
+                Y = 0.25f,
+            },
+            new()
+            {
+                Id = 2,
+                Kind = (uint)VrOverlayPointerEventKind.Reset,
+                X = float.NaN,
+                Y = float.NaN,
+            },
+            new()
+            {
+                Id = 3,
+                Kind = 99u,
+                X = 0.5f,
+                Y = 0.5f,
+            },
+            new()
+            {
+                Id = 4,
+                Kind = (uint)VrOverlayPointerEventKind.Move,
+                X = float.NaN,
+                Y = 0.5f,
+            },
+            new()
+            {
+                Id = 5,
+                Kind = (uint)VrOverlayPointerEventKind.Move,
+                X = 0.5f,
+                Y = 11.0f,
+            },
+            new()
+            {
+                Id = 6,
+                Kind = (uint)VrOverlayPointerEventKind.Wheel,
+                X = 0.5f,
+                Y = 0.5f,
+                WheelX = 9.0f,
+            },
+            new()
+            {
+                Id = 7,
+                Kind = (uint)VrOverlayPointerEventKind.Wheel,
+                X = 0.5f,
+                Y = 0.5f,
+                WheelY = float.PositiveInfinity,
+            },
+        ];
+
+        IReadOnlyList<OpenXrPointerEvent> converted = NativeLinuxOpenXrOverlayBackend.ConvertPointerEvents(raw);
+        Assert.Equal(2, converted.Count);
+        Assert.Equal(1UL, converted[0].Id);
+        Assert.Equal(VrOverlayPointerEventKind.Move, converted[0].Kind);
+        Assert.Equal(0UL, converted[1].Id);
+        Assert.Equal(VrOverlayPointerEventKind.Reset, converted[1].Kind);
+    }
+
+    [Fact]
     public void NativeBackendHandlesMissingLibraryAndExercisesBuiltLinuxHelperWhenPresent()
     {
         var missingInspector = new LinuxVrRuntimeInspector(
@@ -190,6 +355,8 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.False(missing.Publish(nint.Zero, [1, 2, 3]));
         Assert.Equal(LinuxOpenXrNativeStatus.SessionLost, missing.GetStatus(nint.Zero).Status);
         Assert.False(missing.TryGetHeadPose(nint.Zero, 0, out _));
+        Assert.False(missing.SetInteractionEnabled(nint.Zero, true).Succeeded);
+        Assert.Empty(missing.PollPointerEvents(nint.Zero));
         missing.Destroy(nint.Zero);
 
         string builtLibrary = Path.Combine(AppContext.BaseDirectory, "OpenXR", "libSrvSurveyLinuxOpenXrOverlay.so");
@@ -212,6 +379,8 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.False(native.Publish(nint.Zero, [1, 2, 3]));
         Assert.Equal(LinuxOpenXrNativeStatus.SessionLost, native.GetStatus(nint.Zero).Status);
         Assert.False(native.TryGetHeadPose(nint.Zero, 0, out _));
+        Assert.False(native.SetInteractionEnabled(nint.Zero, true).Succeeded);
+        Assert.Empty(native.PollPointerEvents(nint.Zero));
         native.Destroy(nint.Zero);
     }
 
@@ -236,10 +405,14 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
             new(new nint(1), LinuxOpenXrNativeStatus.Ok, 0, "Created");
         public LinuxOpenXrSessionStatus SessionStatus { get; set; } =
             new(LinuxOpenXrNativeStatus.Ok, 0, 0, 16, "Active");
+        public LinuxOpenXrInteractionOutcome InteractionOutcome { get; set; } = new(true, 0, "Enabled");
+        public IReadOnlyList<OpenXrPointerEvent> PointerEvents { get; set; } = [];
         public VrOverlayHeadPose? HeadPose { get; set; }
         public bool PublishResult { get; set; } = true;
         public int CreateCalls { get; private set; }
         public int DestroyCalls { get; private set; }
+        public int SetInteractionCalls { get; private set; }
+        public bool LastInteractionEnabled { get; private set; }
         public byte[]? LastPacket { get; private set; }
         public uint LastRequestedOriginRevision { get; private set; }
 
@@ -265,6 +438,15 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
             pose = HeadPose;
             return pose is not null;
         }
+
+        public LinuxOpenXrInteractionOutcome SetInteractionEnabled(nint session, bool enabled)
+        {
+            SetInteractionCalls++;
+            LastInteractionEnabled = enabled;
+            return enabled ? InteractionOutcome : new(true, 0, "Disabled");
+        }
+
+        public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session) => PointerEvents;
 
         public void Destroy(nint session) => DestroyCalls++;
     }

@@ -4,6 +4,10 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class VrOverlayTransform
 {
+    private const float CalibrationSnapStepRadians = MathF.PI / 4f;
+    private const float CalibrationSnapMaxYawRadians = MathF.PI / 2f;
+    private const float CalibrationSnapHysteresisRadians = 30f * MathF.PI / 180f;
+
     /// <summary>Places only this panel at eye level, one metre along the current head heading.</summary>
     public static VrOverlayCalibration PlaceInFront(VrOverlayCalibration calibration, VrOverlayHeadPose pose)
     {
@@ -12,8 +16,89 @@ public static class VrOverlayTransform
         return new VrOverlayCalibration(
             Math.Min(calibration.Scale, 8),
             new Vector3(position.X * 10, position.Y * 10, -position.Z * 10),
-            new Vector3(0, (pose.PanelYaw ?? pose.Yaw) * 180 / MathF.PI, 0)
+            new Vector3(0, RadiansToDegrees(pose.PanelYaw ?? pose.Yaw), 0)
         );
+    }
+
+    /// <summary>Snaps heading yaw into five 45-degree front cockpit sectors (-90° to +90°) with hysteresis.</summary>
+    public static float SnapCalibrationYaw(float rawYawRadians, float? currentSnappedYawRadians)
+    {
+        float normalized = NormalizeAngle(rawYawRadians);
+        float clamped = Math.Clamp(normalized, -CalibrationSnapMaxYawRadians, CalibrationSnapMaxYawRadians);
+        if (
+            currentSnappedYawRadians is float current
+            && MathF.Abs(NormalizeAngle(clamped - current)) < CalibrationSnapHysteresisRadians
+        )
+        {
+            return current;
+        }
+
+        float slot = MathF.Round(clamped / CalibrationSnapStepRadians) * CalibrationSnapStepRadians;
+        return Math.Clamp(slot, -CalibrationSnapMaxYawRadians, CalibrationSnapMaxYawRadians);
+    }
+
+    /// <summary>Places the headset calibration window centered along the requested heading, facing the eyes at its standard lower height.</summary>
+    public static VrOverlayCalibration PlaceCalibrationControls(VrOverlayHeadPose pose, float? snappedYawRadians = null)
+    {
+        ArgumentNullException.ThrowIfNull(pose);
+        const float scale = 8f;
+        const float distanceMeters = 1f;
+        const float heightOffsetMeters = -0.5f;
+        float tiltRadians = MathF.Atan2(-heightOffsetMeters, distanceMeters);
+        float targetYaw = snappedYawRadians ?? pose.Yaw;
+
+        var heading = Matrix4x4.CreateRotationY(targetYaw);
+        Vector3 positionMeters =
+            pose.Position
+            + Vector3.Transform(new Vector3(0, 0, -distanceMeters), heading)
+            + new Vector3(0, heightOffsetMeters, 0);
+        var position = new Vector3(positionMeters.X * 10f, positionMeters.Y * 10f, -positionMeters.Z * 10f);
+
+        Vector3 rotation;
+        if (pose.UsesLegacyOpenVrRotation)
+        {
+            float worldYaw = snappedYawRadians.HasValue ? targetYaw + pose.OpenVrYawOffset : pose.OpenVrWorldYaw;
+            var desired = Quaternion.CreateFromYawPitchRoll(worldYaw, -tiltRadians, 0f);
+            var inverse = Matrix4x4.CreateFromQuaternion(Quaternion.Inverse(desired));
+            float pitch = MathF.Asin(Math.Clamp(-inverse.M32, -1f, 1f));
+            float yaw = MathF.Atan2(inverse.M31, inverse.M33) + pose.OpenVrYawOffset;
+            float roll = MathF.Atan2(inverse.M12, inverse.M22);
+            rotation = new Vector3(RadiansToDegrees(pitch), RadiansToDegrees(yaw), RadiansToDegrees(roll));
+        }
+        else
+        {
+            float panelYaw = snappedYawRadians ?? (pose.PanelYaw ?? pose.Yaw);
+            rotation = new Vector3(-RadiansToDegrees(tiltRadians), RadiansToDegrees(panelYaw), 0f);
+        }
+
+        return new VrOverlayCalibration(scale, position, rotation);
+    }
+
+    /// <summary>Moves a panel along its own plane in 10 cm calibration units during VR click-and-drag.</summary>
+    public static VrOverlayCalibration ApplyPlaneDrag(
+        VrOverlayCalibration calibration,
+        float deltaRightUnits,
+        float deltaUpUnits,
+        bool usesLegacyOpenVrRotation
+    )
+    {
+        ArgumentNullException.ThrowIfNull(calibration);
+        Vector3 radians = calibration.Rotation * (MathF.PI / 180f);
+        var orientation = Quaternion.CreateFromYawPitchRoll(radians.Y, radians.X, radians.Z);
+        if (usesLegacyOpenVrRotation)
+        {
+            orientation = Quaternion.Inverse(orientation);
+        }
+
+        var right = Vector3.Transform(Vector3.UnitX, orientation);
+        var up = Vector3.Transform(Vector3.UnitY, orientation);
+        Vector3 worldDelta = right * deltaRightUnits + up * deltaUpUnits;
+        var position = new Vector3(
+            Math.Clamp(calibration.Position.X + worldDelta.X, -1000f, 1000f),
+            Math.Clamp(calibration.Position.Y + worldDelta.Y, -1000f, 1000f),
+            Math.Clamp(calibration.Position.Z - worldDelta.Z, -1000f, 1000f)
+        );
+        return calibration with { Position = position };
     }
 
     public static Matrix4x4 Create(
@@ -51,8 +136,16 @@ public static class VrOverlayTransform
             Matrix4x4.Transpose(headsetOrientationOffset)
         );
         float yaw = MathF.Atan2(matrix.m2, matrix.m10);
-        // Legacy OpenVR rotates positions and panel orientations with opposite offset signs.
-        return new VrOverlayHeadPose(position, yaw - headsetYawOffset, yaw + headsetYawOffset);
+        // OVRSharp.ToHmdMatrix34_t copies Matrix4x4's row-vector 3x3 block without transposing,
+        // which negates rotation angles relative to column-vector OpenVR transforms.
+        return new VrOverlayHeadPose(
+            position,
+            yaw - headsetYawOffset,
+            headsetYawOffset - yaw,
+            UsesLegacyOpenVrRotation: true,
+            OpenVrWorldYaw: yaw,
+            OpenVrYawOffset: headsetYawOffset
+        );
     }
 
     public static float ExtractYaw(Valve.VR.HmdMatrix34_t matrix)
@@ -64,6 +157,23 @@ public static class VrOverlayTransform
     {
         return MathF.PI / 180 * degrees;
     }
+
+    private static float RadiansToDegrees(float radians)
+    {
+        return radians * 180f / MathF.PI;
+    }
+
+    private static float NormalizeAngle(float radians)
+    {
+        return MathF.Atan2(MathF.Sin(radians), MathF.Cos(radians));
+    }
 }
 
-public sealed record VrOverlayHeadPose(Vector3 Position, float Yaw, float? PanelYaw = null);
+public sealed record VrOverlayHeadPose(
+    Vector3 Position,
+    float Yaw,
+    float? PanelYaw = null,
+    bool UsesLegacyOpenVrRotation = false,
+    float OpenVrWorldYaw = 0f,
+    float OpenVrYawOffset = 0f
+);

@@ -8,17 +8,24 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class VrOverlayCoordinator : IDisposable
 {
+    private const long DragUpdateIntervalMs = 32;
     private readonly VrOverlayViewModel viewModel;
     private readonly OverlayWindowRegistry registry;
     private readonly IVrOverlayRuntime runtime;
     private readonly Func<string, bool> processDetector;
     private readonly Func<string?> modeProvider;
+    private readonly Func<long> clock;
     private readonly OverlayDispatcherTimer timer;
     private readonly OverlayDispatcherTimer interactionTimer;
     private VrOverlayInputRouter? inputRouter;
     private readonly HashSet<string> published = new(StringComparer.Ordinal);
     private readonly VrOverlayCalibrationSession calibrationSession = new();
     private IReadOnlyList<RegisteredOverlayWindow> calibrationRegistrations = [];
+    private string? activeDragPlotter;
+    private double dragGrabNormX;
+    private double dragGrabNormY;
+    private long lastDragApplyMs;
+    private double pendingDragDepthWheel;
     private bool synchronizing;
     private bool disposed;
 
@@ -28,7 +35,8 @@ public sealed class VrOverlayCoordinator : IDisposable
         IVrOverlayRuntime? runtime = null,
         Func<string, bool>? processDetector = null,
         Func<string?>? modeProvider = null,
-        VrOverlayInputRouter? inputRouter = null
+        VrOverlayInputRouter? inputRouter = null,
+        Func<long>? clock = null
     )
     {
         this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
@@ -43,6 +51,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         this.processDetector = processDetector ?? IsProcessRunning;
         this.modeProvider = modeProvider ?? (() => null);
         this.inputRouter = inputRouter;
+        this.clock = clock ?? (() => Environment.TickCount64);
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.CalibrationChanged += OnCalibrationChanged;
         viewModel.ConnectionCheckRequested += OnConnectionCheckRequested;
@@ -152,14 +161,131 @@ public sealed class VrOverlayCoordinator : IDisposable
         {
             if (pointerEvent.Kind == VrOverlayPointerEventKind.Reset)
             {
+                ClearDragState();
                 inputRouter?.Reset();
                 continue;
             }
             if (registrations.TryGetValue(pointerEvent.PlotterName, out RegisteredOverlayWindow? registration))
             {
+                if (TryHandleDragEvent(registration, pointerEvent))
+                {
+                    continue;
+                }
                 inputRouter?.Dispatch(registration, pointerEvent);
             }
         }
+    }
+
+    private bool TryHandleDragEvent(RegisteredOverlayWindow registration, VrOverlayPointerEvent pointerEvent)
+    {
+        if (
+            !viewModel.IsAdjusting
+            || !viewModel.IsDragModeEnabled
+            || string.Equals(
+                registration.PlotterName,
+                VrOverlayCalibrationSession.ControlsPlotterName,
+                StringComparison.Ordinal
+            )
+            || !calibrationSession.Owns(registration)
+        )
+        {
+            return false;
+        }
+
+        double width = registration.RenderSource.Bounds.Width;
+        double height = registration.RenderSource.Bounds.Height;
+        if (width <= 0 || height <= 0)
+        {
+            return true;
+        }
+
+        double normX = pointerEvent.X / width;
+        double normY = pointerEvent.Y / height;
+        switch (pointerEvent.Kind)
+        {
+            case VrOverlayPointerEventKind.LeftButtonDown:
+                if (!string.Equals(viewModel.SelectedOverlayName, registration.PlotterName, StringComparison.Ordinal))
+                {
+                    viewModel.SelectedOverlayName = registration.PlotterName;
+                }
+                activeDragPlotter = registration.PlotterName;
+                dragGrabNormX = normX;
+                dragGrabNormY = normY;
+                lastDragApplyMs = 0;
+                pendingDragDepthWheel = 0;
+                return true;
+            case VrOverlayPointerEventKind.Move
+                when string.Equals(activeDragPlotter, registration.PlotterName, StringComparison.Ordinal):
+            {
+                long now = clock();
+                if (lastDragApplyMs > 0 && now - lastDragApplyMs < DragUpdateIntervalMs)
+                {
+                    return true;
+                }
+
+                VrOverlayCalibration? current = viewModel.GetCalibration(registration.PlotterName, modeProvider());
+                if (current is null)
+                {
+                    return true;
+                }
+
+                float deltaRight = (float)((normX - dragGrabNormX) * current.Scale);
+                float deltaUp = (float)((dragGrabNormY - normY) * current.Scale * (height / width));
+                if (MathF.Abs(deltaRight) < 0.005f && MathF.Abs(deltaUp) < 0.005f)
+                {
+                    return true;
+                }
+
+                bool usesLegacyOpenVr = !VrPlatformProfileCatalog.UsesSeatedDefaults(
+                    viewModel.SelectedPlatformProfile.Id
+                );
+                VrOverlayCalibration moved = VrOverlayTransform.ApplyPlaneDrag(
+                    current,
+                    deltaRight,
+                    deltaUp,
+                    usesLegacyOpenVr
+                );
+                lastDragApplyMs = now;
+                viewModel.ApplyCalibrationEdit(moved);
+                return true;
+            }
+            case VrOverlayPointerEventKind.Wheel
+                when string.Equals(activeDragPlotter, registration.PlotterName, StringComparison.Ordinal):
+            {
+                if (pointerEvent.WheelY == 0)
+                {
+                    return true;
+                }
+                if (pendingDragDepthWheel != 0 && Math.Sign(pointerEvent.WheelY) != Math.Sign(pendingDragDepthWheel))
+                {
+                    pendingDragDepthWheel = 0;
+                }
+                pendingDragDepthWheel += pointerEvent.WheelY;
+                int steps = (int)Math.Truncate(pendingDragDepthWheel);
+                if (steps != 0)
+                {
+                    pendingDragDepthWheel -= steps;
+                    viewModel.PositionZ = Math.Clamp(
+                        viewModel.PositionZ + steps * (double)viewModel.PositionIncrement,
+                        -1000,
+                        1000
+                    );
+                }
+                return true;
+            }
+            case VrOverlayPointerEventKind.LeftButtonUp
+                when string.Equals(activeDragPlotter, registration.PlotterName, StringComparison.Ordinal):
+                ClearDragState();
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    private void ClearDragState()
+    {
+        activeDragPlotter = null;
+        pendingDragDepthWheel = 0;
     }
 
     private void OnRegistryChanged(object? sender, EventArgs eventArgs)
@@ -212,8 +338,14 @@ public sealed class VrOverlayCoordinator : IDisposable
             eventArgs.PropertyName
             is nameof(VrOverlayViewModel.IsAdjusting)
                 or nameof(VrOverlayViewModel.SelectedOverlayName)
+                or nameof(VrOverlayViewModel.SelectedCategory)
+                or nameof(VrOverlayViewModel.IsDragModeEnabled)
         )
         {
+            if (!viewModel.IsAdjusting || !viewModel.IsDragModeEnabled)
+            {
+                ClearDragState();
+            }
             inputRouter?.Reset();
         }
 
@@ -228,6 +360,7 @@ public sealed class VrOverlayCoordinator : IDisposable
                     or nameof(VrOverlayViewModel.RotationYaw)
                     or nameof(VrOverlayViewModel.RotationRoll)
                     or nameof(VrOverlayViewModel.IsAdjusting)
+                    or nameof(VrOverlayViewModel.SelectedCategory)
                     or nameof(VrOverlayViewModel.SelectedOverlayName)
                     or nameof(VrOverlayViewModel.SelectedMode)
         )
@@ -267,7 +400,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
 
         VrOverlayHeadPose? pose = null;
-        if (viewModel.IsAdjusting)
+        if (viewModel.IsAdjusting && inputRouter?.HasCapture != true && activeDragPlotter is null)
         {
             runtime.TryGetHeadPose(out pose);
         }

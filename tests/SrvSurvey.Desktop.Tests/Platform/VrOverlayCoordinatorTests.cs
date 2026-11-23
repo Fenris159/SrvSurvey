@@ -355,6 +355,144 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         }
     }
 
+    [AvaloniaFact]
+    public void CalibrationControlsHoldPoseWhilePointerIsCapturedAndRecenterAfterRelease()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var runtime = new StubOpenVrRuntime();
+        using var router = new VrOverlayInputRouter();
+        using var coordinator = new VrOverlayCoordinator(
+            viewModel,
+            new OverlayWindowRegistry(),
+            runtime,
+            _ => true,
+            inputRouter: router
+        );
+
+        Assert.True(viewModel.BeginAdjustment());
+        Assert.True(coordinator.ToggleInteraction());
+        Assert.False(router.HasCapture);
+
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonDown, 20, 20)
+        );
+        coordinator.PollInteractionEvents();
+        Assert.True(router.HasCapture);
+        int headPoseCallsWhileCaptured = runtime.HeadPoseCalls;
+        viewModel.Scale = 12;
+        Assert.Equal(headPoseCallsWhileCaptured, runtime.HeadPoseCalls);
+
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonUp, 20, 20)
+        );
+        coordinator.PollInteractionEvents();
+        Assert.False(router.HasCapture);
+        viewModel.Scale = 13;
+        Assert.True(runtime.HeadPoseCalls > headPoseCallsWhileCaptured);
+    }
+
+    [AvaloniaFact]
+    public void CategoryPreviewPublishesAllCategoryPanelsAndDragModeMovesAndAdjustsDepth()
+    {
+        string dataDirectory = Path.Combine(temporaryDirectory, "data-drag");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-drag");
+        Directory.CreateDirectory(dataDirectory);
+        Directory.CreateDirectory(factoryDirectory);
+        string factoryPath = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factoryPath,
+            """
+            {
+              "PlotBioStatus": "center:0, top:8 { s: 4, p: <0, 4, 10>, r: <0, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 4, p: <-6, 0, 10>, r: <0, 0, 0>}"
+            }
+            """
+        );
+        var viewModel = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "drag-settings.json")),
+            new VrOverlayCalibrationStore(dataDirectory, factoryPath)
+        );
+        viewModel.Enabled = true;
+
+        long now = 1000;
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(
+            viewModel,
+            new OverlayWindowRegistry(),
+            runtime,
+            _ => true,
+            clock: () => now
+        );
+
+        Assert.True(viewModel.BeginAdjustment());
+        viewModel.SelectedCategory = "Biology & surface";
+        Assert.Contains("PlotAdjustVR", runtime.Frames.Keys);
+        Assert.Contains("PlotBioStatus", runtime.Frames.Keys);
+        Assert.Contains("PlotBioSystem", runtime.Frames.Keys);
+        Assert.Equal("PlotBioStatus", viewModel.SelectedOverlayName);
+
+        Assert.True(coordinator.ToggleInteraction());
+        viewModel.IsDragModeEnabled = true;
+
+        // Grabbing PlotBioSystem selects it and drags it right/up + pushes depth with wheel.
+        double bioWidth = OverlayLayoutCatalog.GetRequired("PlotBioSystem").PreviewSize.Width;
+        double bioHeight = runtime.Frames["PlotBioSystem"].PointerHeight;
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent(
+                "PlotBioSystem",
+                VrOverlayPointerEventKind.LeftButtonDown,
+                bioWidth * 0.5,
+                bioHeight * 0.5
+            )
+        );
+        coordinator.PollInteractionEvents();
+        Assert.Equal("PlotBioSystem", viewModel.SelectedOverlayName);
+
+        double startX = viewModel.PositionX;
+        double startY = viewModel.PositionY;
+        double startZ = viewModel.PositionZ;
+        now += 50;
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent(
+                "PlotBioSystem",
+                VrOverlayPointerEventKind.Move,
+                bioWidth * 0.75,
+                bioHeight * 0.25
+            )
+        );
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent(
+                "PlotBioSystem",
+                VrOverlayPointerEventKind.Wheel,
+                bioWidth * 0.75,
+                bioHeight * 0.25,
+                WheelY: 1
+            )
+        );
+        coordinator.PollInteractionEvents();
+        Assert.True(viewModel.PositionX > startX);
+        Assert.True(viewModel.PositionY > startY);
+        Assert.True(viewModel.PositionZ > startZ);
+
+        // Throttled move within <32 ms is ignored; release ends drag cleanly.
+        double afterDragX = viewModel.PositionX;
+        now += 10;
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, bioWidth, bioHeight * 0.25)
+        );
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent(
+                "PlotBioSystem",
+                VrOverlayPointerEventKind.LeftButtonUp,
+                bioWidth,
+                bioHeight * 0.25
+            )
+        );
+        coordinator.PollInteractionEvents();
+        Assert.Equal(afterDragX, viewModel.PositionX, 4);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -406,8 +544,11 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public bool PoseAvailable { get; init; } = true;
 
+        public int HeadPoseCalls { get; private set; }
+
         public bool TryGetHeadPose(out VrOverlayHeadPose? pose)
         {
+            HeadPoseCalls++;
             pose = PoseAvailable ? new VrOverlayHeadPose(System.Numerics.Vector3.Zero, 0) : null;
             return PoseAvailable;
         }

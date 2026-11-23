@@ -56,13 +56,44 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     }
 
     [Theory]
-    [InlineData("PlotBioStatus", "{ s: 5, p: <0, 3.5, 10>, r: <-15, 0, 0>}")]
-    [InlineData("PlotSysStatus", "{ s: 3.5, p: <-5.5, -3, 9>, r: <15, -25, 0>}")]
-    [InlineData("PlotBioSystem", "{ s: 5, p: <-6.5, 0.5, 9>, r: <0, -35, 0>}")]
-    [InlineData("PlotPulse", "{ s: 5, p: <0, 0, 10>, r: <0, 0, 0>}")]
-    public void SeatedDefaultsUseReportedCockpitPlacements(string name, string expected)
+    [InlineData("PlotJumpInfo", "{ s: 8, p: <0, 4.5, 11>, r: <22.2, 0, 0>}")]
+    [InlineData("PlotBioStatus", "{ s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}")]
+    [InlineData("PlotSysStatus", "{ s: 1.9, p: <-6, -3, 9.5>, r: <-14.9, 32.3, 0>}")]
+    [InlineData("PlotBioSystem", "{ s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}")]
+    [InlineData("PlotBuildCommodities", "{ s: 3.6, p: <6, 4.5, 9.5>, r: <21.8, -32.3, 0>}")]
+    [InlineData("PlotPulse", "{ s: 0.8, p: <-6, -3, 9.5>, r: <-14.9, 32.3, 0>}")]
+    [InlineData("PlotUnknownLegacy", "{ s: 4, p: <0, 0, 11>, r: <0, 0, 0>}")]
+    public void SeatedDefaultsUseDesktopMirroredCockpitPlacements(string name, string expected)
     {
         Assert.Equal(expected, VrSeatedCalibrationDefaults.Get(name).ToString());
+    }
+
+    [Fact]
+    public void EverySupportedOverlayHasProportionalEyeFacingSeatedAndFactoryDefaults()
+    {
+        var store = new VrOverlayCalibrationStore(temporaryDirectory);
+        VrOverlayCalibrationCatalog steamVr = store.Load();
+        VrOverlayCalibrationCatalog openXr = store.Load(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
+        {
+            Assert.True(
+                steamVr.FactoryDefaults.ContainsKey(definition.Name),
+                $"Missing SteamVR default for {definition.Name}"
+            );
+            VrOverlayCalibration seated = openXr.FactoryDefaults[definition.Name];
+            Assert.InRange(seated.Scale, 0.8f, 8f);
+            Assert.Equal(0f, seated.Rotation.Z);
+
+            var panelPosition = new Vector3(seated.Position.X / 10f, seated.Position.Y / 10f, -seated.Position.Z / 10f);
+            Vector3 radians = seated.Rotation * (MathF.PI / 180f);
+            var orientation = Quaternion.CreateFromYawPitchRoll(radians.Y, radians.X, radians.Z);
+            var normal = Vector3.Transform(Vector3.UnitZ, orientation);
+            var right = Vector3.Transform(Vector3.UnitX, orientation);
+            var toEye = Vector3.Normalize(-panelPosition);
+            Assert.True(Vector3.Dot(normal, toEye) > 0.999f, $"{definition.Name} does not face seated origin.");
+            Assert.Equal(0f, right.Y, 4);
+        }
     }
 
     [Fact]

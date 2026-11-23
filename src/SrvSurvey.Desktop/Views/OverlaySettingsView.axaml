@@ -349,7 +349,7 @@
                     <TextBlock Classes="muted"
                                FontSize="11"
                                TextWrapping="Wrap"
-                               Text="Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode." />
+                               Text="Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode." />
                   </StackPanel>
                   <StackPanel Grid.Column="1" Spacing="3">
                     <controls:ShortcutCaptureBox Chord="{Binding VrOverlayInteractionBinding.Chord, Mode=TwoWay}"

@@ -1632,7 +1632,7 @@ public static class GuideCatalog
     {
         return Section(
             "Interact with panels in the headset",
-            "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+            "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
             [
                 "In Theme > Overlay setup > VR, assign Toggle VR overlay interaction. It is also available in Settings > Input. Global keyboard input must be enabled.",
                 "With VR overlays connected, use that shortcut once to enable controller-pointer clicks and scrolling on the selected route, including the calibration panel.",
@@ -1640,7 +1640,7 @@ public static class GuideCatalog
             ],
             [
                 "For EDVR, enable Experimental EDVR controller input in Theme > Overlay setup > VR, install the matching OpenXR layer, and restart Elite. The option is off by default and is restricted to recognized EDVR sessions. Disable it and restart Elite if another input layer conflicts; controller compatibility is still experimental.",
-                "On VDXR, release the controller buttons before enabling interaction, then point the cursor at a panel. Trigger clicks, grip right-clicks, thumbstick press middle-clicks, and thumbstick tilt scrolls. Toggle off to return those controls to Elite. Adjust VR overlays opens the calibration panel in the headset as well as desktop settings.",
+                "On VDXR, WiVRn, and Monado, release the controller buttons before enabling interaction, then point the cursor at a panel. Trigger clicks, grip right-clicks, thumbstick or trackpad press middle-clicks, and thumbstick or trackpad tilt scrolls. On VDXR, toggling off returns those controls to Elite; on WiVRn and Monado, controller input is read from a separate overlay session and is not intercepted from Elite, so inputs also bound in Elite may act in both apps while interaction is enabled. Adjust VR overlays opens the calibration panel in the headset as well as desktop settings.",
                 "The desktop live-overlay interaction shortcut remains separate; it controls desktop dragging and does not enable VR input.",
                 "The headset calibration panel uses the same target, step-size, placement, save, and close controls as the desktop editor. If controller input is unavailable, mirror the SrvSurvey window into VR (for example with OpenKneeboard window capture) and use the mouse.",
             ]

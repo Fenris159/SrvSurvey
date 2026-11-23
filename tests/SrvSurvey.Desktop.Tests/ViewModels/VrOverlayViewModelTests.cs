@@ -122,7 +122,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.Equal(8, viewModel.Scale);
         Assert.Equal(4.5, viewModel.PositionY);
         Assert.Equal(11, viewModel.PositionZ);
-        Assert.Equal(-20, viewModel.RotationPitch);
+        Assert.Equal(22.2, viewModel.RotationPitch, 1);
 
         viewModel.PositionY = 1;
         viewModel.SaveCommand.Execute(null);
@@ -344,6 +344,75 @@ public sealed class VrOverlayViewModelTests : IDisposable
         );
         Assert.Equal(VrPlatformProfileCatalog.MonadoOpenXrProfileId, linuxModel.SelectedPlatformProfile.Id);
         Assert.Contains("Linux OpenXR", linuxModel.PlatformSupportMessage);
+    }
+
+    [Fact]
+    public void CategorySelectionFiltersTargetsShowsAllCategoryPanelsAndTracksPendingEditsAndDragMode()
+    {
+        string data = Path.Combine(temporaryDirectory, "data-cat");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-cat");
+        Directory.CreateDirectory(data);
+        Directory.CreateDirectory(factoryDirectory);
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factory,
+            """
+            {
+              "PlotJumpInfo": "center:0, top:8 { s: 8, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioStatus": "center:0, top:8 { s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}"
+            }
+            """
+        );
+        var model = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "settings-cat.json")),
+            new VrOverlayCalibrationStore(data, factory),
+            VrPlatformProfileCatalog.ForPlatform(OSPlatform.Linux, Architecture.X64, 0)
+        );
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+
+        // Drag mode cannot enable before adjustment begins.
+        model.IsDragModeEnabled = true;
+        Assert.False(model.IsDragModeEnabled);
+        Assert.Empty(model.VisibleAdjustmentOverlays);
+
+        Assert.True(model.BeginAdjustment());
+        Assert.Equal(VrOverlayViewModel.AllCategoriesLabel, model.SelectedCategory);
+        Assert.Contains("Biology & surface", model.AvailableCategories);
+        Assert.Contains("Exploration & navigation", model.AvailableCategories);
+        Assert.Single(model.VisibleAdjustmentOverlays);
+
+        // Selecting a category filters AvailableOverlays and exposes all panels in that category.
+        model.SelectedCategory = "Biology & surface";
+        Assert.True(model.IsCategoryPreviewActive);
+        Assert.Equal(["PlotBioStatus", "PlotBioSystem"], model.AvailableOverlays);
+        Assert.Equal(["PlotBioStatus", "PlotBioSystem"], model.VisibleAdjustmentOverlays);
+        Assert.Equal("PlotBioStatus", model.SelectedOverlayName);
+
+        // Edits on multiple panels in the category remain visible while switching between them and save together.
+        model.PositionX = 2.5;
+        model.SelectedOverlayName = "PlotBioSystem";
+        model.PositionY = 1.5;
+        Assert.Equal(2.5f, model.GetCalibration("PlotBioStatus")!.Position.X);
+        Assert.Equal(1.5f, model.GetCalibration("PlotBioSystem")!.Position.Y);
+
+        model.IsDragModeEnabled = true;
+        Assert.True(model.IsDragModeEnabled);
+        Assert.Contains("Drag mode active", model.StatusMessage);
+
+        model.SaveCommand.Execute(null);
+        Assert.Contains("Saved 2 overlays", model.StatusMessage);
+
+        // Cycle category commands wrap cleanly and Cancel turns off drag mode.
+        model.NextCategoryCommand.Execute(null);
+        model.PreviousCategoryCommand.Execute(null);
+        Assert.Equal("Biology & surface", model.SelectedCategory);
+
+        model.PositionX = -9;
+        model.CancelCommand.Execute(null);
+        Assert.False(model.IsAdjusting);
+        Assert.False(model.IsDragModeEnabled);
+        Assert.Equal(-6f, model.GetCalibration("PlotBioSystem")!.Position.X);
     }
 
     public void Dispose()

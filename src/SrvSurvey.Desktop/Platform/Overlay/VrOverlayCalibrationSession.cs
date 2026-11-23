@@ -11,12 +11,18 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 internal sealed class VrOverlayCalibrationSession : IDisposable
 {
     public const string ControlsPlotterName = "PlotAdjustVR";
+    private const float PositionRecenterThresholdMetersSquared = 0.04f; // 20 cm
+    private static readonly VrOverlayCalibration DefaultControlsCalibration = new(
+        8,
+        new Vector3(0, -5, 10),
+        Vector3.Zero
+    );
     private RegisteredOverlayWindow? controls;
-    private RegisteredOverlayWindow? preview;
-    private bool awaitingHeadPose;
+    private readonly Dictionary<string, RegisteredOverlayWindow> previews = new(StringComparer.Ordinal);
+    private float? snappedYaw;
+    private Vector3? anchoredHeadPosition;
 
-    public VrOverlayCalibration ControlsCalibration { get; private set; } =
-        new(8, new Vector3(0, -5, 11), new Vector3(15, 0, 0));
+    public VrOverlayCalibration ControlsCalibration { get; private set; } = DefaultControlsCalibration;
 
     public IReadOnlyList<RegisteredOverlayWindow> Refresh(VrOverlayViewModel viewModel, VrOverlayHeadPose? pose)
     {
@@ -30,41 +36,79 @@ internal sealed class VrOverlayCalibrationSession : IDisposable
         {
             var content = new Border
             {
-                Padding = new Thickness(20),
+                Padding = new Thickness(16),
                 Child = new VrCalibrationView { DataContext = viewModel, IsInHeadset = true },
             };
             content[!Border.BackgroundProperty] = new DynamicResourceExtension("RavenWindowBrush");
-            controls = CreateSurface(ControlsPlotterName, content, 760);
-            ControlsCalibration = new(8, new Vector3(0, -5, 11), new Vector3(15, 0, 0));
-            awaitingHeadPose = true;
+            controls = CreateSurface(ControlsPlotterName, content, 712);
+            ControlsCalibration = DefaultControlsCalibration;
+            snappedYaw = null;
+            anchoredHeadPosition = null;
         }
-        if (awaitingHeadPose && pose is not null)
+        if (pose is not null)
         {
-            ControlsCalibration = VrOverlayTransform.PlaceInFront(ControlsCalibration, pose);
-            ControlsCalibration = ControlsCalibration with
+            float nextYaw = VrOverlayTransform.SnapCalibrationYaw(pose.Yaw, snappedYaw);
+            bool shifted =
+                anchoredHeadPosition is null
+                || Vector3.DistanceSquared(pose.Position, anchoredHeadPosition.Value)
+                    > PositionRecenterThresholdMetersSquared;
+            bool yawChanged = snappedYaw is null || MathF.Abs(snappedYaw.Value - nextYaw) > 0.001f;
+            if (yawChanged || shifted)
             {
-                Position = ControlsCalibration.Position - new Vector3(0, 5, 0),
-                Rotation = ControlsCalibration.Rotation with { X = 15 },
-            };
-            awaitingHeadPose = false;
+                snappedYaw = nextYaw;
+                anchoredHeadPosition = pose.Position;
+                ControlsCalibration = VrOverlayTransform.PlaceCalibrationControls(pose, nextYaw);
+            }
         }
 
-        if (preview?.PlotterName != viewModel.SelectedOverlayName)
+        IReadOnlyList<string> desiredNames = viewModel.VisibleAdjustmentOverlays;
+        var desiredSet = new HashSet<string>(desiredNames, StringComparer.Ordinal);
+        foreach (string stale in previews.Keys.Where(name => !desiredSet.Contains(name)).ToArray())
         {
-            preview?.Window.Close();
-            preview = null;
+            previews[stale].Window.Close();
+            previews.Remove(stale);
+        }
+
+        foreach (string name in desiredNames)
+        {
             if (
-                viewModel.SelectedOverlayName is { } name
+                !previews.ContainsKey(name)
                 && OverlayRuntimePresentationFactory.TryCreate(name, out Control? presentation, out _)
             )
             {
-                preview = CreateSurface(name, presentation!, OverlayLayoutCatalog.GetRequired(name).PreviewSize.Width);
+                previews[name] = CreateSurface(
+                    name,
+                    presentation!,
+                    OverlayLayoutCatalog.GetRequired(name).PreviewSize.Width
+                );
             }
         }
-        return preview is null ? [controls] : [controls, preview];
+
+        var result = new List<RegisteredOverlayWindow>(1 + previews.Count) { controls };
+        foreach (string name in desiredNames)
+        {
+            if (
+                !string.Equals(name, viewModel.SelectedOverlayName, StringComparison.Ordinal)
+                && previews.TryGetValue(name, out RegisteredOverlayWindow? sibling)
+            )
+            {
+                result.Add(sibling);
+            }
+        }
+
+        if (
+            viewModel.SelectedOverlayName is { } selected
+            && previews.TryGetValue(selected, out RegisteredOverlayWindow? selectedWindow)
+        )
+        {
+            result.Add(selectedWindow);
+        }
+
+        return result;
     }
 
-    public bool Owns(RegisteredOverlayWindow registration) => registration == controls || registration == preview;
+    public bool Owns(RegisteredOverlayWindow registration) =>
+        registration == controls || previews.ContainsValue(registration);
 
     private static RegisteredOverlayWindow CreateSurface(string name, Control content, double width)
     {
@@ -86,9 +130,14 @@ internal sealed class VrOverlayCalibrationSession : IDisposable
 
     public void Dispose()
     {
-        preview?.Window.Close();
-        preview = null;
+        foreach (RegisteredOverlayWindow preview in previews.Values)
+        {
+            preview.Window.Close();
+        }
+        previews.Clear();
         controls?.Window.Close();
         controls = null;
+        snappedYaw = null;
+        anchoredHeadPosition = null;
     }
 }
