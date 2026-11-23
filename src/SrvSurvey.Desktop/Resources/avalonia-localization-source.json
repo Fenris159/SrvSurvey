@@ -55239,6 +55239,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
     "IsFormat": true,
     "SourceKinds": [

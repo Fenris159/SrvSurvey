@@ -24,7 +24,11 @@ internal sealed class VrOverlayCalibrationSession : IDisposable
 
     public VrOverlayCalibration ControlsCalibration { get; private set; } = DefaultControlsCalibration;
 
-    public IReadOnlyList<RegisteredOverlayWindow> Refresh(VrOverlayViewModel viewModel, VrOverlayHeadPose? pose)
+    public IReadOnlyList<RegisteredOverlayWindow> Refresh(
+        VrOverlayViewModel viewModel,
+        VrOverlayHeadPose? pose,
+        int maxRegistrations = int.MaxValue
+    )
     {
         if (!viewModel.IsAdjusting)
         {
@@ -32,36 +36,55 @@ internal sealed class VrOverlayCalibrationSession : IDisposable
             return [];
         }
 
-        if (controls is null)
+        EnsureControlsSurface(viewModel);
+        UpdateControlsPlacement(pose);
+        IReadOnlyList<string> desiredNames = viewModel.VisibleAdjustmentOverlays;
+        SyncPreviewSurfaces(desiredNames);
+        return BuildOrderedRegistrations(desiredNames, viewModel.SelectedOverlayName, maxRegistrations);
+    }
+
+    private void EnsureControlsSurface(VrOverlayViewModel viewModel)
+    {
+        if (controls is not null)
         {
-            var content = new Border
-            {
-                Padding = new Thickness(16),
-                Child = new VrCalibrationView { DataContext = viewModel, IsInHeadset = true },
-            };
-            content[!Border.BackgroundProperty] = new DynamicResourceExtension("RavenWindowBrush");
-            controls = CreateSurface(ControlsPlotterName, content, 712);
-            ControlsCalibration = DefaultControlsCalibration;
-            snappedYaw = null;
-            anchoredHeadPosition = null;
-        }
-        if (pose is not null)
-        {
-            float nextYaw = VrOverlayTransform.SnapCalibrationYaw(pose.Yaw, snappedYaw);
-            bool shifted =
-                anchoredHeadPosition is null
-                || Vector3.DistanceSquared(pose.Position, anchoredHeadPosition.Value)
-                    > PositionRecenterThresholdMetersSquared;
-            bool yawChanged = snappedYaw is null || MathF.Abs(snappedYaw.Value - nextYaw) > 0.001f;
-            if (yawChanged || shifted)
-            {
-                snappedYaw = nextYaw;
-                anchoredHeadPosition = pose.Position;
-                ControlsCalibration = VrOverlayTransform.PlaceCalibrationControls(pose, nextYaw);
-            }
+            return;
         }
 
-        IReadOnlyList<string> desiredNames = viewModel.VisibleAdjustmentOverlays;
+        var content = new Border
+        {
+            Padding = new Thickness(16),
+            Child = new VrCalibrationView { DataContext = viewModel, IsInHeadset = true },
+        };
+        content[!Border.BackgroundProperty] = new DynamicResourceExtension("RavenWindowBrush");
+        controls = CreateSurface(ControlsPlotterName, content, 712);
+        ControlsCalibration = DefaultControlsCalibration;
+        snappedYaw = null;
+        anchoredHeadPosition = null;
+    }
+
+    private void UpdateControlsPlacement(VrOverlayHeadPose? pose)
+    {
+        if (pose is null)
+        {
+            return;
+        }
+
+        float nextYaw = VrOverlayTransform.SnapCalibrationYaw(pose.Yaw, snappedYaw);
+        bool shifted =
+            anchoredHeadPosition is null
+            || Vector3.DistanceSquared(pose.Position, anchoredHeadPosition.Value)
+                > PositionRecenterThresholdMetersSquared;
+        bool yawChanged = snappedYaw is null || MathF.Abs(snappedYaw.Value - nextYaw) > 0.001f;
+        if (yawChanged || shifted)
+        {
+            snappedYaw = nextYaw;
+            anchoredHeadPosition = pose.Position;
+            ControlsCalibration = VrOverlayTransform.PlaceCalibrationControls(pose, nextYaw);
+        }
+    }
+
+    private void SyncPreviewSurfaces(IReadOnlyList<string> desiredNames)
+    {
         var desiredSet = new HashSet<string>(desiredNames, StringComparer.Ordinal);
         foreach (string stale in previews.Keys.Where(name => !desiredSet.Contains(name)).ToArray())
         {
@@ -83,23 +106,49 @@ internal sealed class VrOverlayCalibrationSession : IDisposable
                 );
             }
         }
+    }
 
-        var result = new List<RegisteredOverlayWindow>(1 + previews.Count) { controls };
+    private List<RegisteredOverlayWindow> BuildOrderedRegistrations(
+        IReadOnlyList<string> desiredNames,
+        string? selectedOverlayName,
+        int maxRegistrations
+    )
+    {
+        if (controls is null || maxRegistrations <= 0)
+        {
+            return [];
+        }
+
+        var result = new List<RegisteredOverlayWindow>(Math.Min(maxRegistrations, 1 + previews.Count)) { controls };
+        if (maxRegistrations == 1)
+        {
+            return result;
+        }
+
+        RegisteredOverlayWindow? selectedWindow =
+            selectedOverlayName is not null && previews.TryGetValue(selectedOverlayName, out RegisteredOverlayWindow? w)
+                ? w
+                : null;
+        int siblingLimit = maxRegistrations - 1 - (selectedWindow is null ? 0 : 1);
+        int addedSiblings = 0;
         foreach (string name in desiredNames)
         {
+            if (addedSiblings >= siblingLimit)
+            {
+                break;
+            }
+
             if (
-                !string.Equals(name, viewModel.SelectedOverlayName, StringComparison.Ordinal)
+                !string.Equals(name, selectedOverlayName, StringComparison.Ordinal)
                 && previews.TryGetValue(name, out RegisteredOverlayWindow? sibling)
             )
             {
                 result.Add(sibling);
+                addedSiblings++;
             }
         }
 
-        if (
-            viewModel.SelectedOverlayName is { } selected
-            && previews.TryGetValue(selected, out RegisteredOverlayWindow? selectedWindow)
-        )
+        if (selectedWindow is not null)
         {
             result.Add(selectedWindow);
         }

@@ -27525,6 +27525,10 @@
       "translation": "{0} Live-Overlay-Position(en) gespeichert und Click-through-Modus wiederhergestellt.{1}"
     },
     {
+      "source": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+      "translation": "{0} von {1}-Overlays gespeichert; nicht gespeichert: {2} ({3})"
+    },
+    {
       "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
       "translation": "Gespeichert: {0} Overlay-Position und Erscheinungsbild-Override(s){1}{2}{3}"
     },
@@ -70801,6 +70805,10 @@
     {
       "source": "Saved {0} live overlay position(s) and restored click-through mode.{1}",
       "translation": "{0} posiciones de superposición en vivo guardadas y modo de clic restaurado.{1}"
+    },
+    {
+      "source": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+      "translation": "Guardado {0} de superposiciones {1}; no guardado: {2} ({3})"
     },
     {
       "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
@@ -114081,6 +114089,10 @@
       "translation": "{0} position(s) de superposition en direct enregistrée et mode de clic restauré.{1}"
     },
     {
+      "source": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+      "translation": "Enregistrement des superpositions {0} des {1} ; non enregistré : {2} ({3})"
+    },
+    {
       "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
       "translation": "Position de superposition {0} enregistrée et remplacement(s) de l'apparence{1}{2}{3}"
     },
@@ -157357,6 +157369,10 @@
     {
       "source": "Saved {0} live overlay position(s) and restored click-through mode.{1}",
       "translation": "{0} posições de sobreposição ao vivo salvas e modo de clique restaurado.{1}"
+    },
+    {
+      "source": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+      "translation": "{0} salvo de sobreposições {1}; não salvo: {2} ({3})"
     },
     {
       "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
@@ -200637,6 +200653,10 @@
       "translation": "Сохранены {0} позиции наложения в реальном времени и восстановлен режим перехода по клику.{1}"
     },
     {
+      "source": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+      "translation": "Сохранен {0} из наложений {1}; несохранено: {2} ({3})"
+    },
+    {
       "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
       "translation": "Сохранено положение наложения {0} и переопределение внешнего вида {1}{2}{3}"
     },
@@ -243915,6 +243935,10 @@
       "translation": "已保存 {0} 实时叠加位置并恢复点击模式。{1}"
     },
     {
+      "source": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+      "translation": "保存了 {0} 的 {1} 叠加；未保存：{2} ({3})"
+    },
+    {
       "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
       "translation": "保存的 {0} 叠加位置和外观覆盖 {1}{2}{3}"
     },
@@ -287191,6 +287215,10 @@
     {
       "source": "Saved {0} live overlay position(s) and restored click-through mode.{1}",
       "translation": "* SAVED {0} LIVE OVERLAY POSITION(S) AND RESTORED CLICK-THROUGH MODE.{1} >>>!"
+    },
+    {
+      "source": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+      "translation": "* SAVED {0} OF {1} OVERLAYS; UNSAVED: {2} ({3}) >>>!"
     },
     {
       "source": "Saved {0} overlay position and appearance override(s){1}{2}{3}",

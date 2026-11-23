@@ -1503,29 +1503,26 @@ HeadPose OverlaySession::GetHeadPose(uint32_t expectedOriginRevision) const
 bool OverlaySession::SetInteractionEnabled(bool enabled, int32_t &outXrError, std::string &outMessage)
 {
     outXrError = 0;
+    std::lock_guard lock(inputMutex);
     if (!enabled)
     {
         interactionEnabled.store(false, std::memory_order_release);
         interactionGeneration.fetch_add(1, std::memory_order_acq_rel);
-        std::lock_guard lock(inputMutex);
         pointerEvents.clear();
         outMessage = "VR overlays are click-through again.";
         return true;
     }
 
+    if (!inputReady)
     {
-        std::lock_guard lock(inputMutex);
-        if (!inputReady)
-        {
-            outXrError = inputError;
-            outMessage = inputErrorMessage.empty()
-                             ? "OpenXR controller input is unavailable for this overlay session."
-                             : inputErrorMessage;
-            return false;
-        }
-        pointerEvents.clear();
+        outXrError = inputError;
+        outMessage = inputErrorMessage.empty()
+                         ? "OpenXR controller input is unavailable for this overlay session."
+                         : inputErrorMessage;
+        return false;
     }
 
+    pointerEvents.clear();
     interactionEnabled.store(true, std::memory_order_release);
     interactionGeneration.fetch_add(1, std::memory_order_acq_rel);
     outMessage = "Controller-pointer interaction is enabled. Point at a panel and use the trigger to click.";
@@ -1546,11 +1543,14 @@ size_t OverlaySession::PollPointerEvents(std::span<PointerEvent> outEvents)
     return count;
 }
 
-bool OverlaySession::QueuePointerEvents(const std::vector<PointerEvent> &events)
+OverlaySession::EnqueueResult OverlaySession::QueuePointerEvents(const std::vector<PointerEvent> &events,
+                                                                 std::optional<uint64_t> expectedGeneration)
 {
     if (events.empty())
-        return true;
+        return EnqueueResult::Ok;
     std::lock_guard lock(inputMutex);
+    if (expectedGeneration && interactionGeneration.load(std::memory_order_acquire) != *expectedGeneration)
+        return EnqueueResult::StaleGeneration;
     for (const PointerEvent &ev : events)
     {
         if (ev.kind == PointerKind::Move && !pointerEvents.empty() &&
@@ -1576,24 +1576,42 @@ bool OverlaySession::QueuePointerEvents(const std::vector<PointerEvent> &events)
             {
                 pointerEvents.clear();
                 pointerEvents.push_back({0, PointerKind::Reset});
-                return false;
+                return EnqueueResult::Overflow;
             }
         }
         pointerEvents.push_back(ev);
     }
-    return true;
+    return EnqueueResult::Ok;
 }
 
-void OverlaySession::ResetInteractionState()
+void OverlaySession::ResetInteractionState(bool forceResetEvent)
 {
     previousHandButtons = {0, 0};
     PointerUpdate reset = pointer.Reset();
-    (void)QueuePointerEvents(reset.events);
+    if (!reset.events.empty())
+    {
+        (void)QueuePointerEvents(reset.events);
+    }
+    else if (forceResetEvent)
+    {
+        std::vector<PointerEvent> synthetic{{0, PointerKind::Reset}};
+        (void)QueuePointerEvents(synthetic);
+    }
 }
 
-PointerUpdate OverlaySession::UpdateInteraction(std::span<const PointerSurface> surfaces, XrTime displayTime)
+OverlaySession::SampledInteraction OverlaySession::SampleInteraction(std::span<const PointerSurface> surfaces,
+                                                                     XrTime displayTime)
 {
-    uint64_t generation = interactionGeneration.load(std::memory_order_acquire);
+    uint64_t generation = 0;
+    bool enabled = false;
+    bool ready = false;
+    {
+        std::lock_guard lock(inputMutex);
+        generation = interactionGeneration.load(std::memory_order_acquire);
+        enabled = interactionEnabled.load(std::memory_order_acquire);
+        ready = inputReady;
+    }
+
     if (generation != appliedInteractionGeneration)
     {
         appliedInteractionGeneration = generation;
@@ -1601,19 +1619,10 @@ PointerUpdate OverlaySession::UpdateInteraction(std::span<const PointerSurface> 
         (void)pointer.Reset();
     }
 
-    bool enabled = interactionEnabled.load(std::memory_order_acquire);
-    bool ready = false;
-    {
-        std::lock_guard lock(inputMutex);
-        ready = inputReady;
-    }
-
     if (!enabled || !ready || !sessionFocused || displayTime <= 0)
     {
         previousHandButtons = {0, 0};
-        PointerUpdate reset = pointer.Reset();
-        (void)QueuePointerEvents(reset.events);
-        return reset;
+        return {pointer.Reset(), generation, true};
     }
 
     XrActiveActionSet activeSet{actionSet, XR_NULL_PATH};
@@ -1624,9 +1633,7 @@ PointerUpdate OverlaySession::UpdateInteraction(std::span<const PointerSurface> 
     if (syncRes != XR_SUCCESS)
     {
         previousHandButtons = {0, 0};
-        PointerUpdate reset = pointer.Reset();
-        (void)QueuePointerEvents(reset.events);
-        return reset;
+        return {pointer.Reset(), generation, true};
     }
 
     std::array<ControllerSample, 2> hands{};
@@ -1729,19 +1736,10 @@ PointerUpdate OverlaySession::UpdateInteraction(std::span<const PointerSurface> 
     if (actionReadError)
     {
         previousHandButtons = {0, 0};
-        PointerUpdate reset = pointer.Reset();
-        (void)QueuePointerEvents(reset.events);
-        return reset;
+        return {pointer.Reset(), generation, true};
     }
 
-    PointerUpdate update = pointer.Update(true, hands, surfaces, static_cast<double>(displayTime) * 1e-9);
-    if (!QueuePointerEvents(update.events))
-    {
-        previousHandButtons = {0, 0};
-        (void)pointer.Reset();
-        update.cursor.reset();
-    }
-    return update;
+    return {pointer.Update(true, hands, surfaces, static_cast<double>(displayTime) * 1e-9), generation, false};
 }
 
 std::optional<XrCompositionLayerQuad> OverlaySession::BuildCursorQuad(const PointerHit &hit, int32_t &outXrError,
@@ -2269,10 +2267,11 @@ bool OverlaySession::RenderFrame()
     if (frameState.shouldRender == XR_TRUE && mainSessionVisible && hasPacket && anchored &&
         header.originRevision == originRevision)
     {
-        uint32_t limit = std::min(header.count, maxPanelLayers);
-        quads.reserve(limit + 1);
-        surfaces.reserve(limit);
-        for (uint32_t i = 0; i < limit; ++i)
+        uint32_t reserveCount = std::min(header.count, maxPanelLayers);
+        quads.reserve(reserveCount + 1);
+        surfaces.reserve(reserveCount);
+        uint32_t submittedPanels = 0;
+        for (uint32_t i = 0; i < header.count && submittedPanels < maxPanelLayers; ++i)
         {
             Descriptor d{};
             std::memcpy(&d, packetSnapshot->data() + sizeof(Header) + i * sizeof(Descriptor), sizeof(d));
@@ -2319,24 +2318,23 @@ bool OverlaySession::RenderFrame()
                                   quad.pose.orientation.w},
                                  {quad.pose.position.x, quad.pose.position.y, quad.pose.position.z}},
                                 d.widthMeters, d.heightMeters});
+            ++submittedPanels;
         }
     }
 
     uint32_t panelLayerCount = static_cast<uint32_t>(quads.size());
 
-    if (uploadFatal || (interactionWillRun && maxLayers <= 1))
+    SampledInteraction sampled{};
+    bool needsInteractionReset = uploadFatal || (interactionWillRun && maxLayers <= 1);
+    if (!needsInteractionReset)
     {
-        ResetInteractionState();
-    }
-    else
-    {
-        PointerUpdate interactionUpdate = UpdateInteraction(surfaces, frameState.predictedDisplayTime);
-        if (interactionUpdate.cursor && quads.size() < maxLayers)
+        sampled = SampleInteraction(surfaces, frameState.predictedDisplayTime);
+        if (!sampled.resetOnly && sampled.update.cursor && quads.size() < maxLayers)
         {
             int32_t cursorXrError = 0;
             std::string cursorError;
             bool cursorFatal = false;
-            if (auto cursorQuad = BuildCursorQuad(*interactionUpdate.cursor, cursorXrError, cursorError, cursorFatal))
+            if (auto cursorQuad = BuildCursorQuad(*sampled.update.cursor, cursorXrError, cursorError, cursorFatal))
             {
                 quads.push_back(*cursorQuad);
             }
@@ -2392,7 +2390,7 @@ bool OverlaySession::RenderFrame()
     res = xr.endFrame(session, &endInfo);
     if (XR_FAILED(res))
     {
-        ResetInteractionState();
+        ResetInteractionState(/*forceResetEvent=*/!sampled.update.events.empty());
         ClearHeadPose();
         SetStatus(OverlayStatus::Error, static_cast<int32_t>(res), 0,
                   "OpenXR endFrame failed (OpenXR error " + std::to_string(res) + ").");
@@ -2401,12 +2399,26 @@ bool OverlaySession::RenderFrame()
 
     if (uploadFatal)
     {
-        ResetInteractionState();
+        ResetInteractionState(/*forceResetEvent=*/!sampled.update.events.empty());
         ClearHeadPose();
         SetStatus(OverlayStatus::Error, uploadXrError, 0,
                   uploadErrorMessage.empty() ? "Vulkan overlay upload completion could not be confirmed."
                                              : uploadErrorMessage);
         return false;
+    }
+
+    if (needsInteractionReset)
+    {
+        ResetInteractionState();
+    }
+    else if (!sampled.update.events.empty())
+    {
+        EnqueueResult enqueued = QueuePointerEvents(sampled.update.events, sampled.generation);
+        if (enqueued == EnqueueResult::Overflow)
+        {
+            previousHandButtons = {0, 0};
+            (void)pointer.Reset();
+        }
     }
 
     if (uploadFailed)

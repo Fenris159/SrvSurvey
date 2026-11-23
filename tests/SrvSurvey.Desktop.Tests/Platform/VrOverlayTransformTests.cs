@@ -248,4 +248,41 @@ public sealed class VrOverlayTransformTests
         Assert.Equal(movedXr.Position.Y, movedVr.Position.Y, 4);
         Assert.Equal(movedXr.Position.Z, movedVr.Position.Z, 4);
     }
+
+    [Fact]
+    public void ApplyDepthStepMovesAlongPanelNormalOnOpenXrAndOpenVr()
+    {
+        // At yaw 0, positive depth increases Position.Z directly away from the viewer.
+        var frontPanel = new VrOverlayCalibration(8f, new Vector3(0f, 2f, 10f), Vector3.Zero);
+        VrOverlayCalibration pushedFront = VrOverlayTransform.ApplyDepthStep(
+            frontPanel,
+            deltaDepthUnits: 1.5f,
+            usesLegacyOpenVrRotation: false
+        );
+        Assert.Equal(0f, pushedFront.Position.X, 4);
+        Assert.Equal(2f, pushedFront.Position.Y, 4);
+        Assert.Equal(11.5f, pushedFront.Position.Z, 4);
+
+        // At +90 deg OpenXR yaw (left side panel facing +X), positive depth moves away along -X without drifting Z.
+        var sideXr = new VrOverlayCalibration(8f, new Vector3(-5f, 2f, 0f), new Vector3(0f, 90f, 0f));
+        VrOverlayCalibration pushedSideXr = VrOverlayTransform.ApplyDepthStep(
+            sideXr,
+            deltaDepthUnits: 2f,
+            usesLegacyOpenVrRotation: false
+        );
+        Assert.Equal(-7f, pushedSideXr.Position.X, 4);
+        Assert.Equal(2f, pushedSideXr.Position.Y, 4);
+        Assert.Equal(0f, pushedSideXr.Position.Z, 4);
+
+        // Legacy OpenVR uses -90 deg for the same physical orientation and must move identically.
+        var sideVr = new VrOverlayCalibration(8f, new Vector3(-5f, 2f, 0f), new Vector3(0f, -90f, 0f));
+        VrOverlayCalibration pushedSideVr = VrOverlayTransform.ApplyDepthStep(
+            sideVr,
+            deltaDepthUnits: 2f,
+            usesLegacyOpenVrRotation: true
+        );
+        Assert.Equal(pushedSideXr.Position.X, pushedSideVr.Position.X, 4);
+        Assert.Equal(pushedSideXr.Position.Y, pushedSideVr.Position.Y, 4);
+        Assert.Equal(pushedSideXr.Position.Z, pushedSideVr.Position.Z, 4);
+    }
 }

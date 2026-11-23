@@ -226,10 +226,25 @@ class OverlaySession
     void CleanupResources();
     void WorkerLoop();
     bool PollEvents();
+    enum class EnqueueResult
+    {
+        Ok,
+        StaleGeneration,
+        Overflow,
+    };
+
+    struct SampledInteraction
+    {
+        PointerUpdate update{};
+        uint64_t generation = 0;
+        bool resetOnly = false;
+    };
+
     bool RenderFrame();
-    bool QueuePointerEvents(const std::vector<PointerEvent> &events);
-    void ResetInteractionState();
-    PointerUpdate UpdateInteraction(std::span<const PointerSurface> surfaces, XrTime displayTime);
+    EnqueueResult QueuePointerEvents(const std::vector<PointerEvent> &events,
+                                     std::optional<uint64_t> expectedGeneration = std::nullopt);
+    void ResetInteractionState(bool forceResetEvent = false);
+    SampledInteraction SampleInteraction(std::span<const PointerSurface> surfaces, XrTime displayTime);
     std::optional<XrCompositionLayerQuad> BuildCursorQuad(const PointerHit &hit, int32_t &outXrError,
                                                           std::string &outError, bool &outFatal);
     bool EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height, int32_t &outXrError,

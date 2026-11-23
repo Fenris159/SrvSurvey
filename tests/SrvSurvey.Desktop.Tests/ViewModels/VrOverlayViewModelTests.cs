@@ -413,6 +413,19 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.False(model.IsAdjusting);
         Assert.False(model.IsDragModeEnabled);
         Assert.Equal(-6f, model.GetCalibration("PlotBioSystem")!.Position.X);
+
+        // Partial group save failure refreshes committed overlays and reports which overlays remain unsaved.
+        Assert.True(model.BeginAdjustment());
+        model.SelectedCategory = "Biology & surface";
+        model.SelectedOverlayName = "PlotBioStatus";
+        model.PositionX = 4.25;
+        model.SelectedOverlayName = "PlotBioSystem";
+        model.PositionX = double.NaN;
+        model.SaveCommand.Execute(null);
+        Assert.Contains("Saved 1 of 2 overlays; unsaved: PlotBioSystem", model.StatusMessage);
+        model.CancelCommand.Execute(null);
+        Assert.Equal(4.25f, model.GetCalibration("PlotBioStatus")!.Position.X);
+        Assert.Equal(-6f, model.GetCalibration("PlotBioSystem")!.Position.X);
     }
 
     public void Dispose()

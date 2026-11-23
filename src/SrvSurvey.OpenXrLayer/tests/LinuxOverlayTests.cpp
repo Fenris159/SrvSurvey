@@ -108,6 +108,8 @@ struct MockRuntime
         float scrollY = 0;
     };
     std::array<MockHandState, 2> hands{};
+    XrResult endFrameResult = XR_SUCCESS;
+    std::function<void()> onEndFrame;
 };
 
 MockRuntime *gMock = nullptr;
@@ -515,6 +517,10 @@ XrResult MockBeginFrame(XrSession, const XrFrameBeginInfo *)
 XrResult MockEndFrame(XrSession, const XrFrameEndInfo *info)
 {
     ++gMock->endFrameCount;
+    if (gMock->onEndFrame)
+        gMock->onEndFrame();
+    if (gMock->endFrameResult != XR_SUCCESS)
+        return gMock->endFrameResult;
     gMock->lastSubmittedLayerCount = info->layerCount;
     gMock->lastSubmittedQuads.clear();
     for (uint32_t i = 0; i < info->layerCount; ++i)
@@ -1634,6 +1640,50 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
         REQUIRE(mock.lastSubmittedQuads.size() == 2);
         REQUIRE(mock.lastSubmittedQuads[1].subImage.imageRect.extent.width == 32);
         REQUIRE(session.GetStatus().renderedCount == 1);
+
+        // Zero-alpha panel at position 1 must not consume the panel layer budget before opaque panel at position 2.
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20, 0.0f, 1.0f)));
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedQuads.size() == 2);
+        REQUIRE(session.GetStatus().renderedCount == 1);
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        REQUIRE(events[count - 1].id == 20);
+
+        // Generation change during frame (between sampling and endFrame) must drop stale sampled events!
+        mock.hands[1].select = true;
+        mock.onEndFrame = [&]() {
+            int32_t err = 0;
+            std::string msg;
+            (void)session.SetInteractionEnabled(false, err, msg);
+            (void)session.SetInteractionEnabled(true, err, msg);
+        };
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        mock.onEndFrame = nullptr;
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 0);
+
+        // Trigger press succeeds on accepted frame, then xrEndFrame fails on trigger release -> Reset (not LeftUp).
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        (void)session.PollPointerEvents(events);
+
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        (void)session.PollPointerEvents(events);
+
+        mock.hands[1].select = false;
+        mock.endFrameResult = XR_ERROR_RUNTIME_FAILURE;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(!session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].kind == PointerKind::Reset);
         session.Shutdown();
     }
 }

@@ -83,16 +83,35 @@ public static class VrOverlayTransform
     )
     {
         ArgumentNullException.ThrowIfNull(calibration);
-        Vector3 radians = calibration.Rotation * (MathF.PI / 180f);
-        var orientation = Quaternion.CreateFromYawPitchRoll(radians.Y, radians.X, radians.Z);
-        if (usesLegacyOpenVrRotation)
-        {
-            orientation = Quaternion.Inverse(orientation);
-        }
-
+        Quaternion orientation = GetPanelOrientation(calibration, usesLegacyOpenVrRotation);
         var right = Vector3.Transform(Vector3.UnitX, orientation);
         var up = Vector3.Transform(Vector3.UnitY, orientation);
         Vector3 worldDelta = right * deltaRightUnits + up * deltaUpUnits;
+        return ApplyWorldDelta(calibration, worldDelta);
+    }
+
+    /// <summary>Moves a panel along its depth normal (away from the viewer for positive steps) in 10 cm calibration units.</summary>
+    public static VrOverlayCalibration ApplyDepthStep(
+        VrOverlayCalibration calibration,
+        float deltaDepthUnits,
+        bool usesLegacyOpenVrRotation
+    )
+    {
+        ArgumentNullException.ThrowIfNull(calibration);
+        Quaternion orientation = GetPanelOrientation(calibration, usesLegacyOpenVrRotation);
+        var awayNormal = Vector3.Transform(-Vector3.UnitZ, orientation);
+        return ApplyWorldDelta(calibration, awayNormal * deltaDepthUnits);
+    }
+
+    private static Quaternion GetPanelOrientation(VrOverlayCalibration calibration, bool usesLegacyOpenVrRotation)
+    {
+        Vector3 radians = calibration.Rotation * (MathF.PI / 180f);
+        var orientation = Quaternion.CreateFromYawPitchRoll(radians.Y, radians.X, radians.Z);
+        return usesLegacyOpenVrRotation ? Quaternion.Inverse(orientation) : orientation;
+    }
+
+    private static VrOverlayCalibration ApplyWorldDelta(VrOverlayCalibration calibration, Vector3 worldDelta)
+    {
         var position = new Vector3(
             Math.Clamp(calibration.Position.X + worldDelta.X, -1000f, 1000f),
             Math.Clamp(calibration.Position.Y + worldDelta.Y, -1000f, 1000f),

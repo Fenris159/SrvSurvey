@@ -815,17 +815,20 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             return;
         }
 
+        var toSave = new Dictionary<string, VrOverlayCalibration>(pendingAdjustments, StringComparer.Ordinal)
+        {
+            [SelectedOverlayName] = CreateCalibration(),
+        };
+        var savedNames = new List<string>(toSave.Count);
         try
         {
-            var toSave = new Dictionary<string, VrOverlayCalibration>(pendingAdjustments, StringComparer.Ordinal)
-            {
-                [SelectedOverlayName] = CreateCalibration(),
-            };
             string? mode = SelectedMode == DefaultMode ? null : SelectedMode;
             VrOverlayCalibrationSaveResult? lastResult = null;
             foreach ((string plotterName, VrOverlayCalibration calibration) in toSave)
             {
                 lastResult = calibrationStore.Save(plotterName, calibration, mode, SelectedPlatformProfile.Id);
+                savedNames.Add(plotterName);
+                pendingAdjustments.Remove(plotterName);
             }
 
             pendingAdjustments.Clear();
@@ -854,7 +857,21 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
                         or OverflowException
             )
         {
-            StatusMessage = $"VR calibration was not saved: {exception.Message}";
+            if (savedNames.Count > 0)
+            {
+                catalog = calibrationStore.Load(SelectedPlatformProfile.Id);
+                RefreshAvailableModes();
+                CalibrationChanged?.Invoke(this, EventArgs.Empty);
+                string[] unsaved = toSave
+                    .Keys.Where(name => !savedNames.Contains(name, StringComparer.Ordinal))
+                    .ToArray();
+                StatusMessage =
+                    $"Saved {savedNames.Count} of {toSave.Count} overlays; unsaved: {string.Join(", ", unsaved)} ({exception.Message})";
+            }
+            else
+            {
+                StatusMessage = $"VR calibration was not saved: {exception.Message}";
+            }
         }
     }
 

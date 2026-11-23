@@ -210,11 +210,13 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.False(failedFallback.Succeeded);
         Assert.Contains("-15", failedFallback.Message);
 
-        // Native success supports custom and fallback messages.
+        // Native success supports custom and fallback messages and reserves one layer for the cursor.
+        Assert.Equal(16, runtime.MaximumOverlays);
         backend.InteractionOutcome = new(true, 0, " ");
         VrRuntimeResult enabledFallback = runtime.SetInteractionEnabled(true);
         Assert.True(enabledFallback.Succeeded);
         Assert.Contains("Monado / OpenXR", enabledFallback.Message);
+        Assert.Equal(15, runtime.MaximumOverlays);
 
         backend.InteractionOutcome = new(true, 0, "Pointer active");
         VrRuntimeResult enabledCustom = runtime.SetInteractionEnabled(true);
@@ -237,7 +239,7 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         ];
 
         IReadOnlyList<VrOverlayPointerEvent> polled = runtime.PollPointerEvents();
-        Assert.Equal(4, polled.Count);
+        Assert.Equal(3, polled.Count);
         Assert.Equal("PlotAdjustVR", polled[0].PlotterName);
         Assert.Equal(VrOverlayPointerEventKind.Move, polled[0].Kind);
         Assert.Equal(200, polled[0].X, 3);
@@ -252,7 +254,14 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
 
         Assert.Equal(VrOverlayPointerEventKind.Reset, polled[2].Kind);
         Assert.Equal(string.Empty, polled[2].PlotterName);
-        Assert.Equal(VrOverlayPointerEventKind.Reset, polled[3].Kind);
+
+        // Changing a panel's coordinate basis drains stale queued input and emits a Reset.
+        backend.PointerEvents = [new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0)];
+        var resizedFrame = new VrOverlayFrame(2, 1, [255, 0, 0, 255, 0, 255, 0, 255], 600, 300);
+        Assert.True(runtime.PublishOverlay("PlotAdjustVR", resizedFrame, ValidCalibration(), 1f).Succeeded);
+        IReadOnlyList<VrOverlayPointerEvent> afterResize = runtime.PollPointerEvents();
+        Assert.Single(afterResize);
+        Assert.Equal(VrOverlayPointerEventKind.Reset, afterResize[0].Kind);
 
         // Removing an overlay invalidates its identity and yields Reset if a stale event arrives.
         runtime.RemoveOverlay("PlotJumpInfo");
@@ -261,8 +270,9 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.Single(afterRemove);
         Assert.Equal(VrOverlayPointerEventKind.Reset, afterRemove[0].Kind);
 
-        // Disabling interaction forwards false to the backend and stops polling.
+        // Disabling interaction restores full overlay capacity, forwards false, and stops polling.
         Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        Assert.Equal(16, runtime.MaximumOverlays);
         Assert.False(backend.LastInteractionEnabled);
         Assert.Empty(runtime.PollPointerEvents());
 
@@ -443,10 +453,16 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         {
             SetInteractionCalls++;
             LastInteractionEnabled = enabled;
+            PointerEvents = [];
             return enabled ? InteractionOutcome : new(true, 0, "Disabled");
         }
 
-        public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session) => PointerEvents;
+        public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session)
+        {
+            IReadOnlyList<OpenXrPointerEvent> polled = PointerEvents;
+            PointerEvents = [];
+            return polled;
+        }
 
         public void Destroy(nint session) => DestroyCalls++;
     }

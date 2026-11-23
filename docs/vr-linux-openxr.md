@@ -54,10 +54,13 @@ SrvSurvey.Desktop (Avalonia panels -> bounded RGBA frames)
 4. Use **Adjust overlays**, **Place in front of me**, or **Reset VR
    orientation** to position cockpit panels. Assign **Toggle VR overlay
    interaction** to aim and click panels (including the in-headset calibration
-   panel) with your VR controllers: trigger clicks, grip right-clicks,
-   thumbstick/trackpad press middle-clicks, and thumbstick/trackpad tilt
-   scrolls. WiVRn and Monado use seated cockpit defaults and store placements
-   separately under `vr/wivrn` and `vr/monado`.
+   panel) with your VR controllers: on profiles with full bindings (Oculus
+   Touch, Valve Index, Microsoft Motion, and HTC Vive), trigger clicks, grip
+   right-clicks, thumbstick/trackpad press middle-clicks, and
+   thumbstick/trackpad tilt scrolls. The fallback **KHR Simple Controller**
+   profile binds only aim and primary select unless the runtime supplies
+   additional bindings. WiVRn and Monado use seated cockpit defaults and store
+   placements separately under `vr/wivrn` and `vr/monado`.
 
 ## Building locally
 
@@ -86,6 +89,7 @@ path.
     colors, and proper cockpit placement.
   - **Toggle VR overlay interaction** shows the pointer cursor dot on panels,
     clicks buttons on the in-headset **Adjust overlays** panel, scrolls with the
-    thumbstick/trackpad, and returns overlays to click-through when toggled off.
+    thumbstick/trackpad (on controller profiles with a thumbstick or trackpad
+    binding), and returns overlays to click-through when toggled off.
   - **Place in front of me**, **Reset VR orientation**, hiding/showing panels,
     and cleanly disconnecting/reconnecting WiVRn or Monado work reliably.

@@ -16,11 +16,12 @@ explicit reset.
 ## What's changed
 
 - **Linux OpenXR controller pointer interaction (WiVRn and Monado)** adds
-  OpenXR aim, trigger, secondary/middle click, and thumbstick scroll actions to
-  `libSrvSurveyLinuxOpenXrOverlay.so` with a rendered laser cursor, letting you
-  click, scroll, and adjust VR overlays directly in the headset across Oculus
-  Touch, Valve Index, Microsoft Motion, HTC Vive, and KHR Simple controller
-  profiles.
+  OpenXR aim, trigger, secondary/middle click, and thumbstick/trackpad scroll
+  actions to `libSrvSurveyLinuxOpenXrOverlay.so` with a rendered laser cursor,
+  letting you click, scroll, and adjust VR overlays directly in the headset
+  across Oculus Touch, Valve Index, Microsoft Motion, and HTC Vive controller
+  profiles (with aim and primary select on KHR Simple Controller unless the
+  runtime supplies additional bindings).
 - **Snapped, camera-facing VR calibration window** centers the in-headset
   calibration panel in front of you and snaps it to five 45° front-hemisphere
   sectors (`-90°`, `-45°`, `0°`, `+45°`, `+90°`) with yaw hysteresis and a
