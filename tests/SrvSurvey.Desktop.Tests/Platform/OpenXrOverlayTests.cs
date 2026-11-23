@@ -405,6 +405,16 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.Equal("VDXR / OpenXR", router.DisplayName);
         Assert.Equal(16, router.MaximumOverlays);
         Assert.False(router.TryGetHeadPose(out _));
+        profile = VrPlatformProfileCatalog.WivrnOpenXrProfileId;
+        Assert.False(router.IsInitialized);
+        Assert.Equal("WiVRn / OpenXR", router.DisplayName);
+        Assert.Equal(16, router.MaximumOverlays);
+        Assert.False(router.TryGetHeadPose(out _));
+        profile = VrPlatformProfileCatalog.MonadoOpenXrProfileId;
+        Assert.False(router.IsInitialized);
+        Assert.Equal("Monado / OpenXR", router.DisplayName);
+        Assert.Equal(16, router.MaximumOverlays);
+        Assert.False(router.TryGetHeadPose(out _));
     }
 
     [Fact]

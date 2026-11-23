@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /source
 
 COPY global.json SrvSurvey.slnx ./
@@ -20,7 +20,16 @@ COPY tools/ tools/
 RUN dotnet build SrvSurvey.slnx --configuration Release --no-restore \
     && dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 
-FROM test AS publish
+FROM test AS native-openxr
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cmake g++ make \
+    && rm -rf /var/lib/apt/lists/* \
+    && cmake -S src/SrvSurvey.OpenXrLayer -B artifacts/openxr-build -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build artifacts/openxr-build \
+    && ctest --test-dir artifacts/openxr-build --output-on-failure \
+    && cmake --install artifacts/openxr-build --prefix artifacts/openxr-linux
+
+FROM native-openxr AS publish
 RUN dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj \
     --configuration Release \
     --runtime linux-x64 \

@@ -1553,7 +1553,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/SteamScreenshotSource.cs"
   },
   {
-    "Text": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+    "Text": "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer. WiVRn and Monado require XR_EXTX_overlay support from the active Linux OpenXR runtime.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -8138,6 +8138,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/GuardianGestureSettingsStore.cs"
+  },
+  {
+    "Text": "Blocked OpenVR shim on Linux: if openvrpaths.vrpath or VR_OVERRIDE points to xrizer or OpenComposite, switch SrvSurvey\u0027s route to WiVRn or Monado (Linux OpenXR) instead of SteamVR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Blue",
@@ -15174,6 +15182,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
   },
   {
+    "Text": "Connect and wake your headset, then launch Elite Dangerous through Monado.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Connect from ALVR and wait until SteamVR reports the headset ready.",
     "IsFormat": false,
     "SourceKinds": [
@@ -15260,6 +15276,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
+    "Text": "Connect {0} before resetting the overlay origin.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Connected but one panel is absent: verify that panel\u0027s normal visibility switch, vehicle exception, and game-state trigger.",
@@ -15533,6 +15557,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerDeviceProvider.cs"
+  },
+  {
+    "Text": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
@@ -16087,6 +16119,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "Could not encode overlay frames for {0}: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "Could not enumerate update instance registrations: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -16101,6 +16141,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectPreviewViewModel.cs"
+  },
+  {
+    "Text": "Could not initialize the {0} overlay session (OpenXR error {1}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Could not load this report. Choose Refresh to try again.",
@@ -18826,6 +18874,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Direct Linux OpenXR overlay (XR_EXTX_overlay) to Monado",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Direct Linux OpenXR overlay (XR_EXTX_overlay) to WiVRn",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Direct target",
     "IsFormat": false,
     "SourceKinds": [
@@ -19362,6 +19426,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/KeyboardChordFormatter.cs"
+  },
+  {
+    "Text": "Do not choose a SteamVR route while Elite runs through WiVRn with xrizer or OpenComposite; SrvSurvey blocks OpenVR probing when xrizer, OpenComposite, WiVRn, or Monado is active so it does not crash the running game.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "Do you want to close the existing instance and continue opening this one?",
@@ -20836,7 +20908,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Elite can run through Proton while the native SrvSurvey application publishes to the same SteamVR compositor, but Frontier does not support that Linux game path and SrvSurvey labels it experimental.",
+    "Text": "Elite can run through Proton while the native SrvSurvey application publishes to SteamVR, WiVRn, or Monado, but Frontier does not support that Linux game path and SrvSurvey labels Linux VR routes experimental.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -21126,6 +21198,14 @@
   },
   {
     "Text": "Enable SrvSurvey VR overlays and wait for a connected VDXR session. Place panels with the calibration controls. Use Toggle VR overlay interaction to point and click with a Quest controller.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -22334,6 +22414,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Experimental Linux OpenXR route without SteamVR. Uses Monado\u0027s native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn\u0027s native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Experimental rig bar detection",
@@ -24920,7 +25016,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+    "Text": "For Meta Quest or Rift on Windows, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -29546,7 +29642,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+    "Text": "If packaged OpenVR or Linux OpenXR overlay support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -33170,6 +33266,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/ProfileSyncStore.cs"
   },
   {
+    "Text": "Linux OpenXR overlay session is not active.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Linux OpenXR overlays require Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "Linux OpenXR: packaged XR_EXTX_overlay Vulkan support is ready. Requires libopenxr_loader and Vulkan.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Linux OpenXR: packaged XR_EXTX_overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Linux keyboard input sources",
     "IsFormat": false,
     "SourceKinds": [
@@ -33178,7 +33306,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
+    "Text": "Linux only.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Linux packages include the OpenVR client library for SteamVR routes and the XR_EXTX_overlay Vulkan helper for WiVRn and Monado; no custom library location is required, though your Linux distribution must provide libopenxr_loader.so.1 and libvulkan.so.1 for WiVRn or Monado.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -37023,6 +37159,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "Monado",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "Monado (Linux OpenXR, experimental)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Monado / OpenXR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Monado is running without SteamVR. Probing SteamVR/OpenVR can launch SteamVR or crash an active Monado game session. Choose the Monado (Linux OpenXR, experimental) route instead.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "Monazite",
     "IsFormat": false,
     "SourceKinds": [
@@ -37546,7 +37714,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
-    "Text": "NEEDS ATTENTION \u2014 The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel\u0027s VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+    "Text": "NEEDS ATTENTION \u2014 The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart the VR runtime, reset the affected panel\u0027s VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -40975,6 +41143,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "On Linux, choose WiVRn (Linux OpenXR, experimental) or Monado (Linux OpenXR, experimental) when streaming or running natively through WiVRn/Monado instead of SteamVR.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "On ShoppingList here: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -42002,6 +42178,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
+    "Text": "OpenComposite",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "OpenComposite is not a compatible workaround for standalone OpenVR overlays. An existing Elite OpenXR setup can use EDVR or OpenComposite. EDVR rendering was confirmed on Quest 3 with VDXR in issue #264; OpenComposite is not required. Experimental EDVR controller input supplies its own frame-driven actions when opted in; real-headset controller compatibility still needs feedback.",
     "IsFormat": false,
     "SourceKinds": [
@@ -42079,7 +42263,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrFrameBridge.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "Opened the Guardian survey Discord channel.",
@@ -43678,6 +43862,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/MiningSpeechOutput.cs"
   },
   {
+    "Text": "PC VR headsets running through Monado or Envision on Linux",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "PIN",
     "IsFormat": false,
     "SourceKinds": [
@@ -43868,6 +44060,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceMiningSearchViewModel.cs"
+  },
+  {
+    "Text": "Packaged Linux OpenXR overlay library is unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Packaged Linux OpenXR overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Packaged Linux OpenXR overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Pad",
@@ -46812,6 +47028,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/QuestDeveloperViewModel.cs"
   },
   {
+    "Text": "Published overlay frames to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "Published reference data is current.",
     "IsFormat": false,
     "SourceKinds": [
@@ -47196,6 +47420,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DesktopJournalProjectionAdapter.cs"
   },
   {
+    "Text": "Quest, Pico, and standalone headsets streaming over WiVRn on Linux",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Quest-tagged system",
     "IsFormat": false,
     "SourceKinds": [
@@ -47323,6 +47555,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VoxStellarSharingViewModel.cs"
+  },
+  {
+    "Text": "Queued {0} for {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Queued {0} journal events for EDDN.",
@@ -49494,6 +49734,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Recentered the Linux OpenXR overlay origin to the current headset pose.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "Recepta Conditivus",
     "IsFormat": false,
     "SourceKinds": [
@@ -51440,7 +51688,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
-    "Text": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
+    "Text": "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, WiVRn, and Monado, as the overlay origin without changing saved panel placement.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -60265,6 +60513,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"
   },
   {
+    "Text": "SrvSurvey matches its overlay backend to the VR runtime used by Elite Dangerous: OpenVR for SteamVR routes, an OpenXR layer for VDXR on Windows, and direct OpenXR overlays for WiVRn and Monado on Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "SrvSurvey mining activity overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -60543,14 +60799,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml"
-  },
-  {
-    "Text": "SrvSurvey uses SteamVR\u0027s OpenVR overlay compositor because it can place a companion panel over another running VR application.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "SrvSurvey will follow the newest active journal.",
@@ -61033,6 +61281,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
+    "Text": "Start SteamVR (vrserver) and connect your headset before enabling SteamVR overlays on Linux.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "Start SteamVR and wait until it reports the Meta headset and controllers ready.",
     "IsFormat": false,
     "SourceKinds": [
@@ -61050,6 +61306,14 @@
   },
   {
     "Text": "Start SteamVR through the Windows Mixed Reality bridge and confirm the headset is ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "Start WiVRn (wivrn-server), connect your headset, and confirm WiVRn is the active OpenXR runtime.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -61191,6 +61455,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Start monado-service (or your Envision profile) and confirm Monado is the active OpenXR runtime.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
     "Text": "Start or edit a map draft before choosing a background image.",
@@ -61709,7 +61981,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+    "Text": "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. WiVRn and Monado routes on Linux use direct XR_EXTX_overlay with headless Vulkan without launching SteamVR.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -64655,7 +64927,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
-    "Text": "The Link / Air Link, Steam Link, Virtual Desktop SteamVR, and ALVR routes require SteamVR. The separate VDXR route does not require SteamVR; direct Meta runtime overlays remain unsupported.",
+    "Text": "The Link / Air Link, Steam Link, Virtual Desktop SteamVR, and ALVR routes require SteamVR. The VDXR route (Windows) and the WiVRn / Monado routes (Linux) run without SteamVR; direct Meta runtime overlays remain unsupported.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -65213,6 +65485,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationNexusViewModel.Reports.cs"
+  },
+  {
+    "Text": "The active OpenVR runtime is configured to use {0}, which translates VR games to OpenXR and does not support cross-process OpenVR overlays. Connecting through OpenVR can crash active games; choose the WiVRn or Monado (Linux OpenXR) route instead.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "The active OpenXR runtime is Monado, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "The active OpenXR runtime is SteamVR, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "The active bootstrap source and the locations checked on this platform.",
@@ -68007,7 +68311,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
-    "Text": "The same overlay publisher runs on both supported desktop operating systems; only native OpenVR library discovery differs.",
+    "Text": "The same overlay publisher runs on both supported desktop operating systems; native runtime integration matches the active VR stack.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -69189,6 +69493,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "The {0} overlay session disconnected.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The {0} overlay session ended during startup.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "The {0} profile value limit of {1} was exceeded by {2}. Large JSON files in systems or mining-search-cache can exceed this limit.",
@@ -73368,7 +73688,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
-    "Text": "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+    "Text": "VDXR, WiVRn, and Monado use seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -73497,7 +73817,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
-    "Text": "VR connection failed: restart the selected VR session and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
+    "Text": "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -73567,6 +73887,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
+  },
+  {
+    "Text": "VR overlays are click-through.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "VR overlays are disabled.",
@@ -74275,6 +74603,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
+    "Text": "Waiting for Monado. Start monado-service and connect your headset, then confirm Monado is the active OpenXR runtime.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "Waiting for WiVRn. Start wivrn-server and connect your headset, then confirm WiVRn is the active OpenXR runtime.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "Waiting for a Loadout event. Board your ship to identify its equipped modules.",
     "IsFormat": false,
     "SourceKinds": [
@@ -74555,7 +74899,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteViewModel.cs"
   },
   {
-    "Text": "Waiting: for SteamVR routes, confirm SteamVR is running and the headset is in that session. For VDXR, register the SrvSurvey OpenXR layer, restart Elite, and confirm Runtime: VDXR.",
+    "Text": "Waiting: for SteamVR routes, confirm SteamVR (vrserver) is running and the headset is in that session. For VDXR, register the SrvSurvey OpenXR layer, restart Elite, and confirm Runtime: VDXR. For WiVRn or Monado on Linux, confirm wivrn-server or monado-service is running, the headset is connected, and ~/.config/openxr/1/active_runtime.json points to WiVRn or Monado.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -75309,6 +75653,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
+    "Text": "WiVRn",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "WiVRn (Linux OpenXR, experimental)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "WiVRn / OpenXR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "WiVRn is running without SteamVR. Probing SteamVR/OpenVR can launch SteamVR or crash an active WiVRn game session. Choose the WiVRn (Linux OpenXR, experimental) route instead.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "Width",
     "IsFormat": false,
     "SourceKinds": [
@@ -75478,7 +75854,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs"
   },
   {
-    "Text": "Windows packages include the OpenVR client library used by SrvSurvey.",
+    "Text": "Windows packages include the OpenVR client library and the Windows x64 Direct3D 11 OpenXR layer for VDXR.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -79756,7 +80132,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "linux-x64",
@@ -79764,7 +80140,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "linux64",
@@ -80183,6 +80559,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "monado",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "monado-openxr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "monado-service",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "monitor",
     "IsFormat": false,
     "SourceKinds": [
@@ -80260,7 +80660,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ProfileSync/GoogleDriveBackupClient.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "native",
@@ -80268,7 +80668,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "native button-up",
@@ -80605,6 +81005,46 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Controls/BoxelSystemActionMenu.axaml.cs"
+  },
+  {
+    "Text": "opencomposite",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "openovr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "openvr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "openvrpaths.vrpath",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "openxr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "optimistic",
@@ -81423,12 +81863,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
+    "Text": "runtime",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "runtimes",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrNativeLibraryResolver.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "ruthenium",
@@ -82037,6 +82485,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/VrOverlaySettingsStore.cs"
+  },
+  {
+    "Text": "steamxr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "steel",
@@ -83304,6 +83760,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ScreenshotProcessingService.cs"
   },
   {
+    "Text": "wivrn",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "wivrn-openxr",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
+    "Text": "wivrn-server",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
     "Text": "wmr-via-steamvr",
     "IsFormat": false,
     "SourceKinds": [
@@ -83366,6 +83846,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
+    "Text": "xrizer",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
     "Text": "yellow",
@@ -84864,6 +85352,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayExceptionsViewModel.cs"
   },
   {
+    "Text": "{0} overlay session is active.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "{0} overlay session is not active.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "{0} overlay settings",
     "IsFormat": true,
     "SourceKinds": [
@@ -84934,6 +85438,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
+  },
+  {
+    "Text": "{0} rejected the overlay frame packet.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "{0} remaining",

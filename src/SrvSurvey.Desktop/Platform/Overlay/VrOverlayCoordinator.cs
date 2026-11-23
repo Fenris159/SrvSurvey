@@ -37,7 +37,8 @@ public sealed class VrOverlayCoordinator : IDisposable
             runtime
             ?? new VrOverlayRuntimeRouter(
                 () => viewModel.SelectedPlatformProfile.Id,
-                edvrControllerInput: () => viewModel.EdvrControllerInput
+                edvrControllerInput: () => viewModel.EdvrControllerInput,
+                isCustomRuntime: () => viewModel.IsCustomRuntime
             );
         this.processDetector = processDetector ?? IsProcessRunning;
         this.modeProvider = modeProvider ?? (() => null);

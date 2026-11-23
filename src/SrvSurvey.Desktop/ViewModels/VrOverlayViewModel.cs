@@ -265,10 +265,24 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             {
                 return SelectedPlatformProfile.UnavailableReason;
             }
-            return SelectedPlatformProfile.Id == VrPlatformProfileCatalog.MetaVdxrProfileId
-                ? "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required."
-                : platformSupportMessage;
+            if (SelectedPlatformProfile.Id == VrPlatformProfileCatalog.MetaVdxrProfileId)
+            {
+                return "VDXR: register the OpenXR layer from the Windows x64 package, then restart Elite. Direct3D 11 is required.";
+            }
+            if (VrPlatformProfileCatalog.IsLinuxOpenXrProfile(SelectedPlatformProfile.Id))
+            {
+                return CreateLinuxOpenXrSupportMessage();
+            }
+            return platformSupportMessage;
         }
+    }
+
+    private static string CreateLinuxOpenXrSupportMessage()
+    {
+        string? library = LinuxVrRuntimeInspector.Default.FindOverlayLibrary();
+        return library is null
+            ? "Linux OpenXR: packaged XR_EXTX_overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture."
+            : "Linux OpenXR: packaged XR_EXTX_overlay Vulkan support is ready. Requires libopenxr_loader and Vulkan.";
     }
 
     private static string CreatePlatformSupportMessage()

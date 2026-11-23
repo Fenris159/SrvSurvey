@@ -1535,21 +1535,23 @@ public static class GuideCatalog
         ];
     }
 
-    /// <summary>Explains how to select a supported headset bridge and OpenVR connection route.</summary>
+    /// <summary>Explains how to select a supported headset bridge and VR connection route.</summary>
     private static GuideSectionViewModel CreateVrConnectionRouteSection()
     {
         return Section(
             "Choose the connection route",
-            "SrvSurvey uses SteamVR's OpenVR overlay compositor because it can place a companion panel over another running VR application.",
+            "SrvSurvey matches its overlay backend to the VR runtime used by Elite Dangerous: OpenVR for SteamVR routes, an OpenXR layer for VDXR on Windows, and direct OpenXR overlays for WiVRn and Monado on Linux.",
             [
                 "Open Theme > Overlay setup > VR.",
                 "Choose SteamVR headset for Index, Vive, Pimax, Bigscreen Beyond, Pico, or another headset already exposed to SteamVR.",
-                "For Meta Quest or Rift, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+                "For Meta Quest or Rift on Windows, choose the exact bridge you use: Link / Air Link, Steam Link, Virtual Desktop SteamVR, VDXR, or experimental ALVR.",
+                "On Linux, choose WiVRn (Linux OpenXR, experimental) or Monado (Linux OpenXR, experimental) when streaming or running natively through WiVRn/Monado instead of SteamVR.",
                 "Choose Windows Mixed Reality only on a Windows installation where its headset software and SteamVR bridge remain available. Check the vendor’s current support before changing Windows versions.",
                 "Use Custom OpenVR runtime only when the compositor implements the OpenVR overlay API and you know its process name.",
             ],
             [
-                "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. A community Quest 3 test confirmed rendering with EDVR; controller interaction remains unverified on that setup.",
+                "SteamVR routes use the OpenVR overlay backend. The VDXR route uses the SrvSurvey OpenXR layer on Windows x64 with Direct3D 11. WiVRn and Monado routes on Linux use direct XR_EXTX_overlay with headless Vulkan without launching SteamVR.",
+                "Do not choose a SteamVR route while Elite runs through WiVRn with xrizer or OpenComposite; SrvSurvey blocks OpenVR probing when xrizer, OpenComposite, WiVRn, or Monado is active so it does not crash the running game.",
                 "Changing connection routes does not erase overlay positions or vehicle-mode calibrations.",
             ]
         );
@@ -1562,12 +1564,12 @@ public static class GuideCatalog
             "The settings panel keeps headset pairing, runtime startup, and SrvSurvey activation in the order they must happen.",
             [
                 "Complete the vendor's normal wired or wireless headset connection first.",
-                "For SteamVR routes, start SteamVR and wait until it reports the headset ready before launching Elite Dangerous in VR. For VDXR, register the SrvSurvey OpenXR layer and restart Elite using your existing VDXR setup.",
+                "For SteamVR routes, start SteamVR and wait until it reports the headset ready before launching Elite Dangerous in VR. For VDXR, register the SrvSurvey OpenXR layer and restart Elite using your existing VDXR setup. For WiVRn or Monado on Linux, start wivrn-server or monado-service and confirm it is the active OpenXR runtime.",
                 "Enable VR overlays in SrvSurvey. The status changes from Waiting to Connecting and then Connected automatically.",
                 "Use Check connection after changing runtimes or repairing a headset connection.",
             ],
             [
-                "The Link / Air Link, Steam Link, Virtual Desktop SteamVR, and ALVR routes require SteamVR. The separate VDXR route does not require SteamVR; direct Meta runtime overlays remain unsupported.",
+                "The Link / Air Link, Steam Link, Virtual Desktop SteamVR, and ALVR routes require SteamVR. The VDXR route (Windows) and the WiVRn / Monado routes (Linux) run without SteamVR; direct Meta runtime overlays remain unsupported.",
                 "A Connected state with zero live overlays means the runtime is ready but no SrvSurvey panel is currently visible in the active game context.",
             ]
         );
@@ -1597,13 +1599,13 @@ public static class GuideCatalog
     {
         return Section(
             "Windows and Linux setup",
-            "The same overlay publisher runs on both supported desktop operating systems; only native OpenVR library discovery differs.",
+            "The same overlay publisher runs on both supported desktop operating systems; native runtime integration matches the active VR stack.",
             [],
             [
-                "Windows packages include the OpenVR client library used by SrvSurvey.",
-                "Linux packages include the OpenVR client library used by SrvSurvey; no custom library location is required.",
-                "If packaged OpenVR support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
-                "Elite can run through Proton while the native SrvSurvey application publishes to the same SteamVR compositor, but Frontier does not support that Linux game path and SrvSurvey labels it experimental.",
+                "Windows packages include the OpenVR client library and the Windows x64 Direct3D 11 OpenXR layer for VDXR.",
+                "Linux packages include the OpenVR client library for SteamVR routes and the XR_EXTX_overlay Vulkan helper for WiVRn and Monado; no custom library location is required, though your Linux distribution must provide libopenxr_loader.so.1 and libvulkan.so.1 for WiVRn or Monado.",
+                "If packaged OpenVR or Linux OpenXR overlay support is reported unavailable, reinstall SrvSurvey and verify that the package matches the system architecture.",
+                "Elite can run through Proton while the native SrvSurvey application publishes to SteamVR, WiVRn, or Monado, but Frontier does not support that Linux game path and SrvSurvey labels Linux VR routes experimental.",
             ]
         );
     }
@@ -1620,8 +1622,8 @@ public static class GuideCatalog
                 "Place in front of me moves only the selected panel to eye level, one metre along your current heading. Save calibration keeps that target and mode; Close / discard unsaved restores saved values. Reset selected restores the route default (or the default placement for a vehicle override) and saves it.",
             ],
             [
-                "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, as the overlay origin without changing saved panel placement.",
-                "VDXR has seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
+                "Reset VR orientation captures the current headset yaw on SteamVR, or the headset pose on VDXR, WiVRn, and Monado, as the overlay origin without changing saved panel placement.",
+                "VDXR, WiVRn, and Monado use seated defaults and separate saved placements. Existing custom calibrations are retained as a starting point; Reset selected applies the seated factory placement. SteamVR and desktop placements are preserved.",
             ]
         );
     }
@@ -1652,12 +1654,13 @@ public static class GuideCatalog
             "Use the connection state to separate headset/runtime problems from ordinary overlay visibility rules.",
             [],
             [
-                "Waiting: for SteamVR routes, confirm SteamVR is running and the headset is in that session. For VDXR, register the SrvSurvey OpenXR layer, restart Elite, and confirm Runtime: VDXR.",
-                "VR connection failed: restart the selected VR session and use Check connection. On Linux, reinstall SrvSurvey if packaged OpenVR support is reported unavailable.",
-                "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart SteamVR, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
+                "Waiting: for SteamVR routes, confirm SteamVR (vrserver) is running and the headset is in that session. For VDXR, register the SrvSurvey OpenXR layer, restart Elite, and confirm Runtime: VDXR. For WiVRn or Monado on Linux, confirm wivrn-server or monado-service is running, the headset is connected, and ~/.config/openxr/1/active_runtime.json points to WiVRn or Monado.",
+                "Blocked OpenVR shim on Linux: if openvrpaths.vrpath or VR_OVERRIDE points to xrizer or OpenComposite, switch SrvSurvey's route to WiVRn or Monado (Linux OpenXR) instead of SteamVR.",
+                "VR connection failed: restart the selected VR session and use Check connection. On Linux, confirm libopenxr_loader.so.1 and libvulkan.so.1 are installed for WiVRn/Monado and restart SrvSurvey after installing missing loaders, or reinstall SrvSurvey if packaged support is reported unavailable.",
+                "NEEDS ATTENTION — The VR runtime rejected an overlay: use Check connection to retry publishing. If the rejection persists, restart the VR runtime, reset the affected panel's VR calibration, and verify that the panel appears normally on the desktop before reconnecting.",
                 "Connected with zero panels: make a SrvSurvey overlay visible in Elite or open its supported game context.",
                 "Connected but one panel is absent: verify that panel's normal visibility switch, vehicle exception, and game-state trigger.",
-                "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer.",
+                "A SteamVR route with no SrvSurvey panels: confirm Elite was launched through SteamVR. The VDXR route requires a live Direct3D 11 VDXR session and the registered SrvSurvey OpenXR layer. WiVRn and Monado require XR_EXTX_overlay support from the active Linux OpenXR runtime.",
             ]
         );
     }

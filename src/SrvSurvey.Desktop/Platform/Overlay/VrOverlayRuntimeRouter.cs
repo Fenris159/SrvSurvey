@@ -1,30 +1,81 @@
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-/// <summary>Owns one transport at a time and releases it when the connection route changes.</summary>
-public sealed class VrOverlayRuntimeRouter(
-    Func<string> profile,
-    Func<bool, IVrOverlayRuntime>? factory = null,
-    Func<bool>? edvrControllerInput = null
-) : IVrOverlayRuntime
+public enum VrOverlayTransportKind
 {
-    private readonly Func<bool, IVrOverlayRuntime> factory =
-        factory
-        ?? (
-            direct => direct ? new OpenXrOverlayRuntime(edvrControllerInput: edvrControllerInput) : new OpenVrRuntime()
-        );
+    OpenVr,
+    WindowsVdxrOpenXr,
+    LinuxWivrnOpenXr,
+    LinuxMonadoOpenXr,
+}
+
+/// <summary>Owns one transport at a time and releases it when the connection route changes.</summary>
+public sealed class VrOverlayRuntimeRouter : IVrOverlayRuntime
+{
+    private readonly Func<string> profile;
+    private readonly Func<VrOverlayTransportKind, IVrOverlayRuntime> factory;
     private IVrOverlayRuntime? active;
-    private bool direct;
+    private VrOverlayTransportKind activeKind;
+
+    public VrOverlayRuntimeRouter(
+        Func<string> profile,
+        Func<bool, IVrOverlayRuntime>? factory = null,
+        Func<bool>? edvrControllerInput = null,
+        Func<bool>? isCustomRuntime = null
+    )
+        : this(
+            profile,
+            factory is not null
+                ? (VrOverlayTransportKind kind) => factory(kind != VrOverlayTransportKind.OpenVr)
+                : CreateDefaultFactory(edvrControllerInput, isCustomRuntime)
+        ) { }
+
+    public VrOverlayRuntimeRouter(
+        Func<string> profile,
+        Func<VrOverlayTransportKind, IVrOverlayRuntime> transportFactory
+    )
+    {
+        this.profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        factory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
+    }
+
+    private static Func<VrOverlayTransportKind, IVrOverlayRuntime> CreateDefaultFactory(
+        Func<bool>? edvrControllerInput,
+        Func<bool>? isCustomRuntime
+    ) =>
+        kind =>
+            kind switch
+            {
+                VrOverlayTransportKind.WindowsVdxrOpenXr => new OpenXrOverlayRuntime(
+                    edvrControllerInput: edvrControllerInput
+                ),
+                VrOverlayTransportKind.LinuxWivrnOpenXr => new LinuxOpenXrOverlayRuntime(
+                    VrPlatformProfileCatalog.WivrnOpenXrProfileId
+                ),
+                VrOverlayTransportKind.LinuxMonadoOpenXr => new LinuxOpenXrOverlayRuntime(
+                    VrPlatformProfileCatalog.MonadoOpenXrProfileId
+                ),
+                _ => new OpenVrRuntime(isCustomRuntime: isCustomRuntime),
+            };
+
+    internal static VrOverlayTransportKind ResolveTransport(string profileId) =>
+        profileId switch
+        {
+            VrPlatformProfileCatalog.MetaVdxrProfileId => VrOverlayTransportKind.WindowsVdxrOpenXr,
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId => VrOverlayTransportKind.LinuxWivrnOpenXr,
+            VrPlatformProfileCatalog.MonadoOpenXrProfileId => VrOverlayTransportKind.LinuxMonadoOpenXr,
+            _ => VrOverlayTransportKind.OpenVr,
+        };
 
     private IVrOverlayRuntime Current
     {
         get
         {
-            bool requested = profile() == VrPlatformProfileCatalog.MetaVdxrProfileId;
-            if (active is null || direct != requested)
+            VrOverlayTransportKind requested = ResolveTransport(profile());
+            if (active is null || activeKind != requested)
             {
                 active?.Dispose();
                 active = factory(requested);
-                direct = requested;
+                activeKind = requested;
             }
 
             return active;
