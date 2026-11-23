@@ -11269,8 +11269,8 @@
       "translation": "Erkundungsbelohnungen"
     },
     {
-      "source": "Exploration rewards ~{0} CR",
-      "translation": "Erkundungsbelohnungen ~{0} CR"
+      "source": "Exploration rewards {0} CR",
+      "translation": "Erkundungsbelohnungen {0} CR"
     },
     {
       "source": "Exploration route: Sol → Lave → Colonia",
@@ -43173,10 +43173,6 @@
       "translation": "| {0} Fahrten mit diesem Schiff"
     },
     {
-      "source": "~{0} CR",
-      "translation": "~{0} CR"
-    },
-    {
       "source": "~{0} M",
       "translation": "~{0} M"
     },
@@ -54551,8 +54547,8 @@
       "translation": "Recompensas de exploración"
     },
     {
-      "source": "Exploration rewards ~{0} CR",
-      "translation": "Recompensas de exploración ~{0} CR"
+      "source": "Exploration rewards {0} CR",
+      "translation": "Recompensas de exploración {0} CR"
     },
     {
       "source": "Exploration route: Sol → Lave → Colonia",
@@ -86455,10 +86451,6 @@
       "translation": "| {0} viajes en este barco"
     },
     {
-      "source": "~{0} CR",
-      "translation": "~{0} CR"
-    },
-    {
       "source": "~{0} M",
       "translation": "~{0} M"
     },
@@ -97833,8 +97825,8 @@
       "translation": "Récompenses d'exploration"
     },
     {
-      "source": "Exploration rewards ~{0} CR",
-      "translation": "Récompenses d'exploration ~{0} CR"
+      "source": "Exploration rewards {0} CR",
+      "translation": "Récompenses d'exploration {0} CR"
     },
     {
       "source": "Exploration route: Sol → Lave → Colonia",
@@ -129737,10 +129729,6 @@
       "translation": "| {0} voyages à bord de ce navire"
     },
     {
-      "source": "~{0} CR",
-      "translation": "~{0} CR"
-    },
-    {
       "source": "~{0} M",
       "translation": "~{0} M"
     },
@@ -141115,8 +141103,8 @@
       "translation": "Recompensas de exploração"
     },
     {
-      "source": "Exploration rewards ~{0} CR",
-      "translation": "Recompensas de exploração ~{0} CR"
+      "source": "Exploration rewards {0} CR",
+      "translation": "Recompensas de exploração {0} CR"
     },
     {
       "source": "Exploration route: Sol → Lave → Colonia",
@@ -173019,10 +173007,6 @@
       "translation": "| {0} viagens neste navio"
     },
     {
-      "source": "~{0} CR",
-      "translation": "~{0} CR"
-    },
-    {
       "source": "~{0} M",
       "translation": "~{0} M"
     },
@@ -184397,8 +184381,8 @@
       "translation": "Награды за исследование"
     },
     {
-      "source": "Exploration rewards ~{0} CR",
-      "translation": "Награды за исследование ~{0} CR"
+      "source": "Exploration rewards {0} CR",
+      "translation": "Награды за исследование {0} CR"
     },
     {
       "source": "Exploration route: Sol → Lave → Colonia",
@@ -216301,10 +216285,6 @@
       "translation": "| {0} путешествия на этом корабле"
     },
     {
-      "source": "~{0} CR",
-      "translation": "~{0} CR"
-    },
-    {
       "source": "~{0} M",
       "translation": "~{0} М"
     },
@@ -227679,8 +227659,8 @@
       "translation": "探索奖励"
     },
     {
-      "source": "Exploration rewards ~{0} CR",
-      "translation": "探索奖励 ~{0} CR"
+      "source": "Exploration rewards {0} CR",
+      "translation": "探索奖励 {0} CR"
     },
     {
       "source": "Exploration route: Sol → Lave → Colonia",
@@ -259583,10 +259563,6 @@
       "translation": "|乘坐这艘船的 {0} 行程"
     },
     {
-      "source": "~{0} CR",
-      "translation": "~{0} CR"
-    },
-    {
       "source": "~{0} M",
       "translation": "~{0} M"
     },
@@ -270961,8 +270937,8 @@
       "translation": "* EXPLORATION REWARDS >>>!"
     },
     {
-      "source": "Exploration rewards ~{0} CR",
-      "translation": "* EXPLORATION REWARDS ~{0} CR >>>!"
+      "source": "Exploration rewards {0} CR",
+      "translation": "* EXPLORATION REWARDS {0} CR >>>!"
     },
     {
       "source": "Exploration route: Sol → Lave → Colonia",
@@ -302863,10 +302839,6 @@
     {
       "source": "| {0} trips in this ship",
       "translation": "* | {0} TRIPS IN THIS SHIP >>>!"
-    },
-    {
-      "source": "~{0} CR",
-      "translation": "* ~{0} CR >>>!"
     },
     {
       "source": "~{0} M",

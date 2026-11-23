@@ -39,3 +39,10 @@ explicit reset.
   targets, and replaces scattered negative-yaw / oversized factory VR presets
   with desktop-mirrored curved-cockpit defaults for all 42 overlays across
   OpenXR and SteamVR.
+- **Scrollable settings layout stability** eliminates Avalonia layout-cycle
+  warnings when resizing or switching tabs in **Theme → Overlay setup**,
+  **Settings**, and Colonization system-sites tables by replacing cyclic
+  `Viewport.Width` bindings with `ResponsiveScrollViewer`.
+- **Clearer Journey exploration rewards formatting** removes the leading `~`
+  from **Exploration rewards** values in **Navigation → Journeys** so credit
+  estimates are not mistaken for negative numbers.

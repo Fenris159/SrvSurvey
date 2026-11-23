@@ -73,8 +73,8 @@
     <TabControl x:Name="GlobalOverlaySections" Grid.Row="1" Classes="theme-selector" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                 IsVisible="{Binding #GlobalOverlayBehaviorCard.IsVisible}">
       <TabItem Classes="theme-selector" Header="Display">
-        <ScrollViewer x:Name="DisplayOverlayScroller" HorizontalScrollBarVisibility="Auto">
-          <StackPanel Margin="0,16,0,0" Spacing="16" Width="{Binding #DisplayOverlayScroller.Viewport.Width}" MinWidth="540">
+        <controls:ResponsiveScrollViewer x:Name="DisplayOverlayScroller" MinimumContentWidth="540">
+          <StackPanel Margin="0,16,0,0" Spacing="16" MinWidth="540">
             <Border x:Name="GlobalOverlayBehaviorCard" Classes="card raised">
               <StackPanel Spacing="14">
                 <StackPanel Spacing="4">
@@ -273,11 +273,11 @@
               </StackPanel>
             </Expander>
           </StackPanel>
-        </ScrollViewer>
+        </controls:ResponsiveScrollViewer>
       </TabItem>
       <TabItem Classes="theme-selector" Header="Visibility">
-        <ScrollViewer x:Name="VisibilityOverlayScroller" HorizontalScrollBarVisibility="Auto">
-          <StackPanel x:Name="GlobalVisibilityContent" Margin="0,16,0,0" Spacing="16" Width="{Binding #VisibilityOverlayScroller.Viewport.Width}" MinWidth="540">
+        <controls:ResponsiveScrollViewer x:Name="VisibilityOverlayScroller" MinimumContentWidth="540">
+          <StackPanel x:Name="GlobalVisibilityContent" Margin="0,16,0,0" Spacing="16" MinWidth="540">
             <Border x:Name="OverlayVisibilityCard" Classes="card raised">
               <StackPanel Spacing="14">
                 <StackPanel Spacing="4">
@@ -311,11 +311,11 @@
               </StackPanel>
             </Border>
           </StackPanel>
-        </ScrollViewer>
+        </controls:ResponsiveScrollViewer>
       </TabItem>
       <TabItem Classes="theme-selector" Header="Shortcuts">
-        <ScrollViewer x:Name="ShortcutsOverlayScroller" HorizontalScrollBarVisibility="Auto">
-          <StackPanel Margin="0,16,0,0" Spacing="16" Width="{Binding #ShortcutsOverlayScroller.Viewport.Width}" MinWidth="540">
+        <controls:ResponsiveScrollViewer x:Name="ShortcutsOverlayScroller" MinimumContentWidth="540">
+          <StackPanel Margin="0,16,0,0" Spacing="16" MinWidth="540">
             <Border x:Name="OverlayInteractionShortcutsCard" Classes="card raised">
               <StackPanel Spacing="14">
                 <StackPanel Spacing="4">
@@ -367,11 +367,11 @@
               </StackPanel>
             </Border>
           </StackPanel>
-        </ScrollViewer>
+        </controls:ResponsiveScrollViewer>
       </TabItem>
       <TabItem Classes="theme-selector" Header="Notifications">
-        <ScrollViewer x:Name="NotificationsOverlayScroller" HorizontalScrollBarVisibility="Auto">
-          <StackPanel Margin="0,16,0,0" Spacing="16" Width="{Binding #NotificationsOverlayScroller.Viewport.Width}" MinWidth="540">
+        <controls:ResponsiveScrollViewer x:Name="NotificationsOverlayScroller" MinimumContentWidth="540">
+          <StackPanel Margin="0,16,0,0" Spacing="16" MinWidth="540">
             <Border x:Name="PassiveNotificationCard" Classes="card raised">
               <StackPanel Spacing="14">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
@@ -465,11 +465,11 @@
               </StackPanel>
             </Border>
           </StackPanel>
-        </ScrollViewer>
+        </controls:ResponsiveScrollViewer>
       </TabItem>
       <TabItem Classes="theme-selector" Header="VR">
-        <ScrollViewer x:Name="VROverlayScroller" HorizontalScrollBarVisibility="Auto">
-          <StackPanel Margin="0,16,0,0" Spacing="16" Width="{Binding #VROverlayScroller.Viewport.Width}" MinWidth="540">
+        <controls:ResponsiveScrollViewer x:Name="VROverlayScroller" MinimumContentWidth="540">
+          <StackPanel Margin="0,16,0,0" Spacing="16" MinWidth="540">
             <Border x:Name="OpenVrOverlayCard" Classes="card raised">
               <StackPanel Spacing="18">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
@@ -603,11 +603,11 @@
               </StackPanel>
             </Border>
           </StackPanel>
-        </ScrollViewer>
+        </controls:ResponsiveScrollViewer>
       </TabItem>
       <TabItem Classes="theme-selector" Header="Streaming">
-        <ScrollViewer x:Name="StreamingOverlayScroller" HorizontalScrollBarVisibility="Auto">
-          <StackPanel Margin="0,16,0,0" Spacing="16" Width="{Binding #StreamingOverlayScroller.Viewport.Width}" MinWidth="540">
+        <controls:ResponsiveScrollViewer x:Name="StreamingOverlayScroller" MinimumContentWidth="540">
+          <StackPanel Margin="0,16,0,0" Spacing="16" MinWidth="540">
             <Border x:Name="StreamOverlayCard" Classes="card raised">
               <StackPanel Spacing="10">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
@@ -640,7 +640,7 @@
               </StackPanel>
             </Border>
           </StackPanel>
-        </ScrollViewer>
+        </controls:ResponsiveScrollViewer>
       </TabItem>
     </TabControl>
     <ScrollViewer x:Name="CategoryOverlaySections"

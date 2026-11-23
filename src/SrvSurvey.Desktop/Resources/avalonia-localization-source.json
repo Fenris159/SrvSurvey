@@ -22608,7 +22608,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
-    "Text": "Exploration rewards ~{0} CR",
+    "Text": "Exploration rewards {0} CR",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -86582,14 +86582,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
-  },
-  {
-    "Text": "~{0} CR",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "~{0} M",

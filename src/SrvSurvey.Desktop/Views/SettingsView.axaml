@@ -59,11 +59,10 @@
       </Border>
 
       <Grid Grid.Column="1">
-        <ScrollViewer x:Name="SettingsFormScroller"
-                      HorizontalScrollBarVisibility="Auto"
-                      IsVisible="{Binding !SettingsWorkspace.HasSearchQuery}">
+        <controls:ResponsiveScrollViewer x:Name="SettingsFormScroller"
+                                         MinimumContentWidth="540"
+                                         IsVisible="{Binding !SettingsWorkspace.HasSearchQuery}">
           <StackPanel Spacing="24"
-                      Width="{Binding #SettingsFormScroller.Viewport.Width}"
                       MinWidth="540" MaxWidth="1100">
             <Border x:Name="GlobalOverlaysCard"
                     Classes="card raised"
@@ -1206,7 +1205,7 @@
         </StackPanel>
       </Border>
           </StackPanel>
-        </ScrollViewer>
+        </controls:ResponsiveScrollViewer>
 
         <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                       IsVisible="{Binding SettingsWorkspace.HasSearchQuery}">
