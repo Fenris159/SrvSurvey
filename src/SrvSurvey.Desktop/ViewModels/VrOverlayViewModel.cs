@@ -224,6 +224,9 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
     // Reload editor fields as one route change before asking the coordinator to publish.
     internal bool IsChangingRoute { get; private set; }
 
+    // Batch multi-field calibration updates into a single coordinator synchronize pass.
+    internal bool IsApplyingCalibrationBatch { get; private set; }
+
     public bool CanEnableOverlays => SelectedPlatformProfile.IsAvailable;
 
     private bool TryLoadCalibrations(string profileId)
@@ -700,10 +703,10 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             return false;
         }
 
-        IsAdjusting = true;
         SelectedOverlayName ??= AvailableOverlays[0];
         StatusMessage =
             "Sample preview is active. Use the controller-interaction shortcut to operate the headset controls. Save keeps the selected panel and mode.";
+        IsAdjusting = true;
         return true;
     }
 
@@ -859,9 +862,12 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         {
             if (savedNames.Count > 0)
             {
-                catalog = calibrationStore.Load(SelectedPlatformProfile.Id);
-                RefreshAvailableModes();
-                CalibrationChanged?.Invoke(this, EventArgs.Empty);
+                if (TryLoadCalibrations(SelectedPlatformProfile.Id))
+                {
+                    RefreshAvailableModes();
+                    CalibrationChanged?.Invoke(this, EventArgs.Empty);
+                }
+
                 string[] unsaved = toSave
                     .Keys.Where(name => !savedNames.Contains(name, StringComparer.Ordinal))
                     .ToArray();
@@ -890,17 +896,6 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             return;
         }
 
-        pendingAdjustments.Remove(SelectedOverlayName);
-        isLoadingSelection = true;
-        try
-        {
-            ApplyCalibration(factoryDefault);
-        }
-        finally
-        {
-            isLoadingSelection = false;
-        }
-
         try
         {
             VrOverlayCalibrationSaveResult result = calibrationStore.Save(
@@ -909,8 +904,19 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
                 SelectedMode == DefaultMode ? null : SelectedMode,
                 SelectedPlatformProfile.Id
             );
+            pendingAdjustments.Remove(SelectedOverlayName);
             catalog = calibrationStore.Load(SelectedPlatformProfile.Id);
             RefreshAvailableModes();
+            isLoadingSelection = true;
+            try
+            {
+                ApplyCalibration(factoryDefault, notifyCalibrationChanged: false);
+            }
+            finally
+            {
+                isLoadingSelection = false;
+            }
+
             CalibrationChanged?.Invoke(this, EventArgs.Empty);
             StatusMessage =
                 $"Saved {SelectedOverlayName} ({SelectedMode})."
@@ -975,7 +981,7 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
             isLoadingSelection = true;
             try
             {
-                ApplyCalibration(calibration);
+                ApplyCalibration(calibration, notifyCalibrationChanged: IsAdjusting);
             }
             finally
             {
@@ -986,7 +992,13 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
 
     private void RecordPendingAdjustment()
     {
-        if (IsAdjusting && IsCategoryPreviewActive && !isLoadingSelection && SelectedOverlayName is not null)
+        if (
+            IsAdjusting
+            && IsCategoryPreviewActive
+            && !isLoadingSelection
+            && !IsApplyingCalibrationBatch
+            && SelectedOverlayName is not null
+        )
         {
             pendingAdjustments[SelectedOverlayName] = CreateCalibration();
         }
@@ -1009,15 +1021,29 @@ public sealed class VrOverlayViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplyCalibration(VrOverlayCalibration calibration)
+    private void ApplyCalibration(VrOverlayCalibration calibration, bool notifyCalibrationChanged = true)
     {
-        Scale = calibration.Scale;
-        PositionX = calibration.Position.X;
-        PositionY = calibration.Position.Y;
-        PositionZ = calibration.Position.Z;
-        RotationPitch = calibration.Rotation.X;
-        RotationYaw = calibration.Rotation.Y;
-        RotationRoll = calibration.Rotation.Z;
+        IsApplyingCalibrationBatch = true;
+        try
+        {
+            Scale = calibration.Scale;
+            PositionX = calibration.Position.X;
+            PositionY = calibration.Position.Y;
+            PositionZ = calibration.Position.Z;
+            RotationPitch = calibration.Rotation.X;
+            RotationYaw = calibration.Rotation.Y;
+            RotationRoll = calibration.Rotation.Z;
+        }
+        finally
+        {
+            IsApplyingCalibrationBatch = false;
+        }
+
+        RecordPendingAdjustment();
+        if (notifyCalibrationChanged && !IsChangingRoute)
+        {
+            CalibrationChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private VrOverlayCalibration CreateCalibration()

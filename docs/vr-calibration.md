@@ -16,10 +16,14 @@ the same controls. Enable **Toggle VR overlay interaction**, release held
 controller buttons, then point and click. Interaction remains an explicit
 toggle: closing calibration does not turn off interaction for other panels.
 
-Select the target overlay and **Default** or a vehicle/game mode. In the headset,
-use the left/right buttons to cycle targets and modes; precision choices stay
-inline, so no desktop popup needs to be captured. Fields wrap
-into additional rows on narrow windows and keep readable numeric boxes.
+Select an **Overlay category** (`All overlays` or a desktop editor category),
+the **Calibration Target** overlay, and **Default** or a vehicle/game mode.
+Choosing a category previews all overlays in that category together and filters
+**Calibration Target** to those panels; **All overlays** previews only the
+currently selected panel. In the headset, use the left/right buttons to cycle
+categories, targets, and modes; precision choices stay inline, so no desktop
+popup needs to be captured. Fields wrap into additional rows on narrow windows
+and keep readable numeric boxes.
 
 | Control | Behavior |
 | --- | --- |
@@ -30,20 +34,28 @@ into additional rows on narrow windows and keep readable numeric boxes.
 | Shift / Ctrl | Temporarily use one tenth / five times the selected step size for mouse arrows, keyboard arrows, or wheel input. Shift takes precedence. |
 | Mouse wheel | Scroll up/down over a number to increase/decrease it, without typing. Controller thumbstick scrolling uses the selected step size too. |
 | Place in front of me | Put only the selected panel at eye level, one metre along the current head heading. Keep its width up to 80 cm, clear pitch/roll, and face the pilot. Other panels and the shared origin stay in place. Requires a fresh tracked pose. Save to keep it. |
-| Save calibration | Save the selected panel and mode. Existing files receive verified backups. |
+| Drag panels in VR | While controller-pointer interaction is active, point at any visible preview panel, hold trigger to drag it along its plane, and tilt the thumbstick to push or pull depth. Selecting a dragged panel switches **Calibration Target** automatically. |
+| Save calibration | Save the selected panel and mode, or all edited panels in the active category preview together. Existing files receive verified backups. |
 | Reset selected | Restore and save the route's factory placement for Default, or the panel's Default placement for a vehicle/game mode. |
 | Close / discard unsaved | Close both editors and discard unsaved changes. Earlier saves remain saved. |
 
-Selecting another target or mode discards unsaved changes to the previous
-selection. Save each placement before moving on. The sample identifies the
-selected panel; the calibration control panel is a separate surface below it.
-At the transport's panel limit, SrvSurvey reserves publication slots for the
-controls and selected sample so calibration does not overflow the frame packet.
-On VDXR, OpenXR's native composition-layer budget is a separate limit shared
-with Elite, the controller cursor and other OpenXR layers. It can still omit
-published panels, including the selected sample. If a sample is missing in a
-busy scene, temporarily hide other panels or layers and retry. Closing
-calibration returns the available transport slots to live panels.
+When **Overlay category** is set to **All overlays**, selecting another target
+or mode discards unsaved changes to the previous selection. Inside a specific
+category preview, unsaved edits across multiple panels in that category stay
+live while you switch between them and are committed together when you click
+**Save calibration** (switching category or mode, or clicking **Close / discard
+unsaved**, discards unsaved edits). The calibration control panel
+(`PlotAdjustVR`) stays centered in front of you, snapped to five 45°
+front-hemisphere sectors (`-90°`, `-45°`, `0°`, `+45°`, `+90°`) with yaw
+hysteresis and a 20 cm movement deadzone, and always renders and hit-tests on
+top of preview panels. At the transport's panel limit, SrvSurvey reserves
+publication slots for the controls and selected sample before category siblings
+and live panels so calibration does not overflow the frame packet. On OpenXR
+routes, the runtime's native composition-layer budget is shared with Elite, the
+controller cursor, and other OpenXR layers. If a sample is missing in a busy
+scene or under a strict layer limit, temporarily hide other panels or layers
+(or toggle controller interaction off) and retry. Closing calibration returns
+the available transport slots to live panels.
 
 **Reset VR orientation** recenters the whole arrangement using the selected
 backend's existing origin behavior. Use **Place in front of me** to recover a
@@ -51,27 +63,31 @@ single panel without moving the others. For VDXR, install the matching native
 OpenXR layer and restart Elite to enable current-head placement; older layers
 can still render but do not supply the required pose.
 
-## Seated VDXR defaults and existing settings
+## Seated OpenXR defaults and existing settings
 
 The Quest 3 report in [#264](https://github.com/Fenris159/SrvSurvey/issues/264)
-confirmed that SteamVR's floor-origin defaults are too high and large when
-used with VDXR's head-origin placement. VDXR now uses these seated starting
-points for unmodified factory calibrations:
+confirmed that SteamVR's floor-origin defaults are too high and large when used
+with OpenXR's head-origin placement. OpenXR routes (**VDXR**, **WiVRn**, and
+**Monado**) now generate desktop-mirrored curved-cockpit factory defaults for
+all 42 supported overlays from `VrSeatedCalibrationDefaults`:
 
-| Panel | Scale | Position | Rotation |
-| --- | --- | --- | --- |
-| Jump information | 8 | 0, 4.5, 11 | -20, 0, 0 |
-| Biology status | 5 | 0, 3.5, 10 | -15, 0, 0 |
-| System status | 3.5 | -5.5, -3, 9 | 15, -25, 0 |
-| Biology system | 5 | -6.5, 0.5, 9 | 0, -35, 0 |
-| Other panels | 5 | 0, 0, 10 | 0, 0, 0 |
+- Panel scale is derived proportionally from each overlay's desktop preview
+  width (`width / 75`, clamped to `0.8`–`8.0`).
+- Cockpit X / Y / Z coordinates mirror each panel's desktop horizontal and
+  vertical anchor across a gentle curved arc around the pilot (`Z = 9.5`–`11.0`,
+  `X = -6.0` to `+6.0`, `Y = -3.0` to `+4.5`).
+- Pitch and yaw angles are computed automatically so every panel faces the
+  seated head origin cleanly (for example, `PlotJumpInfo` starts at scale `8`,
+  position `0, 4.5, 11`, pitch `+22.2°`, yaw `0°`; left-edge panels start at
+  `X = -6, Z = 9.5` with positive yaw `+32.3°` angled toward the pilot).
 
 Existing custom shared placements are retained as a starting point. Use
 **Reset selected** in Default mode to adopt a seated factory placement.
-VDXR saves go into the profile's `vr/vdxr/Default.json` and vehicle/game-mode
-files in the same folder. SteamVR continues to use `plotters.json` and `vr/`
-mode overrides. Changing VDXR placement does not rewrite SteamVR or desktop
-placement. Backups are kept beside the relevant saved calibration files.
+OpenXR route saves are isolated under `vr/vdxr/`, `vr/wivrn/`, and `vr/monado/`
+(`Default.json` plus vehicle/game-mode files). SteamVR continues to use
+`plotters.json` and `vr/` mode overrides. Changing one route's placement does
+not rewrite another route or desktop placement. Backups are kept beside the
+relevant saved calibration files.
 
 ## Controller availability
 

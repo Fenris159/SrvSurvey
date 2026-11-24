@@ -2469,6 +2469,10 @@
       "translation": "Anwendungsausgang"
     },
     {
+      "source": "Application exit ({0}).",
+      "translation": "Anwendungsexit ({0})."
+    },
+    {
       "source": "Application logging is unavailable.",
       "translation": "Die Anwendungsprotokollierung ist nicht verfügbar."
     },
@@ -32749,6 +32753,10 @@
       "translation": "Die aktive Laufzeit OpenXR ist WiVRn, nicht {0}. Schließen Sie Ihr Headset an {1} an oder verknüpfen Sie ~/.config/openxr/1/active_runtime.json mit {2}."
     },
     {
+      "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+      "translation": "Das Limit der aktiven VR-Laufzeitebene passt nur zu den Kalibrierungssteuerelementen. Deaktivieren Sie die Controller-Interaktion oder geben Sie eine Kompositionsebene frei, um eine Vorschau der ausgewählten Überlagerung anzuzeigen."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "Die aktive Bootstrap-Quelle und die auf dieser Plattform überprüften Speicherorte."
     },
@@ -45825,6 +45833,10 @@
     {
       "source": "Application exit",
       "translation": "Salida de la aplicación"
+    },
+    {
+      "source": "Application exit ({0}).",
+      "translation": "Salida de la aplicación ({0})."
     },
     {
       "source": "Application logging is unavailable.",
@@ -76107,6 +76119,10 @@
       "translation": "El tiempo de ejecución activo OpenXR es WiVRn, no {0}. Conecte sus auriculares en {1} o apunte ~/.config/openxr/1/active_runtime.json a {2}."
     },
     {
+      "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+      "translation": "El límite de la capa de tiempo de ejecución de VR activa solo se ajusta a los controles de calibración. Desactive la interacción del controlador o libere una capa de composición para obtener una vista previa de la superposición seleccionada."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "La fuente de arranque activa y las ubicaciones marcadas en esta plataforma."
     },
@@ -89183,6 +89199,10 @@
     {
       "source": "Application exit",
       "translation": "Sortie de l'application"
+    },
+    {
+      "source": "Application exit ({0}).",
+      "translation": "Sortie de l'application ({0})."
     },
     {
       "source": "Application logging is unavailable.",
@@ -119465,6 +119485,10 @@
       "translation": "Le moteur d'exécution actif OpenXR est WiVRn et non {0}. Connectez votre casque en {1} ou pointez ~/.config/openxr/1/active_runtime.json à {2}."
     },
     {
+      "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+      "translation": "La limite de couche d’exécution VR active correspond uniquement aux contrôles d’étalonnage. Désactivez l’interaction du contrôleur ou libérez un calque de composition pour prévisualiser la superposition sélectionnée."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "La source d'amorçage active et les emplacements vérifiés sur cette plateforme."
     },
@@ -132541,6 +132565,10 @@
     {
       "source": "Application exit",
       "translation": "Saída do aplicativo"
+    },
+    {
+      "source": "Application exit ({0}).",
+      "translation": "Saída do aplicativo ({0})."
     },
     {
       "source": "Application logging is unavailable.",
@@ -162823,6 +162851,10 @@
       "translation": "O tempo de execução ativo OpenXR é WiVRn, não {0}. Conecte seu fone de ouvido em {1} ou aponte ~/.config/openxr/1/active_runtime.json para {2}."
     },
     {
+      "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+      "translation": "O limite da camada de tempo de execução de VR ativo se ajusta apenas aos controles de calibração. Desative a interação do controlador ou libere uma camada de composição para visualizar a sobreposição selecionada."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "A fonte de bootstrap ativa e os locais verificados nesta plataforma."
     },
@@ -175899,6 +175931,10 @@
     {
       "source": "Application exit",
       "translation": "Выход из приложения"
+    },
+    {
+      "source": "Application exit ({0}).",
+      "translation": "Выход из приложения ({0})."
     },
     {
       "source": "Application logging is unavailable.",
@@ -206181,6 +206217,10 @@
       "translation": "Активной средой выполнения OpenXR является WiVRn, а не {0}. Подключите гарнитуру к {1} или укажите ~/.config/openxr/1/active_runtime.json к {2}."
     },
     {
+      "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+      "translation": "Ограничение активного слоя среды выполнения VR соответствует только элементам управления калибровкой. Отключите взаимодействие с контроллером или освободите композиционный слой, чтобы просмотреть выбранное наложение."
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "Активный источник начальной загрузки и местоположения, проверенные на этой платформе."
     },
@@ -219257,6 +219297,10 @@
     {
       "source": "Application exit",
       "translation": "应用程序退出"
+    },
+    {
+      "source": "Application exit ({0}).",
+      "translation": "应用程序退出（{0}）。"
     },
     {
       "source": "Application logging is unavailable.",
@@ -249539,6 +249583,10 @@
       "translation": "活动OpenXR运行时是WiVRn，而不是{0}。将耳机连接到 {1} 或将 ~/.config/openxr/1/active_runtime.json 指向 {2}。"
     },
     {
+      "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+      "translation": "活动 VR 运行时层限制仅适合校准控件。关闭控制器交互或释放合成图层以预览选定的叠加层。"
+    },
+    {
       "source": "The active bootstrap source and the locations checked on this platform.",
       "translation": "在此平台上检查的活动引导源和位置。"
     },
@@ -262615,6 +262663,10 @@
     {
       "source": "Application exit",
       "translation": "* APPLICATION EXIT >>>!"
+    },
+    {
+      "source": "Application exit ({0}).",
+      "translation": "* APPLICATION EXIT ({0}). >>>!"
     },
     {
       "source": "Application logging is unavailable.",
@@ -292895,6 +292947,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "* THE ACTIVE OPENXR RUNTIME IS WIVRN, NOT {0}. CONNECT YOUR HEADSET IN {1} OR POINT ~/.CONFIG/OPENXR/1/ACTIVE_RUNTIME.JSON TO {2}. >>>!"
+    },
+    {
+      "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+      "translation": "* THE ACTIVE VR RUNTIME LAYER LIMIT ONLY FITS THE CALIBRATION CONTROLS. TURN OFF CONTROLLER INTERACTION OR FREE A COMPOSITION LAYER TO PREVIEW THE SELECTED OVERLAY. >>>!"
     },
     {
       "source": "The active bootstrap source and the locations checked on this platform.",

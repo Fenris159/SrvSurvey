@@ -152,6 +152,36 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.Equal(1u, BinaryPrimitives.ReadUInt32LittleEndian(backend.LastPacket.AsSpan(24)));
         Assert.Equal(0u, BinaryPrimitives.ReadUInt32LittleEndian(backend.LastPacket.AsSpan(28)));
 
+        // Publish order puts later non-control panels (selected preview) above earlier siblings while PlotAdjustVR stays topmost.
+        Assert.True(
+            runtime
+                .PublishOverlay(VrOverlayCalibrationSession.ControlsPlotterName, ValidFrame(), ValidCalibration(), 1f)
+                .Succeeded
+        );
+        Assert.True(runtime.PublishOverlay("PlotSysStatus", ValidFrame(), ValidCalibration(), 1f).Succeeded);
+        Assert.True(runtime.PublishOverlay("PlotBioStatus", ValidFrame(), ValidCalibration(), 1f).Succeeded);
+        Assert.True(runtime.CompleteFrame().Succeeded);
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId("PlotJumpInfo"),
+            BinaryPrimitives.ReadUInt64LittleEndian(backend.LastPacket.AsSpan(128))
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId("PlotSysStatus"),
+            BinaryPrimitives.ReadUInt64LittleEndian(backend.LastPacket.AsSpan(192))
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId("PlotBioStatus"),
+            BinaryPrimitives.ReadUInt64LittleEndian(backend.LastPacket.AsSpan(256))
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId(VrOverlayCalibrationSession.ControlsPlotterName),
+            BinaryPrimitives.ReadUInt64LittleEndian(backend.LastPacket.AsSpan(320))
+        );
+        runtime.RemoveOverlay(VrOverlayCalibrationSession.ControlsPlotterName);
+        runtime.RemoveOverlay("PlotSysStatus");
+        runtime.RemoveOverlay("PlotBioStatus");
+        Assert.True(runtime.CompleteFrame().Succeeded);
+
         Assert.True(runtime.TryGetHeadPose(out VrOverlayHeadPose? pose));
         Assert.Equal(new Vector3(0.1f, 0.2f, -0.3f), pose!.Position);
         Assert.Equal(0.5f, pose.Yaw);

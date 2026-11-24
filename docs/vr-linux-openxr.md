@@ -20,6 +20,13 @@ SrvSurvey.Desktop (Avalonia panels -> bounded RGBA frames)
   probing them through SteamVR/OpenVR can crash the active game. SrvSurvey
   blocks SteamVR/OpenVR probing when `xrizer`, `OpenComposite`, `wivrn-server`,
   or `monado-service` is active without `vrserver`.
+- **Deferred attachment while Elite Dangerous is closed:** WiVRn hides its
+  headset lobby whenever any OpenXR client holds an active session, including
+  an `XR_EXTX_overlay` session. SrvSurvey therefore waits until
+  `EliteDangerous64.exe` is running before attaching to WiVRn or Monado, and
+  immediately destroys its overlay session when Elite exits so WiVRn's lobby
+  remains usable before launch and across game restarts without manually
+  toggling VR overlays off and on.
 - **Native OpenXR overlay session:** Both WiVRn and Monado implement Monado's
   `XR_EXTX_overlay` compositor extension. SrvSurvey opens an overlay
   `XrSession` with `XrSessionCreateInfoOverlayEXTX` and a headless Vulkan

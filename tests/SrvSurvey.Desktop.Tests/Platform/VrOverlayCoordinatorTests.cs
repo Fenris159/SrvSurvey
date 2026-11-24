@@ -736,6 +736,93 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.True(runtime.IsInitialized);
     }
 
+    [AvaloniaFact]
+    public void PlaceInFrontAndDragBatchPropertyUpdatesIntoSingleSynchronizePass()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        long now = 1000;
+        var runtime = new StubOpenVrRuntime();
+        using var coordinator = new VrOverlayCoordinator(
+            viewModel,
+            new OverlayWindowRegistry(),
+            runtime,
+            _ => true,
+            clock: () => now
+        );
+
+        Assert.True(viewModel.BeginAdjustment());
+        Assert.True(coordinator.ToggleInteraction());
+
+        int beforePlace = runtime.CompleteFrameCount;
+        viewModel.PlaceInFrontCommand.Execute(null);
+        Assert.Equal(beforePlace + 1, runtime.CompleteFrameCount);
+
+        viewModel.IsDragModeEnabled = true;
+        double width = OverlayLayoutCatalog.GetRequired("PlotJumpInfo").PreviewSize.Width;
+        double height = runtime.Frames["PlotJumpInfo"].PointerHeight;
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent(
+                "PlotJumpInfo",
+                VrOverlayPointerEventKind.LeftButtonDown,
+                width * 0.5,
+                height * 0.5
+            )
+        );
+        coordinator.PollInteractionEvents();
+
+        int beforeDrag = runtime.CompleteFrameCount;
+        now += 50;
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.Move, width * 0.75, height * 0.25)
+        );
+        coordinator.PollInteractionEvents();
+        Assert.Equal(beforeDrag + 1, runtime.CompleteFrameCount);
+    }
+
+    [AvaloniaFact]
+    public void SingleLayerCapacityReportsCalibrationStatusAndFailedInteractionReenableResetsLocally()
+    {
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+        var liveWindow = new Window
+        {
+            Width = 200,
+            Height = 100,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Orange },
+        };
+        var runtime = new StubOpenVrRuntime { MaximumOverlays = 1 };
+        try
+        {
+            registry.Register(liveWindow, "PlotJumpInfo");
+            liveWindow.Show();
+            using var coordinator = new VrOverlayCoordinator(viewModel, registry, runtime);
+            Assert.True(viewModel.BeginAdjustment());
+            Assert.Single(runtime.Frames);
+            Assert.True(runtime.Frames.ContainsKey(VrOverlayCalibrationSession.ControlsPlotterName));
+            Assert.Equal(VrOverlayConnectionState.Ready, viewModel.ConnectionState);
+            Assert.Contains("layer limit", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
+
+            // Reset to normal capacity, enable interaction, then fail SetInteractionEnabled during surface replacement.
+            viewModel.CancelCommand.Execute(null);
+            runtime.MaximumOverlays = 16;
+            viewModel.RefreshConnectionCommand.Execute(null);
+            Assert.True(coordinator.ToggleInteraction());
+            Assert.True(coordinator.IsInteractionEnabled);
+
+            runtime.FailNextSetInteractionTrue = true;
+            Assert.True(viewModel.BeginAdjustment());
+            Assert.False(coordinator.IsInteractionEnabled);
+            Assert.Contains("Interaction rejected", viewModel.StatusMessage, StringComparison.Ordinal);
+        }
+        finally
+        {
+            liveWindow.Close();
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -765,7 +852,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     {
         public bool IsInitialized { get; private set; }
 
-        public int MaximumOverlays { get; init; } = int.MaxValue;
+        public int MaximumOverlays { get; set; } = int.MaxValue;
 
         public int ResetCount { get; private set; }
 
@@ -773,9 +860,13 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public int ShutdownCount { get; private set; }
 
+        public int CompleteFrameCount { get; private set; }
+
         public int InteractionChangeCount { get; private set; }
 
         public bool InteractionEnabled { get; private set; }
+
+        public bool FailNextSetInteractionTrue { get; set; }
 
         public VrOverlayFrame? LastFrame { get; private set; }
 
@@ -832,11 +923,24 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             return VrRuntimeResult.Success("Published.");
         }
 
+        public VrRuntimeResult CompleteFrame()
+        {
+            CompleteFrameCount++;
+            return VrRuntimeResult.Success("Completed.");
+        }
+
         public void RemoveOverlay(string plotterName) => Frames.Remove(plotterName);
 
         public VrRuntimeResult SetInteractionEnabled(bool enabled)
         {
             InteractionChangeCount++;
+            if (enabled && FailNextSetInteractionTrue)
+            {
+                FailNextSetInteractionTrue = false;
+                InteractionEnabled = false;
+                return VrRuntimeResult.Failure("Interaction rejected.");
+            }
+
             InteractionEnabled = enabled;
             return VrRuntimeResult.Success(
                 enabled ? "VR overlay controller interaction is enabled." : "VR overlays are click-through again."

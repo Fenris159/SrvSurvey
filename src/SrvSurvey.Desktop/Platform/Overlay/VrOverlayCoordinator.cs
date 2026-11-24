@@ -352,7 +352,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             calibrationSession.Dispose();
             calibrationRegistrations = [];
         }
-        if (viewModel.IsChangingRoute)
+        if (viewModel.IsChangingRoute || viewModel.IsApplyingCalibrationBatch)
         {
             return;
         }
@@ -473,6 +473,12 @@ public sealed class VrOverlayCoordinator : IDisposable
                 $"Connected through {viewModel.SelectedPlatformProfile.DisplayName}",
                 $"{runtime.DisplayName} is active with {active.Count:N0} live overlays.{interactionStatus}"
             );
+            if (viewModel.IsAdjusting && capacity == 1 && !string.IsNullOrWhiteSpace(viewModel.SelectedOverlayName))
+            {
+                viewModel.ReportAdjustmentStatus(
+                    "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay."
+                );
+            }
         }
         else
         {
@@ -500,7 +506,12 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (IsInteractionEnabled && runtime.IsInitialized)
         {
             _ = runtime.PollPointerEvents();
-            _ = runtime.SetInteractionEnabled(true);
+            VrRuntimeResult reenable = runtime.SetInteractionEnabled(true);
+            if (!reenable.Succeeded)
+            {
+                ResetInteractionLocally();
+                viewModel.ReportAdjustmentStatus(reenable.Message);
+            }
         }
     }
 

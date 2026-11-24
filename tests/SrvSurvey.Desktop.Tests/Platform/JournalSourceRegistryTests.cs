@@ -177,6 +177,32 @@ public sealed class JournalSourceRegistryTests : IDisposable
         Assert.False(first.IsClaimedByOtherInstance("F14004033"));
     }
 
+    /// <summary>Unreadable or half-written live peer claims fail closed, while missing files are skipped cleanly.</summary>
+    [Theory]
+    [InlineData("")]
+    [InlineData("{")]
+    [InlineData("null")]
+    [InlineData("{\"ProcessId\":1,\"StartTime\":1,\"FrontierId\":\"\"}")]
+    public void CommanderClaimsFailClosedOnMalformedLivePeerLeaseAndIgnoreMissingPaths(string contents)
+    {
+        Assert.False(ProcessLeaseFile.HasLiveLease(Path.Combine(root, "does-not-exist.json")));
+
+        using var first = new CommanderClaimRegistry(root);
+        Assert.True(first.Claim("F13228986"));
+        string claimsDir = Path.Combine(root, "CommanderClaims");
+        string peerPath = Path.Combine(claimsDir, "mid-write.json");
+        using (var midWrite = new FileStream(peerPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read))
+        {
+            byte[] payload = System.Text.Encoding.UTF8.GetBytes(contents);
+            midWrite.Write(payload);
+            midWrite.Flush();
+            Assert.True(first.IsClaimedByOtherInstance("F14004033"));
+        }
+
+        File.Delete(peerPath);
+        Assert.False(first.IsClaimedByOtherInstance("F14004033"));
+    }
+
     /// <summary>Creates a physical folder for a source fixture.</summary>
     private string Journal(string folder)
     {

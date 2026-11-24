@@ -1686,6 +1686,31 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
         REQUIRE(events[0].kind == PointerKind::Reset);
         session.Shutdown();
     }
+
+    // 3. Single-layer runtimes reject controller-pointer interaction cleanly while keeping panel rendering active.
+    {
+        MockRuntime mock;
+        mock.maxLayerCount = 1;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "monado", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = -1;
+        std::string message;
+        REQUIRE(!session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(xrErr == 0);
+        REQUIRE(message.find("1 composition layer") != std::string::npos);
+
+        REQUIRE(session.PublishPacket(BuildPacket(0, 10, 2, 1, 1.0f)));
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+        REQUIRE(session.GetStatus().renderedCount == 1);
+        session.Shutdown();
+    }
 }
 
 } // namespace

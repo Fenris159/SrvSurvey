@@ -586,7 +586,14 @@ internal sealed partial class DesktopRuntime
         DesktopStartup startup
     )
     {
-        if (startup.CommanderSwitchWindowState is { WasHiddenToTray: true })
+        bool hideToTray =
+            startup.CommanderSwitchWindowState is { WasHiddenToTray: true }
+            || (
+                startup.CommanderSwitchWindowState is { WasMinimized: true }
+                && viewModel.DesktopBehavior.MinimizeToTray
+                && window.HasTrayIcon
+            );
+        if (hideToTray)
         {
             desktop.MainWindow = window;
             window.ShowInTaskbar = false;
@@ -595,12 +602,12 @@ internal sealed partial class DesktopRuntime
         }
 
         bool bringToFront = startup.CommanderSwitchWindowState is { } preserved
-            ? preserved.WasActive
+            ? preserved.WasActive && !preserved.WasMinimized
             : startup.BringMainWindowToFront;
-        if (startup.CommanderSwitchWindowState is { WasActive: false } inactiveState)
+        if (startup.CommanderSwitchWindowState is { WasMinimized: true } or { WasActive: false })
         {
             window.ShowActivated = false;
-            if (inactiveState.WasMinimized)
+            if (startup.CommanderSwitchWindowState.WasMinimized)
             {
                 window.WindowState = WindowState.Minimized;
             }

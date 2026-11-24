@@ -295,7 +295,23 @@ public sealed class MainWindowViewModelTests
             Assert.Empty(requestedSwitches);
         }
 
-        // Once F14004033 is unowned and only one client runs, automatic switching triggers cleanly once.
+        // An active Google Drive / profile-sync operation defers automatic switching until it completes.
+        var syncStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseSync = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task syncOperation = first.ProfileSync.FileOperationAsync(async () =>
+        {
+            syncStarted.TrySetResult();
+            await releaseSync.Task;
+        });
+        await syncStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(first.ProfileSync.IsBusy);
+        await first.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        releaseSync.TrySetResult();
+        await syncOperation.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(first.ProfileSync.IsBusy);
+
+        // Once F14004033 is unowned, idle, and only one client runs, automatic switching triggers cleanly once.
         await first.RefreshAsync();
         Assert.Equal(["F14004033"], requestedSwitches);
         await first.RefreshAsync();

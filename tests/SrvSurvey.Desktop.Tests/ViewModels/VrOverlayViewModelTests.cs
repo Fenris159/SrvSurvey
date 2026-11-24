@@ -428,6 +428,56 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.Equal(-6f, model.GetCalibration("PlotBioSystem")!.Position.X);
     }
 
+    [Fact]
+    public void PartialSaveHandlesReloadFailureWithoutThrowingAndResetFailurePreservesEdits()
+    {
+        string data = Path.Combine(temporaryDirectory, "data-fail");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-fail");
+        Directory.CreateDirectory(data);
+        Directory.CreateDirectory(factoryDirectory);
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factory,
+            """
+            {
+              "PlotBioStatus": "center:0, top:8 { s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}"
+            }
+            """
+        );
+        var model = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "settings-fail.json")),
+            new VrOverlayCalibrationStore(data, factory),
+            VrPlatformProfileCatalog.ForPlatform(OSPlatform.Linux, Architecture.X64, 0)
+        );
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+        Assert.True(model.BeginAdjustment());
+        model.SelectedCategory = "Biology & surface";
+
+        // Corrupt an unrelated mode file after load so partial-save reload fails inside the catch block.
+        string routeDir = Path.Combine(data, "vr", "wivrn");
+        Directory.CreateDirectory(routeDir);
+        string corruptModePath = Path.Combine(routeDir, "corrupt.json");
+        File.WriteAllText(corruptModePath, "{");
+
+        model.SelectedOverlayName = "PlotBioStatus";
+        model.PositionX = 3.25;
+        model.SelectedOverlayName = "PlotBioSystem";
+        model.PositionX = double.NaN;
+        model.SaveCommand.Execute(null);
+        Assert.Contains("Saved 1 of 2 overlays; unsaved: PlotBioSystem", model.StatusMessage);
+
+        // Corrupt Default.json so ResetCommand fails on Save; UI values and pending edits must stay intact.
+        File.Delete(corruptModePath);
+        File.WriteAllText(Path.Combine(routeDir, "Default.json"), "{");
+        model.SelectedOverlayName = "PlotBioStatus";
+        model.PositionX = 7.5;
+        model.ResetCommand.Execute(null);
+        Assert.Contains("VR calibration was not saved", model.StatusMessage);
+        Assert.Equal(7.5, model.PositionX);
+        Assert.Equal(7.5f, model.GetCalibration("PlotBioStatus")!.Position.X);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

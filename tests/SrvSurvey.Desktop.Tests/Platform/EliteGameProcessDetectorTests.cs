@@ -94,6 +94,67 @@ public sealed class EliteGameProcessDetectorTests : IDisposable
         Assert.False(absent.IsRunning());
     }
 
+    [Fact]
+    public void LinuxDetectorCachesWithinTtlUsesLastPidFastPathAndFallsBackOnExit()
+    {
+        string proc = CreateProcRoot("cache-and-fast-path");
+        WriteProcess(proc, "200", "EliteDangerous6", "/game/EliteDangerous64.exe\0");
+        var clock = new AdjustableTimeProvider();
+        var detector = new EliteGameProcessDetector(
+            () => true,
+            proc,
+            timeProvider: clock,
+            cacheDuration: TimeSpan.FromSeconds(1)
+        );
+
+        Assert.True(detector.IsRunning());
+
+        // Within the TTL window, the cached result is returned without rescanning /proc.
+        Directory.Delete(Path.Combine(proc, "200"), recursive: true);
+        clock.Advance(TimeSpan.FromMilliseconds(500));
+        Assert.True(detector.IsRunning());
+
+        // Past the TTL window, the missing PID triggers a fresh check and reports false.
+        clock.Advance(TimeSpan.FromMilliseconds(600));
+        Assert.False(detector.IsRunning());
+
+        // Re-create Elite at PID 300, detect it, confirm repeated checks after TTL reuse the PID fast path,
+        // then replace PID 300 with PID 301 to verify fallback scan.
+        WriteProcess(proc, "300", "EliteDangerous6", "/game/EliteDangerous64.exe\0");
+        clock.Advance(TimeSpan.FromSeconds(2));
+        Assert.True(detector.IsRunning());
+
+        clock.Advance(TimeSpan.FromSeconds(2));
+        Assert.True(detector.IsRunning());
+
+        Directory.Delete(Path.Combine(proc, "300"), recursive: true);
+        WriteProcess(proc, "301", "EliteDangerous6", "/game/EliteDangerous64.exe\0");
+        clock.Advance(TimeSpan.FromSeconds(2));
+        Assert.True(detector.IsRunning());
+
+        // Zero cache duration bypasses caching immediately.
+        var uncached = new EliteGameProcessDetector(
+            () => true,
+            proc,
+            timeProvider: clock,
+            cacheDuration: TimeSpan.Zero
+        );
+        Assert.True(uncached.IsRunning());
+        Directory.Delete(Path.Combine(proc, "301"), recursive: true);
+        Assert.False(uncached.IsRunning());
+    }
+
+    private sealed class AdjustableTimeProvider : TimeProvider
+    {
+        private long ticks = TimeSpan.TicksPerSecond;
+
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override long GetTimestamp() => ticks;
+
+        public void Advance(TimeSpan delta) => ticks += delta.Ticks;
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

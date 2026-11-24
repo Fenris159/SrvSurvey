@@ -72,6 +72,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     private bool pendingInteractionReset;
     private ulong? activePointerOverlayId;
     private int maximumOverlays = OpenXrFramePacket.MaximumOverlays;
+    private int nextFrameSortOrder;
 
     public LinuxOpenXrOverlayRuntime(
         string profileId,
@@ -235,7 +236,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         }
 
         identities[OpenXrFramePacket.GetOverlayId(plotterName)] = plotterName;
-        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha);
+        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha, nextFrameSortOrder++);
         return VrRuntimeResult.Success($"Queued {plotterName} for {DisplayName}.");
     }
 
@@ -258,6 +259,10 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             byte[] emptyPacket = OpenXrFramePacket.Encode(EmptyFrames, originRevision);
             _ = backend.Publish(sessionHandle, emptyPacket);
             return VrRuntimeResult.Failure($"Could not encode overlay frames for {DisplayName}: {exception.Message}");
+        }
+        finally
+        {
+            nextFrameSortOrder = 0;
         }
     }
 
@@ -410,6 +415,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         identities.Clear();
         frames.Clear();
         maximumOverlays = OpenXrFramePacket.MaximumOverlays;
+        nextFrameSortOrder = 0;
     }
 
     private void ClearInteractionBuffers()

@@ -81,6 +81,8 @@ public sealed partial class MainWindow : Window
 
     public ApplicationInputContext InputContext { get; }
 
+    internal bool HasTrayIcon => trayIcon is not null;
+
     /// <summary>Activates the window when its content receives pointer input.</summary>
     private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {

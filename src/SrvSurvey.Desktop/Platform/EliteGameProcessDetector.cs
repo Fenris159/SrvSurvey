@@ -15,10 +15,18 @@ public sealed class EliteGameProcessDetector : IEliteGameProcessDetector
 {
     private const string EliteExecutableName = "EliteDangerous64.exe";
     private const string EliteLinuxTruncatedCommName = "EliteDangerous6";
+    private static readonly TimeSpan DefaultCacheDuration = TimeSpan.FromSeconds(1);
 
     private readonly Func<bool> isLinux;
     private readonly string procDirectory;
     private readonly Func<string, bool> isNamedProcessRunning;
+    private readonly TimeProvider timeProvider;
+    private readonly TimeSpan cacheDuration;
+    private readonly Lock cacheLock = new();
+    private bool hasCachedResult;
+    private bool cachedResult;
+    private long lastCheckedTimestamp;
+    private string? lastDetectedPid;
 
     public EliteGameProcessDetector()
         : this(OperatingSystem.IsLinux, "/proc", IsSystemProcessRunning) { }
@@ -26,43 +34,83 @@ public sealed class EliteGameProcessDetector : IEliteGameProcessDetector
     internal EliteGameProcessDetector(
         Func<bool> isLinux,
         string procDirectory,
-        Func<string, bool>? isNamedProcessRunning = null
+        Func<string, bool>? isNamedProcessRunning = null,
+        TimeProvider? timeProvider = null,
+        TimeSpan? cacheDuration = null
     )
     {
         this.isLinux = isLinux ?? throw new ArgumentNullException(nameof(isLinux));
         this.procDirectory = procDirectory ?? throw new ArgumentNullException(nameof(procDirectory));
         this.isNamedProcessRunning = isNamedProcessRunning ?? IsSystemProcessRunning;
+        this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.cacheDuration = cacheDuration ?? DefaultCacheDuration;
     }
 
     public bool IsRunning()
     {
-        if (isLinux())
+        lock (cacheLock)
         {
-            return IsRunningOnLinux(procDirectory);
-        }
+            long now = timeProvider.GetTimestamp();
+            if (
+                hasCachedResult
+                && cacheDuration > TimeSpan.Zero
+                && timeProvider.GetElapsedTime(lastCheckedTimestamp, now) < cacheDuration
+            )
+            {
+                return cachedResult;
+            }
 
-        return isNamedProcessRunning(EliteGameWindowIdentity.WindowsProcessName);
+            cachedResult = EvaluateRunning();
+            hasCachedResult = true;
+            lastCheckedTimestamp = now;
+            return cachedResult;
+        }
     }
 
-    internal static bool IsRunningOnLinux(string procRoot)
+    private bool EvaluateRunning()
+    {
+        if (!isLinux())
+        {
+            return isNamedProcessRunning(EliteGameWindowIdentity.WindowsProcessName);
+        }
+
+        if (lastDetectedPid is { } pid && IsLinuxEliteProcessDirectory(Path.Combine(procDirectory, pid)))
+        {
+            return true;
+        }
+
+        lastDetectedPid = FindLinuxEliteProcessId(procDirectory);
+        return lastDetectedPid is not null;
+    }
+
+    internal static bool IsRunningOnLinux(string procRoot) => FindLinuxEliteProcessId(procRoot) is not null;
+
+    private static string? FindLinuxEliteProcessId(string procRoot)
     {
         if (string.IsNullOrWhiteSpace(procRoot) || !Directory.Exists(procRoot))
         {
-            return false;
+            return null;
         }
 
         try
         {
-            return Directory
-                .EnumerateDirectories(procRoot)
-                .Where(entry =>
-                    int.TryParse(Path.GetFileName(entry), NumberStyles.None, CultureInfo.InvariantCulture, out _)
+            foreach (string entry in Directory.EnumerateDirectories(procRoot))
+            {
+                string pid = Path.GetFileName(entry);
+                if (
+                    int.TryParse(pid, NumberStyles.None, CultureInfo.InvariantCulture, out _)
+                    && IsLinuxEliteProcessDirectory(entry)
                 )
-                .Any(IsLinuxEliteProcessDirectory);
+                {
+                    return pid;
+                }
+            }
+
+            return null;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            return false;
+            return null;
         }
     }
 

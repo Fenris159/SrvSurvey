@@ -1522,6 +1522,14 @@ bool OverlaySession::SetInteractionEnabled(bool enabled, int32_t &outXrError, st
         return false;
     }
 
+    if (maxLayers <= 1)
+    {
+        outXrError = 0;
+        outMessage =
+            "The active OpenXR runtime supports only 1 composition layer; at least 2 layers are required for controller-pointer interaction.";
+        return false;
+    }
+
     pointerEvents.clear();
     interactionEnabled.store(true, std::memory_order_release);
     interactionGeneration.fetch_add(1, std::memory_order_acq_rel);

@@ -390,6 +390,39 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.Equal("Data from EDSM and Spansh", viewModel.DataStatus);
     }
 
+    /// <summary>When the primary lookup faults while the secondary lookup is still in flight, LoadTargetsAsync awaits and observes both.</summary>
+    [Fact]
+    public async Task DualLookupFailureObservesBothTaskExceptions()
+    {
+        var secondaryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseSecondary = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new FakeSummaryClient
+        {
+            ThrowException = new HttpRequestException("offline"),
+            BeforeRequest = async (systemName, _) =>
+            {
+                if (systemName == "Alpha")
+                {
+                    secondaryStarted.TrySetResult();
+                    await releaseSecondary.Task;
+                }
+            },
+        };
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
+
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        await secondaryStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Task.Yield();
+
+        Assert.False(viewModel.PendingLoad.IsCompleted);
+
+        releaseSecondary.TrySetResult();
+        await viewModel.PendingLoad;
+
+        Assert.Equal(2, client.Requests.Count);
+        Assert.Contains("unavailable", viewModel.DataStatus, StringComparison.OrdinalIgnoreCase);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -447,6 +480,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
 
         public Task? Gate { get; set; }
 
+        public Func<string, CancellationToken, Task>? BeforeRequest { get; set; }
+
         public Exception? ThrowException { get; set; }
 
         public int CancellationCount { get; private set; }
@@ -462,6 +497,10 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         )
         {
             Requests.Add((systemName, systemAddress));
+            if (BeforeRequest is not null)
+            {
+                await BeforeRequest(systemName, cancellationToken);
+            }
             if (Gate is not null)
             {
                 try

@@ -441,7 +441,6 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         disposed = true;
         authorization?.Cancel();
         operationCancellation?.Cancel();
-        operationCancellation?.Dispose();
         operationCancellation = null;
         service.Changed -= OnServiceChanged;
         return service;

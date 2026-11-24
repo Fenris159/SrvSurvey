@@ -1107,6 +1107,142 @@ public sealed class DesktopRuntimeTests
         Assert.Equal("F13228986", runtime.MainViewModel.FrontierId);
     }
 
+    /// <summary>An exit request arriving during an automatic commander switch aborts replacement startup and shuts down cleanly.</summary>
+    [AvaloniaFact]
+    public async Task ShutdownDuringAutomaticCommanderSwitchAbortsReplacementAndExitsCleanly()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            """
+            {"event":"Commander","Name":"First Cmdr","FID":"F13228986"}
+            {"event":"LoadGame","Commander":"First Cmdr","FID":"F13228986"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 1, 57, DateTimeKind.Utc));
+
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        List<string> lifetimeEvents = [];
+        var lifetime = new RecordingDesktopLifetime(lifetimeEvents);
+        var applicationLog = new ApplicationLogService(temp.Paths.DataDirectory);
+        var cloud = new FakeProfileDrive();
+        var profileSync = new ProfileSyncService(temp.Store, cloud);
+        bool replaced = false;
+        string[] arguments = ["--journal-directory", journals];
+        DesktopStartupContext startupContext = await DesktopStartupContext.ResolveAsync(
+            arguments,
+            () => temp.Paths,
+            CancellationToken.None
+        );
+        var runtime = DesktopRuntime.Start(
+            Application.Current!,
+            desktop,
+            new DesktopStartup(arguments, applicationLog)
+            {
+                AppDataPathsOverride = startupContext.AppDataPaths,
+                ProfileSyncService = profileSync,
+                GameWindowSwitcherFactory = () => new FixedGameWindowSwitcher(1),
+                OnRuntimeReplaced = _ => replaced = true,
+            },
+            lifetime
+        );
+
+        await WaitUntilAsync(() => runtime.MainViewModel?.FrontierId == "F13228986");
+
+        Task switchTask = runtime.SwitchCommanderAsync("F14004033");
+        Task shutdownTask = runtime.RequestShutdownAsync(DesktopShutdownReason.LinuxTermination, exitCode: 0);
+        await WaitUntilAsync(() => switchTask.IsCompleted && shutdownTask.IsCompleted);
+        await Task.WhenAll(switchTask, shutdownTask);
+
+        Assert.False(replaced);
+        Assert.Equal(["shutdown:0"], lifetimeEvents);
+        Assert.True(cloud.Disposed);
+        Assert.Contains("Application exit (LinuxTermination)", applicationLog.Text, StringComparison.Ordinal);
+    }
+
+    /// <summary>Switching from a minimized window into a commander with MinimizeToTray keeps the replacement hidden in the tray.</summary>
+    [AvaloniaFact]
+    public async Task MinimizedAutomaticCommanderSwitchWithMinimizeToTrayStaysHidden()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            """
+            {"event":"Commander","Name":"First Cmdr","FID":"F13228986"}
+            {"event":"LoadGame","Commander":"First Cmdr","FID":"F13228986"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 1, 57, DateTimeKind.Utc));
+
+        AppDataPaths firstPaths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        AppDataPaths secondPaths = temp.Paths with { SettingsFrontierId = "F14004033" };
+        CommanderSettingsProfile.Prepare(firstPaths);
+        CommanderSettingsProfile.Prepare(secondPaths);
+        new DesktopBehaviorSettingsStore(secondPaths.UiSettingsPath).Save(
+            new DesktopBehaviorPreferences(
+                FocusGameOnStart: false,
+                FocusGameOnMinimize: false,
+                FocusGameAfterFsdJump: false,
+                MinimizeToTray: true
+            )
+        );
+
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var applicationLog = new ApplicationLogService(temp.Paths.DataDirectory);
+        DesktopRuntime? activeRuntime = null;
+        var switched = new TaskCompletionSource<DesktopRuntime>(TaskCreationOptions.RunContinuationsAsynchronously);
+        string[] arguments = ["--journal-directory", journals];
+        DesktopStartupContext startupContext = await DesktopStartupContext.ResolveAsync(
+            arguments,
+            () => temp.Paths,
+            CancellationToken.None
+        );
+        activeRuntime = DesktopRuntime.Start(
+            Application.Current!,
+            desktop,
+            new DesktopStartup(arguments, applicationLog)
+            {
+                AppDataPathsOverride = startupContext.AppDataPaths,
+                GameWindowSwitcherFactory = () => new FixedGameWindowSwitcher(1),
+                OnRuntimeReplaced = replacement =>
+                {
+                    activeRuntime = replacement;
+                    switched.TrySetResult(replacement);
+                },
+            },
+            new RecordingDesktopLifetime([])
+        );
+
+        try
+        {
+            await WaitUntilAsync(() => activeRuntime?.MainViewModel?.FrontierId == "F13228986");
+            activeRuntime.MainWindow!.WindowState = WindowState.Minimized;
+            Assert.True(activeRuntime.MainWindow.HasTrayIcon);
+
+            await activeRuntime.SwitchCommanderAsync("F14004033");
+            DesktopRuntime secondRuntime = await WaitForTaskAsync(switched.Task);
+            await WaitUntilAsync(() => secondRuntime.MainViewModel?.AppDataPaths.SettingsFrontierId == "F14004033");
+
+            Assert.False(secondRuntime.MainWindow!.IsVisible);
+            Assert.False(secondRuntime.MainWindow.ShowInTaskbar);
+        }
+        finally
+        {
+            if (activeRuntime is not null)
+            {
+                await activeRuntime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+            }
+        }
+    }
+
     private static async Task WaitUntilAsync(Func<bool> predicate)
     {
         DateTime deadline = DateTime.UtcNow + TimeSpan.FromSeconds(15);

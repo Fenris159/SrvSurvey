@@ -2900,6 +2900,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             || automaticCommanderSwitchRequested
             || IsDiagnosticReplay
             || IsImportingProfile
+            || ProfileSync.IsBusy
             || OverlayInteraction.IsEditing
             || AutomaticCommanderSwitchRequested is null
         )

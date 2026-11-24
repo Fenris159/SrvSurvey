@@ -83,6 +83,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     private Window? attachedMainWindow;
     private Task? shutdownTask;
     private DesktopShutdownReason? activeShutdownReason;
+    private (DesktopShutdownReason Reason, int ExitCode)? pendingShutdown;
 
     internal MainWindowViewModel? MainViewModel => mainViewModel;
 
@@ -208,6 +209,11 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         {
             if (shutdownTask is not null)
             {
+                if (activeShutdownReason == DesktopShutdownReason.CommanderSwitch)
+                {
+                    pendingShutdown ??= (reason, exitCode);
+                }
+
                 return shutdownTask;
             }
 
@@ -287,14 +293,26 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     /// <summary>Finishes dependent services and background backups before releasing the close guard and exiting.</summary>
     private async Task StopAsync(DesktopShutdownReason reason, int exitCode)
     {
+        _ = await TeardownOutgoingRuntimeAsync(reason, preserveProfileSync: false);
+        TryRun(() => lifetime.Shutdown(exitCode));
+    }
+
+    private async Task<SrvSurvey.Desktop.ProfileSync.ProfileSyncService?> TeardownOutgoingRuntimeAsync(
+        DesktopShutdownReason reason,
+        bool preserveProfileSync
+    )
+    {
         TryRun(() => QuiesceMainWindow(reason));
         TryRun(() => phases.Quiesce(reason));
         await TryRunAsync(phases.StopProducersAsync);
         await TryRunAsync(phases.DisposeDependentsAsync);
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? preservedProfileSync = preserveProfileSync
+            ? mainViewModel?.DetachProfileSyncService()
+            : null;
         await TryRunAsync(phases.DisposeViewModelAsync);
         await TryRunAsync(phases.DisposeInfrastructureAsync);
         TryRun(ReleaseMainWindowCloseGuard);
-        TryRun(() => lifetime.Shutdown(exitCode));
+        return preservedProfileSync;
     }
 
     private async Task CompleteStopAsync(TaskCompletionSource completion, DesktopShutdownReason reason, int exitCode)
@@ -337,16 +355,30 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         Action<DesktopRuntime>? replacedCallback = onRuntimeReplaced;
         Func<SrvSurvey.Desktop.Platform.Overlay.IGameWindowSwitcher>? switcherFactory = gameWindowSwitcherFactory;
 
-        TryRun(() => QuiesceMainWindow(DesktopShutdownReason.CommanderSwitch));
-        TryRun(() => phases.Quiesce(DesktopShutdownReason.CommanderSwitch));
-        await TryRunAsync(phases.StopProducersAsync);
-        await TryRunAsync(phases.DisposeDependentsAsync);
-        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? preservedProfileSync =
-            mainViewModel?.DetachProfileSyncService();
-        await TryRunAsync(phases.DisposeViewModelAsync);
-        await TryRunAsync(phases.DisposeInfrastructureAsync);
-        TryRun(ReleaseMainWindowCloseGuard);
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? preservedProfileSync = await TeardownOutgoingRuntimeAsync(
+            DesktopShutdownReason.CommanderSwitch,
+            preserveProfileSync: true
+        );
         TryRun(() => oldWindow?.Close());
+
+        (DesktopShutdownReason Reason, int ExitCode)? shutdownRequest;
+        lock (sync)
+        {
+            shutdownRequest = pendingShutdown;
+        }
+
+        if (shutdownRequest is { } pending)
+        {
+            if (preservedProfileSync is not null)
+            {
+                await TryRunAsync(() => preservedProfileSync.ShutdownAsync(CancellationToken.None));
+                TryRun(preservedProfileSync.Dispose);
+            }
+
+            log?.Append($"Application exit ({pending.Reason}).");
+            TryRun(() => lifetime.Shutdown(pending.ExitCode));
+            return;
+        }
 
         Program.UpdateStartupContextPaths(nextPaths);
         log?.Append($"Automatic commander switch: reloading desktop runtime for {nextFrontierId}.");

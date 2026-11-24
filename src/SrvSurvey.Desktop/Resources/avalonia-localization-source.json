@@ -4941,6 +4941,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
+    "Text": "Application exit ({0}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.cs"
+  },
+  {
     "Text": "Application logging is unavailable.",
     "IsFormat": false,
     "SourceKinds": [
@@ -65717,6 +65725,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
   },
   {
     "Text": "The active bootstrap source and the locations checked on this platform.",

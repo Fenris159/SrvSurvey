@@ -49,6 +49,7 @@ public static class OpenXrFramePacket
                         ? 1
                         : 0
                 )
+                .ThenBy(entry => entry.Value.SortOrder)
                 .ThenBy(entry => entry.Key, StringComparer.Ordinal)
         )
         {
@@ -103,4 +104,9 @@ public static class OpenXrFramePacket
         BinaryPrimitives.WriteSingleLittleEndian(target[offset..], value);
 }
 
-public sealed record OpenXrOverlayFrame(VrOverlayFrame Frame, VrOverlayCalibration Calibration, float Alpha);
+public sealed record OpenXrOverlayFrame(
+    VrOverlayFrame Frame,
+    VrOverlayCalibration Calibration,
+    float Alpha,
+    int SortOrder = 0
+);

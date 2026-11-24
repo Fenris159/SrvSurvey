@@ -90,7 +90,7 @@ internal sealed class JournalSourceRegistry(string dataDirectory) : IDisposable
     private static bool TryReadSource(string path, out SourceRecord? source)
     {
         source = null;
-        if (!HasLiveLease(path))
+        if (!ProcessLeaseFile.HasLiveLease(path))
         {
             return true;
         }
@@ -108,7 +108,7 @@ internal sealed class JournalSourceRegistry(string dataDirectory) : IDisposable
         {
             return false;
         }
-        if (IsLive(record))
+        if (ProcessLeaseFile.IsProcessLive(record.ProcessId, record.StartTime))
         {
             source = record;
         }
@@ -121,42 +121,7 @@ internal sealed class JournalSourceRegistry(string dataDirectory) : IDisposable
         current = null;
         lease?.Dispose();
         lease = null;
-        try
-        {
-            File.Delete(Path.Combine(directory, fileName));
-        }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-        {
-            // A leftover record is ignored after this process exits.
-        }
-    }
-
-    /// <summary>A live owner holds the source file open; an abandoned binding cannot authorize uploads even while its old process lives.</summary>
-    private static bool HasLiveLease(string path)
-    {
-        try
-        {
-            using var released = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-            return false;
-        }
-        catch (IOException)
-        {
-            return true;
-        }
-    }
-
-    /// <summary>Rejects stale registrations, including records whose process ID was reused.</summary>
-    private static bool IsLive(SourceRecord record)
-    {
-        try
-        {
-            using var process = Process.GetProcessById(record.ProcessId);
-            return !process.HasExited && process.StartTime.ToUniversalTime().Ticks == record.StartTime;
-        }
-        catch (Exception error) when (error is ArgumentException or InvalidOperationException or Win32Exception)
-        {
-            return false;
-        }
+        ProcessLeaseFile.TryDelete(Path.Combine(directory, fileName));
     }
 
     /// <summary>Resolves links in every directory component so Steam aliases cannot masquerade as independent sources.</summary>
@@ -247,9 +212,9 @@ internal sealed class CommanderClaimRegistry(string dataDirectory) : IDisposable
 
             return files.Where(path => !IsCurrentClaimFile(path)).Any(path => IsLiveClaimForCommander(path, target));
         }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
-            return false;
+            return true;
         }
     }
 
@@ -260,10 +225,39 @@ internal sealed class CommanderClaimRegistry(string dataDirectory) : IDisposable
             OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
         );
 
-    private static bool IsLiveClaimForCommander(string path, string frontierId) =>
-        TryReadLiveClaim(path, out ClaimRecord? record)
-        && record is not null
-        && string.Equals(record.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase);
+    private static bool IsLiveClaimForCommander(string path, string frontierId)
+    {
+        try
+        {
+            if (!ProcessLeaseFile.HasLiveLease(path))
+            {
+                return false;
+            }
+
+            if (new FileInfo(path).Length is <= 0 or > 16384)
+            {
+                return true;
+            }
+
+            using var snapshot = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            ClaimRecord? record = JsonSerializer.Deserialize<ClaimRecord>(snapshot);
+            if (record is null || string.IsNullOrWhiteSpace(record.FrontierId))
+            {
+                return true;
+            }
+
+            return ProcessLeaseFile.IsProcessLive(record.ProcessId, record.StartTime)
+                && string.Equals(record.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return false;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return true;
+        }
+    }
 
     /// <summary>Releases this instance's commander claim on shutdown or commander switch.</summary>
     public void Dispose()
@@ -271,45 +265,24 @@ internal sealed class CommanderClaimRegistry(string dataDirectory) : IDisposable
         current = null;
         lease?.Dispose();
         lease = null;
-        try
-        {
-            File.Delete(Path.Combine(directory, fileName));
-        }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-        {
-            // A leftover record is ignored once its handle is released.
-        }
+        ProcessLeaseFile.TryDelete(Path.Combine(directory, fileName));
     }
 
-    private static bool TryReadLiveClaim(string path, out ClaimRecord? claim)
-    {
-        claim = null;
-        if (!HasLiveLease(path))
-        {
-            return false;
-        }
+    private sealed record ClaimRecord(int ProcessId, long StartTime, string FrontierId);
+}
 
-        if (new FileInfo(path).Length is <= 0 or > 16384)
-        {
-            return false;
-        }
-
-        using var snapshot = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        ClaimRecord? record = JsonSerializer.Deserialize<ClaimRecord>(snapshot);
-        if (record is null || string.IsNullOrWhiteSpace(record.FrontierId) || !IsLive(record))
-        {
-            return false;
-        }
-
-        claim = record;
-        return true;
-    }
-
-    private static bool HasLiveLease(string path)
+internal static class ProcessLeaseFile
+{
+    /// <summary>A live owner holds the lease file open; a missing or unlocked file has no live lease.</summary>
+    public static bool HasLiveLease(string path)
     {
         try
         {
             using var released = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            return false;
+        }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException)
+        {
             return false;
         }
         catch (IOException)
@@ -318,12 +291,13 @@ internal sealed class CommanderClaimRegistry(string dataDirectory) : IDisposable
         }
     }
 
-    private static bool IsLive(ClaimRecord record)
+    /// <summary>Rejects stale registrations, including records whose process ID was reused.</summary>
+    public static bool IsProcessLive(int processId, long startTimeTicks)
     {
         try
         {
-            using var process = Process.GetProcessById(record.ProcessId);
-            return !process.HasExited && process.StartTime.ToUniversalTime().Ticks == record.StartTime;
+            using var process = Process.GetProcessById(processId);
+            return !process.HasExited && process.StartTime.ToUniversalTime().Ticks == startTimeTicks;
         }
         catch (Exception error) when (error is ArgumentException or InvalidOperationException or Win32Exception)
         {
@@ -331,5 +305,15 @@ internal sealed class CommanderClaimRegistry(string dataDirectory) : IDisposable
         }
     }
 
-    private sealed record ClaimRecord(int ProcessId, long StartTime, string FrontierId);
+    public static void TryDelete(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            // A leftover record is ignored once its handle is released.
+        }
+    }
 }

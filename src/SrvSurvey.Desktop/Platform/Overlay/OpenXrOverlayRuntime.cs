@@ -12,6 +12,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     private OpenXrFrameBridge? bridge;
     private uint originRevision;
     private bool interactionEnabled;
+    private int nextFrameSortOrder;
     private readonly Dictionary<ulong, string> identities = [];
 
     public OpenXrOverlayRuntime(
@@ -102,7 +103,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
         }
 
         identities[OpenXrFramePacket.GetOverlayId(plotterName)] = plotterName;
-        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha);
+        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha, nextFrameSortOrder++);
         return VrRuntimeResult.Success("Queued the OpenXR overlay frame.");
     }
 
@@ -119,6 +120,10 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
         {
             bridge?.Stop();
             return VrRuntimeResult.Failure("The OpenXR overlay frames could not be published: " + exception.Message);
+        }
+        finally
+        {
+            nextFrameSortOrder = 0;
         }
     }
 
@@ -206,6 +211,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     {
         IsInitialized = false;
         interactionEnabled = false;
+        nextFrameSortOrder = 0;
         identities.Clear();
         frames.Clear();
         bridge?.Dispose();

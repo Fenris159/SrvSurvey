@@ -179,6 +179,29 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.Equal(OpenXrFramePacket.GetOverlayId("PlotBioStatus"), firstId);
         Assert.Equal(OpenXrFramePacket.GetOverlayId("PlotSysStatus"), secondId);
         Assert.Equal(OpenXrFramePacket.GetOverlayId(VrOverlayCalibrationSession.ControlsPlotterName), lastId);
+
+        // Explicit SortOrder preserves publish order (e.g. selected preview above siblings) while PlotAdjustVR stays topmost.
+        byte[] withSortOrder = OpenXrFramePacket.Encode(
+            new Dictionary<string, OpenXrOverlayFrame>
+            {
+                [VrOverlayCalibrationSession.ControlsPlotterName] = overlay with { SortOrder = 0 },
+                ["PlotSysStatus"] = overlay with { SortOrder = 1 },
+                ["PlotBioStatus"] = overlay with { SortOrder = 2 },
+            },
+            0
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId("PlotSysStatus"),
+            BinaryPrimitives.ReadUInt64LittleEndian(withSortOrder.AsSpan(128))
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId("PlotBioStatus"),
+            BinaryPrimitives.ReadUInt64LittleEndian(withSortOrder.AsSpan(192))
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId(VrOverlayCalibrationSession.ControlsPlotterName),
+            BinaryPrimitives.ReadUInt64LittleEndian(withSortOrder.AsSpan(256))
+        );
     }
 
     [Theory]

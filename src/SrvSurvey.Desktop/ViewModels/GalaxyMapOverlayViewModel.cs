@@ -477,8 +477,19 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             Task<SystemSummaryLoadResult>? secondaryTask = secondary is null
                 ? null
                 : summaryClient.GetAsync(secondary.Name, secondary.SystemAddress, cancellationToken);
-            SystemSummaryLoadResult primaryResult = await primaryTask;
-            SystemSummaryLoadResult? secondaryResult = secondaryTask is null ? null : await secondaryTask;
+            SystemSummaryLoadResult primaryResult;
+            SystemSummaryLoadResult? secondaryResult;
+            if (secondaryTask is null)
+            {
+                primaryResult = await primaryTask;
+                secondaryResult = null;
+            }
+            else
+            {
+                SystemSummaryLoadResult[] results = await Task.WhenAll(primaryTask, secondaryTask);
+                primaryResult = results[0];
+                secondaryResult = results[1];
+            }
             cancellationToken.ThrowIfCancellationRequested();
 
             PrimarySystem = Project(primary.Label, primaryResult.Summary);
