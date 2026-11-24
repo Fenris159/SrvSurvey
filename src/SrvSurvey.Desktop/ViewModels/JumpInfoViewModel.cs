@@ -667,28 +667,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private void LogLookupFailure(JumpTarget target, string detail) =>
         log?.Invoke($"Next-jump lookup for {target.Name} ({target.SystemAddress}): {detail}");
 
-    private static string FormatLookupWarnings(IReadOnlyList<string> warnings)
-    {
-        if (warnings.Count == 0)
-        {
-            return string.Empty;
-        }
-
-        string[] providers = warnings
-            .Select(warning =>
-                warning switch
-                {
-                    _ when warning.StartsWith("EDSM ", StringComparison.Ordinal) => "EDSM",
-                    _ when warning.StartsWith("Spansh ", StringComparison.Ordinal) => "Spansh",
-                    _ => "System",
-                }
-            )
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
-        return providers.Contains("System", StringComparer.Ordinal)
-            ? "System data unavailable."
-            : string.Join(" and ", providers) + " data unavailable.";
-    }
+    private static string FormatLookupWarnings(IReadOnlyList<string> warnings) =>
+        SystemSummaryWarningFormatter.Format(warnings);
 
     /// <summary>Refreshes the bound next-jump summary and its matching attraction context.</summary>
     private void RefreshSummaryProperties()

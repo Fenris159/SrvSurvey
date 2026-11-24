@@ -20249,6 +20249,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "EDSM and Spansh data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM and Spansh temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM data unavailable \u00B7 Spansh temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
     "Text": "EDSM processing was isolated from journal tracking: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -20295,6 +20327,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/EdsmSettingsViewModel.cs"
+  },
+  {
+    "Text": "EDSM temporarily rate-limited \u00B7 Spansh data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
   },
   {
     "Text": "ELW",
@@ -26169,14 +26217,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Galaxy Map data is unavailable: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
-  },
-  {
     "Text": "Galaxy Map data ready",
     "IsFormat": false,
     "SourceKinds": [
@@ -26191,6 +26231,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Galaxy Map lookup for {0} ({1}): {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -59894,6 +59942,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
   },
   {
+    "Text": "Spansh data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
     "Text": "Spansh data updated just now",
     "IsFormat": false,
     "SourceKinds": [
@@ -59980,6 +60036,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Spansh temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
   },
   {
     "Text": "Spansh unavailable; showing built-in and commander observations.",
@@ -61779,6 +61843,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Station data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
+  },
+  {
     "Text": "Station information",
     "IsFormat": false,
     "SourceKinds": [
@@ -61788,7 +61860,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Station information is unavailable: {0}",
+    "Text": "Station information settings could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -61796,7 +61868,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
-    "Text": "Station information settings could not be saved: {0}",
+    "Text": "Station lookup for {0} ({1}): {2}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -63342,7 +63414,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "System default",
@@ -70593,6 +70665,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Too Many Requests",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
   },
   {
     "Text": "Too steep",
@@ -81687,6 +81767,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "rate-limited",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
     "Text": "rating",
     "IsFormat": false,
     "SourceKinds": [
@@ -84694,14 +84782,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
-  },
-  {
-    "Text": "{0} data unavailable.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
     "Text": "{0} destination: {1} \u00B7 Mining: {2}",

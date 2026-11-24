@@ -46,3 +46,9 @@ explicit reset.
 - **Clearer Journey exploration rewards formatting** removes the leading `~`
   from **Exploration rewards** values in **Navigation → Journeys** so credit
   estimates are not mistaken for negative numbers.
+- **Calmer, deduplicated EDSM and Spansh lookups** stops Galaxy Map status
+  polling from cancelling and refiring in-flight lookups, adds short-term
+  caching and `429` rate-limit cooldowns in `SystemSummaryClient`, treats
+  Spansh `404` responses for undiscovered systems as normal instead of errors,
+  and aggregates overlay provider warnings to a single calm status notice per
+  provider.

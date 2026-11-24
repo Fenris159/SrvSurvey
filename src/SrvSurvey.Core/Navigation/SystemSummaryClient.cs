@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
@@ -95,7 +97,12 @@ public sealed record SystemSummaryLoadResult(SystemSummary Summary, IReadOnlyLis
 public sealed class SystemSummaryClient : ISystemSummaryClient
 {
     private const int MaximumResponseBytes = 32 * 1024 * 1024;
+    private const int MaximumCacheEntries = 256;
 
+    private static readonly TimeSpan DefaultCacheDuration = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan DefaultRateLimitCooldown = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan MinimumRateLimitCooldown = TimeSpan.FromSeconds(15);
+    private static readonly TimeSpan MaximumRateLimitCooldown = TimeSpan.FromMinutes(10);
     private static readonly Uri DefaultEdsmBaseUri = new("https://www.edsm.net/");
     private static readonly Uri DefaultSpanshBaseUri = new("https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
@@ -115,18 +122,37 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     private readonly Uri edsmBaseUri;
     private readonly Uri spanshBaseUri;
     private readonly Func<bool> useSpanshLastUpdated;
+    private readonly TimeProvider timeProvider;
+    private readonly Lock rateLimitLock = new();
+    private readonly ProviderFetchCache<EdsmBodiesFragment> bodiesCache;
+    private readonly ProviderFetchCache<EdsmTrafficFragment> trafficCache;
+    private readonly ProviderFetchCache<SpanshFragment> spanshCache;
+    private DateTimeOffset edsmCooldownUntil;
+    private DateTimeOffset spanshCooldownUntil;
 
     public SystemSummaryClient(
         HttpClient? client = null,
         Uri? edsmBaseUri = null,
         Uri? spanshBaseUri = null,
-        Func<bool>? useSpanshLastUpdated = null
+        Func<bool>? useSpanshLastUpdated = null,
+        TimeProvider? timeProvider = null,
+        TimeSpan? cacheDuration = null
     )
     {
         this.client = client ?? SharedClient;
         this.edsmBaseUri = edsmBaseUri ?? DefaultEdsmBaseUri;
         this.spanshBaseUri = spanshBaseUri ?? DefaultSpanshBaseUri;
         this.useSpanshLastUpdated = useSpanshLastUpdated ?? (() => false);
+        this.timeProvider = timeProvider ?? TimeProvider.System;
+        TimeSpan resolvedCacheDuration = cacheDuration ?? DefaultCacheDuration;
+        if (resolvedCacheDuration < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(cacheDuration), "Cache duration cannot be negative.");
+        }
+
+        bodiesCache = new ProviderFetchCache<EdsmBodiesFragment>(this.timeProvider, resolvedCacheDuration);
+        trafficCache = new ProviderFetchCache<EdsmTrafficFragment>(this.timeProvider, resolvedCacheDuration);
+        spanshCache = new ProviderFetchCache<SpanshFragment>(this.timeProvider, resolvedCacheDuration);
     }
 
     public async Task<SystemSummaryLoadResult> GetAsync(
@@ -137,30 +163,35 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
         string normalizedName = systemName.Trim();
-        Task<FetchResult<EdsmBodiesFragment>> bodiesTask = FetchAsync(
-            "EDSM bodies",
-            new Uri(edsmBaseUri, "api-system-v1/bodies?systemName=" + Uri.EscapeDataString(normalizedName)),
-            ParseEdsmBodies,
+        Uri bodiesUri = new(edsmBaseUri, "api-system-v1/bodies?systemName=" + Uri.EscapeDataString(normalizedName));
+        Uri trafficUri = new(edsmBaseUri, "api-system-v1/traffic?systemName=" + Uri.EscapeDataString(normalizedName));
+        Task<FetchResult<EdsmBodiesFragment>> bodiesTask = bodiesCache.GetOrFetchAsync(
+            normalizedName,
+            () => FetchAsync(ProviderFamily.Edsm, "EDSM bodies", bodiesUri, ParseEdsmBodies),
             cancellationToken
         );
-        Task<FetchResult<EdsmTrafficFragment>> trafficTask = FetchAsync(
-            "EDSM traffic",
-            new Uri(edsmBaseUri, "api-system-v1/traffic?systemName=" + Uri.EscapeDataString(normalizedName)),
-            ParseEdsmTraffic,
+        Task<FetchResult<EdsmTrafficFragment>> trafficTask = trafficCache.GetOrFetchAsync(
+            normalizedName,
+            () => FetchAsync(ProviderFamily.Edsm, "EDSM traffic", trafficUri, ParseEdsmTraffic),
             cancellationToken
         );
         Task<FetchResult<SpanshFragment>> spanshTask =
             systemAddress > 0
-                ? FetchAsync(
-                    "Spansh system dump",
-                    new Uri(
-                        spanshBaseUri,
-                        UriPath.CombineWithTrailingSeparator(
-                            "dump",
-                            systemAddress.ToString(CultureInfo.InvariantCulture)
-                        )
-                    ),
-                    ParseSpanshDump,
+                ? spanshCache.GetOrFetchAsync(
+                    systemAddress.ToString(CultureInfo.InvariantCulture),
+                    () =>
+                        FetchAsync(
+                            ProviderFamily.Spansh,
+                            "Spansh system dump",
+                            new Uri(
+                                spanshBaseUri,
+                                UriPath.CombineWithTrailingSeparator(
+                                    "dump",
+                                    systemAddress.ToString(CultureInfo.InvariantCulture)
+                                )
+                            ),
+                            ParseSpanshDump
+                        ),
                     cancellationToken
                 )
                 : Task.FromResult(FetchResult<SpanshFragment>.Empty);
@@ -178,19 +209,20 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             systemAddress > 0 ? systemAddress : bodies.Value?.SystemAddress ?? traffic.Value?.SystemAddress ?? 0;
         int scannedBodyCount = Math.Max(bodies.Value?.ScannedBodyCount ?? 0, spansh.Value?.ScannedBodyCount ?? 0);
         int totalBodyCount = Math.Max(bodies.Value?.TotalBodyCount ?? 0, spansh.Value?.TotalBodyCount ?? 0);
-        int attemptedProviders = systemAddress > 0 ? 3 : 2;
+        bool edsmSucceeded = bodies.Warning is null || traffic.Warning is null;
+        bool spanshSucceeded = systemAddress <= 0 || spansh.Warning is null;
         bool? isKnown;
         if (bodies.Value?.SystemAddress > 0 || traffic.Value?.SystemAddress > 0 || spansh.Value is not null)
         {
             isKnown = true;
         }
-        else if (warnings.Length == attemptedProviders)
+        else if (edsmSucceeded && spanshSucceeded)
         {
-            isKnown = null;
+            isKnown = false;
         }
         else
         {
-            isKnown = false;
+            isKnown = null;
         }
         SystemPoiSummary points =
             spansh.Value?.PointsOfInterest ?? new SystemPoiSummary(totalBodyCount, 0, 0, 0, 0, 0, 0);
@@ -221,38 +253,96 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     }
 
     private async Task<FetchResult<T>> FetchAsync<T>(
+        ProviderFamily family,
         string provider,
         Uri requestUri,
-        Func<JsonElement, T> parser,
-        CancellationToken cancellationToken
+        Func<JsonElement, T> parser
     )
         where T : class
     {
+        if (IsRateLimited(family))
+        {
+            return new FetchResult<T>(null, $"{provider} data is temporarily rate-limited (HTTP 429).");
+        }
+
         try
         {
             using HttpResponseMessage response = await client
-                .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
+            if (family == ProviderFamily.Spansh && response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return FetchResult<T>.Empty;
+            }
+
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                RecordRateLimit(family, response.Headers.RetryAfter);
+                return new FetchResult<T>(null, $"{provider} data is temporarily rate-limited (HTTP 429).");
+            }
+
             response.EnsureSuccessStatusCode();
             using JsonDocument document = await BoundedHttpContent
-                .ReadJsonDocumentAsync(
-                    response.Content,
-                    MaximumResponseBytes,
-                    $"The {provider} response",
-                    cancellationToken
-                )
+                .ReadJsonDocumentAsync(response.Content, MaximumResponseBytes, $"The {provider} response")
                 .ConfigureAwait(false);
             return new FetchResult<T>(parser(document.RootElement), null);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
         }
         catch (Exception exception)
             when (exception is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException)
         {
             return new FetchResult<T>(null, $"{provider} data is unavailable: {exception.Message}");
         }
+    }
+
+    private bool IsRateLimited(ProviderFamily family)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        lock (rateLimitLock)
+        {
+            DateTimeOffset until = family == ProviderFamily.Edsm ? edsmCooldownUntil : spanshCooldownUntil;
+            return now < until;
+        }
+    }
+
+    private void RecordRateLimit(ProviderFamily family, RetryConditionHeaderValue? retryAfter)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        DateTimeOffset until = now + ResolveRateLimitDelay(retryAfter, now);
+        lock (rateLimitLock)
+        {
+            if (family == ProviderFamily.Edsm)
+            {
+                if (until > edsmCooldownUntil)
+                {
+                    edsmCooldownUntil = until;
+                }
+            }
+            else if (until > spanshCooldownUntil)
+            {
+                spanshCooldownUntil = until;
+            }
+        }
+    }
+
+    private static TimeSpan ResolveRateLimitDelay(RetryConditionHeaderValue? retryAfter, DateTimeOffset now)
+    {
+        TimeSpan? candidate = retryAfter?.Delta;
+        if (candidate is null && retryAfter?.Date is { } retryDate)
+        {
+            candidate = retryDate - now;
+        }
+
+        if (candidate is not { } delay || delay <= TimeSpan.Zero)
+        {
+            return DefaultRateLimitCooldown;
+        }
+
+        if (delay < MinimumRateLimitCooldown)
+        {
+            return MinimumRateLimitCooldown;
+        }
+
+        return delay > MaximumRateLimitCooldown ? MaximumRateLimitCooldown : delay;
     }
 
     private static EdsmBodiesFragment ParseEdsmBodies(JsonElement root)
@@ -839,6 +929,105 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         var client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
         client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
         return client;
+    }
+
+    private enum ProviderFamily
+    {
+        Edsm,
+        Spansh,
+    }
+
+    private sealed class ProviderFetchCache<T>(TimeProvider timeProvider, TimeSpan ttl)
+        where T : class
+    {
+        private readonly Lock gate = new();
+        private readonly Dictionary<string, CachedEntry> entries = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Task<FetchResult<T>>> inFlight = new(StringComparer.OrdinalIgnoreCase);
+
+        public async Task<FetchResult<T>> GetOrFetchAsync(
+            string key,
+            Func<Task<FetchResult<T>>> fetch,
+            CancellationToken cancellationToken
+        )
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Task<FetchResult<T>> task;
+            TaskCompletionSource? startGate = null;
+            lock (gate)
+            {
+                DateTimeOffset now = timeProvider.GetUtcNow();
+                if (entries.TryGetValue(key, out CachedEntry cached) && now < cached.ExpiresAt)
+                {
+                    return cached.Result;
+                }
+
+                if (!inFlight.TryGetValue(key, out task!))
+                {
+                    startGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    task = RunAndStoreAsync(key, fetch, startGate.Task);
+                    _ = task.ContinueWith(
+                        static faulted => _ = faulted.Exception,
+                        CancellationToken.None,
+                        TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                        TaskScheduler.Default
+                    );
+                    inFlight[key] = task;
+                }
+            }
+
+            startGate?.TrySetResult();
+            return await task.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<FetchResult<T>> RunAndStoreAsync(
+            string key,
+            Func<Task<FetchResult<T>>> fetch,
+            Task startGate
+        )
+        {
+            await startGate.ConfigureAwait(false);
+            FetchResult<T>? completed = null;
+            try
+            {
+                completed = await fetch().ConfigureAwait(false);
+                return completed;
+            }
+            finally
+            {
+                lock (gate)
+                {
+                    inFlight.Remove(key);
+                    if (completed is { Warning: null } && ttl > TimeSpan.Zero)
+                    {
+                        DateTimeOffset now = timeProvider.GetUtcNow();
+                        PruneLocked(now);
+                        entries[key] = new CachedEntry(completed, now + ttl);
+                    }
+                }
+            }
+        }
+
+        private void PruneLocked(DateTimeOffset now)
+        {
+            if (entries.Count < MaximumCacheEntries)
+            {
+                return;
+            }
+
+            string[] expired = entries.Where(pair => now >= pair.Value.ExpiresAt).Select(pair => pair.Key).ToArray();
+            foreach (string key in expired)
+            {
+                entries.Remove(key);
+            }
+
+            if (entries.Count >= MaximumCacheEntries)
+            {
+                string oldest = entries.OrderBy(pair => pair.Value.ExpiresAt).First().Key;
+                entries.Remove(oldest);
+            }
+        }
+
+        private readonly record struct CachedEntry(FetchResult<T> Result, DateTimeOffset ExpiresAt);
     }
 
     private sealed record FetchResult<T>(T? Value, string? Warning)

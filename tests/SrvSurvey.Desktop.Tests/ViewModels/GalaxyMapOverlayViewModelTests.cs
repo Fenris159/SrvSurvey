@@ -236,6 +236,160 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.Equal(new GalaxyMapPreferences(false, false), new GalaxyMapSettingsStore(SettingsPath).Load());
     }
 
+    /// <summary>Repeated status ticks while a Galaxy Map lookup is in flight must not cancel or refire requests.</summary>
+    [Fact]
+    public async Task RepeatedStatusUpdatesWhileLoadingDoNotCancelOrRefireLookups()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new FakeSummaryClient { Gate = gate.Task };
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
+        var status = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], status);
+        for (int index = 0; index < 5; index++)
+        {
+            viewModel.ApplyUpdate("Sol", 1, null, [], status);
+        }
+
+        gate.SetResult();
+        await viewModel.PendingLoad;
+
+        Assert.Equal(0, client.CancellationCount);
+        Assert.Equal([("Alpha", 2L), ("Beta", 3L)], client.Requests.Order().ToArray());
+        Assert.Equal("Data from EDSM and Spansh", viewModel.DataStatus);
+    }
+
+    /// <summary>Closing the Galaxy Map mid-load cancels cleanly and reloads once reopened.</summary>
+    [Fact]
+    public async Task ClosingGalaxyMapMidLoadRetriesOnReopen()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new FakeSummaryClient { Gate = gate.Task };
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
+
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        viewModel.ApplyUpdate("Sol", 1, null, [], new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        await viewModel.PendingLoad;
+
+        Assert.True(client.CancellationCount > 0);
+        client.Gate = null;
+        viewModel.ApplyUpdate("Sol", 1, null, [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        await viewModel.PendingLoad;
+
+        Assert.Equal("Beta", viewModel.PrimarySystem!.Name);
+        Assert.Equal("Alpha", viewModel.SecondarySystem!.Name);
+    }
+
+    /// <summary>Failed lookups show calm status without looping retries while open, and retry once reopened.</summary>
+    [Fact]
+    public async Task FailedLookupDoesNotSpinWhileOpenAndHidesRawExceptionText()
+    {
+        var client = new FakeSummaryClient { ThrowException = new HttpRequestException("429 Too Many Requests") };
+        var logs = new List<string>();
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client, logs.Add);
+        var status = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], status);
+        await viewModel.PendingLoad;
+
+        Assert.Equal("System data unavailable.", viewModel.DataStatus);
+        Assert.DoesNotContain("429", viewModel.DataStatus, StringComparison.Ordinal);
+        Assert.Single(logs);
+        int requestCount = client.Requests.Count;
+
+        viewModel.ApplyUpdate("Sol", 1, null, [], status);
+        viewModel.ApplyUpdate("Sol", 1, null, [], status);
+        Assert.Equal(requestCount, client.Requests.Count);
+
+        client.ThrowException = null;
+        viewModel.ApplyUpdate("Sol", 1, null, [], new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        viewModel.ApplyUpdate("Sol", 1, null, [], status);
+        await viewModel.PendingLoad;
+
+        Assert.Equal("Data from EDSM and Spansh", viewModel.DataStatus);
+        Assert.Equal("Alpha", viewModel.SecondarySystem!.Name);
+    }
+
+    /// <summary>Aggregates duplicate provider warnings across primary and secondary lookups into calm notices.</summary>
+    [Theory]
+    [InlineData(
+        new[]
+        {
+            "EDSM bodies data is temporarily rate-limited (HTTP 429).",
+            "EDSM traffic data is temporarily rate-limited (HTTP 429).",
+        },
+        new[]
+        {
+            "EDSM bodies data is unavailable: Response status code does not indicate success: 429 (Too Many Requests).",
+            "EDSM traffic data is unavailable: Response status code does not indicate success: 429 (Too Many Requests).",
+        },
+        "EDSM temporarily rate-limited."
+    )]
+    [InlineData(
+        new[] { "EDSM bodies data is temporarily rate-limited (HTTP 429)." },
+        new[] { "Spansh system dump data is temporarily rate-limited (HTTP 429)." },
+        "EDSM and Spansh temporarily rate-limited."
+    )]
+    [InlineData(
+        new[] { "Spansh system dump data is temporarily rate-limited (HTTP 429)." },
+        new string[0],
+        "Spansh temporarily rate-limited."
+    )]
+    [InlineData(
+        new[] { "EDSM bodies data is temporarily rate-limited (HTTP 429)." },
+        new[] { "Spansh system dump data is unavailable: 503 Service Unavailable" },
+        "EDSM temporarily rate-limited · Spansh data unavailable."
+    )]
+    [InlineData(
+        new[] { "EDSM traffic data is unavailable: timeout" },
+        new[] { "Spansh system dump data is temporarily rate-limited (HTTP 429)." },
+        "EDSM data unavailable · Spansh temporarily rate-limited."
+    )]
+    [InlineData(
+        new[] { "EDSM bodies data is unavailable: 502" },
+        new[] { "Spansh system dump data is unavailable: 503" },
+        "EDSM and Spansh data unavailable."
+    )]
+    [InlineData(new[] { "Unexpected provider failure" }, new string[0], "System data unavailable.")]
+    public async Task ProviderWarningsAggregateOncePerProviderWithoutRawExceptions(
+        string[] primaryWarnings,
+        string[] secondaryWarnings,
+        string expectedStatus
+    )
+    {
+        var client = new FakeSummaryClient
+        {
+            WarningsBySystem = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Beta"] = primaryWarnings,
+                ["Alpha"] = secondaryWarnings,
+            },
+        };
+        var logs = new List<string>();
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client, logs.Add);
+
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        await viewModel.PendingLoad;
+
+        Assert.Equal(expectedStatus, viewModel.DataStatus);
+        Assert.DoesNotContain("Response status code", viewModel.DataStatus, StringComparison.Ordinal);
+        Assert.Equal(primaryWarnings.Length + secondaryWarnings.Length, logs.Count);
+    }
+
+    /// <summary>Undiscovered next-hop systems show Undiscovered system with a clean footer and no errors.</summary>
+    [Fact]
+    public async Task UndiscoveredNextHopShowsUndiscoveredWithoutErrors()
+    {
+        var client = new FakeSummaryClient { UndiscoveredSystems = ["Alpha"] };
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client);
+
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        await viewModel.PendingLoad;
+
+        Assert.Equal("Undiscovered system", viewModel.SecondarySystem!.DiscoveryText);
+        Assert.Equal("Data from EDSM and Spansh", viewModel.DataStatus);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -246,7 +400,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
 
     private string SettingsPath => Path.Combine(temporaryDirectory, "ui-settings.json");
 
-    private GalaxyMapOverlayViewModel CreateViewModel(ISystemSummaryClient client)
+    private GalaxyMapOverlayViewModel CreateViewModel(ISystemSummaryClient client, Action<string>? log = null)
     {
         Directory.CreateDirectory(temporaryDirectory);
         return new GalaxyMapOverlayViewModel(
@@ -255,7 +409,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             new SystemNicknameViewModel(
                 SystemNicknameCatalog.Load(temporaryDirectory),
                 new SystemNicknameSettingsStore(SettingsPath)
-            )
+            ),
+            log
         );
     }
 
@@ -290,33 +445,78 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     {
         public List<(string Name, long Address)> Requests { get; } = [];
 
-        public Task<SystemSummaryLoadResult> GetAsync(
+        public Task? Gate { get; set; }
+
+        public Exception? ThrowException { get; set; }
+
+        public int CancellationCount { get; private set; }
+
+        public Dictionary<string, IReadOnlyList<string>> WarningsBySystem { get; init; } = [];
+
+        public HashSet<string> UndiscoveredSystems { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public async Task<SystemSummaryLoadResult> GetAsync(
             string systemName,
             long systemAddress,
             CancellationToken cancellationToken = default
         )
         {
             Requests.Add((systemName, systemAddress));
+            if (Gate is not null)
+            {
+                try
+                {
+                    await Gate.WaitAsync(cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    CancellationCount++;
+                    throw;
+                }
+            }
+
+            if (ThrowException is not null)
+            {
+                throw ThrowException;
+            }
+
+            bool isUndiscovered = UndiscoveredSystems.Contains(systemName);
             var summary = new SystemSummary(
                 systemName,
                 systemAddress,
                 null,
                 "K",
-                true,
-                4,
-                7,
-                "Pathfinder",
-                DateTimeOffset.Parse("2024-01-02T03:04:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
-                DateTimeOffset.Parse("2025-02-03T04:05:06Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                !isUndiscovered,
+                isUndiscovered ? 0 : 4,
+                isUndiscovered ? 0 : 7,
+                isUndiscovered ? null : "Pathfinder",
+                isUndiscovered
+                    ? null
+                    : DateTimeOffset.Parse(
+                        "2024-01-02T03:04:05Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
+                isUndiscovered
+                    ? null
+                    : DateTimeOffset.Parse(
+                        "2025-02-03T04:05:06Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                 null,
-                new SystemPoiSummary(7, systemName == "Beta" ? 2 : 0, 0, 0, 0, 0, 0),
+                new SystemPoiSummary(isUndiscovered ? 0 : 7, systemName == "Beta" ? 2 : 0, 0, 0, 0, 0, 0),
                 []
             )
             {
                 Factions =
                     systemName == "Beta" ? [new SystemFactionSummary("Pathfinder Cooperative", 0.62, "Boom")] : [],
             };
-            return Task.FromResult(new SystemSummaryLoadResult(summary, []));
+            IReadOnlyList<string> warnings = WarningsBySystem.TryGetValue(
+                systemName,
+                out IReadOnlyList<string>? configured
+            )
+                ? configured
+                : [];
+            return new SystemSummaryLoadResult(summary, warnings);
         }
     }
 }

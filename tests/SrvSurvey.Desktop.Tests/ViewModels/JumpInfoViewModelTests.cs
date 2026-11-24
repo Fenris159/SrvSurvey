@@ -265,6 +265,34 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.Equal(expected, viewModel.DataStatus);
     }
 
+    [Fact]
+    public async Task RateLimitedLookupWarningsCollapseToCalmProviderNotice()
+    {
+        using JumpInfoViewModel viewModel = CreateViewModel(
+            new FakeSummaryClient(CreateSummary())
+            {
+                Warnings =
+                [
+                    "EDSM bodies data is temporarily rate-limited (HTTP 429).",
+                    "EDSM traffic data is temporarily rate-limited (HTTP 429).",
+                ],
+            }
+        );
+        viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
+                "Sol",
+                1,
+                null,
+                null,
+                [FsdTarget("Beta", 3, "N")],
+                new EliteStatus { Flags = StatusFlags.InMainShip },
+                null
+            )
+        );
+        await viewModel.PendingSummaryLoad;
+        Assert.Equal("EDSM temporarily rate-limited.", viewModel.DataStatus);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

@@ -763,12 +763,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             GalaxyMap = new GalaxyMapOverlayViewModel(
                 sharedSystemSummaryClient,
                 new GalaxyMapSettingsStore(AppDataPaths.UiSettingsPath),
-                SystemNicknames
+                SystemNicknames,
+                log: message => resolvedApplicationLogService?.Append(message)
             );
             rollback.Add(GalaxyMap.Dispose);
             StationInfo = new StationInfoViewModel(
                 sharedSystemSummaryClient,
-                stationInfoSettingsStore ?? new StationInfoSettingsStore(AppDataPaths.UiSettingsPath)
+                stationInfoSettingsStore ?? new StationInfoSettingsStore(AppDataPaths.UiSettingsPath),
+                log: message => resolvedApplicationLogService?.Append(message)
             );
             rollback.Add(StationInfo.Dispose);
             construction.Checkpoint?.Invoke(MainWindowViewModelConstructionCheckpoint.TravelReady);

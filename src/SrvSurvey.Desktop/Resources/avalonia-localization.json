@@ -10093,6 +10093,22 @@
       "translation": "EDSM und Spansh Body Lookups warten auf eine aktive Elite-Sitzung und einen bestätigten Besuch im aktuellen System. Wenn neu entdeckte Körperdaten noch nicht indiziert sind, erlaubt SrvSurvey bis zu drei Wiederholungsversuche nach der ersten Suche und merkt sich das aktuelle Besuchsbudget über alle Anwendungsneustarts hinweg."
     },
     {
+      "source": "EDSM and Spansh data unavailable.",
+      "translation": "EDSM und Spansh Daten nicht verfügbar."
+    },
+    {
+      "source": "EDSM and Spansh temporarily rate-limited.",
+      "translation": "EDSM und Spansh vorübergehend ratenbegrenzt."
+    },
+    {
+      "source": "EDSM data unavailable · Spansh temporarily rate-limited.",
+      "translation": "EDSM Daten nicht verfügbar · Spansh vorübergehend ratenbegrenzt."
+    },
+    {
+      "source": "EDSM data unavailable.",
+      "translation": "EDSM Daten nicht verfügbar."
+    },
+    {
       "source": "EDSM processing was isolated from journal tracking: {0}",
       "translation": "EDSM Die Verarbeitung wurde von der Journalverfolgung isoliert: {0}"
     },
@@ -10115,6 +10131,14 @@
     {
       "source": "EDSM synchronization was enabled for {0}.",
       "translation": "EDSM Die Synchronisierung wurde für {0} aktiviert."
+    },
+    {
+      "source": "EDSM temporarily rate-limited · Spansh data unavailable.",
+      "translation": "EDSM vorübergehend ratenbegrenzt · Spansh Daten nicht verfügbar."
+    },
+    {
+      "source": "EDSM temporarily rate-limited.",
+      "translation": "EDSM vorübergehend ratenbegrenzt."
     },
     {
       "source": "ELW",
@@ -13045,16 +13069,16 @@
       "translation": "Galaxy Map Boxel-Anleitung"
     },
     {
-      "source": "Galaxy Map data is unavailable: {0}",
-      "translation": "Galaxy Map-Daten sind nicht verfügbar: {0}"
-    },
-    {
       "source": "Galaxy Map data ready",
       "translation": "Galaxienkartendaten bereit"
     },
     {
       "source": "Galaxy Map intelligence",
       "translation": "Informationen zur Galaxy Map"
+    },
+    {
+      "source": "Galaxy Map lookup for {0} ({1}): {2}",
+      "translation": "Galaxy Map-Suche für {0} ({1}): {2}"
     },
     {
       "source": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -29845,6 +29869,10 @@
       "translation": "Spansh konnte das System „{0}“ nicht auflösen."
     },
     {
+      "source": "Spansh data unavailable.",
+      "translation": "Spansh Daten nicht verfügbar."
+    },
+    {
       "source": "Spansh data updated just now",
       "translation": "Spansh Daten gerade aktualisiert"
     },
@@ -29887,6 +29915,10 @@
     {
       "source": "Spansh search cancelled.",
       "translation": "Spansh Suche abgebrochen."
+    },
+    {
+      "source": "Spansh temporarily rate-limited.",
+      "translation": "Spansh vorübergehend ratenbegrenzt."
     },
     {
       "source": "Spansh unavailable; showing built-in and commander observations.",
@@ -30785,16 +30817,20 @@
       "translation": "Stations- und Datenfilter"
     },
     {
+      "source": "Station data unavailable.",
+      "translation": "Stationsdaten nicht verfügbar."
+    },
+    {
       "source": "Station information",
       "translation": "Informationen zum Bahnhof"
     },
     {
-      "source": "Station information is unavailable: {0}",
-      "translation": "Stationsinformationen sind nicht verfügbar: {0}"
-    },
-    {
       "source": "Station information settings could not be saved: {0}",
       "translation": "Die Einstellungen der Stationsinformationen konnten nicht gespeichert werden: {0}"
+    },
+    {
+      "source": "Station lookup for {0} ({1}): {2}",
+      "translation": "Stationssuche für {0} ({1}): {2}"
     },
     {
       "source": "Station types",
@@ -35183,6 +35219,10 @@
     {
       "source": "Tons / active hour",
       "translation": "Tonnen / aktive Stunde"
+    },
+    {
+      "source": "Too Many Requests",
+      "translation": "Zu viele Anfragen"
     },
     {
       "source": "Too steep",
@@ -40725,6 +40765,10 @@
       "translation": "Reichweite"
     },
     {
+      "source": "rate-limited",
+      "translation": "satzbegrenzt"
+    },
+    {
       "source": "rating",
       "translation": "Bewertung"
     },
@@ -42227,10 +42271,6 @@
     {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} konnte nicht geöffnet werden: {1}"
-    },
-    {
-      "source": "{0} data unavailable.",
-      "translation": "{0}-Daten nicht verfügbar."
     },
     {
       "source": "{0} destination: {1} · Mining: {2}",
@@ -53371,6 +53411,22 @@
       "translation": "Las búsquedas de cuerpos EDSM y Spansh esperan una sesión Elite activa y una visita confirmada al sistema actual. Si los datos corporales recién descubiertos aún no están indexados, SrvSurvey permite hasta tres reintentos después de la búsqueda inicial y recuerda el presupuesto de la visita actual cuando se reinicia la aplicación."
     },
     {
+      "source": "EDSM and Spansh data unavailable.",
+      "translation": "Datos EDSM y Spansh no disponibles."
+    },
+    {
+      "source": "EDSM and Spansh temporarily rate-limited.",
+      "translation": "EDSM y Spansh con tarifa limitada temporalmente."
+    },
+    {
+      "source": "EDSM data unavailable · Spansh temporarily rate-limited.",
+      "translation": "EDSM datos no disponibles · Spansh tarifa limitada temporalmente."
+    },
+    {
+      "source": "EDSM data unavailable.",
+      "translation": "EDSM datos no disponibles."
+    },
+    {
       "source": "EDSM processing was isolated from journal tracking: {0}",
       "translation": "EDSM el procesamiento se aisló del seguimiento del diario: {0}"
     },
@@ -53393,6 +53449,14 @@
     {
       "source": "EDSM synchronization was enabled for {0}.",
       "translation": "EDSM se habilitó la sincronización para {0}."
+    },
+    {
+      "source": "EDSM temporarily rate-limited · Spansh data unavailable.",
+      "translation": "EDSM tarifa limitada temporalmente · Spansh datos no disponibles."
+    },
+    {
+      "source": "EDSM temporarily rate-limited.",
+      "translation": "EDSM tarifa limitada temporalmente."
     },
     {
       "source": "ELW",
@@ -56323,16 +56387,16 @@
       "translation": "Guía del cuadro de Galaxy Map"
     },
     {
-      "source": "Galaxy Map data is unavailable: {0}",
-      "translation": "Los datos del mapa Galaxy no están disponibles: {0}"
-    },
-    {
       "source": "Galaxy Map data ready",
       "translation": "Datos del mapa Galaxy listos"
     },
     {
       "source": "Galaxy Map intelligence",
       "translation": "Inteligencia del mapa galáctico"
+    },
+    {
+      "source": "Galaxy Map lookup for {0} ({1}): {2}",
+      "translation": "Búsqueda de mapas de galaxias para {0} ({1}): {2}"
     },
     {
       "source": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -73123,6 +73187,10 @@
       "translation": "Spansh no pudo resolver el sistema '{0}'."
     },
     {
+      "source": "Spansh data unavailable.",
+      "translation": "Spansh datos no disponibles."
+    },
+    {
       "source": "Spansh data updated just now",
       "translation": "Spansh datos actualizados hace un momento"
     },
@@ -73165,6 +73233,10 @@
     {
       "source": "Spansh search cancelled.",
       "translation": "Spansh búsqueda cancelada."
+    },
+    {
+      "source": "Spansh temporarily rate-limited.",
+      "translation": "Spansh tarifa limitada temporalmente."
     },
     {
       "source": "Spansh unavailable; showing built-in and commander observations.",
@@ -74063,16 +74135,20 @@
       "translation": "Filtros de estaciones y datos."
     },
     {
+      "source": "Station data unavailable.",
+      "translation": "Datos de la estación no disponibles."
+    },
+    {
       "source": "Station information",
       "translation": "Información de la estación"
     },
     {
-      "source": "Station information is unavailable: {0}",
-      "translation": "La información de la estación no está disponible: {0}"
-    },
-    {
       "source": "Station information settings could not be saved: {0}",
       "translation": "No se pudo guardar la configuración de información de la estación: {0}"
+    },
+    {
+      "source": "Station lookup for {0} ({1}): {2}",
+      "translation": "Búsqueda de estaciones para {0} ({1}): {2}"
     },
     {
       "source": "Station types",
@@ -78461,6 +78537,10 @@
     {
       "source": "Tons / active hour",
       "translation": "Toneladas/hora activa"
+    },
+    {
+      "source": "Too Many Requests",
+      "translation": "Demasiadas solicitudes"
     },
     {
       "source": "Too steep",
@@ -84003,6 +84083,10 @@
       "translation": "rango"
     },
     {
+      "source": "rate-limited",
+      "translation": "tasa limitada"
+    },
+    {
       "source": "rating",
       "translation": "calificación"
     },
@@ -85505,10 +85589,6 @@
     {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} no se pudo abrir: {1}"
-    },
-    {
-      "source": "{0} data unavailable.",
-      "translation": "Datos {0} no disponibles."
     },
     {
       "source": "{0} destination: {1} · Mining: {2}",
@@ -96649,6 +96729,22 @@
       "translation": "Les recherches de corps EDSM et Spansh attendent une session Elite active et une visite confirmée du système actuel. Si les données corporelles nouvellement découvertes ne sont pas encore indexées, SrvSurvey autorise jusqu'à trois tentatives après la recherche initiale et mémorise le budget de visite en cours lors des redémarrages de l'application."
     },
     {
+      "source": "EDSM and Spansh data unavailable.",
+      "translation": "Données EDSM et Spansh indisponibles."
+    },
+    {
+      "source": "EDSM and Spansh temporarily rate-limited.",
+      "translation": "EDSM et Spansh temporairement limités en débit."
+    },
+    {
+      "source": "EDSM data unavailable · Spansh temporarily rate-limited.",
+      "translation": "EDSM données indisponibles · Spansh temporairement limité en débit."
+    },
+    {
+      "source": "EDSM data unavailable.",
+      "translation": "EDSM données indisponibles."
+    },
+    {
       "source": "EDSM processing was isolated from journal tracking: {0}",
       "translation": "Le traitement EDSM a été isolé du suivi des pièces : {0}"
     },
@@ -96671,6 +96767,14 @@
     {
       "source": "EDSM synchronization was enabled for {0}.",
       "translation": "La synchronisation EDSM a été activée pour {0}."
+    },
+    {
+      "source": "EDSM temporarily rate-limited · Spansh data unavailable.",
+      "translation": "EDSM temporairement limité en débit · Spansh données indisponibles."
+    },
+    {
+      "source": "EDSM temporarily rate-limited.",
+      "translation": "EDSM temporairement limité en débit."
     },
     {
       "source": "ELW",
@@ -99601,16 +99705,16 @@
       "translation": "Guidage de la boîte Galaxy Map"
     },
     {
-      "source": "Galaxy Map data is unavailable: {0}",
-      "translation": "Les données Galaxy Map ne sont pas disponibles : {0}"
-    },
-    {
       "source": "Galaxy Map data ready",
       "translation": "Données Galaxy Map prêtes"
     },
     {
       "source": "Galaxy Map intelligence",
       "translation": "Intelligence de la carte de la galaxie"
+    },
+    {
+      "source": "Galaxy Map lookup for {0} ({1}): {2}",
+      "translation": "Recherche de carte de galaxie pour {0} ({1}) : {2}"
     },
     {
       "source": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -116401,6 +116505,10 @@
       "translation": "Spansh n'a pas pu résoudre le système « {0} »."
     },
     {
+      "source": "Spansh data unavailable.",
+      "translation": "Spansh données indisponibles."
+    },
+    {
       "source": "Spansh data updated just now",
       "translation": "Spansh données mises à jour tout à l'heure"
     },
@@ -116443,6 +116551,10 @@
     {
       "source": "Spansh search cancelled.",
       "translation": "Spansh recherche annulée."
+    },
+    {
+      "source": "Spansh temporarily rate-limited.",
+      "translation": "Spansh temporairement limité en débit."
     },
     {
       "source": "Spansh unavailable; showing built-in and commander observations.",
@@ -117341,16 +117453,20 @@
       "translation": "Filtres de stations et de données"
     },
     {
+      "source": "Station data unavailable.",
+      "translation": "Données de la station indisponibles."
+    },
+    {
       "source": "Station information",
       "translation": "Informations sur la gare"
     },
     {
-      "source": "Station information is unavailable: {0}",
-      "translation": "Les informations sur la station ne sont pas disponibles : {0}"
-    },
-    {
       "source": "Station information settings could not be saved: {0}",
       "translation": "Les paramètres des informations sur la station n'ont pas pu être enregistrés : {0}"
+    },
+    {
+      "source": "Station lookup for {0} ({1}): {2}",
+      "translation": "Recherche de station pour {0} ({1}) : {2}"
     },
     {
       "source": "Station types",
@@ -121739,6 +121855,10 @@
     {
       "source": "Tons / active hour",
       "translation": "Tonnes / heure active"
+    },
+    {
+      "source": "Too Many Requests",
+      "translation": "Trop de demandes"
     },
     {
       "source": "Too steep",
@@ -127281,6 +127401,10 @@
       "translation": "gamme"
     },
     {
+      "source": "rate-limited",
+      "translation": "à taux limité"
+    },
+    {
       "source": "rating",
       "translation": "note"
     },
@@ -128783,10 +128907,6 @@
     {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} n'a pas pu être ouvert : {1}"
-    },
-    {
-      "source": "{0} data unavailable.",
-      "translation": "Données {0} indisponibles."
     },
     {
       "source": "{0} destination: {1} · Mining: {2}",
@@ -139927,6 +140047,22 @@
       "translation": "As pesquisas de corpo EDSM e Spansh aguardam uma sessão Elite ativa e uma visita confirmada ao sistema atual. Se os dados corporais recém-descobertos ainda não estiverem indexados, SrvSurvey permitirá até três novas tentativas após a pesquisa inicial e lembrará o orçamento da visita atual nas reinicializações do aplicativo."
     },
     {
+      "source": "EDSM and Spansh data unavailable.",
+      "translation": "Dados EDSM e Spansh indisponíveis."
+    },
+    {
+      "source": "EDSM and Spansh temporarily rate-limited.",
+      "translation": "EDSM e Spansh com taxa temporariamente limitada."
+    },
+    {
+      "source": "EDSM data unavailable · Spansh temporarily rate-limited.",
+      "translation": "EDSM dados indisponíveis · Spansh com taxa temporariamente limitada."
+    },
+    {
+      "source": "EDSM data unavailable.",
+      "translation": "EDSM dados indisponíveis."
+    },
+    {
       "source": "EDSM processing was isolated from journal tracking: {0}",
       "translation": "EDSM o processamento foi isolado do rastreamento do diário: {0}"
     },
@@ -139949,6 +140085,14 @@
     {
       "source": "EDSM synchronization was enabled for {0}.",
       "translation": "EDSM a sincronização foi habilitada para {0}."
+    },
+    {
+      "source": "EDSM temporarily rate-limited · Spansh data unavailable.",
+      "translation": "EDSM temporariamente com taxa limitada · Spansh dados indisponíveis."
+    },
+    {
+      "source": "EDSM temporarily rate-limited.",
+      "translation": "EDSM temporariamente com taxa limitada."
     },
     {
       "source": "ELW",
@@ -142879,16 +143023,16 @@
       "translation": "Orientação boxel do Galaxy Map"
     },
     {
-      "source": "Galaxy Map data is unavailable: {0}",
-      "translation": "Os dados do Galaxy Map não estão disponíveis: {0}"
-    },
-    {
       "source": "Galaxy Map data ready",
       "translation": "Dados do Galaxy Map prontos"
     },
     {
       "source": "Galaxy Map intelligence",
       "translation": "Inteligência do Mapa da Galáxia"
+    },
+    {
+      "source": "Galaxy Map lookup for {0} ({1}): {2}",
+      "translation": "Pesquisa do Galaxy Map para {0} ({1}): {2}"
     },
     {
       "source": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -159679,6 +159823,10 @@
       "translation": "Spansh não pôde resolver o sistema '{0}'."
     },
     {
+      "source": "Spansh data unavailable.",
+      "translation": "Spansh dados indisponíveis."
+    },
+    {
       "source": "Spansh data updated just now",
       "translation": "Spansh dados atualizados agora há pouco"
     },
@@ -159721,6 +159869,10 @@
     {
       "source": "Spansh search cancelled.",
       "translation": "Spansh pesquisa cancelada."
+    },
+    {
+      "source": "Spansh temporarily rate-limited.",
+      "translation": "Spansh temporariamente com taxa limitada."
     },
     {
       "source": "Spansh unavailable; showing built-in and commander observations.",
@@ -160619,16 +160771,20 @@
       "translation": "Filtros de estações e dados"
     },
     {
+      "source": "Station data unavailable.",
+      "translation": "Dados da estação indisponíveis."
+    },
+    {
       "source": "Station information",
       "translation": "Informações da estação"
     },
     {
-      "source": "Station information is unavailable: {0}",
-      "translation": "As informações da estação não estão disponíveis: {0}"
-    },
-    {
       "source": "Station information settings could not be saved: {0}",
       "translation": "As configurações de informações da estação não puderam ser salvas: {0}"
+    },
+    {
+      "source": "Station lookup for {0} ({1}): {2}",
+      "translation": "Pesquisa de estação para {0} ({1}): {2}"
     },
     {
       "source": "Station types",
@@ -165017,6 +165173,10 @@
     {
       "source": "Tons / active hour",
       "translation": "Toneladas/hora ativa"
+    },
+    {
+      "source": "Too Many Requests",
+      "translation": "Muitas solicitações"
     },
     {
       "source": "Too steep",
@@ -170559,6 +170719,10 @@
       "translation": "faixa"
     },
     {
+      "source": "rate-limited",
+      "translation": "taxa limitada"
+    },
+    {
       "source": "rating",
       "translation": "classificação"
     },
@@ -172061,10 +172225,6 @@
     {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} não pôde ser aberto: {1}"
-    },
-    {
-      "source": "{0} data unavailable.",
-      "translation": "Dados {0} indisponíveis."
     },
     {
       "source": "{0} destination: {1} · Mining: {2}",
@@ -183205,6 +183365,22 @@
       "translation": "Поиск тела EDSM и Spansh ожидает активного сеанса Elite и подтвержденного посещения текущей системы. Если вновь обнаруженные данные тела еще не проиндексированы, SrvSurvey допускает до трех повторных попыток после первоначального поиска и запоминает текущий бюджет посещений при перезапуске приложения."
     },
     {
+      "source": "EDSM and Spansh data unavailable.",
+      "translation": "Данные EDSM и Spansh недоступны."
+    },
+    {
+      "source": "EDSM and Spansh temporarily rate-limited.",
+      "translation": "EDSM и Spansh временно ограничены по скорости."
+    },
+    {
+      "source": "EDSM data unavailable · Spansh temporarily rate-limited.",
+      "translation": "EDSM данные недоступны · Spansh временно ограничена скорость."
+    },
+    {
+      "source": "EDSM data unavailable.",
+      "translation": "EDSM данные недоступны."
+    },
+    {
       "source": "EDSM processing was isolated from journal tracking: {0}",
       "translation": "EDSM обработка была изолирована от отслеживания журнала: {0}"
     },
@@ -183227,6 +183403,14 @@
     {
       "source": "EDSM synchronization was enabled for {0}.",
       "translation": "EDSM синхронизация была включена для {0}."
+    },
+    {
+      "source": "EDSM temporarily rate-limited · Spansh data unavailable.",
+      "translation": "EDSM временно ограничена скорость · Spansh данные недоступны."
+    },
+    {
+      "source": "EDSM temporarily rate-limited.",
+      "translation": "EDSM временно ограничена скорость."
     },
     {
       "source": "ELW",
@@ -186157,16 +186341,16 @@
       "translation": "Руководство по боксу «Карта Галактики»"
     },
     {
-      "source": "Galaxy Map data is unavailable: {0}",
-      "translation": "Данные карты Галактики недоступны: {0}"
-    },
-    {
       "source": "Galaxy Map data ready",
       "translation": "Данные карты Галактики готовы"
     },
     {
       "source": "Galaxy Map intelligence",
       "translation": "Разведка карты галактики"
+    },
+    {
+      "source": "Galaxy Map lookup for {0} ({1}): {2}",
+      "translation": "Поиск на карте Галактики для {0} ({1}): {2}"
     },
     {
       "source": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -202957,6 +203141,10 @@
       "translation": "Spansh не удалось разрешить систему «{0}»."
     },
     {
+      "source": "Spansh data unavailable.",
+      "translation": "Spansh данные недоступны."
+    },
+    {
       "source": "Spansh data updated just now",
       "translation": "Spansh данные обновлены только что"
     },
@@ -202999,6 +203187,10 @@
     {
       "source": "Spansh search cancelled.",
       "translation": "Spansh поиск отменен."
+    },
+    {
+      "source": "Spansh temporarily rate-limited.",
+      "translation": "Spansh временно ограничена скорость."
     },
     {
       "source": "Spansh unavailable; showing built-in and commander observations.",
@@ -203897,16 +204089,20 @@
       "translation": "Фильтры станций и данных"
     },
     {
+      "source": "Station data unavailable.",
+      "translation": "Данные о станции недоступны."
+    },
+    {
       "source": "Station information",
       "translation": "Информация о станции"
     },
     {
-      "source": "Station information is unavailable: {0}",
-      "translation": "Информация о станции недоступна: {0}"
-    },
-    {
       "source": "Station information settings could not be saved: {0}",
       "translation": "Не удалось сохранить настройки информации о станции: {0}"
+    },
+    {
+      "source": "Station lookup for {0} ({1}): {2}",
+      "translation": "Поиск станции для {0} ({1}): {2}"
     },
     {
       "source": "Station types",
@@ -208295,6 +208491,10 @@
     {
       "source": "Tons / active hour",
       "translation": "Тонн/активный час"
+    },
+    {
+      "source": "Too Many Requests",
+      "translation": "Слишком много запросов"
     },
     {
       "source": "Too steep",
@@ -213837,6 +214037,10 @@
       "translation": "диапазон"
     },
     {
+      "source": "rate-limited",
+      "translation": "ограниченный по скорости"
+    },
+    {
       "source": "rating",
       "translation": "рейтинг"
     },
@@ -215339,10 +215543,6 @@
     {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} не удалось открыть: {1}"
-    },
-    {
-      "source": "{0} data unavailable.",
-      "translation": "Данные {0} недоступны."
     },
     {
       "source": "{0} destination: {1} · Mining: {2}",
@@ -226483,6 +226683,22 @@
       "translation": "EDSM 和 Spansh 正文查找等待活动的 Elite 会话和对当前系统的确认访问。如果新发现的身体数据尚未建立索引，SrvSurvey 允许在初始查找后最多重试 3 次，并在应用程序重新启动时记住当前访问预算。"
     },
     {
+      "source": "EDSM and Spansh data unavailable.",
+      "translation": "EDSM 和 Spansh 数据不可用。"
+    },
+    {
+      "source": "EDSM and Spansh temporarily rate-limited.",
+      "translation": "EDSM 和 Spansh 暂时受到速率限制。"
+    },
+    {
+      "source": "EDSM data unavailable · Spansh temporarily rate-limited.",
+      "translation": "EDSM 数据不可用 · Spansh 暂时受到速率限制。"
+    },
+    {
+      "source": "EDSM data unavailable.",
+      "translation": "EDSM 数据不可用。"
+    },
+    {
       "source": "EDSM processing was isolated from journal tracking: {0}",
       "translation": "EDSM 处理与日志跟踪隔离：{0}"
     },
@@ -226505,6 +226721,14 @@
     {
       "source": "EDSM synchronization was enabled for {0}.",
       "translation": "EDSM 已为 {0} 启用同步。"
+    },
+    {
+      "source": "EDSM temporarily rate-limited · Spansh data unavailable.",
+      "translation": "EDSM 暂时受到速率限制 · Spansh 数据不可用。"
+    },
+    {
+      "source": "EDSM temporarily rate-limited.",
+      "translation": "EDSM暂时限速。"
     },
     {
       "source": "ELW",
@@ -229435,16 +229659,16 @@
       "translation": "银河地图盒式指导"
     },
     {
-      "source": "Galaxy Map data is unavailable: {0}",
-      "translation": "银河地图数据不可用：{0}"
-    },
-    {
       "source": "Galaxy Map data ready",
       "translation": "银河地图数据准备就绪"
     },
     {
       "source": "Galaxy Map intelligence",
       "translation": "银河地图智能"
+    },
+    {
+      "source": "Galaxy Map lookup for {0} ({1}): {2}",
+      "translation": "{0} ({1}) 的银河地图查找：{2}"
     },
     {
       "source": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -246235,6 +246459,10 @@
       "translation": "Spansh 无法解析系统“{0}”。"
     },
     {
+      "source": "Spansh data unavailable.",
+      "translation": "Spansh 数据不可用。"
+    },
+    {
       "source": "Spansh data updated just now",
       "translation": "Spansh 数据刚刚更新"
     },
@@ -246277,6 +246505,10 @@
     {
       "source": "Spansh search cancelled.",
       "translation": "Spansh 搜索已取消。"
+    },
+    {
+      "source": "Spansh temporarily rate-limited.",
+      "translation": "Spansh暂时限速。"
     },
     {
       "source": "Spansh unavailable; showing built-in and commander observations.",
@@ -247175,16 +247407,20 @@
       "translation": "站和数据过滤器"
     },
     {
+      "source": "Station data unavailable.",
+      "translation": "站数据不可用。"
+    },
+    {
       "source": "Station information",
       "translation": "车站信息"
     },
     {
-      "source": "Station information is unavailable: {0}",
-      "translation": "电台信息不可用：{0}"
-    },
-    {
       "source": "Station information settings could not be saved: {0}",
       "translation": "无法保存电台信息设置：{0}"
+    },
+    {
+      "source": "Station lookup for {0} ({1}): {2}",
+      "translation": "{0} ({1}) 的电台查找：{2}"
     },
     {
       "source": "Station types",
@@ -251573,6 +251809,10 @@
     {
       "source": "Tons / active hour",
       "translation": "吨/活跃小时"
+    },
+    {
+      "source": "Too Many Requests",
+      "translation": "请求过多"
     },
     {
       "source": "Too steep",
@@ -257115,6 +257355,10 @@
       "translation": "范围"
     },
     {
+      "source": "rate-limited",
+      "translation": "限速"
+    },
+    {
       "source": "rating",
       "translation": "评级"
     },
@@ -258617,10 +258861,6 @@
     {
       "source": "{0} could not be opened: {1}",
       "translation": "{0} 无法打开：{1}"
-    },
-    {
-      "source": "{0} data unavailable.",
-      "translation": "{0} 数据不可用。"
     },
     {
       "source": "{0} destination: {1} · Mining: {2}",
@@ -269761,6 +270001,22 @@
       "translation": "* EDSM AND SPANSH BODY LOOKUPS WAIT FOR AN ACTIVE ELITE SESSION AND A CONFIRMED VISIT TO THE CURRENT SYSTEM. IF NEWLY DISCOVERED BODY DATA IS NOT INDEXED YET, SRVSURVEY ALLOWS UP TO THREE RETRIES AFTER THE INITIAL LOOKUP AND REMEMBERS THE CURRENT-VISIT BUDGET ACROSS APPLICATION RESTARTS. >>>!"
     },
     {
+      "source": "EDSM and Spansh data unavailable.",
+      "translation": "* EDSM AND SPANSH DATA UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "EDSM and Spansh temporarily rate-limited.",
+      "translation": "* EDSM AND SPANSH TEMPORARILY RATE-LIMITED. >>>!"
+    },
+    {
+      "source": "EDSM data unavailable · Spansh temporarily rate-limited.",
+      "translation": "* EDSM DATA UNAVAILABLE · SPANSH TEMPORARILY RATE-LIMITED. >>>!"
+    },
+    {
+      "source": "EDSM data unavailable.",
+      "translation": "* EDSM DATA UNAVAILABLE. >>>!"
+    },
+    {
       "source": "EDSM processing was isolated from journal tracking: {0}",
       "translation": "* EDSM PROCESSING WAS ISOLATED FROM JOURNAL TRACKING: {0} >>>!"
     },
@@ -269783,6 +270039,14 @@
     {
       "source": "EDSM synchronization was enabled for {0}.",
       "translation": "* EDSM SYNCHRONIZATION WAS ENABLED FOR {0}. >>>!"
+    },
+    {
+      "source": "EDSM temporarily rate-limited · Spansh data unavailable.",
+      "translation": "* EDSM TEMPORARILY RATE-LIMITED · SPANSH DATA UNAVAILABLE. >>>!"
+    },
+    {
+      "source": "EDSM temporarily rate-limited.",
+      "translation": "* EDSM TEMPORARILY RATE-LIMITED. >>>!"
     },
     {
       "source": "ELW",
@@ -272713,16 +272977,16 @@
       "translation": "* GALAXY MAP BOXEL GUIDANCE >>>!"
     },
     {
-      "source": "Galaxy Map data is unavailable: {0}",
-      "translation": "* GALAXY MAP DATA IS UNAVAILABLE: {0} >>>!"
-    },
-    {
       "source": "Galaxy Map data ready",
       "translation": "* GALAXY MAP DATA READY >>>!"
     },
     {
       "source": "Galaxy Map intelligence",
       "translation": "* GALAXY MAP INTELLIGENCE >>>!"
+    },
+    {
+      "source": "Galaxy Map lookup for {0} ({1}): {2}",
+      "translation": "* GALAXY MAP LOOKUP FOR {0} ({1}): {2} >>>!"
     },
     {
       "source": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -289513,6 +289777,10 @@
       "translation": "* SPANSH COULD NOT RESOLVE SYSTEM '{0}'. >>>!"
     },
     {
+      "source": "Spansh data unavailable.",
+      "translation": "* SPANSH DATA UNAVAILABLE. >>>!"
+    },
+    {
       "source": "Spansh data updated just now",
       "translation": "* SPANSH DATA UPDATED JUST NOW >>>!"
     },
@@ -289555,6 +289823,10 @@
     {
       "source": "Spansh search cancelled.",
       "translation": "* SPANSH SEARCH CANCELLED. >>>!"
+    },
+    {
+      "source": "Spansh temporarily rate-limited.",
+      "translation": "* SPANSH TEMPORARILY RATE-LIMITED. >>>!"
     },
     {
       "source": "Spansh unavailable; showing built-in and commander observations.",
@@ -290453,16 +290725,20 @@
       "translation": "* STATION AND DATA FILTERS >>>!"
     },
     {
+      "source": "Station data unavailable.",
+      "translation": "* STATION DATA UNAVAILABLE. >>>!"
+    },
+    {
       "source": "Station information",
       "translation": "* STATION INFORMATION >>>!"
     },
     {
-      "source": "Station information is unavailable: {0}",
-      "translation": "* STATION INFORMATION IS UNAVAILABLE: {0} >>>!"
-    },
-    {
       "source": "Station information settings could not be saved: {0}",
       "translation": "* STATION INFORMATION SETTINGS COULD NOT BE SAVED: {0} >>>!"
+    },
+    {
+      "source": "Station lookup for {0} ({1}): {2}",
+      "translation": "* STATION LOOKUP FOR {0} ({1}): {2} >>>!"
     },
     {
       "source": "Station types",
@@ -294851,6 +295127,10 @@
     {
       "source": "Tons / active hour",
       "translation": "* TONS / ACTIVE HOUR >>>!"
+    },
+    {
+      "source": "Too Many Requests",
+      "translation": "* TOO MANY REQUESTS >>>!"
     },
     {
       "source": "Too steep",
@@ -300393,6 +300673,10 @@
       "translation": "* RANGE >>>!"
     },
     {
+      "source": "rate-limited",
+      "translation": "* RATE-LIMITED >>>!"
+    },
+    {
       "source": "rating",
       "translation": "* RATING >>>!"
     },
@@ -301895,10 +302179,6 @@
     {
       "source": "{0} could not be opened: {1}",
       "translation": "* {0} COULD NOT BE OPENED: {1} >>>!"
-    },
-    {
-      "source": "{0} data unavailable.",
-      "translation": "* {0} DATA UNAVAILABLE. >>>!"
     },
     {
       "source": "{0} destination: {1} · Mining: {2}",
