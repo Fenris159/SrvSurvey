@@ -11221,8 +11221,8 @@
       "translation": "Experimentelle Linux-Route OpenXR ohne SteamVR. Verwendet Monados nativen Compositor XR_EXTX_overlay mit Headless Vulkan. Unterstützt die Controller-Zeiger-Interaktion über die Toggle VR-Overlay-Interaktion."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
-      "translation": "Experimentelle Linux-Route OpenXR ohne SteamVR. Verwendet WiVRns nativen Compositor XR_EXTX_overlay mit Headless Vulkan, sodass Elite Dangerous WiVRn (mit xrizer oder OpenComposite) ohne OpenVR Overlay-Abstürze ausführen kann. Unterstützt die Controller-Zeiger-Interaktion über die Toggle VR-Overlay-Interaktion."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Experimentelle Linux-Route OpenXR ohne SteamVR. Verwendet WiVRns nativen Compositor XR_EXTX_overlay mit Headless Vulkan, sodass Elite Dangerous WiVRn (mit xrizer oder OpenComposite) ohne OpenVR Overlay-Abstürze ausführen kann. SrvSurvey wartet, bis Elite Dangerous ausgeführt wird, bevor es eine Verbindung zu WiVRn herstellt, damit die WiVRn-Lobby nutzbar bleibt und die Controller-Zeiger-Interaktion über die Interaktion „VR-Overlay umschalten“ unterstützt."
     },
     {
       "source": "Experimental rig bar detection",
@@ -36345,6 +36345,10 @@
       "translation": "Verwenden Sie „Gemessenen Punkt hinzufügen“ nur, wenn die ausgewählte Vermessung der aktive Standort ist und gültige Oberflächenposition, Körperradius, Standortrichtung und Commander-Position übereinstimmen."
     },
     {
+      "source": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Verwenden Sie „Overlays anpassen“, „VR-Ausrichtung zurücksetzen“ oder „VR-Overlay-Interaktion umschalten“, um Panels in Ihrem Cockpit zu platzieren und anzuklicken."
+    },
+    {
       "source": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
       "translation": "Verwenden Sie „Alle Boxel prüfen“, wenn Sie jeden Zweig anhand des lokalen Verlaufs und Spansh und nicht nur des aktuellen Boxels aktualisieren möchten. Große Audits erfordern eine explizite Bestätigung, da mehr als 1.000 Anfragen gestellt werden können."
     },
@@ -37247,6 +37251,14 @@
     {
       "source": "Waiting for Commander Codex journal entries.",
       "translation": "Warten auf Commander-Codex-Tagebucheinträge."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+      "translation": "Warten auf den Start von Elite Dangerous. SrvSurvey wird an Monado angeschlossen, sobald das Spiel läuft."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.",
+      "translation": "Warten auf den Start von Elite Dangerous. SrvSurvey wird an WiVRn angeschlossen, sobald das Spiel läuft, sodass die WiVRn-Lobby weiterhin nutzbar bleibt."
     },
     {
       "source": "Waiting for Elite Dangerous.",
@@ -41847,6 +41859,22 @@
     {
       "source": "windows",
       "translation": "Fenster"
+    },
+    {
+      "source": "wine",
+      "translation": "Wein"
+    },
+    {
+      "source": "wine-preloader",
+      "translation": "Weinvorlader"
+    },
+    {
+      "source": "wine64",
+      "translation": "Wein64"
+    },
+    {
+      "source": "wine64-preloader",
+      "translation": "wine64-Preloader"
     },
     {
       "source": "with unknown time",
@@ -54539,8 +54567,8 @@
       "translation": "Ruta experimental de Linux OpenXR sin SteamVR. Utiliza el compositor nativo de Monado XR_EXTX_overlay con Vulkan sin cabeza. Admite la interacción controlador-puntero a través de la interacción de superposición Toggle VR."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
-      "translation": "Ruta experimental de Linux OpenXR sin SteamVR. Utiliza el compositor nativo de WiVRn XR_EXTX_overlay con Vulkan sin cabeza para que Elite Dangerous pueda ejecutarse a través de WiVRn (con xrizer o OpenComposite) sin fallas de superposición OpenVR. Admite la interacción controlador-puntero a través de la interacción de superposición Toggle VR."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Ruta experimental de Linux OpenXR sin SteamVR. Utiliza el compositor nativo de WiVRn XR_EXTX_overlay con Vulkan sin cabeza para que Elite Dangerous pueda ejecutarse a través de WiVRn (con xrizer o OpenComposite) sin fallas de superposición OpenVR. SrvSurvey espera hasta que Elite Dangerous se esté ejecutando antes de conectarse a WiVRn para que el lobby de WiVRn siga siendo utilizable y admita la interacción controlador-puntero a través de la interacción de superposición Toggle VR."
     },
     {
       "source": "Experimental rig bar detection",
@@ -79663,6 +79691,10 @@
       "translation": "Utilice Agregar punto medido solo mientras el levantamiento seleccionado sea el sitio activo y la posición válida de la superficie, el radio del cuerpo, el rumbo del sitio y la posición del comandante coincidan."
     },
     {
+      "source": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Utilice Ajustar superposiciones, Restablecer orientación de realidad virtual o Alternar interacción de superposición de realidad virtual para colocar y hacer clic en paneles en su cabina."
+    },
+    {
       "source": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
       "translation": "Utilice Auditar todos los cuadros cuando necesite actualizar todas las sucursales con el historial local y Spansh en lugar de solo el cuadro actual. Las auditorías grandes requieren una confirmación explícita porque pueden realizar más de 1000 solicitudes."
     },
@@ -80565,6 +80597,14 @@
     {
       "source": "Waiting for Commander Codex journal entries.",
       "translation": "Esperando las entradas del diario del Commander Codex."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+      "translation": "Esperando a que se inicie Elite Dangerous. SrvSurvey se conecta a Monado una vez que el juego se está ejecutando."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.",
+      "translation": "Esperando a que se inicie Elite Dangerous. SrvSurvey se conecta a WiVRn una vez que el juego se está ejecutando para que el lobby de WiVRn siga siendo utilizable."
     },
     {
       "source": "Waiting for Elite Dangerous.",
@@ -85165,6 +85205,22 @@
     {
       "source": "windows",
       "translation": "ventanas"
+    },
+    {
+      "source": "wine",
+      "translation": "vino"
+    },
+    {
+      "source": "wine-preloader",
+      "translation": "precargador de vino"
+    },
+    {
+      "source": "wine64",
+      "translation": "vino64"
+    },
+    {
+      "source": "wine64-preloader",
+      "translation": "precargador de vino64"
     },
     {
       "source": "with unknown time",
@@ -97857,8 +97913,8 @@
       "translation": "Route Linux expérimentale OpenXR sans SteamVR. Utilise le compositeur natif de Monado XR_EXTX_overlay avec Vulkan sans tête. Prend en charge l’interaction contrôleur-pointeur via l’interaction de superposition Toggle VR."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
-      "translation": "Route Linux expérimentale OpenXR sans SteamVR. Utilise le compositeur natif de WiVRn XR_EXTX_overlay avec Vulkan sans tête afin que Elite Dangerous puisse fonctionner via WiVRn (avec xrizer ou OpenComposite) sans crash de superposition OpenVR. Prend en charge l’interaction contrôleur-pointeur via l’interaction de superposition Toggle VR."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Route Linux expérimentale OpenXR sans SteamVR. Utilise le compositeur natif de WiVRn XR_EXTX_overlay avec Vulkan sans tête afin que Elite Dangerous puisse fonctionner via WiVRn (avec xrizer ou OpenComposite) sans crash de superposition OpenVR. SrvSurvey attend que Elite Dangerous soit en cours d'exécution avant de se connecter à WiVRn afin que le lobby de WiVRn reste utilisable et prend en charge l'interaction contrôleur-pointeur via l'interaction de superposition Toggle VR."
     },
     {
       "source": "Experimental rig bar detection",
@@ -122981,6 +123037,10 @@
       "translation": "Utilisez Ajouter un point mesuré uniquement lorsque le levé sélectionné est le site actif et que la position de surface, le rayon du corps, le cap du site et la position du commandant valides conviennent."
     },
     {
+      "source": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Utilisez Ajuster les superpositions, Réinitialiser l'orientation VR ou Activer l'interaction de superposition VR pour placer et cliquer sur les panneaux dans votre cockpit."
+    },
+    {
       "source": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
       "translation": "Utilisez Auditer tous les boxels lorsque vous avez besoin d'actualiser chaque branche par rapport à l'historique local et à Spansh plutôt que uniquement le boxel actuel. Les audits de grande envergure nécessitent une confirmation explicite car ils peuvent faire plus de 1 000 demandes."
     },
@@ -123883,6 +123943,14 @@
     {
       "source": "Waiting for Commander Codex journal entries.",
       "translation": "En attente des entrées du journal du Commander Codex."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+      "translation": "En attente du démarrage de Elite Dangerous. SrvSurvey s'attache à Monado une fois le jeu lancé."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.",
+      "translation": "En attente du démarrage de Elite Dangerous. SrvSurvey se connecte à WiVRn une fois le jeu lancé afin que le lobby de WiVRn reste utilisable."
     },
     {
       "source": "Waiting for Elite Dangerous.",
@@ -128483,6 +128551,22 @@
     {
       "source": "windows",
       "translation": "fenêtres"
+    },
+    {
+      "source": "wine",
+      "translation": "vin"
+    },
+    {
+      "source": "wine-preloader",
+      "translation": "préchargeur de vin"
+    },
+    {
+      "source": "wine64",
+      "translation": "vin64"
+    },
+    {
+      "source": "wine64-preloader",
+      "translation": "wine64-préchargeur"
     },
     {
       "source": "with unknown time",
@@ -141175,8 +141259,8 @@
       "translation": "Rota experimental do Linux OpenXR sem SteamVR. Usa o compositor nativo da Monado XR_EXTX_overlay com Vulkan sem cabeça. Suporta interação controlador-ponteiro por meio da interação Toggle VR overlay."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
-      "translation": "Rota experimental do Linux OpenXR sem SteamVR. Usa o compositor nativo do WiVRn XR_EXTX_overlay com Vulkan sem cabeça para que Elite Dangerous possa ser executado através do WiVRn (com xrizer ou OpenComposite) sem travamentos de sobreposição OpenVR. Suporta interação controlador-ponteiro por meio da interação Toggle VR overlay."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Rota experimental do Linux OpenXR sem SteamVR. Usa o compositor nativo do WiVRn XR_EXTX_overlay com Vulkan sem cabeça para que Elite Dangerous possa ser executado através do WiVRn (com xrizer ou OpenComposite) sem travamentos de sobreposição OpenVR. SrvSurvey espera até que Elite Dangerous esteja em execução antes de se conectar ao WiVRn para que o lobby do WiVRn permaneça utilizável e suporte a interação controlador-ponteiro por meio da interação Toggle VR overlay."
     },
     {
       "source": "Experimental rig bar detection",
@@ -166299,6 +166383,10 @@
       "translation": "Use Adicionar ponto medido apenas enquanto o levantamento selecionado for o local ativo e a posição de superfície válida, o raio do corpo, o rumo do local e a posição do comandante estiverem de acordo."
     },
     {
+      "source": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Use Ajustar sobreposições, Redefinir orientação de VR ou Alternar interação de sobreposição de VR para posicionar e clicar em painéis em seu cockpit."
+    },
+    {
       "source": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
       "translation": "Use Auditar todos os boxels quando precisar que cada branch seja atualizado em relação ao histórico local e Spansh em vez de apenas o boxel atual. Grandes auditorias exigem confirmação explícita porque podem fazer mais de 1.000 solicitações."
     },
@@ -167201,6 +167289,14 @@
     {
       "source": "Waiting for Commander Codex journal entries.",
       "translation": "Aguardando entradas no diário do Commander Codex."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+      "translation": "Aguardando Elite Dangerous iniciar. SrvSurvey é anexado ao Monado assim que o jogo está em execução."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.",
+      "translation": "Aguardando Elite Dangerous iniciar. SrvSurvey se conecta ao WiVRn assim que o jogo está em execução, para que o lobby do WiVRn permaneça utilizável."
     },
     {
       "source": "Waiting for Elite Dangerous.",
@@ -171801,6 +171897,22 @@
     {
       "source": "windows",
       "translation": "janelas"
+    },
+    {
+      "source": "wine",
+      "translation": "vinho"
+    },
+    {
+      "source": "wine-preloader",
+      "translation": "pré-carregador de vinho"
+    },
+    {
+      "source": "wine64",
+      "translation": "vinho64"
+    },
+    {
+      "source": "wine64-preloader",
+      "translation": "pré-carregador wine64"
     },
     {
       "source": "with unknown time",
@@ -184493,8 +184605,8 @@
       "translation": "Экспериментальный маршрут Linux OpenXR без SteamVR. Использует собственный композитор Monado XR_EXTX_overlay с безголовым Vulkan. Поддерживает взаимодействие контроллера и указателя через взаимодействие наложения Toggle VR."
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
-      "translation": "Экспериментальный маршрут Linux OpenXR без SteamVR. Использует собственный композитор WiVRn XR_EXTX_overlay с безголовым Vulkan, поэтому Elite Dangerous может работать через WiVRn (с xrizer или OpenComposite) без сбоев наложения OpenVR. Поддерживает взаимодействие контроллера и указателя через взаимодействие наложения Toggle VR."
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "Экспериментальный маршрут Linux OpenXR без SteamVR. Использует собственный композитор WiVRn XR_EXTX_overlay с безголовым Vulkan, поэтому Elite Dangerous может работать через WiVRn (с xrizer или OpenComposite) без сбоев наложения OpenVR. SrvSurvey ждет, пока Elite Dangerous не запустится, прежде чем подключаться к WiVRn, поэтому лобби WiVRn остается доступным для использования и поддерживает взаимодействие контроллера-указателя через взаимодействие наложения Toggle VR."
     },
     {
       "source": "Experimental rig bar detection",
@@ -209617,6 +209729,10 @@
       "translation": "Используйте команду «Добавить измеренную точку» только в том случае, если выбранная съемка является активным объектом и действительные положения поверхности, радиус тела, направление объекта и положение командира совпадают."
     },
     {
+      "source": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "Используйте «Настроить наложения», «Сбросить ориентацию VR» или «Переключить наложение VR», чтобы разместить панели в кабине и щелкнуть ими."
+    },
+    {
       "source": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
       "translation": "Используйте аудит всех бокселей, если вам нужно обновить каждую ветку по локальной истории и Spansh, а не только по текущему бокселю. Крупные аудиты требуют явного подтверждения, поскольку они могут делать более 1000 запросов."
     },
@@ -210519,6 +210635,14 @@
     {
       "source": "Waiting for Commander Codex journal entries.",
       "translation": "Ожидание записей журнала Кодекса командира."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+      "translation": "Ожидание запуска Elite Dangerous. SrvSurvey прикрепляется к Monado после запуска игры."
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.",
+      "translation": "Ожидание запуска Elite Dangerous. SrvSurvey подключается к WiVRn после запуска игры, поэтому лобби WiVRn остается доступным для использования."
     },
     {
       "source": "Waiting for Elite Dangerous.",
@@ -215119,6 +215243,22 @@
     {
       "source": "windows",
       "translation": "окна"
+    },
+    {
+      "source": "wine",
+      "translation": "вино"
+    },
+    {
+      "source": "wine-preloader",
+      "translation": "винный предзагрузчик"
+    },
+    {
+      "source": "wine64",
+      "translation": "вино64"
+    },
+    {
+      "source": "wine64-preloader",
+      "translation": "Wine64-предзагрузчик"
     },
     {
       "source": "with unknown time",
@@ -227811,8 +227951,8 @@
       "translation": "实验性 Linux OpenXR 路线没有 SteamVR。使用 Monado 的原生 XR_EXTX_overlay 合成器和无头 Vulkan。通过切换 VR 叠加交互支持控制器指针交互。"
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
-      "translation": "实验性 Linux OpenXR 路线没有 SteamVR。使用 WiVRn 的本机 XR_EXTX_overlay 合成器和无头 Vulkan，因此 Elite Dangerous 可以通过 WiVRn（使用 xrizer 或 OpenComposite）运行，而不会 OpenVR 覆盖崩溃。通过切换 VR 叠加交互支持控制器指针交互。"
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "实验性 Linux OpenXR 路线没有 SteamVR。使用 WiVRn 的本机 XR_EXTX_overlay 合成器和无头 Vulkan，因此 Elite Dangerous 可以通过 WiVRn（使用 xrizer 或 OpenComposite）运行，而不会 OpenVR 覆盖崩溃。 SrvSurvey 等待 Elite Dangerous 运行后再连接到 WiVRn，以便 WiVRn 的大厅保持可用，并通过切换 VR 覆盖交互支持控制器指针交互。"
     },
     {
       "source": "Experimental rig bar detection",
@@ -252935,6 +253075,10 @@
       "translation": "仅当所选测量是活动站点且有效表面位置、主体半径、站点航向和指挥官位置一致时，才使用“添加测量点”。"
     },
     {
+      "source": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "使用调整叠加、重置 VR 方向或切换 VR 叠加交互来放置并单击驾驶舱中的面板。"
+    },
+    {
       "source": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
       "translation": "当您需要根据本地历史记录和 Spansh 而不仅仅是当前 boxel 刷新每个分支时，请使用审核所有 boxel。大型审核需要明确确认，因为它们可能会提出 1,000 多个请求。"
     },
@@ -253837,6 +253981,14 @@
     {
       "source": "Waiting for Commander Codex journal entries.",
       "translation": "等待指挥官法典日志条目。"
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+      "translation": "等待Elite Dangerous启动。游戏运行后，SrvSurvey 就会连接到 Monado。"
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.",
+      "translation": "等待Elite Dangerous启动。 SrvSurvey 在游戏运行后连接到 WiVRn，以便 WiVRn 的大厅保持可用。"
     },
     {
       "source": "Waiting for Elite Dangerous.",
@@ -258437,6 +258589,22 @@
     {
       "source": "windows",
       "translation": "窗户"
+    },
+    {
+      "source": "wine",
+      "translation": "葡萄酒"
+    },
+    {
+      "source": "wine-preloader",
+      "translation": "葡萄酒预加载器"
+    },
+    {
+      "source": "wine64",
+      "translation": "葡萄酒64"
+    },
+    {
+      "source": "wine64-preloader",
+      "translation": "wine64 预加载器"
     },
     {
       "source": "with unknown time",
@@ -271129,8 +271297,8 @@
       "translation": "* EXPERIMENTAL LINUX OPENXR ROUTE WITHOUT STEAMVR. USES MONADO'S NATIVE XR_EXTX_OVERLAY COMPOSITOR WITH HEADLESS VULKAN. SUPPORTS CONTROLLER-POINTER INTERACTION VIA TOGGLE VR OVERLAY INTERACTION. >>>!"
     },
     {
-      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
-      "translation": "* EXPERIMENTAL LINUX OPENXR ROUTE WITHOUT STEAMVR. USES WIVRN'S NATIVE XR_EXTX_OVERLAY COMPOSITOR WITH HEADLESS VULKAN SO ELITE DANGEROUS CAN RUN THROUGH WIVRN (WITH XRIZER OR OPENCOMPOSITE) WITHOUT OPENVR OVERLAY CRASHES. SUPPORTS CONTROLLER-POINTER INTERACTION VIA TOGGLE VR OVERLAY INTERACTION. >>>!"
+      "source": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
+      "translation": "* EXPERIMENTAL LINUX OPENXR ROUTE WITHOUT STEAMVR. USES WIVRN'S NATIVE XR_EXTX_OVERLAY COMPOSITOR WITH HEADLESS VULKAN SO ELITE DANGEROUS CAN RUN THROUGH WIVRN (WITH XRIZER OR OPENCOMPOSITE) WITHOUT OPENVR OVERLAY CRASHES. SRVSURVEY WAITS UNTIL ELITE DANGEROUS IS RUNNING BEFORE ATTACHING TO WIVRN SO WIVRN'S LOBBY STAYS USABLE, AND SUPPORTS CONTROLLER-POINTER INTERACTION VIA TOGGLE VR OVERLAY INTERACTION. >>>!"
     },
     {
       "source": "Experimental rig bar detection",
@@ -296253,6 +296421,10 @@
       "translation": "* USE ADD MEASURED POINT ONLY WHILE THE SELECTED SURVEY IS THE ACTIVE SITE AND VALID SURFACE POSITION, BODY RADIUS, SITE HEADING, AND COMMANDER POSITION AGREE. >>>!"
     },
     {
+      "source": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+      "translation": "* USE ADJUST OVERLAYS, RESET VR ORIENTATION, OR TOGGLE VR OVERLAY INTERACTION TO PLACE AND CLICK PANELS IN YOUR COCKPIT. >>>!"
+    },
+    {
       "source": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
       "translation": "* USE AUDIT ALL BOXELS WHEN YOU NEED EVERY BRANCH REFRESHED AGAINST LOCAL HISTORY AND SPANSH RATHER THAN ONLY THE CURRENT BOXEL. LARGE AUDITS REQUIRE EXPLICIT CONFIRMATION BECAUSE THEY CAN MAKE MORE THAN 1,000 REQUESTS. >>>!"
     },
@@ -297155,6 +297327,14 @@
     {
       "source": "Waiting for Commander Codex journal entries.",
       "translation": "* WAITING FOR COMMANDER CODEX JOURNAL ENTRIES. >>>!"
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+      "translation": "* WAITING FOR ELITE DANGEROUS TO START. SRVSURVEY ATTACHES TO MONADO ONCE THE GAME IS RUNNING. >>>!"
+    },
+    {
+      "source": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.",
+      "translation": "* WAITING FOR ELITE DANGEROUS TO START. SRVSURVEY ATTACHES TO WIVRN ONCE THE GAME IS RUNNING SO WIVRN'S LOBBY STAYS USABLE. >>>!"
     },
     {
       "source": "Waiting for Elite Dangerous.",
@@ -301755,6 +301935,22 @@
     {
       "source": "windows",
       "translation": "* WINDOWS >>>!"
+    },
+    {
+      "source": "wine",
+      "translation": "* WINE >>>!"
+    },
+    {
+      "source": "wine-preloader",
+      "translation": "* WINE-PRELOADER >>>!"
+    },
+    {
+      "source": "wine64",
+      "translation": "* WINE64 >>>!"
+    },
+    {
+      "source": "wine64-preloader",
+      "translation": "* WINE64-PRELOADER >>>!"
     },
     {
       "source": "with unknown time",

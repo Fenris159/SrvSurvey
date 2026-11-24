@@ -94,11 +94,11 @@ public static class VrPlatformProfileCatalog
             "WiVRn (Linux OpenXR, experimental)",
             "Quest, Pico, and standalone headsets streaming over WiVRn on Linux",
             "Direct Linux OpenXR overlay (XR_EXTX_overlay) to WiVRn",
-            "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+            "Experimental Linux OpenXR route without SteamVR. Uses WiVRn's native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn's lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
             [
                 "Start WiVRn (wivrn-server), connect your headset, and confirm WiVRn is the active OpenXR runtime.",
-                "Launch Elite Dangerous through WiVRn (for example using xrizer or OpenComposite in Steam launch options).",
-                "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+                "Enable SrvSurvey VR overlays below, then launch Elite Dangerous through WiVRn (for example using xrizer or OpenComposite in Steam launch options). SrvSurvey attaches once the game starts and releases WiVRn when the game exits.",
+                "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
             ]
         ),
         new(

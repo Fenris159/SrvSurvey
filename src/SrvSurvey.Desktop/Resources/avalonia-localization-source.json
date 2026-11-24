@@ -22512,7 +22512,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn\u0027s native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Supports controller-pointer interaction via Toggle VR overlay interaction.",
+    "Text": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn\u0027s native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn\u0027s lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -72919,6 +72919,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
     "IsFormat": false,
     "SourceKinds": [
@@ -74729,6 +74737,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn\u0027s lobby stays usable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Waiting for Elite Dangerous.",
@@ -83934,6 +83958,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
+  },
+  {
+    "Text": "wine",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+  },
+  {
+    "Text": "wine-preloader",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+  },
+  {
+    "Text": "wine64",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+  },
+  {
+    "Text": "wine64-preloader",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
   },
   {
     "Text": "with unknown time",

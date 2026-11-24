@@ -57,10 +57,12 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
 {
     private static readonly IReadOnlyDictionary<string, OpenXrOverlayFrame> EmptyFrames =
         new Dictionary<string, OpenXrOverlayFrame>();
+    private static readonly EliteGameProcessDetector DefaultGameDetector = new();
     private readonly string profileId;
     private readonly string expectedRuntime;
     private readonly ILinuxOpenXrOverlayBackend backend;
     private readonly LinuxVrRuntimeInspector inspector;
+    private readonly Func<bool> isGameRunning;
     private readonly Dictionary<string, OpenXrOverlayFrame> frames = new(StringComparer.Ordinal);
     private readonly Dictionary<ulong, string> identities = [];
     private readonly List<VrOverlayPointerEvent> bufferedEvents = [];
@@ -74,13 +76,15 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     public LinuxOpenXrOverlayRuntime(
         string profileId,
         ILinuxOpenXrOverlayBackend? backend = null,
-        LinuxVrRuntimeInspector? inspector = null
+        LinuxVrRuntimeInspector? inspector = null,
+        Func<bool>? isGameRunning = null
     )
     {
         this.profileId = profileId;
         expectedRuntime = profileId == VrPlatformProfileCatalog.MonadoOpenXrProfileId ? "monado" : "wivrn";
         this.inspector = inspector ?? LinuxVrRuntimeInspector.Default;
         this.backend = backend ?? new NativeLinuxOpenXrOverlayBackend(this.inspector);
+        this.isGameRunning = isGameRunning ?? DefaultGameDetector.IsRunning;
     }
 
     public bool IsInitialized => sessionHandle != nint.Zero;
@@ -89,6 +93,11 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         profileId == VrPlatformProfileCatalog.MonadoOpenXrProfileId ? "Monado / OpenXR" : "WiVRn / OpenXR";
 
     public int MaximumOverlays => interactionEnabled && maximumOverlays > 1 ? maximumOverlays - 1 : maximumOverlays;
+
+    private string WaitingForGameMessage =>
+        profileId == VrPlatformProfileCatalog.MonadoOpenXrProfileId
+            ? "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running."
+            : "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.";
 
     public VrRuntimeProbe Probe()
     {
@@ -105,6 +114,12 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeProbe.RuntimeUnavailable(
                 "Packaged Linux OpenXR overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture."
             );
+        }
+
+        if (!isGameRunning())
+        {
+            Shutdown();
+            return VrRuntimeProbe.HeadsetUnavailable(WaitingForGameMessage);
         }
 
         if (IsInitialized)
@@ -138,6 +153,12 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     {
         if (IsInitialized)
         {
+            if (!isGameRunning())
+            {
+                Shutdown();
+                return VrRuntimeResult.Failure(WaitingForGameMessage);
+            }
+
             return VrRuntimeResult.Success($"{DisplayName} overlay session is active.");
         }
 
@@ -152,6 +173,11 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeResult.Failure(
                 "Packaged Linux OpenXR overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable."
             );
+        }
+
+        if (!isGameRunning())
+        {
+            return VrRuntimeResult.Failure(WaitingForGameMessage);
         }
 
         LinuxOpenXrCreateOutcome created = backend.Create(expectedRuntime);

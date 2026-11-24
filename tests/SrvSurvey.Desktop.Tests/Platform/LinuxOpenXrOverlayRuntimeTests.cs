@@ -14,7 +14,8 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         using var missingRuntime = new LinuxOpenXrOverlayRuntime(
             VrPlatformProfileCatalog.WivrnOpenXrProfileId,
             missingBackend,
-            activeInspector
+            activeInspector,
+            () => true
         );
         Assert.Equal("WiVRn / OpenXR", missingRuntime.DisplayName);
         Assert.False(missingRuntime.Probe().RuntimeAvailable);
@@ -24,7 +25,8 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         using var runtime = new LinuxOpenXrOverlayRuntime(
             VrPlatformProfileCatalog.MonadoOpenXrProfileId,
             backend,
-            ActiveLinuxInspector("monado-service")
+            ActiveLinuxInspector("monado-service"),
+            () => true
         );
         Assert.Equal("Monado / OpenXR", runtime.DisplayName);
 
@@ -48,6 +50,76 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
     }
 
     [Fact]
+    public void LinuxOpenXrRoutesWaitForEliteDangerousAndShutdownImmediatelyWhenGameExits()
+    {
+        bool gameRunning = false;
+        var backend = new StubBackend
+        {
+            CreateOutcome = new(new nint(202), LinuxOpenXrNativeStatus.Ok, 0, "Created"),
+            SessionStatus = new(LinuxOpenXrNativeStatus.Ok, 0, 1, 16, "Active"),
+        };
+        using var wivrn = new LinuxOpenXrOverlayRuntime(
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId,
+            backend,
+            ActiveLinuxInspector("wivrn-server"),
+            () => gameRunning
+        );
+
+        // Before Elite launches, WiVRn must not be probed or connected so its headset lobby stays usable.
+        VrRuntimeProbe waitingProbe = wivrn.Probe();
+        Assert.True(waitingProbe.RuntimeAvailable);
+        Assert.False(waitingProbe.HeadsetPresent);
+        Assert.Contains("Waiting for Elite Dangerous", waitingProbe.Message);
+        Assert.Contains("WiVRn's lobby", waitingProbe.Message);
+        Assert.Equal(0, backend.ProbeCalls);
+
+        VrRuntimeResult waitingInit = wivrn.Initialize();
+        Assert.False(waitingInit.Succeeded);
+        Assert.False(wivrn.IsInitialized);
+        Assert.Equal(0, backend.CreateCalls);
+
+        // Once Elite launches, WiVRn probes and connects normally.
+        gameRunning = true;
+        Assert.True(wivrn.Probe().HeadsetPresent);
+        Assert.Equal(1, backend.ProbeCalls);
+        Assert.True(wivrn.Initialize().Succeeded);
+        Assert.True(wivrn.IsInitialized);
+        Assert.Equal(1, backend.CreateCalls);
+
+        // When Elite exits (or restarts), Probe immediately destroys the OpenXR session so WiVRn returns to its lobby.
+        gameRunning = false;
+        VrRuntimeProbe exitedProbe = wivrn.Probe();
+        Assert.True(exitedProbe.RuntimeAvailable);
+        Assert.False(exitedProbe.HeadsetPresent);
+        Assert.False(wivrn.IsInitialized);
+        Assert.Equal(1, backend.DestroyCalls);
+        Assert.Equal(1, backend.ProbeCalls);
+
+        // Reconnect when Elite starts again, and verify Initialize also tears down if the game exits in between.
+        gameRunning = true;
+        Assert.True(wivrn.Initialize().Succeeded);
+        Assert.True(wivrn.IsInitialized);
+        gameRunning = false;
+        VrRuntimeResult exitedInit = wivrn.Initialize();
+        Assert.False(exitedInit.Succeeded);
+        Assert.False(wivrn.IsInitialized);
+        Assert.Equal(2, backend.DestroyCalls);
+
+        // Monado also waits for Elite Dangerous before connecting.
+        using var monado = new LinuxOpenXrOverlayRuntime(
+            VrPlatformProfileCatalog.MonadoOpenXrProfileId,
+            backend,
+            ActiveLinuxInspector("monado-service"),
+            () => gameRunning
+        );
+        VrRuntimeProbe monadoWaiting = monado.Probe();
+        Assert.True(monadoWaiting.RuntimeAvailable);
+        Assert.False(monadoWaiting.HeadsetPresent);
+        Assert.Contains("Monado", monadoWaiting.Message);
+        Assert.Equal(1, backend.ProbeCalls);
+    }
+
+    [Fact]
     public void RuntimeLifecyclePublishesFramesUpdatesMaxLayersTracksHeadPoseAndRecoversFromDisconnect()
     {
         var backend = new StubBackend
@@ -59,7 +131,8 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         using var runtime = new LinuxOpenXrOverlayRuntime(
             VrPlatformProfileCatalog.WivrnOpenXrProfileId,
             backend,
-            ActiveLinuxInspector("wivrn-server")
+            ActiveLinuxInspector("wivrn-server"),
+            () => true
         );
 
         Assert.False(runtime.PublishOverlay("PlotJumpInfo", ValidFrame(), ValidCalibration(), 1f).Succeeded);
@@ -119,7 +192,8 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         using var runtime = new LinuxOpenXrOverlayRuntime(
             VrPlatformProfileCatalog.WivrnOpenXrProfileId,
             backend,
-            ActiveLinuxInspector("wivrn-server")
+            ActiveLinuxInspector("wivrn-server"),
+            () => true
         );
         VrRuntimeResult failedInit = runtime.Initialize();
         Assert.False(failedInit.Succeeded);
@@ -187,7 +261,8 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         using var runtime = new LinuxOpenXrOverlayRuntime(
             VrPlatformProfileCatalog.MonadoOpenXrProfileId,
             backend,
-            ActiveLinuxInspector("monado-service")
+            ActiveLinuxInspector("monado-service"),
+            () => true
         );
 
         // Before initialization, enabling interaction fails cleanly while disabling is a safe no-op.
@@ -449,6 +524,7 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         public IReadOnlyList<OpenXrPointerEvent> PointerEvents { get; set; } = [];
         public VrOverlayHeadPose? HeadPose { get; set; }
         public bool PublishResult { get; set; } = true;
+        public int ProbeCalls { get; private set; }
         public int CreateCalls { get; private set; }
         public int DestroyCalls { get; private set; }
         public int SetInteractionCalls { get; private set; }
@@ -456,7 +532,11 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         public byte[]? LastPacket { get; private set; }
         public uint LastRequestedOriginRevision { get; private set; }
 
-        public LinuxOpenXrProbeOutcome Probe(string expectedRuntime) => ProbeOutcome;
+        public LinuxOpenXrProbeOutcome Probe(string expectedRuntime)
+        {
+            ProbeCalls++;
+            return ProbeOutcome;
+        }
 
         public LinuxOpenXrCreateOutcome Create(string expectedRuntime)
         {

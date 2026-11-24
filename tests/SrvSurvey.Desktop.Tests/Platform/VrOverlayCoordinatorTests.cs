@@ -683,6 +683,59 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         }
     }
 
+    [AvaloniaFact]
+    public void CoordinatorKeepsWiVRnSessionClosedUntilEliteStartsAndReleasesItOnGameExit()
+    {
+        bool gameRunning = false;
+        var backend = new StubLinuxOpenXrBackend();
+        var inspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: _ => null,
+            readAllText: _ => null,
+            fileExists: _ => false,
+            isProcessRunning: name => name == "wivrn-server"
+        );
+        using var runtime = new LinuxOpenXrOverlayRuntime(
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId,
+            backend,
+            inspector,
+            () => gameRunning
+        );
+        VrOverlayViewModel model = CreateViewModel();
+        model.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+
+        using var coordinator = new VrOverlayCoordinator(model, registry, runtime);
+        Assert.Equal(VrOverlayConnectionState.WaitingForRuntime, model.ConnectionState);
+        Assert.Contains("Waiting for Elite Dangerous", model.ConnectionDetail, StringComparison.Ordinal);
+        Assert.Equal(0, backend.CreateCalls);
+        Assert.False(runtime.IsInitialized);
+
+        // Starting Elite attaches overlays cleanly and allows controller interaction.
+        gameRunning = true;
+        model.RefreshConnectionCommand.Execute(null);
+        Assert.Equal(VrOverlayConnectionState.Ready, model.ConnectionState);
+        Assert.Equal(1, backend.CreateCalls);
+        Assert.True(runtime.IsInitialized);
+        Assert.True(coordinator.ToggleInteraction());
+        Assert.True(coordinator.IsInteractionEnabled);
+
+        // Exiting Elite immediately tears down the OpenXR session and resets interaction so WiVRn returns to lobby.
+        gameRunning = false;
+        model.RefreshConnectionCommand.Execute(null);
+        Assert.Equal(VrOverlayConnectionState.WaitingForRuntime, model.ConnectionState);
+        Assert.Equal(1, backend.DestroyCalls);
+        Assert.False(runtime.IsInitialized);
+        Assert.False(coordinator.IsInteractionEnabled);
+
+        // Restarting Elite reconnects cleanly without the user toggling overlays off and back on.
+        gameRunning = true;
+        model.RefreshConnectionCommand.Execute(null);
+        Assert.Equal(VrOverlayConnectionState.Ready, model.ConnectionState);
+        Assert.Equal(2, backend.CreateCalls);
+        Assert.True(runtime.IsInitialized);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -817,5 +870,37 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         {
             Shutdown();
         }
+    }
+
+    private sealed class StubLinuxOpenXrBackend : ILinuxOpenXrOverlayBackend
+    {
+        public bool IsAvailable => true;
+        public int CreateCalls { get; private set; }
+        public int DestroyCalls { get; private set; }
+
+        public LinuxOpenXrProbeOutcome Probe(string expectedRuntime) => new(LinuxOpenXrNativeStatus.Ok, 0, "Ready");
+
+        public LinuxOpenXrCreateOutcome Create(string expectedRuntime)
+        {
+            CreateCalls++;
+            return new(new nint(CreateCalls), LinuxOpenXrNativeStatus.Ok, 0, "Created");
+        }
+
+        public bool Publish(nint session, byte[] packet) => true;
+
+        public LinuxOpenXrSessionStatus GetStatus(nint session) => new(LinuxOpenXrNativeStatus.Ok, 0, 0, 16, "Active");
+
+        public bool TryGetHeadPose(nint session, uint expectedOriginRevision, out VrOverlayHeadPose? pose)
+        {
+            pose = new VrOverlayHeadPose(System.Numerics.Vector3.Zero, 0);
+            return true;
+        }
+
+        public LinuxOpenXrInteractionOutcome SetInteractionEnabled(nint session, bool enabled) =>
+            new(true, 0, enabled ? "Interaction on." : "Interaction off.");
+
+        public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session) => [];
+
+        public void Destroy(nint session) => DestroyCalls++;
     }
 }
