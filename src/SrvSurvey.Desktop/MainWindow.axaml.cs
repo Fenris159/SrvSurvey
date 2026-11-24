@@ -621,8 +621,16 @@ public sealed partial class MainWindow : Window
         Screens.Changed -= OnScreensChanged;
         PositionChanged -= OnPositionChanged;
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
-        trayIcon?.Dispose();
-        trayIcon = null;
+        if (trayIcon is not null)
+        {
+            if (Application.Current is { } application)
+            {
+                TrayIcon.SetIcons(application, null);
+            }
+
+            trayIcon.Dispose();
+            trayIcon = null;
+        }
     }
 
     private TrayIcon? CreateTrayIcon()

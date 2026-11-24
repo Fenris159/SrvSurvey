@@ -435,8 +435,8 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         }
     }
 
-    /// <summary>Removes notifications and releases this machine's sync resources.</summary>
-    public void Dispose()
+    /// <summary>Detaches the shared sync service so an in-process commander switch can reuse it without shutting down.</summary>
+    internal ProfileSyncService DetachService()
     {
         disposed = true;
         authorization?.Cancel();
@@ -444,7 +444,18 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         operationCancellation?.Dispose();
         operationCancellation = null;
         service.Changed -= OnServiceChanged;
-        service.Dispose();
+        return service;
+    }
+
+    /// <summary>Removes notifications and releases this machine's sync resources.</summary>
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        DetachService().Dispose();
     }
 }
 

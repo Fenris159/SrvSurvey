@@ -124,6 +124,59 @@ public sealed class JournalSourceRegistryTests : IDisposable
         Assert.Empty(Directory.GetFiles(Path.Combine(root, nameof(JournalSourceRegistry)), "*.json"));
     }
 
+    /// <summary>Live commander claims prevent peers from stealing an owned commander and clear once released or stale.</summary>
+    [Fact]
+    public void CommanderClaimsTrackLivePeersAndIgnoreOwnOrStaleRecords()
+    {
+        using var first = new CommanderClaimRegistry(root);
+        using var second = new CommanderClaimRegistry(root);
+        Assert.False(first.IsClaimedByOtherInstance("F13228986"));
+        Assert.False(first.IsClaimedByOtherInstance(" "));
+        Assert.True(first.Claim("f13228986"));
+        Assert.True(first.Claim("F13228986"));
+        Assert.False(first.IsClaimedByOtherInstance("F13228986"));
+
+        Assert.True(second.Claim("F14004033"));
+        Assert.True(first.IsClaimedByOtherInstance("F14004033"));
+        Assert.False(first.IsClaimedByOtherInstance("F99999999"));
+        Assert.True(second.IsClaimedByOtherInstance("F13228986"));
+
+        string claimsDir = Path.Combine(root, "CommanderClaims");
+        File.WriteAllText(
+            Path.Combine(claimsDir, "unlocked.json"),
+            JsonSerializer.Serialize(
+                new
+                {
+                    Environment.ProcessId,
+                    StartTime = 1L,
+                    FrontierId = "F888",
+                }
+            )
+        );
+        using var deadPeer = new FileStream(
+            Path.Combine(claimsDir, "dead.json"),
+            FileMode.CreateNew,
+            FileAccess.ReadWrite,
+            FileShare.Read
+        );
+        JsonSerializer.Serialize(
+            deadPeer,
+            new
+            {
+                ProcessId = int.MaxValue,
+                StartTime = 1L,
+                FrontierId = "F777",
+            }
+        );
+        deadPeer.Flush();
+
+        Assert.False(first.IsClaimedByOtherInstance("F888"));
+        Assert.False(first.IsClaimedByOtherInstance("F777"));
+
+        Assert.False(second.Claim(null));
+        Assert.False(first.IsClaimedByOtherInstance("F14004033"));
+    }
+
     /// <summary>Creates a physical folder for a source fixture.</summary>
     private string Journal(string folder)
     {

@@ -27,6 +27,16 @@ internal static class Program
 
     internal static DesktopStartupContext? StartupContext { get; private set; }
 
+    /// <summary>Updates the active startup paths after an in-process automatic commander switch.</summary>
+    internal static void UpdateStartupContextPaths(AppDataPaths appDataPaths)
+    {
+        ArgumentNullException.ThrowIfNull(appDataPaths);
+        if (StartupContext is { IsDiagnosticReplay: false } current)
+        {
+            StartupContext = current with { AppDataPaths = appDataPaths };
+        }
+    }
+
     [STAThread]
     public static void Main(string[] args)
     {

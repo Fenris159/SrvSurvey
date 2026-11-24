@@ -861,6 +861,295 @@ public sealed class DesktopRuntimeTests
         await stopping;
     }
 
+    /// <summary>Automatic mode switches commanders in-process while loading each commander's isolated settings and keeping ProfileSync alive.</summary>
+    [AvaloniaFact]
+    public async Task AutomaticCommanderSwitchReloadsRuntimeWithIsolatedCommanderSettings()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            """
+            {"event":"Fileheader","part":1,"Odyssey":true}
+            {"event":"Commander","Name":"First Cmdr","FID":"F13228986"}
+            {"event":"LoadGame","Commander":"First Cmdr","FID":"F13228986"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 1, 57, DateTimeKind.Utc));
+
+        AppDataPaths firstPaths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        AppDataPaths secondPaths = temp.Paths with { SettingsFrontierId = "F14004033" };
+        CommanderSettingsProfile.Prepare(firstPaths);
+        CommanderSettingsProfile.Prepare(secondPaths);
+        new OverlayScaleSettingsStore(firstPaths.UiSettingsPath).Save(new(OverlayScaleCatalog.GetIndex(65)));
+        new OverlayScaleSettingsStore(secondPaths.UiSettingsPath).Save(new(OverlayScaleCatalog.BaselineIndex));
+        new LegacyOverlayLayoutStore(firstPaths.OverlaySettingsDirectory).Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new(LegacyHorizontalAnchor.Left, 120, LegacyVerticalAnchor.Top, 80, null),
+            }
+        );
+        new LegacyOverlayLayoutStore(secondPaths.OverlaySettingsDirectory).Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new(LegacyHorizontalAnchor.Left, 450, LegacyVerticalAnchor.Top, 80, null),
+            }
+        );
+
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        List<string> lifetimeEvents = [];
+        var lifetime = new RecordingDesktopLifetime(lifetimeEvents);
+        var applicationLog = new ApplicationLogService(temp.Paths.DataDirectory);
+        var cloud = new FakeProfileDrive();
+        var profileSync = new ProfileSyncService(temp.Store, cloud);
+        DesktopRuntime? activeRuntime = null;
+        var switchedToSecond = new TaskCompletionSource<DesktopRuntime>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        var switchedBackToFirst = new TaskCompletionSource<DesktopRuntime>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        string[] arguments = ["--journal-directory", journals];
+
+        DesktopStartupContext startupContext = await DesktopStartupContext.ResolveAsync(
+            arguments,
+            () => temp.Paths,
+            CancellationToken.None
+        );
+        activeRuntime = DesktopRuntime.Start(
+            Application.Current!,
+            desktop,
+            new DesktopStartup(arguments, applicationLog)
+            {
+                AppDataPathsOverride = startupContext.AppDataPaths,
+                ProfileSyncService = profileSync,
+                GameWindowSwitcherFactory = () => new FixedGameWindowSwitcher(1),
+                OnRuntimeReplaced = replacement =>
+                {
+                    activeRuntime = replacement;
+                    if (
+                        string.Equals(
+                            replacement.MainViewModel?.AppDataPaths.SettingsFrontierId,
+                            "F14004033",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    {
+                        switchedToSecond.TrySetResult(replacement);
+                    }
+                    else if (
+                        string.Equals(
+                            replacement.MainViewModel?.AppDataPaths.SettingsFrontierId,
+                            "F13228986",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    {
+                        switchedBackToFirst.TrySetResult(replacement);
+                    }
+                },
+            },
+            lifetime
+        );
+
+        try
+        {
+            await WaitUntilAsync(() => activeRuntime?.MainViewModel?.FrontierId == "F13228986");
+            Assert.Equal("F13228986", activeRuntime.MainViewModel!.AppDataPaths.SettingsFrontierId);
+            Assert.True(activeRuntime.MainViewModel.AllowAutomaticCommanderSwitch);
+            Assert.Equal(65, activeRuntime.MainViewModel.OverlayScale.ScalePercent);
+            Assert.Equal(
+                120,
+                activeRuntime
+                    .MainViewModel.OverlayLayout.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo")
+                    .HorizontalOffset
+            );
+
+            // Simulate closing Commander A and reconnecting as Commander B without restarting SrvSurvey.
+            await File.AppendAllTextAsync(firstJournal, "{\"event\":\"Shutdown\"}\n");
+            File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 7, 33, 50, DateTimeKind.Utc));
+            string secondJournal = Path.Combine(journals, "Journal.2026-11-23T073400.01.log");
+            await File.WriteAllTextAsync(
+                secondJournal,
+                """
+                {"event":"Fileheader","part":1,"Odyssey":true}
+                {"event":"Commander","Name":"Second Cmdr","FID":"F14004033"}
+                {"event":"LoadGame","Commander":"Second Cmdr","FID":"F14004033"}
+
+                """
+            );
+            File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 15, DateTimeKind.Utc));
+
+            DesktopRuntime secondRuntime = await WaitForTaskAsync(switchedToSecond.Task);
+            await WaitUntilAsync(() => secondRuntime.MainViewModel?.FrontierId == "F14004033");
+
+            Assert.Empty(lifetimeEvents);
+            Assert.Equal("F14004033", secondRuntime.MainViewModel!.AppDataPaths.SettingsFrontierId);
+            Assert.Equal("Second Cmdr", secondRuntime.MainViewModel.CommanderName);
+            Assert.Equal(0, secondRuntime.MainViewModel.OverlayScale.ScalePercent);
+            Assert.Equal(
+                450,
+                secondRuntime
+                    .MainViewModel.OverlayLayout.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo")
+                    .HorizontalOffset
+            );
+            Assert.Empty(cloud.Uploaded);
+            Assert.Contains("Automatic commander switch", applicationLog.Text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Application exit", applicationLog.Text, StringComparison.Ordinal);
+
+            // Hide to tray, then switch back to Commander A; replacement must stay hidden and still load Commander A.
+            secondRuntime.MainWindow!.ShowInTaskbar = false;
+            secondRuntime.MainWindow.Hide();
+            string thirdJournal = Path.Combine(journals, "Journal.2026-11-23T090000.01.log");
+            await File.WriteAllTextAsync(
+                thirdJournal,
+                """
+                {"event":"Fileheader","part":1,"Odyssey":true}
+                {"event":"Commander","Name":"First Cmdr","FID":"F13228986"}
+                {"event":"LoadGame","Commander":"First Cmdr","FID":"F13228986"}
+
+                """
+            );
+            File.SetLastWriteTimeUtc(thirdJournal, new DateTime(2026, 11, 23, 9, 0, 0, DateTimeKind.Utc));
+
+            DesktopRuntime restoredFirst = await WaitForTaskAsync(switchedBackToFirst.Task);
+            await WaitUntilAsync(() => restoredFirst.MainViewModel?.FrontierId == "F13228986");
+
+            Assert.False(restoredFirst.MainWindow!.IsVisible);
+            Assert.False(restoredFirst.MainWindow.ShowInTaskbar);
+            Assert.Equal(65, restoredFirst.MainViewModel!.OverlayScale.ScalePercent);
+            Assert.Equal(
+                120,
+                restoredFirst
+                    .MainViewModel.OverlayLayout.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo")
+                    .HorizontalOffset
+            );
+            Assert.Equal(
+                OverlayScaleCatalog.GetIndex(65),
+                new OverlayScaleSettingsStore(firstPaths.UiSettingsPath).Load().Index
+            );
+            Assert.Equal(
+                OverlayScaleCatalog.BaselineIndex,
+                new OverlayScaleSettingsStore(secondPaths.UiSettingsPath).Load().Index
+            );
+        }
+        finally
+        {
+            if (activeRuntime is not null)
+            {
+                await activeRuntime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+            }
+        }
+
+        Assert.Equal(["shutdown:0"], lifetimeEvents);
+    }
+
+    /// <summary>An explicitly pinned Preferred commander stays on its assigned commander when another commander connects.</summary>
+    [AvaloniaFact]
+    public async Task PinnedPreferredCommanderDoesNotAutoSwitch()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            """
+            {"event":"Commander","Name":"First Cmdr","FID":"F13228986"}
+            {"event":"LoadGame","Commander":"First Cmdr","FID":"F13228986"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 1, 57, DateTimeKind.Utc));
+        new CommanderPreferenceSettingsStore(temp.Paths.SharedUiSettingsPath).Save(new("First Cmdr", "F13228986"));
+
+        var desktop = new ClassicDesktopStyleApplicationLifetime();
+        var applicationLog = new ApplicationLogService(temp.Paths.DataDirectory);
+        bool replaced = false;
+        string[] arguments = ["--journal-directory", journals];
+        DesktopStartupContext startupContext = await DesktopStartupContext.ResolveAsync(
+            arguments,
+            () => temp.Paths,
+            CancellationToken.None
+        );
+        await using var runtime = DesktopRuntime.Start(
+            Application.Current!,
+            desktop,
+            new DesktopStartup(arguments, applicationLog)
+            {
+                AppDataPathsOverride = startupContext.AppDataPaths,
+                GameWindowSwitcherFactory = () => new FixedGameWindowSwitcher(1),
+                OnRuntimeReplaced = _ => replaced = true,
+            },
+            new RecordingDesktopLifetime([])
+        );
+
+        await WaitUntilAsync(() => runtime.MainViewModel?.FrontierId == "F13228986");
+        Assert.False(runtime.MainViewModel!.AllowAutomaticCommanderSwitch);
+
+        string secondJournal = Path.Combine(journals, "Journal.2026-11-23T073400.01.log");
+        await File.WriteAllTextAsync(
+            secondJournal,
+            """
+            {"event":"Commander","Name":"Second Cmdr","FID":"F14004033"}
+            {"event":"LoadGame","Commander":"Second Cmdr","FID":"F14004033"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 15, DateTimeKind.Utc));
+        await runtime.MainViewModel.RefreshAsync();
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.False(replaced);
+        Assert.Equal("F13228986", runtime.MainViewModel.FrontierId);
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> predicate)
+    {
+        DateTime deadline = DateTime.UtcNow + TimeSpan.FromSeconds(15);
+        while (!predicate())
+        {
+            if (DateTime.UtcNow >= deadline)
+            {
+                throw new TimeoutException("Timed out waiting for desktop runtime state.");
+            }
+
+            Dispatcher.UIThread.RunJobs();
+            await Task.Delay(25);
+        }
+    }
+
+    private static async Task<T> WaitForTaskAsync<T>(Task<T> task)
+    {
+        DateTime deadline = DateTime.UtcNow + TimeSpan.FromSeconds(15);
+        while (!task.IsCompleted)
+        {
+            if (DateTime.UtcNow >= deadline)
+            {
+                throw new TimeoutException("Timed out waiting for commander switch.");
+            }
+
+            Dispatcher.UIThread.RunJobs();
+            await Task.Delay(25);
+        }
+
+        return await task;
+    }
+
+    private sealed class FixedGameWindowSwitcher(int windowCount) : IGameWindowSwitcher
+    {
+        public int GetAvailableWindowCount() => windowCount;
+
+        public bool TryActivateCurrent() => windowCount > 0;
+
+        public bool TryActivateNext() => windowCount > 1;
+
+        public void Dispose() { }
+    }
+
     private sealed class RecordingDesktopRuntimePhases : IDesktopRuntimePhases
     {
         private readonly List<string> events;

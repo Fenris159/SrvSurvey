@@ -72,6 +72,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private readonly JournalFolderResolution folderResolution;
     private readonly JournalDirectoryMonitor? journalMonitor;
     private readonly JournalSourceRegistry journalSources;
+    private readonly CommanderClaimRegistry commanderClaims;
     private readonly JournalProjectionState projectionState = new();
     private readonly JournalProjection journalProjections;
 
@@ -240,6 +241,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         set => projectionState.AwaitFreshCargoSnapshot = value;
     }
     private bool disposed;
+    private readonly bool suppressInitialOtherCommanderSwitch;
+    private bool initialAutomaticSwitchBaselineCaptured;
+    private ObservedJournalIdentity? suppressedStartupOtherCommanderJournal;
+    private bool automaticCommanderSwitchRequested;
+    private bool profileSyncDetached;
     private readonly FallbackSystemNameSuggestionClient boxelNameSuggestions;
 
     public MainWindowViewModel(string? configuredJournalDirectory)
@@ -317,6 +323,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
             journalSources = new JournalSourceRegistry(AppDataPaths.CacheDirectory);
             rollback.Add(journalSources);
+            commanderClaims = new CommanderClaimRegistry(AppDataPaths.CacheDirectory);
+            rollback.Add(commanderClaims);
+            (AllowAutomaticCommanderSwitch, suppressInitialOtherCommanderSwitch) = ResolveAutomaticCommanderSwitchMode(
+                IsDiagnosticReplay,
+                foundation
+            );
             var sharedJournalSettingsStore = new JournalSettingsStore(AppDataPaths.SharedUiSettingsPath);
             IReadOnlyList<string> savedJournalDirectories = sharedJournalSettingsStore.Load().Directories;
             folderResolution = ResolveJournalFolder(
@@ -949,6 +961,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             TargetFrontierId =
                 NormalizeOptionalId(targetFrontierId)
                 ?? CommanderSettingsProfile.NormalizeFrontierId(AppDataPaths.SettingsFrontierId);
+            commanderClaims.Claim(TargetFrontierId ?? AppDataPaths.SettingsFrontierId);
             var commanderProfileCatalog = new CommanderProfileCatalog(
                 AppDataPaths.DataDirectory,
                 profileJournalDirectories
@@ -1397,6 +1410,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
     public string? TargetFrontierId { get; }
+
+    internal bool AllowAutomaticCommanderSwitch { get; }
+
+    internal event Action<string>? AutomaticCommanderSwitchRequested;
 
     public string ProfileDataDirectory => AppDataPaths.DataDirectory;
 
@@ -2208,10 +2225,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         using var changes = new JournalDirectoryChangeSignal(journalMonitor.JournalDirectories);
         try
         {
-            while (!Volatile.Read(ref disposed))
+            while (!Volatile.Read(ref disposed) && !Volatile.Read(ref automaticCommanderSwitchRequested))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await PollAndApplyMonitorUpdateAsync(isManualRefresh: false, cancellationToken);
+                if (Volatile.Read(ref automaticCommanderSwitchRequested))
+                {
+                    break;
+                }
                 await changes.WaitAsync(interval, cancellationToken);
             }
         }
@@ -2692,6 +2713,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private static string? NormalizeOptionalId(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    private static (bool AllowAutomatic, bool SuppressInitialOther) ResolveAutomaticCommanderSwitchMode(
+        bool isDiagnosticReplay,
+        MainWindowFoundationInputs foundation
+    )
+    {
+        bool allowAutomatic = !isDiagnosticReplay && foundation.AllowAutomaticCommanderSwitch;
+        return (allowAutomatic, allowAutomatic && foundation.SuppressInitialOtherCommanderSwitch);
+    }
+
     private static LegacyProfileOptionViewModel? SelectInitialLegacyProfile(
         IReadOnlyList<LegacyProfileOptionViewModel> profiles
     ) => profiles.Count > 0 ? profiles[0] : null;
@@ -2820,21 +2850,23 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     {
         lock (journalUpdateLifetime)
         {
-            if (disposed)
+            if (disposed || Volatile.Read(ref automaticCommanderSwitchRequested))
             {
                 return;
             }
             journalUpdateUsers++;
         }
+        string? automaticSwitchTarget = null;
         try
         {
             await journalUpdateGate.WaitAsync(cancellationToken);
             try
             {
-                if (!Volatile.Read(ref disposed))
+                if (!Volatile.Read(ref disposed) && !Volatile.Read(ref automaticCommanderSwitchRequested))
                 {
                     JournalMonitorUpdate update = await journalMonitor!.PollAsync(cancellationToken);
                     await ApplyMonitorUpdateAsync(update, isManualRefresh, cancellationToken);
+                    automaticSwitchTarget = EvaluateAutomaticCommanderSwitch(update);
                 }
             }
             finally
@@ -2853,6 +2885,89 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 }
             }
         }
+
+        if (automaticSwitchTarget is not null)
+        {
+            AutomaticCommanderSwitchRequested?.Invoke(automaticSwitchTarget);
+        }
+    }
+
+    /// <summary>Detects an active commander switch in Automatic mode while protecting concurrent multi-commander sessions.</summary>
+    private string? EvaluateAutomaticCommanderSwitch(JournalMonitorUpdate update)
+    {
+        if (
+            !AllowAutomaticCommanderSwitch
+            || automaticCommanderSwitchRequested
+            || IsDiagnosticReplay
+            || IsImportingProfile
+            || OverlayInteraction.IsEditing
+            || AutomaticCommanderSwitchRequested is null
+        )
+        {
+            return null;
+        }
+
+        string? currentFrontierId = CommanderSettingsProfile.NormalizeFrontierId(
+            AppDataPaths.SettingsFrontierId ?? TargetFrontierId
+        );
+        string? candidateFrontierId = ResolveAutomaticSwitchCandidate(update, currentFrontierId);
+        if (candidateFrontierId is null)
+        {
+            return null;
+        }
+
+        CommanderInstances.RefreshGameWindowCount();
+        if (CommanderInstances.HasMultipleGameWindows || commanderClaims.IsClaimedByOtherInstance(candidateFrontierId))
+        {
+            return null;
+        }
+
+        Volatile.Write(ref automaticCommanderSwitchRequested, true);
+        applicationLogService?.Append(
+            $"Automatic commander switch: detected active journal for {candidateFrontierId} "
+                + $"(current: {currentFrontierId ?? "none"})."
+        );
+        return candidateFrontierId;
+    }
+
+    /// <summary>Resolves a different commander's newly active journal while preserving retained-restart baselines.</summary>
+    private string? ResolveAutomaticSwitchCandidate(JournalMonitorUpdate update, string? currentFrontierId)
+    {
+        ObservedJournalIdentity? observed = update.NewestIdentifiedJournal;
+        if (observed is null)
+        {
+            initialAutomaticSwitchBaselineCaptured = true;
+            return currentFrontierId is null
+                ? CommanderSettingsProfile.NormalizeFrontierId(journalState.FrontierId)
+                : null;
+        }
+
+        string? normalizedObserved = CommanderSettingsProfile.NormalizeFrontierId(observed.FrontierId);
+        if (
+            normalizedObserved is null
+            || string.Equals(normalizedObserved, currentFrontierId, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            initialAutomaticSwitchBaselineCaptured = true;
+            suppressedStartupOtherCommanderJournal = null;
+            return null;
+        }
+
+        if (suppressInitialOtherCommanderSwitch && !initialAutomaticSwitchBaselineCaptured)
+        {
+            suppressedStartupOtherCommanderJournal = observed;
+            initialAutomaticSwitchBaselineCaptured = true;
+            return null;
+        }
+
+        return observed == suppressedStartupOtherCommanderJournal ? null : normalizedObserved;
+    }
+
+    /// <summary>Hands off the shared profile-sync service before an in-process commander switch tears down this workspace.</summary>
+    internal SrvSurvey.Desktop.ProfileSync.ProfileSyncService DetachProfileSyncService()
+    {
+        profileSyncDetached = true;
+        return ProfileSync.DetachService();
     }
 
     /// <summary>Projects monitor updates and services retained Raven work even when the journal poll is idle.</summary>
@@ -4887,6 +5002,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         TryDispose(FleetCarrierWorkspace.Dispose);
         // Keep the owned disposal call visible to resource-lifetime analysis.
         TryDispose(() => journalSources.Dispose());
+        TryDispose(() => commanderClaims.Dispose());
         TryDispose(Colonization.Dispose);
         TryDispose(GalaxyMap.Dispose);
         ScreenshotProcessing.PropertyChanged -= OnScreenshotProcessingChanged;
@@ -4918,12 +5034,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         await TryDisposeAsync(questRuntimeCoordinator.DisposeAsync);
-        if (!IsDiagnosticReplay)
+        if (!profileSyncDetached)
         {
-            await TryDisposeAsync(() => new ValueTask(ProfileSync.ShutdownAsync()));
-        }
+            if (!IsDiagnosticReplay)
+            {
+                await TryDisposeAsync(() => new ValueTask(ProfileSync.ShutdownAsync()));
+            }
 
-        TryDispose(ProfileSync.Dispose);
+            TryDispose(ProfileSync.Dispose);
+        }
         ThrowDisposalFailures(failures);
     }
 

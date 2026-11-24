@@ -223,6 +223,158 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    /// <summary>Automatic mode requests a commander switch when a different commander connects, while deferring for multi-client conflicts.</summary>
+    [Fact]
+    public async Task AutomaticModeRequestsCommanderSwitchAfterLogoutWhileHonoringMultiCommanderGuards()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            """
+            {"event":"Fileheader","part":1,"Odyssey":true}
+            {"event":"Commander","Name":"First Cmdr","FID":"F13228986"}
+            {"event":"LoadGame","Commander":"First Cmdr","FID":"F13228986"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 1, 57, DateTimeKind.Utc));
+        AppDataPaths firstPaths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        CommanderSettingsProfile.Prepare(firstPaths);
+        var switcher = new MutableGameWindowSwitcher { AvailableWindowCount = 1 };
+        List<string> requestedSwitches = [];
+        await using MainWindowViewModel first = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder =>
+                builder
+                    .WithAppDataPaths(firstPaths)
+                    .WithGameWindowSwitcher(switcher)
+                    .WithAllowAutomaticCommanderSwitch(true)
+        );
+        first.AutomaticCommanderSwitchRequested += requestedSwitches.Add;
+
+        await first.RefreshAsync();
+        Assert.Equal("F13228986", first.FrontierId);
+        Assert.Empty(requestedSwitches);
+
+        // Menu-only journal must not switch before the new commander logs in.
+        string secondJournal = Path.Combine(journals, "Journal.2026-11-23T073400.01.log");
+        await File.WriteAllTextAsync(secondJournal, "{\"event\":\"Fileheader\",\"part\":1,\"Odyssey\":true}\n");
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 0, DateTimeKind.Utc));
+        await first.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        // Second commander connects while two Elite windows are open -> deferred.
+        switcher.AvailableWindowCount = 2;
+        await File.AppendAllTextAsync(
+            secondJournal,
+            """
+            {"event":"Commander","Name":"Second Cmdr","FID":"F14004033"}
+            {"event":"LoadGame","Commander":"Second Cmdr","FID":"F14004033"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 15, DateTimeKind.Utc));
+        await first.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        // Even with one Elite window, another live SrvSurvey instance owning F14004033 blocks stealing it.
+        switcher.AvailableWindowCount = 1;
+        AppDataPaths secondPaths = temp.Paths with { SettingsFrontierId = "F14004033" };
+        CommanderSettingsProfile.Prepare(secondPaths);
+        await using (
+            MainWindowViewModel second = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(secondPaths).WithTargetFrontierId("F14004033")
+            )
+        )
+        {
+            await first.RefreshAsync();
+            Assert.Empty(requestedSwitches);
+        }
+
+        // Once F14004033 is unowned and only one client runs, automatic switching triggers cleanly once.
+        await first.RefreshAsync();
+        Assert.Equal(["F14004033"], requestedSwitches);
+        await first.RefreshAsync();
+        Assert.Single(requestedSwitches);
+    }
+
+    /// <summary>A retained restart ignores pre-existing newer journals from another commander until new activity occurs, and fresh startups adopt the first commander.</summary>
+    [Fact]
+    public async Task AutomaticModeRetainedRestartWaitsForNewActivityAndFreshStartupAdoptsFirstCommander()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            "{\"event\":\"Commander\",\"Name\":\"First\",\"FID\":\"F13228986\"}\n"
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 1, 57, DateTimeKind.Utc));
+        string preExistingOther = Path.Combine(journals, "Journal.2026-11-23T070000.01.log");
+        await File.WriteAllTextAsync(
+            preExistingOther,
+            "{\"event\":\"Commander\",\"Name\":\"Other\",\"FID\":\"F14004033\"}\n"
+        );
+        File.SetLastWriteTimeUtc(preExistingOther, new DateTime(2026, 11, 23, 7, 0, 0, DateTimeKind.Utc));
+
+        AppDataPaths retainedPaths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        CommanderSettingsProfile.Prepare(retainedPaths);
+        List<string> retainedSwitches = [];
+        await using (
+            MainWindowViewModel retained = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(retainedPaths)
+                        .WithGameWindowSwitcher(new MutableGameWindowSwitcher { AvailableWindowCount = 1 })
+                        .WithAllowAutomaticCommanderSwitch(true, suppressInitialOtherCommanderSwitch: true)
+            )
+        )
+        {
+            retained.AutomaticCommanderSwitchRequested += retainedSwitches.Add;
+            await retained.RefreshAsync();
+            await retained.RefreshAsync();
+            Assert.Empty(retainedSwitches);
+
+            await File.AppendAllTextAsync(
+                preExistingOther,
+                "{\"event\":\"LoadGame\",\"Commander\":\"Other\",\"FID\":\"F14004033\"}\n"
+            );
+            File.SetLastWriteTimeUtc(preExistingOther, new DateTime(2026, 11, 23, 7, 1, 0, DateTimeKind.Utc));
+            await retained.RefreshAsync();
+            Assert.Equal(["F14004033"], retainedSwitches);
+        }
+
+        // Fresh startup with no journals yet adopts the first identified commander when it arrives.
+        string emptyJournals = temp.Path("data", "empty-journals");
+        Directory.CreateDirectory(emptyJournals);
+        List<string> freshSwitches = [];
+        await using MainWindowViewModel fresh = MainWindowViewModelTestBuilder.Create(
+            emptyJournals,
+            builder =>
+                builder
+                    .WithAppDataPaths(temp.Paths)
+                    .WithGameWindowSwitcher(new MutableGameWindowSwitcher { AvailableWindowCount = 1 })
+                    .WithAllowAutomaticCommanderSwitch(true)
+        );
+        fresh.AutomaticCommanderSwitchRequested += freshSwitches.Add;
+        await fresh.RefreshAsync();
+        Assert.Empty(freshSwitches);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(emptyJournals, "Journal.2026-11-23T080000.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"New\",\"FID\":\"F999\"}\n"
+                + "{\"event\":\"LoadGame\",\"Commander\":\"New\",\"FID\":\"F999\"}\n"
+        );
+        await fresh.RefreshAsync();
+        Assert.Equal(["F999"], freshSwitches);
+    }
+
     /// <summary>Startup publishes only the current Cargo.json snapshot, honoring opt-in, ownership, and cancellation.</summary>
     [Theory]
     [InlineData(true, 1, true, false, true)]

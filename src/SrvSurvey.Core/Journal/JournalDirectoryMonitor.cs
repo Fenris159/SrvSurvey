@@ -48,6 +48,7 @@ public sealed partial class JournalDirectoryMonitor
     private bool lastReportedAwaitingCommanderIdentity;
     private string? lastReportedConfiguredJournalDirectory;
     private string? activeJournalDirectory;
+    private ObservedJournalIdentity? newestIdentifiedJournal;
 
     /// <summary>Monitors a single journal directory for the selected commander.</summary>
     public JournalDirectoryMonitor(string journalDirectory, string? targetFrontierId = null)
@@ -198,6 +199,7 @@ public sealed partial class JournalDirectoryMonitor
                 lastReportedConfiguredJournalDirectory,
                 OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
             ),
+            NewestIdentifiedJournal = newestIdentifiedJournal,
         };
         lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
         lastReportedConfiguredJournalDirectory = configuredSource;
@@ -346,6 +348,7 @@ public sealed partial class JournalDirectoryMonitor
     private async Task<FileInfo?> FindLatestJournalAsync(CancellationToken cancellationToken)
     {
         configuredJournalSources.Clear();
+        newestIdentifiedJournal = null;
         FileInfo[] journals = journalDirectories
             .Where(Directory.Exists)
             .SelectMany(EnumerateJournalFiles)
@@ -378,6 +381,7 @@ public sealed partial class JournalDirectoryMonitor
             if (index == 0)
             {
                 newestFrontierId = frontierId;
+                RecordNewestIdentifiedJournal(journal, frontierId);
             }
 
             if (MatchesTargetFrontierId(frontierId))
@@ -391,6 +395,19 @@ public sealed partial class JournalDirectoryMonitor
         isAutomaticIdentityScanIncomplete = targetFrontierId is null && journals.Length > 0;
         isAwaitingCommanderIdentity = targetFrontierId is not null && journals.Length > 0 && newestFrontierId is null;
         return targetFrontierId is null ? journals[0] : null;
+    }
+
+    private void RecordNewestIdentifiedJournal(FileInfo journal, string? frontierId)
+    {
+        if (frontierId is not null)
+        {
+            newestIdentifiedJournal = new ObservedJournalIdentity(
+                journal.FullName,
+                frontierId,
+                journal.Length,
+                journal.LastWriteTimeUtc
+            );
+        }
     }
 
     private bool MatchesTargetFrontierId(string? frontierId) =>
@@ -1013,6 +1030,9 @@ public sealed record JournalMonitorUpdate(
 
     public bool ConfiguredSourceChanged { get; init; }
 
+    /// <summary>The newest journal across monitored folders when it already declares a commander Frontier ID.</summary>
+    public ObservedJournalIdentity? NewestIdentifiedJournal { get; init; }
+
     public bool HasChanges =>
         IsBootstrapRead
         || JournalEvents.Count > 0
@@ -1026,3 +1046,11 @@ public sealed record JournalMonitorUpdate(
         || SessionContextChanged
         || ConfiguredSourceChanged;
 }
+
+/// <summary>Snapshot of the newest journal file that has already declared a commander identity.</summary>
+public sealed record ObservedJournalIdentity(
+    string JournalPath,
+    string FrontierId,
+    long Length,
+    DateTime LastWriteTimeUtc
+);

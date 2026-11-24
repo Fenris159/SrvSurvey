@@ -187,6 +187,10 @@ internal sealed class MainWindowFoundationInputs
 
     public string? TargetFrontierId { get; init; }
 
+    public bool AllowAutomaticCommanderSwitch { get; init; }
+
+    public bool SuppressInitialOtherCommanderSwitch { get; init; }
+
     public CommanderPreferenceSettingsStore? CommanderPreferenceSettingsStore { get; init; }
 
     public bool CommanderPreferenceCommandLineOverride { get; init; }

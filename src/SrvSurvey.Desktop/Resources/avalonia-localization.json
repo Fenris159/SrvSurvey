@@ -3121,6 +3121,14 @@
       "translation": "Für die automatische Frachtsynchronisierung von Raven Fleet Carrier sind ein API-Schlüssel und eine ausdrückliche Zustimmung erforderlich."
     },
     {
+      "source": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+      "translation": "Automatischer Commander-Schalter: Aktives Journal für {0} (aktuell: {1}) erkannt."
+    },
+    {
+      "source": "Automatic commander switch: reloading desktop runtime for {0}.",
+      "translation": "Automatischer Commander-Schalter: Desktop-Runtime für {0} neu laden."
+    },
+    {
       "source": "Automatic conversion",
       "translation": "Automatische Konvertierung"
     },
@@ -7015,6 +7023,10 @@
     {
       "source": "Commander: {0}",
       "translation": "Kommandant: {0}"
+    },
+    {
+      "source": "CommanderClaims",
+      "translation": "CommanderClaims"
     },
     {
       "source": "CommanderPreference",
@@ -46467,6 +46479,14 @@
       "translation": "La sincronización automática de carga de Raven Fleet Carrier requiere una clave API y un consentimiento explícito."
     },
     {
+      "source": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+      "translation": "Interruptor de comandante automático: diario activo detectado para {0} (actual: {1})."
+    },
+    {
+      "source": "Automatic commander switch: reloading desktop runtime for {0}.",
+      "translation": "Cambio de comandante automático: recarga del tiempo de ejecución del escritorio para {0}."
+    },
+    {
       "source": "Automatic conversion",
       "translation": "Conversión automática"
     },
@@ -50361,6 +50381,10 @@
     {
       "source": "Commander: {0}",
       "translation": "Comandante: {0}"
+    },
+    {
+      "source": "CommanderClaims",
+      "translation": "ComandanteReclamaciones"
     },
     {
       "source": "CommanderPreference",
@@ -89813,6 +89837,14 @@
       "translation": "La synchronisation automatique du fret Raven Fleet Carrier nécessite une clé API et un consentement explicite."
     },
     {
+      "source": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+      "translation": "Commutateur de commande automatique : journal actif détecté pour {0} (actuel : {1})."
+    },
+    {
+      "source": "Automatic commander switch: reloading desktop runtime for {0}.",
+      "translation": "Commutateur de commande automatique : rechargement du runtime de bureau pour {0}."
+    },
+    {
       "source": "Automatic conversion",
       "translation": "Conversion automatique"
     },
@@ -93707,6 +93739,10 @@
     {
       "source": "Commander: {0}",
       "translation": "Commandant : {0}"
+    },
+    {
+      "source": "CommanderClaims",
+      "translation": "Réclamations du commandant"
     },
     {
       "source": "CommanderPreference",
@@ -133159,6 +133195,14 @@
       "translation": "A sincronização automática de carga da Raven Fleet Carrier requer uma chave de API e consentimento explícito."
     },
     {
+      "source": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+      "translation": "Chave de comando automática: diário ativo detectado para {0} (atual: {1})."
+    },
+    {
+      "source": "Automatic commander switch: reloading desktop runtime for {0}.",
+      "translation": "Troca automática de comandante: recarregando o tempo de execução da área de trabalho para {0}."
+    },
+    {
       "source": "Automatic conversion",
       "translation": "Conversão automática"
     },
@@ -137053,6 +137097,10 @@
     {
       "source": "Commander: {0}",
       "translation": "Comandante: {0}"
+    },
+    {
+      "source": "CommanderClaims",
+      "translation": "ComandanteReivindicações"
     },
     {
       "source": "CommanderPreference",
@@ -176505,6 +176553,14 @@
       "translation": "Для автоматической синхронизации грузов Raven Fleet Carrier требуется ключ API и явное согласие."
     },
     {
+      "source": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+      "translation": "Автоматический переключатель управления: обнаружен активный журнал для {0} (текущий: {1})."
+    },
+    {
+      "source": "Automatic commander switch: reloading desktop runtime for {0}.",
+      "translation": "Автоматический переключатель управления: перезагрузка среды выполнения рабочего стола для {0}."
+    },
+    {
       "source": "Automatic conversion",
       "translation": "Автоматическое преобразование"
     },
@@ -180399,6 +180455,10 @@
     {
       "source": "Commander: {0}",
       "translation": "Командир: {0}"
+    },
+    {
+      "source": "CommanderClaims",
+      "translation": "Командир Претензии"
     },
     {
       "source": "CommanderPreference",
@@ -219851,6 +219911,14 @@
       "translation": "自动 Raven 舰队承运人货物同步需要 API 密钥和明确同意。"
     },
     {
+      "source": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+      "translation": "自动命令开关：检测到 {0} 的活动日志（当前：{1}）。"
+    },
+    {
+      "source": "Automatic commander switch: reloading desktop runtime for {0}.",
+      "translation": "自动命令切换：为{0}重新加载桌面运行时。"
+    },
+    {
       "source": "Automatic conversion",
       "translation": "自动转换"
     },
@@ -223745,6 +223813,10 @@
     {
       "source": "Commander: {0}",
       "translation": "指挥官：{0}"
+    },
+    {
+      "source": "CommanderClaims",
+      "translation": "指挥官索赔"
     },
     {
       "source": "CommanderPreference",
@@ -263197,6 +263269,14 @@
       "translation": "* AUTOMATIC RAVEN FLEET CARRIER CARGO SYNC REQUIRES AN API KEY AND EXPLICIT CONSENT. >>>!"
     },
     {
+      "source": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+      "translation": "* AUTOMATIC COMMANDER SWITCH: DETECTED ACTIVE JOURNAL FOR {0} (CURRENT: {1}). >>>!"
+    },
+    {
+      "source": "Automatic commander switch: reloading desktop runtime for {0}.",
+      "translation": "* AUTOMATIC COMMANDER SWITCH: RELOADING DESKTOP RUNTIME FOR {0}. >>>!"
+    },
+    {
       "source": "Automatic conversion",
       "translation": "* AUTOMATIC CONVERSION >>>!"
     },
@@ -267091,6 +267171,10 @@
     {
       "source": "Commander: {0}",
       "translation": "* COMMANDER: {0} >>>!"
+    },
+    {
+      "source": "CommanderClaims",
+      "translation": "* COMMANDERCLAIMS >>>!"
     },
     {
       "source": "CommanderPreference",

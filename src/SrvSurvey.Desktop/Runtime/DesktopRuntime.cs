@@ -3,8 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Runtime;
+
+internal sealed record CommanderSwitchWindowState(bool WasHiddenToTray, bool WasMinimized, bool WasActive);
 
 internal sealed record DesktopStartup(string[] Arguments, ApplicationLogService? ApplicationLog)
 {
@@ -14,7 +17,15 @@ internal sealed record DesktopStartup(string[] Arguments, ApplicationLogService?
 
     internal bool BringMainWindowToFront { get; init; }
 
+    internal bool IsCommanderSwitch { get; init; }
+
+    internal CommanderSwitchWindowState? CommanderSwitchWindowState { get; init; }
+
     internal Action<DesktopStartupCheckpoint>? Checkpoint { get; init; }
+
+    internal Action<DesktopRuntime>? OnRuntimeReplaced { get; init; }
+
+    internal Func<SrvSurvey.Desktop.Platform.Overlay.IGameWindowSwitcher>? GameWindowSwitcherFactory { get; init; }
 
     internal SrvSurvey.Desktop.ProfileSync.ProfileSyncService? ProfileSyncService { get; init; }
 }
@@ -34,6 +45,7 @@ internal enum DesktopShutdownReason
     StartupFailure,
     JournalCommand,
     Restart,
+    CommanderSwitch,
     UpdateHandoff,
     RemoteInstanceRequest,
     LinuxTermination,
@@ -70,6 +82,11 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     private readonly IDesktopRuntimePhases phases;
     private Window? attachedMainWindow;
     private Task? shutdownTask;
+    private DesktopShutdownReason? activeShutdownReason;
+
+    internal MainWindowViewModel? MainViewModel => mainViewModel;
+
+    internal MainWindow? MainWindow => mainWindow;
 
     private DesktopRuntime(IDesktopRuntimeLifetime lifetime, IDesktopRuntimePhases phases)
     {
@@ -90,17 +107,25 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         Application application,
         IClassicDesktopStyleApplicationLifetime lifetime,
         DesktopStartup startup
+    ) => Start(application, lifetime, startup, new AvaloniaDesktopRuntimeLifetime(lifetime));
+
+    internal static DesktopRuntime Start(
+        Application application,
+        IClassicDesktopStyleApplicationLifetime desktop,
+        DesktopStartup startup,
+        IDesktopRuntimeLifetime lifetime
     )
     {
         ArgumentNullException.ThrowIfNull(application);
-        ArgumentNullException.ThrowIfNull(lifetime);
+        ArgumentNullException.ThrowIfNull(desktop);
         ArgumentNullException.ThrowIfNull(startup);
+        ArgumentNullException.ThrowIfNull(lifetime);
 
         var runtime = new DesktopRuntime(lifetime);
         runtime.applicationLogService = startup.ApplicationLog;
         try
         {
-            runtime.InitializeDesktopApplication(application, lifetime, startup);
+            runtime.InitializeDesktopApplication(application, desktop, startup);
         }
         catch (Exception exception)
         {
@@ -188,9 +213,38 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
 
             completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             shutdownTask = completion.Task;
+            activeShutdownReason = reason;
         }
 
         _ = CompleteStopAsync(completion, reason, exitCode);
+        return completion.Task;
+    }
+
+    /// <summary>Replaces the active commander-scoped runtime in-process when Automatic mode detects a new commander.</summary>
+    internal Task SwitchCommanderAsync(string nextFrontierId)
+    {
+        string? normalized = SrvSurvey.Desktop.Configuration.CommanderSettingsProfile.NormalizeFrontierId(
+            nextFrontierId
+        );
+        if (normalized is null || hostApplication is null || hostDesktop is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        TaskCompletionSource completion;
+        lock (sync)
+        {
+            if (shutdownTask is not null)
+            {
+                return shutdownTask;
+            }
+
+            completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            shutdownTask = completion.Task;
+            activeShutdownReason = DesktopShutdownReason.CommanderSwitch;
+        }
+
+        _ = CompleteCommanderSwitchAsync(completion, normalized);
         return completion.Task;
     }
 
@@ -255,6 +309,72 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
             completion.SetException(exception);
         }
     }
+
+    private async Task CompleteCommanderSwitchAsync(TaskCompletionSource completion, string nextFrontierId)
+    {
+        try
+        {
+            await SwitchCommanderCoreAsync(nextFrontierId);
+            completion.SetResult();
+        }
+        catch (Exception exception)
+        {
+            completion.SetException(exception);
+        }
+    }
+
+    /// <summary>Tears down the outgoing commander's workspaces and composes a fresh runtime for the active commander.</summary>
+    private async Task SwitchCommanderCoreAsync(string nextFrontierId)
+    {
+        Application application = hostApplication!;
+        IClassicDesktopStyleApplicationLifetime desktop = hostDesktop!;
+        Window? oldWindow = attachedMainWindow;
+        CommanderSwitchWindowState? windowState = CaptureWindowStateForCommanderSwitch();
+        AppDataPaths basePaths = mainViewModel?.AppDataPaths ?? startupAppDataPaths ?? AppDataPaths.ResolveCurrent();
+        AppDataPaths nextPaths = basePaths with { SettingsFrontierId = nextFrontierId };
+        string[] nextArguments = StartupOptions.WithoutInstanceFrontierId(originalStartupArguments);
+        ApplicationLogService? log = applicationLogService;
+        Action<DesktopRuntime>? replacedCallback = onRuntimeReplaced;
+        Func<SrvSurvey.Desktop.Platform.Overlay.IGameWindowSwitcher>? switcherFactory = gameWindowSwitcherFactory;
+
+        TryRun(() => QuiesceMainWindow(DesktopShutdownReason.CommanderSwitch));
+        TryRun(() => phases.Quiesce(DesktopShutdownReason.CommanderSwitch));
+        await TryRunAsync(phases.StopProducersAsync);
+        await TryRunAsync(phases.DisposeDependentsAsync);
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? preservedProfileSync =
+            mainViewModel?.DetachProfileSyncService();
+        await TryRunAsync(phases.DisposeViewModelAsync);
+        await TryRunAsync(phases.DisposeInfrastructureAsync);
+        TryRun(ReleaseMainWindowCloseGuard);
+        TryRun(() => oldWindow?.Close());
+
+        Program.UpdateStartupContextPaths(nextPaths);
+        log?.Append($"Automatic commander switch: reloading desktop runtime for {nextFrontierId}.");
+        DesktopRuntime replacement = Start(
+            application,
+            desktop,
+            new DesktopStartup(nextArguments, log)
+            {
+                AppDataPathsOverride = nextPaths,
+                ProfileSyncService = preservedProfileSync,
+                IsCommanderSwitch = true,
+                CommanderSwitchWindowState = windowState,
+                OnRuntimeReplaced = replacedCallback,
+                GameWindowSwitcherFactory = switcherFactory,
+            },
+            lifetime
+        );
+        replacedCallback?.Invoke(replacement);
+    }
+
+    private CommanderSwitchWindowState? CaptureWindowStateForCommanderSwitch() =>
+        attachedMainWindow is { } window
+            ? new CommanderSwitchWindowState(
+                WasHiddenToTray: !window.IsVisible && !window.ShowInTaskbar,
+                WasMinimized: window.WindowState == WindowState.Minimized,
+                WasActive: window.IsActive
+            )
+            : null;
 
     private void HandleMainWindowClosing(object? sender, WindowClosingEventArgs eventArgs)
     {

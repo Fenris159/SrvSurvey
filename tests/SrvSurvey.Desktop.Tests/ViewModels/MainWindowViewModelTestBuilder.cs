@@ -39,6 +39,8 @@ internal sealed class MainWindowViewModelTestBuilder
     private IEliteGameProcessDetector? eliteGameProcessDetector;
     private TimeSpan? systemBodyDataRetryDelay;
     private string? targetFrontierId;
+    private bool allowAutomaticCommanderSwitch;
+    private bool suppressInitialOtherCommanderSwitch;
     private IVoxStellarPublisher? voxStellarPublisher;
     private bool isDiagnosticReplay;
     private string? diagnosticReplayStatus;
@@ -70,6 +72,8 @@ internal sealed class MainWindowViewModelTestBuilder
                     AppDataPaths = appDataPaths ?? CreateIsolatedPaths(),
                     ApplicationLogService = applicationLogService,
                     TargetFrontierId = targetFrontierId,
+                    AllowAutomaticCommanderSwitch = allowAutomaticCommanderSwitch,
+                    SuppressInitialOtherCommanderSwitch = suppressInitialOtherCommanderSwitch,
                     FrontierProfile = frontierProfile,
                     ExternalNetworkClient = externalNetworkClient ?? OfflineNetwork,
                     IsDiagnosticReplay = isDiagnosticReplay,
@@ -194,6 +198,16 @@ internal sealed class MainWindowViewModelTestBuilder
     public MainWindowViewModelTestBuilder WithTargetFrontierId(string? value)
     {
         targetFrontierId = value;
+        return this;
+    }
+
+    public MainWindowViewModelTestBuilder WithAllowAutomaticCommanderSwitch(
+        bool allow = true,
+        bool suppressInitialOtherCommanderSwitch = false
+    )
+    {
+        allowAutomaticCommanderSwitch = allow;
+        this.suppressInitialOtherCommanderSwitch = suppressInitialOtherCommanderSwitch;
         return this;
     }
 
