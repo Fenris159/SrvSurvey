@@ -488,7 +488,7 @@ public sealed class VrOverlayCoordinator : IDisposable
     {
         bool surfaceReplaced = registrations.Any(registration =>
             published.TryGetValue(registration.PlotterName, out RegisteredOverlayWindow? prior)
-            && !ReferenceEquals(prior, registration)
+            && !IsSameSurface(prior, registration)
         );
         if (!surfaceReplaced)
         {
@@ -503,6 +503,9 @@ public sealed class VrOverlayCoordinator : IDisposable
             _ = runtime.SetInteractionEnabled(true);
         }
     }
+
+    private static bool IsSameSurface(RegisteredOverlayWindow prior, RegisteredOverlayWindow current) =>
+        ReferenceEquals(prior.Window, current.Window) && ReferenceEquals(prior.RenderSource, current.RenderSource);
 
     private (Dictionary<string, RegisteredOverlayWindow> Active, string? LastError) PublishRegistrations(
         IReadOnlyList<RegisteredOverlayWindow> registrations,

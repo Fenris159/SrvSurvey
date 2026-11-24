@@ -63,10 +63,12 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     private readonly LinuxVrRuntimeInspector inspector;
     private readonly Dictionary<string, OpenXrOverlayFrame> frames = new(StringComparer.Ordinal);
     private readonly Dictionary<ulong, string> identities = [];
+    private readonly List<VrOverlayPointerEvent> bufferedEvents = [];
     private nint sessionHandle;
     private uint originRevision;
     private bool interactionEnabled;
     private bool pendingInteractionReset;
+    private ulong? activePointerOverlayId;
     private int maximumOverlays = OpenXrFramePacket.MaximumOverlays;
 
     public LinuxOpenXrOverlayRuntime(
@@ -203,7 +205,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             && HasDifferentPointerBasis(previous.Frame, frame)
         )
         {
-            InvalidateQueuedInteraction();
+            InvalidateOverlayInteraction(plotterName);
         }
 
         identities[OpenXrFramePacket.GetOverlayId(plotterName)] = plotterName;
@@ -237,7 +239,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     {
         if (frames.Remove(plotterName))
         {
-            InvalidateQueuedInteraction();
+            InvalidateOverlayInteraction(plotterName);
         }
 
         identities.Remove(OpenXrFramePacket.GetOverlayId(plotterName));
@@ -268,7 +270,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         if (!enabled)
         {
             interactionEnabled = false;
-            pendingInteractionReset = false;
+            ClearInteractionBuffers();
             if (IsInitialized)
             {
                 _ = backend.SetInteractionEnabled(sessionHandle, false);
@@ -285,7 +287,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         if (!outcome.Succeeded)
         {
             interactionEnabled = false;
-            pendingInteractionReset = false;
+            ClearInteractionBuffers();
             return VrRuntimeResult.Failure(
                 string.IsNullOrWhiteSpace(outcome.Message)
                     ? $"Controller-pointer interaction is unavailable on {DisplayName} (OpenXR error {outcome.XrError})."
@@ -294,7 +296,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         }
 
         interactionEnabled = true;
-        pendingInteractionReset = false;
+        ClearInteractionBuffers();
         return VrRuntimeResult.Success(
             string.IsNullOrWhiteSpace(outcome.Message)
                 ? $"{DisplayName} controller interaction is enabled. Point at a panel and use the trigger to click."
@@ -312,15 +314,21 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         IReadOnlyList<OpenXrPointerEvent> events = backend.PollPointerEvents(sessionHandle);
         bool prependReset = pendingInteractionReset;
         pendingInteractionReset = false;
-        if (events.Count == 0 && !prependReset)
+        if (events.Count == 0 && bufferedEvents.Count == 0 && !prependReset)
         {
             return [];
         }
 
-        var result = new List<VrOverlayPointerEvent>(events.Count + (prependReset ? 1 : 0));
+        var result = new List<VrOverlayPointerEvent>(events.Count + bufferedEvents.Count + (prependReset ? 1 : 0));
         if (prependReset)
         {
             result.Add(new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0));
+        }
+
+        if (bufferedEvents.Count > 0)
+        {
+            result.AddRange(bufferedEvents);
+            bufferedEvents.Clear();
         }
 
         foreach (OpenXrPointerEvent pointer in events)
@@ -339,6 +347,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             || !frames.TryGetValue(name, out OpenXrOverlayFrame? overlayFrame)
         )
         {
+            activePointerOverlayId = null;
             if (result.Count == 0 || result[^1].Kind != VrOverlayPointerEventKind.Reset)
             {
                 result.Add(new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0));
@@ -346,6 +355,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return;
         }
 
+        activePointerOverlayId = pointer.Id;
         VrOverlayFrame frame = overlayFrame.Frame;
         double width = frame.PointerWidth > 0 ? frame.PointerWidth : frame.Width;
         double height = frame.PointerHeight > 0 ? frame.PointerHeight : frame.Height;
@@ -364,7 +374,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     public void Shutdown()
     {
         interactionEnabled = false;
-        pendingInteractionReset = false;
+        ClearInteractionBuffers();
         if (sessionHandle != nint.Zero)
         {
             backend.Destroy(sessionHandle);
@@ -376,14 +386,41 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         maximumOverlays = OpenXrFramePacket.MaximumOverlays;
     }
 
-    private void InvalidateQueuedInteraction()
+    private void ClearInteractionBuffers()
+    {
+        pendingInteractionReset = false;
+        activePointerOverlayId = null;
+        bufferedEvents.Clear();
+    }
+
+    private void InvalidateOverlayInteraction(string plotterName)
     {
         if (!interactionEnabled || !IsInitialized)
         {
             return;
         }
 
-        _ = backend.PollPointerEvents(sessionHandle);
+        ulong overlayId = OpenXrFramePacket.GetOverlayId(plotterName);
+        bool affected =
+            activePointerOverlayId == overlayId
+            || bufferedEvents.Any(ev => string.Equals(ev.PlotterName, plotterName, StringComparison.Ordinal));
+        foreach (OpenXrPointerEvent pointer in backend.PollPointerEvents(sessionHandle))
+        {
+            if (pointer.Id == overlayId)
+            {
+                affected = true;
+                continue;
+            }
+
+            AppendPointerEvent(bufferedEvents, pointer);
+        }
+
+        if (!affected)
+        {
+            return;
+        }
+
+        ClearInteractionBuffers();
         _ = backend.SetInteractionEnabled(sessionHandle, true);
         pendingInteractionReset = true;
     }

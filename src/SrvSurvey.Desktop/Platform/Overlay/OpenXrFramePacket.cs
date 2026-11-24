@@ -43,7 +43,13 @@ public static class OpenXrFramePacket
         int descriptorOffset = HeaderBytes;
         int pixelOffset = HeaderBytes + overlays.Count * DescriptorBytes;
         foreach (
-            (string name, OpenXrOverlayFrame overlay) in overlays.OrderBy(entry => entry.Key, StringComparer.Ordinal)
+            (string name, OpenXrOverlayFrame overlay) in overlays
+                .OrderBy(entry =>
+                    string.Equals(entry.Key, VrOverlayCalibrationSession.ControlsPlotterName, StringComparison.Ordinal)
+                        ? 1
+                        : 0
+                )
+                .ThenBy(entry => entry.Key, StringComparer.Ordinal)
         )
         {
             Span<byte> descriptor = packet.AsSpan(descriptorOffset, DescriptorBytes);

@@ -606,6 +606,83 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         }
     }
 
+    [AvaloniaFact]
+    public void SteadyLiveOverlaysDoNotResetVrPointerInteractionAcrossSynchronizeTicks()
+    {
+        string dataDirectory = Path.Combine(temporaryDirectory, "data-steady");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-steady");
+        Directory.CreateDirectory(dataDirectory);
+        Directory.CreateDirectory(factoryDirectory);
+        string factoryPath = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factoryPath,
+            """
+            {
+              "PlotBioStatus": "center:0, top:8 { s: 4, p: <0, 4, 10>, r: <0, 0, 0>}",
+              "PlotJumpInfo": "center:0, top:8 { s: 4, p: <0, 2, 10>, r: <0, 0, 0>}"
+            }
+            """
+        );
+        var viewModel = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "steady-settings.json")),
+            new VrOverlayCalibrationStore(dataDirectory, factoryPath)
+        );
+        viewModel.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+        var liveWindow = new Window
+        {
+            Width = 200,
+            Height = 100,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Orange },
+        };
+        var runtime = new StubOpenVrRuntime();
+        using var router = new VrOverlayInputRouter();
+        try
+        {
+            registry.Register(liveWindow, "PlotBioStatus");
+            liveWindow.Show();
+            using var coordinator = new VrOverlayCoordinator(
+                viewModel,
+                registry,
+                runtime,
+                _ => true,
+                inputRouter: router
+            );
+            Assert.True(viewModel.BeginAdjustment());
+            viewModel.SelectedOverlayName = "PlotJumpInfo";
+            Assert.True(coordinator.ToggleInteraction());
+
+            // Press and hold on PlotAdjustVR while a steady live overlay (PlotBioStatus) is also published.
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonDown, 20, 20)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.True(router.HasCapture);
+
+            int interactionCallsBefore = runtime.InteractionChangeCount;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonUp, 20, 20)
+            );
+
+            // Repeated Synchronize ticks allocate fresh RegisteredOverlayWindow snapshots for liveWindow,
+            // but must NOT treat the unchanged surface as replaced or flush queued pointer events.
+            viewModel.RefreshConnectionCommand.Execute(null);
+            viewModel.RefreshConnectionCommand.Execute(null);
+
+            Assert.Equal(interactionCallsBefore, runtime.InteractionChangeCount);
+            Assert.True(router.HasCapture);
+            Assert.Single(runtime.PointerEvents);
+
+            coordinator.PollInteractionEvents();
+            Assert.False(router.HasCapture);
+        }
+        finally
+        {
+            liveWindow.Close();
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

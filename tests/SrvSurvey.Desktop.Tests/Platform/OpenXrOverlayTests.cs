@@ -162,6 +162,23 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.Equal(256u, UInt(packet, 128 + 16));
         Assert.Equal(260u, UInt(packet, 192 + 16));
         Assert.Equal(128, OpenXrFramePacket.Encode(new Dictionary<string, OpenXrOverlayFrame>(), 0).Length);
+
+        // Calibration controls (PlotAdjustVR) must be encoded last so they always render and hit-test on top.
+        byte[] withControls = OpenXrFramePacket.Encode(
+            new Dictionary<string, OpenXrOverlayFrame>
+            {
+                [VrOverlayCalibrationSession.ControlsPlotterName] = overlay,
+                ["PlotBioStatus"] = overlay,
+                ["PlotSysStatus"] = overlay,
+            },
+            0
+        );
+        ulong firstId = BinaryPrimitives.ReadUInt64LittleEndian(withControls.AsSpan(128));
+        ulong secondId = BinaryPrimitives.ReadUInt64LittleEndian(withControls.AsSpan(192));
+        ulong lastId = BinaryPrimitives.ReadUInt64LittleEndian(withControls.AsSpan(256));
+        Assert.Equal(OpenXrFramePacket.GetOverlayId("PlotBioStatus"), firstId);
+        Assert.Equal(OpenXrFramePacket.GetOverlayId("PlotSysStatus"), secondId);
+        Assert.Equal(OpenXrFramePacket.GetOverlayId(VrOverlayCalibrationSession.ControlsPlotterName), lastId);
     }
 
     [Theory]
