@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 
@@ -124,12 +125,12 @@ public sealed partial class ScreenshotProcessingViewModel
             warnings.AddRange(batch.Warnings);
             if (batch.Captures.Count > 0)
             {
-                ScreenshotProcessingPreferences currentPreferences = preferences with { SourceFolder = source };
-                ScreenshotProcessingResult converted = await processingService.ProcessLiveAsync(
+                ScreenshotProcessingResult converted = await ProcessSteamCapturesAsync(
                     batch.Captures.Select(capture => capture.Entry).ToArray(),
-                    currentPreferences,
-                    null,
-                    cancellationToken: cancellationToken
+                    source,
+                    frontierId,
+                    liveSession is not null,
+                    cancellationToken
                 );
                 conversions.AddRange(converted.Conversions);
                 warnings.AddRange(converted.Warnings);
@@ -144,5 +145,41 @@ public sealed partial class ScreenshotProcessingViewModel
         string[] newWarnings = warning.Length > 0 && warning != lastSteamWarning ? [warning] : [];
         lastSteamWarning = warning;
         return new(conversions, newWarnings);
+    }
+
+    internal async Task<ScreenshotProcessingResult> ProcessSteamCapturesAsync(
+        IReadOnlyList<SrvSurvey.Core.Journal.JournalEventEnvelope> entries,
+        string source,
+        string frontierId,
+        bool hasLiveSession,
+        CancellationToken cancellationToken
+    )
+    {
+        ScreenshotProcessingPreferences currentPreferences = preferences with { SourceFolder = source };
+        if (!currentPreferences.Enabled || !currentPreferences.ProcessSteamScreenshots)
+        {
+            diagnostics.WriteSteamScanSkipped(
+                ScreenshotProcessingDiagnostics.DisabledDuringScanReason,
+                entries.Count,
+                currentPreferences.Enabled,
+                currentPreferences.ProcessSteamScreenshots
+            );
+            return ScreenshotProcessingResult.Empty;
+        }
+
+        diagnostics.WriteSteamScan(
+            source,
+            frontierId,
+            entries.Count,
+            hasLiveSession,
+            currentPreferences.Enabled,
+            currentPreferences.ProcessSteamScreenshots
+        );
+        return await processingService.ProcessLiveAsync(
+            entries,
+            currentPreferences,
+            null,
+            cancellationToken: cancellationToken
+        );
     }
 }

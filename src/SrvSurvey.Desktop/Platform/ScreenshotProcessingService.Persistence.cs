@@ -239,7 +239,11 @@ public sealed partial class ScreenshotProcessingService
 
     private ScreenshotConversion FinishConversion(string key, PendingScreenshot capture)
     {
-        ScreenshotConversion conversion = capture.CompletedConversion!;
+        ScreenshotConversion conversion = capture.CompletedConversion! with
+        {
+            IsSteam = IsSteamCapture(capture.Request.Entry),
+        };
+        capture.CompletedConversion = conversion;
         // Publish a verified completion before deleting the source. A restart can
         // finish cleanup without requiring the original file or duplicating a PNG.
         SavePendingCapture(key, capture);

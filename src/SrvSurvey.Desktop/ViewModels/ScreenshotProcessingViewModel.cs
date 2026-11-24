@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
@@ -10,6 +11,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
 {
     private readonly ScreenshotProcessingSettingsStore settingsStore;
     private readonly IScreenshotProcessingService processingService;
+    private ScreenshotProcessingDiagnostics diagnostics = new(null);
     private ScreenshotProcessingPreferences preferences;
     private string statusMessage;
     private string? journalDirectory;
@@ -53,6 +55,17 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
 
     internal bool IsGameWindowAvailable => processingService.IsGameWindowAvailable;
 
+    public void UseDiagnosticLog(Action<string>? log)
+    {
+        diagnostics = new ScreenshotProcessingDiagnostics(log);
+        diagnostics.WriteLoaded(
+            settingsStore.SettingsPath,
+            CreateSettingsDiagnostic(),
+            processingService.PendingNativeCount,
+            processingService.PendingSteamCount
+        );
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void InitializeOutputFolder()
@@ -81,6 +94,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
         {
             StatusMessage =
                 "The screenshot output folder is fixed for this session but could not be saved: " + exception.Message;
+            diagnostics.WriteSaveFailed(ScreenshotProcessingDiagnostics.PinOutputFolderOperation, exception.Message);
         }
         OnPropertyChanged(nameof(TargetFolder));
     }
@@ -114,7 +128,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
         string next = folder.Trim();
         if (next == preferences.SourceFolder)
         {
-            SavePreferences();
+            SavePreferences(nameof(SourceFolder));
         }
         else
         {
@@ -190,7 +204,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
             {
                 if (pinExplicitTarget)
                 {
-                    SavePreferences();
+                    SavePreferences(nameof(TargetFolder));
                 }
                 return;
             }
@@ -285,6 +299,17 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
         {
             InitializeOutputFolder();
         }
+        if (!preferences.Enabled)
+        {
+            foreach (JournalEventEnvelope entry in journalEvents.Where(entry => entry.EventName == "Screenshot"))
+            {
+                diagnostics.WriteSkippedNative(
+                    ScreenshotProcessingDiagnostics.DisabledReason,
+                    ScreenshotProcessingService.GetEventFilename(entry),
+                    preferences.Enabled
+                );
+            }
+        }
         ScreenshotProcessingResult result =
             processingService.HasPendingWorkFor(preferences.ProcessSteamScreenshots)
             || journalEvents.Any(entry => entry.EventName == "Screenshot")
@@ -314,6 +339,7 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
             return result;
         }
 
+        LogProcessingResult(result);
         string converted = result.Conversions.Count switch
         {
             0 => "No screenshots were converted.",
@@ -324,6 +350,56 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
         return result;
     }
 
+    private void LogProcessingResult(ScreenshotProcessingResult result)
+    {
+        int pendingNative = processingService.PendingNativeCount;
+        int pendingSteam = processingService.PendingSteamCount;
+        HashSet<string>? conversionWarnings = null;
+        foreach (ScreenshotConversion conversion in result.Conversions)
+        {
+            if (!string.IsNullOrWhiteSpace(conversion.Warning))
+            {
+                conversionWarnings ??= new HashSet<string>(StringComparer.Ordinal);
+                conversionWarnings.Add(conversion.Warning);
+            }
+            diagnostics.WriteConversion(
+                new ScreenshotConversionDiagnostic
+                {
+                    IsSteam = conversion.IsSteam,
+                    SourcePath = conversion.SourcePath,
+                    OutputPath = conversion.OutputPath,
+                    IncludedBanner = conversion.IncludedBanner ?? preferences.AddBanner,
+                    SourceDeleted = conversion.SourceDeleted,
+                    AerialOutputPath = conversion.AerialOutputPath,
+                    Warning = conversion.Warning,
+                    PendingNative = pendingNative,
+                    PendingSteam = pendingSteam,
+                }
+            );
+        }
+        foreach (
+            string warning in result.Warnings.Where(warning =>
+                conversionWarnings is null || !conversionWarnings.Contains(warning)
+            )
+        )
+        {
+            diagnostics.WriteWarning(warning);
+        }
+    }
+
+    private ScreenshotSettingsDiagnostic CreateSettingsDiagnostic() =>
+        new()
+        {
+            Enabled = preferences.Enabled,
+            ProcessSteamScreenshots = preferences.ProcessSteamScreenshots,
+            AddBanner = preferences.AddBanner,
+            DeleteOriginal = preferences.DeleteOriginal,
+            AutomaticSource = automaticSource,
+            SourceFolder = preferences.SourceFolder,
+            SteamSourceFolder = SteamSourceFolder,
+            TargetFolder = preferences.TargetFolder,
+        };
+
     private void Update(ScreenshotProcessingPreferences updated, [CallerMemberName] string? propertyName = null)
     {
         if (preferences == updated)
@@ -333,10 +409,10 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
 
         preferences = updated;
         OnPropertyChanged(propertyName);
-        SavePreferences();
+        SavePreferences(propertyName);
     }
 
-    private void SavePreferences()
+    private void SavePreferences(string? changedProperty = null)
     {
         try
         {
@@ -349,12 +425,17 @@ public sealed partial class ScreenshotProcessingViewModel : INotifyPropertyChang
             );
             outputPinPending = false;
             StatusMessage = CreateReadyStatus(preferences);
+            if (changedProperty is not null)
+            {
+                diagnostics.WriteSettingsChanged(changedProperty, CreateSettingsDiagnostic());
+            }
         }
         catch (Exception exception)
             when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             StatusMessage =
                 "The screenshot preference changed for this session but could not be saved: " + exception.Message;
+            diagnostics.WriteSaveFailed(ScreenshotProcessingDiagnostics.SavePreferencesOperation, exception.Message);
         }
     }
 

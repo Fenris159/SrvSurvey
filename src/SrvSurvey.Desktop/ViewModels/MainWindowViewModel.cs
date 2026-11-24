@@ -502,6 +502,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 deferOutputInitialization: true,
                 timeProvider: overlay.ScreenshotTimeProvider
             );
+            ScreenshotProcessing.UseDiagnosticLog(message => resolvedApplicationLogService?.Append(message));
             construction.Checkpoint?.Invoke(MainWindowViewModelConstructionCheckpoint.OverlayReady);
             DockToDock = new DockToDockViewModel(
                 new DockToDockSettingsStore(AppDataPaths.UiSettingsPath),

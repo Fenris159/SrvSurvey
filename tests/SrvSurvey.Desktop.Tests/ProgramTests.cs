@@ -1,4 +1,5 @@
 using Avalonia;
+using SrvSurvey.Core.Updates;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -6,6 +7,15 @@ namespace SrvSurvey.Desktop.Tests;
 
 public sealed class ProgramTests
 {
+    [Fact]
+    public void StartupVersionIncludesPrereleaseIdentifier()
+    {
+        string expected = ReleaseVersion.FromAssembly(typeof(Program).Assembly).ToString();
+
+        Assert.Equal(expected, Program.GetStartupVersion(typeof(Program).Assembly));
+        Assert.Contains("-rc.", expected, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("1")]
     [InlineData("true")]
