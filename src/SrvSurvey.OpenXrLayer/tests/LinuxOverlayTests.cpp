@@ -1532,6 +1532,68 @@ void TestInteractionGracefulDegradationAndCursorUploadFailureSafety()
     }
 }
 
+void TestReleaseOnFirstReplacementFrameRearmsFreshPress()
+{
+    for (bool pressReplacement : {false, true})
+    {
+        MockRuntime mock;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20)));
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        REQUIRE(session.StepOnce());
+        std::array<PointerEvent, 16> events{};
+        REQUIRE(session.PollPointerEvents(events) == 1);
+        REQUIRE(events[0].id == 20);
+
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 2);
+        REQUIRE(events[1].id == 20);
+        REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+        // Retire the captured panel with no queued input, and observe the
+        // release on the first frame using its replacement packet.
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 21, 1.0f, pressReplacement ? 1.0f : 0.0f)));
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 1);
+        REQUIRE(events[0].kind == PointerKind::Reset);
+
+        // The next fresh press must work without a second release, whether it
+        // targets the replacement or the unchanged panel behind it.
+        uint64_t expectedId = pressReplacement ? 21 : 10;
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 2);
+        REQUIRE(events[0].id == expectedId);
+        REQUIRE(events[0].kind == PointerKind::Move);
+        REQUIRE(events[1].id == expectedId);
+        REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 2);
+        REQUIRE(events[1].id == expectedId);
+        REQUIRE(events[1].kind == PointerKind::LeftUp);
+        session.Shutdown();
+    }
+}
+
 void TestReplacingUnrelatedSurfacePreservesStagedPress()
 {
     MockRuntime mock;
@@ -1893,6 +1955,7 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
 
 int main()
 {
+    TestReleaseOnFirstReplacementFrameRearmsFreshPress();
     TestReplacingUnrelatedSurfacePreservesStagedPress();
     TestProbeContracts();
     TestOverlaySessionLifecycleAndBgraSwizzle();

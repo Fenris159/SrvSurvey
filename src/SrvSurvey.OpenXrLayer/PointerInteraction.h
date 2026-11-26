@@ -180,8 +180,7 @@ class PointerInteraction
         {
             if (target || buttons)
                 result.events.push_back({0, PointerKind::Reset});
-            if (buttons)
-                armed[selectedHand] = false;
+            // Preserve neutral rearming; held hands with no hit were disarmed above.
             target = 0;
             buttons = 0;
             if (!hands[selectedHand].valid)
