@@ -164,7 +164,11 @@ internal sealed class ProfileSyncStore
         {
             yield break;
         }
-        foreach (string folder in new[] { vr, Path.Combine(vr, "vdxr") })
+        foreach (
+            string folder in VrOverlayCalibrationStore
+                .RouteDirectoryNames.Select(route => Path.Combine(vr, route))
+                .Prepend(vr)
+        )
         {
             if (Directory.Exists(folder) && (File.GetAttributes(folder) & FileAttributes.ReparsePoint) == 0)
             {

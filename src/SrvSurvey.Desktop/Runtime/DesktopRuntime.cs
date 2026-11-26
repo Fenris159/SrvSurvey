@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -28,6 +29,22 @@ internal sealed record DesktopStartup(string[] Arguments, ApplicationLogService?
     internal Func<SrvSurvey.Desktop.Platform.Overlay.IGameWindowSwitcher>? GameWindowSwitcherFactory { get; init; }
 
     internal SrvSurvey.Desktop.ProfileSync.ProfileSyncService? ProfileSyncService { get; init; }
+
+    internal SrvSurvey.Desktop.Platform.CommanderClaimLease? CommanderClaimLease { get; init; }
+
+    internal IReadOnlyDictionary<string, JournalCheckpoint>? CommanderJournalCheckpoints { get; init; }
+
+    internal JournalBaselineSnapshot? CommanderJournalBaseline { get; init; }
+
+    internal JournalSwitchResume? CommanderSwitchJournalResume { get; init; }
+
+    internal ReleaseUpdateSessionState? ReleaseUpdateSessionState { get; init; }
+
+    internal Task<ReleaseUpdateSessionState>? PendingReleaseUpdateCheck { get; init; }
+
+    internal ReferenceDataUpdateSessionState? ReferenceDataUpdateSessionState { get; init; }
+
+    internal Task<ReferenceDataUpdateSessionState>? PendingReferenceDataRefresh { get; init; }
 }
 
 internal enum DesktopStartupCheckpoint
@@ -84,6 +101,9 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     private Task? shutdownTask;
     private DesktopShutdownReason? activeShutdownReason;
     private (DesktopShutdownReason Reason, int ExitCode)? pendingShutdown;
+    private DesktopRuntime? replacementRuntime;
+
+    internal bool HasLinuxTerminationRegistration => linuxTerminationRegistration is not null;
 
     internal MainWindowViewModel? MainViewModel => mainViewModel;
 
@@ -204,40 +224,53 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
 
     internal Task RequestShutdownAsync(DesktopShutdownReason reason, int exitCode = 0)
     {
-        TaskCompletionSource completion;
+        DesktopRuntime? forwardTo = null;
+        TaskCompletionSource? completion = null;
         lock (sync)
         {
             if (shutdownTask is not null)
             {
                 if (activeShutdownReason == DesktopShutdownReason.CommanderSwitch)
                 {
-                    pendingShutdown ??= (reason, exitCode);
+                    if (replacementRuntime is not null)
+                    {
+                        forwardTo = replacementRuntime;
+                    }
+                    else
+                    {
+                        pendingShutdown ??= (reason, exitCode);
+                    }
                 }
 
-                return shutdownTask;
+                if (forwardTo is null)
+                {
+                    return shutdownTask;
+                }
             }
-
-            completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            shutdownTask = completion.Task;
-            activeShutdownReason = reason;
+            else
+            {
+                completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                shutdownTask = completion.Task;
+                activeShutdownReason = reason;
+            }
         }
 
-        _ = CompleteStopAsync(completion, reason, exitCode);
-        return completion.Task;
+        if (forwardTo is not null)
+        {
+            return forwardTo.RequestShutdownAsync(reason, exitCode);
+        }
+
+        _ = CompleteStopAsync(completion!, reason, exitCode);
+        return completion!.Task;
     }
 
     /// <summary>Replaces the active commander-scoped runtime in-process when Automatic mode detects a new commander.</summary>
-    internal Task SwitchCommanderAsync(string nextFrontierId)
+    internal Task SwitchCommanderAsync(string nextFrontierId, bool isAutomatic = false)
     {
         string? normalized = SrvSurvey.Desktop.Configuration.CommanderSettingsProfile.NormalizeFrontierId(
             nextFrontierId
         );
-        if (normalized is null || hostApplication is null || hostDesktop is null)
-        {
-            return Task.CompletedTask;
-        }
-
-        TaskCompletionSource completion;
+        TaskCompletionSource? completion = null;
         lock (sync)
         {
             if (shutdownTask is not null)
@@ -245,12 +278,27 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
                 return shutdownTask;
             }
 
-            completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            shutdownTask = completion.Task;
-            activeShutdownReason = DesktopShutdownReason.CommanderSwitch;
+            if (
+                normalized is not null
+                && hostApplication is not null
+                && hostDesktop is not null
+                && mainViewModel?.ReleaseUpdates.IsInstalling != true
+                && (!isAutomatic || mainViewModel?.CanProceedWithAutomaticCommanderSwitch() != false)
+            )
+            {
+                completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                shutdownTask = completion.Task;
+                activeShutdownReason = DesktopShutdownReason.CommanderSwitch;
+            }
         }
 
-        _ = CompleteCommanderSwitchAsync(completion, normalized);
+        if (completion is null)
+        {
+            mainViewModel?.CancelAutomaticCommanderSwitch();
+            return Task.CompletedTask;
+        }
+
+        _ = CompleteCommanderSwitchAsync(completion, normalized!);
         return completion.Task;
     }
 
@@ -293,27 +341,72 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     /// <summary>Finishes dependent services and background backups before releasing the close guard and exiting.</summary>
     private async Task StopAsync(DesktopShutdownReason reason, int exitCode)
     {
-        _ = await TeardownOutgoingRuntimeAsync(reason, preserveProfileSync: false);
+        _ = await TeardownOutgoingRuntimeAsync(reason, preserveForSwitch: false, nextFrontierId: null);
         TryRun(() => lifetime.Shutdown(exitCode));
     }
 
-    private async Task<SrvSurvey.Desktop.ProfileSync.ProfileSyncService?> TeardownOutgoingRuntimeAsync(
+    private async Task<OutgoingSwitchResources> TeardownOutgoingRuntimeAsync(
         DesktopShutdownReason reason,
-        bool preserveProfileSync
+        bool preserveForSwitch,
+        string? nextFrontierId,
+        string? outgoingFrontierId = null
     )
     {
         TryRun(() => QuiesceMainWindow(reason));
         TryRun(() => phases.Quiesce(reason));
         await TryRunAsync(phases.StopProducersAsync);
         await TryRunAsync(phases.DisposeDependentsAsync);
-        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? preservedProfileSync = preserveProfileSync
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? preservedProfileSync = preserveForSwitch
             ? mainViewModel?.DetachProfileSyncService()
+            : null;
+        SrvSurvey.Desktop.Platform.CommanderClaimLease? preservedCommanderClaim = preserveForSwitch
+            ? mainViewModel?.DetachReservedCommanderClaim(nextFrontierId)
+            : null;
+        ReleaseUpdateSessionState? releaseUpdateState = preserveForSwitch
+            ? mainViewModel?.ReleaseUpdates.CaptureSessionState()
+            : null;
+        Task<ReleaseUpdateSessionState>? pendingReleaseCheck = preserveForSwitch
+            ? mainViewModel?.ReleaseUpdates.CapturePendingCheckAsync()
+            : null;
+        ReferenceDataUpdateSessionState? referenceDataUpdateState = preserveForSwitch
+            ? mainViewModel?.ReferenceDataUpdates.CaptureSessionState()
+            : null;
+        Task<ReferenceDataUpdateSessionState>? pendingReferenceRefresh = preserveForSwitch
+            ? mainViewModel?.ReferenceDataUpdates.CapturePendingRefreshAsync()
+            : null;
+        string? confirmedOutgoingFrontierId = mainViewModel?.ProjectedFrontierId ?? outgoingFrontierId;
+        Dictionary<string, JournalCheckpoint>? checkpoints =
+            preserveForSwitch && nextFrontierId is not null
+                ? CaptureCommanderJournalCheckpoints(confirmedOutgoingFrontierId)
+                : null;
+        JournalBaselineSnapshot? journalBaseline = preserveForSwitch
+            ? mainViewModel?.CurrentJournalBaseline ?? commanderJournalBaseline
             : null;
         await TryRunAsync(phases.DisposeViewModelAsync);
         await TryRunAsync(phases.DisposeInfrastructureAsync);
         TryRun(ReleaseMainWindowCloseGuard);
-        return preservedProfileSync;
+        return new OutgoingSwitchResources(
+            preservedProfileSync,
+            preservedCommanderClaim,
+            checkpoints,
+            journalBaseline,
+            releaseUpdateState,
+            pendingReleaseCheck,
+            referenceDataUpdateState,
+            pendingReferenceRefresh
+        );
     }
+
+    private sealed record OutgoingSwitchResources(
+        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? ProfileSync,
+        SrvSurvey.Desktop.Platform.CommanderClaimLease? CommanderClaim,
+        Dictionary<string, JournalCheckpoint>? CommanderJournalCheckpoints,
+        JournalBaselineSnapshot? CommanderJournalBaseline,
+        ReleaseUpdateSessionState? ReleaseUpdateSessionState,
+        Task<ReleaseUpdateSessionState>? PendingReleaseUpdateCheck,
+        ReferenceDataUpdateSessionState? ReferenceDataUpdateSessionState,
+        Task<ReferenceDataUpdateSessionState>? PendingReferenceDataRefresh
+    );
 
     private async Task CompleteStopAsync(TaskCompletionSource completion, DesktopShutdownReason reason, int exitCode)
     {
@@ -350,53 +443,115 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         CommanderSwitchWindowState? windowState = CaptureWindowStateForCommanderSwitch();
         AppDataPaths basePaths = mainViewModel?.AppDataPaths ?? startupAppDataPaths ?? AppDataPaths.ResolveCurrent();
         AppDataPaths nextPaths = basePaths with { SettingsFrontierId = nextFrontierId };
+        string? outgoingFrontierId = basePaths.SettingsFrontierId ?? mainViewModel?.TargetFrontierId;
         string[] nextArguments = StartupOptions.WithoutInstanceFrontierId(originalStartupArguments);
         ApplicationLogService? log = applicationLogService;
         Action<DesktopRuntime>? replacedCallback = onRuntimeReplaced;
         Func<SrvSurvey.Desktop.Platform.Overlay.IGameWindowSwitcher>? switcherFactory = gameWindowSwitcherFactory;
 
-        SrvSurvey.Desktop.ProfileSync.ProfileSyncService? preservedProfileSync = await TeardownOutgoingRuntimeAsync(
-            DesktopShutdownReason.CommanderSwitch,
-            preserveProfileSync: true
-        );
-        TryRun(() => oldWindow?.Close());
-
-        (DesktopShutdownReason Reason, int ExitCode)? shutdownRequest;
-        lock (sync)
+        try
         {
-            shutdownRequest = pendingShutdown;
-        }
+            OutgoingSwitchResources handoff = await TeardownOutgoingRuntimeAsync(
+                DesktopShutdownReason.CommanderSwitch,
+                preserveForSwitch: true,
+                nextFrontierId: nextFrontierId,
+                outgoingFrontierId: outgoingFrontierId
+            );
+            TryRun(() => oldWindow?.Close());
 
-        if (shutdownRequest is { } pending)
-        {
-            if (preservedProfileSync is not null)
+            (DesktopShutdownReason Reason, int ExitCode)? shutdownRequest;
+            lock (sync)
             {
-                await TryRunAsync(() => preservedProfileSync.ShutdownAsync(CancellationToken.None));
-                TryRun(preservedProfileSync.Dispose);
+                shutdownRequest = pendingShutdown;
             }
 
-            log?.Append($"Application exit ({pending.Reason}).");
-            TryRun(() => lifetime.Shutdown(pending.ExitCode));
-            return;
+            if (shutdownRequest is { } pending)
+            {
+                if (handoff.CommanderClaim is not null)
+                {
+                    TryRun(handoff.CommanderClaim.Dispose);
+                }
+
+                if (handoff.ProfileSync is not null)
+                {
+                    await TryRunAsync(() => handoff.ProfileSync.ShutdownAsync(CancellationToken.None));
+                    TryRun(handoff.ProfileSync.Dispose);
+                }
+
+                log?.Append($"Application exit ({pending.Reason}).");
+                TryRun(() => lifetime.Shutdown(pending.ExitCode));
+                return;
+            }
+
+            JournalCheckpoint? nextCheckpoint = handoff.CommanderJournalCheckpoints?.GetValueOrDefault(nextFrontierId);
+            IReadOnlyDictionary<string, long> confirmedOffsets =
+                SrvSurvey.Desktop.Platform.CommanderJournalCheckpointStore.TryLoad(
+                    nextPaths.CacheDirectory,
+                    nextFrontierId
+                );
+            Program.UpdateStartupContextPaths(nextPaths);
+            log?.Append($"Automatic commander switch: reloading desktop runtime for {nextFrontierId}.");
+            DesktopRuntime replacement = Start(
+                application,
+                desktop,
+                new DesktopStartup(nextArguments, log)
+                {
+                    AppDataPathsOverride = nextPaths,
+                    ProfileSyncService = handoff.ProfileSync,
+                    CommanderClaimLease = handoff.CommanderClaim,
+                    CommanderJournalCheckpoints = handoff.CommanderJournalCheckpoints,
+                    CommanderJournalBaseline = handoff.CommanderJournalBaseline,
+                    CommanderSwitchJournalResume = new JournalSwitchResume(
+                        nextCheckpoint,
+                        handoff.CommanderJournalBaseline,
+                        confirmedOffsets.Count > 0 ? confirmedOffsets : null
+                    ),
+                    ReleaseUpdateSessionState = handoff.ReleaseUpdateSessionState,
+                    PendingReleaseUpdateCheck = handoff.PendingReleaseUpdateCheck,
+                    ReferenceDataUpdateSessionState = handoff.ReferenceDataUpdateSessionState,
+                    PendingReferenceDataRefresh = handoff.PendingReferenceDataRefresh,
+                    IsCommanderSwitch = true,
+                    CommanderSwitchWindowState = windowState,
+                    OnRuntimeReplaced = replacedCallback,
+                    GameWindowSwitcherFactory = switcherFactory,
+                },
+                lifetime
+            );
+            (DesktopShutdownReason Reason, int ExitCode)? lateShutdown;
+            lock (sync)
+            {
+                replacementRuntime = replacement;
+                lateShutdown = pendingShutdown;
+            }
+
+            if (lateShutdown is { } late)
+            {
+                _ = replacement.RequestShutdownAsync(late.Reason, late.ExitCode);
+            }
+
+            replacedCallback?.Invoke(replacement);
+        }
+        finally
+        {
+            DisposeResource(ref linuxTerminationRegistration);
+        }
+    }
+
+    private Dictionary<string, JournalCheckpoint> CaptureCommanderJournalCheckpoints(string? outgoingFrontierId)
+    {
+        var checkpoints = new Dictionary<string, JournalCheckpoint>(
+            commanderJournalCheckpoints,
+            StringComparer.OrdinalIgnoreCase
+        );
+        string? normalizedOutgoing = SrvSurvey.Desktop.Configuration.CommanderSettingsProfile.NormalizeFrontierId(
+            outgoingFrontierId
+        );
+        if (normalizedOutgoing is not null && mainViewModel?.CurrentJournalCheckpoint is { } outgoingCheckpoint)
+        {
+            checkpoints[normalizedOutgoing] = outgoingCheckpoint;
         }
 
-        Program.UpdateStartupContextPaths(nextPaths);
-        log?.Append($"Automatic commander switch: reloading desktop runtime for {nextFrontierId}.");
-        DesktopRuntime replacement = Start(
-            application,
-            desktop,
-            new DesktopStartup(nextArguments, log)
-            {
-                AppDataPathsOverride = nextPaths,
-                ProfileSyncService = preservedProfileSync,
-                IsCommanderSwitch = true,
-                CommanderSwitchWindowState = windowState,
-                OnRuntimeReplaced = replacedCallback,
-                GameWindowSwitcherFactory = switcherFactory,
-            },
-            lifetime
-        );
-        replacedCallback?.Invoke(replacement);
+        return checkpoints;
     }
 
     private CommanderSwitchWindowState? CaptureWindowStateForCommanderSwitch() =>

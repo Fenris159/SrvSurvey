@@ -61,8 +61,12 @@ internal static class CommanderSettingsProfile
 
         string marker = Path.Combine(paths.OverlaySettingsDirectory, ".profile-initialized");
         string vrMarker = Path.Combine(paths.OverlaySettingsDirectory, ".vr-profile-initialized");
-        string vdxrMarker = Path.Combine(paths.OverlaySettingsDirectory, ".vdxr-profile-initialized");
-        string[] markers = [marker, vrMarker, vdxrMarker];
+        (string Route, string Marker)[] vrRouteMigrations = VrOverlayCalibrationStore
+            .RouteDirectoryNames.Select(route =>
+                (route, Path.Combine(paths.OverlaySettingsDirectory, $".{route}-profile-initialized"))
+            )
+            .ToArray();
+        string[] markers = [marker, vrMarker, .. vrRouteMigrations.Select(entry => entry.Marker)];
         if (markers.All(File.Exists))
         {
             return;
@@ -98,13 +102,16 @@ internal static class CommanderSettingsProfile
             );
             WriteInitializationMarker(vrMarker);
         }
-        if (!File.Exists(vdxrMarker))
+        foreach ((string route, string routeMarker) in vrRouteMigrations)
         {
-            CopyCalibrationDirectory(
-                Path.Combine(paths.DataDirectory, "vr", "vdxr"),
-                Path.Combine(paths.OverlaySettingsDirectory, "vr", "vdxr")
-            );
-            WriteInitializationMarker(vdxrMarker);
+            if (!File.Exists(routeMarker))
+            {
+                CopyCalibrationDirectory(
+                    Path.Combine(paths.DataDirectory, "vr", route),
+                    Path.Combine(paths.OverlaySettingsDirectory, "vr", route)
+                );
+                WriteInitializationMarker(routeMarker);
+            }
         }
         WriteInitializationMarker(marker);
     }

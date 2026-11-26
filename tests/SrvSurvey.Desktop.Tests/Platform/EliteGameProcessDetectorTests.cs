@@ -26,6 +26,15 @@ public sealed class EliteGameProcessDetectorTests : IDisposable
         );
         Assert.True(new EliteGameProcessDetector(() => true, flatWineProc).IsRunning());
 
+        string truncatedWinePreloaderProc = CreateProcRoot("match-truncated-wine-preloader");
+        WriteProcess(
+            truncatedWinePreloaderProc,
+            "102",
+            "wine64-preloade",
+            "\"C:\\Program Files (x86)\\Steam\\EliteDangerous64.exe\" /autorun /vr\0"
+        );
+        Assert.True(new EliteGameProcessDetector(() => true, truncatedWinePreloaderProc).IsRunning());
+
         string quotedWineProc = CreateProcRoot("match-quoted-wine");
         WriteProcess(
             quotedWineProc,
@@ -65,6 +74,7 @@ public sealed class EliteGameProcessDetectorTests : IDisposable
         WriteProcess(proc, "103", "EliteDangerous6", @"C:\game\not-elite.exe --target EliteDangerous64.exe" + "\0");
         WriteProcess(proc, "104", "EliteDangerous6", "/game/FakeEliteDangerous64.exe\0");
         WriteProcess(proc, "105", "wine64-preloader", "\"C:\\game\\EDLaunch.exe\" EliteDangerous64.exe\0");
+        WriteProcess(proc, "107", "wine64-preloade", "\"C:\\game\\EDLaunch.exe\" EliteDangerous64.exe\0");
         WriteProcess(proc, "106", "wine64", "\"\"\0   \0/game/not-elite.exex\0");
 
         Assert.False(new EliteGameProcessDetector(() => true, proc).IsRunning());
@@ -90,8 +100,37 @@ public sealed class EliteGameProcessDetectorTests : IDisposable
         var absent = new EliteGameProcessDetector(() => false, "/unused", _ => false);
 
         Assert.True(present.IsRunning());
+        Assert.Equal(1, present.TryGetRunningProcessCount());
         Assert.Equal("EliteDangerous64", requested);
         Assert.False(absent.IsRunning());
+        Assert.Equal(0, absent.TryGetRunningProcessCount());
+
+        var counted = new EliteGameProcessDetector(() => false, "/unused", _ => true, _ => 2);
+        Assert.Equal(2, counted.TryGetRunningProcessCount());
+        var unavailable = new EliteGameProcessDetector(() => false, "/unused", _ => false, _ => null);
+        Assert.Null(unavailable.TryGetRunningProcessCount());
+    }
+
+    [Fact]
+    public void LinuxDetectorCountsConcurrentEliteProcessesAndReportsNullWhenProcMissing()
+    {
+        string proc = CreateProcRoot("count-multi-client");
+        WriteProcess(proc, "201", "EliteDangerous6", "/game/EliteDangerous64.exe\0");
+        WriteProcess(proc, "202", "wine64-preloade", "\"C:\\Program Files (x86)\\Steam\\EliteDangerous64.exe\" /vr\0");
+        WriteProcess(proc, "203", "EDLaunch.exe", "C:\\Steam\\EDLaunch.exe\0");
+
+        var detector = new EliteGameProcessDetector(() => true, proc);
+        Assert.Equal(2, detector.TryGetRunningProcessCount());
+
+        Directory.Delete(Path.Combine(proc, "202"), recursive: true);
+        Assert.Equal(1, detector.TryGetRunningProcessCount());
+
+        Assert.Null(
+            new EliteGameProcessDetector(
+                () => true,
+                Path.Combine(temporaryDirectory, "missing")
+            ).TryGetRunningProcessCount()
+        );
     }
 
     [Fact]

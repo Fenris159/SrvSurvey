@@ -44,13 +44,27 @@ public sealed class CommanderSettingsProfileTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void SeatedVdxrPlacementsMigrateIntoNewAndPreviouslyInitializedCommanderProfiles(bool existingProfile)
+    [InlineData(false, "vdxr", VrPlatformProfileCatalog.MetaVdxrProfileId)]
+    [InlineData(true, "vdxr", VrPlatformProfileCatalog.MetaVdxrProfileId)]
+    [InlineData(true, "wivrn", VrPlatformProfileCatalog.WivrnOpenXrProfileId)]
+    [InlineData(true, "monado", VrPlatformProfileCatalog.MonadoOpenXrProfileId)]
+    public void SeatedRoutePlacementsMigrateIntoNewAndPreviouslyInitializedCommanderProfiles(
+        bool existingProfile,
+        string routeFolder,
+        string profileId
+    )
     {
         using var temp = new ProfileSyncTestRoot();
-        temp.Write("data", "vr/vdxr/Default.json", """{"PlotJumpInfo":"{ s: 7, p: <0, 1, 10>, r: <0, 0, 0>}"}""");
-        temp.Write("data", "vr/vdxr/testbuggy.json", """{"PlotJumpInfo":"{ s: 3, p: <0, 2, 9>, r: <0, 0, 0>}"}""");
+        temp.Write(
+            "data",
+            $"vr/{routeFolder}/Default.json",
+            """{"PlotJumpInfo":"{ s: 7, p: <0, 1, 10>, r: <0, 0, 0>}"}"""
+        );
+        temp.Write(
+            "data",
+            $"vr/{routeFolder}/testbuggy.json",
+            """{"PlotJumpInfo":"{ s: 3, p: <0, 2, 9>, r: <0, 0, 0>}"}"""
+        );
         AppDataPaths first = temp.Paths with { SettingsFrontierId = "F123" };
         if (existingProfile)
         {
@@ -60,22 +74,22 @@ public sealed class CommanderSettingsProfileTests
         }
         CommanderSettingsProfile.Prepare(first);
         var store = new VrOverlayCalibrationStore(first.OverlaySettingsDirectory);
-        VrOverlayCalibrationCatalog catalog = store.Load(VrPlatformProfileCatalog.MetaVdxrProfileId);
+        VrOverlayCalibrationCatalog catalog = store.Load(profileId);
         Assert.Equal(7, catalog.Resolve("PlotJumpInfo", null)!.Scale);
         Assert.Equal(3, catalog.Resolve("PlotJumpInfo", "testbuggy")!.Scale);
-        store.Save(
-            "PlotJumpInfo",
-            new(4, new(0, 0, 10), new(0, 0, 0)),
-            profileId: VrPlatformProfileCatalog.MetaVdxrProfileId
+        store.Save("PlotJumpInfo", new(4, new(0, 0, 10), new(0, 0, 0)), profileId: profileId);
+        temp.Write(
+            "data",
+            $"vr/{routeFolder}/Default.json",
+            """{"PlotJumpInfo":"{ s: 9, p: <0, 1, 10>, r: <0, 0, 0>}"}"""
         );
-        temp.Write("data", "vr/vdxr/Default.json", """{"PlotJumpInfo":"{ s: 9, p: <0, 1, 10>, r: <0, 0, 0>}"}""");
         CommanderSettingsProfile.Prepare(first);
         CommanderSettingsProfile.Prepare(temp.Paths with { SettingsFrontierId = "F456" });
-        Assert.Equal(4, store.Load(VrPlatformProfileCatalog.MetaVdxrProfileId).Resolve("PlotJumpInfo", null)!.Scale);
+        Assert.Equal(4, store.Load(profileId).Resolve("PlotJumpInfo", null)!.Scale);
         Assert.Equal(
             9,
             new VrOverlayCalibrationStore((temp.Paths with { SettingsFrontierId = "F456" }).OverlaySettingsDirectory)
-                .Load(VrPlatformProfileCatalog.MetaVdxrProfileId)
+                .Load(profileId)
                 .Resolve("PlotJumpInfo", null)!
                 .Scale
         );

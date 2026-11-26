@@ -39,6 +39,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private IEliteGameProcessDetector? eliteGameProcessDetector;
     private TimeSpan? systemBodyDataRetryDelay;
     private string? targetFrontierId;
+    private SrvSurvey.Core.Journal.JournalSwitchResume? commanderSwitchJournalResume;
     private bool allowAutomaticCommanderSwitch;
     private bool suppressInitialOtherCommanderSwitch;
     private IVoxStellarPublisher? voxStellarPublisher;
@@ -72,6 +73,7 @@ internal sealed class MainWindowViewModelTestBuilder
                     AppDataPaths = appDataPaths ?? CreateIsolatedPaths(),
                     ApplicationLogService = applicationLogService,
                     TargetFrontierId = targetFrontierId,
+                    CommanderSwitchJournalResume = commanderSwitchJournalResume,
                     AllowAutomaticCommanderSwitch = allowAutomaticCommanderSwitch,
                     SuppressInitialOtherCommanderSwitch = suppressInitialOtherCommanderSwitch,
                     FrontierProfile = frontierProfile,
@@ -117,6 +119,10 @@ internal sealed class MainWindowViewModelTestBuilder
     }
 
     public MainWindowViewModelTestBuilder WithAppDataPaths(AppDataPaths value) => Set(ref appDataPaths, value);
+
+    public MainWindowViewModelTestBuilder WithCommanderSwitchJournalResume(
+        SrvSurvey.Core.Journal.JournalSwitchResume value
+    ) => Set(ref commanderSwitchJournalResume, value);
 
     /// <summary>Injects exploration poi client into the isolated main-window fixture.</summary>
     public MainWindowViewModelTestBuilder WithExplorationPoiClient(IExplorationPoiClient value) =>

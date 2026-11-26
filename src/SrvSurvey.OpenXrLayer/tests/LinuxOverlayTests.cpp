@@ -1636,10 +1636,14 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
         mock.hands[1].poseActive = true;
         mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
         REQUIRE(session.StepOnce());
-        // With maxLayerCount == 2 and interaction active: 1 panel + 1 cursor = 2 layers (cursor always fits).
+        // With maxLayerCount == 2 and interaction active: topmost panel (id 20) + 1 cursor = 2 layers.
         REQUIRE(mock.lastSubmittedQuads.size() == 2);
         REQUIRE(mock.lastSubmittedQuads[1].subImage.imageRect.extent.width == 32);
         REQUIRE(session.GetStatus().renderedCount == 1);
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        REQUIRE(events[count - 1].id == 20);
 
         // Zero-alpha panel at position 1 must not consume the panel layer budget before opaque panel at position 2.
         REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20, 0.0f, 1.0f)));
@@ -1647,8 +1651,7 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
         REQUIRE(session.StepOnce());
         REQUIRE(mock.lastSubmittedQuads.size() == 2);
         REQUIRE(session.GetStatus().renderedCount == 1);
-        std::array<PointerEvent, 16> events{};
-        size_t count = session.PollPointerEvents(events);
+        count = session.PollPointerEvents(events);
         REQUIRE(count >= 1);
         REQUIRE(events[count - 1].id == 20);
 
@@ -1709,6 +1712,52 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
         REQUIRE(session.StepOnce());
         REQUIRE(mock.lastSubmittedLayerCount == 1);
         REQUIRE(session.GetStatus().renderedCount == 1);
+        session.Shutdown();
+    }
+
+    // 4. Nonfatal cursor swapchain creation failure keeps panels rendering but suppresses invisible pointer clicks.
+    {
+        MockRuntime mock;
+        mock.maxLayerCount = 8;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "monado", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        REQUIRE(session.PublishPacket(BuildPacket(0, 10, 2, 1, 1.0f)));
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+
+        int32_t xrErr = -1;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        // Fail cursor swapchain creation nonfatally after the panel swapchain already exists.
+        mock.createSwapchainResult = XR_ERROR_RUNTIME_FAILURE;
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.7f, 0.0f}};
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+        REQUIRE(session.GetStatus().status == OverlayStatus::Ok);
+        REQUIRE(session.GetStatus().renderedCount == 1);
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        for (size_t i = 0; i < count; ++i)
+            REQUIRE(events[i].kind != PointerKind::LeftDown && events[i].kind != PointerKind::Move);
+
+        // Once cursor swapchain creation succeeds, cursor renders and pointer events resume normally.
+        mock.createSwapchainResult = XR_SUCCESS;
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 2);
+        count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        REQUIRE(events[count - 1].kind == PointerKind::Move);
         session.Shutdown();
     }
 }

@@ -79,35 +79,47 @@ public static class VrOverlayTransform
         VrOverlayCalibration calibration,
         float deltaRightUnits,
         float deltaUpUnits,
-        bool usesLegacyOpenVrRotation
+        bool usesLegacyOpenVrRotation,
+        float openVrYawOffset = 0f
     )
     {
         ArgumentNullException.ThrowIfNull(calibration);
-        Quaternion orientation = GetPanelOrientation(calibration, usesLegacyOpenVrRotation);
-        var right = Vector3.Transform(Vector3.UnitX, orientation);
-        var up = Vector3.Transform(Vector3.UnitY, orientation);
-        Vector3 worldDelta = right * deltaRightUnits + up * deltaUpUnits;
-        return ApplyWorldDelta(calibration, worldDelta);
+        Matrix4x4 axes = GetCalibrationAxesTransform(calibration, usesLegacyOpenVrRotation, openVrYawOffset);
+        var right = Vector3.Transform(Vector3.UnitX, axes);
+        var up = Vector3.Transform(Vector3.UnitY, axes);
+        Vector3 calibrationDelta = right * deltaRightUnits + up * deltaUpUnits;
+        return ApplyWorldDelta(calibration, calibrationDelta);
     }
 
     /// <summary>Moves a panel along its depth normal (away from the viewer for positive steps) in 10 cm calibration units.</summary>
     public static VrOverlayCalibration ApplyDepthStep(
         VrOverlayCalibration calibration,
         float deltaDepthUnits,
-        bool usesLegacyOpenVrRotation
+        bool usesLegacyOpenVrRotation,
+        float openVrYawOffset = 0f
     )
     {
         ArgumentNullException.ThrowIfNull(calibration);
-        Quaternion orientation = GetPanelOrientation(calibration, usesLegacyOpenVrRotation);
-        var awayNormal = Vector3.Transform(-Vector3.UnitZ, orientation);
+        Matrix4x4 axes = GetCalibrationAxesTransform(calibration, usesLegacyOpenVrRotation, openVrYawOffset);
+        var awayNormal = Vector3.Transform(-Vector3.UnitZ, axes);
         return ApplyWorldDelta(calibration, awayNormal * deltaDepthUnits);
     }
 
-    private static Quaternion GetPanelOrientation(VrOverlayCalibration calibration, bool usesLegacyOpenVrRotation)
+    private static Matrix4x4 GetCalibrationAxesTransform(
+        VrOverlayCalibration calibration,
+        bool usesLegacyOpenVrRotation,
+        float openVrYawOffset
+    )
     {
         Vector3 radians = calibration.Rotation * (MathF.PI / 180f);
-        var orientation = Quaternion.CreateFromYawPitchRoll(radians.Y, radians.X, radians.Z);
-        return usesLegacyOpenVrRotation ? Quaternion.Inverse(orientation) : orientation;
+        if (!usesLegacyOpenVrRotation)
+        {
+            return Matrix4x4.CreateFromYawPitchRoll(radians.Y, radians.X, radians.Z);
+        }
+
+        var renderedRotation = Matrix4x4.CreateFromYawPitchRoll(radians.Y - openVrYawOffset, radians.X, radians.Z);
+        var headsetOrientationOffset = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, openVrYawOffset);
+        return Matrix4x4.Multiply(Matrix4x4.Transpose(renderedRotation), Matrix4x4.Transpose(headsetOrientationOffset));
     }
 
     private static VrOverlayCalibration ApplyWorldDelta(VrOverlayCalibration calibration, Vector3 worldDelta)

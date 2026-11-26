@@ -54636,6 +54636,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
   },
   {
+    "Text": "Save ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Save As...",
     "IsFormat": false,
     "SourceKinds": [
@@ -65725,6 +65733,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
+  },
+  {
+    "Text": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
     "Text": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -83716,7 +83732,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationStore.cs"
   },
   {
     "Text": "version",
@@ -86126,6 +86142,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderPreferenceSettingsStore.cs"
+  },
+  {
+    "Text": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "{0} unsold entries",

@@ -154,9 +154,20 @@ internal static partial class ProfileSyncPolicy
         && FrontierId().IsMatch(parts[1])
         && parts[2] == "overlays";
 
-    /// <summary>Limits calibration directories to VR and its VDXR subdirectory.</summary>
+    /// <summary>Limits calibration directories to VR and its VDXR, WiVRn, and Monado route subdirectories.</summary>
     private static bool IsVrDirectory(ReadOnlySpan<string> parts) =>
-        parts.Length > 0 && parts[0] == "vr" && (parts.Length == 1 || (parts.Length == 2 && parts[1] == "vdxr"));
+        parts.Length > 0
+        && parts[0] == "vr"
+        && (
+            parts.Length == 1
+            || (
+                parts.Length == 2
+                && Array.IndexOf(
+                    SrvSurvey.Desktop.Platform.Overlay.VrOverlayCalibrationStore.RouteDirectoryNames,
+                    parts[1]
+                ) >= 0
+            )
+        );
 
     /// <summary>Recognizes the last-used filter keys required to restore saved search presentations.</summary>
     internal static bool IsSearchSelection(string relative) =>

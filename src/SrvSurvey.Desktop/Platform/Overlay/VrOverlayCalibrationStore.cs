@@ -28,14 +28,22 @@ public sealed class VrOverlayCalibrationStore
     {
         using FileStream lease = OverlayLayoutFileAccess.Acquire(dataDirectory);
         OverlayLayoutFileAccess.Recover(dataDirectory);
+        bool hasSavedPlotters = File.Exists(plottersPath);
         Dictionary<string, VrOverlayCalibration> defaults = LoadFile(
-            File.Exists(plottersPath) ? plottersPath : defaultPlottersPath,
+            hasSavedPlotters ? plottersPath : defaultPlottersPath,
             allowDesktopPrefix: true
         );
         Dictionary<string, VrOverlayCalibration> factoryDefaults = LoadFile(
             defaultPlottersPath,
             allowDesktopPrefix: true
         );
+        if (hasSavedPlotters)
+        {
+            foreach (KeyValuePair<string, VrOverlayCalibration> entry in factoryDefaults)
+            {
+                defaults.TryAdd(entry.Key, entry.Value);
+            }
+        }
         Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>> overrides = LoadModes(
             GetOverrideDirectory(null)
         );
@@ -83,7 +91,11 @@ public sealed class VrOverlayCalibrationStore
         {
             VrOverlayCalibration legacyDefault = factoryDefaults[name];
             factoryDefaults[name] = VrSeatedCalibrationDefaults.Get(name);
-            if (!defaults.TryGetValue(name, out VrOverlayCalibration? saved) || saved == legacyDefault)
+            if (
+                !defaults.TryGetValue(name, out VrOverlayCalibration? saved)
+                || saved == legacyDefault
+                || VrSeatedCalibrationDefaults.IsLegacyBundledDefault(name, saved)
+            )
             {
                 defaults[name] = factoryDefaults[name];
             }
@@ -132,7 +144,12 @@ public sealed class VrOverlayCalibrationStore
     {
         string sourcePath = File.Exists(plottersPath) ? plottersPath : defaultPlottersPath;
         JsonObject root = ParseObject(sourcePath);
-        if (root[plotterName] is not JsonValue value || !value.TryGetValue<string>(out string? existing))
+        string? existing = TryReadStringEntry(root, plotterName);
+        if (existing is null && File.Exists(plottersPath) && File.Exists(defaultPlottersPath))
+        {
+            existing = TryReadStringEntry(ParseObject(defaultPlottersPath), plotterName);
+        }
+        if (existing is null)
         {
             throw new InvalidDataException($"Overlay calibration '{plotterName}' is not present in '{sourcePath}'.");
         }
@@ -203,13 +220,26 @@ public sealed class VrOverlayCalibrationStore
     }
 
     private const string DefaultCalibrationMode = "Default";
+    internal const string VdxrRouteDirectoryName = "vdxr";
+    internal const string WivrnRouteDirectoryName = "wivrn";
+    internal const string MonadoRouteDirectoryName = "monado";
+    internal static readonly string[] RouteDirectoryNames =
+    [
+        VdxrRouteDirectoryName,
+        WivrnRouteDirectoryName,
+        MonadoRouteDirectoryName,
+    ];
 
     private string GetOverrideDirectory(string? profileId) =>
         profileId switch
         {
-            VrPlatformProfileCatalog.MetaVdxrProfileId => Path.Combine(dataDirectory, "vr", "vdxr"),
-            VrPlatformProfileCatalog.WivrnOpenXrProfileId => Path.Combine(dataDirectory, "vr", "wivrn"),
-            VrPlatformProfileCatalog.MonadoOpenXrProfileId => Path.Combine(dataDirectory, "vr", "monado"),
+            VrPlatformProfileCatalog.MetaVdxrProfileId => Path.Combine(dataDirectory, "vr", VdxrRouteDirectoryName),
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId => Path.Combine(dataDirectory, "vr", WivrnRouteDirectoryName),
+            VrPlatformProfileCatalog.MonadoOpenXrProfileId => Path.Combine(
+                dataDirectory,
+                "vr",
+                MonadoRouteDirectoryName
+            ),
             _ => Path.Combine(dataDirectory, "vr"),
         };
 
@@ -238,6 +268,9 @@ public sealed class VrOverlayCalibrationStore
 
         return result;
     }
+
+    private static string? TryReadStringEntry(JsonObject root, string plotterName) =>
+        root[plotterName] is JsonValue value && value.TryGetValue<string>(out string? existing) ? existing : null;
 
     private static JsonObject ParseObject(string path)
     {

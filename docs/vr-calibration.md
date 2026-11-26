@@ -35,16 +35,17 @@ and keep readable numeric boxes.
 | Mouse wheel | Scroll up/down over a number to increase/decrease it, without typing. Controller thumbstick scrolling uses the selected step size too. |
 | Place in front of me | Put only the selected panel at eye level, one metre along the current head heading. Keep its width up to 80 cm, clear pitch/roll, and face the pilot. Other panels and the shared origin stay in place. Requires a fresh tracked pose. Save to keep it. |
 | Drag panels in VR | While controller-pointer interaction is active, point at any visible preview panel, hold trigger to drag it along its plane, and tilt the thumbstick to push or pull depth. Selecting a dragged panel switches **Calibration Target** automatically. |
-| Save calibration | Save the selected panel and mode, or all edited panels in the active category preview together. Existing files receive verified backups. |
+| Save calibration | Save the selected panel and mode, or all pending edited panels across categories for the active mode together (the **Save** button shows the pending count when multiple or out-of-category drafts will be committed). Existing files receive verified backups. |
 | Reset selected | Restore and save the route's factory placement for Default, or the panel's Default placement for a vehicle/game mode. |
 | Close / discard unsaved | Close both editors and discard unsaved changes. Earlier saves remain saved. |
 
 When **Overlay category** is set to **All overlays**, selecting another target
-or mode discards unsaved changes to the previous selection. Inside a specific
-category preview, unsaved edits across multiple panels in that category stay
-live while you switch between them and are committed together when you click
-**Save calibration** (switching category or mode, or clicking **Close / discard
-unsaved**, discards unsaved edits). The calibration control panel
+or mode discards unsaved changes to the previous selection. Switching **Overlay
+category** keeps unsaved edits for the active mode pending across categories,
+and inside a specific category preview unsaved edits across multiple panels
+stay live while you switch between them. Clicking **Save** commits all pending
+edits for the active mode together (switching **Mode** or clicking **Close /
+discard unsaved** discards all unsaved edits). The calibration control panel
 (`PlotAdjustVR`) stays centered in front of you, snapped to five 45°
 front-hemisphere sectors (`-90°`, `-45°`, `0°`, `+45°`, `+90°`) with yaw
 hysteresis and a 20 cm movement deadzone, and always renders and hit-tests on

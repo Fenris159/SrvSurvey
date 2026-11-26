@@ -378,15 +378,28 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.True(runtime.PublishOverlay("PlotJumpInfo", resizedJump, ValidCalibration(), 1f).Succeeded);
         Assert.Equal(callsBeforeUnrelated, backend.SetInteractionCalls);
 
+        // Even when the resized panel itself has a stale hover queued ahead of a click on PlotAdjustVR,
+        // discard only the resized panel's event and preserve PlotAdjustVR's click.
+        backend.PointerEvents =
+        [
+            new OpenXrPointerEvent(jumpId, VrOverlayPointerEventKind.Move, 0.25f, 0.25f, 0, 0),
+            new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.LeftButtonUp, 0.5f, 0.5f, 0, 0),
+        ];
+        var resizedJumpAgain = new VrOverlayFrame(2, 1, [255, 128, 64, 255, 0, 10, 20, 255], 360, 200);
+        Assert.True(runtime.PublishOverlay("PlotJumpInfo", resizedJumpAgain, ValidCalibration(), 1f).Succeeded);
+        Assert.Equal(callsBeforeUnrelated, backend.SetInteractionCalls);
+
         // Removing an unrelated panel preserves buffered PlotAdjustVR clicks without resetting the session.
         runtime.RemoveOverlay("PlotJumpInfo");
         Assert.Equal(callsBeforeUnrelated, backend.SetInteractionCalls);
         IReadOnlyList<VrOverlayPointerEvent> preservedClick = runtime.PollPointerEvents();
-        Assert.Single(preservedClick);
+        Assert.Equal(2, preservedClick.Count);
         Assert.Equal("PlotAdjustVR", preservedClick[0].PlotterName);
         Assert.Equal(VrOverlayPointerEventKind.LeftButtonDown, preservedClick[0].Kind);
         Assert.Equal(300, preservedClick[0].X, 3);
         Assert.Equal(150, preservedClick[0].Y, 3);
+        Assert.Equal("PlotAdjustVR", preservedClick[1].PlotterName);
+        Assert.Equal(VrOverlayPointerEventKind.LeftButtonUp, preservedClick[1].Kind);
 
         // Removing an overlay invalidates its identity and yields Reset if a stale event arrives.
         backend.PointerEvents = [new OpenXrPointerEvent(jumpId, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0)];

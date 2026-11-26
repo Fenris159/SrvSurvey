@@ -423,6 +423,101 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.Contains("unavailable", viewModel.DataStatus, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task FailedLookupRetriesAfterBackoffWhileGalaxyMapStaysOpenWithoutDuplicateInFlightRequests()
+    {
+        DateTimeOffset now = new(2026, 11, 25, 12, 0, 0, TimeSpan.Zero);
+        var client = new FakeSummaryClient { ThrowException = new HttpRequestException("temporary outage") };
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client, clock: () => now);
+        var galaxyMapOpen = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+
+        // Initial lookup fails transiently.
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], galaxyMapOpen);
+        await viewModel.PendingLoad;
+        Assert.Equal(2, client.Requests.Count);
+        Assert.Equal("System data unavailable.", viewModel.DataStatus);
+
+        // Status ticks before the 15s backoff expires must NOT re-query.
+        now = now.AddSeconds(10);
+        viewModel.ApplyUpdate("Sol", 1, null, [], galaxyMapOpen);
+        await viewModel.PendingLoad;
+        Assert.Equal(2, client.Requests.Count);
+
+        // After the 15s backoff expires, an update retries; if it still fails with a provider warning, backoff doubles to 30s.
+        client.ThrowException = null;
+        client.WarningsBySystem["Beta"] = ["EDSM rate limited."];
+        now = now.AddSeconds(5);
+        var retryGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        client.Gate = retryGate.Task;
+        viewModel.ApplyUpdate("Sol", 1, null, [], galaxyMapOpen);
+        Assert.True(viewModel.IsLoading);
+
+        // Status updates while the retry is in flight must stay deduplicated.
+        viewModel.ApplyUpdate("Sol", 1, null, [], galaxyMapOpen);
+        Assert.Equal(4, client.Requests.Count);
+        retryGate.SetResult();
+        await viewModel.PendingLoad;
+        Assert.Contains("EDSM data unavailable", viewModel.DataStatus, StringComparison.Ordinal);
+
+        // Before the 30s second backoff expires, no retry occurs.
+        client.Gate = null;
+        client.WarningsBySystem.Clear();
+        now = now.AddSeconds(20);
+        viewModel.ApplyUpdate("Sol", 1, null, [], galaxyMapOpen);
+        await viewModel.PendingLoad;
+        Assert.Equal(4, client.Requests.Count);
+
+        // Once the 30s backoff expires, Galaxy Map recovers automatically while staying open.
+        now = now.AddSeconds(10);
+        viewModel.ApplyUpdate("Sol", 1, null, [], galaxyMapOpen);
+        await viewModel.PendingLoad;
+        Assert.Equal(6, client.Requests.Count);
+        Assert.Equal("Data from EDSM and Spansh", viewModel.DataStatus);
+        Assert.Equal("Beta", viewModel.PrimarySystem!.Name);
+
+        // After clean recovery, later updates do not re-fetch for the unchanged target.
+        now = now.AddMinutes(5);
+        viewModel.ApplyUpdate("Sol", 1, null, [], galaxyMapOpen);
+        await viewModel.PendingLoad;
+        Assert.Equal(6, client.Requests.Count);
+    }
+
+    [Fact]
+    public async Task IdleTickRetriesFailedLookupWhileGalaxyMapStaysOpenWithoutJournalOrStatusChanges()
+    {
+        DateTimeOffset now = new(2026, 11, 25, 12, 0, 0, TimeSpan.Zero);
+        var client = new FakeSummaryClient { ThrowException = new HttpRequestException("temporary outage") };
+        using GalaxyMapOverlayViewModel viewModel = CreateViewModel(client, clock: () => now);
+        var galaxyMapOpen = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+
+        // Initial lookup fails transiently while the map stays open.
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], galaxyMapOpen);
+        await viewModel.PendingLoad;
+        Assert.Equal(2, client.Requests.Count);
+        Assert.Equal("System data unavailable.", viewModel.DataStatus);
+
+        // Idle ticks before the backoff deadline do nothing.
+        client.ThrowException = null;
+        now = now.AddSeconds(10);
+        viewModel.Tick();
+        await viewModel.PendingLoad;
+        Assert.Equal(2, client.Requests.Count);
+
+        // Once the deadline passes, an idle tick recovers automatically with zero journal or Status.json changes.
+        now = now.AddSeconds(5);
+        viewModel.Tick();
+        await viewModel.PendingLoad;
+        Assert.Equal(4, client.Requests.Count);
+        Assert.Equal("Data from EDSM and Spansh", viewModel.DataStatus);
+        Assert.Equal("Beta", viewModel.PrimarySystem!.Name);
+
+        // Subsequent idle ticks do not re-fetch after recovery.
+        now = now.AddMinutes(5);
+        viewModel.Tick();
+        await viewModel.PendingLoad;
+        Assert.Equal(4, client.Requests.Count);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -433,7 +528,11 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
 
     private string SettingsPath => Path.Combine(temporaryDirectory, "ui-settings.json");
 
-    private GalaxyMapOverlayViewModel CreateViewModel(ISystemSummaryClient client, Action<string>? log = null)
+    private GalaxyMapOverlayViewModel CreateViewModel(
+        ISystemSummaryClient client,
+        Action<string>? log = null,
+        Func<DateTimeOffset>? clock = null
+    )
     {
         Directory.CreateDirectory(temporaryDirectory);
         return new GalaxyMapOverlayViewModel(
@@ -443,7 +542,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
                 SystemNicknameCatalog.Load(temporaryDirectory),
                 new SystemNicknameSettingsStore(SettingsPath)
             ),
-            log
+            log,
+            clock
         );
     }
 

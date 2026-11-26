@@ -187,6 +187,12 @@ internal sealed class MainWindowFoundationInputs
 
     public string? TargetFrontierId { get; init; }
 
+    public CommanderClaimLease? CommanderClaimLease { get; init; }
+
+    public SrvSurvey.Core.Journal.JournalBaselineSnapshot? CommanderJournalBaseline { get; init; }
+
+    public SrvSurvey.Core.Journal.JournalSwitchResume? CommanderSwitchJournalResume { get; init; }
+
     public bool AllowAutomaticCommanderSwitch { get; init; }
 
     public bool SuppressInitialOtherCommanderSwitch { get; init; }

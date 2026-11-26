@@ -232,7 +232,7 @@
         <Button Classes="secondary vr-action-btn" Margin="0,0,0,4" Command="{Binding ResetCommand}" Content="Reset selected" />
       </WrapPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
-        <Button Classes="primary vr-action-btn" Command="{Binding SaveCommand}" Content="Save" />
+        <Button Classes="primary vr-action-btn" Command="{Binding SaveCommand}" Content="{Binding SaveButtonLabel}" />
         <Button Classes="secondary vr-action-btn" Command="{Binding CancelCommand}" Content="Close / discard unsaved" />
       </StackPanel>
     </Grid>

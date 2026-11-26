@@ -90,6 +90,102 @@ public sealed class OpenVrRuntimeInteractionTests
     }
 
     [Fact]
+    public void InteractionUpdateConfiguresScrollFlagAndRollsBackOnFlagFailure()
+    {
+        var methodCalls = new List<(ulong Handle, VROverlayInputMethod Method)>();
+        var flagCalls = new List<(ulong Handle, VROverlayFlags Flag, bool Enabled)>();
+
+        (bool succeeded, string? error, bool rollbackFailed) = OpenVrRuntime.UpdateOverlayInputMethods(
+            [11, 22],
+            VROverlayInputMethod.None,
+            VROverlayInputMethod.Mouse,
+            (handle, method) =>
+            {
+                methodCalls.Add((handle, method));
+                return EVROverlayError.None;
+            },
+            (handle, flag, enabled) =>
+            {
+                flagCalls.Add((handle, flag, enabled));
+                return EVROverlayError.None;
+            }
+        );
+
+        Assert.True(succeeded);
+        Assert.Null(error);
+        Assert.False(rollbackFailed);
+        Assert.Equal(
+            [(11UL, OpenVrRuntime.InteractionScrollFlag, true), (22UL, OpenVrRuntime.InteractionScrollFlag, true)],
+            flagCalls
+        );
+
+        // If SetOverlayFlag fails on handle 22, both handle 22's input method and handle 11's method + scroll flag roll back.
+        methodCalls.Clear();
+        flagCalls.Clear();
+        (succeeded, error, rollbackFailed) = OpenVrRuntime.UpdateOverlayInputMethods(
+            [11, 22],
+            VROverlayInputMethod.None,
+            VROverlayInputMethod.Mouse,
+            (handle, method) =>
+            {
+                methodCalls.Add((handle, method));
+                return EVROverlayError.None;
+            },
+            (handle, flag, enabled) =>
+            {
+                flagCalls.Add((handle, flag, enabled));
+                return handle == 22 && enabled ? EVROverlayError.InvalidHandle : EVROverlayError.None;
+            }
+        );
+
+        Assert.False(succeeded);
+        Assert.Equal(EVROverlayError.InvalidHandle.ToString(), error);
+        Assert.False(rollbackFailed);
+        Assert.Equal(
+            [
+                (11UL, VROverlayInputMethod.Mouse),
+                (22UL, VROverlayInputMethod.Mouse),
+                (22UL, VROverlayInputMethod.None),
+                (11UL, VROverlayInputMethod.None),
+            ],
+            methodCalls
+        );
+        Assert.Equal(
+            [
+                (11UL, OpenVrRuntime.InteractionScrollFlag, true),
+                (22UL, OpenVrRuntime.InteractionScrollFlag, true),
+                (11UL, OpenVrRuntime.InteractionScrollFlag, false),
+            ],
+            flagCalls
+        );
+
+        // Disabling interaction clears scroll flag before setting input method to None, and rolls back scroll flag if method fails.
+        methodCalls.Clear();
+        flagCalls.Clear();
+        (succeeded, error, rollbackFailed) = OpenVrRuntime.UpdateOverlayInputMethods(
+            [11],
+            VROverlayInputMethod.Mouse,
+            VROverlayInputMethod.None,
+            (handle, method) =>
+            {
+                methodCalls.Add((handle, method));
+                return EVROverlayError.InvalidHandle;
+            },
+            (handle, flag, enabled) =>
+            {
+                flagCalls.Add((handle, flag, enabled));
+                return EVROverlayError.None;
+            }
+        );
+        Assert.False(succeeded);
+        Assert.False(rollbackFailed);
+        Assert.Equal(
+            [(11UL, OpenVrRuntime.InteractionScrollFlag, false), (11UL, OpenVrRuntime.InteractionScrollFlag, true)],
+            flagCalls
+        );
+    }
+
+    [Fact]
     public void InteractionUpdateReportsRollbackException()
     {
         (bool succeeded, string? error, bool rollbackFailed) = OpenVrRuntime.UpdateOverlayInputMethods(
@@ -233,6 +329,26 @@ public sealed class OpenVrRuntimeInteractionTests
         Assert.True(probe.RuntimeAvailable);
         Assert.False(probe.HeadsetPresent);
         Assert.Equal("Wake the headset.", probe.Message);
+    }
+
+    [Fact]
+    public void SortOrderKeepsCalibrationControlsStrictlyTopmostAndOrdersPreviewsByPublishIndex()
+    {
+        uint firstPreview = OpenVrRuntime.ResolveOverlaySortOrder("PlotBioStatus", 0);
+        uint selectedPreview = OpenVrRuntime.ResolveOverlaySortOrder("PlotBioSystem", 1);
+        uint controls = OpenVrRuntime.ResolveOverlaySortOrder(VrOverlayCalibrationSession.ControlsPlotterName, 0);
+        uint saturatedPreview = OpenVrRuntime.ResolveOverlaySortOrder(
+            "PlotJumpInfo",
+            OpenVrRuntime.ControlsOverlaySortOrder + 50
+        );
+
+        Assert.True(firstPreview < selectedPreview);
+        Assert.Equal(OpenVrRuntime.ControlsOverlaySortOrder, controls);
+        Assert.True(selectedPreview < controls);
+        Assert.True(saturatedPreview < controls);
+
+        using var runtime = new OpenVrRuntime();
+        Assert.True(runtime.CompleteFrame().Succeeded);
     }
 
     private static VREvent_t CreateMouseEvent(EVREventType eventType, float x, float y, uint button)

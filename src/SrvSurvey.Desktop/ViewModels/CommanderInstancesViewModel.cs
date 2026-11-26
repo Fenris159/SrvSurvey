@@ -122,6 +122,8 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     public bool HasMultipleGameWindows => AvailableGameWindowCount > 1;
 
+    public bool IsGameWindowEnumerationAvailable => gameWindowSwitcher.IsAvailable;
+
     public string StatusMessage
     {
         get => statusMessage;

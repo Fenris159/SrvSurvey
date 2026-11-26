@@ -2275,17 +2275,26 @@ bool OverlaySession::RenderFrame()
     if (frameState.shouldRender == XR_TRUE && mainSessionVisible && hasPacket && anchored &&
         header.originRevision == originRevision)
     {
-        uint32_t reserveCount = std::min(header.count, maxPanelLayers);
-        quads.reserve(reserveCount + 1);
-        surfaces.reserve(reserveCount);
-        uint32_t submittedPanels = 0;
-        for (uint32_t i = 0; i < header.count && submittedPanels < maxPanelLayers; ++i)
+        std::vector<Descriptor> visible;
+        visible.reserve(header.count);
+        activeIds.reserve(header.count);
+        for (uint32_t i = 0; i < header.count; ++i)
         {
             Descriptor d{};
             std::memcpy(&d, packetSnapshot->data() + sizeof(Header) + i * sizeof(Descriptor), sizeof(d));
             activeIds.push_back(d.id);
-            if (d.alpha <= 0.0f)
-                continue;
+            if (d.alpha > 0.0f)
+                visible.push_back(d);
+        }
+        // Packet descriptors are ordered lowest-to-highest priority (with calibration controls last),
+        // so trim from the front when the layer budget is tight to preserve topmost controls.
+        size_t firstIncluded = visible.size() > maxPanelLayers ? (visible.size() - maxPanelLayers) : 0u;
+        uint32_t reserveCount = static_cast<uint32_t>(visible.size() - firstIncluded);
+        quads.reserve(reserveCount + 1);
+        surfaces.reserve(reserveCount);
+        for (size_t i = firstIncluded; i < visible.size(); ++i)
+        {
+            const Descriptor &d = visible[i];
             SwapchainTexture &texture = textures[d.id];
             int32_t panelXrError = 0;
             std::string panelError;
@@ -2326,7 +2335,6 @@ bool OverlaySession::RenderFrame()
                                   quad.pose.orientation.w},
                                  {quad.pose.position.x, quad.pose.position.y, quad.pose.position.z}},
                                 d.widthMeters, d.heightMeters});
-            ++submittedPanels;
         }
     }
 
@@ -2337,24 +2345,36 @@ bool OverlaySession::RenderFrame()
     if (!needsInteractionReset)
     {
         sampled = SampleInteraction(surfaces, frameState.predictedDisplayTime);
-        if (!sampled.resetOnly && sampled.update.cursor && quads.size() < maxLayers)
+        if (!sampled.resetOnly && sampled.update.cursor)
         {
-            int32_t cursorXrError = 0;
-            std::string cursorError;
-            bool cursorFatal = false;
-            if (auto cursorQuad = BuildCursorQuad(*sampled.update.cursor, cursorXrError, cursorError, cursorFatal))
+            if (quads.size() < maxLayers)
             {
-                quads.push_back(*cursorQuad);
-            }
-            else if (cursorFatal)
-            {
-                uploadFailed = true;
-                uploadFatal = true;
-                if (uploadErrorMessage.empty())
+                int32_t cursorXrError = 0;
+                std::string cursorError;
+                bool cursorFatal = false;
+                if (auto cursorQuad = BuildCursorQuad(*sampled.update.cursor, cursorXrError, cursorError, cursorFatal))
                 {
-                    uploadXrError = cursorXrError;
-                    uploadErrorMessage = std::move(cursorError);
+                    quads.push_back(*cursorQuad);
                 }
+                else if (cursorFatal)
+                {
+                    uploadFailed = true;
+                    uploadFatal = true;
+                    if (uploadErrorMessage.empty())
+                    {
+                        uploadXrError = cursorXrError;
+                        uploadErrorMessage = std::move(cursorError);
+                    }
+                }
+                else
+                {
+                    // Suppress invisible clicks when cursor swapchain creation/upload fails nonfatally.
+                    needsInteractionReset = true;
+                }
+            }
+            else
+            {
+                needsInteractionReset = true;
             }
         }
     }

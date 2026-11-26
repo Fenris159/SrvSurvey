@@ -223,6 +223,9 @@ internal static class ApplicationUpdateBootstrap
     private static string? pendingConfirmationPlanPath;
     private static string? pendingOutcomePlanPath;
 
+    internal static bool HasPendingStartupUpdateAction =>
+        pendingConfirmationPlanPath is not null || pendingOutcomePlanPath is not null;
+
     public static ApplicationUpdateStartup ParseStartupArguments(IReadOnlyList<string> arguments)
     {
         ArgumentNullException.ThrowIfNull(arguments);

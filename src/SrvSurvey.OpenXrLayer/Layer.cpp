@@ -149,12 +149,13 @@ class Mailbox
         int64_t age = clock() - header->timestamp;
         return header->magic == Magic && header->version == Version && header->timestamp > 0 && age >= 0 && age <= 2000;
     }
-    void Report(uint32_t state, XrResult error = XR_SUCCESS, uint32_t rendered = 0)
+    void Report(uint32_t state, XrResult error = XR_SUCCESS, uint32_t rendered = 0, uint32_t availableLayersEncoded = 0)
     {
         if (!Open())
             return;
         auto *header = reinterpret_cast<Header *>(data);
         header->layerState = state;
+        header->availableLayersEncoded = availableLayersEncoded;
         header->renderedCount = rendered;
         header->lastError = error;
         header->processId = GetCurrentProcessId();
@@ -269,7 +270,7 @@ struct Session
     bool gameInputObserved = false, frameInputAttempted = false, frameInputOwned = false, frameInputBlocked = false;
     bool frameActionsActive = false;
     XrResult lastError = XR_SUCCESS;
-    uint32_t originRevision = 0, maximumLayers = 0;
+    uint32_t originRevision = 0, maximumLayers = 0, lastGameLayerCount = 0, lastAvailableLayersEncoded = 0;
     XrTime pendingSpaceChange = 0;
     XrPosef anchor{{0, 0, 0, 1}, {0, 0, 0}};
 
@@ -534,7 +535,15 @@ std::optional<XrCompositionLayerQuad> CursorQuad(Session &session, const Pointer
     return quad;
 }
 
-bool UpdateFrameInput(Session &session, int64_t now);
+bool HasPointerLayerBudget(const Session &session, uint32_t gameLayerCount)
+{
+    uint32_t effectiveGameLayers =
+        gameLayerCount > 0 ? gameLayerCount : (session.lastGameLayerCount > 0 ? session.lastGameLayerCount : 1u);
+    return effectiveGameLayers < session.maximumLayers &&
+           (session.maximumLayers - effectiveGameLayers) >= 2u;
+}
+
+bool UpdateFrameInput(Session &session, int64_t now, bool hasPointerLayerBudget);
 
 XrResult SyncFrameActions(Session &session, bool enabled)
 {
@@ -585,8 +594,20 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
             s.mailbox.Report(4, s.lastError);
             return s.instance->endFrame(handle, info);
         }
-        s.mailbox.Report(1);
-        bool interaction = UpdateFrameInput(s, s.clock());
+        bool hasPointerLayerBudget = false;
+        if (info->layerCount > 0)
+        {
+            s.lastGameLayerCount = info->layerCount;
+            size_t availableOverlayLayers =
+                info->layerCount < s.maximumLayers ? (s.maximumLayers - info->layerCount) : 0u;
+            hasPointerLayerBudget = availableOverlayLayers >= 2u;
+            s.lastAvailableLayersEncoded = static_cast<uint32_t>(std::min<size_t>(
+                                               availableOverlayLayers,
+                                               static_cast<size_t>(MaximumReportedAvailableLayers))) +
+                                           1u;
+        }
+        s.mailbox.Report(1, XR_SUCCESS, 0, s.lastAvailableLayersEncoded);
+        bool interaction = UpdateFrameInput(s, s.clock(), hasPointerLayerBudget);
         if (!s.running || !s.shouldRender || !info->layerCount || !s.mailbox.Read(s.packet))
         {
             s.mailbox.ClearHeadPose();
@@ -628,18 +649,34 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
             else
                 s.mailbox.ClearHeadPose();
         }
-        std::vector<XrCompositionLayerQuad> quads;
-        quads.reserve(header.count + 1);
-        std::vector<PointerSurface> surfaces;
         std::vector<const XrCompositionLayerBaseHeader *> layers(info->layers, info->layers + info->layerCount);
         std::vector<uint64_t> active;
+        active.reserve(header.count);
+        std::vector<Descriptor> visible;
+        visible.reserve(header.count);
         for (uint32_t index = 0; index < header.count; ++index)
         {
             Descriptor descriptor{};
             std::memcpy(&descriptor, s.packet.data() + sizeof(Header) + index * sizeof(Descriptor), sizeof(descriptor));
             active.push_back(descriptor.id);
-            if (descriptor.alpha <= 0 || layers.size() + (interaction ? 1u : 0u) >= s.maximumLayers)
-                continue;
+            if (descriptor.alpha > 0)
+                visible.push_back(descriptor);
+        }
+        bool allowPointerInput = interaction && hasPointerLayerBudget;
+        size_t reservedForCursor = allowPointerInput ? 1u : 0u;
+        size_t panelBudget = (layers.size() + reservedForCursor < s.maximumLayers)
+                                 ? (s.maximumLayers - layers.size() - reservedForCursor)
+                                 : 0u;
+        // Packet descriptors are ordered lowest-to-highest priority (with calibration controls last),
+        // so trim from the front when the composition budget is tight to preserve topmost controls.
+        size_t firstIncluded = visible.size() > panelBudget ? (visible.size() - panelBudget) : 0u;
+        std::vector<XrCompositionLayerQuad> quads;
+        quads.reserve((visible.size() - firstIncluded) + 1);
+        std::vector<PointerSurface> surfaces;
+        surfaces.reserve(visible.size() - firstIncluded);
+        for (size_t index = firstIncluded; index < visible.size(); ++index)
+        {
+            const Descriptor &descriptor = visible[index];
             Upload(s, descriptor, header.sequence);
             auto &texture = s.textures.at(descriptor.id);
             if (!texture.ready)
@@ -670,8 +707,10 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
             else
                 ++it;
         }
-        auto pointer = s.input->Update(s.local, surfaces, info->displayTime, s.clock());
-        if (interaction && pointer.cursor && layers.size() < s.maximumLayers)
+        auto pointer = allowPointerInput
+                           ? s.input->Update(s.local, surfaces, info->displayTime, s.clock())
+                           : s.input->Update(XR_NULL_HANDLE, {}, info->displayTime, s.clock());
+        if (allowPointerInput && pointer.cursor && layers.size() < s.maximumLayers)
         {
             try
             {
@@ -702,7 +741,8 @@ XrResult XRAPI_CALL LayerEndFrame(XrSession handle, const XrFrameEndInfo *info)
         augmented.layerCount = static_cast<uint32_t>(layers.size());
         augmented.layers = layers.data();
         XrResult result = s.instance->endFrame(handle, &augmented);
-        s.mailbox.Report(XR_SUCCEEDED(result) ? 1 : 4, result, static_cast<uint32_t>(quads.size()));
+        s.mailbox.Report(XR_SUCCEEDED(result) ? 1 : 4, result, static_cast<uint32_t>(quads.size()),
+                         s.lastAvailableLayersEncoded);
         if (XR_FAILED(result))
         {
             SuspendFrameInput(s);
@@ -762,6 +802,8 @@ XrResult XRAPI_CALL LayerEndSession(XrSession handle)
     if (XR_SUCCEEDED(result))
     {
         session->running = false;
+        session->lastGameLayerCount = 0;
+        session->lastAvailableLayersEncoded = 0;
         session->input->focused = false;
         session->input->Cancel();
         if (session->instance->elite)
@@ -927,10 +969,11 @@ void AttachFrameInput(Session &session, int64_t now)
 }
 
 // Explicit EDVR opt-in owns the one-shot attachment; ordinary applications retain their attach/sync path.
-bool UpdateFrameInput(Session &session, int64_t now)
+bool UpdateFrameInput(Session &session, int64_t now, bool hasPointerLayerBudget)
 {
     bool publishing = session.mailbox.IsPublishing();
-    bool available = session.running && session.shouldRender && session.input->focused && publishing;
+    bool available =
+        session.running && session.shouldRender && session.input->focused && publishing && hasPointerLayerBudget;
     bool enabled = session.input->Requested(now, available, session.frameInputOwned);
     std::lock_guard inputLock(session.instance->inputMutex);
     try
@@ -1051,8 +1094,9 @@ XrResult XRAPI_CALL LayerSyncActions(XrSession handle, const XrActionsSyncInfo *
     }
     try
     {
-        bool enabled = session->input->Requested(session->clock(), session->running && session->input->focused &&
-                                                            session->shouldRender && session->mailbox.IsPublishing());
+        bool available = session->running && session->input->focused && session->shouldRender && !session->failed &&
+                         session->mailbox.IsPublishing() && HasPointerLayerBudget(*session, 0);
+        bool enabled = session->input->Requested(session->clock(), available);
         if (enabled && info)
         {
             std::vector<XrActiveActionSet> active;

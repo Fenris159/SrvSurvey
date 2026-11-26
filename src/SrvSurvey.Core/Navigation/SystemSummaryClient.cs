@@ -100,6 +100,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     private const int MaximumCacheEntries = 256;
 
     private static readonly TimeSpan DefaultCacheDuration = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan DefaultRateLimitCooldown = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan MinimumRateLimitCooldown = TimeSpan.FromSeconds(15);
     private static readonly TimeSpan MaximumRateLimitCooldown = TimeSpan.FromMinutes(10);
@@ -123,6 +124,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     private readonly Uri spanshBaseUri;
     private readonly Func<bool> useSpanshLastUpdated;
     private readonly TimeProvider timeProvider;
+    private readonly TimeSpan requestTimeout;
     private readonly Lock rateLimitLock = new();
     private readonly ProviderFetchCache<EdsmBodiesFragment> bodiesCache;
     private readonly ProviderFetchCache<EdsmTrafficFragment> trafficCache;
@@ -136,7 +138,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         Uri? spanshBaseUri = null,
         Func<bool>? useSpanshLastUpdated = null,
         TimeProvider? timeProvider = null,
-        TimeSpan? cacheDuration = null
+        TimeSpan? cacheDuration = null,
+        TimeSpan? requestTimeout = null
     )
     {
         this.client = client ?? SharedClient;
@@ -144,6 +147,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         this.spanshBaseUri = spanshBaseUri ?? DefaultSpanshBaseUri;
         this.useSpanshLastUpdated = useSpanshLastUpdated ?? (() => false);
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.requestTimeout = ResolveRequestTimeout(this.client, requestTimeout);
         TimeSpan resolvedCacheDuration = cacheDuration ?? DefaultCacheDuration;
         if (resolvedCacheDuration < TimeSpan.Zero)
         {
@@ -153,6 +157,23 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         bodiesCache = new ProviderFetchCache<EdsmBodiesFragment>(this.timeProvider, resolvedCacheDuration);
         trafficCache = new ProviderFetchCache<EdsmTrafficFragment>(this.timeProvider, resolvedCacheDuration);
         spanshCache = new ProviderFetchCache<SpanshFragment>(this.timeProvider, resolvedCacheDuration);
+    }
+
+    private static TimeSpan ResolveRequestTimeout(HttpClient client, TimeSpan? requestTimeout)
+    {
+        if (requestTimeout is { } configured)
+        {
+            if (configured <= TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(requestTimeout), "Request timeout must be positive.");
+            }
+
+            return configured;
+        }
+
+        return client.Timeout > TimeSpan.Zero && client.Timeout < DefaultRequestTimeout
+            ? client.Timeout
+            : DefaultRequestTimeout;
     }
 
     public async Task<SystemSummaryLoadResult> GetAsync(
@@ -167,19 +188,19 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         Uri trafficUri = new(edsmBaseUri, "api-system-v1/traffic?systemName=" + Uri.EscapeDataString(normalizedName));
         Task<FetchResult<EdsmBodiesFragment>> bodiesTask = bodiesCache.GetOrFetchAsync(
             normalizedName,
-            () => FetchAsync(ProviderFamily.Edsm, "EDSM bodies", bodiesUri, ParseEdsmBodies),
+            token => FetchAsync(ProviderFamily.Edsm, "EDSM bodies", bodiesUri, ParseEdsmBodies, token),
             cancellationToken
         );
         Task<FetchResult<EdsmTrafficFragment>> trafficTask = trafficCache.GetOrFetchAsync(
             normalizedName,
-            () => FetchAsync(ProviderFamily.Edsm, "EDSM traffic", trafficUri, ParseEdsmTraffic),
+            token => FetchAsync(ProviderFamily.Edsm, "EDSM traffic", trafficUri, ParseEdsmTraffic, token),
             cancellationToken
         );
         Task<FetchResult<SpanshFragment>> spanshTask =
             systemAddress > 0
                 ? spanshCache.GetOrFetchAsync(
                     systemAddress.ToString(CultureInfo.InvariantCulture),
-                    () =>
+                    token =>
                         FetchAsync(
                             ProviderFamily.Spansh,
                             "Spansh system dump",
@@ -190,7 +211,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                                     systemAddress.ToString(CultureInfo.InvariantCulture)
                                 )
                             ),
-                            ParseSpanshDump
+                            ParseSpanshDump,
+                            token
                         ),
                     cancellationToken
                 )
@@ -256,19 +278,23 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         ProviderFamily family,
         string provider,
         Uri requestUri,
-        Func<JsonElement, T> parser
+        Func<JsonElement, T> parser,
+        CancellationToken cancellationToken
     )
         where T : class
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (IsRateLimited(family))
         {
             return new FetchResult<T>(null, $"{provider} data is temporarily rate-limited (HTTP 429).");
         }
 
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(requestTimeout);
         try
         {
             using HttpResponseMessage response = await client
-                .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead)
+                .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, timeout.Token)
                 .ConfigureAwait(false);
             if (family == ProviderFamily.Spansh && response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -283,14 +309,29 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
 
             response.EnsureSuccessStatusCode();
             using JsonDocument document = await BoundedHttpContent
-                .ReadJsonDocumentAsync(response.Content, MaximumResponseBytes, $"The {provider} response")
+                .ReadJsonDocumentAsync(
+                    response.Content,
+                    MaximumResponseBytes,
+                    $"The {provider} response",
+                    timeout.Token
+                )
                 .ConfigureAwait(false);
             return new FetchResult<T>(parser(document.RootElement), null);
         }
-        catch (Exception exception)
-            when (exception is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return new FetchResult<T>(null, $"{provider} data is unavailable: {exception.Message}");
+            throw;
+        }
+        catch (Exception exception)
+            when (exception
+                    is HttpRequestException
+                        or OperationCanceledException
+                        or JsonException
+                        or InvalidDataException
+            )
+        {
+            string detail = timeout.IsCancellationRequested ? "The request timed out." : exception.Message;
+            return new FetchResult<T>(null, $"{provider} data is unavailable: {detail}");
         }
     }
 
@@ -942,16 +983,16 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     {
         private readonly Lock gate = new();
         private readonly Dictionary<string, CachedEntry> entries = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, Task<FetchResult<T>>> inFlight = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, InFlightFetch> inFlight = new(StringComparer.OrdinalIgnoreCase);
 
         public async Task<FetchResult<T>> GetOrFetchAsync(
             string key,
-            Func<Task<FetchResult<T>>> fetch,
+            Func<CancellationToken, Task<FetchResult<T>>> fetch,
             CancellationToken cancellationToken
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Task<FetchResult<T>> task;
+            InFlightFetch entry;
             TaskCompletionSource? startGate = null;
             lock (gate)
             {
@@ -961,27 +1002,68 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                     return cached.Result;
                 }
 
-                if (!inFlight.TryGetValue(key, out task!))
+                if (!inFlight.TryGetValue(key, out entry!))
                 {
+                    entry = new InFlightFetch();
                     startGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                    task = RunAndStoreAsync(key, fetch, startGate.Task);
-                    _ = task.ContinueWith(
+                    entry.Task = RunAndStoreAsync(key, entry, fetch, startGate.Task);
+                    _ = entry.Task.ContinueWith(
                         static faulted => _ = faulted.Exception,
                         CancellationToken.None,
                         TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
                         TaskScheduler.Default
                     );
-                    inFlight[key] = task;
+                    inFlight[key] = entry;
                 }
+
+                entry.Waiters++;
             }
 
             startGate?.TrySetResult();
-            return await task.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await entry.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                ReleaseWaiter(key, entry);
+            }
+        }
+
+        private void ReleaseWaiter(string key, InFlightFetch entry)
+        {
+            bool cancelFetch = false;
+            lock (gate)
+            {
+                entry.Waiters--;
+                if (entry.Waiters == 0 && !entry.Completed && !entry.CancelRequested)
+                {
+                    entry.CancelRequested = true;
+                    entry.CancellationUsers++;
+                    RemoveInFlightLocked(key, entry);
+                    cancelFetch = true;
+                }
+            }
+
+            if (!cancelFetch)
+            {
+                return;
+            }
+
+            try
+            {
+                entry.Cancellation.Cancel();
+            }
+            finally
+            {
+                ReleaseCancellationUser(entry);
+            }
         }
 
         private async Task<FetchResult<T>> RunAndStoreAsync(
             string key,
-            Func<Task<FetchResult<T>>> fetch,
+            InFlightFetch entry,
+            Func<CancellationToken, Task<FetchResult<T>>> fetch,
             Task startGate
         )
         {
@@ -989,21 +1071,54 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             FetchResult<T>? completed = null;
             try
             {
-                completed = await fetch().ConfigureAwait(false);
+                completed = await fetch(entry.Cancellation.Token).ConfigureAwait(false);
                 return completed;
             }
             finally
             {
+                bool disposeCancellation;
                 lock (gate)
                 {
-                    inFlight.Remove(key);
-                    if (completed is { Warning: null } && ttl > TimeSpan.Zero)
+                    entry.Completed = true;
+                    RemoveInFlightLocked(key, entry);
+                    if (completed is { Warning: null } && !entry.CancelRequested && ttl > TimeSpan.Zero)
                     {
                         DateTimeOffset now = timeProvider.GetUtcNow();
                         PruneLocked(now);
                         entries[key] = new CachedEntry(completed, now + ttl);
                     }
+
+                    entry.CancellationUsers--;
+                    disposeCancellation = entry.CancellationUsers == 0;
                 }
+
+                if (disposeCancellation)
+                {
+                    entry.Cancellation.Dispose();
+                }
+            }
+        }
+
+        private void ReleaseCancellationUser(InFlightFetch entry)
+        {
+            bool disposeCancellation;
+            lock (gate)
+            {
+                entry.CancellationUsers--;
+                disposeCancellation = entry.CancellationUsers == 0;
+            }
+
+            if (disposeCancellation)
+            {
+                entry.Cancellation.Dispose();
+            }
+        }
+
+        private void RemoveInFlightLocked(string key, InFlightFetch entry)
+        {
+            if (inFlight.TryGetValue(key, out InFlightFetch? current) && ReferenceEquals(current, entry))
+            {
+                inFlight.Remove(key);
             }
         }
 
@@ -1025,6 +1140,16 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 string oldest = entries.OrderBy(pair => pair.Value.ExpiresAt).First().Key;
                 entries.Remove(oldest);
             }
+        }
+
+        private sealed class InFlightFetch
+        {
+            public CancellationTokenSource Cancellation { get; } = new();
+            public Task<FetchResult<T>> Task { get; set; } = null!;
+            public int Waiters { get; set; }
+            public int CancellationUsers { get; set; } = 1;
+            public bool Completed { get; set; }
+            public bool CancelRequested { get; set; }
         }
 
         private readonly record struct CachedEntry(FetchResult<T> Result, DateTimeOffset ExpiresAt);

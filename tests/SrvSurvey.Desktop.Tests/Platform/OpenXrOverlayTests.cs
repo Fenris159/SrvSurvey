@@ -15,6 +15,52 @@ public sealed class OpenXrOverlayTests : IDisposable
     private const long Now = 100_000;
 
     [Fact]
+    public void EffectivePanelBudgetReflectsNativeLayerLimitAndInteractionCursorSlot()
+    {
+        using OpenXrOverlayRuntime runtime = Runtime();
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+
+        runtime.Probe();
+        WriteState(OpenXrLayerState.Ready, Now);
+        runtime.Initialize();
+        using var nativeInput = new OpenXrInputWriter(MailboxPath + ".input");
+        nativeInput.Ready(Now);
+
+        // Older native layers leave offset 44 zeroed -> fall back to packet capacity.
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+
+        // A 3-layer runtime with 1 game layer reports 2 available overlay layers (encoded as 3).
+        WriteAvailableOverlayLayers(2);
+        Assert.Equal(2, runtime.MaximumOverlays);
+        Assert.True(runtime.SetInteractionEnabled(true).Succeeded);
+        Assert.Equal(1, runtime.MaximumOverlays);
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        Assert.Equal(2, runtime.MaximumOverlays);
+
+        // 17+ available layers keep full 16-panel capacity even while the cursor occupies one layer.
+        WriteAvailableOverlayLayers(17);
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+        Assert.True(runtime.SetInteractionEnabled(true).Succeeded);
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+
+        // Zero or one available overlay layers must reject controller interaction so calibration controls never vanish.
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        WriteAvailableOverlayLayers(1);
+        Assert.Equal(1, runtime.MaximumOverlays);
+        VrRuntimeResult oneLayerToggle = runtime.SetInteractionEnabled(true);
+        Assert.False(oneLayerToggle.Succeeded);
+        Assert.Contains("two free composition layers", oneLayerToggle.Message, StringComparison.Ordinal);
+        Assert.Equal(1, runtime.MaximumOverlays);
+
+        WriteAvailableOverlayLayers(0);
+        Assert.Equal(0, runtime.MaximumOverlays);
+        Assert.False(runtime.SetInteractionEnabled(true).Succeeded);
+
+        runtime.Shutdown();
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+    }
+
+    [Fact]
     public void ConflictingEdvrAttachmentReportsRecoveryAndKeepsTheFramePublisherAvailable()
     {
         using var runtime = new OpenXrOverlayRuntime(
@@ -524,6 +570,26 @@ public sealed class OpenXrOverlayTests : IDisposable
         using MemoryMappedViewAccessor view = mapping.CreateViewAccessor();
         view.Write(40, (uint)state);
         view.Write(32, heartbeat);
+    }
+
+    private void WriteAvailableOverlayLayers(uint availableLayers)
+    {
+        using var file = new FileStream(
+            MailboxPath,
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        using var mapping = MemoryMappedFile.CreateFromFile(
+            file,
+            null,
+            OpenXrFramePacket.Capacity,
+            MemoryMappedFileAccess.ReadWrite,
+            HandleInheritability.None,
+            leaveOpen: true
+        );
+        using MemoryMappedViewAccessor view = mapping.CreateViewAccessor();
+        view.Write(44, availableLayers + 1u);
     }
 
     private void WriteHeadPose(uint sequence, long timestamp, uint revision, Vector3 position, float yaw)

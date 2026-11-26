@@ -179,6 +179,9 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(450, secondStore.Load().Placements["PlotJumpInfo"].HorizontalOffset);
             Assert.Null(secondStore.Load().Placements["PlotJumpInfo"].ScaleIndex);
 
+            await first.DisposeAsync();
+            await second.DisposeAsync();
+
             await using MainWindowViewModel reopenedFirst = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(firstPaths)
@@ -280,8 +283,14 @@ public sealed class MainWindowViewModelTests
         await first.RefreshAsync();
         Assert.Empty(requestedSwitches);
 
-        // Even with one Elite window, another live SrvSurvey instance owning F14004033 blocks stealing it.
+        // If the second Elite client crashes without writing Shutdown, dropping back to one window must NOT switch to the stale journal.
         switcher.AvailableWindowCount = 1;
+        await first.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        // Fresh activity on secondJournal proves the second commander is live, yet another SrvSurvey instance owning F14004033 still blocks stealing it.
+        await File.AppendAllTextAsync(secondJournal, "{\"event\":\"Music\",\"MusicTrack\":\"MainMenu\"}\n");
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 16, DateTimeKind.Utc));
         AppDataPaths secondPaths = temp.Paths with { SettingsFrontierId = "F14004033" };
         CommanderSettingsProfile.Prepare(secondPaths);
         await using (
@@ -296,6 +305,8 @@ public sealed class MainWindowViewModelTests
         }
 
         // An active Google Drive / profile-sync operation defers automatic switching until it completes.
+        await File.AppendAllTextAsync(secondJournal, "{\"event\":\"Music\",\"MusicTrack\":\"NoTrack\"}\n");
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 17, DateTimeKind.Utc));
         var syncStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var releaseSync = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         Task syncOperation = first.ProfileSync.FileOperationAsync(async () =>
@@ -311,11 +322,130 @@ public sealed class MainWindowViewModelTests
         await syncOperation.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.False(first.ProfileSync.IsBusy);
 
-        // Once F14004033 is unowned, idle, and only one client runs, automatic switching triggers cleanly once.
+        // A closed second commander journal (ending with Shutdown) must not steal focus from the active commander.
+        string closedSecondJournal = Path.Combine(journals, "Journal.2026-11-23T073405.01.log");
+        await File.WriteAllTextAsync(
+            closedSecondJournal,
+            """
+            {"event":"Fileheader","part":1,"Odyssey":true}
+            {"event":"Commander","Name":"Second Cmdr","FID":"F14004033"}
+            {"event":"LoadGame","Commander":"Second Cmdr","FID":"F14004033"}
+            {"event":"Shutdown"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(closedSecondJournal, new DateTime(2026, 11, 23, 7, 34, 18, DateTimeKind.Utc));
+        await first.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        // Re-activate second commander without Shutdown, then verify VR calibration defers automatic switching.
+        await File.AppendAllTextAsync(secondJournal, "{\"event\":\"Location\",\"StarSystem\":\"Sol\"}\n");
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 20, DateTimeKind.Utc));
+        Assert.True(first.VrOverlay.BeginAdjustment());
+        Assert.True(first.VrOverlay.IsAdjusting);
+        await first.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        first.VrOverlay.CancelCommand.Execute(null);
+        Assert.False(first.VrOverlay.IsAdjusting);
+
+        // Once F14004033 is unowned, idle, not calibrating VR, and only one client runs, automatic switching reserves it exclusively so a racing peer cannot claim it too.
+        AppDataPaths thirdPaths = temp.Paths with
+        {
+            SettingsFrontierId = "F99999999",
+        };
+        CommanderSettingsProfile.Prepare(thirdPaths);
+        List<string> competingSwitches = [];
+        await using MainWindowViewModel competing = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder =>
+                builder
+                    .WithAppDataPaths(thirdPaths)
+                    .WithTargetFrontierId("F99999999")
+                    .WithGameWindowSwitcher(switcher)
+                    .WithAllowAutomaticCommanderSwitch(true)
+        );
+        competing.AutomaticCommanderSwitchRequested += competingSwitches.Add;
+
         await first.RefreshAsync();
         Assert.Equal(["F14004033"], requestedSwitches);
+        await competing.RefreshAsync();
+        Assert.Empty(competingSwitches);
         await first.RefreshAsync();
         Assert.Single(requestedSwitches);
+    }
+
+    /// <summary>When window enumeration is unavailable (e.g., native Wayland), process counts still block multi-client or unverified switches.</summary>
+    [Fact]
+    public async Task AutomaticModeProtectsConcurrentClientsWhenWindowEnumerationIsUnavailable()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            """
+            {"event":"Commander","Name":"First Cmdr","FID":"F13228986"}
+            {"event":"LoadGame","Commander":"First Cmdr","FID":"F13228986"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 1, 57, DateTimeKind.Utc));
+        AppDataPaths firstPaths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        CommanderSettingsProfile.Prepare(firstPaths);
+        var processDetector = new MutableEliteProcessDetector { ProcessCount = 2 };
+        List<string> requestedSwitches = [];
+        await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder =>
+                builder
+                    .WithAppDataPaths(firstPaths)
+                    .WithGameWindowSwitcher(new UnavailableGameWindowSwitcher())
+                    .WithEliteGameProcessDetector(processDetector)
+                    .WithAllowAutomaticCommanderSwitch(true)
+        );
+        viewModel.AutomaticCommanderSwitchRequested += requestedSwitches.Add;
+
+        await viewModel.RefreshAsync();
+        Assert.False(viewModel.CommanderInstances.IsGameWindowEnumerationAvailable);
+
+        string secondJournal = Path.Combine(journals, "Journal.2026-11-23T073400.01.log");
+        await File.WriteAllTextAsync(
+            secondJournal,
+            """
+            {"event":"Commander","Name":"Second Cmdr","FID":"F14004033"}
+            {"event":"LoadGame","Commander":"Second Cmdr","FID":"F14004033"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 15, DateTimeKind.Utc));
+
+        // Two Elite processes block switching even though window enumeration reports 0.
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        // Unavailable process count also fails closed when window enumeration is unavailable.
+        processDetector.ProcessCount = null;
+        await File.AppendAllTextAsync(secondJournal, "{\"event\":\"Location\",\"StarSystem\":\"Sol\"}\n");
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 20, DateTimeKind.Utc));
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        // Once verified single client is running and fresh activity arrives, automatic switching succeeds.
+        processDetector.ProcessCount = 1;
+        await File.AppendAllTextAsync(secondJournal, "{\"event\":\"Music\",\"MusicTrack\":\"Exploration\"}\n");
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 25, DateTimeKind.Utc));
+        await viewModel.RefreshAsync();
+        Assert.Equal(["F14004033"], requestedSwitches);
+    }
+
+    private sealed class MutableEliteProcessDetector : IEliteGameProcessDetector
+    {
+        public int? ProcessCount { get; set; } = 1;
+
+        public bool IsRunning() => ProcessCount is > 0;
+
+        public int? TryGetRunningProcessCount() => ProcessCount;
     }
 
     /// <summary>A retained restart ignores pre-existing newer journals from another commander until new activity occurs, and fresh startups adopt the first commander.</summary>
@@ -389,6 +519,648 @@ public sealed class MainWindowViewModelTests
         );
         await fresh.RefreshAsync();
         Assert.Equal(["F999"], freshSwitches);
+    }
+
+    /// <summary>An unbound instance must hold exclusive commander ownership before projecting commander-scoped mutations, and retain blocked batches until ownership is acquired.</summary>
+    [Fact]
+    public async Task UnboundInstanceRequiresCommanderOwnershipBeforeWritingAndRetainsBlockedBatches()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        var profileStore = new CommanderProfileStore(temp.Paths.DataDirectory);
+
+        // 1. Unbound Automatic mode must neither mutate F14004033's profile nor switch while another instance owns F14004033.
+        List<string> switches = [];
+        await using (
+            MainWindowViewModel autoUnbound = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(temp.Paths)
+                        .WithGameWindowSwitcher(new MutableGameWindowSwitcher { AvailableWindowCount = 1 })
+                        .WithAllowAutomaticCommanderSwitch(true)
+            )
+        )
+        {
+            autoUnbound.AutomaticCommanderSwitchRequested += switches.Add;
+            await autoUnbound.RefreshAsync();
+
+            using SrvSurvey.Desktop.Platform.CommanderClaimLease? otherOwner =
+                SrvSurvey.Desktop.Platform.CommanderClaimRegistry.TryAcquire(temp.Paths.CacheDirectory, "F14004033");
+            Assert.NotNull(otherOwner);
+
+            string journal = Path.Combine(journals, "Journal.2026-11-23T080000.01.log");
+            await File.WriteAllTextAsync(
+                journal,
+                """
+                {"timestamp":"2026-11-23T08:00:00Z","event":"Fileheader","part":1,"Odyssey":true}
+                {"timestamp":"2026-11-23T08:00:01Z","event":"Commander","Name":"Blocked","FID":"F14004033"}
+                {"timestamp":"2026-11-23T08:00:02Z","event":"LoadGame","Commander":"Blocked","FID":"F14004033"}
+                {"timestamp":"2026-11-23T08:00:03Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Sol","SystemAddress":10477373803}
+                {"timestamp":"2026-11-23T08:00:04Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":10477373803,"JumpDist":25.0}
+
+                """
+            );
+            await autoUnbound.RefreshAsync();
+            Assert.Empty(switches);
+            Assert.False((await profileStore.LoadAsync("F14004033", isOdyssey: true)).Exists);
+
+            // Subsequent appends without repeating Commander must remain blocked while another instance holds the claim.
+            await File.AppendAllTextAsync(
+                journal,
+                """
+                {"timestamp":"2026-11-23T08:01:03Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Achenar","SystemAddress":10477373804}
+                {"timestamp":"2026-11-23T08:01:04Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":10477373804,"JumpDist":15.0}
+
+                """
+            );
+            await autoUnbound.RefreshAsync();
+            Assert.Empty(switches);
+            Assert.False((await profileStore.LoadAsync("F14004033", isOdyssey: true)).Exists);
+            // A peer claim alone must never mark an unconfirmed journal file as historical in the local baseline.
+            Assert.False(autoUnbound.CurrentJournalBaseline?.FileLengths.ContainsKey(journal) ?? false);
+        }
+
+        // 2. Unbound non-switching instance retains blocked batches and replays them once the other instance releases the claim.
+        string standaloneJournals = temp.Path("data", "standalone-journals");
+        Directory.CreateDirectory(standaloneJournals);
+        await using MainWindowViewModel standalone = MainWindowViewModelTestBuilder.Create(
+            standaloneJournals,
+            builder => builder.WithAppDataPaths(temp.Paths)
+        );
+        await standalone.RefreshAsync();
+
+        string standaloneJournal = Path.Combine(standaloneJournals, "Journal.2026-11-23T090000.01.log");
+        using (
+            SrvSurvey.Desktop.Platform.CommanderClaimLease? otherOwner =
+                SrvSurvey.Desktop.Platform.CommanderClaimRegistry.TryAcquire(temp.Paths.CacheDirectory, "F14004033")
+        )
+        {
+            Assert.NotNull(otherOwner);
+            await File.WriteAllTextAsync(
+                standaloneJournal,
+                """
+                {"timestamp":"2026-11-23T09:00:00Z","event":"Fileheader","part":1,"Odyssey":true}
+                {"timestamp":"2026-11-23T09:00:01Z","event":"Commander","Name":"Retained","FID":"F14004033"}
+                {"timestamp":"2026-11-23T09:00:02Z","event":"LoadGame","Commander":"Retained","FID":"F14004033"}
+                {"timestamp":"2026-11-23T09:00:03Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Sol","SystemAddress":10477373803}
+                {"timestamp":"2026-11-23T09:00:04Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":10477373803,"JumpDist":25.0}
+
+                """
+            );
+            await standalone.RefreshAsync();
+            Assert.False((await profileStore.LoadAsync("F14004033", isOdyssey: true)).Exists);
+
+            await File.AppendAllTextAsync(
+                standaloneJournal,
+                """
+                {"timestamp":"2026-11-23T09:01:03Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Achenar","SystemAddress":10477373804}
+                {"timestamp":"2026-11-23T09:01:04Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":10477373804,"JumpDist":15.0}
+
+                """
+            );
+            await standalone.RefreshAsync();
+            Assert.False((await profileStore.LoadAsync("F14004033", isOdyssey: true)).Exists);
+        }
+
+        // Once the other instance releases F14004033, the next poll claims ownership and projects all retained batches cleanly.
+        await standalone.RefreshAsync();
+        CommanderProfileLoadResult reloaded = await profileStore.LoadAsync("F14004033", isOdyssey: true);
+        Assert.True(reloaded.Exists);
+        Assert.Equal(2, reloaded.Data!.Exploration.JumpCount);
+        Assert.Equal(40.0, reloaded.Data.Exploration.DistanceTravelled, 4);
+    }
+
+    /// <summary>A failed exploration or exobiology save blocks confirmed checkpoint advancement across idle polls until a retry succeeds.</summary>
+    [Fact]
+    public async Task FailedProfileSaveBlocksCheckpointAdvancementUntilRetrySucceeds()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string journal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            journal,
+            """
+            {"timestamp":"2026-11-23T06:01:57Z","event":"Fileheader","part":1,"Odyssey":true}
+            {"timestamp":"2026-11-23T06:01:58Z","event":"Commander","Name":"Checkpoint Cmdr","FID":"F13228986"}
+            {"timestamp":"2026-11-23T06:01:59Z","event":"LoadGame","Commander":"Checkpoint Cmdr","FID":"F13228986"}
+            {"timestamp":"2026-11-23T06:02:00Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Sol","SystemAddress":10477373803}
+            {"timestamp":"2026-11-23T06:02:01Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":10477373803,"JumpDist":12.5}
+
+            """
+        );
+        AppDataPaths paths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        CommanderSettingsProfile.Prepare(paths);
+        var profileStore = new CommanderProfileStore(paths.DataDirectory);
+        string profilePath = profileStore.GetProfilePath("F13228986", isOdyssey: true);
+
+        await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder =>
+                builder
+                    .WithAppDataPaths(paths)
+                    .WithTargetFrontierId("F13228986")
+                    .WithAllowAutomaticCommanderSwitch(true)
+        );
+
+        await viewModel.RefreshAsync();
+        Assert.True(viewModel.CanProceedWithAutomaticCommanderSwitch());
+        long confirmedInitialOffset = new FileInfo(journal).Length;
+        Assert.Equal(confirmedInitialOffset, viewModel.CurrentJournalCheckpoint?.ByteOffset);
+        Assert.Equal(
+            confirmedInitialOffset,
+            CommanderJournalCheckpointStore.TryLoad(paths.CacheDirectory, "F13228986")[journal]
+        );
+
+        // Block writes to the commander profile file across both the failing poll and a subsequent idle poll.
+        File.Delete(profilePath);
+        Directory.CreateDirectory(profilePath);
+        try
+        {
+            await File.AppendAllTextAsync(
+                journal,
+                """
+                {"timestamp":"2026-11-23T06:03:00Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Achenar","SystemAddress":10477373804}
+                {"timestamp":"2026-11-23T06:03:01Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":10477373804,"JumpDist":17.5}
+
+                """
+            );
+            long updatedLength = new FileInfo(journal).Length;
+            Assert.True(updatedLength > confirmedInitialOffset);
+
+            await viewModel.RefreshAsync();
+            Assert.Contains(
+                "could not be saved",
+                viewModel.ExplorationStatusMessage,
+                StringComparison.OrdinalIgnoreCase
+            );
+            Assert.False(viewModel.CanProceedWithAutomaticCommanderSwitch());
+            Assert.Equal(confirmedInitialOffset, viewModel.CurrentJournalCheckpoint?.ByteOffset);
+            Assert.Equal(
+                confirmedInitialOffset,
+                CommanderJournalCheckpointStore.TryLoad(paths.CacheDirectory, "F13228986")[journal]
+            );
+
+            // An idle poll while saves are still blocked must neither drop the pending save nor advance the checkpoint.
+            await viewModel.RefreshAsync();
+            Assert.False(viewModel.CanProceedWithAutomaticCommanderSwitch());
+            Assert.Equal(confirmedInitialOffset, viewModel.CurrentJournalCheckpoint?.ByteOffset);
+            Assert.Equal(
+                confirmedInitialOffset,
+                CommanderJournalCheckpointStore.TryLoad(paths.CacheDirectory, "F13228986")[journal]
+            );
+
+            // Once profile writes can succeed again, the next idle poll retries the save, advances the checkpoint, and re-enables switching.
+            Directory.Delete(profilePath);
+            await viewModel.RefreshAsync();
+            Assert.True(viewModel.CanProceedWithAutomaticCommanderSwitch());
+            Assert.Equal(updatedLength, viewModel.CurrentJournalCheckpoint?.ByteOffset);
+            Assert.Equal(
+                updatedLength,
+                CommanderJournalCheckpointStore.TryLoad(paths.CacheDirectory, "F13228986")[journal]
+            );
+            CommanderProfileLoadResult saved = await profileStore.LoadAsync("F13228986", isOdyssey: true);
+            Assert.True(saved.Exists);
+            Assert.Equal(2, saved.Data!.Exploration.JumpCount);
+            Assert.Equal(30.0, saved.Data.Exploration.DistanceTravelled, 4);
+        }
+        finally
+        {
+            if (Directory.Exists(profilePath))
+            {
+                Directory.Delete(profilePath, recursive: true);
+            }
+        }
+    }
+
+    /// <summary>When shutdown cancels a journal poll during projection after draining persistence, the confirmed checkpoint advances so resuming later does not double-count totals.</summary>
+    [Fact]
+    public async Task CancelledMonitorPollPersistsCheckpointAfterDrainingExplorationTotals()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string journal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            journal,
+            """
+            {"timestamp":"2026-11-23T06:01:57Z","event":"Fileheader","part":1,"Odyssey":true}
+            {"timestamp":"2026-11-23T06:01:58Z","event":"Commander","Name":"Checkpoint Cmdr","FID":"F13228986"}
+            {"timestamp":"2026-11-23T06:01:59Z","event":"LoadGame","Commander":"Checkpoint Cmdr","FID":"F13228986"}
+            {"timestamp":"2026-11-23T06:02:00Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Sol","SystemAddress":10477373803}
+            {"timestamp":"2026-11-23T06:02:01Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":10477373803,"JumpDist":12.5}
+
+            """
+        );
+        AppDataPaths paths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        CommanderSettingsProfile.Prepare(paths);
+        var profileStore = new CommanderProfileStore(paths.DataDirectory);
+
+        using var cancellation = new CancellationTokenSource();
+        bool cancelOnPublication = false;
+        var eddn = new RecordingEddnPublisher(() =>
+        {
+            if (cancelOnPublication)
+            {
+                cancellation.Cancel();
+            }
+        });
+
+        long updatedLength;
+        await using (
+            MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithTargetFrontierId("F13228986")
+                        .WithEddnPublisher(eddn)
+                        .WithAllowAutomaticCommanderSwitch(true)
+            )
+        )
+        {
+            await viewModel.RefreshAsync();
+            long initialLength = new FileInfo(journal).Length;
+            Assert.Equal(initialLength, viewModel.CurrentJournalCheckpoint?.ByteOffset);
+
+            await File.AppendAllTextAsync(
+                journal,
+                """
+                {"timestamp":"2026-11-23T06:03:00Z","event":"StartJump","JumpType":"Hyperspace","StarSystem":"Achenar","SystemAddress":10477373804}
+                {"timestamp":"2026-11-23T06:03:01Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":10477373804,"JumpDist":17.5}
+
+                """
+            );
+            updatedLength = new FileInfo(journal).Length;
+            Assert.True(updatedLength > initialLength);
+
+            cancelOnPublication = true;
+            cancellation.CancelAfter(TimeSpan.FromSeconds(15));
+            await viewModel.MonitorAsync(TimeSpan.FromMilliseconds(25), cancellation.Token);
+
+            Assert.True(cancellation.IsCancellationRequested);
+            Assert.Equal(updatedLength, viewModel.CurrentJournalCheckpoint?.ByteOffset);
+            Assert.Equal(
+                updatedLength,
+                CommanderJournalCheckpointStore.TryLoad(paths.CacheDirectory, "F13228986")[journal]
+            );
+        }
+
+        CommanderProfileLoadResult savedAfterCancel = await profileStore.LoadAsync("F13228986", isOdyssey: true);
+        Assert.True(savedAfterCancel.Exists);
+        Assert.Equal(2, savedAfterCancel.Data!.Exploration.JumpCount);
+        Assert.Equal(30.0, savedAfterCancel.Data.Exploration.DistanceTravelled, 4);
+
+        // Resuming the commander later from the persisted checkpoint (as happens after switching to another commander and back) must not double-count the saved jump.
+        IReadOnlyDictionary<string, long> persistedCheckpoints = CommanderJournalCheckpointStore.TryLoad(
+            paths.CacheDirectory,
+            "F13228986"
+        );
+        await using MainWindowViewModel resumed = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder =>
+                builder
+                    .WithAppDataPaths(paths)
+                    .WithTargetFrontierId("F13228986")
+                    .WithCommanderSwitchJournalResume(new JournalSwitchResume(ConfirmedOffsets: persistedCheckpoints))
+        );
+        await resumed.RefreshAsync();
+        CommanderProfileLoadResult savedAfterResume = await profileStore.LoadAsync("F13228986", isOdyssey: true);
+        Assert.True(savedAfterResume.Exists);
+        Assert.Equal(2, savedAfterResume.Data!.Exploration.JumpCount);
+        Assert.Equal(30.0, savedAfterResume.Data.Exploration.DistanceTravelled, 4);
+    }
+
+    /// <summary>Automatic commander switching defers while Journey or other workspace editors have unsaved edits or while a release update is installing.</summary>
+    [Fact]
+    public async Task AutomaticCommanderSwitchDefersForUnsavedWorkspaceEditsAndActiveUpdateInstall()
+    {
+        using var temp = new ProfileSyncTestRoot();
+        string journals = temp.Path("data", "journals");
+        Directory.CreateDirectory(journals);
+        string firstJournal = Path.Combine(journals, "Journal.2026-11-23T060157.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            """
+            {"timestamp":"2026-11-23T06:01:57Z","event":"Fileheader","part":1,"Odyssey":true}
+            {"timestamp":"2026-11-23T06:01:58Z","event":"Commander","Name":"Probe","FID":"F13228986"}
+            {"timestamp":"2026-11-23T06:01:59Z","event":"LoadGame","Commander":"Probe","FID":"F13228986"}
+            {"timestamp":"2026-11-23T06:02:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 6, 2, 0, DateTimeKind.Utc));
+        AppDataPaths firstPaths = temp.Paths with { SettingsFrontierId = "F13228986" };
+        CommanderSettingsProfile.Prepare(firstPaths);
+        var colonizationSettings = new ColonizationSettingsStore(firstPaths.UiSettingsPath);
+        colonizationSettings.SaveEnabled(true);
+        colonizationSettings.SaveShipCargoPublishingEnabled(true);
+        await new CommanderProfileStore(firstPaths.DataDirectory).SaveRavenColonialApiKeyAsync(
+            "F13228986",
+            "Probe",
+            true,
+            "test-raven-key"
+        );
+        using var ravenHandler = new StartupRavenCargoHandler { ServeLinkedCarrier = true };
+        using var ravenNetwork = new HttpClient(ravenHandler);
+        var eddn = new RecordingEddnPublisher();
+
+        List<string> requestedSwitches = [];
+        await using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
+            journals,
+            builder =>
+                builder
+                    .WithAppDataPaths(firstPaths)
+                    .WithExternalNetworkClient(ravenNetwork)
+                    .WithEddnPublisher(eddn)
+                    .WithGameWindowSwitcher(new MutableGameWindowSwitcher { AvailableWindowCount = 1 })
+                    .WithAllowAutomaticCommanderSwitch(true)
+        );
+        viewModel.AutomaticCommanderSwitchRequested += requestedSwitches.Add;
+        await viewModel.RefreshAsync();
+
+        // Direct construction for an already-claimed commander must fail closed instead of ignoring the failed claim.
+        Assert.Throws<InvalidOperationException>(() =>
+            MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(firstPaths).WithTargetFrontierId("F13228986")
+            )
+        );
+
+        // Start a journey and leave unsaved edits (Journey.IsDirty == true).
+        await viewModel.Journey.StartNewJourneyAsync();
+        viewModel.Journey.UsePreviousStart = true;
+        viewModel.Journey.NewJourneyName = "Unsaved expedition";
+        viewModel.Journey.StartSystemQuery = "Sol";
+        await viewModel.Journey.FindStartAsync();
+        await viewModel.Journey.BeginJourneyAsync();
+        viewModel.Journey.JourneyDescription = "Draft description not yet saved";
+        Assert.True(viewModel.Journey.IsDirty);
+
+        string secondJournal = Path.Combine(journals, "Journal.2026-11-23T073400.01.log");
+        await File.WriteAllTextAsync(
+            secondJournal,
+            """
+            {"timestamp":"2026-11-23T07:34:00Z","event":"Fileheader","part":1,"Odyssey":true}
+            {"timestamp":"2026-11-23T07:34:01Z","event":"Commander","Name":"Second Cmdr","FID":"F14004033"}
+            {"timestamp":"2026-11-23T07:34:02Z","event":"LoadGame","Commander":"Second Cmdr","FID":"F14004033"}
+
+            """
+        );
+        File.SetLastWriteTimeUtc(secondJournal, new DateTime(2026, 11, 23, 7, 34, 2, DateTimeKind.Utc));
+
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        Assert.Equal("Draft description not yet saved", viewModel.Journey.JourneyDescription);
+
+        // Save Journey, then verify unsaved SystemNotes also defers switching.
+        await viewModel.Journey.SaveAsync();
+        Assert.False(viewModel.Journey.IsDirty);
+        Assert.True(await viewModel.SystemNotes.LoadCurrentAsync());
+        viewModel.SystemNotes.Notes = "Unsaved system note";
+        Assert.True(viewModel.SystemNotes.IsDirty);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        Assert.True(await viewModel.SystemNotes.SaveAsync());
+        Assert.False(viewModel.SystemNotes.IsDirty);
+
+        // Unsaved Colonization project visibility edits must also defer switching until saved.
+        Assert.True(viewModel.Colonization.HasProjects);
+        viewModel.Colonization.Projects[0].IsShown = false;
+        Assert.True(viewModel.Colonization.HasUnsavedProjectVisibility);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        await viewModel.Colonization.SaveProjectVisibilityAsync();
+        Assert.False(viewModel.Colonization.HasUnsavedProjectVisibility);
+
+        // Unsaved Colonization System Editor site edits must also defer switching until cleared or published.
+        await viewModel.Colonization.SystemEditor.LoadAsync();
+        viewModel.Colonization.SystemEditor.NewSiteName = "Unsaved Draft Outpost";
+        viewModel.Colonization.SystemEditor.AddSiteCommand.Execute(null);
+        Assert.True(viewModel.Colonization.SystemEditor.HasLocalChanges);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        await viewModel.Colonization.SystemEditor.LoadAsync();
+        Assert.False(viewModel.Colonization.SystemEditor.HasLocalChanges);
+
+        // Unsaved Colonization Nexus Editor drafts must also defer switching until closed or saved.
+        using (
+            ColonizationNexusEditorViewModel nexusEditor = viewModel.Colonization.Nexus.CreateEditor([], edit: false)
+        )
+        {
+            Assert.False(viewModel.Colonization.Nexus.HasActiveEditorWork);
+            nexusEditor.Name = "Unsaved Nexus Draft";
+            Assert.True(viewModel.Colonization.Nexus.HasActiveEditorWork);
+            await viewModel.RefreshAsync();
+            Assert.Empty(requestedSwitches);
+        }
+        Assert.False(viewModel.Colonization.Nexus.HasActiveEditorWork);
+
+        // Unsaved Colonization Carrier Manifest editor changes must also defer switching until closed or saved.
+        using (ColonizationCarrierManifestViewModel manifestEditor = viewModel.Colonization.CreateCarrierManifest())
+        {
+            await manifestEditor.InitializeAsync();
+            Assert.True(manifestEditor.HasCarrier);
+            Assert.False(viewModel.Colonization.HasActiveCarrierManifestWork);
+            manifestEditor.SystemName = "Achenar";
+            Assert.True(viewModel.Colonization.HasActiveCarrierManifestWork);
+            await viewModel.RefreshAsync();
+            Assert.Empty(requestedSwitches);
+            manifestEditor.SystemName = "Sol";
+            Assert.False(viewModel.Colonization.HasActiveCarrierManifestWork);
+            manifestEditor.ToggleTextCommand.Execute(null);
+            Assert.True(viewModel.Colonization.HasActiveCarrierManifestWork);
+            await viewModel.RefreshAsync();
+            Assert.Empty(requestedSwitches);
+        }
+        Assert.False(viewModel.Colonization.HasActiveCarrierManifestWork);
+
+        // Unsaved Discord carrier announcement changes must also defer switching until saved or discarded.
+        viewModel.DiscordCarrierAnnouncements.WebhookUrl = "https://discord.com/api/webhooks/123/unsaved";
+        Assert.True(viewModel.DiscordCarrierAnnouncements.HasChanges);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        viewModel.DiscordCarrierAnnouncements.WebhookUrl = string.Empty;
+        Assert.False(viewModel.DiscordCarrierAnnouncements.HasChanges);
+
+        // Route notes still being typed in the open route notes dialog must defer switching until saved or cancelled.
+        viewModel.Route.NotesCommand.Execute(null);
+        Assert.True(viewModel.Route.IsNotesVisible);
+        Assert.False(viewModel.Route.HasPendingNotesDraft);
+        viewModel.Route.NotesDraft = "Route notes still being typed";
+        Assert.True(viewModel.Route.HasPendingNotesDraft);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        await viewModel.Route.SaveNotesAsync();
+        Assert.False(viewModel.Route.IsNotesVisible);
+        Assert.False(viewModel.Route.HasPendingNotesDraft);
+        Assert.True(viewModel.Route.HasNotesChanges);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        viewModel.Route.NotesCommand.Execute(null);
+        viewModel.Route.NotesDraft = string.Empty;
+        Assert.True(viewModel.Route.HasPendingNotesDraft);
+        await viewModel.Route.SaveNotesAsync();
+        Assert.False(viewModel.Route.HasPendingNotesDraft);
+        Assert.False(viewModel.Route.HasNotesChanges);
+
+        // Route Manager notes and rename dialog drafts must also defer switching until saved or cancelled.
+        var routeStore = new FollowRouteStore(firstPaths.DataDirectory);
+        await routeStore.SaveAsAsync(
+            (await routeStore.CreateNewAsync("F13228986")) with
+            {
+                Hops =
+                [
+                    new FollowRouteHop("Sol", 42, null, null, false, false),
+                    new FollowRouteHop("Achenar", 43, null, null, false, false),
+                ],
+                Notes = "Saved manager note",
+            },
+            "SavedRoute"
+        );
+        await viewModel.RouteManager.RefreshAsync();
+        RouteManagerItemViewModel savedRouteItem = Assert.Single(viewModel.RouteManager.Routes);
+        savedRouteItem.EditNotesCommand.Execute(null);
+        Assert.True(viewModel.RouteManager.IsNotesVisible);
+        Assert.False(viewModel.RouteManager.HasPendingDialogDraft);
+        viewModel.RouteManager.NotesDraft = "Edited manager note draft";
+        Assert.True(viewModel.RouteManager.HasPendingDialogDraft);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        viewModel.RouteManager.NotesDraft = string.Empty;
+        Assert.True(viewModel.RouteManager.HasPendingDialogDraft);
+        viewModel.RouteManager.CancelDialogCommand.Execute(null);
+        Assert.False(viewModel.RouteManager.HasPendingDialogDraft);
+
+        savedRouteItem.RenameCommand.Execute(null);
+        Assert.True(viewModel.RouteManager.IsRenameVisible);
+        Assert.False(viewModel.RouteManager.HasPendingDialogDraft);
+        viewModel.RouteManager.RenameDraft = "RenamedRouteDraft";
+        Assert.True(viewModel.RouteManager.HasPendingDialogDraft);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        viewModel.RouteManager.CancelDialogCommand.Execute(null);
+        Assert.False(viewModel.RouteManager.HasPendingDialogDraft);
+
+        // When Commander B writes Cargo.json in the same folder while Commander A's journal lacks Shutdown and switching is deferred,
+        // Commander A's cargo must NOT be replaced with Commander B's cargo or published to Raven under Commander A,
+        // while a verified final Scan written to Commander A's own journal MUST still publish with AllowSharedData disabled.
+        viewModel.Journey.JourneyDescription = "Holding switch during same-folder cargo check";
+        await File.AppendAllTextAsync(
+            firstJournal,
+            "{\"timestamp\":\"2026-11-23T07:33:55Z\",\"event\":\"Scan\",\"BodyName\":\"Sol 1\",\"BodyID\":1,\"StarSystem\":\"Sol\",\"SystemAddress\":42}\n"
+        );
+        File.SetLastWriteTimeUtc(firstJournal, new DateTime(2026, 11, 23, 7, 33, 55, DateTimeKind.Utc));
+        await File.WriteAllTextAsync(
+            Path.Combine(journals, "Cargo.json"),
+            """{"timestamp":"2026-11-23T07:34:05Z","event":"Cargo","Vessel":"Ship","Count":50,"Inventory":[{"Name":"steel","Name_Localised":"Steel","Count":50,"Stolen":0}]}"""
+        );
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        Assert.Empty(ravenHandler.Ships);
+        EddnCall finalScanCall = Assert.Single(eddn.Calls, call => call.Events.Any(entry => entry.EventName == "Scan"));
+        Assert.True(finalScanCall.AllowPublishing);
+        Assert.False(finalScanCall.AllowSharedData);
+        await viewModel.Journey.SaveAsync();
+        Assert.False(viewModel.Journey.IsDirty);
+
+        // If Elite restarts into a newer menu-only journal while a dirty draft blocked switching to B, clearing the draft must NOT switch to stale B.
+        viewModel.Journey.JourneyDescription = "Holding switch while menu-only starts";
+        Assert.True(viewModel.Journey.IsDirty);
+        string menuOnlyJournal = Path.Combine(journals, "Journal.2026-11-23T073500.01.log");
+        await File.WriteAllTextAsync(
+            menuOnlyJournal,
+            "{\"timestamp\":\"2026-11-23T07:35:00Z\",\"event\":\"Fileheader\",\"part\":1,\"Odyssey\":true}\n"
+        );
+        File.SetLastWriteTimeUtc(menuOnlyJournal, new DateTime(2026, 11, 23, 7, 35, 0, DateTimeKind.Utc));
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        await viewModel.Journey.SaveAsync();
+        Assert.False(viewModel.Journey.IsDirty);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        // Remove the menu-only journal so B becomes newest again for the final active-install and switch-proceeds assertions.
+        File.Delete(menuOnlyJournal);
+
+        // Active guarded update installation must also block automatic switching until it completes.
+        var installStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseInstall = new TaskCompletionSource<SrvSurvey.Desktop.Platform.ReleaseInstallationWorkflowResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        viewModel.ReleaseUpdates.ConfigureInstallationWorkflow(
+            new GatedReleaseInstallationWorkflow(installStarted, releaseInstall.Task)
+        );
+        var package = new SrvSurvey.Core.Updates.CrossPlatformReleasePackage(
+            "linux-x64",
+            "SrvSurvey.tar.gz",
+            "tar.gz",
+            1024,
+            new string('a', 64),
+            new Uri("https://example.invalid/SrvSurvey.tar.gz")
+        );
+        Assert.True(
+            viewModel.ReleaseUpdates.TryRestoreSessionState(
+                new ReleaseUpdateSessionState(
+                    HasCompletedCheck: true,
+                    UseDevelopmentReleases: viewModel.ReleaseUpdates.UseDevelopmentReleases,
+                    LatestVersion: "2.2.0.0",
+                    StatusMessage: "Update available.",
+                    IsUpdateAvailable: true,
+                    ReleaseUri: new Uri("https://example.invalid/releases"),
+                    ReleasePackage: package,
+                    ReleaseVersion: SrvSurvey.Core.Updates.ReleaseVersion.Parse("2.2.0.0"),
+                    ReleaseNotes: "Notes",
+                    DismissedReleaseVersion: null,
+                    PreviousInstallationOutcomeMessage: null,
+                    HasAttemptedCheck: true
+                )
+            )
+        );
+        viewModel.ReleaseUpdates.InstallConfirmed = true;
+        Task installing = viewModel.ReleaseUpdates.InstallAsync();
+        await installStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(viewModel.ReleaseUpdates.IsInstalling);
+
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+
+        releaseInstall.SetResult(
+            new SrvSurvey.Desktop.Platform.ReleaseInstallationWorkflowResult(
+                SrvSurvey.Desktop.Platform.ReleaseInstallationWorkflowStatus.Cancelled,
+                SrvSurvey.Desktop.Platform.ReleaseInstallationWorkflowStage.Downloading,
+                SrvSurvey.Desktop.Platform.ReleaseInstallationCleanupStatus.Succeeded
+            )
+        );
+        await installing;
+        Assert.False(viewModel.ReleaseUpdates.IsInstalling);
+
+        // Once all unsaved editors are saved and installation finishes, automatic switching proceeds.
+        await viewModel.RefreshAsync();
+        Assert.Equal(["F14004033"], requestedSwitches);
+    }
+
+    private sealed class GatedReleaseInstallationWorkflow(
+        TaskCompletionSource started,
+        Task<SrvSurvey.Desktop.Platform.ReleaseInstallationWorkflowResult> resultTask
+    ) : SrvSurvey.Desktop.Platform.IReleaseInstallationWorkflow
+    {
+        public SrvSurvey.Desktop.Platform.ReleaseInstallationCapability Capability { get; } =
+            new(SrvSurvey.Desktop.Platform.ReleaseInstallationCapabilityStatus.Supported);
+
+        public SrvSurvey.Desktop.Platform.ReleaseInstallationCapability RefreshCapability() => Capability;
+
+        public Task<SrvSurvey.Desktop.Platform.ReleaseInstallationWorkflowResult> ExecuteAsync(
+            SrvSurvey.Desktop.Platform.ReleaseInstallationRequest request,
+            IProgress<SrvSurvey.Desktop.Platform.ReleaseInstallationWorkflowProgress>? progress = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            started.TrySetResult();
+            return resultTask;
+        }
     }
 
     /// <summary>Startup publishes only the current Cargo.json snapshot, honoring opt-in, ownership, and cancellation.</summary>
@@ -525,6 +1297,8 @@ public sealed class MainWindowViewModelTests
 
         public Action? OnWorkspaceRead { get; set; }
 
+        public bool ServeLinkedCarrier { get; set; }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
@@ -544,8 +1318,15 @@ public sealed class MainWindowViewModelTests
             {
                 "/api/cmdr/Probe/active" =>
                     """[{"buildId":"build-1","buildType":"no_truss","buildName":"Port","marketId":10,"systemAddress":42,"maxNeed":100,"sumNeed":100,"commodities":{"steel":100}}]""",
-                "/api/cmdr/Probe/hiddenIDs" or "/api/cmdr/Probe/fc/all" => "[]",
+                "/api/cmdr/Probe/hiddenIDs" => "[]",
+                "/api/cmdr/Probe/fc/all" => ServeLinkedCarrier
+                    ? """[{"marketId":3700000001,"name":"TEST-01","displayName":"Test Carrier","owner":"Probe","systemName":"Sol","cargo":{"steel":10}}]"""
+                    : "[]",
+                "/api/fc/3700000001" when ServeLinkedCarrier =>
+                    """{"marketId":3700000001,"name":"TEST-01","displayName":"Test Carrier","owner":"Probe","systemName":"Sol","cargo":{"steel":10}}""",
                 "/api/cmdr/Probe/primary" => "null",
+                "/api/v2/system/42" =>
+                    """{"id64":42,"name":"Sol","architect":"Probe","rev":1,"sites":[],"bodies":[{"num":0,"name":"Sol","type":"Star","subType":"G"}]}""",
                 _ => null,
             };
             if (payload is null)

@@ -7,8 +7,10 @@ public sealed partial class ColonizationViewModel
 {
     private Action? carrierManifestOpener;
     private ColonizationCarrierRefreshCooldown? carrierManifestRefreshCooldown;
+    private ColonizationCarrierManifestViewModel? activeCarrierManifestEditor;
     private readonly WorkspaceCommand carrierManifestCommand;
     public ICommand EditCarrierManifestCommand => carrierManifestCommand;
+    internal bool HasActiveCarrierManifestWork => activeCarrierManifestEditor is { HasPendingWork: true };
 
     internal void SetCarrierManifestOpener(Action? opener) => carrierManifestOpener = opener;
 
@@ -27,7 +29,7 @@ public sealed partial class ColonizationViewModel
         string commander = CommanderName;
         string key = recovery.ApiKey;
         int profileVersion = recovery.ProfileVersion;
-        return new ColonizationCarrierManifestViewModel(
+        ColonizationCarrierManifestViewModel editor = new(
             manifestClient,
             commander,
             key,
@@ -47,5 +49,14 @@ public sealed partial class ColonizationViewModel
         {
             PreferredCarrierMarketId = planningCarrierMarketId,
         };
+        activeCarrierManifestEditor = editor;
+        editor.Disposed += () =>
+        {
+            if (ReferenceEquals(activeCarrierManifestEditor, editor))
+            {
+                activeCarrierManifestEditor = null;
+            }
+        };
+        return editor;
     }
 }

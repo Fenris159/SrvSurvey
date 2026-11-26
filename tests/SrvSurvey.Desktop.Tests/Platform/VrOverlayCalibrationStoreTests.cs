@@ -56,11 +56,110 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     }
 
     [Theory]
+    [InlineData(VrPlatformProfileCatalog.MetaVdxrProfileId)]
+    [InlineData(VrPlatformProfileCatalog.WivrnOpenXrProfileId)]
+    [InlineData(VrPlatformProfileCatalog.MonadoOpenXrProfileId)]
+    public void OpenXrRoutesMigratePreRc7727BundledDefaultsToSeatedWhilePreservingCustomEdits(string profile)
+    {
+        string data = Path.Combine(temporaryDirectory, "upgrade-" + profile);
+        Directory.CreateDirectory(data);
+        File.WriteAllText(
+            Path.Combine(data, "plotters.json"),
+            """
+            {
+              "PlotAdjustVR": "center:0, middle:0 { s: 10.090002, p: <-0.42953613, 14.988647, 33.43891>, r: <-0.13900007, 0, -0.98910034>}",
+              "PlotBioStatus": "center:0, top:8 { s: 10, p: <-0.37305868, 19.789331, 18.2856>, r: <-13.458961, 0, 0>}",
+              "PlotBodyInfo": "left:8, top:8 { s: 7.5, p: <-4, 12, 10>, r: <0, -25, 0>}",
+              "PlotJumpInfo": "center:0, top:8 { s: 20, p: <0.06868008, 23.358482, 19.957216>, r: <-20.24308, 0, 0>}",
+              "PlotSysStatus": "left:8, bottom:44 { s: 3.1119983, p: <-9.165022, 4.2676287, 17.66371>, r: <5.0753016, -10.793489, 0>}"
+            }
+            """
+        );
+
+        var store = new VrOverlayCalibrationStore(data);
+        VrOverlayCalibrationCatalog catalog = store.Load(profile);
+
+        Assert.Equal(VrSeatedCalibrationDefaults.Get("PlotAdjustVR"), catalog.Defaults["PlotAdjustVR"]);
+        Assert.Equal(VrSeatedCalibrationDefaults.Get("PlotBioStatus"), catalog.Defaults["PlotBioStatus"]);
+        Assert.Equal(VrSeatedCalibrationDefaults.Get("PlotJumpInfo"), catalog.Defaults["PlotJumpInfo"]);
+        Assert.Equal(VrSeatedCalibrationDefaults.Get("PlotSysStatus"), catalog.Defaults["PlotSysStatus"]);
+        Assert.Equal(
+            new VrOverlayCalibration(7.5f, new(-4f, 12f, 10f), new(0f, -25f, 0f)),
+            catalog.Defaults["PlotBodyInfo"]
+        );
+    }
+
+    [Fact]
+    public void UpgradedSteamVrProfileMergesNewlyBundledOverlaysAndAllowsSavingThem()
+    {
+        string data = Path.Combine(temporaryDirectory, "upgrade-steamvr");
+        Directory.CreateDirectory(data);
+        File.WriteAllText(
+            Path.Combine(data, "plotters.json"),
+            """
+            {
+              "PlotJumpInfo": "center:0, top:8 { s: 14, p: <0, 15, 12>, r: <-18, 0, 0>}"
+            }
+            """
+        );
+
+        var store = new VrOverlayCalibrationStore(data);
+        VrOverlayCalibrationCatalog catalog = store.Load();
+
+        // Existing saved SteamVR placement stays intact while newly bundled overlays merge in.
+        Assert.Equal(14f, catalog.Defaults["PlotJumpInfo"].Scale);
+        Assert.True(catalog.Defaults.ContainsKey("PlotMiningMissions"));
+        Assert.Equal(catalog.FactoryDefaults["PlotMiningMissions"], catalog.Defaults["PlotMiningMissions"]);
+
+        // Saving a newly bundled overlay adds it cleanly to the user's plotters.json with its bundled desktop prefix.
+        var edited = new VrOverlayCalibration(5.2f, new(5f, 14f, 9f), new(-12f, 24f, 0f));
+        VrOverlayCalibrationSaveResult saved = store.Save("PlotMiningMissions", edited);
+        Assert.NotNull(saved.BackupPath);
+        string updatedText = File.ReadAllText(Path.Combine(data, "plotters.json"));
+        Assert.Contains("\"PlotMiningMissions\": \"right:8, top:8 ", updatedText);
+        Assert.Equal(edited, store.Load().Defaults["PlotMiningMissions"]);
+        Assert.Equal(14f, store.Load().Defaults["PlotJumpInfo"].Scale);
+    }
+
+    [Fact]
+    public void SavedDesktopOnlyEntryFallsBackToBundledSteamVrDefaultAndPreservesDesktopPlacementOnSave()
+    {
+        string data = Path.Combine(temporaryDirectory, "upgrade-steamvr-desktop-only");
+        Directory.CreateDirectory(data);
+        File.WriteAllText(
+            Path.Combine(data, "plotters.json"),
+            """
+            {
+              "PlotColonizationWishList": "left:24, bottom:12",
+              "PlotJumpInfo": "center:0, top:8 { s: 14, p: <0, 15, 12>, r: <-18, 0, 0>}"
+            }
+            """
+        );
+
+        var store = new VrOverlayCalibrationStore(data);
+        VrOverlayCalibrationCatalog catalog = store.Load();
+
+        // A saved desktop-only entry without a VR block inherits the newly bundled SteamVR default while explicit VR suffixes stay intact.
+        Assert.True(catalog.Defaults.ContainsKey("PlotColonizationWishList"));
+        Assert.Equal(catalog.FactoryDefaults["PlotColonizationWishList"], catalog.Defaults["PlotColonizationWishList"]);
+        Assert.Equal(14f, catalog.Defaults["PlotJumpInfo"].Scale);
+
+        var edited = new VrOverlayCalibration(4.5f, new(-5f, 11f, 9f), new(0f, -28f, 0f));
+        _ = store.Save("PlotColonizationWishList", edited);
+        string updatedText = File.ReadAllText(Path.Combine(data, "plotters.json"));
+        Assert.Contains("\"PlotColonizationWishList\": \"left:24, bottom:12 ", updatedText);
+        Assert.Equal(edited, store.Load().Defaults["PlotColonizationWishList"]);
+        Assert.Equal(14f, store.Load().Defaults["PlotJumpInfo"].Scale);
+    }
+
+    [Theory]
     [InlineData("PlotJumpInfo", "{ s: 8, p: <0, 4.5, 11>, r: <22.2, 0, 0>}")]
     [InlineData("PlotBioStatus", "{ s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}")]
     [InlineData("PlotSysStatus", "{ s: 1.9, p: <-6, -3, 9.5>, r: <-14.9, 32.3, 0>}")]
     [InlineData("PlotBioSystem", "{ s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}")]
     [InlineData("PlotBuildCommodities", "{ s: 3.6, p: <6, 4.5, 9.5>, r: <21.8, -32.3, 0>}")]
+    [InlineData("PlotRouteBio", "{ s: 3.5, p: <6, -0.5, 9.5>, r: <-2.5, -32.3, 0>}")]
+    [InlineData("PlotSphericalSearch", "{ s: 3.2, p: <6, 4.5, 9.5>, r: <21.8, -32.3, 0>}")]
     [InlineData("PlotPulse", "{ s: 0.8, p: <-6, -3, 9.5>, r: <-14.9, 32.3, 0>}")]
     [InlineData("PlotUnknownLegacy", "{ s: 4, p: <0, 0, 11>, r: <0, 0, 0>}")]
     public void SeatedDefaultsUseDesktopMirroredCockpitPlacements(string name, string expected)
@@ -93,7 +192,44 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
             var toEye = Vector3.Normalize(-panelPosition);
             Assert.True(Vector3.Dot(normal, toEye) > 0.999f, $"{definition.Name} does not face seated origin.");
             Assert.Equal(0f, right.Y, 4);
+
+            VrOverlayCalibration steam = steamVr.FactoryDefaults[definition.Name];
+            Assert.Equal(seated.Position.X, steam.Position.X);
+            Assert.Equal(seated.Position.Y + 12f, steam.Position.Y);
+            Assert.Equal(seated.Position.Z, steam.Position.Z);
         }
+
+        foreach (OverlayLayoutCategoryDefinition category in OverlayLayoutCatalog.Categories)
+        {
+            IReadOnlyList<OverlayLayoutDefinition> categoryOverlays = OverlayLayoutCatalog.ForCategory(
+                category.Category
+            );
+            Assert.Equal(
+                categoryOverlays.Count,
+                categoryOverlays.Select(item => steamVr.FactoryDefaults[item.Name].Position).Distinct().Count()
+            );
+            Assert.Equal(
+                categoryOverlays.Count,
+                categoryOverlays.Select(item => openXr.FactoryDefaults[item.Name].Position).Distinct().Count()
+            );
+        }
+
+        string[] mapOverlays =
+        [
+            "PlotBodyInfo",
+            "PlotFSSInfo",
+            "PlotGalMap",
+            "PlotColonizationWishList",
+            "PlotStationInfo",
+        ];
+        Assert.Equal(
+            mapOverlays.Length,
+            mapOverlays.Select(name => steamVr.FactoryDefaults[name].Position).Distinct().Count()
+        );
+        Assert.Equal(
+            mapOverlays.Length,
+            mapOverlays.Select(name => openXr.FactoryDefaults[name].Position).Distinct().Count()
+        );
     }
 
     [Fact]

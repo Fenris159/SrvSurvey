@@ -433,22 +433,39 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         }
 
         ulong overlayId = OpenXrFramePacket.GetOverlayId(plotterName);
-        bool affected =
-            activePointerOverlayId == overlayId
-            || bufferedEvents.Any(ev => string.Equals(ev.PlotterName, plotterName, StringComparison.Ordinal));
+        bool hadActiveOverlay = activePointerOverlayId == overlayId;
+        int removedBuffered = bufferedEvents.RemoveAll(ev =>
+            string.Equals(ev.PlotterName, plotterName, StringComparison.Ordinal)
+        );
+        bool sawInvalidatedNativeEvent = false;
         foreach (OpenXrPointerEvent pointer in backend.PollPointerEvents(sessionHandle))
         {
             if (pointer.Id == overlayId)
             {
-                affected = true;
+                sawInvalidatedNativeEvent = true;
                 continue;
             }
 
             AppendPointerEvent(bufferedEvents, pointer);
         }
 
-        if (!affected)
+        if (!hadActiveOverlay && removedBuffered == 0 && !sawInvalidatedNativeEvent)
         {
+            return;
+        }
+
+        if (activePointerOverlayId == overlayId)
+        {
+            activePointerOverlayId = null;
+        }
+
+        if (bufferedEvents.Count > 0)
+        {
+            if (hadActiveOverlay)
+            {
+                pendingInteractionReset = true;
+            }
+
             return;
         }
 

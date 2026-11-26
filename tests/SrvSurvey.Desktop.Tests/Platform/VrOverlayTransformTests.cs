@@ -285,4 +285,46 @@ public sealed class VrOverlayTransformTests
         Assert.Equal(pushedSideXr.Position.Y, pushedSideVr.Position.Y, 4);
         Assert.Equal(pushedSideXr.Position.Z, pushedSideVr.Position.Z, 4);
     }
+
+    [Theory]
+    [InlineData(0.6f)]
+    [InlineData(-1.1f)]
+    [InlineData(MathF.PI / 2f)]
+    public void LegacyOpenVrDragAndDepthStayAlignedWithRenderedPanelPlaneAfterRecentering(float yawOffset)
+    {
+        var original = new VrOverlayCalibration(6f, new Vector3(4.5f, 14.2f, 9.8f), new Vector3(25f, -35f, 18f));
+        var origin = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, yawOffset);
+        var beforeWorld = VrOverlayTransform.Create(original, yawOffset, origin).ToHmdMatrix34_t();
+        var beforePos = new Vector3(beforeWorld.m3, beforeWorld.m7, beforeWorld.m11);
+        var renderedRight = Vector3.Normalize(new Vector3(beforeWorld.m0, beforeWorld.m4, beforeWorld.m8));
+        var renderedUp = Vector3.Normalize(new Vector3(beforeWorld.m1, beforeWorld.m5, beforeWorld.m9));
+        var renderedNormal = Vector3.Normalize(new Vector3(beforeWorld.m2, beforeWorld.m6, beforeWorld.m10));
+
+        // In-plane drag moves strictly along the rendered quad's right/up axes with zero drift along its normal.
+        VrOverlayCalibration dragged = VrOverlayTransform.ApplyPlaneDrag(
+            original,
+            deltaRightUnits: 2.5f,
+            deltaUpUnits: -1.75f,
+            usesLegacyOpenVrRotation: true,
+            openVrYawOffset: yawOffset
+        );
+        var draggedWorld = VrOverlayTransform.Create(dragged, yawOffset, origin).ToHmdMatrix34_t();
+        Vector3 draggedDeltaMeters = new Vector3(draggedWorld.m3, draggedWorld.m7, draggedWorld.m11) - beforePos;
+        Assert.Equal(0.25f, Vector3.Dot(draggedDeltaMeters, renderedRight), 4);
+        Assert.Equal(-0.175f, Vector3.Dot(draggedDeltaMeters, renderedUp), 4);
+        Assert.Equal(0f, Vector3.Dot(draggedDeltaMeters, renderedNormal), 4);
+
+        // Depth step moves strictly along -renderedNormal with zero sideways or vertical drift.
+        VrOverlayCalibration pushed = VrOverlayTransform.ApplyDepthStep(
+            original,
+            deltaDepthUnits: 3f,
+            usesLegacyOpenVrRotation: true,
+            openVrYawOffset: yawOffset
+        );
+        var pushedWorld = VrOverlayTransform.Create(pushed, yawOffset, origin).ToHmdMatrix34_t();
+        Vector3 pushedDeltaMeters = new Vector3(pushedWorld.m3, pushedWorld.m7, pushedWorld.m11) - beforePos;
+        Assert.Equal(0f, Vector3.Dot(pushedDeltaMeters, renderedRight), 4);
+        Assert.Equal(0f, Vector3.Dot(pushedDeltaMeters, renderedUp), 4);
+        Assert.Equal(-0.3f, Vector3.Dot(pushedDeltaMeters, renderedNormal), 4);
+    }
 }

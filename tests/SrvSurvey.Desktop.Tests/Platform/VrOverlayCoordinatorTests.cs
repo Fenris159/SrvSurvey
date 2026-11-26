@@ -475,12 +475,15 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.True(viewModel.PositionY > startY);
         Assert.True(viewModel.PositionZ > startZ);
 
-        // Throttled move within <32 ms is ignored; release ends drag cleanly.
+        // Intermediate move within <32 ms is throttled, while releasing applies the final drop position without throttling.
         double afterDragX = viewModel.PositionX;
         now += 10;
         runtime.PointerEvents.Enqueue(
             new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, bioWidth, bioHeight * 0.25)
         );
+        coordinator.PollInteractionEvents();
+        Assert.Equal(afterDragX, viewModel.PositionX, 4);
+
         runtime.PointerEvents.Enqueue(
             new VrOverlayPointerEvent(
                 "PlotBioSystem",
@@ -490,7 +493,42 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             )
         );
         coordinator.PollInteractionEvents();
-        Assert.Equal(afterDragX, viewModel.PositionX, 4);
+        double afterReleaseX = viewModel.PositionX;
+        Assert.True(afterReleaseX > afterDragX);
+
+        // Move after release does not keep dragging; same-coordinate release after an applied move does not double-apply.
+        now += 50;
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, bioWidth, bioHeight * 0.25)
+        );
+        coordinator.PollInteractionEvents();
+        Assert.Equal(afterReleaseX, viewModel.PositionX, 4);
+
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent(
+                "PlotBioSystem",
+                VrOverlayPointerEventKind.LeftButtonDown,
+                bioWidth * 0.5,
+                bioHeight * 0.5
+            )
+        );
+        now += 50;
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, bioWidth * 0.75, bioHeight * 0.5)
+        );
+        coordinator.PollInteractionEvents();
+        double singleMoveX = viewModel.PositionX;
+        Assert.True(singleMoveX > afterReleaseX);
+        runtime.PointerEvents.Enqueue(
+            new VrOverlayPointerEvent(
+                "PlotBioSystem",
+                VrOverlayPointerEventKind.LeftButtonUp,
+                bioWidth * 0.75,
+                bioHeight * 0.5
+            )
+        );
+        coordinator.PollInteractionEvents();
+        Assert.Equal(singleMoveX, viewModel.PositionX, 4);
 
         // Changing selection or toggling interaction off clears an active drag so later moves cannot edit another panel.
         now += 50;
@@ -567,6 +605,108 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         Assert.True(runtime.Frames.ContainsKey(VrOverlayCalibrationSession.ControlsPlotterName));
         Assert.True(runtime.Frames.ContainsKey("PlotBioSystem"));
         Assert.False(runtime.Frames.ContainsKey("PlotBioStatus"));
+    }
+
+    [AvaloniaFact]
+    public void VdxrCalibrationHonorsNativeLayerBudgetAndShowsOneSlotWarningWhenInteractionTakesCursorSlot()
+    {
+        string mailboxPath = Path.Combine(temporaryDirectory, "vdxr-budget", "frames.bin");
+        long now = 100_000;
+        using var runtime = new OpenXrOverlayRuntime(() => new OpenXrFrameBridge(mailboxPath, () => now), () => true);
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime);
+        using (
+            var file = new FileStream(
+                mailboxPath,
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.ReadWrite | FileShare.Delete
+            )
+        )
+        using (
+            var mapping = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+                file,
+                null,
+                OpenXrFramePacket.Capacity,
+                System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite,
+                HandleInheritability.None,
+                leaveOpen: true
+            )
+        )
+        using (System.IO.MemoryMappedFiles.MemoryMappedViewAccessor view = mapping.CreateViewAccessor())
+        {
+            // Ready state with 2 available overlay layers above Elite's projection layer (encoded as 3).
+            view.Write(40, (uint)OpenXrLayerState.Ready);
+            view.Write(44, 3u);
+            view.Write(32, now);
+        }
+
+        using var inputFile = new FileStream(
+            mailboxPath + OpenXrInputBridge.FileSuffix,
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        using var inputMapping = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+            inputFile,
+            null,
+            4096,
+            System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite,
+            HandleInheritability.None,
+            leaveOpen: true
+        );
+        using System.IO.MemoryMappedFiles.MemoryMappedViewAccessor inputView = inputMapping.CreateViewAccessor();
+        inputView.Write(56, inputView.ReadUInt64(24));
+        inputView.Write(40, 1u);
+        inputView.Write(32, now);
+
+        viewModel.RefreshConnectionCommand.Execute(null);
+        Assert.True(runtime.IsInitialized);
+        Assert.True(viewModel.BeginAdjustment());
+        viewModel.SelectedOverlayName = "PlotJumpInfo";
+        Assert.Equal(2, runtime.MaximumOverlays);
+        Assert.Contains("2 live overlays", viewModel.ConnectionDetail, StringComparison.Ordinal);
+
+        // Enabling controller interaction takes one layer for the cursor, leaving 1 slot -> only PlotAdjustVR stays live + warning shown.
+        Assert.True(coordinator.ToggleInteraction());
+        Assert.Equal(1, runtime.MaximumOverlays);
+        Assert.Contains("1 live overlays", viewModel.ConnectionDetail, StringComparison.Ordinal);
+        Assert.Contains("only fits the calibration controls", viewModel.StatusMessage, StringComparison.Ordinal);
+
+        // When only 1 overlay layer is free, disabling and attempting to re-enable controller interaction must fail instead of hiding PlotAdjustVR.
+        Assert.True(coordinator.ToggleInteraction());
+        using (
+            var file = new FileStream(
+                mailboxPath,
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.ReadWrite | FileShare.Delete
+            )
+        )
+        using (
+            var mapping = System.IO.MemoryMappedFiles.MemoryMappedFile.CreateFromFile(
+                file,
+                null,
+                OpenXrFramePacket.Capacity,
+                System.IO.MemoryMappedFiles.MemoryMappedFileAccess.ReadWrite,
+                HandleInheritability.None,
+                leaveOpen: true
+            )
+        )
+        using (System.IO.MemoryMappedFiles.MemoryMappedViewAccessor view = mapping.CreateViewAccessor())
+        {
+            // 1 available overlay layer above Elite (encoded as 2).
+            view.Write(44, 2u);
+        }
+
+        Assert.False(coordinator.ToggleInteraction());
+        Assert.False(coordinator.IsInteractionEnabled);
+        Assert.Equal(1, runtime.MaximumOverlays);
+        Assert.Contains("two free composition layers", viewModel.StatusMessage, StringComparison.Ordinal);
+        viewModel.RefreshConnectionCommand.Execute(null);
+        Assert.Contains("1 live overlays", viewModel.ConnectionDetail, StringComparison.Ordinal);
     }
 
     [AvaloniaFact]
@@ -680,6 +820,244 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         finally
         {
             liveWindow.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ReplacingUnrelatedOverlayPreservesActiveVrCaptureDragAndQueuedRelease()
+    {
+        string dataDirectory = Path.Combine(temporaryDirectory, "data-unrelated");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-unrelated");
+        Directory.CreateDirectory(dataDirectory);
+        Directory.CreateDirectory(factoryDirectory);
+        string factoryPath = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factoryPath,
+            """
+            {
+              "PlotBioStatus": "center:0, top:8 { s: 4, p: <0, 4, 10>, r: <0, 0, 0>}",
+              "PlotJumpInfo": "center:0, top:8 { s: 4, p: <0, 2, 10>, r: <0, 0, 0>}"
+            }
+            """
+        );
+        var viewModel = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "unrelated-settings.json")),
+            new VrOverlayCalibrationStore(dataDirectory, factoryPath)
+        );
+        viewModel.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+        var bioWindow1 = new Window
+        {
+            Width = 200,
+            Height = 100,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Orange },
+        };
+        var bioWindow2 = new Window
+        {
+            Width = 200,
+            Height = 100,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Green },
+        };
+        var bioWindow3 = new Window
+        {
+            Width = 200,
+            Height = 100,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Blue },
+        };
+        var runtime = new StubOpenVrRuntime();
+        using var router = new VrOverlayInputRouter();
+        long tickMs = 1000;
+        try
+        {
+            registry.Register(bioWindow1, "PlotBioStatus");
+            bioWindow1.Show();
+            using var coordinator = new VrOverlayCoordinator(
+                viewModel,
+                registry,
+                runtime,
+                _ => true,
+                inputRouter: router,
+                clock: () => tickMs
+            );
+            Assert.True(viewModel.BeginAdjustment());
+            viewModel.SelectedOverlayName = "PlotJumpInfo";
+            Assert.True(coordinator.ToggleInteraction());
+
+            // 0. A queued click on unchanged PlotAdjustVR BEFORE capture starts (including after a leading Reset) must not be swallowed when unrelated PlotBioStatus is replaced.
+            int preCaptureInteractionChanges = runtime.InteractionChangeCount;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotBioStatus", VrOverlayPointerEventKind.Move, 10, 10)
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0)
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.Move, 20, 20)
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonDown, 20, 20)
+            );
+            var bioWindow0 = new Window
+            {
+                Width = 200,
+                Height = 100,
+                WindowDecorations = WindowDecorations.None,
+                Content = new Border { Background = Brushes.Yellow },
+            };
+            try
+            {
+                registry.Register(bioWindow0, "PlotBioStatus");
+                bioWindow0.Show();
+                viewModel.RefreshConnectionCommand.Execute(null);
+                bioWindow1.Close();
+                Assert.Equal(preCaptureInteractionChanges, runtime.InteractionChangeCount);
+                coordinator.PollInteractionEvents();
+                Assert.True(router.HasCapture);
+                Assert.Equal("PlotAdjustVR", router.CapturedPlotterName);
+                runtime.PointerEvents.Enqueue(
+                    new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonUp, 20, 20)
+                );
+                coordinator.PollInteractionEvents();
+                Assert.False(router.HasCapture);
+            }
+            finally
+            {
+                bioWindow0.Close();
+            }
+            registry.Register(bioWindow2, "PlotBioStatus");
+            bioWindow2.Show();
+            viewModel.RefreshConnectionCommand.Execute(null);
+
+            // 1. Active UI capture on PlotAdjustVR survives replacing unrelated PlotBioStatus, including its queued release.
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonDown, 20, 20)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.True(router.HasCapture);
+            Assert.Equal("PlotAdjustVR", router.CapturedPlotterName);
+
+            int interactionCallsBefore = runtime.InteractionChangeCount;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotBioStatus", VrOverlayPointerEventKind.Move, 10, 10)
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.LeftButtonUp, 20, 20)
+            );
+
+            registry.Register(bioWindow3, "PlotBioStatus");
+            bioWindow3.Show();
+            viewModel.RefreshConnectionCommand.Execute(null);
+            bioWindow2.Close();
+
+            Assert.Equal(interactionCallsBefore, runtime.InteractionChangeCount);
+            Assert.True(router.HasCapture);
+            Assert.Equal("PlotAdjustVR", router.CapturedPlotterName);
+
+            coordinator.PollInteractionEvents();
+            Assert.False(router.HasCapture);
+            Assert.Null(router.CapturedPlotterName);
+
+            // 2. Active drag on PlotJumpInfo preview survives replacing unrelated PlotBioStatus and applies queued release movement.
+            viewModel.IsDragModeEnabled = true;
+            double startX = viewModel.PositionX;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonDown, 100, 50)
+            );
+            coordinator.PollInteractionEvents();
+
+            tickMs += 100;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonUp, 200, 50)
+            );
+            var bioWindow4 = new Window
+            {
+                Width = 200,
+                Height = 100,
+                WindowDecorations = WindowDecorations.None,
+                Content = new Border { Background = Brushes.Purple },
+            };
+            try
+            {
+                registry.Register(bioWindow4, "PlotBioStatus");
+                bioWindow4.Show();
+                viewModel.RefreshConnectionCommand.Execute(null);
+                bioWindow3.Close();
+
+                coordinator.PollInteractionEvents();
+                Assert.True(Math.Abs(viewModel.PositionX - startX) > 0.1);
+            }
+            finally
+            {
+                bioWindow4.Close();
+            }
+
+            // 3. Releasing a drag after the 32ms throttle window with the same coordinate (as SteamVR emits) must NOT apply the movement a second time.
+            double dragStartX = viewModel.PositionX;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonDown, 100, 50)
+            );
+            coordinator.PollInteractionEvents();
+            tickMs += 100;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.Move, 180, 50)
+            );
+            coordinator.PollInteractionEvents();
+            double afterMoveX = viewModel.PositionX;
+            Assert.True(Math.Abs(afterMoveX - dragStartX) > 0.1);
+
+            tickMs += 100;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonUp, 180, 50)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.Equal(afterMoveX, viewModel.PositionX, 6);
+
+            // 4. Subsequent moves (and throttled final drop) that hit the same UV coordinate against the panel's NEW pose MUST still apply.
+            double continuedStartX = viewModel.PositionX;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonDown, 100, 50)
+            );
+            coordinator.PollInteractionEvents();
+            tickMs += 100;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.Move, 150, 50)
+            );
+            coordinator.PollInteractionEvents();
+            double afterFirstStepX = viewModel.PositionX;
+            Assert.True(Math.Abs(afterFirstStepX - continuedStartX) > 0.1);
+
+            // Next poll after the panel moved to its updated pose: hitting 150 again is another +25% drag step.
+            tickMs += 100;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.Move, 150, 50)
+            );
+            coordinator.PollInteractionEvents();
+            double afterSecondStepX = viewModel.PositionX;
+            Assert.True(Math.Abs(afterSecondStepX - afterFirstStepX) > 0.1);
+
+            // Throttled move at 150 followed immediately by release at 150 must apply the final drop step.
+            tickMs += 10;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.Move, 150, 50)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.Equal(afterSecondStepX, viewModel.PositionX, 6);
+
+            tickMs += 5;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotJumpInfo", VrOverlayPointerEventKind.LeftButtonUp, 150, 50)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.True(Math.Abs(viewModel.PositionX - afterSecondStepX) > 0.1);
+        }
+        finally
+        {
+            bioWindow1.Close();
+            bioWindow2.Close();
+            bioWindow3.Close();
         }
     }
 
@@ -823,6 +1201,110 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         }
     }
 
+    [AvaloniaFact]
+    public void CategoryPreviewResolvesUnselectedPanelsAgainstSelectedModeNotRuntimeMode()
+    {
+        string dataDirectory = Path.Combine(temporaryDirectory, "data-mode");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-mode");
+        Directory.CreateDirectory(dataDirectory);
+        Directory.CreateDirectory(factoryDirectory);
+        string factoryPath = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factoryPath,
+            """
+            {
+              "PlotJumpInfo": "center:0, top:8 { s: 4, p: <0, 1, 10>, r: <0, 0, 0>}",
+              "PlotBioStatus": "center:0, top:8 { s: 4, p: <0, 4, 10>, r: <0, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 4, p: <-6, 0, 10>, r: <0, 0, 0>}"
+            }
+            """
+        );
+        var calibrationStore = new VrOverlayCalibrationStore(dataDirectory, factoryPath);
+        calibrationStore.Save(
+            "PlotBioSystem",
+            new VrOverlayCalibration(4, new System.Numerics.Vector3(-2, 3, 9), System.Numerics.Vector3.Zero),
+            mode: "Ship"
+        );
+        calibrationStore.Save(
+            "PlotBioSystem",
+            new VrOverlayCalibration(4, new System.Numerics.Vector3(5, -2, 8), System.Numerics.Vector3.Zero),
+            mode: "testbuggy"
+        );
+        calibrationStore.Save(
+            "PlotJumpInfo",
+            new VrOverlayCalibration(4, new System.Numerics.Vector3(9, 2, 11), System.Numerics.Vector3.Zero),
+            mode: "Ship"
+        );
+
+        var viewModel = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "mode-settings.json")),
+            calibrationStore
+        );
+        viewModel.Enabled = true;
+
+        var registry = new OverlayWindowRegistry();
+        var liveWindow = new Window
+        {
+            Width = 200,
+            Height = 100,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Orange },
+        };
+        var runtime = new StubOpenVrRuntime();
+        long now = 1000;
+        try
+        {
+            registry.Register(liveWindow, "PlotJumpInfo");
+            liveWindow.Show();
+            using var coordinator = new VrOverlayCoordinator(
+                viewModel,
+                registry,
+                runtime,
+                _ => true,
+                modeProvider: () => "Ship",
+                clock: () => now
+            );
+
+            Assert.True(viewModel.BeginAdjustment());
+            viewModel.SelectedCategory = "Biology & surface";
+            viewModel.SelectedMode = "testbuggy";
+            Assert.Equal("PlotBioStatus", viewModel.SelectedOverlayName);
+
+            // Unselected category sample resolves against SelectedMode ("testbuggy"), while live panel uses runtimeMode ("Ship").
+            Assert.Equal(5f, runtime.Calibrations["PlotBioSystem"].Position.X);
+            Assert.Equal(-2f, runtime.Calibrations["PlotBioSystem"].Position.Y);
+            Assert.Equal(9f, runtime.Calibrations["PlotJumpInfo"].Position.X);
+
+            // Dragging the unselected sibling starts cleanly from its testbuggy placement without jumping to Ship.
+            Assert.True(coordinator.ToggleInteraction());
+            viewModel.IsDragModeEnabled = true;
+            double width = OverlayLayoutCatalog.GetRequired("PlotBioSystem").PreviewSize.Width;
+            double height = runtime.Frames["PlotBioSystem"].PointerHeight;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent(
+                    "PlotBioSystem",
+                    VrOverlayPointerEventKind.LeftButtonDown,
+                    width * 0.5,
+                    height * 0.5
+                )
+            );
+            coordinator.PollInteractionEvents();
+            Assert.Equal("PlotBioSystem", viewModel.SelectedOverlayName);
+            Assert.Equal(5, viewModel.PositionX);
+
+            now += 50;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, width * 0.75, height * 0.5)
+            );
+            coordinator.PollInteractionEvents();
+            Assert.True(viewModel.PositionX > 5);
+        }
+        finally
+        {
+            liveWindow.Close();
+        }
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -876,6 +1358,8 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
         public Dictionary<string, VrOverlayFrame> Frames { get; } = [];
 
+        public Dictionary<string, VrOverlayCalibration> Calibrations { get; } = [];
+
         public bool PoseAvailable { get; init; } = true;
 
         public int HeadPoseCalls { get; private set; }
@@ -920,6 +1404,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             LastFrame = frame;
             LastAlpha = alpha;
             Frames[plotterName] = frame;
+            Calibrations[plotterName] = calibration;
             return VrRuntimeResult.Success("Published.");
         }
 

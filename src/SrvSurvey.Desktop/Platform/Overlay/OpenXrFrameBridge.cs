@@ -79,6 +79,21 @@ public sealed class OpenXrFrameBridge : IDisposable
 
     public int LastError => view.ReadInt32(52);
 
+    /// <summary>Returns the remaining composition layers reported by the native VDXR layer above the game's layers, or null for older layers.</summary>
+    public int? AvailableOverlayLayers
+    {
+        get
+        {
+            if (ReadState() != OpenXrLayerState.Ready)
+            {
+                return null;
+            }
+
+            uint encoded = view.ReadUInt32(44);
+            return encoded == 0 ? null : Math.Clamp((int)(encoded - 1u), 0, OpenXrFramePacket.MaximumOverlays + 1);
+        }
+    }
+
     /// <summary>Reads a fresh pose in the current overlay-origin coordinates, rejecting partial native writes.</summary>
     public bool TryReadHeadPose(uint originRevision, out VrOverlayHeadPose? pose)
     {
@@ -156,6 +171,7 @@ public sealed class OpenXrFrameBridge : IDisposable
         view.Write(0, 0u);
         view.Write(16, 0L);
         view.Write(32, 0L);
+        view.Write(44, 0u);
         view.Write(64, 0L);
         view.Write(96, 0L);
         Thread.MemoryBarrier();

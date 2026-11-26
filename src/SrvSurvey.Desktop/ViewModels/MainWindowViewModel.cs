@@ -244,6 +244,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
     private readonly bool suppressInitialOtherCommanderSwitch;
     private bool initialAutomaticSwitchBaselineCaptured;
     private ObservedJournalIdentity? suppressedStartupOtherCommanderJournal;
+    private ObservedJournalIdentity? suppressedConflictOtherCommanderJournal;
+    private JournalBaselineSnapshot? journalBaseline;
+    private JournalCheckpoint? confirmedJournalCheckpoint;
+    private JournalCheckpoint? lastPersistedJournalCheckpoint;
+    private bool explorationSavePending;
+    private bool exobiologySavePending;
+    private readonly List<JournalMonitorUpdate> blockedUnboundUpdates = [];
+    private string? blockedUnboundJournalPath;
+    private string? blockedUnboundFrontierId;
     private bool automaticCommanderSwitchRequested;
     private bool profileSyncDetached;
     private readonly FallbackSystemNameSuggestionClient boxelNameSuggestions;
@@ -307,6 +316,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         rollback.Add(resolvedFirstFootfallInferenceService);
         var gameWindowOwnership = new MainWindowViewModelConstructionOwnership<IGameWindowSwitcher>(gameWindowSwitcher);
         rollback.Add(gameWindowOwnership);
+        var commanderClaimOwnership = new MainWindowViewModelConstructionOwnership<CommanderClaimLease>(
+            foundation.CommanderClaimLease
+        );
+        rollback.Add(commanderClaimOwnership);
         rollback.Add(resolvedInaraPublisher);
         rollback.Add(resolvedEdsmPublisher);
         rollback.Add(resolvedEddnPublisher as IDisposable);
@@ -961,7 +974,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             TargetFrontierId =
                 NormalizeOptionalId(targetFrontierId)
                 ?? CommanderSettingsProfile.NormalizeFrontierId(AppDataPaths.SettingsFrontierId);
-            commanderClaims.Claim(TargetFrontierId ?? AppDataPaths.SettingsFrontierId);
+            string? claimFrontierId = TargetFrontierId ?? AppDataPaths.SettingsFrontierId;
+            CommanderClaimLease? inheritedClaim = foundation.CommanderClaimLease;
+            commanderClaimOwnership.Transfer();
+            AcquireStartupCommanderClaim(inheritedClaim, claimFrontierId);
             var commanderProfileCatalog = new CommanderProfileCatalog(
                 AppDataPaths.DataDirectory,
                 profileJournalDirectories
@@ -1010,7 +1026,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             );
             rollback.Add(ActiveUsers.DisposeAsync);
             statusMessage = BuildJournalReadyStatus(folderResolution.IsFound, TargetFrontierId);
-            journalMonitor = CreateJournalMonitor(folderResolution, TargetFrontierId);
+            journalBaseline = ResolveInitialJournalBaseline(
+                foundation.CommanderJournalBaseline,
+                folderResolution.AvailablePaths
+            );
+            journalMonitor = CreateJournalMonitor(
+                folderResolution,
+                TargetFrontierId,
+                foundation.CommanderSwitchJournalResume
+            );
             journalProjections = CreateJournalProjection();
             RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
             ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
@@ -2225,14 +2249,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         using var changes = new JournalDirectoryChangeSignal(journalMonitor.JournalDirectories);
         try
         {
-            while (!Volatile.Read(ref disposed) && !Volatile.Read(ref automaticCommanderSwitchRequested))
+            while (!Volatile.Read(ref disposed))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await PollAndApplyMonitorUpdateAsync(isManualRefresh: false, cancellationToken);
-                if (Volatile.Read(ref automaticCommanderSwitchRequested))
-                {
-                    break;
-                }
                 await changes.WaitAsync(interval, cancellationToken);
             }
         }
@@ -2741,11 +2761,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
 
     private static JournalDirectoryMonitor? CreateJournalMonitor(
         JournalFolderResolution resolution,
-        string? targetFrontierId
+        string? targetFrontierId,
+        JournalSwitchResume? switchResume
     ) =>
         resolution.AvailablePaths.Count == 0
             ? null
-            : new JournalDirectoryMonitor(resolution.AvailablePaths, targetFrontierId);
+            : new JournalDirectoryMonitor(resolution.AvailablePaths, targetFrontierId, switchResume);
 
     private static (HttpClient? Client, VisitedStarsCacheViewModel Cache) CreateVisitedStarsCache(
         VisitedStarsCacheViewModel? provided,
@@ -2845,6 +2866,31 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             + ".";
     }
 
+    private void AcquireStartupCommanderClaim(CommanderClaimLease? inheritedClaim, string? claimFrontierId)
+    {
+        if (
+            inheritedClaim is not null
+            && string.Equals(inheritedClaim.FrontierId, claimFrontierId, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            commanderClaims.Adopt(inheritedClaim);
+            return;
+        }
+
+        inheritedClaim?.Dispose();
+        if (!IsDiagnosticReplay && claimFrontierId is not null && !commanderClaims.Claim(claimFrontierId))
+        {
+            throw new InvalidOperationException(
+                string.Concat("Another SrvSurvey instance is already open", " (", claimFrontierId, ").")
+            );
+        }
+    }
+
+    private static JournalBaselineSnapshot? ResolveInitialJournalBaseline(
+        JournalBaselineSnapshot? inheritedBaseline,
+        IReadOnlyList<string> availablePaths
+    ) => inheritedBaseline ?? (availablePaths.Count > 0 ? JournalBaselineSnapshot.Capture(availablePaths) : null);
+
     /// <summary>Keeps each journal poll and its asynchronous projection together so event-time maps remain valid.</summary>
     private async Task PollAndApplyMonitorUpdateAsync(bool isManualRefresh, CancellationToken cancellationToken)
     {
@@ -2862,12 +2908,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             await journalUpdateGate.WaitAsync(cancellationToken);
             try
             {
-                if (!Volatile.Read(ref disposed) && !Volatile.Read(ref automaticCommanderSwitchRequested))
-                {
-                    JournalMonitorUpdate update = await journalMonitor!.PollAsync(cancellationToken);
-                    await ApplyMonitorUpdateAsync(update, isManualRefresh, cancellationToken);
-                    automaticSwitchTarget = EvaluateAutomaticCommanderSwitch(update);
-                }
+                automaticSwitchTarget = await PollLockedMonitorUpdateAsync(isManualRefresh, cancellationToken);
             }
             finally
             {
@@ -2892,16 +2933,315 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
-    /// <summary>Detects an active commander switch in Automatic mode while protecting concurrent multi-commander sessions.</summary>
-    private string? EvaluateAutomaticCommanderSwitch(JournalMonitorUpdate update)
+    private async Task<string?> PollLockedMonitorUpdateAsync(bool isManualRefresh, CancellationToken cancellationToken)
+    {
+        if (Volatile.Read(ref disposed) || Volatile.Read(ref automaticCommanderSwitchRequested))
+        {
+            return null;
+        }
+
+        JournalMonitorUpdate update = await journalMonitor!.PollAsync(cancellationToken);
+        if (TryHandleUnboundJournalOwnership(update, out string? unboundSwitchTarget))
+        {
+            return unboundSwitchTarget;
+        }
+
+        bool retryExploration = explorationSavePending;
+        bool retryExobiology = exobiologySavePending;
+        bool unboundCancelled = await ApplyPendingUnboundUpdatesAsync(isManualRefresh, cancellationToken);
+        await ApplyAndPersistMonitorUpdateAsync(
+            update,
+            isManualRefresh,
+            retryExploration,
+            retryExobiology,
+            unboundCancelled,
+            cancellationToken
+        );
+        int remainingCatchUpPolls = 32;
+        while (
+            update.HasPendingLiveTail
+            && remainingCatchUpPolls-- > 0
+            && !Volatile.Read(ref disposed)
+            && !Volatile.Read(ref automaticCommanderSwitchRequested)
+        )
+        {
+            retryExploration = explorationSavePending;
+            retryExobiology = exobiologySavePending;
+            update = await journalMonitor.PollAsync(cancellationToken);
+            await ApplyAndPersistMonitorUpdateAsync(
+                update,
+                isManualRefresh,
+                retryExploration,
+                retryExobiology,
+                priorDrainedCancellation: false,
+                cancellationToken
+            );
+        }
+
+        return update.HasPendingLiveTail ? null : EvaluateAutomaticCommanderSwitch(update);
+    }
+
+    /// <summary>Requires exclusive commander ownership before an unbound runtime projects commander-scoped journal writes.</summary>
+    private bool TryHandleUnboundJournalOwnership(JournalMonitorUpdate update, out string? switchTarget)
+    {
+        switchTarget = null;
+        if (
+            IsDiagnosticReplay
+            || CommanderSettingsProfile.NormalizeFrontierId(AppDataPaths.SettingsFrontierId ?? TargetFrontierId)
+                is not null
+        )
+        {
+            return false;
+        }
+
+        string? batchFrontierId = ResolveUnboundBatchFrontierId(update);
+        if (batchFrontierId is null)
+        {
+            if (
+                blockedUnboundJournalPath is not null
+                && update.JournalPath is not null
+                && !JournalPathsEqual(update.JournalPath, blockedUnboundJournalPath)
+            )
+            {
+                ClearBlockedUnboundState();
+            }
+
+            return false;
+        }
+
+        if (AllowAutomaticCommanderSwitch && AutomaticCommanderSwitchRequested is not null)
+        {
+            switchTarget = EvaluateAutomaticCommanderSwitch(update, batchFrontierId);
+            if (switchTarget is not null)
+            {
+                ClearBlockedUnboundState();
+            }
+            else
+            {
+                blockedUnboundJournalPath = update.JournalPath;
+                blockedUnboundFrontierId = batchFrontierId;
+            }
+
+            return true;
+        }
+
+        if (!commanderClaims.Claim(batchFrontierId))
+        {
+            RetainBlockedUnboundUpdate(update, batchFrontierId);
+            return true;
+        }
+
+        if (
+            blockedUnboundFrontierId is not null
+            && !string.Equals(blockedUnboundFrontierId, batchFrontierId, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            blockedUnboundUpdates.Clear();
+        }
+
+        blockedUnboundJournalPath = null;
+        blockedUnboundFrontierId = null;
+        return false;
+    }
+
+    private string? ResolveUnboundBatchFrontierId(JournalMonitorUpdate update)
+    {
+        string? declared = CommanderSettingsProfile.NormalizeFrontierId(
+            JournalCommanderEvents.ReadFinalIdentity(update.JournalEvents, null, null).FrontierId
+        );
+        if (declared is not null)
+        {
+            return declared;
+        }
+
+        string? observed = CommanderSettingsProfile.NormalizeFrontierId(update.NewestIdentifiedJournal?.FrontierId);
+        if (observed is not null)
+        {
+            return observed;
+        }
+
+        return
+            update.JournalPath is not null
+            && blockedUnboundJournalPath is not null
+            && JournalPathsEqual(update.JournalPath, blockedUnboundJournalPath)
+            ? blockedUnboundFrontierId
+            : null;
+    }
+
+    private void RetainBlockedUnboundUpdate(JournalMonitorUpdate update, string frontierId)
     {
         if (
-            !AllowAutomaticCommanderSwitch
+            !JournalPathsEqual(update.JournalPath, blockedUnboundJournalPath)
+            || !string.Equals(blockedUnboundFrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            blockedUnboundUpdates.Clear();
+        }
+
+        blockedUnboundJournalPath = update.JournalPath;
+        blockedUnboundFrontierId = frontierId;
+        if (update.HasChanges)
+        {
+            blockedUnboundUpdates.Add(update);
+        }
+    }
+
+    private void ClearBlockedUnboundState()
+    {
+        blockedUnboundUpdates.Clear();
+        blockedUnboundJournalPath = null;
+        blockedUnboundFrontierId = null;
+    }
+
+    private async Task<bool> ApplyPendingUnboundUpdatesAsync(bool isManualRefresh, CancellationToken cancellationToken)
+    {
+        if (blockedUnboundUpdates.Count == 0)
+        {
+            return false;
+        }
+
+        JournalMonitorUpdate[] pending = blockedUnboundUpdates.ToArray();
+        blockedUnboundUpdates.Clear();
+        bool cancelledAfterDrain = false;
+        foreach (JournalMonitorUpdate pendingUpdate in pending)
+        {
+            if (Volatile.Read(ref disposed) || Volatile.Read(ref automaticCommanderSwitchRequested))
+            {
+                return cancelledAfterDrain;
+            }
+
+            try
+            {
+                await ApplyMonitorUpdateAsync(pendingUpdate, isManualRefresh, cancellationToken);
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested && (pendingUpdate.HasChanges || isManualRefresh))
+            {
+                cancelledAfterDrain = true;
+            }
+        }
+
+        return cancelledAfterDrain;
+    }
+
+    private async Task ApplyAndPersistMonitorUpdateAsync(
+        JournalMonitorUpdate update,
+        bool isManualRefresh,
+        bool retryExploration,
+        bool retryExobiology,
+        bool priorDrainedCancellation,
+        CancellationToken cancellationToken
+    )
+    {
+        bool cancelledAfterDrain = priorDrainedCancellation;
+        if (update.HasChanges || isManualRefresh)
+        {
+            try
+            {
+                await ApplyMonitorUpdateAsync(update, isManualRefresh, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                cancelledAfterDrain = true;
+            }
+        }
+        else if (!cancelledAfterDrain)
+        {
+            await ApplyMonitorUpdateAsync(update, isManualRefresh, cancellationToken);
+        }
+
+        await RetryPendingProfileSavesAsync(retryExploration, retryExobiology);
+        PersistConfirmedJournalCheckpoint();
+        if (cancelledAfterDrain)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    private static bool JournalPathsEqual(string? first, string? second) =>
+        first is not null
+        && second is not null
+        && string.Equals(
+            first,
+            second,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        );
+
+    private async Task RetryPendingProfileSavesAsync(bool retryExploration, bool retryExobiology)
+    {
+        if (IsDiagnosticReplay || !activeCommanderProfileReady || activeProfileFrontierId is null)
+        {
+            return;
+        }
+
+        if (retryExploration && explorationSavePending)
+        {
+            await SaveExplorationAsync(explorationState.CreateSnapshot());
+        }
+
+        if (retryExobiology && exobiologySavePending)
+        {
+            await SaveExobiologyAsync(exobiologyState.CreateSnapshot());
+        }
+    }
+
+    private void PersistConfirmedJournalCheckpoint()
+    {
+        if (
+            IsDiagnosticReplay
+            || explorationSavePending
+            || exobiologySavePending
+            || !activeCommanderProfileReady
+            || CommanderSettingsProfile.NormalizeFrontierId(activeProfileFrontierId) is not { } confirmedFrontierId
+            || !string.Equals(
+                CommanderSettingsProfile.NormalizeFrontierId(journalState.FrontierId),
+                confirmedFrontierId,
+                StringComparison.OrdinalIgnoreCase
+            )
+            || journalMonitor?.CurrentCheckpoint is not { ByteOffset: > 0 } checkpoint
+        )
+        {
+            return;
+        }
+
+        confirmedJournalCheckpoint = checkpoint;
+        if (
+            checkpoint != lastPersistedJournalCheckpoint
+            && CommanderJournalCheckpointStore.TrySave(AppDataPaths.CacheDirectory, confirmedFrontierId, checkpoint)
+        )
+        {
+            lastPersistedJournalCheckpoint = checkpoint;
+        }
+    }
+
+    /// <summary>Returns true when Automatic mode is currently allowed to switch commanders without disrupting active work.</summary>
+    internal bool CanProceedWithAutomaticCommanderSwitch() =>
+        AllowAutomaticCommanderSwitch
+        && !IsDiagnosticReplay
+        && !IsImportingProfile
+        && !ProfileSync.IsBusy
+        && !ReleaseUpdates.IsInstalling
+        && !ApplicationUpdateBootstrap.HasPendingStartupUpdateAction
+        && !explorationSavePending
+        && !exobiologySavePending
+        && !HasUnsavedWorkspaceEdits();
+
+    /// <summary>Releases any reserved switch lease and resumes polling when a queued automatic switch is declined.</summary>
+    internal void CancelAutomaticCommanderSwitch()
+    {
+        commanderClaims.DetachReservedLease()?.Dispose();
+        Volatile.Write(ref automaticCommanderSwitchRequested, false);
+    }
+
+    /// <summary>Detects an active commander switch in Automatic mode while protecting concurrent multi-commander sessions.</summary>
+    private string? EvaluateAutomaticCommanderSwitch(
+        JournalMonitorUpdate update,
+        string? fallbackUnboundFrontierId = null
+    )
+    {
+        if (
+            !CanProceedWithAutomaticCommanderSwitch()
             || automaticCommanderSwitchRequested
-            || IsDiagnosticReplay
-            || IsImportingProfile
-            || ProfileSync.IsBusy
-            || OverlayInteraction.IsEditing
             || AutomaticCommanderSwitchRequested is null
         )
         {
@@ -2911,15 +3251,22 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         string? currentFrontierId = CommanderSettingsProfile.NormalizeFrontierId(
             AppDataPaths.SettingsFrontierId ?? TargetFrontierId
         );
-        string? candidateFrontierId = ResolveAutomaticSwitchCandidate(update, currentFrontierId);
+        string? candidateFrontierId = ResolveAutomaticSwitchCandidate(
+            update,
+            currentFrontierId,
+            fallbackUnboundFrontierId
+        );
         if (candidateFrontierId is null)
         {
             return null;
         }
 
         CommanderInstances.RefreshGameWindowCount();
-        if (CommanderInstances.HasMultipleGameWindows || commanderClaims.IsClaimedByOtherInstance(candidateFrontierId))
+        bool concurrentClients = HasConcurrentOrUnverifiedGameClients();
+        bool claimedByOther = commanderClaims.IsClaimedByOtherInstance(candidateFrontierId);
+        if (concurrentClients || claimedByOther || !commanderClaims.TryReserve(candidateFrontierId))
         {
+            suppressedConflictOtherCommanderJournal = update.NewestIdentifiedJournal;
             return null;
         }
 
@@ -2931,15 +3278,60 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         return candidateFrontierId;
     }
 
+    private bool HasUnsavedWorkspaceEdits() =>
+        OverlayInteraction.IsEditing
+        || OverlayInteraction.HasPendingLivePositions
+        || VrOverlay.IsAdjusting
+        || Journey.IsDirty
+        || SystemNotes.IsDirty
+        || OverlayLayout.IsDirty
+        || OverlayTheme.IsDirty
+        || HasUnsavedRouteEdits(Route, RouteManager)
+        || HasUnsavedRouteEdits(FleetCarrierRoute, FleetCarrierRouteManager)
+        || HasUnsavedRouteEdits(SquadronCarrierRoute, SquadronCarrierRouteManager)
+        || HumanSite.TemplateAuthor.HasPendingBuilding
+        || Colonization.HasUnsavedProjectVisibility
+        || Colonization.SystemEditor.HasLocalChanges
+        || Colonization.Nexus.HasActiveEditorWork
+        || Colonization.HasActiveCarrierManifestWork
+        || DiscordCarrierAnnouncements.HasChanges;
+
+    private static bool HasUnsavedRouteEdits(RouteWorkspaceViewModel route, RouteManagerViewModel manager) =>
+        route.HasDefinitionChanges
+        || route.HasNotesChanges
+        || route.HasPendingNotesDraft
+        || manager.HasPendingDialogDraft;
+
+    private bool HasConcurrentOrUnverifiedGameClients()
+    {
+        if (CommanderInstances.HasMultipleGameWindows)
+        {
+            return true;
+        }
+
+        int? runningGameProcesses = eliteGameProcessDetector.TryGetRunningProcessCount();
+        if (runningGameProcesses is > 1)
+        {
+            return true;
+        }
+
+        return !CommanderInstances.IsGameWindowEnumerationAvailable && runningGameProcesses is null;
+    }
+
     /// <summary>Resolves a different commander's newly active journal while preserving retained-restart baselines.</summary>
-    private string? ResolveAutomaticSwitchCandidate(JournalMonitorUpdate update, string? currentFrontierId)
+    private string? ResolveAutomaticSwitchCandidate(
+        JournalMonitorUpdate update,
+        string? currentFrontierId,
+        string? fallbackUnboundFrontierId = null
+    )
     {
         ObservedJournalIdentity? observed = update.NewestIdentifiedJournal;
         if (observed is null)
         {
             initialAutomaticSwitchBaselineCaptured = true;
+            suppressedConflictOtherCommanderJournal = null;
             return currentFrontierId is null
-                ? CommanderSettingsProfile.NormalizeFrontierId(journalState.FrontierId)
+                ? fallbackUnboundFrontierId ?? CommanderSettingsProfile.NormalizeFrontierId(journalState.FrontierId)
                 : null;
         }
 
@@ -2951,6 +3343,13 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         {
             initialAutomaticSwitchBaselineCaptured = true;
             suppressedStartupOtherCommanderJournal = null;
+            suppressedConflictOtherCommanderJournal = null;
+            return null;
+        }
+
+        if (observed.IsShutdown)
+        {
+            initialAutomaticSwitchBaselineCaptured = true;
             return null;
         }
 
@@ -2961,7 +3360,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
             return null;
         }
 
-        return observed == suppressedStartupOtherCommanderJournal ? null : normalizedObserved;
+        return observed == suppressedStartupOtherCommanderJournal || observed == suppressedConflictOtherCommanderJournal
+            ? null
+            : normalizedObserved;
     }
 
     /// <summary>Hands off the shared profile-sync service before an in-process commander switch tears down this workspace.</summary>
@@ -2970,6 +3371,22 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         profileSyncDetached = true;
         return ProfileSync.DetachService();
     }
+
+    /// <summary>Hands off the reserved commander claim lease before an in-process commander switch tears down this workspace.</summary>
+    internal CommanderClaimLease? DetachReservedCommanderClaim(string? expectedFrontierId = null) =>
+        commanderClaims.DetachReservedLease(expectedFrontierId);
+
+    /// <summary>Returns the last journal file and byte offset whose commander profile persistence succeeded.</summary>
+    internal JournalCheckpoint? CurrentJournalCheckpoint => confirmedJournalCheckpoint;
+
+    /// <summary>Returns the process-wide journal baseline separating historical files from newly created sessions.</summary>
+    internal JournalBaselineSnapshot? CurrentJournalBaseline => journalBaseline;
+
+    /// <summary>Returns the commander identity actually projected in this workspace, falling back to configured startup targets.</summary>
+    internal string? ProjectedFrontierId =>
+        CommanderSettingsProfile.NormalizeFrontierId(
+            activeProfileFrontierId ?? journalState.FrontierId ?? TargetFrontierId ?? AppDataPaths.SettingsFrontierId
+        );
 
     /// <summary>Projects monitor updates and services retained Raven work even when the journal poll is idle.</summary>
     internal Task ApplyMonitorUpdateAsync(
@@ -3149,6 +3566,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         loadedSystemBodyDataKey = null;
         ResetSystemBodyDataRetryContext();
         CancelSystemBodyDataRequest();
+        if (!string.Equals(activeProfileFrontierId, journalState.FrontierId, StringComparison.OrdinalIgnoreCase))
+        {
+            explorationSavePending = false;
+            exobiologySavePending = false;
+            confirmedJournalCheckpoint = null;
+            lastPersistedJournalCheckpoint = null;
+        }
+
         activeProfileFrontierId = journalState.FrontierId;
         activeProfileCommanderName = journalState.CommanderName ?? result.Data?.CommanderName;
         activeProfileIsOdyssey = isOdyssey;
@@ -3270,6 +3695,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 snapshot,
                 CancellationToken.None
             );
+            explorationSavePending = false;
             ExplorationStatusMessage =
                 $"Totals saved to "
                 + Path.GetFileName(
@@ -3280,6 +3706,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         catch (Exception exception)
             when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
+            explorationSavePending = true;
             ExplorationStatusMessage = "Totals changed for this session but could not be saved: " + exception.Message;
         }
     }
@@ -3312,6 +3739,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
                 snapshot,
                 CancellationToken.None
             );
+            exobiologySavePending = false;
             ExobiologyStatusMessage =
                 $"Organic scan state saved to "
                 + Path.GetFileName(
@@ -3322,6 +3750,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         catch (Exception exception)
             when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
+            exobiologySavePending = true;
             ExobiologyStatusMessage =
                 "Organic scan state changed for this session but could not be saved: " + exception.Message;
         }

@@ -25,6 +25,8 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
     private string systemName = string.Empty;
     private string bulkText = string.Empty;
     private string status = string.Empty;
+    private string initialSystemName = string.Empty;
+    private Dictionary<string, int> initialCargo = new(StringComparer.OrdinalIgnoreCase);
     private ColonizationManifestCommodity? newCommodity;
     private bool hideNonColonyCommodities;
 
@@ -65,6 +67,8 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
     public long PreferredCarrierMarketId { get; init; }
 
     public event Action? CloseRequested;
+    internal event Action? Disposed;
+    internal bool HasPendingWork => !disposed && (IsBusy || TextMode || HasUnsavedChanges());
     public IReadOnlyList<CarrierManifestChoice> Carriers { get; private set; } = [];
     public CarrierManifestChoice? SelectedCarrier
     {
@@ -321,9 +325,44 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
     {
         carrier = loaded;
         SystemName = loaded.SystemName ?? string.Empty;
+        initialSystemName = SystemName;
         TextMode = false;
         ReplaceRows(loaded.Cargo);
+        initialCargo = SnapshotRowCargo();
         NotifyCarrier();
+    }
+
+    private bool HasUnsavedChanges()
+    {
+        if (carrier is null)
+        {
+            return false;
+        }
+
+        if (!string.Equals(SystemName, initialSystemName, StringComparison.Ordinal) || rows.Any(row => !row.IsValid))
+        {
+            return true;
+        }
+
+        Dictionary<string, int> current = SnapshotRowCargo();
+        return current.Count != initialCargo.Count
+            || current.Any(pair =>
+                !initialCargo.TryGetValue(pair.Key, out int baselineAmount) || baselineAmount != pair.Value
+            );
+    }
+
+    private Dictionary<string, int> SnapshotRowCargo()
+    {
+        var snapshot = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (CarrierManifestRowViewModel row in rows)
+        {
+            if (row.IsValid && row.Amount > 0)
+            {
+                snapshot[row.Key] = row.Amount;
+            }
+        }
+
+        return snapshot;
     }
 
     /// <summary>
@@ -524,6 +563,7 @@ public sealed partial class ColonizationCarrierManifestViewModel : WorkspaceObse
         lifetime.Cancel();
         lifetime.Dispose();
         NotifyState();
+        Disposed?.Invoke();
     }
 }
 

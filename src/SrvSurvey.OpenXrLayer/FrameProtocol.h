@@ -10,6 +10,7 @@ constexpr uint32_t Magic = 0x58565253;
 constexpr uint32_t Version = 1;
 constexpr uint32_t Capacity = 64 * 1024 * 1024;
 constexpr uint32_t MaximumOverlays = 16;
+constexpr uint32_t MaximumReportedAvailableLayers = MaximumOverlays + 1;
 struct Descriptor
 {
     uint64_t id;
@@ -24,7 +25,7 @@ struct Header
     int64_t timestamp;
     uint32_t count, originRevision;
     int64_t layerHeartbeat;
-    uint32_t layerState, reserved, renderedCount;
+    uint32_t layerState, availableLayersEncoded, renderedCount;
     int32_t lastError;
     uint32_t processId;
     uint32_t poseSequence;
@@ -37,6 +38,7 @@ struct Header
 };
 static_assert(sizeof(Header) == 128);
 static_assert(offsetof(Header, layerHeartbeat) == 32);
+static_assert(offsetof(Header, availableLayersEncoded) == 44);
 static_assert(offsetof(Header, poseSequence) == 60);
 static_assert(offsetof(Header, poseTimestamp) == 64);
 static_assert(offsetof(Header, poseOriginRevision) == 72);

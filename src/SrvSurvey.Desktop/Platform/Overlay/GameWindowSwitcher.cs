@@ -7,6 +7,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public interface IGameWindowSwitcher : IDisposable
 {
+    bool IsAvailable => true;
+
     int GetAvailableWindowCount();
 
     bool TryActivateCurrent();
@@ -86,6 +88,8 @@ internal static class GameWindowCycle
 
 internal sealed class UnavailableGameWindowSwitcher : IGameWindowSwitcher
 {
+    public bool IsAvailable => false;
+
     public int GetAvailableWindowCount() => 0;
 
     public bool TryActivateCurrent() => false;

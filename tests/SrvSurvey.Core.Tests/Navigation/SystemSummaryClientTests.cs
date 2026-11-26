@@ -494,6 +494,149 @@ public sealed class SystemSummaryClientTests
         Assert.Equal(4, handler.Requests.Count);
     }
 
+    /// <summary>Abandoned targets cancel their HTTP requests immediately while shared stalled fetches still time out cleanly.</summary>
+    [Fact]
+    public async Task StalledResponseBodyTimesOutAndAllowsSubsequentRetriesToRecover()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new SystemSummaryClient(requestTimeout: TimeSpan.Zero));
+
+        var bodyStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var bodyCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bool stallBodies = true;
+        var handler = new ProviderHandler
+        {
+            CustomResponse = uri =>
+                stallBodies && uri.AbsolutePath.EndsWith("/bodies", StringComparison.Ordinal)
+                    ? new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StallingStreamContent(bodyStarted, bodyCanceled),
+                    }
+                    : null,
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) },
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            requestTimeout: TimeSpan.FromSeconds(30)
+        );
+
+        // When the sole caller abandons a target, the underlying HTTP request cancels immediately rather than waiting 30s.
+        using (var abandonCts = new CancellationTokenSource())
+        {
+            Task<SystemSummaryLoadResult> abandoned = client.GetAsync("Abandoned System", 54, abandonCts.Token);
+            await bodyStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await abandonCts.CancelAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => abandoned);
+            await bodyCanceled.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        }
+
+        // Once the provider recovers, a fresh lookup for the previously abandoned system succeeds cleanly.
+        stallBodies = false;
+        SystemSummaryLoadResult recoveredAbandoned = await client.GetAsync("Abandoned System", 54);
+        Assert.Empty(recoveredAbandoned.Warnings);
+        Assert.True(recoveredAbandoned.Summary.IsKnown);
+
+        // Two callers share a stalled fetch: canceling the first keeps it alive for the second until requestTimeout fires.
+        stallBodies = true;
+        bodyStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bodyCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timedClient = new SystemSummaryClient(
+            new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) },
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            requestTimeout: TimeSpan.FromMilliseconds(120)
+        );
+        using var callerCts = new CancellationTokenSource();
+        Task<SystemSummaryLoadResult> first = timedClient.GetAsync("Stalled System", 55, callerCts.Token);
+        await bodyStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Task<SystemSummaryLoadResult> second = timedClient.GetAsync("Stalled System", 55);
+        await callerCts.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => first);
+
+        // Second caller observes the timeout warning, and inFlight is cleared.
+        SystemSummaryLoadResult timedOut = await second;
+        Assert.Contains(
+            timedOut.Warnings,
+            warning => warning.Contains("timed out", StringComparison.OrdinalIgnoreCase)
+        );
+
+        // Once the provider recovers, a fresh retry succeeds instead of staying wedged.
+        stallBodies = false;
+        SystemSummaryLoadResult recovered = await timedClient.GetAsync("Stalled System", 55);
+        Assert.Empty(recovered.Warnings);
+        Assert.True(recovered.Summary.IsKnown);
+
+        // Shorter HttpClient.Timeout is also honored when no explicit requestTimeout is passed.
+        var shortHttpClient = new SystemSummaryClient(
+            new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(100) },
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+        stallBodies = true;
+        SystemSummaryLoadResult shortTimedOut = await shortHttpClient.GetAsync("Short Timeout System", 56);
+        Assert.Contains(
+            shortTimedOut.Warnings,
+            warning => warning.Contains("timed out", StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    private sealed class StallingStreamContent(TaskCompletionSource readStarted, TaskCompletionSource readCanceled)
+        : HttpContent
+    {
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => Task.CompletedTask;
+
+        protected override Task<Stream> CreateContentReadStreamAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<Stream>(new StallingStream(readStarted, readCanceled));
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
+
+        private sealed class StallingStream(TaskCompletionSource readStarted, TaskCompletionSource readCanceled)
+            : Stream
+        {
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => throw new NotSupportedException();
+            public override long Position
+            {
+                get => throw new NotSupportedException();
+                set => throw new NotSupportedException();
+            }
+
+            public override void Flush() { }
+
+            public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+            public override async ValueTask<int> ReadAsync(
+                Memory<byte> buffer,
+                CancellationToken cancellationToken = default
+            )
+            {
+                readStarted.TrySetResult();
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    readCanceled.TrySetResult();
+                    throw;
+                }
+                return 0;
+            }
+
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        }
+    }
+
     private sealed class AdjustableTimeProvider(DateTimeOffset initialUtcNow) : TimeProvider
     {
         private DateTimeOffset utcNow = initialUtcNow;
@@ -523,6 +666,8 @@ public sealed class SystemSummaryClientTests
 
         public Task? Gate { get; init; }
 
+        public Func<Uri, HttpResponseMessage?>? CustomResponse { get; init; }
+
         public string BodiesResponse { get; init; } = BodiesJson;
 
         public string TrafficResponse { get; init; } = TrafficJson;
@@ -542,6 +687,11 @@ public sealed class SystemSummaryClientTests
             lock (requestLock)
             {
                 Requests.Add(uri.AbsoluteUri);
+            }
+
+            if (CustomResponse?.Invoke(uri) is { } customResponse)
+            {
+                return customResponse;
             }
 
             if (uri.Host == "spansh.test")

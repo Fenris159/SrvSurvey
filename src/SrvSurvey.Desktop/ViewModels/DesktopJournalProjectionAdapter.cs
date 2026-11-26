@@ -72,6 +72,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             {
                 PrepareBodyCatalogBatch(context);
                 dependencies.MiningWorkspace.Tick();
+                dependencies.GalaxyMap.Tick();
             }
         );
         operations[JournalProjectionOperation.ColonizationIdle] = (context, tick) =>
@@ -178,7 +179,9 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         operations[JournalProjectionOperation.CargoInventory] = Sync(
             (context, tick) =>
             {
-                tick.AllowSharedCargo = !dependencies.CommanderInstances.HasMultipleGameWindows;
+                tick.AllowSharedCargo =
+                    !dependencies.CommanderInstances.HasMultipleGameWindows
+                    && !context.Update.IsCompanionDirectorySuperseded;
                 tick.CargoChanged = ApplyCargoInventoryUpdate(context.Update, tick.AllowSharedCargo);
                 bool attributedSource =
                     !context.Update.IsAwaitingCommanderIdentity
@@ -1286,6 +1289,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             || state.Session.IsShutdown
             || state.Session.IsAtMainMenu
             || update.IsAwaitingCommanderIdentity
+            || update.IsCompanionDirectorySuperseded
                 ? null
                 : update.JournalPath,
             state.Session.FrontierId
@@ -1294,6 +1298,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
             !state.Session.IsShutdown
             && !state.Session.IsAtMainMenu
             && !state.ProviderCargoSessionEnded
+            && !update.IsCompanionDirectorySuperseded
             && dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount)
             && (!dependencies.CommanderInstances.HasMultipleGameWindows || bound);
         dependencies.Colonization.SetSharedCargoSuppressed(!allowed);
@@ -1494,6 +1499,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
         await ApplyExternalPublicationAsync(
             update,
             allowSharedCargo: !dependencies.CommanderInstances.HasMultipleGameWindows
+                && !update.IsCompanionDirectorySuperseded
         );
         shell.StartSystemBodyDataRetryIfDue();
     }
@@ -1682,6 +1688,7 @@ internal sealed class DesktopJournalProjectionAdapter : IJournalProjectionAdapte
     /// <summary>Companion files require a currently active verified source, independent of captured journal attribution.</summary>
     private bool CanShareCompanionSnapshots(JournalMonitorUpdate update) =>
         !update.IsAwaitingCommanderIdentity
+        && !update.IsCompanionDirectorySuperseded
         && !state.ProviderCargoSessionEnded
         && dependencies.JournalSources.CanUseSource(dependencies.CommanderInstances.AvailableGameWindowCount);
 

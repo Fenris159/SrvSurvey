@@ -7,8 +7,11 @@ public sealed class VrOverlayInputRouter : IDisposable
 {
     private readonly Pointer pointer = new(1, PointerType.Mouse, true);
     private readonly Dictionary<string, RawInputModifiers> modifiers = new(StringComparer.Ordinal);
+    private string? capturedPlotterName;
 
     public bool HasCapture => pointer.Captured is not null;
+
+    public string? CapturedPlotterName => pointer.Captured is null ? null : capturedPlotterName;
 
     public void Dispatch(RegisteredOverlayWindow registration, VrOverlayPointerEvent pointerEvent)
     {
@@ -65,6 +68,7 @@ public sealed class VrOverlayInputRouter : IDisposable
             case VrOverlayPointerEventKind.LeftButtonDown:
             case VrOverlayPointerEventKind.RightButtonDown:
             case VrOverlayPointerEventKind.MiddleButtonDown:
+                capturedPlotterName = pointerEvent.PlotterName;
                 pointer.Capture(target);
                 target.RaiseEvent(
                     new PointerPressedEventArgs(
@@ -96,6 +100,7 @@ public sealed class VrOverlayInputRouter : IDisposable
                 );
                 if (current == RawInputModifiers.None)
                 {
+                    capturedPlotterName = null;
                     pointer.Capture(null);
                 }
                 break;
@@ -108,9 +113,25 @@ public sealed class VrOverlayInputRouter : IDisposable
         }
     }
 
+    public void ResetPlotter(string plotterName)
+    {
+        if (string.IsNullOrEmpty(plotterName))
+        {
+            return;
+        }
+
+        modifiers.Remove(plotterName);
+        if (string.Equals(capturedPlotterName, plotterName, StringComparison.Ordinal))
+        {
+            capturedPlotterName = null;
+            pointer.Capture(null);
+        }
+    }
+
     public void Reset()
     {
         modifiers.Clear();
+        capturedPlotterName = null;
         pointer.Capture(null);
     }
 

@@ -32,7 +32,19 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
 
     public string DisplayName => "VDXR / OpenXR";
 
-    public int MaximumOverlays => OpenXrFramePacket.MaximumOverlays;
+    public int MaximumOverlays
+    {
+        get
+        {
+            if (!IsInitialized || bridge?.AvailableOverlayLayers is not { } available)
+            {
+                return OpenXrFramePacket.MaximumOverlays;
+            }
+
+            int panelBudget = interactionEnabled && available >= 2 ? available - 1 : available;
+            return Math.Min(panelBudget, OpenXrFramePacket.MaximumOverlays);
+        }
+    }
 
     public bool TryGetHeadPose(out VrOverlayHeadPose? pose)
     {
@@ -162,6 +174,12 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
         {
             return VrRuntimeResult.Failure(
                 $"Waiting for VDXR controller input (OpenXR error {bridge?.InputError ?? 0}). Update the OpenXR layer and restart Elite before using this shortcut. For EDVR, enable Experimental EDVR controller input in the VR settings."
+            );
+        }
+        if (enabled && bridge?.AvailableOverlayLayers is < 2)
+        {
+            return VrRuntimeResult.Failure(
+                "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction."
             );
         }
         interactionEnabled = enabled;

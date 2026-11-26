@@ -27225,6 +27225,10 @@
       "translation": "Speichern"
     },
     {
+      "source": "Save ({0})",
+      "translation": "Speichern ({0})"
+    },
+    {
       "source": "Save As...",
       "translation": "Speichern unter..."
     },
@@ -32751,6 +32755,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "Die aktive Laufzeit OpenXR ist WiVRn, nicht {0}. Schließen Sie Ihr Headset an {1} an oder verknüpfen Sie ~/.config/openxr/1/active_runtime.json mit {2}."
+    },
+    {
+      "source": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+      "translation": "Die aktive VDXR Laufzeit benötigt mindestens zwei freie Kompositionsebenen für die Controller-Interaktion. Geben Sie eine Kompositionsebene frei, bevor Sie die Controller-Interaktion aktivieren."
     },
     {
       "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -42943,6 +42951,10 @@
     {
       "source": "{0} unrelated malformed profile file(s) were ignored.",
       "translation": "{0} nicht verwandte fehlerhafte Profildateien wurden ignoriert."
+    },
+    {
+      "source": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+      "translation": "Nicht gespeicherte Overlay-Änderungen von {0} bleiben für {1} ausstehend und werden zusammen gespeichert. Mit „Schließen/Nicht gespeichertes verwerfen“ werden alle ausstehenden Änderungen rückgängig gemacht."
     },
     {
       "source": "{0} unsold entries",
@@ -70591,6 +70603,10 @@
       "translation": "Guardar"
     },
     {
+      "source": "Save ({0})",
+      "translation": "Guardar ({0})"
+    },
+    {
       "source": "Save As...",
       "translation": "Guardar como..."
     },
@@ -76117,6 +76133,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "El tiempo de ejecución activo OpenXR es WiVRn, no {0}. Conecte sus auriculares en {1} o apunte ~/.config/openxr/1/active_runtime.json a {2}."
+    },
+    {
+      "source": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+      "translation": "El tiempo de ejecución activo VDXR necesita al menos dos capas de composición libres para la interacción del controlador. Libere una capa de composición antes de habilitar la interacción del controlador."
     },
     {
       "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -86309,6 +86329,10 @@
     {
       "source": "{0} unrelated malformed profile file(s) were ignored.",
       "translation": "{0} archivos de perfil con formato incorrecto no relacionados fueron ignorados."
+    },
+    {
+      "source": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+      "translation": "Las ediciones de superposición no guardadas de {0} permanecen pendientes para {1} y se guardarán juntas. Cerrar/descartar archivos no guardados revierte todas las ediciones pendientes."
     },
     {
       "source": "{0} unsold entries",
@@ -113957,6 +113981,10 @@
       "translation": "Enregistrer"
     },
     {
+      "source": "Save ({0})",
+      "translation": "Enregistrer ({0})"
+    },
+    {
       "source": "Save As...",
       "translation": "Enregistrer sous..."
     },
@@ -119483,6 +119511,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "Le moteur d'exécution actif OpenXR est WiVRn et non {0}. Connectez votre casque en {1} ou pointez ~/.config/openxr/1/active_runtime.json à {2}."
+    },
+    {
+      "source": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+      "translation": "Le runtime actif VDXR nécessite au moins deux couches de composition libres pour l'interaction du contrôleur. Libérez une couche de composition avant d’activer l’interaction du contrôleur."
     },
     {
       "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -129675,6 +129707,10 @@
     {
       "source": "{0} unrelated malformed profile file(s) were ignored.",
       "translation": "{0} fichier(s) de profil malformé sans rapport ont été ignorés."
+    },
+    {
+      "source": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+      "translation": "Les modifications de superposition non enregistrées de {0} restent en attente pour {1} et seront enregistrées ensemble. Fermer/ignorer les modifications non enregistrées annule toutes les modifications en attente."
     },
     {
       "source": "{0} unsold entries",
@@ -157323,6 +157359,10 @@
       "translation": "Salvar"
     },
     {
+      "source": "Save ({0})",
+      "translation": "Salvar ({0})"
+    },
+    {
       "source": "Save As...",
       "translation": "Salvar como..."
     },
@@ -162849,6 +162889,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "O tempo de execução ativo OpenXR é WiVRn, não {0}. Conecte seu fone de ouvido em {1} ou aponte ~/.config/openxr/1/active_runtime.json para {2}."
+    },
+    {
+      "source": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+      "translation": "O tempo de execução ativo VDXR precisa de pelo menos duas camadas de composição livres para interação do controlador. Libere uma camada de composição antes de ativar a interação do controlador."
     },
     {
       "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -173041,6 +173085,10 @@
     {
       "source": "{0} unrelated malformed profile file(s) were ignored.",
       "translation": "{0} arquivos de perfil mal formados não relacionados foram ignorados."
+    },
+    {
+      "source": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+      "translation": "As edições de sobreposição não salvas de {0} permanecem pendentes para {1} e serão salvas juntas. Fechar/descartar não salvos reverte todas as edições pendentes."
     },
     {
       "source": "{0} unsold entries",
@@ -200689,6 +200737,10 @@
       "translation": "Сохранить"
     },
     {
+      "source": "Save ({0})",
+      "translation": "Сохранить ({0})"
+    },
+    {
       "source": "Save As...",
       "translation": "Сохранить как..."
     },
@@ -206215,6 +206267,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "Активной средой выполнения OpenXR является WiVRn, а не {0}. Подключите гарнитуру к {1} или укажите ~/.config/openxr/1/active_runtime.json к {2}."
+    },
+    {
+      "source": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+      "translation": "Активной среде выполнения VDXR требуется как минимум два свободных слоя композиции для взаимодействия с контроллером. Освободите слой композиции перед включением взаимодействия с контроллером."
     },
     {
       "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -216407,6 +216463,10 @@
     {
       "source": "{0} unrelated malformed profile file(s) were ignored.",
       "translation": "{0} несвязанные файлы некорректного профиля были проигнорированы."
+    },
+    {
+      "source": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+      "translation": "{0} несохраненные изменения наложения остаются ожидающими для {1} и будут сохранены вместе. Закрыть/отменить несохраненные изменения отменяет все ожидающие изменения."
     },
     {
       "source": "{0} unsold entries",
@@ -244055,6 +244115,10 @@
       "translation": "保存"
     },
     {
+      "source": "Save ({0})",
+      "translation": "保存（{0}）"
+    },
+    {
       "source": "Save As...",
       "translation": "另存为..."
     },
@@ -249581,6 +249645,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "活动OpenXR运行时是WiVRn，而不是{0}。将耳机连接到 {1} 或将 ~/.config/openxr/1/active_runtime.json 指向 {2}。"
+    },
+    {
+      "source": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+      "translation": "活动VDXR运行时需要至少两个自由组合层用于控制器交互。在启用控制器交互之前释放组合层。"
     },
     {
       "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -259773,6 +259841,10 @@
     {
       "source": "{0} unrelated malformed profile file(s) were ignored.",
       "translation": "{0} 不相关的格式错误的配置文件被忽略。"
+    },
+    {
+      "source": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+      "translation": "{0} 未保存的叠加编辑对于 {1} 仍处于待处理状态，并将一起保存。关闭/放弃未保存的操作将恢复所有待处理的编辑。"
     },
     {
       "source": "{0} unsold entries",
@@ -287421,6 +287493,10 @@
       "translation": "* SAVE >>>!"
     },
     {
+      "source": "Save ({0})",
+      "translation": "* SAVE ({0}) >>>!"
+    },
+    {
       "source": "Save As...",
       "translation": "* SAVE AS... >>>!"
     },
@@ -292947,6 +293023,10 @@
     {
       "source": "The active OpenXR runtime is WiVRn, not {0}. Connect your headset in {1} or point ~/.config/openxr/1/active_runtime.json to {2}.",
       "translation": "* THE ACTIVE OPENXR RUNTIME IS WIVRN, NOT {0}. CONNECT YOUR HEADSET IN {1} OR POINT ~/.CONFIG/OPENXR/1/ACTIVE_RUNTIME.JSON TO {2}. >>>!"
+    },
+    {
+      "source": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+      "translation": "* THE ACTIVE VDXR RUNTIME NEEDS AT LEAST TWO FREE COMPOSITION LAYERS FOR CONTROLLER INTERACTION. FREE A COMPOSITION LAYER BEFORE ENABLING CONTROLLER INTERACTION. >>>!"
     },
     {
       "source": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
@@ -303139,6 +303219,10 @@
     {
       "source": "{0} unrelated malformed profile file(s) were ignored.",
       "translation": "* {0} UNRELATED MALFORMED PROFILE FILE(S) WERE IGNORED. >>>!"
+    },
+    {
+      "source": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+      "translation": "* {0} UNSAVED OVERLAY EDIT(S) REMAIN PENDING FOR {1} AND WILL BE SAVED TOGETHER. CLOSE / DISCARD UNSAVED REVERTS ALL PENDING EDITS. >>>!"
     },
     {
       "source": "{0} unsold entries",

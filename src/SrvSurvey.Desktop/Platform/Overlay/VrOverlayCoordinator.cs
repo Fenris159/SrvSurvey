@@ -19,13 +19,19 @@ public sealed class VrOverlayCoordinator : IDisposable
     private readonly OverlayDispatcherTimer interactionTimer;
     private VrOverlayInputRouter? inputRouter;
     private readonly Dictionary<string, RegisteredOverlayWindow> published = new(StringComparer.Ordinal);
+    private readonly Queue<VrOverlayPointerEvent> retainedPointerEvents = new();
     private readonly VrOverlayCalibrationSession calibrationSession = new();
     private IReadOnlyList<RegisteredOverlayWindow> calibrationRegistrations = [];
     private string? activeDragPlotter;
     private double dragGrabNormX;
     private double dragGrabNormY;
+    private double lastAppliedDragNormX;
+    private double lastAppliedDragNormY;
     private long lastDragApplyMs;
+    private bool appliedDragInCurrentPollBatch;
+    private bool sawDragMoveSinceLastApply;
     private double pendingDragDepthWheel;
+    private float lastOpenVrYawOffset;
     private bool synchronizing;
     private bool disposed;
 
@@ -80,6 +86,11 @@ public sealed class VrOverlayCoordinator : IDisposable
         viewModel.SetRuntimeStatus(result.Message);
         if (!result.Succeeded)
         {
+            if (viewModel.IsAdjusting)
+            {
+                viewModel.ReportAdjustmentStatus(result.Message);
+            }
+
             return false;
         }
 
@@ -92,6 +103,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         else
         {
             interactionTimer.Stop();
+            retainedPointerEvents.Clear();
             ClearDragState();
             inputRouter?.Reset();
         }
@@ -110,6 +122,14 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
 
         VrRuntimeResult result = runtime.ResetOrientation();
+        if (result.Succeeded)
+        {
+            lastOpenVrYawOffset = 0f;
+            if (runtime.TryGetHeadPose(out VrOverlayHeadPose? pose) && pose is not null)
+            {
+                lastOpenVrYawOffset = pose.OpenVrYawOffset;
+            }
+        }
         viewModel.SetRuntimeStatus(result.Message);
         return result.Succeeded;
     }
@@ -131,6 +151,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         viewModel.ConnectionCheckRequested -= OnConnectionCheckRequested;
         viewModel.PlaceInFrontRequested -= OnPlaceInFrontRequested;
         registry.Changed -= OnRegistryChanged;
+        retainedPointerEvents.Clear();
         ClearDragState();
         inputRouter?.Dispose();
         inputRouter = null;
@@ -161,22 +182,38 @@ public sealed class VrOverlayCoordinator : IDisposable
             .Where(registration => registration.IsVisible)
             .GroupBy(registration => registration.PlotterName, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Last(), StringComparer.Ordinal);
+        appliedDragInCurrentPollBatch = false;
+        while (retainedPointerEvents.Count > 0)
+        {
+            DispatchPointerEvent(registrations, retainedPointerEvents.Dequeue());
+        }
+
         foreach (VrOverlayPointerEvent pointerEvent in runtime.PollPointerEvents())
         {
-            if (pointerEvent.Kind == VrOverlayPointerEventKind.Reset)
+            DispatchPointerEvent(registrations, pointerEvent);
+        }
+    }
+
+    private void DispatchPointerEvent(
+        Dictionary<string, RegisteredOverlayWindow> registrations,
+        VrOverlayPointerEvent pointerEvent
+    )
+    {
+        if (pointerEvent.Kind == VrOverlayPointerEventKind.Reset)
+        {
+            ClearDragState();
+            inputRouter?.Reset();
+            return;
+        }
+
+        if (registrations.TryGetValue(pointerEvent.PlotterName, out RegisteredOverlayWindow? registration))
+        {
+            if (TryHandleDragEvent(registration, pointerEvent))
             {
-                ClearDragState();
-                inputRouter?.Reset();
-                continue;
+                return;
             }
-            if (registrations.TryGetValue(pointerEvent.PlotterName, out RegisteredOverlayWindow? registration))
-            {
-                if (TryHandleDragEvent(registration, pointerEvent))
-                {
-                    continue;
-                }
-                inputRouter?.Dispatch(registration, pointerEvent);
-            }
+
+            inputRouter?.Dispatch(registration, pointerEvent);
         }
     }
 
@@ -209,6 +246,7 @@ public sealed class VrOverlayCoordinator : IDisposable
                 HandleDragDepth(registration.PlotterName, pointerEvent.WheelY);
                 return true;
             case VrOverlayPointerEventKind.LeftButtonUp when isActiveTarget:
+                HandleDragMove(registration.PlotterName, normX, normY, width, height, throttle: false);
                 ClearDragState();
                 return true;
             default:
@@ -238,19 +276,48 @@ public sealed class VrOverlayCoordinator : IDisposable
         activeDragPlotter = plotterName;
         dragGrabNormX = normX;
         dragGrabNormY = normY;
+        lastAppliedDragNormX = normX;
+        lastAppliedDragNormY = normY;
         lastDragApplyMs = 0;
+        appliedDragInCurrentPollBatch = false;
+        sawDragMoveSinceLastApply = false;
         pendingDragDepthWheel = 0;
     }
 
-    private void HandleDragMove(string plotterName, double normX, double normY, double width, double height)
+    private void HandleDragMove(
+        string plotterName,
+        double normX,
+        double normY,
+        double width,
+        double height,
+        bool throttle = true
+    )
     {
+        bool isSameCoordinate =
+            Math.Abs(normX - lastAppliedDragNormX) < 1e-6 && Math.Abs(normY - lastAppliedDragNormY) < 1e-6;
+        if (throttle)
+        {
+            // Drop repeated coordinates from the same poll batch while allowing a later poll to hit the same UV on a moved panel.
+            if (appliedDragInCurrentPollBatch && isSameCoordinate)
+            {
+                return;
+            }
+
+            sawDragMoveSinceLastApply = true;
+        }
+        else if (isSameCoordinate && (appliedDragInCurrentPollBatch || !sawDragMoveSinceLastApply))
+        {
+            // SteamVR reuses the last Move coordinate on LeftButtonUp when the pointer did not move again.
+            return;
+        }
+
         long now = clock();
-        if (lastDragApplyMs > 0 && now - lastDragApplyMs < DragUpdateIntervalMs)
+        if (throttle && lastDragApplyMs > 0 && now - lastDragApplyMs < DragUpdateIntervalMs)
         {
             return;
         }
 
-        VrOverlayCalibration? current = viewModel.GetCalibration(plotterName, modeProvider());
+        VrOverlayCalibration? current = viewModel.GetCalibrationForAdjustment(plotterName);
         if (current is null)
         {
             return;
@@ -264,8 +331,19 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
 
         bool usesLegacyOpenVr = !VrPlatformProfileCatalog.UsesSeatedDefaults(viewModel.SelectedPlatformProfile.Id);
-        VrOverlayCalibration moved = VrOverlayTransform.ApplyPlaneDrag(current, deltaRight, deltaUp, usesLegacyOpenVr);
+        float openVrYawOffset = ResolveOpenVrYawOffset(usesLegacyOpenVr);
+        VrOverlayCalibration moved = VrOverlayTransform.ApplyPlaneDrag(
+            current,
+            deltaRight,
+            deltaUp,
+            usesLegacyOpenVr,
+            openVrYawOffset
+        );
         lastDragApplyMs = now;
+        lastAppliedDragNormX = normX;
+        lastAppliedDragNormY = normY;
+        appliedDragInCurrentPollBatch = true;
+        sawDragMoveSinceLastApply = false;
         viewModel.ApplyCalibrationEdit(moved);
     }
 
@@ -289,24 +367,43 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
 
         pendingDragDepthWheel -= steps;
-        VrOverlayCalibration? current = viewModel.GetCalibration(plotterName, modeProvider());
+        VrOverlayCalibration? current = viewModel.GetCalibrationForAdjustment(plotterName);
         if (current is null)
         {
             return;
         }
 
         bool usesLegacyOpenVr = !VrPlatformProfileCatalog.UsesSeatedDefaults(viewModel.SelectedPlatformProfile.Id);
+        float openVrYawOffset = ResolveOpenVrYawOffset(usesLegacyOpenVr);
         VrOverlayCalibration moved = VrOverlayTransform.ApplyDepthStep(
             current,
             steps * (float)viewModel.PositionIncrement,
-            usesLegacyOpenVr
+            usesLegacyOpenVr,
+            openVrYawOffset
         );
         viewModel.ApplyCalibrationEdit(moved);
+    }
+
+    private float ResolveOpenVrYawOffset(bool usesLegacyOpenVr)
+    {
+        if (!usesLegacyOpenVr)
+        {
+            return 0f;
+        }
+
+        if (runtime.TryGetHeadPose(out VrOverlayHeadPose? pose) && pose is not null)
+        {
+            lastOpenVrYawOffset = pose.OpenVrYawOffset;
+        }
+
+        return lastOpenVrYawOffset;
     }
 
     private void ClearDragState()
     {
         activeDragPlotter = null;
+        appliedDragInCurrentPollBatch = false;
+        sawDragMoveSinceLastApply = false;
         pendingDragDepthWheel = 0;
     }
 
@@ -492,25 +589,92 @@ public sealed class VrOverlayCoordinator : IDisposable
 
     private void InvalidateReplacedSurfaceInput(IReadOnlyList<RegisteredOverlayWindow> registrations)
     {
-        bool surfaceReplaced = registrations.Any(registration =>
-            published.TryGetValue(registration.PlotterName, out RegisteredOverlayWindow? prior)
-            && !IsSameSurface(prior, registration)
-        );
-        if (!surfaceReplaced)
+        HashSet<string>? replacedPlotters = FindReplacedPlotters(registrations);
+        if (replacedPlotters is null)
         {
             return;
         }
 
-        ClearDragState();
-        inputRouter?.Reset();
-        if (IsInteractionEnabled && runtime.IsInitialized)
+        if (activeDragPlotter is not null && replacedPlotters.Contains(activeDragPlotter))
         {
-            _ = runtime.PollPointerEvents();
-            VrRuntimeResult reenable = runtime.SetInteractionEnabled(true);
-            if (!reenable.Succeeded)
+            ClearDragState();
+        }
+
+        foreach (string replaced in replacedPlotters)
+        {
+            inputRouter?.ResetPlotter(replaced);
+            DiscardRetainedPointerEvents(replaced);
+        }
+
+        bool hasUnaffectedActiveGesture = activeDragPlotter is not null || inputRouter?.HasCapture == true;
+        if (!IsInteractionEnabled || !runtime.IsInitialized)
+        {
+            return;
+        }
+
+        RetainUnaffectedPendingPointerEvents(replacedPlotters);
+        if (!hasUnaffectedActiveGesture && retainedPointerEvents.Count == 0)
+        {
+            ReenableRuntimeInteractionAfterSurfaceReplacement();
+        }
+    }
+
+    private HashSet<string>? FindReplacedPlotters(IReadOnlyList<RegisteredOverlayWindow> registrations)
+    {
+        HashSet<string>? replacedPlotters = null;
+        foreach (RegisteredOverlayWindow registration in registrations)
+        {
+            if (
+                published.TryGetValue(registration.PlotterName, out RegisteredOverlayWindow? prior)
+                && !IsSameSurface(prior, registration)
+            )
             {
-                ResetInteractionLocally();
-                viewModel.ReportAdjustmentStatus(reenable.Message);
+                replacedPlotters ??= new HashSet<string>(StringComparer.Ordinal);
+                replacedPlotters.Add(registration.PlotterName);
+            }
+        }
+
+        return replacedPlotters;
+    }
+
+    private void RetainUnaffectedPendingPointerEvents(HashSet<string> replacedPlotters)
+    {
+        foreach (VrOverlayPointerEvent pendingEvent in runtime.PollPointerEvents())
+        {
+            if (
+                pendingEvent.Kind != VrOverlayPointerEventKind.Reset
+                && replacedPlotters.Contains(pendingEvent.PlotterName)
+            )
+            {
+                continue;
+            }
+
+            retainedPointerEvents.Enqueue(pendingEvent);
+        }
+    }
+
+    private void ReenableRuntimeInteractionAfterSurfaceReplacement()
+    {
+        VrRuntimeResult reenable = runtime.SetInteractionEnabled(true);
+        if (!reenable.Succeeded)
+        {
+            ResetInteractionLocally();
+            viewModel.ReportAdjustmentStatus(reenable.Message);
+        }
+    }
+
+    private void DiscardRetainedPointerEvents(string plotterName)
+    {
+        int count = retainedPointerEvents.Count;
+        for (int index = 0; index < count; index++)
+        {
+            VrOverlayPointerEvent queued = retainedPointerEvents.Dequeue();
+            if (
+                queued.Kind == VrOverlayPointerEventKind.Reset
+                || !string.Equals(queued.PlotterName, plotterName, StringComparison.Ordinal)
+            )
+            {
+                retainedPointerEvents.Enqueue(queued);
             }
         }
     }
@@ -540,6 +704,13 @@ public sealed class VrOverlayCoordinator : IDisposable
     {
         foreach (string removed in published.Keys.Where(name => !active.ContainsKey(name)).ToArray())
         {
+            if (string.Equals(activeDragPlotter, removed, StringComparison.Ordinal))
+            {
+                ClearDragState();
+            }
+
+            inputRouter?.ResetPlotter(removed);
+            DiscardRetainedPointerEvents(removed);
             runtime.RemoveOverlay(removed);
         }
     }
@@ -626,6 +797,7 @@ public sealed class VrOverlayCoordinator : IDisposable
     {
         IsInteractionEnabled = false;
         interactionTimer.Stop();
+        retainedPointerEvents.Clear();
         ClearDragState();
         inputRouter?.Reset();
     }
@@ -633,6 +805,7 @@ public sealed class VrOverlayCoordinator : IDisposable
     private void ShutdownRuntime()
     {
         ResetInteractionLocally();
+        lastOpenVrYawOffset = 0f;
         runtime.Shutdown();
     }
 
@@ -649,10 +822,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             return false;
         }
 
-        VrOverlayCalibration? calibration =
-            registration.PlotterName == VrOverlayCalibrationSession.ControlsPlotterName
-                ? calibrationSession.ControlsCalibration
-                : viewModel.GetCalibration(registration.PlotterName, runtimeMode);
+        VrOverlayCalibration? calibration = ResolveRegistrationCalibration(registration, runtimeMode);
         if (calibration is null)
         {
             return false;
@@ -689,6 +859,21 @@ public sealed class VrOverlayCoordinator : IDisposable
             error = $"Could not render {registration.PlotterName} for VR: " + exception.Message;
             return true;
         }
+    }
+
+    private VrOverlayCalibration? ResolveRegistrationCalibration(
+        RegisteredOverlayWindow registration,
+        string? runtimeMode
+    )
+    {
+        if (registration.PlotterName == VrOverlayCalibrationSession.ControlsPlotterName)
+        {
+            return calibrationSession.ControlsCalibration;
+        }
+
+        return calibrationSession.Owns(registration)
+            ? viewModel.GetCalibrationForAdjustment(registration.PlotterName)
+            : viewModel.GetCalibration(registration.PlotterName, runtimeMode);
     }
 
     private static bool IsProcessRunning(string processName)

@@ -92,10 +92,29 @@ public sealed class VrOverlayViewModelTests : IDisposable
     [Fact]
     public void ChangingToARouteWithoutTheSelectedPanelCannotPublishOrSaveItsOldPlacement()
     {
-        VrOverlayViewModel model = CreateViewModel();
+        string data = Path.Combine(temporaryDirectory, "data-missing-panel");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-missing-panel");
+        string vdxrDirectory = Path.Combine(data, "vr", "vdxr");
+        Directory.CreateDirectory(vdxrDirectory);
+        Directory.CreateDirectory(factoryDirectory);
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
         File.WriteAllText(
-            Path.Combine(temporaryDirectory, "data", "plotters.json"),
+            factory,
             """{"PlotJumpInfo":"center:0, top:8","PlotBioStatus":"left:0, top:0 { s: 5, p: <0, 0, 10>, r: <0, 0, 0>}"}"""
+        );
+        File.WriteAllText(
+            Path.Combine(data, "plotters.json"),
+            """{"PlotJumpInfo":"center:0, top:8","PlotBioStatus":"left:0, top:0 { s: 5, p: <0, 0, 10>, r: <0, 0, 0>}"}"""
+        );
+        File.WriteAllText(
+            Path.Combine(vdxrDirectory, "Default.json"),
+            """{"PlotJumpInfo":"{ s: 8, p: <0, 4.5, 11>, r: <22.2, 0, 0>}"}"""
+        );
+        var store = new VrOverlayCalibrationStore(data, factory);
+        var model = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(SettingsPath),
+            store,
+            VrPlatformProfileCatalog.ForPlatform(OSPlatform.Windows, Architecture.X64, 22000)
         );
         model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.MetaVdxrProfileId);
         Assert.True(model.BeginAdjustment());
@@ -107,9 +126,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.Null(model.GetCalibration("PlotJumpInfo"));
         Assert.Equal(5, model.Scale);
         model.SaveCommand.Execute(null);
-        Assert.Null(
-            new VrOverlayCalibrationStore(Path.Combine(temporaryDirectory, "data")).Load().Resolve("PlotJumpInfo", null)
-        );
+        Assert.Null(store.Load().Resolve("PlotJumpInfo", null));
     }
 
     [Fact]
@@ -429,6 +446,66 @@ public sealed class VrOverlayViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ChangingCalibrationCategoryPreservesPendingEditsAcrossCategoriesUntilSavedOrCanceled()
+    {
+        string data = Path.Combine(temporaryDirectory, "data-preserve-cat");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-preserve-cat");
+        Directory.CreateDirectory(data);
+        Directory.CreateDirectory(factoryDirectory);
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factory,
+            """
+            {
+              "PlotJumpInfo": "center:0, top:8 { s: 8, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioStatus": "center:0, top:8 { s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}"
+            }
+            """
+        );
+        var model = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "settings-preserve-cat.json")),
+            new VrOverlayCalibrationStore(data, factory),
+            VrPlatformProfileCatalog.ForPlatform(OSPlatform.Linux, Architecture.X64, 0)
+        );
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+
+        Assert.True(model.BeginAdjustment());
+
+        // Adjusting a panel in "All overlays" and switching to a category containing that panel preserves the draft.
+        model.SelectedOverlayName = "PlotBioStatus";
+        model.PositionX = 1.75;
+        model.SelectedCategory = "Biology & surface";
+        Assert.Equal("PlotBioStatus", model.SelectedOverlayName);
+        Assert.Equal(1.75, model.PositionX, 4);
+        model.PositionX = 3.25;
+
+        // Switching to another category and returning preserves the unsaved draft without wiping it.
+        model.SelectedCategory = "Exploration & navigation";
+        Assert.Equal("PlotJumpInfo", model.SelectedOverlayName);
+        Assert.Equal(3.25f, model.GetCalibration("PlotBioStatus")!.Position.X);
+
+        model.PositionY = 5.5;
+        model.SelectedCategory = "Biology & surface";
+        Assert.Equal("PlotBioStatus", model.SelectedOverlayName);
+        Assert.Equal(3.25, model.PositionX, 4);
+        Assert.Equal(5.5f, model.GetCalibration("PlotJumpInfo")!.Position.Y);
+
+        // Saving persists all edited drafts across categories without overwriting untouched siblings.
+        model.SaveCommand.Execute(null);
+        Assert.Contains("Saved 2 overlays", model.StatusMessage);
+        Assert.Equal(3.25f, model.GetCalibration("PlotBioStatus")!.Position.X);
+        Assert.Equal(5.5f, model.GetCalibration("PlotJumpInfo")!.Position.Y);
+        Assert.Equal(-6f, model.GetCalibration("PlotBioSystem")!.Position.X);
+
+        // Editing across categories and canceling discards all unsaved drafts cleanly.
+        model.PositionX = -8.5;
+        model.SelectedCategory = "Exploration & navigation";
+        model.CancelCommand.Execute(null);
+        Assert.Equal(3.25f, model.GetCalibration("PlotBioStatus")!.Position.X);
+    }
+
+    [Fact]
     public void PartialSaveHandlesReloadFailureWithoutThrowingAndResetFailurePreservesEdits()
     {
         string data = Path.Combine(temporaryDirectory, "data-fail");
@@ -476,6 +553,162 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Assert.Contains("VR calibration was not saved", model.StatusMessage);
         Assert.Equal(7.5, model.PositionX);
         Assert.Equal(7.5f, model.GetCalibration("PlotBioStatus")!.Position.X);
+    }
+
+    [Fact]
+    public void CategorySaveSkipsUntouchedSelectedOverlaySoNonDefaultModeDoesNotCreateSpuriousOverride()
+    {
+        string data = Path.Combine(temporaryDirectory, "data-mode-save");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-mode-save");
+        Directory.CreateDirectory(data);
+        Directory.CreateDirectory(factoryDirectory);
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factory,
+            """
+            {
+              "PlotBioStatus": "center:0, top:8 { s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}"
+            }
+            """
+        );
+        var store = new VrOverlayCalibrationStore(data, factory);
+        var model = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "settings-mode-save.json")),
+            store,
+            VrPlatformProfileCatalog.ForPlatform(OSPlatform.Linux, Architecture.X64, 0)
+        );
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+        model.SetCurrentRuntimeMode("srv");
+        Assert.True(model.BeginAdjustment());
+        model.SelectedCategory = "Biology & surface";
+        model.SelectedMode = "srv";
+
+        // Edit PlotBioStatus only, then switch selection to untouched PlotBioSystem and click Save.
+        model.SelectedOverlayName = "PlotBioStatus";
+        model.PositionX = 2.5;
+        model.SelectedOverlayName = "PlotBioSystem";
+        model.SaveCommand.Execute(null);
+
+        Assert.Contains("Saved PlotBioStatus (srv).", model.StatusMessage);
+        VrOverlayCalibrationCatalog saved = store.Load(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+        Assert.True(saved.Overrides["srv"].ContainsKey("PlotBioStatus"));
+        Assert.False(saved.Overrides["srv"].ContainsKey("PlotBioSystem"));
+        Assert.Equal(2.5f, saved.Resolve("PlotBioStatus", "srv")!.Position.X);
+
+        // Later Default edits to PlotBioSystem still inherit cleanly into srv mode.
+        model.SelectedMode = VrOverlayViewModel.DefaultMode;
+        model.SelectedOverlayName = "PlotBioSystem";
+        model.PositionX = -3.25;
+        model.SaveCommand.Execute(null);
+        Assert.Equal(-3.25f, model.GetCalibration("PlotBioSystem", "srv")!.Position.X);
+    }
+
+    [Fact]
+    public void ReopeningActiveAdjustmentSessionPreservesUnsavedSiblingPanelEdits()
+    {
+        string data = Path.Combine(temporaryDirectory, "data-reopen-idempotent");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-reopen-idempotent");
+        Directory.CreateDirectory(data);
+        Directory.CreateDirectory(factoryDirectory);
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factory,
+            """
+            {
+              "PlotBioStatus": "center:0, top:8 { s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}"
+            }
+            """
+        );
+        var store = new VrOverlayCalibrationStore(data, factory);
+        var model = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "settings-reopen-idempotent.json")),
+            store,
+            VrPlatformProfileCatalog.ForPlatform(OSPlatform.Linux, Architecture.X64, 0)
+        );
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+
+        Assert.True(model.BeginAdjustment());
+        model.SelectedCategory = "Biology & surface";
+        model.SelectedOverlayName = "PlotBioStatus";
+        model.PositionX = 3.5;
+        model.SelectedOverlayName = "PlotBioSystem";
+        model.PositionX = -4.25;
+
+        // Re-invoking BeginAdjustment while already open must be idempotent and keep sibling pending adjustments.
+        Assert.True(model.BeginAdjustment());
+        Assert.True(model.IsAdjusting);
+        Assert.Equal("PlotBioSystem", model.SelectedOverlayName);
+        Assert.Equal(3.5f, model.GetCalibrationForAdjustment("PlotBioStatus")!.Position.X);
+        Assert.Equal(-4.25f, model.GetCalibrationForAdjustment("PlotBioSystem")!.Position.X);
+    }
+
+    [Fact]
+    public void GameModeChangeWhileAdjustingPreservesPendingBatchCalibrationEdits()
+    {
+        string data = Path.Combine(temporaryDirectory, "data-mode-preserve");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory-mode-preserve");
+        Directory.CreateDirectory(data);
+        Directory.CreateDirectory(factoryDirectory);
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
+        File.WriteAllText(
+            factory,
+            """
+            {
+              "PlotBioStatus": "center:0, top:8 { s: 3.5, p: <0, 4.5, 11>, r: <22.2, 0, 0>}",
+              "PlotBioSystem": "left:8, bottom:144 { s: 3.2, p: <-6, -0.5, 9.5>, r: <-2.5, 32.3, 0>}"
+            }
+            """
+        );
+        var store = new VrOverlayCalibrationStore(data, factory);
+        var model = new VrOverlayViewModel(
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "settings-mode-preserve.json")),
+            store,
+            VrPlatformProfileCatalog.ForPlatform(OSPlatform.Linux, Architecture.X64, 0)
+        );
+        model.SelectedPlatformProfile = VrPlatformProfileCatalog.Get(VrPlatformProfileCatalog.WivrnOpenXrProfileId);
+
+        // Enter a runtime mode that has no saved override yet, begin calibration, and edit two category panels.
+        model.SetCurrentRuntimeMode("Supercruise");
+        Assert.True(model.BeginAdjustment());
+        Assert.Equal("Save", model.SaveButtonLabel);
+        model.SelectedMode = "Supercruise";
+        model.SelectedCategory = "Biology & surface";
+        model.SelectedOverlayName = "PlotBioStatus";
+        model.PositionX = 4.5;
+        model.SelectedOverlayName = "PlotBioSystem";
+        model.PositionX = -3.75;
+        Assert.Equal("Save (2)", model.SaveButtonLabel);
+
+        // Switching categories keeps the cross-category save scope visible before saving.
+        model.SelectedCategory = VrOverlayViewModel.AllCategoriesLabel;
+        Assert.Contains("2 unsaved overlay edit(s) remain pending", model.StatusMessage, StringComparison.Ordinal);
+        Assert.Equal("Save (2)", model.SaveButtonLabel);
+        model.SelectedCategory = "Biology & surface";
+
+        // Leaving Supercruise mid-calibration must keep the mode selected and preserve all pending edits.
+        model.SetCurrentRuntimeMode("NormalSpace");
+        Assert.Equal("Supercruise", model.SelectedMode);
+        Assert.Contains("Supercruise", model.AvailableModes);
+        Assert.Equal(4.5f, model.GetCalibrationForAdjustment("PlotBioStatus")!.Position.X);
+        Assert.Equal(-3.75f, model.GetCalibrationForAdjustment("PlotBioSystem")!.Position.X);
+
+        // Saving commits both panels under the Supercruise override.
+        model.SaveCommand.Execute(null);
+        Assert.Equal("Save", model.SaveButtonLabel);
+        Assert.Equal(4.5f, model.GetCalibration("PlotBioStatus", "Supercruise")!.Position.X);
+        Assert.Equal(-3.75f, model.GetCalibration("PlotBioSystem", "Supercruise")!.Position.X);
+
+        // Discarding an unsaved runtime-only mode falls back to Default once adjustment closes.
+        model.SetCurrentRuntimeMode("OnFoot");
+        model.SelectedMode = "OnFoot";
+        model.SetCurrentRuntimeMode("NormalSpace");
+        Assert.Equal("OnFoot", model.SelectedMode);
+        model.CancelCommand.Execute(null);
+        Assert.False(model.IsAdjusting);
+        Assert.Equal(VrOverlayViewModel.DefaultMode, model.SelectedMode);
+        Assert.DoesNotContain("OnFoot", model.AvailableModes);
     }
 
     public void Dispose()
