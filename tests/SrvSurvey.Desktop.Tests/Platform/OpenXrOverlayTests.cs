@@ -434,6 +434,29 @@ public sealed class OpenXrOverlayTests : IDisposable
         runtime.RemoveOverlay("A");
         native.Add(new OpenXrPointerEvent(id, VrOverlayPointerEventKind.LeftButtonDown, 0, 0, 0, 0));
         Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+
+        // Republishing after RemoveOverlay or changing pointer dimensions rotates the overlay ID
+        // so stale events from the prior surface revision cannot target the replacement or resized surface.
+        runtime.PublishOverlay("A", frame, Overlay().Calibration, 1);
+        ulong rev1Id = OpenXrFramePacket.GetOverlayId("A", 1);
+        Assert.NotEqual(id, rev1Id);
+        native.Add(new OpenXrPointerEvent(id, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0));
+        Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+        native.Add(new OpenXrPointerEvent(rev1Id, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0));
+        VrOverlayPointerEvent rev1Move = Assert.Single(runtime.PollPointerEvents());
+        Assert.Equal("A", rev1Move.PlotterName);
+        Assert.Equal(VrOverlayPointerEventKind.Move, rev1Move.Kind);
+
+        var resizedFrame = new VrOverlayFrame(4, 2, new byte[32], logicalSize ? 4 : 8, logicalSize ? 2 : 4);
+        runtime.PublishOverlay("A", resizedFrame, Overlay().Calibration, 1);
+        ulong rev2Id = OpenXrFramePacket.GetOverlayId("A", 2);
+        native.Add(new OpenXrPointerEvent(rev1Id, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0));
+        Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+        native.Add(new OpenXrPointerEvent(rev2Id, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0));
+        VrOverlayPointerEvent rev2Move = Assert.Single(runtime.PollPointerEvents());
+        Assert.Equal("A", rev2Move.PlotterName);
+        Assert.Equal(logicalSize ? 2 : 4, rev2Move.X, 3);
+
         Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
         Assert.Equal(0u, native.View.ReadUInt32(12));
         Assert.Empty(runtime.PollPointerEvents());

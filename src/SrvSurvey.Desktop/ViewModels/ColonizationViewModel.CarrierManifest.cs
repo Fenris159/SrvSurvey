@@ -7,6 +7,12 @@ public sealed partial class ColonizationViewModel
 {
     private Action? carrierManifestOpener;
     private ColonizationCarrierRefreshCooldown? carrierManifestRefreshCooldown;
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "Non-owning observation reference to the editor owned and disposed by ColonizationCarrierManifestWindow; cleared on editor disposal."
+    )]
     private ColonizationCarrierManifestViewModel? activeCarrierManifestEditor;
     private readonly WorkspaceCommand carrierManifestCommand;
     public ICommand EditCarrierManifestCommand => carrierManifestCommand;

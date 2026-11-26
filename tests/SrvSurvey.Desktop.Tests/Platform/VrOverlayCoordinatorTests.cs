@@ -1361,6 +1361,99 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         }
     }
 
+    [AvaloniaFact]
+    public void SurfaceReplacementPublishesRotatedOverlayIdBeforeReenablingInteractionAndRejectsStaleEvents()
+    {
+        var backend = new StubLinuxOpenXrBackend();
+        var inspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: _ => null,
+            readAllText: _ => null,
+            fileExists: _ => false,
+            isProcessRunning: name => name == "wivrn-server"
+        );
+        using var runtime = new LinuxOpenXrOverlayRuntime(
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId,
+            backend,
+            inspector,
+            () => true
+        );
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+        double previewWidth = OverlayLayoutCatalog.GetRequired("PlotJumpInfo").PreviewSize.Width;
+        var liveWindow = new Window
+        {
+            Width = previewWidth,
+            Height = 120,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Orange },
+        };
+        try
+        {
+            registry.Register(liveWindow, "PlotJumpInfo");
+            liveWindow.Show();
+            using var coordinator = new VrOverlayCoordinator(viewModel, registry, runtime);
+            Assert.True(coordinator.ToggleInteraction());
+
+            ulong liveId = OpenXrFramePacket.GetOverlayId("PlotJumpInfo", 0);
+            backend.OperationLog.Clear();
+
+            // Entering calibration replaces the live PlotJumpInfo surface with a calibration preview.
+            // The replacement packet must rotate PlotJumpInfo's overlay ID and be published BEFORE
+            // SetInteractionEnabled(true) resets the native interaction generation.
+            Assert.True(viewModel.BeginAdjustment());
+            viewModel.IsDragModeEnabled = true;
+            int lastPublishIndex = backend.OperationLog.LastIndexOf("Publish");
+            int lastEnableIndex = backend.OperationLog.LastIndexOf("SetInteractionEnabled:True");
+            Assert.True(lastPublishIndex >= 0);
+            Assert.True(lastEnableIndex > lastPublishIndex);
+
+            ulong previewId = OpenXrFramePacket.GetOverlayId("PlotJumpInfo", 1);
+            Assert.NotEqual(liveId, previewId);
+            Assert.NotNull(backend.LastPacket);
+            Assert.Contains(previewId, ReadPacketOverlayIds(backend.LastPacket));
+            Assert.DoesNotContain(liveId, ReadPacketOverlayIds(backend.LastPacket));
+
+            // A stale in-flight press targeting the replaced live surface ID must never start a calibration drag.
+            double initialX = viewModel.PositionX;
+            backend.PendingPointerEvents =
+            [
+                new OpenXrPointerEvent(liveId, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0),
+                new OpenXrPointerEvent(liveId, VrOverlayPointerEventKind.Move, 0.9f, 0.5f, 0, 0),
+            ];
+            coordinator.PollInteractionEvents();
+            Assert.Equal(initialX, viewModel.PositionX);
+
+            // Events carrying the replacement preview's rotated overlay ID work normally.
+            backend.PendingPointerEvents =
+            [
+                new OpenXrPointerEvent(previewId, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0),
+                new OpenXrPointerEvent(previewId, VrOverlayPointerEventKind.Move, 0.75f, 0.5f, 0, 0),
+            ];
+            coordinator.PollInteractionEvents();
+            Assert.True(viewModel.PositionX > initialX);
+        }
+        finally
+        {
+            liveWindow.Close();
+        }
+    }
+
+    private static ulong[] ReadPacketOverlayIds(byte[] packet)
+    {
+        uint count = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(packet.AsSpan(24));
+        ulong[] ids = new ulong[count];
+        for (int index = 0; index < count; index++)
+        {
+            ids[index] = System.Buffers.Binary.BinaryPrimitives.ReadUInt64LittleEndian(
+                packet.AsSpan(128 + index * 128)
+            );
+        }
+
+        return ids;
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -1522,6 +1615,9 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         public bool IsAvailable => true;
         public int CreateCalls { get; private set; }
         public int DestroyCalls { get; private set; }
+        public List<string> OperationLog { get; } = [];
+        public byte[]? LastPacket { get; private set; }
+        public IReadOnlyList<OpenXrPointerEvent> PendingPointerEvents { get; set; } = [];
 
         public LinuxOpenXrProbeOutcome Probe(string expectedRuntime) => new(LinuxOpenXrNativeStatus.Ok, 0, "Ready");
 
@@ -1531,7 +1627,12 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             return new(new nint(CreateCalls), LinuxOpenXrNativeStatus.Ok, 0, "Created");
         }
 
-        public bool Publish(nint session, byte[] packet) => true;
+        public bool Publish(nint session, byte[] packet)
+        {
+            OperationLog.Add("Publish");
+            LastPacket = packet;
+            return true;
+        }
 
         public LinuxOpenXrSessionStatus GetStatus(nint session) => new(LinuxOpenXrNativeStatus.Ok, 0, 0, 16, "Active");
 
@@ -1541,10 +1642,19 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             return true;
         }
 
-        public LinuxOpenXrInteractionOutcome SetInteractionEnabled(nint session, bool enabled) =>
-            new(true, 0, enabled ? "Interaction on." : "Interaction off.");
+        public LinuxOpenXrInteractionOutcome SetInteractionEnabled(nint session, bool enabled)
+        {
+            OperationLog.Add($"SetInteractionEnabled:{enabled}");
+            PendingPointerEvents = [];
+            return new(true, 0, enabled ? "Interaction on." : "Interaction off.");
+        }
 
-        public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session) => [];
+        public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session)
+        {
+            IReadOnlyList<OpenXrPointerEvent> events = PendingPointerEvents;
+            PendingPointerEvents = [];
+            return events;
+        }
 
         public void Destroy(nint session) => DestroyCalls++;
     }

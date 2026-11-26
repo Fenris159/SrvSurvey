@@ -109,6 +109,7 @@ struct MockRuntime
     };
     std::array<MockHandState, 2> hands{};
     XrResult endFrameResult = XR_SUCCESS;
+    std::function<void()> onLocateSpace;
     std::function<void()> onEndFrame;
 };
 
@@ -307,6 +308,8 @@ XrResult MockLocateSpace(XrSpace space, XrSpace, XrTime, XrSpaceLocation *loc)
         loc->pose = gMock->hands[hand].pose;
         return XR_SUCCESS;
     }
+    if (gMock->onLocateSpace)
+        gMock->onLocateSpace();
     if (!gMock->headPoseValid)
     {
         loc->locationFlags = 0;
@@ -1758,6 +1761,74 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
         count = session.PollPointerEvents(events);
         REQUIRE(count >= 1);
         REQUIRE(events[count - 1].kind == PointerKind::Move);
+        session.Shutdown();
+    }
+
+    // 5. Interleaving PublishPacket + SetInteractionEnabled(true) after a frame snapshots an older packet
+    //    must reject stale-frame presses under the new interaction generation, while subsequent current-frame
+    //    events on the replacement packet still work normally.
+    {
+        MockRuntime mock;
+        mock.maxLayerCount = 8;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(session.PublishPacket(BuildPacket(0, 10, 2, 1, 1.0f)));
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.7f, 0.0f}};
+        REQUIRE(session.StepOnce());
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].id == 10);
+        REQUIRE(events[0].kind == PointerKind::Move);
+
+        // Simulate the desktop replacing the surface (even if reusing id 10 or rotating to id 11) and
+        // re-enabling interaction AFTER RenderFrame snapshotted the old packet, BEFORE SampleInteraction runs.
+        mock.hands[1].select = true;
+        mock.onLocateSpace = [&]() {
+            mock.onLocateSpace = nullptr;
+            int32_t err = 0;
+            std::string msg;
+            REQUIRE(session.PublishPacket(BuildPacket(0, 11, 2, 1, 1.0f)));
+            REQUIRE(session.SetInteractionEnabled(true, err, msg));
+        };
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 0);
+
+        // The next frame snapshots the replacement packet (id 11) with the matching generation:
+        // current-frame hover and trigger press must both be delivered cleanly.
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].id == 11);
+        REQUIRE(events[0].kind == PointerKind::Move);
+
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        bool sawReplacementPress = false;
+        for (size_t i = 0; i < count; ++i)
+        {
+            REQUIRE(events[i].id == 11);
+            if (events[i].kind == PointerKind::LeftDown)
+                sawReplacementPress = true;
+        }
+        REQUIRE(sawReplacementPress);
         session.Shutdown();
     }
 }

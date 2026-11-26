@@ -1608,7 +1608,8 @@ void OverlaySession::ResetInteractionState(bool forceResetEvent)
 }
 
 OverlaySession::SampledInteraction OverlaySession::SampleInteraction(std::span<const PointerSurface> surfaces,
-                                                                     XrTime displayTime)
+                                                                     XrTime displayTime,
+                                                                     uint64_t frameInteractionGeneration)
 {
     uint64_t generation = 0;
     bool enabled = false;
@@ -1625,6 +1626,13 @@ OverlaySession::SampledInteraction OverlaySession::SampleInteraction(std::span<c
         appliedInteractionGeneration = generation;
         previousHandButtons = {0, 0};
         (void)pointer.Reset();
+    }
+
+    if (generation != frameInteractionGeneration)
+    {
+        // SetInteractionEnabled ran after this frame snapshotted its packet;
+        // skip sampling against potentially replaced surfaces for this frame.
+        return {{}, frameInteractionGeneration, true};
     }
 
     if (!enabled || !ready || !sessionFocused || displayTime <= 0)
@@ -2189,6 +2197,11 @@ bool OverlaySession::RenderFrame()
         return false;
     }
 
+    // Capture the interaction generation before snapshotting latestPacket so a
+    // replacement sequence (PublishPacket -> SetInteractionEnabled) cannot be paired
+    // with an older packet snapshot and emit stale-surface events under the new generation.
+    uint64_t frameInteractionGeneration = interactionGeneration.load(std::memory_order_acquire);
+
     std::shared_ptr<const std::vector<uint8_t>> packetSnapshot;
     uint32_t packetSequence = 0;
     {
@@ -2344,7 +2357,7 @@ bool OverlaySession::RenderFrame()
     bool needsInteractionReset = uploadFatal || (interactionWillRun && maxLayers <= 1);
     if (!needsInteractionReset)
     {
-        sampled = SampleInteraction(surfaces, frameState.predictedDisplayTime);
+        sampled = SampleInteraction(surfaces, frameState.predictedDisplayTime, frameInteractionGeneration);
         if (!sampled.resetOnly && sampled.update.cursor)
         {
             if (quads.size() < maxLayers)

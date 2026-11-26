@@ -547,7 +547,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             .Take(capacity)
             .ToArray();
 
-        InvalidateReplacedSurfaceInput(registrations);
+        bool reenableInteraction = PrepareReplacedSurfaceInput(registrations);
         (Dictionary<string, RegisteredOverlayWindow> active, string? lastError) = PublishRegistrations(
             registrations,
             runtimeMode
@@ -557,6 +557,10 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (!completion.Succeeded)
         {
             lastError = completion.Message;
+        }
+        if (reenableInteraction && IsInteractionEnabled && runtime.IsInitialized)
+        {
+            ReenableRuntimeInteractionAfterSurfaceReplacement();
         }
         published.Clear();
         foreach ((string name, RegisteredOverlayWindow registration) in active)
@@ -590,12 +594,12 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
     }
 
-    private void InvalidateReplacedSurfaceInput(IReadOnlyList<RegisteredOverlayWindow> registrations)
+    private bool PrepareReplacedSurfaceInput(IReadOnlyList<RegisteredOverlayWindow> registrations)
     {
         HashSet<string>? replacedPlotters = FindReplacedPlotters(registrations);
         if (replacedPlotters is null)
         {
-            return;
+            return false;
         }
 
         if (activeDragPlotter is not null && replacedPlotters.Contains(activeDragPlotter))
@@ -610,16 +614,20 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
 
         bool hasUnaffectedActiveGesture = activeDragPlotter is not null || inputRouter?.HasCapture == true;
-        if (!IsInteractionEnabled || !runtime.IsInitialized)
+        bool interactionActive = IsInteractionEnabled && runtime.IsInitialized;
+        if (interactionActive)
         {
-            return;
+            RetainUnaffectedPendingPointerEvents(replacedPlotters);
         }
 
-        RetainUnaffectedPendingPointerEvents(replacedPlotters);
-        if (!hasUnaffectedActiveGesture && retainedPointerEvents.Count == 0)
+        // Retire each replaced surface before publishing its replacement so OpenXR runtimes
+        // rotate its overlay ID even when the replacement keeps identical dimensions.
+        foreach (string replaced in replacedPlotters)
         {
-            ReenableRuntimeInteractionAfterSurfaceReplacement();
+            runtime.RemoveOverlay(replaced);
         }
+
+        return interactionActive && !hasUnaffectedActiveGesture && retainedPointerEvents.Count == 0;
     }
 
     private HashSet<string>? FindReplacedPlotters(IReadOnlyList<RegisteredOverlayWindow> registrations)

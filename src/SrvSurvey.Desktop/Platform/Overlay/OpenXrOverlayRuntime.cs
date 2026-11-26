@@ -9,6 +9,8 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     private readonly Func<bool> platformSupported;
     private readonly Func<bool> edvrControllerInput;
     private readonly Dictionary<string, OpenXrOverlayFrame> frames = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ulong> activeOverlayIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ulong> surfaceRevisions = new(StringComparer.Ordinal);
     private OpenXrFrameBridge? bridge;
     private uint originRevision;
     private bool interactionEnabled;
@@ -114,8 +116,23 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeResult.Failure("The VDXR OpenXR layer is not connected.");
         }
 
-        identities[OpenXrFramePacket.GetOverlayId(plotterName)] = plotterName;
-        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha, nextFrameSortOrder++);
+        ulong overlayId;
+        if (
+            frames.TryGetValue(plotterName, out OpenXrOverlayFrame? previous)
+            && HasDifferentPointerBasis(previous.Frame, frame)
+        )
+        {
+            identities.Remove(activeOverlayIds[plotterName]);
+            overlayId = AdvanceOverlayId(plotterName);
+        }
+        else if (!activeOverlayIds.TryGetValue(plotterName, out overlayId))
+        {
+            overlayId = OpenXrFramePacket.GetOverlayId(plotterName, surfaceRevisions.GetValueOrDefault(plotterName));
+            activeOverlayIds[plotterName] = overlayId;
+        }
+
+        identities[overlayId] = plotterName;
+        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha, nextFrameSortOrder++, overlayId);
         return VrRuntimeResult.Success("Queued the OpenXR overlay frame.");
     }
 
@@ -142,7 +159,11 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
     public void RemoveOverlay(string plotterName)
     {
         frames.Remove(plotterName);
-        identities.Remove(OpenXrFramePacket.GetOverlayId(plotterName));
+        if (activeOverlayIds.Remove(plotterName, out ulong previousId))
+        {
+            identities.Remove(previousId);
+            surfaceRevisions[plotterName] = surfaceRevisions.GetValueOrDefault(plotterName) + 1;
+        }
     }
 
     public VrRuntimeResult ResetOrientation()
@@ -203,12 +224,13 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
             if (
                 pointer.Kind == VrOverlayPointerEventKind.Reset
                 || !identities.TryGetValue(pointer.Id, out string? name)
+                || !frames.TryGetValue(name, out OpenXrOverlayFrame? overlayFrame)
             )
             {
                 result.Add(new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0));
                 continue;
             }
-            VrOverlayFrame frame = frames[name].Frame;
+            VrOverlayFrame frame = overlayFrame.Frame;
             double width = frame.PointerWidth > 0 ? frame.PointerWidth : frame.Width;
             double height = frame.PointerHeight > 0 ? frame.PointerHeight : frame.Height;
             result.Add(
@@ -231,9 +253,32 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
         interactionEnabled = false;
         nextFrameSortOrder = 0;
         identities.Clear();
+        activeOverlayIds.Clear();
+        surfaceRevisions.Clear();
         frames.Clear();
         bridge?.Dispose();
         bridge = null;
+    }
+
+    private ulong AdvanceOverlayId(string plotterName)
+    {
+        ulong nextRevision = surfaceRevisions.GetValueOrDefault(plotterName) + 1;
+        surfaceRevisions[plotterName] = nextRevision;
+        ulong nextId = OpenXrFramePacket.GetOverlayId(plotterName, nextRevision);
+        activeOverlayIds[plotterName] = nextId;
+        return nextId;
+    }
+
+    private static bool HasDifferentPointerBasis(VrOverlayFrame previous, VrOverlayFrame current)
+    {
+        double previousWidth = previous.PointerWidth > 0 ? previous.PointerWidth : previous.Width;
+        double previousHeight = previous.PointerHeight > 0 ? previous.PointerHeight : previous.Height;
+        double currentWidth = current.PointerWidth > 0 ? current.PointerWidth : current.Width;
+        double currentHeight = current.PointerHeight > 0 ? current.PointerHeight : current.Height;
+        return previous.Width != current.Width
+            || previous.Height != current.Height
+            || Math.Abs(previousWidth - currentWidth) > 0.001
+            || Math.Abs(previousHeight - currentHeight) > 0.001;
     }
 
     public void Dispose()

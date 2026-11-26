@@ -101,6 +101,12 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     private Task? shutdownTask;
     private DesktopShutdownReason? activeShutdownReason;
     private (DesktopShutdownReason Reason, int ExitCode)? pendingShutdown;
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "Non-owning forwarding reference to the successor runtime created during a commander switch; the successor manages its own lifetime."
+    )]
     private DesktopRuntime? replacementRuntime;
 
     internal bool HasLinuxTerminationRegistration => linuxTerminationRegistration is not null;
