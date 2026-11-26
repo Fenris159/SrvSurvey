@@ -2533,6 +2533,119 @@ public sealed partial class JournalDirectoryMonitorTests : IDisposable
         );
     }
 
+    [Fact]
+    public async Task MissingFinalContinuationPartPreservesCheckpointBoundaryWhenRestored()
+    {
+        string dir = Path.Combine(temporaryDirectory, "missing-final-continuation-restored");
+        Directory.CreateDirectory(dir);
+        string p1 = Path.Combine(dir, "Journal.2026-11-25T100000.01.log");
+        string p2 = Path.Combine(dir, "Journal.2026-11-25T100000.02.log");
+        string p2Backup = Path.Combine(dir, "part2.backup");
+        string p2Prefix =
+            "{\"timestamp\":\"2026-11-25T10:00:10Z\",\"event\":\"Fileheader\",\"part\":2,\"Odyssey\":true}\n"
+            + "{\"timestamp\":\"2026-11-25T10:00:11Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n";
+        string p2LiveTail =
+            "{\"timestamp\":\"2026-11-25T10:00:15Z\",\"event\":\"FSDJump\",\"StarSystem\":\"RecoveredLiveSystem\"}\n";
+        await File.WriteAllTextAsync(
+            p1,
+            "{\"timestamp\":\"2026-11-25T10:00:00Z\",\"event\":\"Fileheader\",\"part\":1,\"Odyssey\":true}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"First\",\"FID\":\"F13228986\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:02Z\",\"event\":\"LoadGame\",\"Commander\":\"First\",\"FID\":\"F13228986\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:03Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:04Z\",\"event\":\"Continued\",\"Part\":2}\n"
+        );
+        File.SetLastWriteTimeUtc(p1, new DateTime(2026, 11, 25, 10, 0, 4, DateTimeKind.Utc));
+        await File.WriteAllTextAsync(p2, p2Prefix + p2LiveTail);
+        File.SetLastWriteTimeUtc(p2, new DateTime(2026, 11, 25, 10, 0, 15, DateTimeKind.Utc));
+        await File.WriteAllTextAsync(
+            Path.Combine(dir, "Cargo.json"),
+            """{"timestamp":"2026-11-25T10:00:16Z","event":"Cargo","Vessel":"Ship","Count":4,"Inventory":[{"Name":"steel","Name_Localised":"Steel","Count":4,"Stolen":0}]}"""
+        );
+
+        var baseline = JournalBaselineSnapshot.Capture(
+            [dir],
+            new DateTimeOffset(2026, 11, 25, 10, 5, 0, TimeSpan.Zero)
+        );
+        long p2PrefixBytes = Encoding.UTF8.GetByteCount(p2Prefix);
+
+        // No later session S2 is queued. Let identity scanning resolve [P1, P2],
+        // then move P2 aside right after P1 opens for event reading so P2 disappears mid-read.
+        int p1Opens = 0;
+        bool movedP2Aside = false;
+        var monitor = new JournalDirectoryMonitor(
+            [dir],
+            "F13228986",
+            path =>
+            {
+                var info = new FileInfo(path);
+                return info.Exists
+                    ? new JournalDirectoryMonitor.CompanionFileStampReadResult(
+                        new JournalDirectoryMonitor.CompanionFileStamp(
+                            info.Length,
+                            info.LastWriteTimeUtc,
+                            info.CreationTimeUtc
+                        ),
+                        null
+                    )
+                    : default;
+            },
+            openJournalStream: path =>
+            {
+                if (string.Equals(path, p1, StringComparison.OrdinalIgnoreCase))
+                {
+                    p1Opens++;
+                    if (p1Opens >= 2 && !movedP2Aside && File.Exists(p2))
+                    {
+                        movedP2Aside = true;
+                        File.Move(p2, p2Backup);
+                    }
+                }
+
+                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            },
+            switchResume: new JournalSwitchResume(new JournalCheckpoint(p2, p2PrefixBytes), baseline)
+        );
+
+        // Poll 1 delivers P1 as bootstrap, records P2's cursor at offset 0 while preserving its boundary, and defers Cargo.json.
+        JournalMonitorUpdate poll1 = await monitor.PollAsync();
+        Assert.Equal(p2, poll1.JournalPath);
+        Assert.Equal(new JournalCheckpoint(p2, 0), monitor.CurrentCheckpoint);
+        Assert.True(poll1.IsBootstrapRead);
+        Assert.False(poll1.HasPendingLiveTail);
+        Assert.Null(poll1.Cargo);
+        Assert.Contains(poll1.JournalEvents, entry => entry.EventName == "SendText");
+        Assert.DoesNotContain(poll1.JournalEvents, entry => entry.EventName == "FSDJump");
+        Assert.NotEmpty(poll1.Errors);
+
+        // Restore P2 before Poll 2: even with currentJournalPath already at P2 offset 0, P2's checkpoint boundary
+        // must still split its historical prefix (including .kill) as bootstrap rather than replaying it as live.
+        File.Move(p2Backup, p2);
+        JournalMonitorUpdate poll2 = await monitor.PollAsync();
+        Assert.Equal(p2, poll2.JournalPath);
+        Assert.True(poll2.IsBootstrapRead);
+        Assert.True(poll2.HasPendingLiveTail);
+        Assert.Null(poll2.Cargo);
+        Assert.Empty(poll2.Errors);
+        Assert.Contains(poll2.JournalEvents, entry => entry.EventName == "SendText");
+        Assert.DoesNotContain(poll2.JournalEvents, entry => entry.EventName == "FSDJump");
+
+        // Poll 3 delivers only P2's live tail after the checkpoint along with Cargo.json.
+        JournalMonitorUpdate poll3 = await monitor.PollAsync();
+        Assert.Equal(p2, poll3.JournalPath);
+        Assert.False(poll3.IsBootstrapRead);
+        Assert.False(poll3.HasPendingLiveTail);
+        Assert.Empty(poll3.Errors);
+        Assert.DoesNotContain(poll3.JournalEvents, entry => entry.EventName == "SendText");
+        Assert.Contains(
+            poll3.JournalEvents,
+            entry =>
+                entry.EventName == "FSDJump"
+                && entry.Payload.GetProperty("StarSystem").GetString() == "RecoveredLiveSystem"
+        );
+        Assert.NotNull(poll3.Cargo);
+        Assert.Equal(4, poll3.Cargo.Count);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

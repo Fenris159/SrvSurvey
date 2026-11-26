@@ -53,38 +53,84 @@ public sealed partial class JournalDirectoryMonitor
         ResolvedJournalIdentity? identity = await ResolveJournalIdentityAsync(latest, cancellationToken)
             .ConfigureAwait(false);
         IReadOnlyList<FileInfo> parts = identity?.Parts ?? [latest];
-        int start = 0;
+        int start = FindCurrentPartStartIndex(parts);
+        int endExclusive = parts.Count;
+        long? checkpointByteOffset = null;
+        bool evaluatedSwitchResumeBoundary = ApplySessionBoundaryIfNeeded(
+            parts,
+            start,
+            ref endExclusive,
+            ref checkpointByteOffset
+        );
+        bool requiresBootstrapBoundary =
+            evaluatedSwitchResumeBoundary
+            && (pollForcesBootstrapRead || (!hasCompletedFirstPoll && firstPollRequiresBootstrap));
+        for (int index = start; index < endExclusive; index++)
+        {
+            FileInfo part = parts[index];
+            SwitchToSessionPartIfNeeded(part, index > 0, events, errors);
+            long? maxOffset = index == endExclusive - 1 ? checkpointByteOffset : null;
+            try
+            {
+                await ReadJournalAppendAsync(events, errors, cancellationToken, maxOffset).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            {
+                if (requiresBootstrapBoundary)
+                {
+                    RecordPendingBootstrapBoundaries(parts, index, endExclusive);
+                }
+
+                throw;
+            }
+
+            pendingBoundaryCheckCatchUpPaths.Remove(part.FullName);
+            startupUnverifiedJournalLengths.Remove(part.FullName);
+        }
+    }
+
+    private int FindCurrentPartStartIndex(IReadOnlyList<FileInfo> parts)
+    {
         for (int index = 0; index < parts.Count; index++)
         {
             if (PathsEqual(parts[index].FullName, currentJournalPath))
             {
-                start = index;
-                break;
+                return index;
             }
         }
-        int endExclusive = parts.Count;
-        long? checkpointByteOffset = null;
-        ApplySessionBoundaryIfNeeded(parts, start, ref endExclusive, ref checkpointByteOffset);
-        for (int index = start; index < endExclusive; index++)
+
+        return 0;
+    }
+
+    private void SwitchToSessionPartIfNeeded(
+        FileInfo part,
+        bool isContinuation,
+        List<JournalEventEnvelope> events,
+        List<string> errors
+    )
+    {
+        if (PathsEqual(part.FullName, currentJournalPath))
         {
-            FileInfo part = parts[index];
-            if (!PathsEqual(part.FullName, currentJournalPath))
-            {
-                FlushPendingLine(events, errors);
-                SetActiveJournalDirectory(part.DirectoryName);
-                currentJournalPath = part.FullName;
-                currentJournalOffset = 0;
-                currentJournalContentOccurrences.Clear();
-                previousJournalContentIdentity = null;
-                pendingJournalBytes = [];
-                // Only verified predecessors share a running session. A continuation
-                // header must not reset commander, vehicle or workspace reducers.
-                currentJournalIsContinuation = index > 0;
-            }
-            long? maxOffset = index == endExclusive - 1 ? checkpointByteOffset : null;
-            await ReadJournalAppendAsync(events, errors, cancellationToken, maxOffset).ConfigureAwait(false);
-            pendingBoundaryCheckCatchUpPaths.Remove(part.FullName);
-            startupUnverifiedJournalLengths.Remove(part.FullName);
+            return;
+        }
+
+        FlushPendingLine(events, errors);
+        SetActiveJournalDirectory(part.DirectoryName);
+        currentJournalPath = part.FullName;
+        currentJournalOffset = 0;
+        currentJournalContentOccurrences.Clear();
+        previousJournalContentIdentity = null;
+        pendingJournalBytes = [];
+        // Only verified predecessors share a running session. A continuation
+        // header must not reset commander, vehicle or workspace reducers.
+        currentJournalIsContinuation = isContinuation;
+    }
+
+    private void RecordPendingBootstrapBoundaries(IReadOnlyList<FileInfo> parts, int startIndex, int endExclusive)
+    {
+        for (int index = startIndex; index < endExclusive; index++)
+        {
+            pendingBoundaryCheckCatchUpPaths.Add(parts[index].FullName);
         }
     }
 
@@ -92,7 +138,7 @@ public sealed partial class JournalDirectoryMonitor
         pendingBoundaryCheckCatchUpPaths.Contains(sessionLatest.FullName)
         || startupUnverifiedJournalLengths.ContainsKey(sessionLatest.FullName);
 
-    private void ApplySessionBoundaryIfNeeded(
+    private bool ApplySessionBoundaryIfNeeded(
         IReadOnlyList<FileInfo> parts,
         int start,
         ref int endExclusive,
@@ -102,18 +148,18 @@ public sealed partial class JournalDirectoryMonitor
         if (!hasCompletedFirstPoll && switchResume is not null)
         {
             ApplySwitchResumeBoundary(parts, start, isInitialPoll: true, ref endExclusive, ref checkpointByteOffset);
-            return;
+            return true;
         }
 
         if (!hasCompletedFirstPoll)
         {
-            return;
+            return false;
         }
 
         int boundarySearchStart = ResolveDeferredBoundarySearchStart(parts, start);
         if (boundarySearchStart >= parts.Count)
         {
-            return;
+            return false;
         }
 
         if (switchResume is not null)
@@ -127,9 +173,10 @@ public sealed partial class JournalDirectoryMonitor
                     ref endExclusive,
                     ref checkpointByteOffset
                 );
+                return true;
             }
 
-            return;
+            return false;
         }
 
         if (
@@ -149,6 +196,8 @@ public sealed partial class JournalDirectoryMonitor
                 lastPollHasPendingLiveTail = true;
             }
         }
+
+        return false;
     }
 
     private int ResolveDeferredBoundarySearchStart(IReadOnlyList<FileInfo> parts, int start)

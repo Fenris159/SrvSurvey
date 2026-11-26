@@ -33,6 +33,7 @@ public sealed partial class JournalDirectoryMonitor
     private bool firstPollRequiresBootstrap;
     private bool pollForcesBootstrapRead;
     private bool lastPollHasPendingLiveTail;
+    private bool deferCompanionsOnCurrentPoll;
     private bool hasSelectedSwitchCatchUpSessions;
     private FileInfo? currentSessionPendingTailTarget;
     private string? previousJournalContentIdentity;
@@ -198,6 +199,7 @@ public sealed partial class JournalDirectoryMonitor
         firstPollRequiresBootstrap = true;
         pollForcesBootstrapRead = false;
         lastPollHasPendingLiveTail = false;
+        deferCompanionsOnCurrentPoll = false;
         newestIdentifiedJournal = null;
         bool journalReadSucceeded = await ReadJournalBatchAsync(events, errors, cancellationToken)
             .ConfigureAwait(false);
@@ -208,7 +210,7 @@ public sealed partial class JournalDirectoryMonitor
         // Defer companion snapshots until catch-up finishes (including after transient read errors)
         // and skip them when a newer journal from another or unidentified session owns the same folder.
         CompanionPollResults companions =
-            hasPendingCatchUpWork || isCompanionDirectorySuperseded
+            hasPendingCatchUpWork || deferCompanionsOnCurrentPoll || isCompanionDirectorySuperseded
                 ? default
                 : await PollAllCompanionsAsync(errors, cancellationToken).ConfigureAwait(false);
         bool sessionContextChanged =
@@ -337,12 +339,11 @@ public sealed partial class JournalDirectoryMonitor
         catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
         {
             currentSessionPendingTailTarget = null;
-            pendingBoundaryCheckCatchUpPaths.Remove(pendingTailTarget.FullName);
-            startupUnverifiedJournalLengths.Remove(pendingTailTarget.FullName);
             errors.Add(exception.Message);
             if (events.Count > 0)
             {
                 lastPollHasPendingLiveTail |= pendingSwitchCatchUpSessions.Count > 0;
+                deferCompanionsOnCurrentPoll = true;
                 return true;
             }
 
@@ -377,13 +378,8 @@ public sealed partial class JournalDirectoryMonitor
             }
             catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
             {
-                _ = pendingSwitchCatchUpSessions.Dequeue();
-                pendingBoundaryCheckCatchUpPaths.Remove(nextSession.FullName);
-                startupUnverifiedJournalLengths.Remove(nextSession.FullName);
-                errors.Add(exception.Message);
-                if (events.Count > 0)
+                if (HandleMissingCatchUpSession(nextSession, exception, events, errors))
                 {
-                    lastPollHasPendingLiveTail |= pendingSwitchCatchUpSessions.Count > 0;
                     return true;
                 }
 
@@ -409,6 +405,30 @@ public sealed partial class JournalDirectoryMonitor
         }
 
         return false;
+    }
+
+    private bool HandleMissingCatchUpSession(
+        FileInfo nextSession,
+        Exception exception,
+        List<JournalEventEnvelope> events,
+        List<string> errors
+    )
+    {
+        _ = pendingSwitchCatchUpSessions.Dequeue();
+        if (switchResume is not null && !hasCompletedFirstPoll)
+        {
+            pendingBoundaryCheckCatchUpPaths.Add(nextSession.FullName);
+        }
+
+        errors.Add(exception.Message);
+        if (events.Count == 0)
+        {
+            return false;
+        }
+
+        lastPollHasPendingLiveTail |= pendingSwitchCatchUpSessions.Count > 0;
+        deferCompanionsOnCurrentPoll = true;
+        return true;
     }
 
     private async Task ReadSessionJournalAsync(

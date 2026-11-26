@@ -219,9 +219,9 @@ jobs:
       - name: Test
         # Linux PR validation already ran the full solution with retained TRX and coverage.
         if: matrix.rid != 'linux-x64' || github.event_name != 'pull_request'
-        # Hosted Windows runners can exceed ten minutes for the complete desktop suite.
+        # Hosted Windows runners can exceed fifteen minutes for the complete desktop suite.
         # Keep the per-test two-minute hang detector while allowing the full suite to finish.
-        timeout-minutes: 15
+        timeout-minutes: 25
         run: >-
           dotnet test SrvSurvey.slnx
           --configuration Release --no-build --no-restore
