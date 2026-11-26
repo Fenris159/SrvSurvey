@@ -2960,6 +2960,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         int remainingCatchUpPolls = 32;
         while (
             update.HasPendingLiveTail
+            && update.Errors.Count == 0
             && remainingCatchUpPolls-- > 0
             && !Volatile.Read(ref disposed)
             && !Volatile.Read(ref automaticCommanderSwitchRequested)
@@ -3294,7 +3295,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged, IDispo
         || Colonization.SystemEditor.HasLocalChanges
         || Colonization.Nexus.HasActiveEditorWork
         || Colonization.HasActiveCarrierManifestWork
-        || DiscordCarrierAnnouncements.HasChanges;
+        || DiscordCarrierAnnouncements.HasChanges
+        || Bookmarks.HasUnsavedChanges;
 
     private static bool HasUnsavedRouteEdits(RouteWorkspaceViewModel route, RouteManagerViewModel manager) =>
         route.HasDefinitionChanges

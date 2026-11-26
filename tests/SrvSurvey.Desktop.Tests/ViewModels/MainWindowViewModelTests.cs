@@ -985,6 +985,22 @@ public sealed class MainWindowViewModelTests
         viewModel.DiscordCarrierAnnouncements.WebhookUrl = string.Empty;
         Assert.False(viewModel.DiscordCarrierAnnouncements.HasChanges);
 
+        // Unsaved bookmark drafts (new or editing an existing bookmark) must also defer switching until saved or cleared.
+        Assert.False(viewModel.Bookmarks.HasUnsavedChanges);
+        viewModel.Bookmarks.System = "Sol";
+        viewModel.Bookmarks.Notes = "Unsaved bookmark draft";
+        Assert.True(viewModel.Bookmarks.HasUnsavedChanges);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        viewModel.Bookmarks.SaveCommand.Execute(null);
+        Assert.False(viewModel.Bookmarks.HasUnsavedChanges);
+        viewModel.Bookmarks.Notes = "Edited selected bookmark draft";
+        Assert.True(viewModel.Bookmarks.HasUnsavedChanges);
+        await viewModel.RefreshAsync();
+        Assert.Empty(requestedSwitches);
+        viewModel.Bookmarks.NewCommand.Execute(null);
+        Assert.False(viewModel.Bookmarks.HasUnsavedChanges);
+
         // Route notes still being typed in the open route notes dialog must defer switching until saved or cancelled.
         viewModel.Route.NotesCommand.Execute(null);
         Assert.True(viewModel.Route.IsNotesVisible);

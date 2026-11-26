@@ -1298,6 +1298,62 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             );
             coordinator.PollInteractionEvents();
             Assert.True(viewModel.PositionX > 5);
+
+            // Within a single pointer batch (all raycasted against the same pre-move pose),
+            // Down(0.5) -> Move(0.6) -> throttled Move(0.7) -> Up(0.7) must move by 0.2 * Scale total,
+            // not 0.1 * Scale + 0.2 * Scale = 0.3 * Scale.
+            viewModel.PositionX = 5;
+            viewModel.PositionY = -2;
+            now += 100;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent(
+                    "PlotBioSystem",
+                    VrOverlayPointerEventKind.LeftButtonDown,
+                    width * 0.5,
+                    height * 0.5
+                )
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, width * 0.6, height * 0.5)
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, width * 0.7, height * 0.5)
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent(
+                    "PlotBioSystem",
+                    VrOverlayPointerEventKind.LeftButtonUp,
+                    width * 0.7,
+                    height * 0.5
+                )
+            );
+            coordinator.PollInteractionEvents();
+            Assert.Equal(5.8, viewModel.PositionX, 2);
+
+            // Dragging right then releasing back at the grab origin within one batch must return to the start position.
+            viewModel.PositionX = 5;
+            now += 100;
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent(
+                    "PlotBioSystem",
+                    VrOverlayPointerEventKind.LeftButtonDown,
+                    width * 0.5,
+                    height * 0.5
+                )
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent("PlotBioSystem", VrOverlayPointerEventKind.Move, width * 0.6, height * 0.5)
+            );
+            runtime.PointerEvents.Enqueue(
+                new VrOverlayPointerEvent(
+                    "PlotBioSystem",
+                    VrOverlayPointerEventKind.LeftButtonUp,
+                    width * 0.5,
+                    height * 0.5
+                )
+            );
+            coordinator.PollInteractionEvents();
+            Assert.Equal(5.0, viewModel.PositionX, 2);
         }
         finally
         {

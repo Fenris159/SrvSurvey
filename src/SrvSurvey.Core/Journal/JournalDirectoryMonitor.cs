@@ -201,10 +201,14 @@ public sealed partial class JournalDirectoryMonitor
         newestIdentifiedJournal = null;
         bool journalReadSucceeded = await ReadJournalBatchAsync(events, errors, cancellationToken)
             .ConfigureAwait(false);
-        // Defer companion snapshots until catch-up finishes and skip them when a newer journal
-        // from another or unidentified session owns the same folder.
+        bool hasPendingCatchUpWork =
+            lastPollHasPendingLiveTail
+            || currentSessionPendingTailTarget is not null
+            || pendingSwitchCatchUpSessions.Count > 0;
+        // Defer companion snapshots until catch-up finishes (including after transient read errors)
+        // and skip them when a newer journal from another or unidentified session owns the same folder.
         CompanionPollResults companions =
-            lastPollHasPendingLiveTail || isCompanionDirectorySuperseded
+            hasPendingCatchUpWork || isCompanionDirectorySuperseded
                 ? default
                 : await PollAllCompanionsAsync(errors, cancellationToken).ConfigureAwait(false);
         bool sessionContextChanged =
@@ -238,7 +242,7 @@ public sealed partial class JournalDirectoryMonitor
                 OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
             ),
             NewestIdentifiedJournal = newestIdentifiedJournal,
-            HasPendingLiveTail = lastPollHasPendingLiveTail,
+            HasPendingLiveTail = hasPendingCatchUpWork,
         };
         lastReportedAwaitingCommanderIdentity = isAwaitingCommanderIdentity;
         lastReportedCompanionDirectorySuperseded = isCompanionDirectorySuperseded;
@@ -336,6 +340,12 @@ public sealed partial class JournalDirectoryMonitor
             pendingBoundaryCheckCatchUpPaths.Remove(pendingTailTarget.FullName);
             startupUnverifiedJournalLengths.Remove(pendingTailTarget.FullName);
             errors.Add(exception.Message);
+            if (events.Count > 0)
+            {
+                lastPollHasPendingLiveTail |= pendingSwitchCatchUpSessions.Count > 0;
+                return true;
+            }
+
             return false;
         }
 
@@ -371,6 +381,12 @@ public sealed partial class JournalDirectoryMonitor
                 pendingBoundaryCheckCatchUpPaths.Remove(nextSession.FullName);
                 startupUnverifiedJournalLengths.Remove(nextSession.FullName);
                 errors.Add(exception.Message);
+                if (events.Count > 0)
+                {
+                    lastPollHasPendingLiveTail |= pendingSwitchCatchUpSessions.Count > 0;
+                    return true;
+                }
+
                 continue;
             }
 

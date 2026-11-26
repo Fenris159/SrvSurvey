@@ -2300,6 +2300,239 @@ public sealed partial class JournalDirectoryMonitorTests : IDisposable
         Assert.NotEmpty(recovered.Errors);
     }
 
+    [Fact]
+    public async Task FailedPendingTailReadKeepsCompanionsDeferredAndPreservesPendingFlag()
+    {
+        string dir = Path.Combine(temporaryDirectory, "failed-tail-defers-companions");
+        Directory.CreateDirectory(dir);
+        string prefix =
+            "{\"timestamp\":\"2026-11-25T10:00:00Z\",\"event\":\"Fileheader\",\"part\":1,\"Odyssey\":true}\n"
+            + "{\"timestamp\":\"2026-11-25T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"First\",\"FID\":\"F13228986\"}\n"
+            + "{\"timestamp\":\"2026-11-25T10:00:02Z\",\"event\":\"LoadGame\",\"Commander\":\"First\",\"FID\":\"F13228986\"}\n";
+        string tail =
+            "{\"timestamp\":\"2026-11-25T10:00:05Z\",\"event\":\"MarketBuy\",\"Type\":\"steel\",\"Count\":10}\n";
+        string journal = Path.Combine(dir, "Journal.2026-11-25T100000.01.log");
+        await File.WriteAllTextAsync(journal, prefix + tail);
+        await File.WriteAllTextAsync(
+            Path.Combine(dir, "Cargo.json"),
+            """{"timestamp":"2026-11-25T10:00:06Z","event":"Cargo","Vessel":"Ship","Count":10,"Inventory":[{"Name":"steel","Name_Localised":"Steel","Count":10,"Stolen":0}]}"""
+        );
+        long prefixBytes = Encoding.UTF8.GetByteCount(prefix);
+
+        bool blockJournalRead = false;
+        var monitor = new JournalDirectoryMonitor(
+            [dir],
+            "F13228986",
+            path =>
+            {
+                var info = new FileInfo(path);
+                return info.Exists
+                    ? new JournalDirectoryMonitor.CompanionFileStampReadResult(
+                        new JournalDirectoryMonitor.CompanionFileStamp(
+                            info.Length,
+                            info.LastWriteTimeUtc,
+                            info.CreationTimeUtc
+                        ),
+                        null
+                    )
+                    : default;
+            },
+            openJournalStream: path =>
+            {
+                if (blockJournalRead && string.Equals(path, journal, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new IOException("Transient sharing violation reading pending live tail.");
+                }
+
+                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            },
+            switchResume: new JournalSwitchResume(new JournalCheckpoint(journal, prefixBytes))
+        );
+
+        JournalMonitorUpdate poll1 = await monitor.PollAsync();
+        Assert.True(poll1.IsBootstrapRead);
+        Assert.True(poll1.HasPendingLiveTail);
+        Assert.Null(poll1.Cargo);
+
+        // If reading the pending live tail fails transiently, Cargo.json must stay deferred
+        // and HasPendingLiveTail must remain true so MarketBuy(10) cannot double-count cargo.
+        blockJournalRead = true;
+        JournalMonitorUpdate poll2 = await monitor.PollAsync();
+        Assert.NotEmpty(poll2.Errors);
+        Assert.Null(poll2.Cargo);
+        Assert.True(poll2.HasPendingLiveTail);
+        Assert.Empty(poll2.JournalEvents);
+
+        // Once the lock clears, the tail and Cargo.json are delivered together cleanly.
+        blockJournalRead = false;
+        JournalMonitorUpdate poll3 = await monitor.PollAsync();
+        Assert.False(poll3.IsBootstrapRead);
+        Assert.False(poll3.HasPendingLiveTail);
+        Assert.Equal("MarketBuy", Assert.Single(poll3.JournalEvents).EventName);
+        Assert.NotNull(poll3.Cargo);
+        Assert.Equal(10, poll3.Cargo.Count);
+    }
+
+    [Fact]
+    public async Task UnlockedContinuationPreservesPrecedingPartConfirmedCheckpointInsteadOfBaseline()
+    {
+        string dir = Path.Combine(temporaryDirectory, "unlocked-continuation-preserves-checkpoint");
+        Directory.CreateDirectory(dir);
+        string p1Prefix =
+            "{\"timestamp\":\"2026-11-25T10:00:00Z\",\"event\":\"Fileheader\",\"part\":1,\"Odyssey\":true}\n"
+            + "{\"timestamp\":\"2026-11-25T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"First\",\"FID\":\"F13228986\"}\n"
+            + "{\"timestamp\":\"2026-11-25T10:00:02Z\",\"event\":\"LoadGame\",\"Commander\":\"First\",\"FID\":\"F13228986\"}\n";
+        string p1Tail =
+            "{\"timestamp\":\"2026-11-25T10:00:10Z\",\"event\":\"FSDJump\",\"StarSystem\":\"PartOneTail\"}\n"
+            + "{\"timestamp\":\"2026-11-25T10:00:11Z\",\"event\":\"Continued\",\"Part\":2}\n";
+        string part1 = Path.Combine(dir, "Journal.2026-11-25T100000.01.log");
+        string part2 = Path.Combine(dir, "Journal.2026-11-25T100000.02.log");
+        await File.WriteAllTextAsync(part1, p1Prefix + p1Tail);
+        File.SetLastWriteTimeUtc(part1, new DateTime(2026, 11, 25, 10, 0, 11, DateTimeKind.Utc));
+        await File.WriteAllTextAsync(
+            part2,
+            "{\"timestamp\":\"2026-11-25T10:00:12Z\",\"event\":\"Fileheader\",\"part\":2,\"Odyssey\":true}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:15Z\",\"event\":\"FSDJump\",\"StarSystem\":\"PartTwoLive\"}\n"
+        );
+        File.SetLastWriteTimeUtc(part2, new DateTime(2026, 11, 25, 10, 0, 15, DateTimeKind.Utc));
+
+        // Both P1 and P2 exist in the startup baseline, while the commander's confirmed checkpoint is inside P1.
+        var baseline = JournalBaselineSnapshot.Capture(
+            [dir],
+            new DateTimeOffset(2026, 11, 25, 10, 1, 0, TimeSpan.Zero)
+        );
+        long p1PrefixBytes = Encoding.UTF8.GetByteCount(p1Prefix);
+
+        bool lockPart2 = true;
+        var monitor = new JournalDirectoryMonitor(
+            [dir],
+            "F13228986",
+            _ => default,
+            openJournalStream: path =>
+            {
+                if (lockPart2 && string.Equals(path, part2, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new IOException("Part 2 temporarily locked.");
+                }
+
+                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            },
+            switchResume: new JournalSwitchResume(new JournalCheckpoint(part1, p1PrefixBytes), baseline)
+        );
+
+        JournalMonitorUpdate poll1 = await monitor.PollAsync();
+        Assert.Equal(part1, poll1.JournalPath);
+        Assert.True(poll1.IsBootstrapRead);
+        Assert.True(poll1.HasPendingLiveTail);
+
+        JournalMonitorUpdate poll2 = await monitor.PollAsync();
+        Assert.Equal(part1, poll2.JournalPath);
+        Assert.False(poll2.IsBootstrapRead);
+        Assert.False(poll2.HasPendingLiveTail);
+        Assert.Contains(poll2.JournalEvents, entry => entry.EventName == "FSDJump");
+
+        // When P2 unlocks, its unpersisted events must stay LIVE (not fall back to P2's startup baseline as bootstrap).
+        lockPart2 = false;
+        JournalMonitorUpdate poll3 = await monitor.PollAsync();
+        Assert.Equal(part2, poll3.JournalPath);
+        Assert.False(poll3.IsBootstrapRead);
+        Assert.False(poll3.HasPendingLiveTail);
+        Assert.Contains(
+            poll3.JournalEvents,
+            entry =>
+                entry.EventName == "FSDJump" && entry.Payload.GetProperty("StarSystem").GetString() == "PartTwoLive"
+        );
+    }
+
+    [Fact]
+    public async Task MissingContinuationPartDeliversConsumedHistoricalPrefixBeforeNextSession()
+    {
+        string dir = Path.Combine(temporaryDirectory, "missing-continuation-preserves-bootstrap");
+        Directory.CreateDirectory(dir);
+        string s1Part1 = Path.Combine(dir, "Journal.2026-11-25T100000.01.log");
+        string s1Part2 = Path.Combine(dir, "Journal.2026-11-25T100000.02.log");
+        string s1Part2Prefix =
+            "{\"timestamp\":\"2026-11-25T10:00:10Z\",\"event\":\"Fileheader\",\"part\":2,\"Odyssey\":true}\n";
+        await File.WriteAllTextAsync(
+            s1Part1,
+            "{\"timestamp\":\"2026-11-25T10:00:00Z\",\"event\":\"Fileheader\",\"part\":1,\"Odyssey\":true}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"First\",\"FID\":\"F13228986\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:02Z\",\"event\":\"LoadGame\",\"Commander\":\"First\",\"FID\":\"F13228986\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:03Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:00:04Z\",\"event\":\"Continued\",\"Part\":2}\n"
+        );
+        File.SetLastWriteTimeUtc(s1Part1, new DateTime(2026, 11, 25, 10, 0, 4, DateTimeKind.Utc));
+        await File.WriteAllTextAsync(
+            s1Part2,
+            s1Part2Prefix
+                + "{\"timestamp\":\"2026-11-25T10:00:11Z\",\"event\":\"FSDJump\",\"StarSystem\":\"OldSystem\"}\n"
+        );
+        File.SetLastWriteTimeUtc(s1Part2, new DateTime(2026, 11, 25, 10, 0, 11, DateTimeKind.Utc));
+
+        var baseline = JournalBaselineSnapshot.Capture(
+            [dir],
+            new DateTimeOffset(2026, 11, 25, 10, 5, 0, TimeSpan.Zero)
+        );
+        long s1Part2PrefixBytes = Encoding.UTF8.GetByteCount(s1Part2Prefix);
+
+        string s2 = Path.Combine(dir, "Journal.2026-11-25T101000.01.log");
+        await File.WriteAllTextAsync(
+            s2,
+            "{\"timestamp\":\"2026-11-25T10:10:00Z\",\"event\":\"Fileheader\",\"part\":1,\"Odyssey\":true}\n"
+                + "{\"timestamp\":\"2026-11-25T10:10:01Z\",\"event\":\"Commander\",\"Name\":\"First\",\"FID\":\"F13228986\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:10:02Z\",\"event\":\"LoadGame\",\"Commander\":\"First\",\"FID\":\"F13228986\"}\n"
+                + "{\"timestamp\":\"2026-11-25T10:10:03Z\",\"event\":\"FSDJump\",\"StarSystem\":\"FreshLiveSystem\"}\n"
+        );
+        File.SetLastWriteTimeUtc(s2, new DateTime(2026, 11, 25, 10, 10, 3, DateTimeKind.Utc));
+
+        // Let identity scanning succeed, then simulate s1Part2 disappearing right after s1Part1 is read.
+        bool s1Part1ReadStarted = false;
+        int s1Part1Opens = 0;
+        var monitor = new JournalDirectoryMonitor(
+            [dir],
+            "F13228986",
+            _ => default,
+            openJournalStream: path =>
+            {
+                if (string.Equals(path, s1Part1, StringComparison.OrdinalIgnoreCase))
+                {
+                    s1Part1Opens++;
+                    if (s1Part1Opens >= 2)
+                    {
+                        s1Part1ReadStarted = true;
+                    }
+                }
+                else if (s1Part1ReadStarted && string.Equals(path, s1Part2, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new FileNotFoundException("Continuation disappeared mid-read.", path);
+                }
+
+                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            },
+            switchResume: new JournalSwitchResume(new JournalCheckpoint(s1Part2, s1Part2PrefixBytes), baseline)
+        );
+
+        // Poll 1 must return the consumed historical prefix of S1 with IsBootstrapRead=true rather than merging S2 as live.
+        JournalMonitorUpdate poll1 = await monitor.PollAsync();
+        Assert.NotEqual(s2, poll1.JournalPath);
+        Assert.True(poll1.IsBootstrapRead);
+        Assert.True(poll1.HasPendingLiveTail);
+        Assert.Contains(poll1.JournalEvents, entry => entry.EventName == "SendText");
+        Assert.DoesNotContain(poll1.JournalEvents, entry => entry.EventName == "FSDJump");
+        Assert.NotEmpty(poll1.Errors);
+
+        // Poll 2 delivers the proven-new S2 session cleanly as live.
+        JournalMonitorUpdate poll2 = await monitor.PollAsync();
+        Assert.Equal(s2, poll2.JournalPath);
+        Assert.False(poll2.IsBootstrapRead);
+        Assert.False(poll2.HasPendingLiveTail);
+        Assert.Contains(
+            poll2.JournalEvents,
+            entry =>
+                entry.EventName == "FSDJump" && entry.Payload.GetProperty("StarSystem").GetString() == "FreshLiveSystem"
+        );
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

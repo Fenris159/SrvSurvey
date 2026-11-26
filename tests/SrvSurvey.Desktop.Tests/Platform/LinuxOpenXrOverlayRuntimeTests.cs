@@ -360,33 +360,47 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.Equal(VrOverlayPointerEventKind.Reset, polled[2].Kind);
         Assert.Equal(string.Empty, polled[2].PlotterName);
 
-        // Changing a panel's coordinate basis drains stale queued input and emits a Reset.
+        // Changing a panel's coordinate basis drains stale queued input, advances its surface revision ID, and emits Reset.
         backend.PointerEvents = [new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0)];
         var resizedFrame = new VrOverlayFrame(2, 1, [255, 0, 0, 255, 0, 255, 0, 255], 600, 300);
         Assert.True(runtime.PublishOverlay("PlotAdjustVR", resizedFrame, ValidCalibration(), 1f).Succeeded);
+        ulong adjustIdRev1 = OpenXrFramePacket.GetOverlayId("PlotAdjustVR", 1);
+        Assert.NotEqual(adjustId, adjustIdRev1);
         IReadOnlyList<VrOverlayPointerEvent> afterResize = runtime.PollPointerEvents();
         Assert.Single(afterResize);
         Assert.Equal(VrOverlayPointerEventKind.Reset, afterResize[0].Kind);
+
+        // Even if the native queue was empty during resize (in-flight pre-resize press staged before xrEndFrame),
+        // an arriving event carrying the old overlay ID must never be mapped against the resized dimensions.
+        backend.PointerEvents =
+        [
+            new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.LeftButtonDown, 0.25f, 0.5f, 0, 0),
+        ];
+        IReadOnlyList<VrOverlayPointerEvent> staleInFlightPress = runtime.PollPointerEvents();
+        Assert.Single(staleInFlightPress);
+        Assert.Equal(VrOverlayPointerEventKind.Reset, staleInFlightPress[0].Kind);
 
         // Resizing or removing an unrelated panel must NOT reset interaction or drop queued clicks on PlotAdjustVR.
         int callsBeforeUnrelated = backend.SetInteractionCalls;
         backend.PointerEvents =
         [
-            new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0),
+            new OpenXrPointerEvent(adjustIdRev1, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0),
         ];
         var resizedJump = new VrOverlayFrame(2, 1, [255, 128, 64, 255, 0, 10, 20, 255], 320, 180);
         Assert.True(runtime.PublishOverlay("PlotJumpInfo", resizedJump, ValidCalibration(), 1f).Succeeded);
+        ulong jumpIdRev1 = OpenXrFramePacket.GetOverlayId("PlotJumpInfo", 1);
         Assert.Equal(callsBeforeUnrelated, backend.SetInteractionCalls);
 
         // Even when the resized panel itself has a stale hover queued ahead of a click on PlotAdjustVR,
         // discard only the resized panel's event and preserve PlotAdjustVR's click.
         backend.PointerEvents =
         [
-            new OpenXrPointerEvent(jumpId, VrOverlayPointerEventKind.Move, 0.25f, 0.25f, 0, 0),
-            new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.LeftButtonUp, 0.5f, 0.5f, 0, 0),
+            new OpenXrPointerEvent(jumpIdRev1, VrOverlayPointerEventKind.Move, 0.25f, 0.25f, 0, 0),
+            new OpenXrPointerEvent(adjustIdRev1, VrOverlayPointerEventKind.LeftButtonUp, 0.5f, 0.5f, 0, 0),
         ];
         var resizedJumpAgain = new VrOverlayFrame(2, 1, [255, 128, 64, 255, 0, 10, 20, 255], 360, 200);
         Assert.True(runtime.PublishOverlay("PlotJumpInfo", resizedJumpAgain, ValidCalibration(), 1f).Succeeded);
+        ulong jumpIdRev2 = OpenXrFramePacket.GetOverlayId("PlotJumpInfo", 2);
         Assert.Equal(callsBeforeUnrelated, backend.SetInteractionCalls);
 
         // Removing an unrelated panel preserves buffered PlotAdjustVR clicks without resetting the session.
@@ -402,13 +416,16 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         Assert.Equal(VrOverlayPointerEventKind.LeftButtonUp, preservedClick[1].Kind);
 
         // Removing an overlay invalidates its identity and yields Reset if a stale event arrives.
-        backend.PointerEvents = [new OpenXrPointerEvent(jumpId, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0)];
+        backend.PointerEvents = [new OpenXrPointerEvent(jumpIdRev2, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0)];
         IReadOnlyList<VrOverlayPointerEvent> afterRemove = runtime.PollPointerEvents();
         Assert.Single(afterRemove);
         Assert.Equal(VrOverlayPointerEventKind.Reset, afterRemove[0].Kind);
 
         // Resizing the actively-hovered panel resets even if no new native event was queued yet.
-        backend.PointerEvents = [new OpenXrPointerEvent(adjustId, VrOverlayPointerEventKind.Move, 0.25f, 0.5f, 0, 0)];
+        backend.PointerEvents =
+        [
+            new OpenXrPointerEvent(adjustIdRev1, VrOverlayPointerEventKind.Move, 0.25f, 0.5f, 0, 0),
+        ];
         _ = runtime.PollPointerEvents();
         int callsBeforeActiveResize = backend.SetInteractionCalls;
         var secondResize = new VrOverlayFrame(2, 1, [255, 0, 0, 255, 0, 255, 0, 255], 640, 320);

@@ -176,7 +176,7 @@ public sealed class OpenXrOverlayRuntime : IVrOverlayRuntime
                 $"Waiting for VDXR controller input (OpenXR error {bridge?.InputError ?? 0}). Update the OpenXR layer and restart Elite before using this shortcut. For EDVR, enable Experimental EDVR controller input in the VR settings."
             );
         }
-        if (enabled && bridge?.AvailableOverlayLayers is < 2)
+        if (enabled && bridge!.AvailableOverlayLayers is < 2)
         {
             return VrRuntimeResult.Failure(
                 "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction."

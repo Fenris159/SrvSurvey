@@ -188,6 +188,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             DispatchPointerEvent(registrations, retainedPointerEvents.Dequeue());
         }
 
+        appliedDragInCurrentPollBatch = false;
         foreach (VrOverlayPointerEvent pointerEvent in runtime.PollPointerEvents())
         {
             DispatchPointerEvent(registrations, pointerEvent);
@@ -323,8 +324,10 @@ public sealed class VrOverlayCoordinator : IDisposable
             return;
         }
 
-        float deltaRight = (float)((normX - dragGrabNormX) * current.Scale);
-        float deltaUp = (float)((dragGrabNormY - normY) * current.Scale * (height / width));
+        double originX = appliedDragInCurrentPollBatch ? lastAppliedDragNormX : dragGrabNormX;
+        double originY = appliedDragInCurrentPollBatch ? lastAppliedDragNormY : dragGrabNormY;
+        float deltaRight = (float)((normX - originX) * current.Scale);
+        float deltaUp = (float)((originY - normY) * current.Scale * (height / width));
         if (MathF.Abs(deltaRight) < 0.005f && MathF.Abs(deltaUp) < 0.005f)
         {
             return;

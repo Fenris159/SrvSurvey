@@ -67,6 +67,7 @@ internal sealed partial class DesktopRuntime
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
     private OverlayPresentationSession? overlayPresentationSession;
+    private DesktopOverlayController? overlayController;
     private MainWindowViewModel? mainViewModel;
     private MainWindow? mainWindow;
     private ApplicationLogService? applicationLogService;
@@ -85,7 +86,6 @@ internal sealed partial class DesktopRuntime
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
     private readonly JournalMonitorSession journalMonitorSession = new();
-    private DesktopOverlayController? overlayController;
     private Application? hostApplication;
     private IClassicDesktopStyleApplicationLifetime? hostDesktop;
     private AppDataPaths? startupAppDataPaths;

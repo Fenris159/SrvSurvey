@@ -64,6 +64,8 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     private readonly LinuxVrRuntimeInspector inspector;
     private readonly Func<bool> isGameRunning;
     private readonly Dictionary<string, OpenXrOverlayFrame> frames = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ulong> activeOverlayIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ulong> surfaceRevisions = new(StringComparer.Ordinal);
     private readonly Dictionary<ulong, string> identities = [];
     private readonly List<VrOverlayPointerEvent> bufferedEvents = [];
     private nint sessionHandle;
@@ -227,16 +229,25 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeResult.Failure($"{DisplayName} overlay session is not active.");
         }
 
+        ulong overlayId;
         if (
             frames.TryGetValue(plotterName, out OpenXrOverlayFrame? previous)
             && HasDifferentPointerBasis(previous.Frame, frame)
         )
         {
-            InvalidateOverlayInteraction(plotterName);
+            ulong previousId = activeOverlayIds[plotterName];
+            InvalidateOverlayInteraction(plotterName, previousId);
+            identities.Remove(previousId);
+            overlayId = AdvanceOverlayId(plotterName);
+        }
+        else if (!activeOverlayIds.TryGetValue(plotterName, out overlayId))
+        {
+            overlayId = OpenXrFramePacket.GetOverlayId(plotterName, surfaceRevisions.GetValueOrDefault(plotterName));
+            activeOverlayIds[plotterName] = overlayId;
         }
 
-        identities[OpenXrFramePacket.GetOverlayId(plotterName)] = plotterName;
-        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha, nextFrameSortOrder++);
+        identities[overlayId] = plotterName;
+        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha, nextFrameSortOrder++, overlayId);
         return VrRuntimeResult.Success($"Queued {plotterName} for {DisplayName}.");
     }
 
@@ -268,12 +279,17 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
 
     public void RemoveOverlay(string plotterName)
     {
-        if (frames.Remove(plotterName))
+        bool removedFrame = frames.Remove(plotterName);
+        if (activeOverlayIds.Remove(plotterName, out ulong previousId))
         {
-            InvalidateOverlayInteraction(plotterName);
-        }
+            if (removedFrame)
+            {
+                InvalidateOverlayInteraction(plotterName, previousId);
+            }
 
-        identities.Remove(OpenXrFramePacket.GetOverlayId(plotterName));
+            identities.Remove(previousId);
+            surfaceRevisions[plotterName] = surfaceRevisions.GetValueOrDefault(plotterName) + 1;
+        }
     }
 
     public VrRuntimeResult ResetOrientation()
@@ -413,9 +429,20 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         }
 
         identities.Clear();
+        activeOverlayIds.Clear();
+        surfaceRevisions.Clear();
         frames.Clear();
         maximumOverlays = OpenXrFramePacket.MaximumOverlays;
         nextFrameSortOrder = 0;
+    }
+
+    private ulong AdvanceOverlayId(string plotterName)
+    {
+        ulong nextRevision = surfaceRevisions.GetValueOrDefault(plotterName) + 1;
+        surfaceRevisions[plotterName] = nextRevision;
+        ulong nextId = OpenXrFramePacket.GetOverlayId(plotterName, nextRevision);
+        activeOverlayIds[plotterName] = nextId;
+        return nextId;
     }
 
     private void ClearInteractionBuffers()
@@ -425,14 +452,13 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
         bufferedEvents.Clear();
     }
 
-    private void InvalidateOverlayInteraction(string plotterName)
+    private void InvalidateOverlayInteraction(string plotterName, ulong overlayId)
     {
         if (!interactionEnabled || !IsInitialized)
         {
             return;
         }
 
-        ulong overlayId = OpenXrFramePacket.GetOverlayId(plotterName);
         bool hadActiveOverlay = activePointerOverlayId == overlayId;
         int removedBuffered = bufferedEvents.RemoveAll(ev =>
             string.Equals(ev.PlotterName, plotterName, StringComparison.Ordinal)

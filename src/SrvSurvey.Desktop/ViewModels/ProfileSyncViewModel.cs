@@ -11,6 +11,12 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     private bool disposed;
     private bool cancellableOperation;
     private CancellationTokenSource? authorization;
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "Owned and disposed by the using block in RunAsync."
+    )]
     private CancellationTokenSource? operationCancellation;
     private CancellationToken operationToken;
     private TaskCompletionSource? operationFinished;

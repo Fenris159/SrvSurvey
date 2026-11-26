@@ -172,25 +172,43 @@ public sealed partial class JournalDirectoryMonitor
         ref long? checkpointByteOffset
     )
     {
-        (int? boundaryPartIndex, long? boundaryByteOffset) = ResolveFirstPollBoundary(parts, start);
-        if (boundaryPartIndex is { } boundaryIndex)
+        (int? authoritativeIndex, long? authoritativeOffset) = FindAuthoritativeBoundary(parts, start: 0);
+        if (authoritativeIndex is { } authIndex)
         {
-            if (isInitialPoll)
+            if (authIndex < start)
             {
-                firstPollRequiresBootstrap = true;
-            }
-            else
-            {
-                pollForcesBootstrapRead = true;
+                // The session's confirmed checkpoint was already crossed in an earlier part,
+                // so remaining continuation parts stay live instead of falling back to startup baselines.
+                if (isInitialPoll)
+                {
+                    firstPollRequiresBootstrap = false;
+                }
+
+                return;
             }
 
-            endExclusive = boundaryIndex + 1;
-            checkpointByteOffset = boundaryByteOffset;
-            if (boundaryIndex < parts.Count - 1)
-            {
-                lastPollHasPendingLiveTail = true;
-            }
+            ApplyBootstrapBoundary(
+                parts,
+                authIndex,
+                authoritativeOffset,
+                isInitialPoll,
+                ref endExclusive,
+                ref checkpointByteOffset
+            );
+            return;
+        }
 
+        (int? baselineIndex, long? baselineOffset) = FindBaselineBoundary(parts, start);
+        if (baselineIndex is { } baseIndex)
+        {
+            ApplyBootstrapBoundary(
+                parts,
+                baseIndex,
+                baselineOffset,
+                isInitialPoll,
+                ref endExclusive,
+                ref checkpointByteOffset
+            );
             return;
         }
 
@@ -202,6 +220,32 @@ public sealed partial class JournalDirectoryMonitor
         else if (!provenNewSinceBaseline)
         {
             pollForcesBootstrapRead = true;
+        }
+    }
+
+    private void ApplyBootstrapBoundary(
+        IReadOnlyList<FileInfo> parts,
+        int boundaryIndex,
+        long? boundaryByteOffset,
+        bool isInitialPoll,
+        ref int endExclusive,
+        ref long? checkpointByteOffset
+    )
+    {
+        if (isInitialPoll)
+        {
+            firstPollRequiresBootstrap = true;
+        }
+        else
+        {
+            pollForcesBootstrapRead = true;
+        }
+
+        endExclusive = boundaryIndex + 1;
+        checkpointByteOffset = boundaryByteOffset;
+        if (boundaryIndex < parts.Count - 1)
+        {
+            lastPollHasPendingLiveTail = true;
         }
     }
 
@@ -687,15 +731,17 @@ public sealed partial class JournalDirectoryMonitor
 
     private (int? PartIndex, long? ByteOffset) ResolveFirstPollBoundary(IReadOnlyList<FileInfo> parts, int start)
     {
+        (int? partIndex, long? byteOffset) = FindAuthoritativeBoundary(parts, start);
+        return partIndex is not null ? (partIndex, byteOffset) : FindBaselineBoundary(parts, start);
+    }
+
+    private (int? PartIndex, long? ByteOffset) FindAuthoritativeBoundary(IReadOnlyList<FileInfo> parts, int start)
+    {
         (int? partIndex, long? byteOffset) = FindPersistedCheckpointBoundary(parts, start);
         (int? confirmedIndex, long? confirmedOffset) = FindConfirmedOffsetBoundary(parts, start);
-        if (IsNewerBoundary(confirmedIndex, confirmedOffset, partIndex, byteOffset))
-        {
-            partIndex = confirmedIndex;
-            byteOffset = confirmedOffset;
-        }
-
-        return partIndex is not null ? (partIndex, byteOffset) : FindBaselineBoundary(parts, start);
+        return IsNewerBoundary(confirmedIndex, confirmedOffset, partIndex, byteOffset)
+            ? (confirmedIndex, confirmedOffset)
+            : (partIndex, byteOffset);
     }
 
     private (int? PartIndex, long? ByteOffset) FindPersistedCheckpointBoundary(IReadOnlyList<FileInfo> parts, int start)
