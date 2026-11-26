@@ -495,8 +495,9 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return;
         }
 
+        // The retired ID rejects late input for this surface. A native generation
+        // reset would also discard input still staged for unaffected surfaces.
         ClearInteractionBuffers();
-        _ = backend.SetInteractionEnabled(sessionHandle, true);
         pendingInteractionReset = true;
     }
 

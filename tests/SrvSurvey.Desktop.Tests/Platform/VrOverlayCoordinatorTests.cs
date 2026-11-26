@@ -738,7 +738,8 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             int beforeChanges = runtime.InteractionChangeCount;
             Assert.True(viewModel.BeginAdjustment());
             Assert.Empty(runtime.PointerEvents);
-            Assert.True(runtime.InteractionChangeCount > beforeChanges);
+            Assert.Equal(beforeChanges, runtime.InteractionChangeCount);
+            Assert.True(coordinator.IsInteractionEnabled);
         }
         finally
         {
@@ -1159,7 +1160,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     }
 
     [AvaloniaFact]
-    public void SingleLayerCapacityReportsCalibrationStatusAndFailedInteractionReenableResetsLocally()
+    public void SingleLayerCapacityReportsCalibrationStatusAndFailedInteractionEnableStaysDisabled()
     {
         VrOverlayViewModel viewModel = CreateViewModel();
         viewModel.Enabled = true;
@@ -1183,7 +1184,8 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             Assert.Equal(VrOverlayConnectionState.Ready, viewModel.ConnectionState);
             Assert.Contains("layer limit", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
 
-            // Reset to normal capacity, enable interaction, then fail SetInteractionEnabled during surface replacement.
+            // Surface replacement keeps interaction enabled. A later explicit
+            // enable failure must still leave interaction disabled and report it.
             viewModel.CancelCommand.Execute(null);
             runtime.MaximumOverlays = 16;
             viewModel.RefreshConnectionCommand.Execute(null);
@@ -1192,6 +1194,9 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
             runtime.FailNextSetInteractionTrue = true;
             Assert.True(viewModel.BeginAdjustment());
+            Assert.True(coordinator.IsInteractionEnabled);
+            Assert.True(coordinator.ToggleInteraction());
+            Assert.False(coordinator.ToggleInteraction());
             Assert.False(coordinator.IsInteractionEnabled);
             Assert.Contains("Interaction rejected", viewModel.StatusMessage, StringComparison.Ordinal);
         }
@@ -1362,9 +1367,14 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     }
 
     [AvaloniaTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ClickOnUnchangedOverlaySurvivesArrivingDuringReplacementPublication(bool releaseAfterPublication)
+    [InlineData(false, PointerArrival.QueuedDuringPublication)]
+    [InlineData(true, PointerArrival.QueuedDuringPublication)]
+    [InlineData(false, PointerArrival.StagedDuringPublication)]
+    [InlineData(true, PointerArrival.StagedBeforeReplacement)]
+    public void ClickOnUnchangedOverlaySurvivesArrivingDuringReplacementPublication(
+        bool releaseAfterPublication,
+        PointerArrival arrival
+    )
     {
         string dataDirectory = Path.Combine(temporaryDirectory, "data");
         Directory.CreateDirectory(dataDirectory);
@@ -1430,25 +1440,55 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             ulong unchangedId = OpenXrFramePacket.GetOverlayId("PlotBioSystem");
             viewModel.SelectedOverlayName = "PlotJumpInfo";
             Assert.Contains(unchangedId, ReadPacketOverlayIds(backend.LastPacket!));
-            backend.OnPublish = () =>
+            IReadOnlyList<OpenXrPointerEvent> click =
+            [
+                new OpenXrPointerEvent(unchangedId, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0),
+            ];
+            if (!releaseAfterPublication)
             {
-                backend.OnPublish = null;
+                click =
+                [
+                    .. click,
+                    new OpenXrPointerEvent(unchangedId, VrOverlayPointerEventKind.LeftButtonUp, 0.5f, 0.5f, 0, 0),
+                ];
+            }
+            if (arrival == PointerArrival.StagedBeforeReplacement)
+            {
+                // The replaced panel was hovered, while a new press on the unchanged
+                // panel has been sampled but has not returned from xrEndFrame yet.
                 backend.PendingPointerEvents =
                 [
-                    new OpenXrPointerEvent(unchangedId, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0),
+                    new OpenXrPointerEvent(
+                        OpenXrFramePacket.GetOverlayId("PlotJumpInfo"),
+                        VrOverlayPointerEventKind.Move,
+                        0.5f,
+                        0.5f,
+                        0,
+                        0
+                    ),
                 ];
-                if (!releaseAfterPublication)
+                _ = runtime.PollPointerEvents();
+                backend.StagedPointerEvents = click;
+            }
+            else
+            {
+                backend.OnPublish = () =>
                 {
-                    backend.PendingPointerEvents =
-                    [
-                        .. backend.PendingPointerEvents,
-                        new OpenXrPointerEvent(unchangedId, VrOverlayPointerEventKind.LeftButtonUp, 0.5f, 0.5f, 0, 0),
-                    ];
-                }
-            };
+                    backend.OnPublish = null;
+                    if (arrival == PointerArrival.StagedDuringPublication)
+                    {
+                        backend.StagedPointerEvents = click;
+                    }
+                    else
+                    {
+                        backend.PendingPointerEvents = click;
+                    }
+                };
+            }
 
             Assert.True(viewModel.BeginAdjustment());
             Assert.Contains(unchangedId, ReadPacketOverlayIds(backend.LastPacket!));
+            backend.CompleteNativeFrame();
             coordinator.PollInteractionEvents();
             if (releaseAfterPublication)
             {
@@ -1471,7 +1511,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     }
 
     [AvaloniaFact]
-    public void SurfaceReplacementPublishesRotatedOverlayIdBeforeReenablingInteractionAndRejectsStaleEvents()
+    public void SurfaceReplacementRotatesOverlayIdWithoutResettingInteractionAndRejectsStaleEvents()
     {
         var backend = new StubLinuxOpenXrBackend();
         var inspector = new LinuxVrRuntimeInspector(
@@ -1509,14 +1549,13 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             backend.OperationLog.Clear();
 
             // Entering calibration replaces the live PlotJumpInfo surface with a calibration preview.
-            // The replacement packet must rotate PlotJumpInfo's overlay ID and be published BEFORE
-            // SetInteractionEnabled(true) resets the native interaction generation.
+            // Rotate PlotJumpInfo's ID without resetting the native interaction
+            // generation, which could discard another panel's staged input.
             Assert.True(viewModel.BeginAdjustment());
             viewModel.IsDragModeEnabled = true;
             int lastPublishIndex = backend.OperationLog.LastIndexOf("Publish");
-            int lastEnableIndex = backend.OperationLog.LastIndexOf("SetInteractionEnabled:True");
             Assert.True(lastPublishIndex >= 0);
-            Assert.True(lastEnableIndex > lastPublishIndex);
+            Assert.DoesNotContain("SetInteractionEnabled:True", backend.OperationLog);
 
             ulong previewId = OpenXrFramePacket.GetOverlayId("PlotJumpInfo", 1);
             Assert.NotEqual(liveId, previewId);
@@ -1589,6 +1628,13 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")),
             new VrOverlayCalibrationStore(dataDirectory, factoryPath)
         );
+    }
+
+    public enum PointerArrival
+    {
+        QueuedDuringPublication,
+        StagedDuringPublication,
+        StagedBeforeReplacement,
     }
 
     private sealed class StubOpenVrRuntime : IVrOverlayRuntime
@@ -1730,6 +1776,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         public List<string> OperationLog { get; } = [];
         public byte[]? LastPacket { get; private set; }
         public IReadOnlyList<OpenXrPointerEvent> PendingPointerEvents { get; set; } = [];
+        public IReadOnlyList<OpenXrPointerEvent> StagedPointerEvents { get; set; } = [];
         public Action? OnPublish { get; set; }
 
         public LinuxOpenXrProbeOutcome Probe(string expectedRuntime) => new(LinuxOpenXrNativeStatus.Ok, 0, "Ready");
@@ -1760,7 +1807,14 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         {
             OperationLog.Add($"SetInteractionEnabled:{enabled}");
             PendingPointerEvents = [];
+            StagedPointerEvents = [];
             return new(true, 0, enabled ? "Interaction on." : "Interaction off.");
+        }
+
+        public void CompleteNativeFrame()
+        {
+            PendingPointerEvents = [.. PendingPointerEvents, .. StagedPointerEvents];
+            StagedPointerEvents = [];
         }
 
         public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session)

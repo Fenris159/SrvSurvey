@@ -1532,6 +1532,62 @@ void TestInteractionGracefulDegradationAndCursorUploadFailureSafety()
     }
 }
 
+void TestReplacingUnrelatedSurfacePreservesStagedPress()
+{
+    MockRuntime mock;
+    mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+    mock.nextPredictedDisplayTime = 1'000'000'000;
+    gMock = &mock;
+
+    OverlaySession session(MakeMockLoader(), "wivrn", false);
+    REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+    PushSessionState(XR_SESSION_STATE_READY);
+    PushSessionState(XR_SESSION_STATE_FOCUSED);
+    int32_t xrErr = 0;
+    std::string message;
+    REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+    REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20)));
+    mock.hands[1].poseActive = true;
+    mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+    REQUIRE(session.StepOnce());
+    std::array<PointerEvent, 16> events{};
+    REQUIRE(session.PollPointerEvents(events) == 1);
+    REQUIRE(events[0].id == 20);
+    REQUIRE(events[0].kind == PointerKind::Move);
+
+    // The press on unchanged panel 20 is sampled before xrEndFrame. Replace
+    // panel 10 while the press is still staged and both queue polls are empty.
+    mock.hands[1].select = true;
+    mock.onEndFrame = [&]() {
+        REQUIRE(session.PollPointerEvents(events) == 0);
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 11, 20)));
+        REQUIRE(session.PollPointerEvents(events) == 0);
+    };
+    mock.nextPredictedDisplayTime += 16'000'000;
+    REQUIRE(session.StepOnce());
+    mock.onEndFrame = nullptr;
+    REQUIRE(session.PollPointerEvents(events) == 2);
+    REQUIRE(events[0].id == 20);
+    REQUIRE(events[0].kind == PointerKind::Move);
+    REQUIRE(events[1].id == 20);
+    REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+    // Keeping the trigger held must not reset or duplicate the press.
+    mock.nextPredictedDisplayTime += 16'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(session.PollPointerEvents(events) == 1);
+    REQUIRE(events[0].id == 20);
+    REQUIRE(events[0].kind == PointerKind::Move);
+
+    mock.hands[1].select = false;
+    mock.nextPredictedDisplayTime += 16'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(session.PollPointerEvents(events) == 2);
+    REQUIRE(events[1].id == 20);
+    REQUIRE(events[1].kind == PointerKind::LeftUp);
+    session.Shutdown();
+}
+
 void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
 {
     // 1. Zero-alpha panels are excluded from submission and hit testing; unreadable/inactive held buttons emit Reset.
@@ -1837,6 +1893,7 @@ void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
 
 int main()
 {
+    TestReplacingUnrelatedSurfacePreservesStagedPress();
     TestProbeContracts();
     TestOverlaySessionLifecycleAndBgraSwizzle();
     TestVulkanEnable1Fallback();

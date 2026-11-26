@@ -430,7 +430,7 @@ public sealed class LinuxOpenXrOverlayRuntimeTests
         int callsBeforeActiveResize = backend.SetInteractionCalls;
         var secondResize = new VrOverlayFrame(2, 1, [255, 0, 0, 255, 0, 255, 0, 255], 640, 320);
         Assert.True(runtime.PublishOverlay("PlotAdjustVR", secondResize, ValidCalibration(), 1f).Succeeded);
-        Assert.True(backend.SetInteractionCalls > callsBeforeActiveResize);
+        Assert.Equal(callsBeforeActiveResize, backend.SetInteractionCalls);
         IReadOnlyList<VrOverlayPointerEvent> activeReset = runtime.PollPointerEvents();
         Assert.Single(activeReset);
         Assert.Equal(VrOverlayPointerEventKind.Reset, activeReset[0].Kind);

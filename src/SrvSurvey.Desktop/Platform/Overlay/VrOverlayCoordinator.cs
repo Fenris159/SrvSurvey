@@ -547,7 +547,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             .Take(capacity)
             .ToArray();
 
-        HashSet<string>? interactionResetPlotters = PrepareReplacedSurfaceInput(registrations);
+        PrepareReplacedSurfaceInput(registrations);
         (Dictionary<string, RegisteredOverlayWindow> active, string? lastError) = PublishRegistrations(
             registrations,
             runtimeMode
@@ -557,10 +557,6 @@ public sealed class VrOverlayCoordinator : IDisposable
         if (!completion.Succeeded)
         {
             lastError = completion.Message;
-        }
-        if (interactionResetPlotters is not null && IsInteractionEnabled && runtime.IsInitialized)
-        {
-            ReenableRuntimeInteractionAfterSurfaceReplacement(interactionResetPlotters);
         }
         published.Clear();
         foreach ((string name, RegisteredOverlayWindow registration) in active)
@@ -594,12 +590,12 @@ public sealed class VrOverlayCoordinator : IDisposable
         }
     }
 
-    private HashSet<string>? PrepareReplacedSurfaceInput(IReadOnlyList<RegisteredOverlayWindow> registrations)
+    private void PrepareReplacedSurfaceInput(IReadOnlyList<RegisteredOverlayWindow> registrations)
     {
         HashSet<string>? replacedPlotters = FindReplacedPlotters(registrations);
         if (replacedPlotters is null)
         {
-            return null;
+            return;
         }
 
         if (activeDragPlotter is not null && replacedPlotters.Contains(activeDragPlotter))
@@ -613,9 +609,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             DiscardRetainedPointerEvents(replaced);
         }
 
-        bool hasUnaffectedActiveGesture = activeDragPlotter is not null || inputRouter?.HasCapture == true;
-        bool interactionActive = IsInteractionEnabled && runtime.IsInitialized;
-        if (interactionActive)
+        if (IsInteractionEnabled && runtime.IsInitialized)
         {
             RetainUnaffectedPendingPointerEvents(replacedPlotters);
         }
@@ -626,10 +620,6 @@ public sealed class VrOverlayCoordinator : IDisposable
         {
             runtime.RemoveOverlay(replaced);
         }
-
-        return interactionActive && !hasUnaffectedActiveGesture && retainedPointerEvents.Count == 0
-            ? replacedPlotters
-            : null;
     }
 
     private HashSet<string>? FindReplacedPlotters(IReadOnlyList<RegisteredOverlayWindow> registrations)
@@ -663,24 +653,6 @@ public sealed class VrOverlayCoordinator : IDisposable
             }
 
             retainedPointerEvents.Enqueue(pendingEvent);
-        }
-    }
-
-    private void ReenableRuntimeInteractionAfterSurfaceReplacement(HashSet<string> replacedPlotters)
-    {
-        // Rendering and publishing can queue a new gesture on an unchanged surface.
-        // Preserve it and reconsider the global reset immediately before reenabling.
-        RetainUnaffectedPendingPointerEvents(replacedPlotters);
-        if (retainedPointerEvents.Count > 0 || activeDragPlotter is not null || inputRouter?.HasCapture == true)
-        {
-            return;
-        }
-
-        VrRuntimeResult reenable = runtime.SetInteractionEnabled(true);
-        if (!reenable.Succeeded)
-        {
-            ResetInteractionLocally();
-            viewModel.ReportAdjustmentStatus(reenable.Message);
         }
     }
 
