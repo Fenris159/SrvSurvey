@@ -12,6 +12,8 @@ namespace SrvSurvey.Desktop.Platform;
 public interface IScreenshotProcessingService
 {
     int PendingCount => 0;
+    int PendingNativeCount => 0;
+    int PendingSteamCount => Math.Max(0, PendingCount - PendingNativeCount);
     bool IsGameWindowAvailable => false;
     bool HasPendingWork => PendingCount > 0;
     bool HasPendingWorkFor(bool includeSteam) => HasPendingWork;
@@ -64,6 +66,8 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
     );
 
     public int PendingCount => Volatile.Read(ref pendingCount);
+    public int PendingNativeCount => Volatile.Read(ref pendingNativeCount);
+    public int PendingSteamCount => Math.Max(0, PendingCount - PendingNativeCount);
     public bool IsGameWindowAvailable => gameClientWidthProvider() is > 0;
     public bool HasPendingWork => PendingCount > 0 || Volatile.Read(ref recoveryWarningCount) > 0;
 
@@ -567,6 +571,7 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         return new ScreenshotConversion(sourcePath, outputPath, false, warning, aerialOutputPath)
         {
             IncludedBanner = preferences.AddBanner,
+            IsSteam = IsSteamCapture(entry),
         };
     }
 
@@ -1011,6 +1016,8 @@ public sealed partial class ScreenshotProcessingService : IScreenshotProcessingS
         return SKColors.Yellow;
     }
 
+    internal static string? GetEventFilename(JournalEventEnvelope entry) => GetString(entry, "Filename");
+
     private static string? GetString(JournalEventEnvelope entry, string propertyName)
     {
         return
@@ -1069,6 +1076,7 @@ public sealed record ScreenshotConversion(
 )
 {
     public bool? IncludedBanner { get; init; }
+    public bool IsSteam { get; init; }
 }
 
 public sealed record ScreenshotGuardianContext(

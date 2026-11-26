@@ -215,6 +215,28 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public bool IsDialogVisible => IsDeleteConfirmationVisible || IsNotesVisible || IsRenameVisible;
 
+    internal bool HasPendingDialogDraft =>
+        (
+            IsNotesVisible
+            && EditingRoute is { } notesRoute
+            && !string.Equals(
+                NormalizeDraftText(notesRoute.Notes),
+                NormalizeDraftText(NotesDraft),
+                StringComparison.Ordinal
+            )
+        )
+        || (
+            IsRenameVisible
+            && EditingRoute is { } renameRoute
+            && !string.Equals(
+                NormalizeDraftText(renameRoute.Name),
+                NormalizeDraftText(RenameDraft),
+                StringComparison.Ordinal
+            )
+        );
+
+    private static string? NormalizeDraftText(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     public RouteManagerItemViewModel? EditingRoute
     {
         get => editingRoute;

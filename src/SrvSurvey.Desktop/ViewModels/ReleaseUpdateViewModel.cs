@@ -31,12 +31,16 @@ public sealed partial class ReleaseUpdateViewModel : INotifyPropertyChanged
     private string installProgressText = string.Empty;
     private string? previousInstallationOutcomeMessage;
     private bool isChecking;
+    private bool hasCompletedCheck;
+    private bool hasAttemptedCheck;
     private bool isUpdateAvailable;
     private bool isInstalling;
     private bool installConfirmed;
     private bool useDevelopmentReleases;
     private bool recheckRequested;
     private double installProgressPercent;
+    private Task? activeCheckTask;
+    private Task<ReleaseUpdateSessionState>? inheritedPendingCheck;
 
     /// <summary>
     /// Initializes update actions and support-copy commands for the installed version and saved release channel.
@@ -124,6 +128,8 @@ public sealed partial class ReleaseUpdateViewModel : INotifyPropertyChanged
             }
 
             dismissedReleaseVersion = null;
+            hasCompletedCheck = false;
+            hasAttemptedCheck = false;
             LatestVersion = "Not checked";
             ClearAvailableRelease();
             RaiseChannelPropertiesChanged();
@@ -305,72 +311,267 @@ public sealed partial class ReleaseUpdateViewModel : INotifyPropertyChanged
         StatusMessage = AppendPreviousOutcome(StatusMessage);
     }
 
-    public async Task CheckAsync()
+    internal ReleaseUpdateSessionState CaptureSessionState() =>
+        new(
+            hasCompletedCheck,
+            useDevelopmentReleases,
+            latestVersion,
+            statusMessage,
+            isUpdateAvailable,
+            releaseUri,
+            releasePackage,
+            releaseVersion,
+            releaseNotes,
+            dismissedReleaseVersion,
+            previousInstallationOutcomeMessage,
+            hasAttemptedCheck
+        );
+
+    internal Task<ReleaseUpdateSessionState>? CapturePendingCheckAsync()
+    {
+        if (inheritedPendingCheck is { IsCompleted: false } inherited)
+        {
+            return inherited;
+        }
+
+        Task? active = activeCheckTask;
+        return active is not null && !active.IsCompleted ? AwaitSessionStateAsync(active) : null;
+    }
+
+    internal Task AttachPendingCheckAsync(
+        Task<ReleaseUpdateSessionState> pending,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(pending);
+        if (activeCheckTask is { IsCompleted: false } existing)
+        {
+            return existing;
+        }
+
+        inheritedPendingCheck = pending;
+        Task attached = RunAttachedPendingCheckAsync(pending, cancellationToken);
+        activeCheckTask = attached;
+        return attached;
+    }
+
+    private async Task RunAttachedPendingCheckAsync(
+        Task<ReleaseUpdateSessionState> pending,
+        CancellationToken cancellationToken
+    )
+    {
+        IsChecking = true;
+        bool needsFollowUpCheck = false;
+        bool runFollowUp = false;
+        try
+        {
+            ReleaseUpdateSessionState state = await pending;
+            if (recheckRequested || state.UseDevelopmentReleases != UseDevelopmentReleases)
+            {
+                previousInstallationOutcomeMessage ??= state.PreviousInstallationOutcomeMessage;
+                needsFollowUpCheck = true;
+            }
+            else if (state.HasCompletedCheck)
+            {
+                TryRestoreSessionState(state);
+            }
+            else if (state.HasAttemptedCheck)
+            {
+                hasAttemptedCheck = true;
+                previousInstallationOutcomeMessage = state.PreviousInstallationOutcomeMessage;
+                ClearAvailableRelease();
+                LatestVersion = state.LatestVersion;
+                StatusMessage = state.StatusMessage;
+            }
+            else
+            {
+                needsFollowUpCheck = true;
+            }
+        }
+        catch (Exception)
+        {
+            needsFollowUpCheck = true;
+        }
+        finally
+        {
+            if (ReferenceEquals(inheritedPendingCheck, pending))
+            {
+                inheritedPendingCheck = null;
+            }
+
+            runFollowUp = needsFollowUpCheck && !cancellationToken.IsCancellationRequested && !IsInstalling;
+            if (!runFollowUp)
+            {
+                IsChecking = false;
+                openReleaseCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        if (runFollowUp)
+        {
+            recheckRequested = false;
+            await RunCheckAsync();
+        }
+    }
+
+    private async Task<ReleaseUpdateSessionState> AwaitSessionStateAsync(Task active)
+    {
+        try
+        {
+            await active.ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // RunCheckAsync catches expected failures; any unexpected fault falls back to a fresh check.
+        }
+
+        return CaptureSessionState();
+    }
+
+    internal bool TryRestoreSessionState(ReleaseUpdateSessionState? state)
+    {
+        if (state is null)
+        {
+            return false;
+        }
+
+        previousInstallationOutcomeMessage = state.PreviousInstallationOutcomeMessage;
+        if (!state.HasCompletedCheck || state.UseDevelopmentReleases != UseDevelopmentReleases)
+        {
+            StatusMessage = AppendPreviousOutcome(StatusMessage);
+            return false;
+        }
+
+        releaseUri = state.ReleaseUri;
+        releasePackage = state.ReleasePackage;
+        releaseVersion = state.ReleaseVersion;
+        releaseNotes = state.ReleaseNotes;
+        dismissedReleaseVersion = state.DismissedReleaseVersion;
+        hasCompletedCheck = true;
+        hasAttemptedCheck = true;
+        OnPropertyChanged(nameof(ReleaseNotes));
+        OnPropertyChanged(nameof(HasReleaseNotes));
+        InstallConfirmed = false;
+        LatestVersion = state.LatestVersion;
+        IsUpdateAvailable = state.IsUpdateAvailable;
+        RaiseNotificationPropertiesChanged();
+        StatusMessage = state.StatusMessage;
+        openReleaseCommand.RaiseCanExecuteChanged();
+        installCommand.RaiseCanExecuteChanged();
+        return true;
+    }
+
+    public Task CheckAsync()
     {
         if (IsInstalling)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (IsChecking)
         {
             recheckRequested = true;
-            return;
+            return activeCheckTask ?? Task.CompletedTask;
         }
 
+        Task check = RunCheckAsync();
+        activeCheckTask = check;
+        return check;
+    }
+
+    private ReleaseChannel CurrentReleaseChannel =>
+        UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable;
+
+    private async Task RunCheckAsync()
+    {
         IsChecking = true;
-        ReleaseChannel channel = UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable;
         try
         {
-            if (installationWorkflow is not null)
+            while (!IsInstalling)
             {
-                installationWorkflow.RefreshCapability();
-                OnPropertyChanged(nameof(CanInstallCurrentInstallation));
-                OnPropertyChanged(nameof(ShowInstallUnavailable));
-                OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
-                OnPropertyChanged(nameof(ShowAppImageManualInstall));
-                installCommand.RaiseCanExecuteChanged();
+                recheckRequested = false;
+                bool channelChangedDuringCheck = await RunSingleCheckPassAsync();
+                if (!channelChangedDuringCheck && !recheckRequested)
+                {
+                    break;
+                }
             }
-
-            ReleaseUpdateResult result = await service.CheckAsync(currentVersion, channel);
-            if (channel != (UseDevelopmentReleases ? ReleaseChannel.Development : ReleaseChannel.Stable))
-            {
-                recheckRequested = true;
-                return;
-            }
-
-            releaseUri = result.ReleaseUri;
-            releasePackage = result.Package;
-            releaseVersion = result.IsUpdateAvailable ? result.LatestVersion : null;
-            releaseNotes = result.IsUpdateAvailable ? result.ReleaseNotes : string.Empty;
-            OnPropertyChanged(nameof(ReleaseNotes));
-            OnPropertyChanged(nameof(HasReleaseNotes));
-            InstallConfirmed = false;
-            LatestVersion = result.LatestVersion?.ToString() ?? "N/A";
-            IsUpdateAvailable = result.IsUpdateAvailable;
-            RaiseNotificationPropertiesChanged();
-            StatusMessage = AppendPreviousOutcome(GetReleaseStatus(result));
-        }
-        catch (Exception exception) when (IsExpectedFailure(exception))
-        {
-            ClearAvailableRelease();
-            LatestVersion = "Unavailable";
-            StatusMessage = AppendPreviousOutcome(
-                "The update check was unavailable: "
-                    + exception.Message
-                    + " The installation and profile were not changed."
-            );
         }
         finally
         {
+            recheckRequested = false;
             IsChecking = false;
             openReleaseCommand.RaiseCanExecuteChanged();
-            if (recheckRequested && !IsInstalling)
-            {
-                recheckRequested = false;
-                _ = CheckAsync();
-            }
         }
+    }
+
+    private async Task<bool> RunSingleCheckPassAsync()
+    {
+        ReleaseChannel channel = CurrentReleaseChannel;
+        try
+        {
+            RefreshInstallationCapability();
+            ReleaseUpdateResult result = await service.CheckAsync(currentVersion, channel);
+            if (channel != CurrentReleaseChannel)
+            {
+                return true;
+            }
+
+            ApplyCheckResult(result);
+            return false;
+        }
+        catch (Exception exception) when (IsExpectedFailure(exception))
+        {
+            if (channel != CurrentReleaseChannel)
+            {
+                return true;
+            }
+
+            ApplyCheckFailure(exception);
+            return false;
+        }
+    }
+
+    private void RefreshInstallationCapability()
+    {
+        if (installationWorkflow is null)
+        {
+            return;
+        }
+
+        installationWorkflow.RefreshCapability();
+        OnPropertyChanged(nameof(CanInstallCurrentInstallation));
+        OnPropertyChanged(nameof(ShowInstallUnavailable));
+        OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
+        OnPropertyChanged(nameof(ShowAppImageManualInstall));
+        installCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ApplyCheckResult(ReleaseUpdateResult result)
+    {
+        releaseUri = result.ReleaseUri;
+        releasePackage = result.Package;
+        releaseVersion = result.IsUpdateAvailable ? result.LatestVersion : null;
+        releaseNotes = result.IsUpdateAvailable ? result.ReleaseNotes : string.Empty;
+        OnPropertyChanged(nameof(ReleaseNotes));
+        OnPropertyChanged(nameof(HasReleaseNotes));
+        InstallConfirmed = false;
+        LatestVersion = result.LatestVersion?.ToString() ?? "N/A";
+        IsUpdateAvailable = result.IsUpdateAvailable;
+        hasCompletedCheck = true;
+        hasAttemptedCheck = true;
+        RaiseNotificationPropertiesChanged();
+        StatusMessage = AppendPreviousOutcome(GetReleaseStatus(result));
+    }
+
+    private void ApplyCheckFailure(Exception exception)
+    {
+        hasAttemptedCheck = true;
+        ClearAvailableRelease();
+        LatestVersion = "Unavailable";
+        StatusMessage = AppendPreviousOutcome(
+            "The update check was unavailable: " + exception.Message + " The installation and profile were not changed."
+        );
     }
 
     public async Task InstallAsync()

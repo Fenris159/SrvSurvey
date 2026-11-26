@@ -28,6 +28,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private readonly ISystemSummaryClient summaryClient;
     private readonly StationInfoSettingsStore? settingsStore;
+    private readonly Action<string>? log;
     private CancellationTokenSource? loadCancellation;
     private SystemSummary? summary;
     private EliteStatus? status;
@@ -56,10 +57,15 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<string>? editorProhibited;
     private bool disposed;
 
-    public StationInfoViewModel(ISystemSummaryClient summaryClient, StationInfoSettingsStore? settingsStore = null)
+    public StationInfoViewModel(
+        ISystemSummaryClient summaryClient,
+        StationInfoSettingsStore? settingsStore = null,
+        Action<string>? log = null
+    )
     {
         this.summaryClient = summaryClient ?? throw new ArgumentNullException(nameof(summaryClient));
         this.settingsStore = settingsStore;
+        this.log = log;
         autoShow = settingsStore?.Load().AutoShow ?? StationInfoPreferences.Default.AutoShow;
     }
 
@@ -377,10 +383,15 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
             }
 
             summary = result.Summary;
+            foreach (string warning in result.Warnings)
+            {
+                log?.Invoke($"Station lookup for {requestedSystemName} ({requestedSystemAddress}): {warning}");
+            }
+
             StatusMessage =
                 result.Warnings.Count == 0
                     ? $"Loaded {summary.Stations.Count:N0} station(s)."
-                    : string.Join(" ", result.Warnings);
+                    : SystemSummaryWarningFormatter.Format(result.Warnings);
             NotifyStationState();
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
@@ -391,7 +402,8 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         {
             if (ReferenceEquals(loadCancellation, cancellation))
             {
-                StatusMessage = $"Station information is unavailable: {exception.Message}";
+                log?.Invoke($"Station lookup for {requestedSystemName} ({requestedSystemAddress}): {exception}");
+                StatusMessage = "Station data unavailable.";
                 NotifyStationState();
             }
         }

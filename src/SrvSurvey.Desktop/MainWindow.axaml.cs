@@ -81,6 +81,8 @@ public sealed partial class MainWindow : Window
 
     public ApplicationInputContext InputContext { get; }
 
+    internal bool HasTrayIcon => trayIcon is not null;
+
     /// <summary>Activates the window when its content receives pointer input.</summary>
     private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
@@ -621,8 +623,16 @@ public sealed partial class MainWindow : Window
         Screens.Changed -= OnScreensChanged;
         PositionChanged -= OnPositionChanged;
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
-        trayIcon?.Dispose();
-        trayIcon = null;
+        if (trayIcon is not null)
+        {
+            if (Application.Current is { } application)
+            {
+                TrayIcon.SetIcons(application, null);
+            }
+
+            trayIcon.Dispose();
+            trayIcon = null;
+        }
     }
 
     private TrayIcon? CreateTrayIcon()

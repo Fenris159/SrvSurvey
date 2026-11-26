@@ -9,6 +9,7 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
 {
     private const string CatalogStatusPrefix = "Catalogs updated this session: ";
     private const string BackupStatusPrefix = "Backup created this session: ";
+    private const string RefreshingStatusMessage = "Checking and validating published reference data...";
 
     private readonly IPublishedReferenceUpdateService service;
     private readonly string dataDirectory;
@@ -20,7 +21,11 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
     private string updatedCatalogs = CatalogStatusPrefix + "None yet; the automatic check is pending.";
     private string backupDirectory = BackupStatusPrefix + "Not needed unless catalogs are replaced.";
     private bool isRefreshing;
+    private bool hasCompletedRefresh;
+    private bool hasAttemptedRefresh;
     private bool isRestartRequired;
+    private Task? activeRefreshTask;
+    private Task<ReferenceDataUpdateSessionState>? inheritedPendingRefresh;
 
     public ReferenceDataUpdateViewModel(
         IPublishedReferenceUpdateService service,
@@ -96,7 +101,136 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
         restartCommand.RaiseCanExecuteChanged();
     }
 
-    public async Task RefreshAsync()
+    internal ReferenceDataUpdateSessionState CaptureSessionState() =>
+        new(
+            hasCompletedRefresh,
+            statusMessage,
+            updatedCatalogs,
+            backupDirectory,
+            isRestartRequired,
+            hasAttemptedRefresh
+        );
+
+    internal Task<ReferenceDataUpdateSessionState>? CapturePendingRefreshAsync()
+    {
+        if (inheritedPendingRefresh is { IsCompleted: false } inherited)
+        {
+            return inherited;
+        }
+
+        Task? active = activeRefreshTask;
+        return active is not null && !active.IsCompleted ? AwaitSessionStateAsync(active) : null;
+    }
+
+    internal Task AttachPendingRefreshAsync(
+        Task<ReferenceDataUpdateSessionState> pending,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(pending);
+        if (activeRefreshTask is { IsCompleted: false } existing)
+        {
+            return existing;
+        }
+
+        inheritedPendingRefresh = pending;
+        Task attached = RunAttachedPendingRefreshAsync(pending, cancellationToken);
+        activeRefreshTask = attached;
+        return attached;
+    }
+
+    private async Task RunAttachedPendingRefreshAsync(
+        Task<ReferenceDataUpdateSessionState> pending,
+        CancellationToken cancellationToken
+    )
+    {
+        IsRefreshing = true;
+        StatusMessage = RefreshingStatusMessage;
+        bool needsFallbackRefresh = false;
+        try
+        {
+            ReferenceDataUpdateSessionState state = await pending;
+            if (state.HasCompletedRefresh)
+            {
+                TryRestoreSessionState(state);
+            }
+            else if (state.HasAttemptedRefresh)
+            {
+                hasAttemptedRefresh = true;
+                IsRestartRequired = state.IsRestartRequired;
+                UpdatedCatalogs = state.UpdatedCatalogs;
+                BackupDirectory = state.BackupDirectory;
+                StatusMessage = state.StatusMessage;
+            }
+            else
+            {
+                needsFallbackRefresh = !cancellationToken.IsCancellationRequested;
+            }
+        }
+        catch (Exception)
+        {
+            needsFallbackRefresh = !cancellationToken.IsCancellationRequested;
+        }
+        finally
+        {
+            if (ReferenceEquals(inheritedPendingRefresh, pending))
+            {
+                inheritedPendingRefresh = null;
+            }
+
+            IsRefreshing = false;
+        }
+
+        if (needsFallbackRefresh)
+        {
+            await RunRefreshAsync();
+        }
+    }
+
+    private async Task<ReferenceDataUpdateSessionState> AwaitSessionStateAsync(Task active)
+    {
+        try
+        {
+            await active.ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // RunRefreshAsync handles expected failures; any unexpected fault falls back to a fresh refresh.
+        }
+
+        return CaptureSessionState();
+    }
+
+    internal bool TryRestoreSessionState(ReferenceDataUpdateSessionState? state)
+    {
+        if (state is null || !state.HasCompletedRefresh)
+        {
+            return false;
+        }
+
+        hasCompletedRefresh = true;
+        hasAttemptedRefresh = true;
+        StatusMessage = state.StatusMessage;
+        UpdatedCatalogs = state.UpdatedCatalogs;
+        BackupDirectory = state.BackupDirectory;
+        IsRestartRequired = state.IsRestartRequired;
+        return true;
+    }
+
+    public Task RefreshAsync()
+    {
+        Task? existing = activeRefreshTask;
+        if (existing is not null && !existing.IsCompleted)
+        {
+            return existing;
+        }
+
+        Task refresh = RunRefreshAsync();
+        activeRefreshTask = refresh;
+        return refresh;
+    }
+
+    private async Task RunRefreshAsync()
     {
         if (IsRefreshing)
         {
@@ -104,7 +238,7 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
         }
 
         IsRefreshing = true;
-        StatusMessage = "Checking and validating published reference data...";
+        StatusMessage = RefreshingStatusMessage;
         try
         {
             PublishedReferenceUpdateResult result = await service.RefreshAsync(dataDirectory);
@@ -113,6 +247,8 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
                 UpdatedCatalogs = CatalogStatusPrefix + "None needed; already current.";
                 BackupDirectory = BackupStatusPrefix + "Not needed; no catalogs were replaced.";
                 IsRestartRequired = false;
+                hasCompletedRefresh = true;
+                hasAttemptedRefresh = true;
                 StatusMessage =
                     result.Warnings.Count == 0
                         ? "Published reference data is current."
@@ -125,6 +261,8 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
                 ? BackupStatusPrefix + backup
                 : BackupStatusPrefix + "Not needed; no prior downloaded catalogs were replaced.";
             IsRestartRequired = result.RestartRequired;
+            hasCompletedRefresh = true;
+            hasAttemptedRefresh = true;
             StatusMessage =
                 $"Activated {result.UpdatedCatalogs.Count:N0} verified "
                 + "reference update(s). Restart SrvSurvey to use them.";
@@ -137,6 +275,7 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
         }
         catch (Exception exception)
         {
+            hasAttemptedRefresh = true;
             IsRestartRequired = false;
             UpdatedCatalogs = CatalogStatusPrefix + "None; refresh failed before activation.";
             BackupDirectory = BackupStatusPrefix + "Not needed; existing reference data remains active.";
@@ -211,3 +350,27 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
         }
     }
 }
+
+internal sealed record ReferenceDataUpdateSessionState(
+    bool HasCompletedRefresh,
+    string StatusMessage,
+    string UpdatedCatalogs,
+    string BackupDirectory,
+    bool IsRestartRequired,
+    bool HasAttemptedRefresh = false
+);
+
+internal sealed record ReleaseUpdateSessionState(
+    bool HasCompletedCheck,
+    bool UseDevelopmentReleases,
+    string LatestVersion,
+    string StatusMessage,
+    bool IsUpdateAvailable,
+    Uri? ReleaseUri,
+    CrossPlatformReleasePackage? ReleasePackage,
+    ReleaseVersion? ReleaseVersion,
+    string ReleaseNotes,
+    ReleaseVersion? DismissedReleaseVersion,
+    string? PreviousInstallationOutcomeMessage,
+    bool HasAttemptedCheck = false
+);

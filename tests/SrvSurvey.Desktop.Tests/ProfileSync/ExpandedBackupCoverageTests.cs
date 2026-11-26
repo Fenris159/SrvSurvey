@@ -102,7 +102,11 @@ public sealed class ExpandedBackupCoverageTests
 
     [Theory]
     [InlineData("vr/Supercruise.json")]
+    [InlineData("vr/wivrn/Default.json")]
+    [InlineData("vr/monado/Default.json")]
     [InlineData("commanders/F123/overlays/vr/vdxr/Default.json")]
+    [InlineData("commanders/F123/overlays/vr/wivrn/Default.json")]
+    [InlineData("commanders/F123/overlays/vr/monado/Default.json")]
     public void StartupAndVrConfigurationCanOnlyBeRecoveredOnTheirOriginalMachine(string calibration)
     {
         using var source = new ProfileSyncTestRoot();

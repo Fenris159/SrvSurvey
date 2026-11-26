@@ -42,6 +42,13 @@ public sealed class VrCalibrationPresentationTests : IDisposable
                 .OfType<VrCalibrationNumberInput>()
                 .ToArray();
             Assert.Equal(7, fields.Length);
+            Avalonia.Controls.Primitives.ToggleButton? dragToggle =
+                view.FindControl<Avalonia.Controls.Primitives.ToggleButton>("DragModeToggleButton");
+            Assert.NotNull(dragToggle);
+            Assert.False(dragToggle.IsChecked);
+            dragToggle.IsChecked = true;
+            Assert.True(((VrOverlayViewModel)view.DataContext).IsDragModeEnabled);
+            Assert.NotNull(view.FindControl<ComboBox>("CategoryComboBox"));
             foreach (VrCalibrationNumberInput field in fields)
             {
                 TextBox text = Assert.Single(field.GetVisualDescendants().OfType<TextBox>());
@@ -115,10 +122,68 @@ public sealed class VrCalibrationPresentationTests : IDisposable
         );
         Assert.Equal(9.9, model.RotationYaw, 4);
 
+        // Fractional controller scroll deltas accumulate before stepping and reset cleanly on reversal.
+        router.Dispatch(
+            controls,
+            new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.Wheel, point.X, point.Y, WheelY: 0.4)
+        );
+        router.Dispatch(
+            controls,
+            new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.Wheel, point.X, point.Y, WheelY: 0.4)
+        );
+        Assert.Equal(9.9, model.RotationYaw, 4);
+        router.Dispatch(
+            controls,
+            new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.Wheel, point.X, point.Y, WheelY: 0.4)
+        );
+        Assert.Equal(10, model.RotationYaw, 4);
+        router.Dispatch(
+            controls,
+            new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.Wheel, point.X, point.Y, WheelY: -0.5)
+        );
+        Assert.Equal(10, model.RotationYaw, 4);
+        router.Dispatch(
+            controls,
+            new VrOverlayPointerEvent("PlotAdjustVR", VrOverlayPointerEventKind.Wheel, point.X, point.Y, WheelY: -0.6)
+        );
+        Assert.Equal(9.9, model.RotationYaw, 4);
+
         RegisteredOverlayWindow sample = registrations.Single(item => item.PlotterName == "PlotJumpInfo");
         Assert.True(session.Owns(sample));
         Assert.False(session.Owns(new RegisteredOverlayWindow(new Window(), "Other")));
         Assert.Equal(controls, session.Refresh(model, null).Single(item => item.PlotterName == "PlotAdjustVR"));
+
+        // Calibration controls snap into five 45-degree front sectors with hysteresis and hold steady during small head motion.
+        _ = session.Refresh(model, new VrOverlayHeadPose(new System.Numerics.Vector3(0f, 1.2f, 0f), 0f));
+        VrOverlayCalibration firstPlacement = session.ControlsCalibration;
+        Assert.Equal(0f, firstPlacement.Position.X, 3);
+        Assert.Equal(7f, firstPlacement.Position.Y, 3);
+        Assert.Equal(10f, firstPlacement.Position.Z, 3);
+        Assert.Equal(0f, firstPlacement.Rotation.Y, 3);
+
+        _ = session.Refresh(
+            model,
+            new VrOverlayHeadPose(new System.Numerics.Vector3(0.05f, 1.2f, 0f), 20f * MathF.PI / 180f)
+        );
+        Assert.Equal(firstPlacement, session.ControlsCalibration);
+
+        _ = session.Refresh(
+            model,
+            new VrOverlayHeadPose(new System.Numerics.Vector3(0f, 1.2f, 0f), 40f * MathF.PI / 180f)
+        );
+        Assert.Equal(45f, session.ControlsCalibration.Rotation.Y, 3);
+
+        _ = session.Refresh(model, new VrOverlayHeadPose(new System.Numerics.Vector3(0.5f, 1.2f, 0f), MathF.PI / 2f));
+        VrOverlayCalibration turnedPlacement = session.ControlsCalibration;
+        Assert.Equal(-5f, turnedPlacement.Position.X, 3);
+        Assert.Equal(7f, turnedPlacement.Position.Y, 3);
+        Assert.Equal(0f, turnedPlacement.Position.Z, 3);
+        Assert.Equal(90f, turnedPlacement.Rotation.Y, 3);
+
+        // A transient null head pose retains the last snapped placement.
+        _ = session.Refresh(model, null);
+        Assert.Equal(turnedPlacement, session.ControlsCalibration);
+
         model.CancelCommand.Execute(null);
         Assert.Empty(session.Refresh(model, null));
         Assert.False(controls.Window.IsVisible);

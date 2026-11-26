@@ -15,6 +15,52 @@ public sealed class OpenXrOverlayTests : IDisposable
     private const long Now = 100_000;
 
     [Fact]
+    public void EffectivePanelBudgetReflectsNativeLayerLimitAndInteractionCursorSlot()
+    {
+        using OpenXrOverlayRuntime runtime = Runtime();
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+
+        runtime.Probe();
+        WriteState(OpenXrLayerState.Ready, Now);
+        runtime.Initialize();
+        using var nativeInput = new OpenXrInputWriter(MailboxPath + ".input");
+        nativeInput.Ready(Now);
+
+        // Older native layers leave offset 44 zeroed -> fall back to packet capacity.
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+
+        // A 3-layer runtime with 1 game layer reports 2 available overlay layers (encoded as 3).
+        WriteAvailableOverlayLayers(2);
+        Assert.Equal(2, runtime.MaximumOverlays);
+        Assert.True(runtime.SetInteractionEnabled(true).Succeeded);
+        Assert.Equal(1, runtime.MaximumOverlays);
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        Assert.Equal(2, runtime.MaximumOverlays);
+
+        // 17+ available layers keep full 16-panel capacity even while the cursor occupies one layer.
+        WriteAvailableOverlayLayers(17);
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+        Assert.True(runtime.SetInteractionEnabled(true).Succeeded);
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+
+        // Zero or one available overlay layers must reject controller interaction so calibration controls never vanish.
+        Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
+        WriteAvailableOverlayLayers(1);
+        Assert.Equal(1, runtime.MaximumOverlays);
+        VrRuntimeResult oneLayerToggle = runtime.SetInteractionEnabled(true);
+        Assert.False(oneLayerToggle.Succeeded);
+        Assert.Contains("two free composition layers", oneLayerToggle.Message, StringComparison.Ordinal);
+        Assert.Equal(1, runtime.MaximumOverlays);
+
+        WriteAvailableOverlayLayers(0);
+        Assert.Equal(0, runtime.MaximumOverlays);
+        Assert.False(runtime.SetInteractionEnabled(true).Succeeded);
+
+        runtime.Shutdown();
+        Assert.Equal(OpenXrFramePacket.MaximumOverlays, runtime.MaximumOverlays);
+    }
+
+    [Fact]
     public void ConflictingEdvrAttachmentReportsRecoveryAndKeepsTheFramePublisherAvailable()
     {
         using var runtime = new OpenXrOverlayRuntime(
@@ -162,6 +208,46 @@ public sealed class OpenXrOverlayTests : IDisposable
         Assert.Equal(256u, UInt(packet, 128 + 16));
         Assert.Equal(260u, UInt(packet, 192 + 16));
         Assert.Equal(128, OpenXrFramePacket.Encode(new Dictionary<string, OpenXrOverlayFrame>(), 0).Length);
+
+        // Calibration controls (PlotAdjustVR) must be encoded last so they always render and hit-test on top.
+        byte[] withControls = OpenXrFramePacket.Encode(
+            new Dictionary<string, OpenXrOverlayFrame>
+            {
+                [VrOverlayCalibrationSession.ControlsPlotterName] = overlay,
+                ["PlotBioStatus"] = overlay,
+                ["PlotSysStatus"] = overlay,
+            },
+            0
+        );
+        ulong firstId = BinaryPrimitives.ReadUInt64LittleEndian(withControls.AsSpan(128));
+        ulong secondId = BinaryPrimitives.ReadUInt64LittleEndian(withControls.AsSpan(192));
+        ulong lastId = BinaryPrimitives.ReadUInt64LittleEndian(withControls.AsSpan(256));
+        Assert.Equal(OpenXrFramePacket.GetOverlayId("PlotBioStatus"), firstId);
+        Assert.Equal(OpenXrFramePacket.GetOverlayId("PlotSysStatus"), secondId);
+        Assert.Equal(OpenXrFramePacket.GetOverlayId(VrOverlayCalibrationSession.ControlsPlotterName), lastId);
+
+        // Explicit SortOrder preserves publish order (e.g. selected preview above siblings) while PlotAdjustVR stays topmost.
+        byte[] withSortOrder = OpenXrFramePacket.Encode(
+            new Dictionary<string, OpenXrOverlayFrame>
+            {
+                [VrOverlayCalibrationSession.ControlsPlotterName] = overlay with { SortOrder = 0 },
+                ["PlotSysStatus"] = overlay with { SortOrder = 1 },
+                ["PlotBioStatus"] = overlay with { SortOrder = 2 },
+            },
+            0
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId("PlotSysStatus"),
+            BinaryPrimitives.ReadUInt64LittleEndian(withSortOrder.AsSpan(128))
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId("PlotBioStatus"),
+            BinaryPrimitives.ReadUInt64LittleEndian(withSortOrder.AsSpan(192))
+        );
+        Assert.Equal(
+            OpenXrFramePacket.GetOverlayId(VrOverlayCalibrationSession.ControlsPlotterName),
+            BinaryPrimitives.ReadUInt64LittleEndian(withSortOrder.AsSpan(256))
+        );
     }
 
     [Theory]
@@ -348,6 +434,29 @@ public sealed class OpenXrOverlayTests : IDisposable
         runtime.RemoveOverlay("A");
         native.Add(new OpenXrPointerEvent(id, VrOverlayPointerEventKind.LeftButtonDown, 0, 0, 0, 0));
         Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+
+        // Republishing after RemoveOverlay or changing pointer dimensions rotates the overlay ID
+        // so stale events from the prior surface revision cannot target the replacement or resized surface.
+        runtime.PublishOverlay("A", frame, Overlay().Calibration, 1);
+        ulong rev1Id = OpenXrFramePacket.GetOverlayId("A", 1);
+        Assert.NotEqual(id, rev1Id);
+        native.Add(new OpenXrPointerEvent(id, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0));
+        Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+        native.Add(new OpenXrPointerEvent(rev1Id, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0));
+        VrOverlayPointerEvent rev1Move = Assert.Single(runtime.PollPointerEvents());
+        Assert.Equal("A", rev1Move.PlotterName);
+        Assert.Equal(VrOverlayPointerEventKind.Move, rev1Move.Kind);
+
+        var resizedFrame = new VrOverlayFrame(4, 2, new byte[32], logicalSize ? 4 : 8, logicalSize ? 2 : 4);
+        runtime.PublishOverlay("A", resizedFrame, Overlay().Calibration, 1);
+        ulong rev2Id = OpenXrFramePacket.GetOverlayId("A", 2);
+        native.Add(new OpenXrPointerEvent(rev1Id, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0));
+        Assert.Equal(VrOverlayPointerEventKind.Reset, Assert.Single(runtime.PollPointerEvents()).Kind);
+        native.Add(new OpenXrPointerEvent(rev2Id, VrOverlayPointerEventKind.Move, 0.5f, 0.5f, 0, 0));
+        VrOverlayPointerEvent rev2Move = Assert.Single(runtime.PollPointerEvents());
+        Assert.Equal("A", rev2Move.PlotterName);
+        Assert.Equal(logicalSize ? 2 : 4, rev2Move.X, 3);
+
         Assert.True(runtime.SetInteractionEnabled(false).Succeeded);
         Assert.Equal(0u, native.View.ReadUInt32(12));
         Assert.Empty(runtime.PollPointerEvents());
@@ -484,6 +593,26 @@ public sealed class OpenXrOverlayTests : IDisposable
         using MemoryMappedViewAccessor view = mapping.CreateViewAccessor();
         view.Write(40, (uint)state);
         view.Write(32, heartbeat);
+    }
+
+    private void WriteAvailableOverlayLayers(uint availableLayers)
+    {
+        using var file = new FileStream(
+            MailboxPath,
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.ReadWrite | FileShare.Delete
+        );
+        using var mapping = MemoryMappedFile.CreateFromFile(
+            file,
+            null,
+            OpenXrFramePacket.Capacity,
+            MemoryMappedFileAccess.ReadWrite,
+            HandleInheritability.None,
+            leaveOpen: true
+        );
+        using MemoryMappedViewAccessor view = mapping.CreateViewAccessor();
+        view.Write(44, availableLayers + 1u);
     }
 
     private void WriteHeadPose(uint sequence, long timestamp, uint revision, Vector3 position, float yaw)

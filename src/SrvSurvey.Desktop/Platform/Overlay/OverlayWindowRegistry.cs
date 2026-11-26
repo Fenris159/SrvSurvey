@@ -193,6 +193,22 @@ public sealed class OverlayWindowRegistry
         ReconcileAndNotify();
     }
 
+    /// <summary>Clears per-session visibility and suppression flags when tearing down or switching commander sessions.</summary>
+    internal void ResetSessionState()
+    {
+        Dispatcher.UIThread.VerifyAccess();
+        userHiddenPlotters.Clear();
+        vehicleExcludedPlotters.Clear();
+        combinedDragWindows.Clear();
+        galaxyMapContextActive = false;
+        editorSuppressed = false;
+        manualSuppressed = false;
+        suitSuppressed = false;
+        sessionSuppressed = false;
+        priorityFacts = default;
+        ReconcileAndNotify();
+    }
+
     public IReadOnlyList<RegisteredOverlayWindow> Snapshot()
     {
         var result = new List<RegisteredOverlayWindow>(windows.Count);

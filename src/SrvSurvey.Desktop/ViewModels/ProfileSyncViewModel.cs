@@ -11,6 +11,12 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
     private bool disposed;
     private bool cancellableOperation;
     private CancellationTokenSource? authorization;
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "Owned and disposed by the using block in RunAsync."
+    )]
     private CancellationTokenSource? operationCancellation;
     private CancellationToken operationToken;
     private TaskCompletionSource? operationFinished;
@@ -435,16 +441,26 @@ public sealed class ProfileSyncViewModel : WorkspaceObservable, IDisposable
         }
     }
 
-    /// <summary>Removes notifications and releases this machine's sync resources.</summary>
-    public void Dispose()
+    /// <summary>Detaches the shared sync service so an in-process commander switch can reuse it without shutting down.</summary>
+    internal ProfileSyncService DetachService()
     {
         disposed = true;
         authorization?.Cancel();
         operationCancellation?.Cancel();
-        operationCancellation?.Dispose();
         operationCancellation = null;
         service.Changed -= OnServiceChanged;
-        service.Dispose();
+        return service;
+    }
+
+    /// <summary>Removes notifications and releases this machine's sync resources.</summary>
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        DetachService().Dispose();
     }
 }
 

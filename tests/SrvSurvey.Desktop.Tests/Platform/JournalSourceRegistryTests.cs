@@ -124,6 +124,148 @@ public sealed class JournalSourceRegistryTests : IDisposable
         Assert.Empty(Directory.GetFiles(Path.Combine(root, nameof(JournalSourceRegistry)), "*.json"));
     }
 
+    /// <summary>Exclusive per-commander leases block concurrent claims, ignore unlocked stale files, and support atomic handoff.</summary>
+    [Fact]
+    public void CommanderClaimsEnforceExclusiveOwnershipAndAtomicSwitchHandoff()
+    {
+        using var first = new CommanderClaimRegistry(root);
+        using var second = new CommanderClaimRegistry(root);
+        Assert.False(first.IsClaimedByOtherInstance("F13228986"));
+        Assert.False(first.IsClaimedByOtherInstance(" "));
+        Assert.False(first.TryReserve(" "));
+
+        Assert.True(first.Claim("f13228986"));
+        Assert.True(first.Claim("F13228986"));
+        Assert.False(first.IsClaimedByOtherInstance("F13228986"));
+        Assert.True(second.IsClaimedByOtherInstance("F13228986"));
+        Assert.False(second.Claim("F13228986"));
+        Assert.False(second.TryReserve("F13228986"));
+
+        // An unlocked leftover claim file from a crashed process does not block ownership.
+        string claimsDir = Path.Combine(root, "CommanderClaims");
+        File.WriteAllText(Path.Combine(claimsDir, "F888.lock"), "{}");
+        Assert.False(first.IsClaimedByOtherInstance("F888"));
+        Assert.True(second.Claim("F888"));
+        Assert.True(first.IsClaimedByOtherInstance("F888"));
+
+        // Releasing F888 frees it immediately while unsafe names hash safely within CommanderClaims.
+        Assert.False(second.Claim(null));
+        Assert.False(first.IsClaimedByOtherInstance("F888"));
+        Assert.True(second.Claim("../unsafe/id"));
+        Assert.True(first.IsClaimedByOtherInstance("../unsafe/id"));
+        Assert.False(second.Claim(null));
+
+        // Reserving F14004033 holds BOTH commanders exclusively until the outgoing registry detaches and disposes.
+        Assert.True(first.TryReserve("F14004033"));
+        Assert.True(first.TryReserve("F14004033"));
+        Assert.True(first.TryReserve("F13228986"));
+        Assert.False(first.IsClaimedByOtherInstance("F14004033"));
+        Assert.True(second.IsClaimedByOtherInstance("F14004033"));
+        Assert.False(second.Claim("F14004033"));
+
+        // Mismatched detach disposes the reserved lease; matching detach preserves the OS lock across outgoing disposal.
+        Assert.Null(first.DetachReservedLease("F99999999"));
+        Assert.False(second.IsClaimedByOtherInstance("F14004033"));
+        Assert.True(first.TryReserve("F14004033"));
+        using CommanderClaimLease? handoff = first.DetachReservedLease("F14004033");
+        Assert.NotNull(handoff);
+        first.Dispose();
+
+        // Outgoing F13228986 is now free, while F14004033 remains exclusively locked until the replacement adopts and disposes it.
+        Assert.False(second.IsClaimedByOtherInstance("F13228986"));
+        Assert.True(second.IsClaimedByOtherInstance("F14004033"));
+        Assert.False(second.Claim("F14004033"));
+
+        using var replacement = new CommanderClaimRegistry(root);
+        replacement.Adopt(handoff);
+        replacement.Adopt(handoff);
+        Assert.False(replacement.IsClaimedByOtherInstance("F14004033"));
+        Assert.True(second.IsClaimedByOtherInstance("F14004033"));
+
+        // Promoting a reserved lease via Claim switches ownership without dropping the lease.
+        Assert.True(replacement.TryReserve("F77777777"));
+        Assert.True(replacement.Claim("F77777777"));
+        Assert.False(second.IsClaimedByOtherInstance("F14004033"));
+        Assert.True(second.IsClaimedByOtherInstance("F77777777"));
+    }
+
+    /// <summary>Missing lease paths report no live lease while an active exclusive handle blocks peers.</summary>
+    [Fact]
+    public void CommanderClaimsIgnoreMissingPathsAndDetectExternalExclusiveHandles()
+    {
+        Assert.False(ProcessLeaseFile.HasLiveLease(Path.Combine(root, "does-not-exist.lock")));
+
+        using var first = new CommanderClaimRegistry(root);
+        Assert.True(first.Claim("F13228986"));
+        string claimsDir = Path.Combine(root, "CommanderClaims");
+        string peerPath = Path.Combine(claimsDir, "F14004033.lock");
+        using (var externalLock = new FileStream(peerPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        {
+            Assert.True(first.IsClaimedByOtherInstance("F14004033"));
+            Assert.False(first.TryReserve("F14004033"));
+        }
+
+        Assert.False(first.IsClaimedByOtherInstance("F14004033"));
+        Assert.True(first.TryReserve("F14004033"));
+    }
+
+    /// <summary>Confirmed commander checkpoints persist monotonically per journal path and ignore malformed files.</summary>
+    [Fact]
+    public void CommanderJournalCheckpointStorePersistsConfirmedOffsetsAndIgnoresMalformedFiles()
+    {
+        Assert.Empty(CommanderJournalCheckpointStore.TryLoad(root, null));
+        Assert.Empty(CommanderJournalCheckpointStore.TryLoad(root, "F14004033"));
+        Assert.False(
+            CommanderJournalCheckpointStore.TrySave(
+                root,
+                " ",
+                new SrvSurvey.Core.Journal.JournalCheckpoint(Journal("first"), 100)
+            )
+        );
+        Assert.False(
+            CommanderJournalCheckpointStore.TrySave(
+                root,
+                "F14004033",
+                new SrvSurvey.Core.Journal.JournalCheckpoint(Journal("first"), 0)
+            )
+        );
+
+        string firstJournal = Journal("first");
+        string secondJournal = Journal("second");
+        Assert.True(
+            CommanderJournalCheckpointStore.TrySave(
+                root,
+                "f14004033",
+                new SrvSurvey.Core.Journal.JournalCheckpoint(firstJournal, 512)
+            )
+        );
+        // Smaller offset must never regress a previously confirmed checkpoint for the same journal.
+        Assert.True(
+            CommanderJournalCheckpointStore.TrySave(
+                root,
+                "F14004033",
+                new SrvSurvey.Core.Journal.JournalCheckpoint(firstJournal, 256)
+            )
+        );
+        Assert.True(
+            CommanderJournalCheckpointStore.TrySave(
+                root,
+                "F14004033",
+                new SrvSurvey.Core.Journal.JournalCheckpoint(secondJournal, 1024)
+            )
+        );
+
+        IReadOnlyDictionary<string, long> loaded = CommanderJournalCheckpointStore.TryLoad(root, "F14004033");
+        Assert.Equal(2, loaded.Count);
+        Assert.Equal(512, loaded[firstJournal]);
+        Assert.Equal(1024, loaded[secondJournal]);
+
+        // Corrupted checkpoint files fail closed to an empty map without throwing.
+        string corruptPath = Path.Combine(root, "CommanderClaims", "F999.checkpoint.json");
+        File.WriteAllText(corruptPath, "{not-valid-json");
+        Assert.Empty(CommanderJournalCheckpointStore.TryLoad(root, "F999"));
+    }
+
     /// <summary>Creates a physical folder for a source fixture.</summary>
     private string Journal(string folder)
     {

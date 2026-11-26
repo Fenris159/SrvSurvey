@@ -553,6 +553,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
   },
   {
+    "Text": "10 cm units, scroll to adjust (Shift fine, Ctrl coarse)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "10.89 M - 34.34 M",
     "IsFormat": false,
     "SourceKinds": [
@@ -2426,14 +2434,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "ADJUSTMENT STEP",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
-  },
-  {
     "Text": "ALIGN GUARDIAN SITE ORIGIN",
     "IsFormat": false,
     "SourceKinds": [
@@ -4035,6 +4035,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationShoppingView.axaml"
   },
   {
+    "Text": "All overlays",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "All platinum",
     "IsFormat": false,
     "SourceKinds": [
@@ -4931,6 +4939,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "Application exit ({0}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.cs"
   },
   {
     "Text": "Application logging is unavailable.",
@@ -6237,6 +6253,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Automatic commander switch: detected active journal for {0} (current: {1}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Automatic commander switch: reloading desktop runtime for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.cs"
   },
   {
     "Text": "Automatic conversion",
@@ -14063,6 +14095,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "CommanderClaims",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/JournalSourceRegistry.cs"
+  },
+  {
     "Text": "CommanderPreference",
     "IsFormat": false,
     "SourceKinds": [
@@ -15278,6 +15318,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "Connect {0} before enabling controller interaction.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "Connect {0} before resetting the overlay origin.",
     "IsFormat": true,
     "SourceKinds": [
@@ -15559,20 +15607,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/ControllerDeviceProvider.cs"
   },
   {
-    "Text": "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
-  },
-  {
     "Text": "Controller-pointer interaction is on; use its shortcut again to restore click-through.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
+    "Text": "Controller-pointer interaction is unavailable on {0} (OpenXR error {1}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "ControllerDeviceId",
@@ -19846,6 +19894,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Drag mode active: point at any visible preview panel, hold trigger to drag, and use the thumbstick to adjust depth.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Drag mode off.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
+    "Text": "Drag panels in VR",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "Drag the bordered previews to the desired monitors and positions. Preview content comes from a false game state shaped like real overlay data.",
     "IsFormat": false,
     "SourceKinds": [
@@ -20209,6 +20281,38 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "EDSM and Spansh data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM and Spansh temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM data unavailable \u00B7 Spansh temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
     "Text": "EDSM processing was isolated from journal tracking: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -20255,6 +20359,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/EdsmSettingsViewModel.cs"
+  },
+  {
+    "Text": "EDSM temporarily rate-limited \u00B7 Spansh data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
+    "Text": "EDSM temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
   },
   {
     "Text": "ELW",
@@ -21205,7 +21325,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Enable SrvSurvey VR overlays below and use Adjust overlays or Reset VR orientation to place panels in your cockpit.",
+    "Text": "Enable SrvSurvey VR overlays below and use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -22416,7 +22536,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
   },
   {
-    "Text": "Experimental Linux OpenXR route without SteamVR. Uses Monado\u0027s native XR_EXTX_overlay compositor with headless Vulkan. Controller pointer interaction is not yet supported.",
+    "Text": "Experimental Linux OpenXR route without SteamVR. Uses Monado\u0027s native XR_EXTX_overlay compositor with headless Vulkan. Supports controller-pointer interaction via Toggle VR overlay interaction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -22424,7 +22544,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn\u0027s native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. Controller pointer interaction is not yet supported.",
+    "Text": "Experimental Linux OpenXR route without SteamVR. Uses WiVRn\u0027s native XR_EXTX_overlay compositor with headless Vulkan so Elite Dangerous can run through WiVRn (with xrizer or OpenComposite) without OpenVR overlay crashes. SrvSurvey waits until Elite Dangerous is running before attaching to WiVRn so WiVRn\u0027s lobby stays usable, and supports controller-pointer interaction via Toggle VR overlay interaction.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -22568,7 +22688,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
-    "Text": "Exploration rewards ~{0} CR",
+    "Text": "Exploration rewards {0} CR",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -26129,14 +26249,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Galaxy Map data is unavailable: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
-  },
-  {
     "Text": "Galaxy Map data ready",
     "IsFormat": false,
     "SourceKinds": [
@@ -26151,6 +26263,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Galaxy Map lookup for {0} ({1}): {2}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "Galaxy Map preferences changed for this session but could not be saved: {0}",
@@ -38520,6 +38640,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
+    "Text": "Next category",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "Next entry",
     "IsFormat": false,
     "SourceKinds": [
@@ -40956,6 +41084,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "OVERLAY CATEGORY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "OVERLAY SIZE",
@@ -44567,7 +44703,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
-    "Text": "Pitch (degrees)",
+    "Text": "Pitch",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -44575,7 +44711,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
-    "Text": "Place in front of me",
+    "Text": "Place in front",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -45226,6 +45362,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
   },
   {
+    "Text": "Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
     "Text": "Point name",
     "IsFormat": false,
     "SourceKinds": [
@@ -45306,7 +45450,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
   },
   {
-    "Text": "Position X (10 cm units)",
+    "Text": "Pos X",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -45314,7 +45458,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
-    "Text": "Position Y (10 cm units)",
+    "Text": "Pos Y",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -45322,7 +45466,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
-    "Text": "Position Z (10 cm units)",
+    "Text": "Pos Z",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -46100,6 +46244,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexWindow.axaml"
+  },
+  {
+    "Text": "Previous category",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Previous entry",
@@ -53068,7 +53220,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "Roll (degrees)",
+    "Text": "Roll",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -53122,6 +53274,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Rotation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Rounder HUD outlines",
@@ -54476,6 +54636,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCarrierManifestWindow.axaml"
   },
   {
+    "Text": "Save ({0})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Save As...",
     "IsFormat": false,
     "SourceKinds": [
@@ -54618,14 +54786,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
-  },
-  {
-    "Text": "Save calibration",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Save change",
@@ -55167,6 +55327,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Saved {0} of {1} overlays; unsaved: {2} ({3})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "Saved {0} overlay position and appearance override(s){1}{2}{3}",
     "IsFormat": true,
     "SourceKinds": [
@@ -55181,6 +55349,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayLayoutSettingsViewModel.cs"
+  },
+  {
+    "Text": "Saved {0} overlays ({1}).",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
     "Text": "Saved {0} screenshots.",
@@ -55283,6 +55459,14 @@
     "IsFormat": false,
     "SourceKinds": [
       "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
+  },
+  {
+    "Text": "Scale \u0026 Position",
+    "IsFormat": false,
+    "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
@@ -59798,6 +59982,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerClient.cs"
   },
   {
+    "Text": "Spansh data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
     "Text": "Spansh data updated just now",
     "IsFormat": false,
     "SourceKinds": [
@@ -59884,6 +60076,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Spansh temporarily rate-limited.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
   },
   {
     "Text": "Spansh unavailable; showing built-in and commander observations.",
@@ -61683,6 +61883,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
+    "Text": "Station data unavailable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
+  },
+  {
     "Text": "Station information",
     "IsFormat": false,
     "SourceKinds": [
@@ -61692,7 +61900,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Station information is unavailable: {0}",
+    "Text": "Station information settings could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -61700,7 +61908,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
   },
   {
-    "Text": "Station information settings could not be saved: {0}",
+    "Text": "Station lookup for {0} ({1}): {2}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -62059,6 +62267,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ExplorationHistoryViewModel.Details.cs"
+  },
+  {
+    "Text": "Step",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "Still to plan: {0}",
@@ -63238,7 +63454,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
   },
   {
     "Text": "System default",
@@ -65519,6 +65735,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxVrRuntimeInspector.cs"
   },
   {
+    "Text": "The active VDXR runtime needs at least two free composition layers for controller interaction. Free a composition layer before enabling controller interaction.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "The active VR runtime layer limit only fits the calibration controls. Turn off controller interaction or free a composition layer to preview the selected overlay.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCoordinator.cs"
+  },
+  {
     "Text": "The active bootstrap source and the locations checked on this platform.",
     "IsFormat": false,
     "SourceKinds": [
@@ -66861,6 +67093,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ReleaseInstallationWorkflow.cs"
+  },
+  {
+    "Text": "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "The installed release notes are missing from this build.",
@@ -68637,14 +68877,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
-  },
-  {
-    "Text": "The selected panel shows sample data. Normal steps: 5 cm and 1\u00B0. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "The selected profile UI settings are not valid JSON.",
@@ -70489,6 +70721,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Too Many Requests",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
   },
   {
     "Text": "Too steep",
@@ -72735,6 +72975,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Use Adjust overlays, Reset VR orientation, or Toggle VR overlay interaction to place and click panels in your cockpit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
+  },
+  {
     "Text": "Use Audit all boxels when you need every branch refreshed against local history and Spansh rather than only the current boxel. Large audits require explicit confirmation because they can make more than 1,000 requests.",
     "IsFormat": false,
     "SourceKinds": [
@@ -73464,7 +73712,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Use this shortcut to switch SteamVR or VDXR overlays between click-through and controller-pointer interaction. On VDXR, point at a panel: trigger clicks, grip right-clicks, and thumbstick scrolls. Use the shortcut again to restore click-through mode.",
+    "Text": "Use this shortcut to switch SteamVR, VDXR, WiVRn, or Monado overlays between click-through and controller-pointer interaction. On OpenXR routes (VDXR, WiVRn, Monado), point at a panel: trigger clicks, grip right-clicks, and thumbstick or trackpad scrolls. Use the shortcut again to restore click-through mode.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -73704,14 +73952,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
   },
   {
-    "Text": "VEHICLE / GAME MODE",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
-  },
-  {
     "Text": "VISIT",
     "IsFormat": false,
     "SourceKinds": [
@@ -73886,14 +74126,6 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
-  },
-  {
-    "Text": "VR overlays are click-through.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
@@ -73921,7 +74153,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrPlatformProfileCatalog.cs"
   },
   {
-    "Text": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR or VDXR route.",
+    "Text": "VR overlays stay click-through until you explicitly enable controller-pointer interaction on the selected SteamVR, VDXR, WiVRn, or Monado route.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -74561,6 +74793,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
+    "Text": "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn\u0027s lobby stays usable.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
   },
   {
     "Text": "Waiting for Elite Dangerous.",
@@ -76150,7 +76398,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Yaw (degrees)",
+    "Text": "Yaw",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -78181,6 +78429,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
+    "Text": "degrees",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/VrCalibrationView.axaml"
   },
   {
     "Text": "depleted",
@@ -81591,6 +81847,14 @@
     "FirstSource": "src/SrvSurvey.Core/Routes/SpanshPlannerCatalog.cs"
   },
   {
+    "Text": "rate-limited",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSummaryWarningFormatter.cs"
+  },
+  {
     "Text": "rating",
     "IsFormat": false,
     "SourceKinds": [
@@ -83468,7 +83732,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderSettingsProfile.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/VrOverlayCalibrationStore.cs"
   },
   {
     "Text": "version",
@@ -83750,6 +84014,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
+  },
+  {
+    "Text": "wine",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+  },
+  {
+    "Text": "wine-preloader",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+  },
+  {
+    "Text": "wine64",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
+  },
+  {
+    "Text": "wine64-preloader",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/EliteGameProcessDetector.cs"
   },
   {
     "Text": "with unknown time",
@@ -84584,20 +84880,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "{0} controller interaction is enabled. Point at a panel and use the trigger to click.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LinuxOpenXrOverlayRuntime.cs"
+  },
+  {
     "Text": "{0} could not be opened: {1}",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
-  },
-  {
-    "Text": "{0} data unavailable.",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
     "Text": "{0} destination: {1} \u00B7 Mining: {2}",
@@ -85848,6 +86144,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderPreferenceSettingsStore.cs"
   },
   {
+    "Text": "{0} unsaved overlay edit(s) remain pending for {1} and will be saved together. Close / discard unsaved reverts all pending edits.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/VrOverlayViewModel.cs"
+  },
+  {
     "Text": "{0} unsold entries",
     "IsFormat": true,
     "SourceKinds": [
@@ -86478,14 +86782,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
-  },
-  {
-    "Text": "~{0} CR",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceSession.cs"
   },
   {
     "Text": "~{0} M",

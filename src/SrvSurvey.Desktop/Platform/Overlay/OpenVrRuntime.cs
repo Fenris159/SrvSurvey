@@ -48,6 +48,9 @@ public interface IVrOverlayRuntime : IDisposable
 
 public sealed class OpenVrRuntime : IVrOverlayRuntime
 {
+    internal const uint ControlsOverlaySortOrder = 1_000_000u;
+    internal const VROverlayFlags InteractionScrollFlag = VROverlayFlags.SendVRSmoothScrollEvents;
+
     private readonly LinuxVrRuntimeInspector linuxInspector;
     private readonly Func<bool> isCustomRuntime;
     private readonly Dictionary<string, ulong> handles = new(StringComparer.Ordinal);
@@ -57,6 +60,7 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
     private float headsetYawOffset;
     private Matrix4x4 headsetOrientationOffset = Matrix4x4.Identity;
     private bool interactionEnabled;
+    private uint nextFrameSortOrder;
 
     public OpenVrRuntime(LinuxVrRuntimeInspector? linuxInspector = null, Func<bool>? isCustomRuntime = null)
     {
@@ -194,6 +198,7 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
                 v1 = (float)(frame.PointerHeight > 0 ? frame.PointerHeight : frame.Height),
             };
             Check(overlay.SetOverlayMouseScale(handle, ref mouseScale));
+            Check(overlay.SetOverlaySortOrder(handle, ResolveOverlaySortOrder(plotterName, nextFrameSortOrder++)));
             Check(overlay.SetOverlayAlpha(handle, Math.Clamp(alpha, 0, 1)));
             Check(overlay.SetOverlayWidthInMeters(handle, calibration.Scale / 10));
             var matrix = VrOverlayTransform
@@ -252,7 +257,8 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
             handles.Values.ToArray(),
             previousMethod,
             nextMethod,
-            overlay.SetOverlayInputMethod
+            overlay.SetOverlayInputMethod,
+            overlay.SetOverlayFlag
         );
         if (!succeeded)
         {
@@ -278,18 +284,21 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
         IReadOnlyList<ulong> overlayHandles,
         VROverlayInputMethod previousMethod,
         VROverlayInputMethod nextMethod,
-        Func<ulong, VROverlayInputMethod, EVROverlayError> setInputMethod
+        Func<ulong, VROverlayInputMethod, EVROverlayError> setInputMethod,
+        Func<ulong, VROverlayFlags, bool, EVROverlayError>? setOverlayFlag = null
     )
     {
         ArgumentNullException.ThrowIfNull(overlayHandles);
         ArgumentNullException.ThrowIfNull(setInputMethod);
 
         var updatedHandles = new List<ulong>(overlayHandles.Count);
+        var transition = new OverlayInteractionTransition(previousMethod, nextMethod, setInputMethod, setOverlayFlag);
+        bool rollbackFailed = false;
         try
         {
             foreach (ulong handle in overlayHandles)
             {
-                Check(setInputMethod(handle, nextMethod));
+                ApplyOverlayInteraction(handle, transition, ref rollbackFailed);
                 updatedHandles.Add(handle);
             }
 
@@ -297,20 +306,97 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
         }
         catch (InvalidOperationException exception)
         {
-            bool rollbackFailed = false;
             for (int index = updatedHandles.Count - 1; index >= 0; index--)
             {
-                try
-                {
-                    rollbackFailed |= setInputMethod(updatedHandles[index], previousMethod) != EVROverlayError.None;
-                }
-                catch (InvalidOperationException)
-                {
-                    rollbackFailed = true;
-                }
+                rollbackFailed |= !TryRollbackOverlayInteraction(updatedHandles[index], transition);
             }
 
             return (false, exception.Message, rollbackFailed);
+        }
+    }
+
+    private readonly record struct OverlayInteractionTransition(
+        VROverlayInputMethod PreviousMethod,
+        VROverlayInputMethod NextMethod,
+        Func<ulong, VROverlayInputMethod, EVROverlayError> SetInputMethod,
+        Func<ulong, VROverlayFlags, bool, EVROverlayError>? SetOverlayFlag
+    )
+    {
+        public bool PreviousScrollEnabled => PreviousMethod != VROverlayInputMethod.None;
+        public bool NextScrollEnabled => NextMethod != VROverlayInputMethod.None;
+    }
+
+    private static void ApplyOverlayInteraction(
+        ulong handle,
+        OverlayInteractionTransition transition,
+        ref bool rollbackFailed
+    )
+    {
+        if (transition.NextScrollEnabled)
+        {
+            Check(transition.SetInputMethod(handle, transition.NextMethod));
+            if (transition.SetOverlayFlag is null)
+            {
+                return;
+            }
+
+            try
+            {
+                Check(transition.SetOverlayFlag(handle, InteractionScrollFlag, true));
+            }
+            catch (InvalidOperationException)
+            {
+                rollbackFailed |= !TryInvoke(() => transition.SetInputMethod(handle, transition.PreviousMethod));
+                throw;
+            }
+
+            return;
+        }
+
+        if (transition.SetOverlayFlag is not null)
+        {
+            Check(transition.SetOverlayFlag(handle, InteractionScrollFlag, false));
+        }
+
+        try
+        {
+            Check(transition.SetInputMethod(handle, transition.NextMethod));
+        }
+        catch (InvalidOperationException)
+        {
+            if (transition.SetOverlayFlag is not null)
+            {
+                rollbackFailed |= !TryInvoke(() =>
+                    transition.SetOverlayFlag(handle, InteractionScrollFlag, transition.PreviousScrollEnabled)
+                );
+            }
+
+            throw;
+        }
+    }
+
+    private static bool TryRollbackOverlayInteraction(ulong handle, OverlayInteractionTransition transition)
+    {
+        bool ok = TryInvoke(() => transition.SetInputMethod(handle, transition.PreviousMethod));
+        if (transition.SetOverlayFlag is not null)
+        {
+            ok &= TryInvoke(() =>
+                transition.SetOverlayFlag(handle, InteractionScrollFlag, transition.PreviousScrollEnabled)
+            );
+        }
+
+        return ok;
+    }
+
+    private static bool TryInvoke(Func<EVROverlayError> call)
+    {
+        try
+        {
+            return call() == EVROverlayError.None;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
         }
     }
 
@@ -387,7 +473,19 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
         headsetYawOffset = 0;
         headsetOrientationOffset = Matrix4x4.Identity;
         interactionEnabled = false;
+        nextFrameSortOrder = 0;
     }
+
+    public VrRuntimeResult CompleteFrame()
+    {
+        nextFrameSortOrder = 0;
+        return VrRuntimeResult.Success("Overlay frame completed.");
+    }
+
+    internal static uint ResolveOverlaySortOrder(string plotterName, uint publishIndex) =>
+        string.Equals(plotterName, VrOverlayCalibrationSession.ControlsPlotterName, StringComparison.Ordinal)
+            ? ControlsOverlaySortOrder
+            : Math.Min(publishIndex + 1u, ControlsOverlaySortOrder - 1u);
 
     public void Dispose()
     {
@@ -411,6 +509,7 @@ public sealed class OpenVrRuntime : IVrOverlayRuntime
         try
         {
             Check(overlay.SetOverlayInputMethod(handle, ToInputMethod(interactionEnabled)));
+            Check(overlay.SetOverlayFlag(handle, InteractionScrollFlag, interactionEnabled));
             handles[plotterName] = handle;
             return handle;
         }

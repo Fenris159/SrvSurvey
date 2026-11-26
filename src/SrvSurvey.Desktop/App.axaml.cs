@@ -97,6 +97,7 @@ public sealed partial class App : Application
                         BringMainWindowToFront =
                             startupDecision == ApplicationStartupInstanceDecision.ReplacedExisting
                             || Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm,
+                        OnRuntimeReplaced = replacement => desktopRuntime = replacement,
                     }
                 );
             });

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
@@ -282,47 +283,456 @@ public sealed class SystemSummaryClientTests
         Assert.DoesNotContain(handler.Requests, request => request.Contains("spansh"));
     }
 
+    /// <summary>Treats Spansh 404 and empty EDSM objects as an undiscovered system without error warnings.</summary>
+    [Fact]
+    public async Task UndiscoveredSystemTreatsSpanshNotFoundAsNormalAndProducesNoWarnings()
+    {
+        var handler = new ProviderHandler
+        {
+            BodiesResponse = "{}",
+            TrafficResponse = "{}",
+            SpanshStatusCode = HttpStatusCode.NotFound,
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+
+        SystemSummaryLoadResult result = await client.GetAsync("Undiscovered Sector A1-B c2-3", 99999);
+
+        Assert.Empty(result.Warnings);
+        Assert.False(result.Summary.IsKnown);
+
+        // EDSM 404 is an unexpected endpoint error and must not be masked as undiscovered.
+        var edsmNotFoundHandler = new ProviderHandler
+        {
+            EdsmStatusCode = HttpStatusCode.NotFound,
+            SpanshStatusCode = HttpStatusCode.NotFound,
+        };
+        var edsmNotFoundClient = new SystemSummaryClient(
+            new HttpClient(edsmNotFoundHandler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+        SystemSummaryLoadResult edsmNotFound = await edsmNotFoundClient.GetAsync("Broken Endpoint System", 99998);
+        Assert.Null(edsmNotFound.Summary.IsKnown);
+        Assert.Equal(2, edsmNotFound.Warnings.Count);
+        Assert.All(edsmNotFound.Warnings, warning => Assert.StartsWith("EDSM ", warning, StringComparison.Ordinal));
+    }
+
+    /// <summary>Deduplicates concurrent requests and serves clean results from cache until TTL expires.</summary>
+    [Fact]
+    public async Task ConcurrentAndRepeatedLookupsDeduplicateAndExpireByTtl()
+    {
+        var clock = new AdjustableTimeProvider(
+            DateTimeOffset.Parse("2026-11-23T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handler = new ProviderHandler { Gate = gate.Task };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            timeProvider: clock,
+            cacheDuration: TimeSpan.FromMinutes(2)
+        );
+
+        Task<SystemSummaryLoadResult> first = client.GetAsync("Test System", 42);
+        Task<SystemSummaryLoadResult> second = client.GetAsync("Test System", 42);
+        gate.SetResult();
+        SystemSummaryLoadResult[] concurrent = await Task.WhenAll(first, second);
+
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.All(concurrent, result => Assert.True(result.Summary.IsKnown));
+
+        // Repeat within TTL hits cache with zero extra requests.
+        SystemSummaryLoadResult cached = await client.GetAsync("Test System", 42);
+        Assert.Equal(3, handler.Requests.Count);
+        Assert.True(cached.Summary.IsKnown);
+
+        // Advance past TTL and verify a fresh fetch happens.
+        clock.Advance(TimeSpan.FromMinutes(3));
+        await client.GetAsync("Test System", 42);
+        Assert.Equal(6, handler.Requests.Count);
+    }
+
+    /// <summary>Honors EDSM 429 Retry-After cooldown and avoids sending more EDSM requests until cooldown expires.</summary>
+    [Theory]
+    [InlineData(90, 90)]
+    [InlineData(5, 15)]
+    [InlineData(900, 600)]
+    [InlineData(0, 60)]
+    public async Task EdsmRateLimitAppliesCooldownAndResumesAfterExpiry(
+        int retryAfterSeconds,
+        int expectedCooldownSeconds
+    )
+    {
+        var clock = new AdjustableTimeProvider(
+            DateTimeOffset.Parse("2026-11-23T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
+        var handler = new ProviderHandler
+        {
+            EdsmStatusCode = HttpStatusCode.TooManyRequests,
+            EdsmRetryAfter =
+                retryAfterSeconds > 0 ? new RetryConditionHeaderValue(TimeSpan.FromSeconds(retryAfterSeconds)) : null,
+            SpanshStatusCode = HttpStatusCode.NotFound,
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            timeProvider: clock
+        );
+
+        SystemSummaryLoadResult first = await client.GetAsync("System One", 101);
+        int requestsAfterFirst = handler.Requests.Count(url =>
+            url.StartsWith("https://edsm.test/", StringComparison.Ordinal)
+        );
+        Assert.InRange(requestsAfterFirst, 1, 2);
+        Assert.Null(first.Summary.IsKnown);
+        Assert.Equal(2, first.Warnings.Count);
+        Assert.All(
+            first.Warnings,
+            warning => Assert.Contains("rate-limited", warning, StringComparison.OrdinalIgnoreCase)
+        );
+
+        // Second lookup during cooldown must not send any EDSM HTTP requests.
+        SystemSummaryLoadResult duringCooldown = await client.GetAsync("System Two", 102);
+        Assert.Equal(
+            requestsAfterFirst,
+            handler.Requests.Count(url => url.StartsWith("https://edsm.test/", StringComparison.Ordinal))
+        );
+        Assert.Equal(2, duringCooldown.Warnings.Count);
+
+        // Just before expiry is still rate-limited; once expired, EDSM resumes.
+        clock.Advance(TimeSpan.FromSeconds(expectedCooldownSeconds - 1));
+        await client.GetAsync("System Three", 103);
+        Assert.Equal(
+            requestsAfterFirst,
+            handler.Requests.Count(url => url.StartsWith("https://edsm.test/", StringComparison.Ordinal))
+        );
+
+        handler.EdsmStatusCode = HttpStatusCode.OK;
+        clock.Advance(TimeSpan.FromSeconds(1));
+        SystemSummaryLoadResult recovered = await client.GetAsync("System Four", 104);
+        Assert.Empty(recovered.Warnings);
+        Assert.True(recovered.Summary.IsKnown);
+        Assert.Equal(
+            requestsAfterFirst + 2,
+            handler.Requests.Count(url => url.StartsWith("https://edsm.test/", StringComparison.Ordinal))
+        );
+    }
+
+    /// <summary>Honors HTTP-date Retry-After headers and Spansh 429 cooldowns without poisoning transient failures.</summary>
+    [Fact]
+    public async Task SpanshRateLimitDateHeaderAndTransientFailureRecoveryWorkCorrectly()
+    {
+        var start = DateTimeOffset.Parse(
+            "2026-11-23T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var clock = new AdjustableTimeProvider(start);
+        var handler = new ProviderHandler
+        {
+            BodiesResponse = "{}",
+            TrafficResponse = "{}",
+            SpanshStatusCode = HttpStatusCode.TooManyRequests,
+            SpanshRetryAfter = new RetryConditionHeaderValue(start.AddSeconds(45)),
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            timeProvider: clock
+        );
+
+        SystemSummaryLoadResult first = await client.GetAsync("Unknown A", 201);
+        Assert.Null(first.Summary.IsKnown);
+        Assert.Single(first.Warnings);
+        Assert.Contains("rate-limited", first.Warnings[0], StringComparison.OrdinalIgnoreCase);
+
+        // Cooldown prevents extra Spansh request.
+        await client.GetAsync("Unknown B", 202);
+        Assert.Single(handler.Requests, url => url.StartsWith("https://spansh.test/", StringComparison.Ordinal));
+
+        // After cooldown expires and Spansh recovers to 404, system is cleanly undiscovered.
+        handler.SpanshStatusCode = HttpStatusCode.NotFound;
+        clock.Advance(TimeSpan.FromSeconds(45));
+        SystemSummaryLoadResult recovered = await client.GetAsync("Unknown A", 201);
+        Assert.Empty(recovered.Warnings);
+        Assert.False(recovered.Summary.IsKnown);
+        Assert.Equal(
+            2,
+            handler.Requests.Count(url => url.StartsWith("https://spansh.test/", StringComparison.Ordinal))
+        );
+    }
+
+    /// <summary>Rejects negative cache durations and avoids caching transient provider errors.</summary>
+    [Fact]
+    public async Task NegativeCacheDurationThrowsAndTransientErrorsAreNotCached()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new SystemSummaryClient(cacheDuration: TimeSpan.FromSeconds(-1))
+        );
+
+        var handler = new ProviderHandler { FailTraffic = true };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+
+        SystemSummaryLoadResult failed = await client.GetAsync("Test System", 42);
+        Assert.Single(failed.Warnings);
+
+        handler.FailTraffic = false;
+        SystemSummaryLoadResult recovered = await client.GetAsync("Test System", 42);
+        Assert.Empty(recovered.Warnings);
+        Assert.NotNull(recovered.Summary.Traffic);
+        // Bodies and Spansh were served from cache; only traffic was retried.
+        Assert.Equal(4, handler.Requests.Count);
+    }
+
+    /// <summary>Abandoned targets cancel their HTTP requests immediately while shared stalled fetches still time out cleanly.</summary>
+    [Fact]
+    public async Task StalledResponseBodyTimesOutAndAllowsSubsequentRetriesToRecover()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new SystemSummaryClient(requestTimeout: TimeSpan.Zero));
+
+        var bodyStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var bodyCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bool stallBodies = true;
+        var handler = new ProviderHandler
+        {
+            CustomResponse = uri =>
+                stallBodies && uri.AbsolutePath.EndsWith("/bodies", StringComparison.Ordinal)
+                    ? new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StallingStreamContent(bodyStarted, bodyCanceled),
+                    }
+                    : null,
+        };
+        var client = new SystemSummaryClient(
+            new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) },
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            requestTimeout: TimeSpan.FromSeconds(30)
+        );
+
+        // When the sole caller abandons a target, the underlying HTTP request cancels immediately rather than waiting 30s.
+        using (var abandonCts = new CancellationTokenSource())
+        {
+            Task<SystemSummaryLoadResult> abandoned = client.GetAsync("Abandoned System", 54, abandonCts.Token);
+            await bodyStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await abandonCts.CancelAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => abandoned);
+            await bodyCanceled.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        }
+
+        // Once the provider recovers, a fresh lookup for the previously abandoned system succeeds cleanly.
+        stallBodies = false;
+        SystemSummaryLoadResult recoveredAbandoned = await client.GetAsync("Abandoned System", 54);
+        Assert.Empty(recoveredAbandoned.Warnings);
+        Assert.True(recoveredAbandoned.Summary.IsKnown);
+
+        // Two callers share a stalled fetch: canceling the first keeps it alive for the second until requestTimeout fires.
+        stallBodies = true;
+        bodyStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        bodyCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timedClient = new SystemSummaryClient(
+            new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) },
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            requestTimeout: TimeSpan.FromMilliseconds(120)
+        );
+        using var callerCts = new CancellationTokenSource();
+        Task<SystemSummaryLoadResult> first = timedClient.GetAsync("Stalled System", 55, callerCts.Token);
+        await bodyStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Task<SystemSummaryLoadResult> second = timedClient.GetAsync("Stalled System", 55);
+        await callerCts.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => first);
+
+        // Second caller observes the timeout warning, and inFlight is cleared.
+        SystemSummaryLoadResult timedOut = await second;
+        Assert.Contains(
+            timedOut.Warnings,
+            warning => warning.Contains("timed out", StringComparison.OrdinalIgnoreCase)
+        );
+
+        // Once the provider recovers, a fresh retry succeeds instead of staying wedged.
+        stallBodies = false;
+        SystemSummaryLoadResult recovered = await timedClient.GetAsync("Stalled System", 55);
+        Assert.Empty(recovered.Warnings);
+        Assert.True(recovered.Summary.IsKnown);
+
+        // Shorter HttpClient.Timeout is also honored when no explicit requestTimeout is passed.
+        var shortHttpClient = new SystemSummaryClient(
+            new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(100) },
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/")
+        );
+        stallBodies = true;
+        SystemSummaryLoadResult shortTimedOut = await shortHttpClient.GetAsync("Short Timeout System", 56);
+        Assert.Contains(
+            shortTimedOut.Warnings,
+            warning => warning.Contains("timed out", StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    private sealed class StallingStreamContent(TaskCompletionSource readStarted, TaskCompletionSource readCanceled)
+        : HttpContent
+    {
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => Task.CompletedTask;
+
+        protected override Task<Stream> CreateContentReadStreamAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<Stream>(new StallingStream(readStarted, readCanceled));
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
+
+        private sealed class StallingStream(TaskCompletionSource readStarted, TaskCompletionSource readCanceled)
+            : Stream
+        {
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => throw new NotSupportedException();
+            public override long Position
+            {
+                get => throw new NotSupportedException();
+                set => throw new NotSupportedException();
+            }
+
+            public override void Flush() { }
+
+            public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+            public override async ValueTask<int> ReadAsync(
+                Memory<byte> buffer,
+                CancellationToken cancellationToken = default
+            )
+            {
+                readStarted.TrySetResult();
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    readCanceled.TrySetResult();
+                    throw;
+                }
+                return 0;
+            }
+
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        }
+    }
+
+    private sealed class AdjustableTimeProvider(DateTimeOffset initialUtcNow) : TimeProvider
+    {
+        private DateTimeOffset utcNow = initialUtcNow;
+
+        public override DateTimeOffset GetUtcNow() => utcNow;
+
+        public void Advance(TimeSpan delta) => utcNow += delta;
+    }
+
     private sealed class ProviderHandler : HttpMessageHandler
     {
+        private readonly Lock requestLock = new();
+
         public List<string> Requests { get; } = [];
 
-        public bool FailTraffic { get; init; }
+        public bool FailTraffic { get; set; }
 
         public bool MalformSpansh { get; init; }
+
+        public HttpStatusCode EdsmStatusCode { get; set; } = HttpStatusCode.OK;
+
+        public RetryConditionHeaderValue? EdsmRetryAfter { get; set; }
+
+        public HttpStatusCode SpanshStatusCode { get; set; } = HttpStatusCode.OK;
+
+        public RetryConditionHeaderValue? SpanshRetryAfter { get; set; }
+
+        public Task? Gate { get; init; }
+
+        public Func<Uri, HttpResponseMessage?>? CustomResponse { get; init; }
 
         public string BodiesResponse { get; init; } = BodiesJson;
 
         public string TrafficResponse { get; init; } = TrafficJson;
         public string SpanshResponse { get; init; } = SpanshJson;
 
-        protected override Task<HttpResponseMessage> SendAsync(
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken
         )
         {
-            Uri uri = request.RequestUri!;
-            Requests.Add(uri.AbsoluteUri);
-            if (uri.AbsolutePath.EndsWith("/traffic", StringComparison.Ordinal))
+            if (Gate is not null)
             {
-                return Task.FromResult(
-                    FailTraffic ? Response("{}", HttpStatusCode.ServiceUnavailable) : Response(TrafficResponse)
-                );
+                await Gate.ConfigureAwait(false);
+            }
+
+            Uri uri = request.RequestUri!;
+            lock (requestLock)
+            {
+                Requests.Add(uri.AbsoluteUri);
+            }
+
+            if (CustomResponse?.Invoke(uri) is { } customResponse)
+            {
+                return customResponse;
             }
 
             if (uri.Host == "spansh.test")
             {
-                return Task.FromResult(Response(MalformSpansh ? "{\"system\":[]}" : SpanshResponse));
+                if (SpanshStatusCode != HttpStatusCode.OK)
+                {
+                    return Response("{}", SpanshStatusCode, SpanshRetryAfter);
+                }
+
+                return Response(MalformSpansh ? "{\"system\":[]}" : SpanshResponse);
             }
 
-            return Task.FromResult(Response(BodiesResponse));
+            if (EdsmStatusCode != HttpStatusCode.OK)
+            {
+                return Response("{}", EdsmStatusCode, EdsmRetryAfter);
+            }
+
+            if (uri.AbsolutePath.EndsWith("/traffic", StringComparison.Ordinal))
+            {
+                return FailTraffic ? Response("{}", HttpStatusCode.ServiceUnavailable) : Response(TrafficResponse);
+            }
+
+            return Response(BodiesResponse);
         }
 
-        private static HttpResponseMessage Response(string content, HttpStatusCode statusCode = HttpStatusCode.OK)
+        private static HttpResponseMessage Response(
+            string content,
+            HttpStatusCode statusCode = HttpStatusCode.OK,
+            RetryConditionHeaderValue? retryAfter = null
+        )
         {
-            return new HttpResponseMessage(statusCode)
+            var response = new HttpResponseMessage(statusCode)
             {
                 Content = new StringContent(content, Encoding.UTF8, "application/json"),
             };
+            if (retryAfter is not null)
+            {
+                response.Headers.RetryAfter = retryAfter;
+            }
+
+            return response;
         }
 
         private const string BodiesJson = """

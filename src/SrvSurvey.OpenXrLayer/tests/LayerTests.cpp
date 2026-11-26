@@ -19,6 +19,7 @@ uint32_t destroyedInstances = 0, destroyedTextures = 0, locateCount = 0, endCoun
 uint32_t submittedLayers = 0;
 uint32_t acquiredImages = 0, releasedImages = 0;
 XrCompositionLayerFlags submittedFlags = 0;
+XrSwapchain submittedSwapchain = XR_NULL_HANDLE;
 XrPosef submittedPose{};
 XrPosef headPose{{0, 0, 0, 1}, {1, 2, 3}};
 std::map<XrSwapchain, std::array<uint8_t, 4>> uploadedPixels;
@@ -180,6 +181,7 @@ XrResult XRAPI_CALL EndFrame(XrSession, const XrFrameEndInfo *info)
         const auto *quad = reinterpret_cast<const XrCompositionLayerQuad *>(info->layers[1]);
         Require(quad->type == XR_TYPE_COMPOSITION_LAYER_QUAD, "Append a quad after game layers");
         submittedFlags = quad->layerFlags;
+        submittedSwapchain = quad->subImage.swapchain;
         submittedPose = quad->pose;
     }
     return XR_SUCCESS;
@@ -344,6 +346,15 @@ void TestTextureReuse(Session &session, const XrFrameEndInfo &frame, const std::
     LayerEndFrame(session.handle, &frame);
     Require(acquiredImages == ++uploads, "Restore opacity after cache regression tests");
     session.maximumLayers = 2;
+    WritePacket(path, 44, {{.id = 1, .red = 10}, {.id = 2, .red = 200}});
+    LayerEndFrame(session.handle, &frame);
+    Require(submittedLayers == 2 && session.textures.contains(2) &&
+                submittedSwapchain == session.textures.at(2).handle,
+            "Preserve the last (topmost controls) panel when the composition layer budget is tight");
+    WritePacket(path, 46);
+    LayerEndFrame(session.handle, &frame);
+    Require(session.textures.size() == 1 && session.textures.contains(1),
+            "Restore single-panel state after tight-budget test");
 }
 
 XrQuaternionf HeadOrientation(float yaw, float pitch, float roll)
@@ -536,8 +547,8 @@ int main()
         WritePacket(path, 10);
         {
             InputFixture input(path);
-            TestBindings(*session, input);
             session->maximumLayers = 3;
+            TestBindings(*session, input);
             input.Enable(true);
             XrActiveActionSet appSet{reinterpret_cast<XrActionSet>(uintptr_t(77)), XR_NULL_PATH};
             XrActionsSyncInfo sync{XR_TYPE_ACTIONS_SYNC_INFO};
@@ -546,6 +557,19 @@ int main()
             LayerSyncActions(session->handle, &sync);
             Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && submittedLayers == 3,
                     "Compose cursor above panel while preserving game projection");
+            {
+                HANDLE mailboxFile = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                                 nullptr, OPEN_EXISTING, 0, nullptr);
+                Require(mailboxFile != INVALID_HANDLE_VALUE, "Open mailbox to verify reported layer budget");
+                Header reported{};
+                DWORD readBytes = 0;
+                Require(ReadFile(mailboxFile, &reported, sizeof(reported), &readBytes, nullptr) &&
+                            readBytes == sizeof(reported),
+                        "Read reported mailbox header");
+                CloseHandle(mailboxFile);
+                Require(reported.availableLayersEncoded == 3u,
+                        "Report available overlay layers above the game's submitted layer");
+            }
             uint32_t start = input.header->eventCount;
             controllerButtons = 1;
             LayerSyncActions(session->handle, &sync);
@@ -558,6 +582,34 @@ int main()
             Require(input.Has(start, PointerKind::Reset) && submittedLayers == 2,
                     "Disabling mode cancels held click and removes cursor");
             controllerButtons = 0;
+            input.Enable(true);
+            LayerSyncActions(session->handle, &sync);
+            Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && submittedLayers == 3 &&
+                        synchronizedSets.size() == 3,
+                    "Re-enable application-driven controller interaction before dropping layer capacity");
+            controllerButtons = 1;
+            LayerSyncActions(session->handle, &sync);
+            LayerEndFrame(session->handle, &frame);
+            start = input.header->eventCount;
+            const XrCompositionLayerBaseHeader *twoGameLayers[] = {gameLayers[0], gameLayers[0]};
+            XrFrameEndInfo tightFrame = frame;
+            tightFrame.layerCount = 2;
+            tightFrame.layers = twoGameLayers;
+            Require(LayerEndFrame(session->handle, &tightFrame) == XR_SUCCESS && submittedLayers == 3 &&
+                        input.Has(start, PointerKind::Reset),
+                    "Dropping to one free overlay slot resets pointer input and keeps the panel visible without cursor");
+            Require(LayerSyncActions(session->handle, &sync) == XR_SUCCESS && synchronizedSets.size() == 1 &&
+                        synchronizedSets[0].actionSet == appSet.actionSet,
+                    "Layer budget drop releases overlay action sets so game bindings are not stolen");
+            controllerButtons = 0;
+            Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && submittedLayers == 2,
+                    "Restoring one game layer restores two free overlay slots");
+            Require(LayerSyncActions(session->handle, &sync) == XR_SUCCESS && synchronizedSets.size() == 3,
+                    "Restored layer budget reactivates overlay action sets");
+            Require(LayerEndFrame(session->handle, &frame) == XR_SUCCESS && submittedLayers == 3,
+                    "Restored layer budget renders the controller cursor again");
+            input.Enable(false);
+            LayerSyncActions(session->handle, &sync);
             session->input->Clear();
             --instance->inputSessions;
             // A rejected augmentation must preserve the application's original suggestion.

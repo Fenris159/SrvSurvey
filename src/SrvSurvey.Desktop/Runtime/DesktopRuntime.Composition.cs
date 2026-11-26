@@ -67,6 +67,7 @@ internal sealed partial class DesktopRuntime
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
     private OverlayPresentationSession? overlayPresentationSession;
+    private DesktopOverlayController? overlayController;
     private MainWindowViewModel? mainViewModel;
     private MainWindow? mainWindow;
     private ApplicationLogService? applicationLogService;
@@ -74,6 +75,8 @@ internal sealed partial class DesktopRuntime
     private WindowChromeThemeCoordinator? windowChromeThemeCoordinator;
     private IDisposable? diagnosticNetworkClientOwnership;
     private DiagnosticReplayContext? diagnosticReplayContext;
+    private SrvSurvey.Desktop.ProfileSync.ProfileSyncService? unownedProfileSyncService;
+    private CommanderClaimLease? unownedCommanderClaimLease;
     private readonly CancellationTokenSource releaseHistoryCleanupCancellation = new();
 #pragma warning restore CA2213
     private readonly ReleaseUpdateHistoryCleanupCoordinator releaseHistoryCleanup = new();
@@ -83,7 +86,17 @@ internal sealed partial class DesktopRuntime
     private GlobalInputSettingsViewModel? globalInputSettings;
     private IGameTextInputService? gameTextInputService;
     private readonly JournalMonitorSession journalMonitorSession = new();
-    private DesktopOverlayController? overlayController;
+    private Application? hostApplication;
+    private IClassicDesktopStyleApplicationLifetime? hostDesktop;
+    private AppDataPaths? startupAppDataPaths;
+    private Action<DesktopRuntime>? onRuntimeReplaced;
+    private Func<IGameWindowSwitcher>? gameWindowSwitcherFactory;
+    private Dictionary<string, JournalCheckpoint> commanderJournalCheckpoints = new(StringComparer.OrdinalIgnoreCase);
+    private JournalBaselineSnapshot? commanderJournalBaseline;
+    private bool isCommanderSwitchStartup;
+    private bool releaseUpdateStateRestored;
+    private bool referenceDataUpdateStateRestored;
+    private bool journalMonitorStarted;
     private string[] originalStartupArguments = [];
 
     private static (CommanderProfileViewModel? Profile, string? Status) CreateDiagnosticProfile(
@@ -111,6 +124,20 @@ internal sealed partial class DesktopRuntime
         DesktopStartup startup
     )
     {
+        hostApplication = application;
+        hostDesktop = desktop;
+        onRuntimeReplaced = startup.OnRuntimeReplaced;
+        gameWindowSwitcherFactory = startup.GameWindowSwitcherFactory;
+        isCommanderSwitchStartup = startup.IsCommanderSwitch;
+        commanderJournalCheckpoints = startup.CommanderJournalCheckpoints is null
+            ? new Dictionary<string, JournalCheckpoint>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, JournalCheckpoint>(
+                startup.CommanderJournalCheckpoints,
+                StringComparer.OrdinalIgnoreCase
+            );
+        commanderJournalBaseline = startup.CommanderJournalBaseline;
+        unownedProfileSyncService = startup.ProfileSyncService;
+        unownedCommanderClaimLease = startup.CommanderClaimLease;
         DiagnosticReplayContext? diagnosticReplay = startup.DiagnosticReplay;
         originalStartupArguments = startup.Arguments.ToArray();
         diagnosticReplayContext = diagnosticReplay;
@@ -122,7 +149,7 @@ internal sealed partial class DesktopRuntime
         ApplicationLogService applicationLog =
             startup.ApplicationLog ?? new ApplicationLogService(appDataPaths.DataDirectory);
         applicationLogService = applicationLog;
-        MigrateLegacyStateIfNeeded(diagnosticReplay, appDataPaths, applicationLog);
+        MigrateLegacyStateIfNeeded(diagnosticReplay, startup.IsCommanderSwitch, appDataPaths, applicationLog);
 
         string? configuredJournalDirectory =
             diagnosticReplay?.JournalDirectory ?? StartupOptions.GetJournalDirectory(startup.Arguments);
@@ -133,24 +160,30 @@ internal sealed partial class DesktopRuntime
             commanderPreferenceStore,
             appDataPaths.DataDirectory
         );
-        if (commanderPreferenceResolution.StatusMessage is not null)
-        {
-            applicationLog.Append(commanderPreferenceResolution.StatusMessage);
-        }
+        LogCommanderPreferenceStatusIfNeeded(commanderPreferenceResolution, startup.IsCommanderSwitch, applicationLog);
 
-        string? targetFrontierId = diagnosticReplay is null
-            ? StartupOptions.GetFrontierId(startup.Arguments)
-                ?? StartupOptions.GetInstanceFrontierId(startup.Arguments)
-                ?? appDataPaths.SettingsFrontierId
-                ?? commanderPreferenceResolution.TargetFrontierId
-            : null;
-        appDataPaths = PrepareCommanderSettings(
-            appDataPaths,
-            targetFrontierId,
-            diagnosticReplay is null,
-            configuredJournalDirectory,
-            applicationLog
+        CommanderStartupTarget commanderTarget = ResolveCommanderStartupTarget(
+            diagnosticReplay,
+            startup.Arguments,
+            commanderPreferenceResolution,
+            appDataPaths
         );
+        string? effectiveFrontierId = ResolveEffectiveStartupFrontierId(
+            appDataPaths,
+            commanderTarget.TargetFrontierId,
+            discoverJournalCommander: diagnosticReplay is null,
+            configuredJournalDirectory
+        );
+        CommanderClaimLease? startupCommanderClaim = AcquireStartupCommanderClaim(
+            diagnosticReplay,
+            appDataPaths,
+            effectiveFrontierId,
+            startup.CommanderClaimLease
+        );
+        unownedCommanderClaimLease = startupCommanderClaim;
+        appDataPaths = PrepareCommanderSettings(appDataPaths, effectiveFrontierId, applicationLog);
+        startupAppDataPaths = appDataPaths;
+        ApplyCommanderLocalizationIfSwitched(startup.IsCommanderSwitch, appDataPaths);
 
         LegacyOverlayTheme overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
         var overlayLayoutStore = new LegacyOverlayLayoutStore(
@@ -222,7 +255,12 @@ internal sealed partial class DesktopRuntime
                 AppDataPaths = appDataPaths,
                 InputSettings = inputSettings,
                 ApplicationLogService = applicationLog,
-                TargetFrontierId = targetFrontierId,
+                TargetFrontierId = effectiveFrontierId,
+                CommanderClaimLease = startupCommanderClaim,
+                CommanderJournalBaseline = commanderJournalBaseline,
+                CommanderSwitchJournalResume = startup.CommanderSwitchJournalResume,
+                AllowAutomaticCommanderSwitch = commanderTarget.AllowAutomaticCommanderSwitch,
+                SuppressInitialOtherCommanderSwitch = commanderTarget.SuppressInitialOtherCommanderSwitch,
                 CommanderPreferenceSettingsStore = commanderPreferenceStore,
                 CommanderPreferenceCommandLineOverride = commanderPreferenceResolution.IsCommandLineOverride,
                 CommanderPreferenceInitialStatus = commanderPreferenceResolution.StatusMessage,
@@ -248,7 +286,9 @@ internal sealed partial class DesktopRuntime
             },
             new MainWindowTravelInputs
             {
-                GameWindowSwitcher = diagnosticReplay is null ? null : new DiagnosticReplayGameWindowSwitcher(),
+                GameWindowSwitcher = diagnosticReplay is null
+                    ? startup.GameWindowSwitcherFactory?.Invoke()
+                    : new DiagnosticReplayGameWindowSwitcher(),
             },
             new MainWindowOnlineInputs
             {
@@ -258,6 +298,8 @@ internal sealed partial class DesktopRuntime
         );
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.MainViewModelDependenciesReady);
         mainViewModel = MainWindowViewModelFactory.Create(mainViewModelStartup);
+        unownedProfileSyncService = null;
+        unownedCommanderClaimLease = null;
         MainWindowViewModel viewModel = mainViewModel;
         overlayPresentation.ConfigureWindowManagement(
             viewModel.OverlayBehavior.BypassWindowManagement,
@@ -287,10 +329,42 @@ internal sealed partial class DesktopRuntime
                 applicationLog,
                 StartupOptions.ForRestart(startup.Arguments, appDataPaths.SettingsFrontierId)
             );
+            if (startup.PendingReleaseUpdateCheck is { } pendingReleaseCheck)
+            {
+                viewModel.ReleaseUpdates.TryRestoreSessionState(startup.ReleaseUpdateSessionState);
+                _ = viewModel.ReleaseUpdates.AttachPendingCheckAsync(
+                    pendingReleaseCheck,
+                    releaseHistoryCleanupCancellation.Token
+                );
+                releaseUpdateStateRestored = true;
+            }
+            else
+            {
+                releaseUpdateStateRestored = viewModel.ReleaseUpdates.TryRestoreSessionState(
+                    startup.ReleaseUpdateSessionState
+                );
+            }
+
+            if (startup.PendingReferenceDataRefresh is { } pendingReferenceRefresh)
+            {
+                viewModel.ReferenceDataUpdates.TryRestoreSessionState(startup.ReferenceDataUpdateSessionState);
+                _ = viewModel.ReferenceDataUpdates.AttachPendingRefreshAsync(
+                    pendingReferenceRefresh,
+                    releaseHistoryCleanupCancellation.Token
+                );
+                referenceDataUpdateStateRestored = true;
+            }
+            else
+            {
+                referenceDataUpdateStateRestored = viewModel.ReferenceDataUpdates.TryRestoreSessionState(
+                    startup.ReferenceDataUpdateSessionState
+                );
+            }
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested += RestartAfterJournalChangeAsync;
             viewModel.ProfileSync.RestartRequested += RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested += RestartAfterCommanderPreferenceChangeAsync;
+            viewModel.AutomaticCommanderSwitchRequested += HandleAutomaticCommanderSwitchRequested;
             viewModel.SetJournalCommandPlatformServices(
                 directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(directory),
                 () => RequestShutdownOnUiThreadAsync(DesktopShutdownReason.JournalCommand, CancellationToken.None),
@@ -466,7 +540,68 @@ internal sealed partial class DesktopRuntime
             StartGlobalInputServices(inputSettings, capabilities, viewModel, desktop);
         }
         linuxTerminationRegistration = RegisterLinuxTermination();
-        if (diagnosticReplay is null)
+        StartReleaseUpdateHistoryCleanupIfNeeded(
+            diagnosticReplay,
+            startup.IsCommanderSwitch,
+            appDataPaths,
+            applicationLog
+        );
+        startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
+        LogUpdateStartupInitializedIfNeeded(startup.IsCommanderSwitch, applicationLog);
+        PresentMainWindow(desktop, mainWindow, appDataPaths, viewModel, applicationLog, startup);
+    }
+
+    private readonly record struct CommanderStartupTarget(
+        string? TargetFrontierId,
+        bool AllowAutomaticCommanderSwitch,
+        bool SuppressInitialOtherCommanderSwitch
+    );
+
+    private static CommanderStartupTarget ResolveCommanderStartupTarget(
+        DiagnosticReplayContext? diagnosticReplay,
+        IReadOnlyList<string> arguments,
+        CommanderPreferenceResolution preference,
+        AppDataPaths appDataPaths
+    )
+    {
+        if (diagnosticReplay is not null)
+        {
+            return default;
+        }
+
+        string? explicitFrontierId = StartupOptions.GetFrontierId(arguments);
+        string? instanceFrontierId = StartupOptions.GetInstanceFrontierId(arguments);
+        string? preferredFrontierId = CommanderSettingsProfile.NormalizeFrontierId(preference.TargetFrontierId);
+        string? targetFrontierId =
+            explicitFrontierId ?? instanceFrontierId ?? preferredFrontierId ?? appDataPaths.SettingsFrontierId;
+        bool allowAutomatic = explicitFrontierId is null && preferredFrontierId is null;
+        return new CommanderStartupTarget(
+            targetFrontierId,
+            allowAutomatic,
+            allowAutomatic && instanceFrontierId is not null
+        );
+    }
+
+    private static void LogCommanderPreferenceStatusIfNeeded(
+        CommanderPreferenceResolution resolution,
+        bool isCommanderSwitch,
+        ApplicationLogService applicationLog
+    )
+    {
+        if (resolution.StatusMessage is not null && !isCommanderSwitch)
+        {
+            applicationLog.Append(resolution.StatusMessage);
+        }
+    }
+
+    private void StartReleaseUpdateHistoryCleanupIfNeeded(
+        DiagnosticReplayContext? diagnosticReplay,
+        bool isCommanderSwitch,
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog
+    )
+    {
+        if (diagnosticReplay is null && !isCommanderSwitch)
         {
             releaseHistoryCleanupTask = CleanReleaseUpdateHistoryAsync(
                 appDataPaths,
@@ -474,16 +609,74 @@ internal sealed partial class DesktopRuntime
                 releaseHistoryCleanupCancellation.Token
             );
         }
-        startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.ProducersReady);
-        if (Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm)
+    }
+
+    private static void LogUpdateStartupInitializedIfNeeded(
+        bool isCommanderSwitch,
+        ApplicationLogService applicationLog
+    )
+    {
+        if (!isCommanderSwitch && Program.UpdateStartupMode == ApplicationUpdateStartupMode.Confirm)
         {
             applicationLog.Append("Update startup: desktop initialized; waiting for the main window's first frame.");
         }
+    }
+
+    private static void ApplyCommanderLocalizationIfSwitched(bool isCommanderSwitch, AppDataPaths appDataPaths)
+    {
+        if (!isCommanderSwitch)
+        {
+            return;
+        }
+
+        string language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
+        SrvSurvey.Desktop.Localization.LocalizationCatalog.Initialize(language);
+        SrvSurvey.Desktop.Localization.LocalizationCatalog.ApplyCulture(language);
+    }
+
+    private void PresentMainWindow(
+        IClassicDesktopStyleApplicationLifetime desktop,
+        MainWindow window,
+        AppDataPaths appDataPaths,
+        MainWindowViewModel viewModel,
+        ApplicationLogService applicationLog,
+        DesktopStartup startup
+    )
+    {
+        bool needsStartupUpdateConfirmation =
+            startup.DiagnosticReplay is null
+            && (!startup.IsCommanderSwitch || ApplicationUpdateBootstrap.HasPendingStartupUpdateAction);
+        bool hideToTray = ShouldHideReplacementWindowToTray(
+            needsStartupUpdateConfirmation,
+            startup.CommanderSwitchWindowState,
+            viewModel.DesktopBehavior.MinimizeToTray,
+            window.HasTrayIcon
+        );
+        if (hideToTray)
+        {
+            desktop.MainWindow = window;
+            window.ShowInTaskbar = false;
+            StartJournalMonitor();
+            return;
+        }
+
+        bool bringToFront = startup.CommanderSwitchWindowState is { } preserved
+            ? preserved.WasActive && !preserved.WasMinimized
+            : startup.BringMainWindowToFront;
+        if (startup.CommanderSwitchWindowState is { WasMinimized: true } or { WasActive: false })
+        {
+            window.ShowActivated = false;
+            if (startup.CommanderSwitchWindowState.WasMinimized)
+            {
+                window.WindowState = WindowState.Minimized;
+            }
+        }
+
         ApplicationStartupWindowPresenter.Present(
             desktop,
-            mainWindow,
-            startup.BringMainWindowToFront,
-            diagnosticReplay is null
+            window,
+            bringToFront,
+            needsStartupUpdateConfirmation
                 ? () =>
                 {
                     if (shutdownTask is null)
@@ -495,13 +688,21 @@ internal sealed partial class DesktopRuntime
         );
     }
 
-    /// <summary>Retains commander-specific save paths even when initial migration cannot complete.</summary>
-    private static AppDataPaths PrepareCommanderSettings(
+    internal static bool ShouldHideReplacementWindowToTray(
+        bool needsStartupUpdateConfirmation,
+        CommanderSwitchWindowState? windowState,
+        bool minimizeToTray,
+        bool hasTrayIcon
+    ) =>
+        !needsStartupUpdateConfirmation
+        && hasTrayIcon
+        && (windowState is { WasHiddenToTray: true } || (windowState is { WasMinimized: true } && minimizeToTray));
+
+    private static string? ResolveEffectiveStartupFrontierId(
         AppDataPaths paths,
         string? targetFrontierId,
         bool discoverJournalCommander,
-        string? configuredJournalDirectory,
-        ApplicationLogService applicationLog
+        string? configuredJournalDirectory
     )
     {
         string? settingsFrontierId =
@@ -515,7 +716,17 @@ internal sealed partial class DesktopRuntime
             );
         }
 
-        paths = paths with { SettingsFrontierId = settingsFrontierId };
+        return settingsFrontierId;
+    }
+
+    /// <summary>Retains commander-specific save paths even when initial migration cannot complete.</summary>
+    internal static AppDataPaths PrepareCommanderSettings(
+        AppDataPaths paths,
+        string? settingsFrontierId,
+        ApplicationLogService applicationLog
+    )
+    {
+        paths = paths with { SettingsFrontierId = CommanderSettingsProfile.NormalizeFrontierId(settingsFrontierId) };
         try
         {
             CommanderSettingsProfile.Prepare(paths);
@@ -540,6 +751,17 @@ internal sealed partial class DesktopRuntime
             window.Opened -= HandleMainWindowOpened;
         }
 
+        StartJournalMonitor();
+    }
+
+    private void StartJournalMonitor()
+    {
+        if (journalMonitorStarted || shutdownTask is not null)
+        {
+            return;
+        }
+
+        journalMonitorStarted = true;
         _ = journalMonitorSession.Start(
             RunJournalMonitorAsync,
             exception => applicationLogService?.Append("Journal monitor stopped unexpectedly: " + exception)
@@ -556,18 +778,65 @@ internal sealed partial class DesktopRuntime
 
         if (!viewModel.IsDiagnosticReplay)
         {
-            _ = viewModel.ReleaseUpdates.CheckAsync();
-            _ = viewModel.ReferenceDataUpdates.RefreshAsync();
+            if (!releaseUpdateStateRestored)
+            {
+                _ = viewModel.ReleaseUpdates.CheckAsync();
+            }
+
+            if (!referenceDataUpdateStateRestored)
+            {
+                _ = viewModel.ReferenceDataUpdates.RefreshAsync();
+            }
         }
         await viewModel.RefreshAsync();
         if (!cancellationToken.IsCancellationRequested)
         {
-            if (!viewModel.IsDiagnosticReplay)
+            if (!viewModel.IsDiagnosticReplay && !isCommanderSwitchStartup)
             {
                 _ = RequestStartupFocusAfterInputAsync(viewModel, cancellationToken);
             }
             await viewModel.MonitorAsync(cancellationToken: cancellationToken);
         }
+    }
+
+    private static CommanderClaimLease? AcquireStartupCommanderClaim(
+        DiagnosticReplayContext? diagnosticReplay,
+        AppDataPaths appDataPaths,
+        string? targetFrontierId,
+        CommanderClaimLease? inheritedLease
+    )
+    {
+        if (diagnosticReplay is not null)
+        {
+            return inheritedLease;
+        }
+
+        string? normalized = CommanderSettingsProfile.NormalizeFrontierId(targetFrontierId);
+        if (normalized is null)
+        {
+            return inheritedLease;
+        }
+
+        if (
+            inheritedLease is not null
+            && string.Equals(inheritedLease.FrontierId, normalized, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return inheritedLease;
+        }
+
+        return CommanderClaimRegistry.TryAcquire(appDataPaths.CacheDirectory, normalized)
+            ?? throw new InvalidOperationException(
+                string.Concat("Another SrvSurvey instance is already open", " (", normalized, ").")
+            );
+    }
+
+    private void HandleAutomaticCommanderSwitchRequested(string nextFrontierId)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _ = SwitchCommanderAsync(nextFrontierId, isAutomatic: true);
+        });
     }
 
     /// <summary>Lets silent input discovery finish without pausing journal monitoring or forcing focus during shutdown.</summary>
@@ -901,12 +1170,20 @@ internal sealed partial class DesktopRuntime
     /// <summary>Stops desktop services before the application process exits.</summary>
     private void QuiesceDesktopRuntime(DesktopShutdownReason reason)
     {
-        DisposeResource(ref linuxTerminationRegistration);
+        if (reason != DesktopShutdownReason.CommanderSwitch)
+        {
+            DisposeResource(ref linuxTerminationRegistration);
+        }
         if (mainWindow is { } window)
         {
             window.Opened -= HandleMainWindowOpened;
             TryCleanup(window.RememberCurrentPositionForShutdown);
-            if (reason is DesktopShutdownReason.Restart or DesktopShutdownReason.UpdateHandoff)
+            if (
+                reason
+                is DesktopShutdownReason.Restart
+                    or DesktopShutdownReason.UpdateHandoff
+                    or DesktopShutdownReason.CommanderSwitch
+            )
             {
                 TryCleanup(() => overlayController?.SetManualSuppression(true));
             }
@@ -923,6 +1200,7 @@ internal sealed partial class DesktopRuntime
             viewModel.JournalSettings.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.ProfileSync.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
+            viewModel.AutomaticCommanderSwitchRequested -= HandleAutomaticCommanderSwitchRequested;
             overlayController?.Dispose();
             overlayController = null;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -= HandleFrontierAuthorizationCallback;
@@ -1023,21 +1301,21 @@ internal sealed partial class DesktopRuntime
     {
         DisposeResource(ref overlayPresentationSession);
         DisposeResource(ref diagnosticNetworkClientOwnership);
+        DisposeResource(ref unownedCommanderClaimLease);
+        DisposeResource(ref unownedProfileSyncService);
         diagnosticReplayContext = null;
         TryCleanup(ResetOverlayRegistryState);
         TryCleanup(releaseHistoryCleanupCancellation.Dispose);
-        applicationLogService?.Append("Application exit");
+        if (activeShutdownReason != DesktopShutdownReason.CommanderSwitch)
+        {
+            applicationLogService?.Append("Application exit");
+        }
         return Task.CompletedTask;
     }
 
     private static void ResetOverlayRegistryState()
     {
-        OverlayWindowRegistry.Shared.SetGlobalSuppression(
-            manualSuppressed: false,
-            suitSuppressed: false,
-            sessionSuppressed: false
-        );
-        OverlayWindowRegistry.Shared.SetPriorityFacts(default);
+        OverlayWindowRegistry.Shared.ResetSessionState();
     }
 
     private static CommanderPreferenceResolution ResolveCommanderPreference(
@@ -1065,11 +1343,12 @@ internal sealed partial class DesktopRuntime
 
     private static void MigrateLegacyStateIfNeeded(
         DiagnosticReplayContext? diagnosticReplay,
+        bool isCommanderSwitch,
         AppDataPaths appDataPaths,
         ApplicationLogService applicationLog
     )
     {
-        if (diagnosticReplay is not null)
+        if (diagnosticReplay is not null || isCommanderSwitch)
         {
             return;
         }
@@ -1156,6 +1435,8 @@ internal sealed partial class DesktopRuntime
                         or InvalidOperationException
             )
         {
+            ApplicationUpdateBootstrap.SetPendingConfirmation(null);
+            ApplicationUpdateBootstrap.SetPendingOutcome(null);
             applicationLog.Append("Update replacement health confirmation failed: " + exception.Message);
         }
     }
@@ -1238,6 +1519,7 @@ internal sealed partial class DesktopRuntime
 
     private async Task StopReleaseUpdateHistoryCleanupAsync()
     {
+        await releaseHistoryCleanupCancellation.CancelAsync();
         Task? cleanupTask = releaseHistoryCleanupTask;
         if (cleanupTask is null)
         {
@@ -1245,7 +1527,6 @@ internal sealed partial class DesktopRuntime
         }
 
         releaseHistoryCleanupTask = null;
-        await releaseHistoryCleanupCancellation.CancelAsync();
         try
         {
             await cleanupTask.ConfigureAwait(false);

@@ -9,14 +9,11 @@ internal static class StartupOptions
     internal const string MultiCommanderInstanceOption = "--multi-commander-instance";
     private const string InstanceFrontierIdOption = "--instance-frontier-id";
 
-    /// <summary>Builds replacement-process arguments for the current commander assignment.</summary>
-    internal static string[] ForRestart(
-        IReadOnlyList<string> arguments,
-        string? frontierId,
-        bool preserveCommander = true
-    )
+    /// <summary>Removes any internal retained-commander marker while keeping user-supplied startup options intact.</summary>
+    internal static string[] WithoutInstanceFrontierId(IReadOnlyList<string> arguments)
     {
-        var retained = new List<string>();
+        ArgumentNullException.ThrowIfNull(arguments);
+        var retained = new List<string>(arguments.Count);
         int index = 0;
         while (index < arguments.Count)
         {
@@ -30,6 +27,18 @@ internal static class StartupOptions
                 retained.Add(argument);
             }
         }
+
+        return retained.ToArray();
+    }
+
+    /// <summary>Builds replacement-process arguments for the current commander assignment.</summary>
+    internal static string[] ForRestart(
+        IReadOnlyList<string> arguments,
+        string? frontierId,
+        bool preserveCommander = true
+    )
+    {
+        var retained = new List<string>(WithoutInstanceFrontierId(arguments));
 
         if (
             preserveCommander

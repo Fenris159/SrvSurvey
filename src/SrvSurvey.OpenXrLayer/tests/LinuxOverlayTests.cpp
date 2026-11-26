@@ -49,6 +49,7 @@ struct MockRuntime
     int endFrameCount = 0;
     uint32_t lastSubmittedLayerCount = 0;
     XrCompositionLayerQuad lastSubmittedQuad{};
+    std::vector<XrCompositionLayerQuad> lastSubmittedQuads;
     XrSwapchainUsageFlags lastSwapchainUsageFlags = 0;
     VkImageLayout lastBarrierNewLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkDeviceSize lastMapSize = 0;
@@ -58,8 +59,15 @@ struct MockRuntime
     VkResult deviceWaitIdleResult = VK_SUCCESS;
     int flushCount = 0;
     int queueSubmitCount = 0;
+    int failWaitAfterSubmits = 0;
     int createdSwapchains = 0;
     int destroyedSwapchains = 0;
+    int destroyedSpaces = 0;
+    int createdActionSets = 0;
+    int destroyedActionSets = 0;
+    int createdActionSpaces = 0;
+    int attachActionSetsCalls = 0;
+    int syncActionsCalls = 0;
     int destroyedBuffers = 0;
     int freedMemories = 0;
     int unmappedMemories = 0;
@@ -79,6 +87,30 @@ struct MockRuntime
     XrPosef headPose{{0, 0, 0, 1}, {1.0f, 1.5f, -0.5f}};
     bool headPoseValid = true;
     XrTime nextPredictedDisplayTime = 1000;
+
+    bool exposeActionFunctions = true;
+    std::string rejectProfile;
+    std::vector<std::string> suggestedProfiles;
+    std::map<XrPath, std::string> pathNames;
+    XrPath nextPath = 1;
+    XrResult syncActionsResult = XR_SUCCESS;
+    XrResult getBooleanStateResult = XR_SUCCESS;
+    struct MockHandState
+    {
+        bool poseActive = false;
+        bool poseValid = true;
+        XrPosef pose{{0, 0, 0, 1}, {0, 0, 0}};
+        bool selectActive = true;
+        bool select = false;
+        bool secondary = false;
+        bool middle = false;
+        float scrollX = 0;
+        float scrollY = 0;
+    };
+    std::array<MockHandState, 2> hands{};
+    XrResult endFrameResult = XR_SUCCESS;
+    std::function<void()> onLocateSpace;
+    std::function<void()> onEndFrame;
 };
 
 MockRuntime *gMock = nullptr;
@@ -258,11 +290,26 @@ XrResult MockCreateReferenceSpace(XrSession, const XrReferenceSpaceCreateInfo *i
 
 XrResult MockDestroySpace(XrSpace)
 {
+    ++gMock->destroyedSpaces;
     return XR_SUCCESS;
 }
 
-XrResult MockLocateSpace(XrSpace, XrSpace, XrTime, XrSpaceLocation *loc)
+XrResult MockLocateSpace(XrSpace space, XrSpace, XrTime, XrSpaceLocation *loc)
 {
+    if (space == reinterpret_cast<XrSpace>(0x1010) || space == reinterpret_cast<XrSpace>(0x1011))
+    {
+        size_t hand = space == reinterpret_cast<XrSpace>(0x1010) ? 0 : 1;
+        if (!gMock->hands[hand].poseValid)
+        {
+            loc->locationFlags = 0;
+            return XR_SUCCESS;
+        }
+        loc->locationFlags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT;
+        loc->pose = gMock->hands[hand].pose;
+        return XR_SUCCESS;
+    }
+    if (gMock->onLocateSpace)
+        gMock->onLocateSpace();
     if (!gMock->headPoseValid)
     {
         loc->locationFlags = 0;
@@ -270,6 +317,132 @@ XrResult MockLocateSpace(XrSpace, XrSpace, XrTime, XrSpaceLocation *loc)
     }
     loc->locationFlags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT;
     loc->pose = gMock->headPose;
+    return XR_SUCCESS;
+}
+
+XrResult MockCreateActionSet(XrInstance, const XrActionSetCreateInfo *, XrActionSet *out)
+{
+    ++gMock->createdActionSets;
+    *out = reinterpret_cast<XrActionSet>(0x5001);
+    return XR_SUCCESS;
+}
+
+XrResult MockDestroyActionSet(XrActionSet)
+{
+    ++gMock->destroyedActionSets;
+    return XR_SUCCESS;
+}
+
+XrResult MockCreateAction(XrActionSet, const XrActionCreateInfo *info, XrAction *out)
+{
+    if (std::strcmp(info->actionName, "aim") == 0)
+        *out = reinterpret_cast<XrAction>(0x5101);
+    else if (std::strcmp(info->actionName, "select") == 0)
+        *out = reinterpret_cast<XrAction>(0x5102);
+    else if (std::strcmp(info->actionName, "secondary") == 0)
+        *out = reinterpret_cast<XrAction>(0x5103);
+    else if (std::strcmp(info->actionName, "middle") == 0)
+        *out = reinterpret_cast<XrAction>(0x5104);
+    else if (std::strcmp(info->actionName, "scroll") == 0)
+        *out = reinterpret_cast<XrAction>(0x5105);
+    else
+        *out = reinterpret_cast<XrAction>(0x5199);
+    return XR_SUCCESS;
+}
+
+XrResult MockStringToPath(XrInstance, const char *pathString, XrPath *out)
+{
+    for (const auto &[path, name] : gMock->pathNames)
+    {
+        if (name == pathString)
+        {
+            *out = path;
+            return XR_SUCCESS;
+        }
+    }
+    XrPath id = gMock->nextPath++;
+    gMock->pathNames[id] = pathString;
+    *out = id;
+    return XR_SUCCESS;
+}
+
+XrResult MockSuggestInteractionProfileBindings(XrInstance, const XrInteractionProfileSuggestedBinding *suggested)
+{
+    auto it = gMock->pathNames.find(suggested->interactionProfile);
+    std::string profile = it != gMock->pathNames.end() ? it->second : "";
+    if (!gMock->rejectProfile.empty() && profile == gMock->rejectProfile)
+        return XR_ERROR_PATH_UNSUPPORTED;
+    gMock->suggestedProfiles.push_back(profile);
+    return XR_SUCCESS;
+}
+
+XrResult MockAttachSessionActionSets(XrSession, const XrSessionActionSetsAttachInfo *)
+{
+    ++gMock->attachActionSetsCalls;
+    return XR_SUCCESS;
+}
+
+XrResult MockCreateActionSpace(XrSession, const XrActionSpaceCreateInfo *info, XrSpace *out)
+{
+    ++gMock->createdActionSpaces;
+    auto it = gMock->pathNames.find(info->subactionPath);
+    bool isLeft = it != gMock->pathNames.end() && it->second == "/user/hand/left";
+    *out = reinterpret_cast<XrSpace>(isLeft ? 0x1010 : 0x1011);
+    return XR_SUCCESS;
+}
+
+XrResult MockSyncActions(XrSession, const XrActionsSyncInfo *)
+{
+    ++gMock->syncActionsCalls;
+    return gMock->syncActionsResult;
+}
+
+size_t ResolveHandIndex(XrPath subactionPath)
+{
+    auto it = gMock->pathNames.find(subactionPath);
+    return (it != gMock->pathNames.end() && it->second == "/user/hand/left") ? 0 : 1;
+}
+
+XrResult MockGetActionStatePose(XrSession, const XrActionStateGetInfo *info, XrActionStatePose *state)
+{
+    size_t hand = ResolveHandIndex(info->subactionPath);
+    state->isActive = gMock->hands[hand].poseActive ? XR_TRUE : XR_FALSE;
+    return XR_SUCCESS;
+}
+
+XrResult MockGetActionStateBoolean(XrSession, const XrActionStateGetInfo *info, XrActionStateBoolean *state)
+{
+    if (gMock->getBooleanStateResult != XR_SUCCESS)
+        return gMock->getBooleanStateResult;
+    size_t hand = ResolveHandIndex(info->subactionPath);
+    if (info->action == reinterpret_cast<XrAction>(0x5102))
+    {
+        state->isActive = gMock->hands[hand].selectActive ? XR_TRUE : XR_FALSE;
+        state->currentState = gMock->hands[hand].select ? XR_TRUE : XR_FALSE;
+    }
+    else if (info->action == reinterpret_cast<XrAction>(0x5103))
+    {
+        state->isActive = XR_TRUE;
+        state->currentState = gMock->hands[hand].secondary ? XR_TRUE : XR_FALSE;
+    }
+    else if (info->action == reinterpret_cast<XrAction>(0x5104))
+    {
+        state->isActive = XR_TRUE;
+        state->currentState = gMock->hands[hand].middle ? XR_TRUE : XR_FALSE;
+    }
+    else
+    {
+        state->isActive = XR_FALSE;
+        state->currentState = XR_FALSE;
+    }
+    return XR_SUCCESS;
+}
+
+XrResult MockGetActionStateVector2f(XrSession, const XrActionStateGetInfo *info, XrActionStateVector2f *state)
+{
+    size_t hand = ResolveHandIndex(info->subactionPath);
+    state->isActive = XR_TRUE;
+    state->currentState = {gMock->hands[hand].scrollX, gMock->hands[hand].scrollY};
     return XR_SUCCESS;
 }
 
@@ -347,9 +520,22 @@ XrResult MockBeginFrame(XrSession, const XrFrameBeginInfo *)
 XrResult MockEndFrame(XrSession, const XrFrameEndInfo *info)
 {
     ++gMock->endFrameCount;
+    if (gMock->onEndFrame)
+        gMock->onEndFrame();
+    if (gMock->endFrameResult != XR_SUCCESS)
+        return gMock->endFrameResult;
     gMock->lastSubmittedLayerCount = info->layerCount;
-    if (info->layerCount > 0 && info->layers[0]->type == XR_TYPE_COMPOSITION_LAYER_QUAD)
-        gMock->lastSubmittedQuad = *reinterpret_cast<const XrCompositionLayerQuad *>(info->layers[0]);
+    gMock->lastSubmittedQuads.clear();
+    for (uint32_t i = 0; i < info->layerCount; ++i)
+    {
+        if (info->layers[i]->type == XR_TYPE_COMPOSITION_LAYER_QUAD)
+        {
+            const auto &quad = *reinterpret_cast<const XrCompositionLayerQuad *>(info->layers[i]);
+            if (i == 0)
+                gMock->lastSubmittedQuad = quad;
+            gMock->lastSubmittedQuads.push_back(quad);
+        }
+    }
     return XR_SUCCESS;
 }
 
@@ -387,6 +573,16 @@ XrResult MockXrGetInstanceProcAddr(XrInstance, const char *name, PFN_xrVoidFunct
         match("xrGetVulkanInstanceExtensionsKHR", MockGetVulkanInstanceExtensions) ||
         match("xrGetVulkanDeviceExtensionsKHR", MockGetVulkanDeviceExtensions) ||
         match("xrGetVulkanGraphicsDeviceKHR", MockGetVulkanDevice1))
+        return XR_SUCCESS;
+    if (gMock->exposeActionFunctions &&
+        (match("xrCreateActionSet", MockCreateActionSet) || match("xrDestroyActionSet", MockDestroyActionSet) ||
+         match("xrCreateAction", MockCreateAction) || match("xrStringToPath", MockStringToPath) ||
+         match("xrSuggestInteractionProfileBindings", MockSuggestInteractionProfileBindings) ||
+         match("xrAttachSessionActionSets", MockAttachSessionActionSets) ||
+         match("xrCreateActionSpace", MockCreateActionSpace) || match("xrSyncActions", MockSyncActions) ||
+         match("xrGetActionStateBoolean", MockGetActionStateBoolean) ||
+         match("xrGetActionStateVector2f", MockGetActionStateVector2f) ||
+         match("xrGetActionStatePose", MockGetActionStatePose)))
         return XR_SUCCESS;
     *fn = nullptr;
     return XR_ERROR_FUNCTION_UNSUPPORTED;
@@ -466,6 +662,10 @@ void MockVkDestroyFence(VkDevice, VkFence, const VkAllocationCallbacks *) { ++gM
 VkResult MockVkResetFences(VkDevice, uint32_t, const VkFence *) { return VK_SUCCESS; }
 VkResult MockVkWaitForFences(VkDevice, uint32_t, const VkFence *, VkBool32, uint64_t)
 {
+    if (gMock->failWaitAfterSubmits > 0 && gMock->queueSubmitCount >= gMock->failWaitAfterSubmits)
+        return gMock->waitForFencesResult;
+    if (gMock->failWaitAfterSubmits > 0)
+        return VK_SUCCESS;
     return gMock->waitForFencesResult;
 }
 VkResult MockVkQueueSubmit(VkQueue, uint32_t, const VkSubmitInfo *, VkFence)
@@ -943,7 +1143,8 @@ void TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate()
     session.Shutdown();
 }
 
-std::vector<uint8_t> BuildTwoPanelPacket(uint32_t originRevision, uint64_t idA, uint64_t idB)
+std::vector<uint8_t> BuildTwoPanelPacket(uint32_t originRevision, uint64_t idA, uint64_t idB, float alphaA = 1.0f,
+                                         float alphaB = 1.0f)
 {
     uint32_t pixelBytes = 4;
     uint32_t total = sizeof(Header) + 2 * sizeof(Descriptor) + 2 * pixelBytes;
@@ -956,7 +1157,7 @@ std::vector<uint8_t> BuildTwoPanelPacket(uint32_t originRevision, uint64_t idA, 
     header.originRevision = originRevision;
     std::memcpy(packet.data(), &header, sizeof(header));
 
-    auto writeDesc = [&](uint32_t index, uint64_t id, uint32_t offset) {
+    auto writeDesc = [&](uint32_t index, uint64_t id, uint32_t offset, float alpha) {
         Descriptor d{};
         d.id = id;
         d.width = 1;
@@ -967,15 +1168,15 @@ std::vector<uint8_t> BuildTwoPanelPacket(uint32_t originRevision, uint64_t idA, 
         d.heightMeters = 0.4f;
         d.position[2] = -1.0f;
         d.orientation[3] = 1.0f;
-        d.alpha = 1.0f;
+        d.alpha = alpha;
         std::memcpy(packet.data() + sizeof(Header) + index * sizeof(Descriptor), &d, sizeof(d));
         packet[offset] = 200;
         packet[offset + 1] = 100;
         packet[offset + 2] = 50;
         packet[offset + 3] = 255;
     };
-    writeDesc(0, idA, sizeof(Header) + 2 * sizeof(Descriptor));
-    writeDesc(1, idB, sizeof(Header) + 2 * sizeof(Descriptor) + pixelBytes);
+    writeDesc(0, idA, sizeof(Header) + 2 * sizeof(Descriptor), alphaA);
+    writeDesc(1, idB, sizeof(Header) + 2 * sizeof(Descriptor) + pixelBytes, alphaB);
     return packet;
 }
 
@@ -1113,10 +1314,649 @@ void TestPostWaitStagingFailureRecoveryAndUploadErrors()
     session.Shutdown();
 }
 
+void TestControllerPointerInteractionAndCursorQuad()
+{
+    MockRuntime mock;
+    mock.headPose = {{0, 0, 0, 1}, {1.0f, 1.5f, -0.5f}};
+    mock.nextPredictedDisplayTime = 1'000'000'000; // 1.0s
+    gMock = &mock;
+
+    OverlaySession session(MakeMockLoader(), "wivrn", false);
+    REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+    REQUIRE(mock.createdActionSets == 1);
+    REQUIRE(mock.attachActionSetsCalls == 1);
+    REQUIRE(mock.createdActionSpaces == 2);
+    REQUIRE(mock.suggestedProfiles.size() == 5);
+    REQUIRE(std::find(mock.suggestedProfiles.begin(), mock.suggestedProfiles.end(),
+                      "/interaction_profiles/oculus/touch_controller") != mock.suggestedProfiles.end());
+    REQUIRE(std::find(mock.suggestedProfiles.begin(), mock.suggestedProfiles.end(),
+                      "/interaction_profiles/valve/index_controller") != mock.suggestedProfiles.end());
+    REQUIRE(std::find(mock.suggestedProfiles.begin(), mock.suggestedProfiles.end(),
+                      "/interaction_profiles/microsoft/motion_controller") != mock.suggestedProfiles.end());
+    REQUIRE(std::find(mock.suggestedProfiles.begin(), mock.suggestedProfiles.end(),
+                      "/interaction_profiles/htc/vive_controller") != mock.suggestedProfiles.end());
+    REQUIRE(std::find(mock.suggestedProfiles.begin(), mock.suggestedProfiles.end(),
+                      "/interaction_profiles/khr/simple_controller") != mock.suggestedProfiles.end());
+
+    // Panel at (0, 0.2, -1.0) relative to head (1.0, 1.5, -0.5) => world (1.0, 1.7, -1.5), size 0.8x0.4.
+    PushSessionState(XR_SESSION_STATE_READY);
+    PushSessionState(XR_SESSION_STATE_FOCUSED);
+    REQUIRE(session.PublishPacket(BuildPacket(0, 42, 2, 1, 1.0f)));
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.syncActionsCalls == 0);
+    REQUIRE(mock.lastSubmittedLayerCount == 1);
+
+    // Enable interaction and aim right hand directly at panel center.
+    int32_t xrErr = 0;
+    std::string message;
+    REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+    REQUIRE(xrErr == 0);
+
+    mock.hands[1].poseActive = true;
+    mock.hands[1].pose = {{0, 0, 0, 1}, {1.0f, 1.7f, -0.5f}};
+    mock.nextPredictedDisplayTime = 1'016'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.syncActionsCalls == 1);
+    REQUIRE(mock.lastSubmittedQuads.size() == 2);
+    REQUIRE(mock.lastSubmittedQuads[1].subImage.imageRect.extent.width == 32);
+    REQUIRE(mock.lastSubmittedQuads[1].subImage.imageRect.extent.height == 32);
+    REQUIRE(std::abs(mock.lastSubmittedQuads[1].size.width - 0.012f) < 1e-5f);
+    REQUIRE(std::abs(mock.lastSubmittedQuads[1].pose.position.x - 1.0f) < 1e-4f);
+    REQUIRE(std::abs(mock.lastSubmittedQuads[1].pose.position.y - 1.7f) < 1e-4f);
+    REQUIRE(std::abs(mock.lastSubmittedQuads[1].pose.position.z - (-1.498f)) < 1e-4f);
+    REQUIRE(session.GetStatus().renderedCount == 1);
+
+    std::array<PointerEvent, 16> events{};
+    size_t count = session.PollPointerEvents(events);
+    REQUIRE(count == 1);
+    REQUIRE(events[0].id == 42);
+    REQUIRE(events[0].kind == PointerKind::Move);
+    REQUIRE(std::abs(events[0].x - 0.5f) < 1e-4f);
+    REQUIRE(std::abs(events[0].y - 0.5f) < 1e-4f);
+
+    // Press all three buttons and tilt thumbstick on next frame (+16ms).
+    mock.hands[1].select = true;
+    mock.hands[1].secondary = true;
+    mock.hands[1].middle = true;
+    mock.hands[1].scrollX = 0.5f;
+    mock.hands[1].scrollY = -0.75f;
+    mock.nextPredictedDisplayTime = 1'032'000'000;
+    REQUIRE(session.StepOnce());
+    count = session.PollPointerEvents(events);
+    REQUIRE(count == 5);
+    REQUIRE(events[0].kind == PointerKind::Move);
+    REQUIRE(events[1].kind == PointerKind::LeftDown);
+    REQUIRE(events[2].kind == PointerKind::RightDown);
+    REQUIRE(events[3].kind == PointerKind::MiddleDown);
+    REQUIRE(events[4].kind == PointerKind::Wheel);
+    REQUIRE(events[4].wheelX > 0.0f);
+    REQUIRE(events[4].wheelY < 0.0f);
+
+    // Release buttons and test trailing Move coalescing across multiple frames without polling.
+    mock.hands[1].select = false;
+    mock.hands[1].secondary = false;
+    mock.hands[1].middle = false;
+    mock.hands[1].scrollX = 0.0f;
+    mock.hands[1].scrollY = 0.0f;
+    mock.nextPredictedDisplayTime = 1'048'000'000;
+    REQUIRE(session.StepOnce());
+    count = session.PollPointerEvents(events);
+    REQUIRE(count == 4);
+    REQUIRE(events[1].kind == PointerKind::LeftUp);
+    REQUIRE(events[2].kind == PointerKind::RightUp);
+    REQUIRE(events[3].kind == PointerKind::MiddleUp);
+
+    mock.hands[1].pose.position.x = 1.1f; // x = 0.5 + 0.1/0.8 = 0.625
+    mock.nextPredictedDisplayTime = 1'064'000'000;
+    REQUIRE(session.StepOnce());
+    mock.hands[1].pose.position.x = 1.2f; // x = 0.5 + 0.2/0.8 = 0.75
+    mock.nextPredictedDisplayTime = 1'080'000'000;
+    REQUIRE(session.StepOnce());
+    count = session.PollPointerEvents(events);
+    REQUIRE(count == 1);
+    REQUIRE(events[0].kind == PointerKind::Move);
+    REQUIRE(std::abs(events[0].x - 0.75f) < 1e-4f);
+
+    // XR_SESSION_NOT_FOCUSED resets pointer state and removes cursor quad.
+    mock.syncActionsResult = XR_SESSION_NOT_FOCUSED;
+    mock.nextPredictedDisplayTime = 1'096'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.lastSubmittedQuads.size() == 1);
+    count = session.PollPointerEvents(events);
+    REQUIRE(count == 1);
+    REQUIRE(events[0].kind == PointerKind::Reset);
+
+    // Restore sync, hit panel again, then lose session focus -> emits Reset and stops syncing.
+    mock.syncActionsResult = XR_SUCCESS;
+    mock.nextPredictedDisplayTime = 1'112'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.lastSubmittedQuads.size() == 2);
+    (void)session.PollPointerEvents(events);
+
+    int syncsBeforeFocusLoss = mock.syncActionsCalls;
+    PushSessionState(XR_SESSION_STATE_VISIBLE);
+    mock.nextPredictedDisplayTime = 1'128'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.syncActionsCalls == syncsBeforeFocusLoss);
+    REQUIRE(mock.lastSubmittedQuads.size() == 1);
+    count = session.PollPointerEvents(events);
+    REQUIRE(count == 1);
+    REQUIRE(events[0].kind == PointerKind::Reset);
+
+    // Disabling interaction clears queue and stays click-through even when focused again.
+    REQUIRE(session.SetInteractionEnabled(false, xrErr, message));
+    PushSessionState(XR_SESSION_STATE_FOCUSED);
+    mock.nextPredictedDisplayTime = 1'144'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(mock.syncActionsCalls == syncsBeforeFocusLoss);
+    REQUIRE(mock.lastSubmittedQuads.size() == 1);
+
+    // Shutdown destroys panel + cursor swapchains, all 4 spaces (2 ref + 2 aim), and the action set.
+    session.Shutdown();
+    REQUIRE(mock.destroyedSwapchains == 2);
+    REQUIRE(mock.destroyedSpaces == 4);
+    REQUIRE(mock.destroyedActionSets == 1);
+}
+
+void TestInteractionGracefulDegradationAndCursorUploadFailureSafety()
+{
+    // Runtime without OpenXR action functions still renders overlays, while SetInteractionEnabled(true) fails cleanly.
+    {
+        MockRuntime mock;
+        mock.exposeActionFunctions = false;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "monado", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        REQUIRE(session.PublishPacket(BuildPacket(0, 77, 2, 1, 1.0f)));
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(!session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(xrErr == static_cast<int32_t>(XR_ERROR_FUNCTION_UNSUPPORTED));
+        REQUIRE(session.SetInteractionEnabled(false, xrErr, message));
+        session.Shutdown();
+    }
+
+    // Partial profile rejection still binds remaining profiles and succeeds.
+    {
+        MockRuntime mock;
+        mock.rejectProfile = "/interaction_profiles/htc/vive_controller";
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "monado", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        REQUIRE(mock.suggestedProfiles.size() == 4);
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        session.Shutdown();
+        REQUIRE(mock.destroyedActionSets == 1);
+    }
+
+    // Unconfirmed GPU wait during cursor upload detaches without destroying GPU/OpenXR handles.
+    {
+        MockRuntime mock;
+        mock.headPose = {{0, 0, 0, 1}, {1.0f, 1.5f, -0.5f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        mock.failWaitAfterSubmits = 2; // 1st submit (panel) succeeds; 2nd submit (cursor) fails wait!
+        mock.waitForFencesResult = VK_ERROR_OUT_OF_HOST_MEMORY;
+        mock.deviceWaitIdleResult = VK_ERROR_OUT_OF_HOST_MEMORY;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        REQUIRE(session.PublishPacket(BuildPacket(0, 88, 2, 1, 1.0f)));
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {1.0f, 1.7f, -0.5f}};
+
+        REQUIRE(!session.StepOnce());
+        REQUIRE(mock.queueSubmitCount == 2);
+        REQUIRE(mock.lastSubmittedLayerCount == 0);
+        REQUIRE(session.GetStatus().status == OverlayStatus::Error);
+
+        session.Shutdown();
+        REQUIRE(mock.destroyedSwapchains == 0);
+        REQUIRE(mock.destroyedSpaces == 0);
+        REQUIRE(mock.destroyedActionSets == 0);
+        REQUIRE(!mock.destroyedSession);
+        REQUIRE(mock.destroyedXrInstances == 0);
+    }
+}
+
+void TestReleaseOnFirstReplacementFrameRearmsFreshPress()
+{
+    for (bool pressReplacement : {false, true})
+    {
+        MockRuntime mock;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20)));
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        REQUIRE(session.StepOnce());
+        std::array<PointerEvent, 16> events{};
+        REQUIRE(session.PollPointerEvents(events) == 1);
+        REQUIRE(events[0].id == 20);
+
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 2);
+        REQUIRE(events[1].id == 20);
+        REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+        // Retire the captured panel with no queued input, and observe the
+        // release on the first frame using its replacement packet.
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 21, 1.0f, pressReplacement ? 1.0f : 0.0f)));
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 1);
+        REQUIRE(events[0].kind == PointerKind::Reset);
+
+        // The next fresh press must work without a second release, whether it
+        // targets the replacement or the unchanged panel behind it.
+        uint64_t expectedId = pressReplacement ? 21 : 10;
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 2);
+        REQUIRE(events[0].id == expectedId);
+        REQUIRE(events[0].kind == PointerKind::Move);
+        REQUIRE(events[1].id == expectedId);
+        REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(session.PollPointerEvents(events) == 2);
+        REQUIRE(events[1].id == expectedId);
+        REQUIRE(events[1].kind == PointerKind::LeftUp);
+        session.Shutdown();
+    }
+}
+
+void TestReplacingUnrelatedSurfacePreservesStagedPress()
+{
+    MockRuntime mock;
+    mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+    mock.nextPredictedDisplayTime = 1'000'000'000;
+    gMock = &mock;
+
+    OverlaySession session(MakeMockLoader(), "wivrn", false);
+    REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+    PushSessionState(XR_SESSION_STATE_READY);
+    PushSessionState(XR_SESSION_STATE_FOCUSED);
+    int32_t xrErr = 0;
+    std::string message;
+    REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+    REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20)));
+    mock.hands[1].poseActive = true;
+    mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+    REQUIRE(session.StepOnce());
+    std::array<PointerEvent, 16> events{};
+    REQUIRE(session.PollPointerEvents(events) == 1);
+    REQUIRE(events[0].id == 20);
+    REQUIRE(events[0].kind == PointerKind::Move);
+
+    // The press on unchanged panel 20 is sampled before xrEndFrame. Replace
+    // panel 10 while the press is still staged and both queue polls are empty.
+    mock.hands[1].select = true;
+    mock.onEndFrame = [&]() {
+        REQUIRE(session.PollPointerEvents(events) == 0);
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 11, 20)));
+        REQUIRE(session.PollPointerEvents(events) == 0);
+    };
+    mock.nextPredictedDisplayTime += 16'000'000;
+    REQUIRE(session.StepOnce());
+    mock.onEndFrame = nullptr;
+    REQUIRE(session.PollPointerEvents(events) == 2);
+    REQUIRE(events[0].id == 20);
+    REQUIRE(events[0].kind == PointerKind::Move);
+    REQUIRE(events[1].id == 20);
+    REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+    // Keeping the trigger held must not reset or duplicate the press.
+    mock.nextPredictedDisplayTime += 16'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(session.PollPointerEvents(events) == 1);
+    REQUIRE(events[0].id == 20);
+    REQUIRE(events[0].kind == PointerKind::Move);
+
+    mock.hands[1].select = false;
+    mock.nextPredictedDisplayTime += 16'000'000;
+    REQUIRE(session.StepOnce());
+    REQUIRE(session.PollPointerEvents(events) == 2);
+    REQUIRE(events[1].id == 20);
+    REQUIRE(events[1].kind == PointerKind::LeftUp);
+    session.Shutdown();
+}
+
+void TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit()
+{
+    // 1. Zero-alpha panels are excluded from submission and hit testing; unreadable/inactive held buttons emit Reset.
+    {
+        MockRuntime mock;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+
+        // Overlapping panels at (0, 1.5, -1.0): id 10 is visible (alpha 1), id 20 is transparent (alpha 0).
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20, 1.0f, 0.0f)));
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        REQUIRE(session.StepOnce());
+        // 1 visible panel + 1 cursor quad; transparent panel id 20 must not intercept the pointer.
+        REQUIRE(mock.lastSubmittedQuads.size() == 2);
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].id == 10);
+        REQUIRE(events[0].kind == PointerKind::Move);
+
+        // Press trigger -> LeftDown.
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 2);
+        REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+        // Held button becomes inactive -> must emit Reset instead of synthesizing LeftUp!
+        mock.hands[1].selectActive = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].kind == PointerKind::Reset);
+
+        // Re-arm and hold trigger again, then fail xrGetActionStateBoolean -> must emit Reset (not LeftUp).
+        mock.hands[1].selectActive = true;
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        (void)session.PollPointerEvents(events);
+
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 2);
+        REQUIRE(events[1].kind == PointerKind::LeftDown);
+
+        mock.getBooleanStateResult = XR_ERROR_RUNTIME_FAILURE;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].kind == PointerKind::Reset);
+
+        // Queue overflow with non-Move Wheel events must reset the gesture and emit Reset.
+        mock.getBooleanStateResult = XR_SUCCESS;
+        mock.hands[1].select = false;
+        mock.hands[1].scrollY = 1.0f;
+        for (int frame = 0; frame < 270; ++frame)
+        {
+            mock.nextPredictedDisplayTime += 16'000'000;
+            REQUIRE(session.StepOnce());
+        }
+        std::array<PointerEvent, 300> drained{};
+        count = session.PollPointerEvents(drained);
+        bool sawReset = false;
+        for (size_t i = 0; i < count; ++i)
+        {
+            if (drained[i].kind == PointerKind::Reset)
+                sawReset = true;
+        }
+        REQUIRE(sawReset);
+        session.Shutdown();
+    }
+
+    // 2. Full-capacity layer limit reserves a cursor slot while interaction is active.
+    {
+        MockRuntime mock;
+        mock.maxLayerCount = 2;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "monado", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20, 1.0f, 1.0f)));
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        REQUIRE(session.StepOnce());
+        // With maxLayerCount == 2 and interaction active: topmost panel (id 20) + 1 cursor = 2 layers.
+        REQUIRE(mock.lastSubmittedQuads.size() == 2);
+        REQUIRE(mock.lastSubmittedQuads[1].subImage.imageRect.extent.width == 32);
+        REQUIRE(session.GetStatus().renderedCount == 1);
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        REQUIRE(events[count - 1].id == 20);
+
+        // Zero-alpha panel at position 1 must not consume the panel layer budget before opaque panel at position 2.
+        REQUIRE(session.PublishPacket(BuildTwoPanelPacket(0, 10, 20, 0.0f, 1.0f)));
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedQuads.size() == 2);
+        REQUIRE(session.GetStatus().renderedCount == 1);
+        count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        REQUIRE(events[count - 1].id == 20);
+
+        // Generation change during frame (between sampling and endFrame) must drop stale sampled events!
+        mock.hands[1].select = true;
+        mock.onEndFrame = [&]() {
+            int32_t err = 0;
+            std::string msg;
+            (void)session.SetInteractionEnabled(false, err, msg);
+            (void)session.SetInteractionEnabled(true, err, msg);
+        };
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        mock.onEndFrame = nullptr;
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 0);
+
+        // Trigger press succeeds on accepted frame, then xrEndFrame fails on trigger release -> Reset (not LeftUp).
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        (void)session.PollPointerEvents(events);
+
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        (void)session.PollPointerEvents(events);
+
+        mock.hands[1].select = false;
+        mock.endFrameResult = XR_ERROR_RUNTIME_FAILURE;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(!session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].kind == PointerKind::Reset);
+        session.Shutdown();
+    }
+
+    // 3. Single-layer runtimes reject controller-pointer interaction cleanly while keeping panel rendering active.
+    {
+        MockRuntime mock;
+        mock.maxLayerCount = 1;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "monado", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = -1;
+        std::string message;
+        REQUIRE(!session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(xrErr == 0);
+        REQUIRE(message.find("1 composition layer") != std::string::npos);
+
+        REQUIRE(session.PublishPacket(BuildPacket(0, 10, 2, 1, 1.0f)));
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+        REQUIRE(session.GetStatus().renderedCount == 1);
+        session.Shutdown();
+    }
+
+    // 4. Nonfatal cursor swapchain creation failure keeps panels rendering but suppresses invisible pointer clicks.
+    {
+        MockRuntime mock;
+        mock.maxLayerCount = 8;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "monado", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        REQUIRE(session.PublishPacket(BuildPacket(0, 10, 2, 1, 1.0f)));
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+
+        int32_t xrErr = -1;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        // Fail cursor swapchain creation nonfatally after the panel swapchain already exists.
+        mock.createSwapchainResult = XR_ERROR_RUNTIME_FAILURE;
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.7f, 0.0f}};
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 1);
+        REQUIRE(session.GetStatus().status == OverlayStatus::Ok);
+        REQUIRE(session.GetStatus().renderedCount == 1);
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        for (size_t i = 0; i < count; ++i)
+            REQUIRE(events[i].kind != PointerKind::LeftDown && events[i].kind != PointerKind::Move);
+
+        // Once cursor swapchain creation succeeds, cursor renders and pointer events resume normally.
+        mock.createSwapchainResult = XR_SUCCESS;
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        REQUIRE(mock.lastSubmittedLayerCount == 2);
+        count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        REQUIRE(events[count - 1].kind == PointerKind::Move);
+        session.Shutdown();
+    }
+
+    // 5. Interleaving PublishPacket + SetInteractionEnabled(true) after a frame snapshots an older packet
+    //    must reject stale-frame presses under the new interaction generation, while subsequent current-frame
+    //    events on the replacement packet still work normally.
+    {
+        MockRuntime mock;
+        mock.maxLayerCount = 8;
+        mock.headPose = {{0, 0, 0, 1}, {0.0f, 1.5f, 0.0f}};
+        mock.nextPredictedDisplayTime = 1'000'000'000;
+        gMock = &mock;
+
+        OverlaySession session(MakeMockLoader(), "wivrn", false);
+        REQUIRE(session.Initialize().status == OverlayStatus::Ok);
+        PushSessionState(XR_SESSION_STATE_READY);
+        PushSessionState(XR_SESSION_STATE_FOCUSED);
+        int32_t xrErr = 0;
+        std::string message;
+        REQUIRE(session.SetInteractionEnabled(true, xrErr, message));
+        REQUIRE(session.PublishPacket(BuildPacket(0, 10, 2, 1, 1.0f)));
+        mock.hands[1].poseActive = true;
+        mock.hands[1].pose = {{0, 0, 0, 1}, {0.0f, 1.7f, 0.0f}};
+        REQUIRE(session.StepOnce());
+        std::array<PointerEvent, 16> events{};
+        size_t count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].id == 10);
+        REQUIRE(events[0].kind == PointerKind::Move);
+
+        // Simulate the desktop replacing the surface (even if reusing id 10 or rotating to id 11) and
+        // re-enabling interaction AFTER RenderFrame snapshotted the old packet, BEFORE SampleInteraction runs.
+        mock.hands[1].select = true;
+        mock.onLocateSpace = [&]() {
+            mock.onLocateSpace = nullptr;
+            int32_t err = 0;
+            std::string msg;
+            REQUIRE(session.PublishPacket(BuildPacket(0, 11, 2, 1, 1.0f)));
+            REQUIRE(session.SetInteractionEnabled(true, err, msg));
+        };
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 0);
+
+        // The next frame snapshots the replacement packet (id 11) with the matching generation:
+        // current-frame hover and trigger press must both be delivered cleanly.
+        mock.hands[1].select = false;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count == 1);
+        REQUIRE(events[0].id == 11);
+        REQUIRE(events[0].kind == PointerKind::Move);
+
+        mock.hands[1].select = true;
+        mock.nextPredictedDisplayTime += 16'000'000;
+        REQUIRE(session.StepOnce());
+        count = session.PollPointerEvents(events);
+        REQUIRE(count >= 1);
+        bool sawReplacementPress = false;
+        for (size_t i = 0; i < count; ++i)
+        {
+            REQUIRE(events[i].id == 11);
+            if (events[i].kind == PointerKind::LeftDown)
+                sawReplacementPress = true;
+        }
+        REQUIRE(sawReplacementPress);
+        session.Shutdown();
+    }
+}
+
 } // namespace
 
 int main()
 {
+    TestReleaseOnFirstReplacementFrameRearmsFreshPress();
+    TestReplacingUnrelatedSurfacePreservesStagedPress();
     TestProbeContracts();
     TestOverlaySessionLifecycleAndBgraSwizzle();
     TestVulkanEnable1Fallback();
@@ -1125,6 +1965,9 @@ int main()
     TestReferenceSpaceChangeTimingPoseInvalidationAndOriginGate();
     TestPostWaitStagingFailureRecoveryAndUploadErrors();
     TestInFlightUploadWaitFailureSafety();
+    TestControllerPointerInteractionAndCursorQuad();
+    TestInteractionGracefulDegradationAndCursorUploadFailureSafety();
+    TestInteractionEdgeCasesOverflowUnreadableAlphaAndLayerLimit();
     std::cout << "All LinuxOpenXrOverlay tests passed.\n";
     return 0;
 }

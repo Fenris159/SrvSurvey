@@ -351,12 +351,10 @@ public sealed class OverlayLayoutRecoveryTests : IDisposable
         File.WriteAllText(paths.SharedUiSettingsPath, "{}");
         File.WriteAllText(Path.Combine(paths.ConfigDirectory, "commanders"), "occupied by a file");
         var log = new SrvSurvey.Core.Diagnostics.ApplicationLogService(paths.DataDirectory);
-        System.Reflection.MethodInfo method = typeof(SrvSurvey.Desktop.Runtime.DesktopRuntime).GetMethod(
-            "PrepareCommanderSettings",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static
-        )!;
-        SrvSurvey.Core.Storage.AppDataPaths actual = Assert.IsType<SrvSurvey.Core.Storage.AppDataPaths>(
-            method.Invoke(null, [paths, "F123", false, null, log])
+        SrvSurvey.Core.Storage.AppDataPaths actual = SrvSurvey.Desktop.Runtime.DesktopRuntime.PrepareCommanderSettings(
+            paths,
+            "F123",
+            log
         );
         Assert.Equal("F123", actual.SettingsFrontierId);
         Assert.NotEqual(paths.DataDirectory, actual.OverlaySettingsDirectory);

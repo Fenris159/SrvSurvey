@@ -42,6 +42,29 @@ public sealed class StartupOptionsTests
         Assert.Equal("F123", StartupOptions.GetFrontierId(changedPreference));
     }
 
+    /// <summary>In-process commander switches strip stale retained-commander markers without losing user flags.</summary>
+    [Theory]
+    [InlineData("--instance-frontier-id", "F123")]
+    [InlineData("--instance-frontier-id=F123", null)]
+    public void WithoutInstanceFrontierIdRemovesRetainedMarkersOnly(string option, string? value)
+    {
+        string[] original =
+        [
+            "--journal-directory",
+            "journals",
+            StartupOptions.MultiCommanderInstanceOption,
+            option,
+            .. value is null ? Array.Empty<string>() : new[] { value },
+        ];
+
+        string[] stripped = StartupOptions.WithoutInstanceFrontierId(original);
+
+        Assert.Null(StartupOptions.GetInstanceFrontierId(stripped));
+        Assert.Equal("journals", StartupOptions.GetJournalDirectory(stripped));
+        Assert.True(StartupOptions.AllowsConcurrentInstance(stripped));
+        Assert.DoesNotContain("F123", stripped);
+    }
+
     /// <summary>Unknown identities and replay sessions must not be redirected to a personal commander.</summary>
     [Theory]
     [InlineData(null, false)]

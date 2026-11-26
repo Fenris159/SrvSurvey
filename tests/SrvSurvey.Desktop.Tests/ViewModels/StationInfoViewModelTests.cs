@@ -105,6 +105,32 @@ public sealed class StationInfoViewModelTests
         Assert.False(viewModel.ShouldShow);
     }
 
+    [Fact]
+    public async Task LookupWarningsAndFailuresUseAggregatedStatusAndLogDetails()
+    {
+        var logs = new List<string>();
+        var client = new FakeSummaryClient(Summary())
+        {
+            Warnings =
+            [
+                "EDSM bodies data is temporarily rate-limited (HTTP 429).",
+                "EDSM traffic data is temporarily rate-limited (HTTP 429).",
+            ],
+        };
+        using var viewModel = new StationInfoViewModel(client, log: logs.Add);
+
+        await viewModel.UpdateCurrentSystemAsync("Test", 42);
+
+        Assert.Equal("EDSM temporarily rate-limited.", viewModel.StatusMessage);
+        Assert.Equal(2, logs.Count);
+
+        client.ThrowException = new HttpRequestException("502 Bad Gateway");
+        await viewModel.UpdateCurrentSystemAsync("Next", 43);
+
+        Assert.Equal("Station data unavailable.", viewModel.StatusMessage);
+        Assert.Equal(3, logs.Count);
+    }
+
     private static EliteStatus Status(string name, GuiFocus focus, long systemAddress = 42)
     {
         return new EliteStatus
@@ -156,13 +182,22 @@ public sealed class StationInfoViewModelTests
 
     private sealed class FakeSummaryClient(SystemSummary summary) : ISystemSummaryClient
     {
+        public IReadOnlyList<string> Warnings { get; set; } = [];
+
+        public Exception? ThrowException { get; set; }
+
         public Task<SystemSummaryLoadResult> GetAsync(
             string systemName,
             long systemAddress,
             CancellationToken cancellationToken = default
         )
         {
-            return Task.FromResult(new SystemSummaryLoadResult(summary, []));
+            if (ThrowException is not null)
+            {
+                return Task.FromException<SystemSummaryLoadResult>(ThrowException);
+            }
+
+            return Task.FromResult(new SystemSummaryLoadResult(summary, Warnings));
         }
     }
 }

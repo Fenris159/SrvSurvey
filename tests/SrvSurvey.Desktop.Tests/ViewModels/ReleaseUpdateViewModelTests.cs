@@ -702,4 +702,204 @@ public sealed class ReleaseUpdateViewModelTests
             return Task.FromResult(result);
         }
     }
+
+    [Fact]
+    public async Task SessionStateRoundTripsAcrossCommanderSwitchWhenChannelMatchesAndRejectsMismatch()
+    {
+        var stub = new StubService(CreateResult(isAvailable: true));
+        var source = new ReleaseUpdateViewModel(stub, new Version(2, 0, 95, 0));
+        Assert.False(source.CaptureSessionState().HasCompletedCheck);
+
+        await source.CheckAsync();
+        ReleaseUpdateSessionState captured = source.CaptureSessionState();
+        Assert.True(captured.HasCompletedCheck);
+
+        var sameChannel = new ReleaseUpdateViewModel(stub, new Version(2, 0, 95, 0));
+        Assert.False(sameChannel.TryRestoreSessionState(null));
+        Assert.True(sameChannel.TryRestoreSessionState(captured));
+        Assert.True(sameChannel.IsUpdateAvailable);
+        Assert.Equal("2.0.95.23", sameChannel.LatestVersion);
+        Assert.Contains("A useful change", sameChannel.ReleaseNotes);
+        Assert.True(sameChannel.ShouldShowUpdateNotification);
+
+        // A commander configured on a different release channel must reject restoration so it re-checks its own channel.
+        string settingsDir = Path.Combine(Path.GetTempPath(), $"SrvSurvey-update-channel-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(settingsDir);
+            var stableStore = new ReleaseUpdateSettingsStore(Path.Combine(settingsDir, "ui-settings.json"));
+            stableStore.SaveUseDevelopmentReleases(false);
+            var differentChannel = new ReleaseUpdateViewModel(stub, new Version(2, 0, 95, 0), stableStore);
+            Assert.False(differentChannel.TryRestoreSessionState(captured));
+            Assert.False(differentChannel.IsUpdateAvailable);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDir))
+            {
+                Directory.Delete(settingsDir, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task PendingCheckResolvesCompletedSessionStateWhenCommanderSwitchesMidCheck()
+    {
+        var gate = new TaskCompletionSource<ReleaseUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var source = new ReleaseUpdateViewModel(new GatedReleaseUpdateService(gate.Task), new Version(2, 0, 95, 0));
+
+        Task check = source.CheckAsync();
+        Task<ReleaseUpdateSessionState>? pending = source.CapturePendingCheckAsync();
+        Assert.NotNull(pending);
+        Assert.False(pending.IsCompleted);
+
+        gate.SetResult(CreateResult(isAvailable: true));
+        ReleaseUpdateSessionState state = await pending;
+        await check;
+        Assert.True(state.HasCompletedCheck);
+        Assert.True(state.IsUpdateAvailable);
+        Assert.Null(source.CapturePendingCheckAsync());
+    }
+
+    [Fact]
+    public async Task AttachedPendingCheckSerializesBusyStateAndRechecksOnChannelMismatch()
+    {
+        var gate = new TaskCompletionSource<ReleaseUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var source = new ReleaseUpdateViewModel(new GatedReleaseUpdateService(gate.Task), new Version(2, 0, 95, 0));
+        Task sourceCheck = source.CheckAsync();
+        Task<ReleaseUpdateSessionState>? pending = source.CapturePendingCheckAsync();
+        Assert.NotNull(pending);
+
+        string settingsDir = Path.Combine(Path.GetTempPath(), $"SrvSurvey-attached-release-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(settingsDir);
+            var stableStore = new ReleaseUpdateSettingsStore(Path.Combine(settingsDir, "ui-settings.json"));
+            stableStore.SaveUseDevelopmentReleases(false);
+            var stableService = new RecordingService();
+            var replacement = new ReleaseUpdateViewModel(stableService, new Version(2, 0, 95, 0), stableStore);
+            Task attached = replacement.AttachPendingCheckAsync(pending);
+
+            Assert.True(replacement.IsChecking);
+            Assert.False(replacement.CheckCommand.CanExecute(null));
+            Assert.Same(pending, replacement.CapturePendingCheckAsync());
+            Assert.Empty(stableService.Channels);
+
+            gate.SetResult(CreateResult(isAvailable: true));
+            await Task.WhenAll(sourceCheck, attached);
+
+            Assert.False(replacement.IsChecking);
+            Assert.Equal([ReleaseChannel.Stable], stableService.Channels);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDir))
+            {
+                Directory.Delete(settingsDir, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task InFlightChannelChangeCarriesFollowUpCheckAcrossCommanderHandoff()
+    {
+        var secondCheckGate = new TaskCompletionSource<ReleaseUpdateResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        var stableCheckStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stableCheckGate = new TaskCompletionSource<ReleaseUpdateResult>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        int checkNumber = 0;
+        var sourceService = new DelegateReleaseUpdateService(channel =>
+        {
+            int current = ++checkNumber;
+            if (current == 1)
+            {
+                return Task.FromResult(CreateResult(isAvailable: false));
+            }
+
+            if (current == 2)
+            {
+                Assert.Equal(ReleaseChannel.Development, channel);
+                return secondCheckGate.Task;
+            }
+
+            Assert.Equal(ReleaseChannel.Stable, channel);
+            stableCheckStarted.TrySetResult();
+            return stableCheckGate.Task;
+        });
+
+        string settingsDir = Path.Combine(Path.GetTempPath(), $"SrvSurvey-channel-handoff-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(settingsDir);
+            string settingsPath = Path.Combine(settingsDir, "ui-settings.json");
+            var sourceStore = new ReleaseUpdateSettingsStore(settingsPath);
+            var source = new ReleaseUpdateViewModel(sourceService, new Version(2, 0, 95, 0), sourceStore);
+
+            // Complete an initial check so hasAttemptedCheck starts true.
+            await source.CheckAsync();
+            Assert.True(source.CaptureSessionState().HasAttemptedCheck);
+
+            // Start a second check, switch channels mid-flight, and hand off to a commander on the new Stable channel.
+            Task secondCheck = source.CheckAsync();
+            source.UseDevelopmentReleases = false;
+            Assert.False(source.CaptureSessionState().HasAttemptedCheck);
+
+            Task<ReleaseUpdateSessionState>? pending = source.CapturePendingCheckAsync();
+            Assert.NotNull(pending);
+
+            var replacementService = new RecordingService();
+            var replacement = new ReleaseUpdateViewModel(
+                replacementService,
+                new Version(2, 0, 95, 0),
+                new ReleaseUpdateSettingsStore(settingsPath)
+            );
+            Task attached = replacement.AttachPendingCheckAsync(pending);
+            Assert.True(replacement.IsChecking);
+            Assert.False(replacement.CheckCommand.CanExecute(null));
+
+            // Completing the superseded Development check must NOT finish the handoff before the Stable follow-up finishes.
+            secondCheckGate.SetResult(CreateResult(isAvailable: false));
+            await stableCheckStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(pending.IsCompleted);
+            Assert.True(replacement.IsChecking);
+
+            stableCheckGate.SetResult(CreateResult(isAvailable: true));
+            await Task.WhenAll(secondCheck, attached);
+
+            Assert.False(replacement.IsChecking);
+            Assert.True(replacement.IsUpdateAvailable);
+            Assert.Equal("2.0.95.23", replacement.LatestVersion);
+            Assert.DoesNotContain("checking now", replacement.StatusMessage, StringComparison.OrdinalIgnoreCase);
+            Assert.Empty(replacementService.Channels);
+        }
+        finally
+        {
+            if (Directory.Exists(settingsDir))
+            {
+                Directory.Delete(settingsDir, recursive: true);
+            }
+        }
+    }
+
+    private sealed class GatedReleaseUpdateService(Task<ReleaseUpdateResult> task) : IReleaseUpdateService
+    {
+        public Task<ReleaseUpdateResult> CheckAsync(
+            ReleaseVersion currentVersion,
+            ReleaseChannel channel,
+            CancellationToken cancellationToken = default
+        ) => task;
+    }
+
+    private sealed class DelegateReleaseUpdateService(Func<ReleaseChannel, Task<ReleaseUpdateResult>> handler)
+        : IReleaseUpdateService
+    {
+        public Task<ReleaseUpdateResult> CheckAsync(
+            ReleaseVersion currentVersion,
+            ReleaseChannel channel,
+            CancellationToken cancellationToken = default
+        ) => handler(channel);
+    }
 }

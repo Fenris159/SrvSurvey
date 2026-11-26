@@ -514,6 +514,12 @@ public sealed partial class RouteWorkspaceViewModel : INotifyPropertyChanged
         loadedRoute is not null
         && !string.Equals(loadedRoute.Notes?.Trim(), draftNotes?.Trim(), StringComparison.Ordinal);
 
+    internal bool HasPendingNotesDraft =>
+        IsNotesVisible
+        && !string.Equals(NormalizeNotes(draftNotes), NormalizeNotes(NotesDraft), StringComparison.Ordinal);
+
+    private static string? NormalizeNotes(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     public bool IsDirty => HasDefinitionChanges || HasProgressChanges || HasNotesChanges;
 
     public bool CanSaveChanges =>

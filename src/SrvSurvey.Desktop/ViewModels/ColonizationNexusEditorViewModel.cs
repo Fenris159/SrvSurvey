@@ -15,6 +15,12 @@ public sealed partial class ColonizationNexusEditorViewModel : WorkspaceObservab
     private readonly Func<ColonizationNexus, Task> onCreated;
     private readonly CancellationTokenSource lifetime = new();
     private readonly WorkspaceCommand addCarrierCommand;
+    private readonly string initialName;
+    private readonly string initialNotes;
+    private readonly bool initialIsPrivate;
+    private readonly string[] initialSystems;
+    private readonly string[] initialCommanders;
+    private readonly long[] initialCarrierMarketIds;
     private bool disposed;
     private bool isBusy;
     private bool completed;
@@ -102,9 +108,26 @@ public sealed partial class ColonizationNexusEditorViewModel : WorkspaceObservab
             }
             status = "Edit the Nexus details, then choose Save changes.";
         }
+        initialName = name;
+        initialNotes = notes;
+        initialIsPrivate = isPrivate;
+        initialSystems = Systems.Rows.Select(row => row.Name).ToArray();
+        initialCommanders = Commanders.Rows.Select(row => row.Name).ToArray();
+        initialCarrierMarketIds = Carriers.Select(carrier => carrier.MarketId).ToArray();
     }
 
     public event Action? CloseRequested;
+    internal event Action? Disposed;
+    internal bool HasPendingWork =>
+        !disposed
+        && !completed
+        && (
+            IsBusy
+            || IsDeleteConfirmationVisible
+            || uncertainCreation
+            || (!IsEditing && created is not null)
+            || HasUnsavedDraftChanges()
+        );
     public string Commander { get; }
     public string Owner { get; }
     public bool IsEditing { get; }
@@ -460,6 +483,16 @@ public sealed partial class ColonizationNexusEditorViewModel : WorkspaceObservab
         addCarrierCommand.Refresh();
     }
 
+    private bool HasUnsavedDraftChanges() =>
+        Systems.HasPendingEntry
+        || Commanders.HasPendingEntry
+        || !string.Equals(name, initialName, StringComparison.Ordinal)
+        || !string.Equals(notes, initialNotes, StringComparison.Ordinal)
+        || isPrivate != initialIsPrivate
+        || !Systems.Rows.Select(row => row.Name).SequenceEqual(initialSystems, StringComparer.OrdinalIgnoreCase)
+        || !Commanders.Rows.Select(row => row.Name).SequenceEqual(initialCommanders, StringComparer.OrdinalIgnoreCase)
+        || !Carriers.Select(carrier => carrier.MarketId).SequenceEqual(initialCarrierMarketIds);
+
     public void Dispose()
     {
         if (disposed)
@@ -472,5 +505,6 @@ public sealed partial class ColonizationNexusEditorViewModel : WorkspaceObservab
         Systems.PropertyChanged -= EntriesChanged;
         Commanders.PropertyChanged -= EntriesChanged;
         RefreshAvailability();
+        Disposed?.Invoke();
     }
 }

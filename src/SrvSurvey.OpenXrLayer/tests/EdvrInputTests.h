@@ -110,6 +110,17 @@ void TestEdvrFrameDrivenInput(const std::shared_ptr<Instance> &instance, const X
     fixture.Frame();
     Require(input.Has(start, PointerKind::LeftDown), "EDVR frame loop returns a controller click");
     start = input.header->eventCount;
+    fixture.session->maximumLayers = 2;
+    fixture.Frame();
+    Require(submittedLayers == 2 && synchronizedSets.empty() && input.Has(start, PointerKind::Reset) &&
+                !input.Has(start, PointerKind::LeftDown),
+            "Dropping to one free layer keeps the panel visible, releases owned actions, and resets pointer input");
+    fixture.session->maximumLayers = 3;
+    controllerButtons = 0;
+    fixture.Frame();
+    controllerButtons = 1;
+    fixture.Frame();
+    start = input.header->eventCount;
     fixture.Focus(false);
     fixture.Frame();
     Require(input.Has(start, PointerKind::Reset) && synchronizedSets.empty() && submittedLayers == 2,

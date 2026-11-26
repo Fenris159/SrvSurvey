@@ -90,7 +90,7 @@ jobs:
 
       - name: Test Linux desktop with coverage
         if: steps.layout.outputs.available == 'true'
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           dotnet test tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj \
             --configuration Release --no-build --no-restore --logger trx --blame-hang-timeout 2m \
@@ -261,7 +261,7 @@ jobs:
         if: steps.layout.outputs.kind == 'avalonia'
         # The uninstrumented Windows suite already takes about eight minutes.
         # Allow coverage overhead while retaining the per-test hang diagnostics.
-        timeout-minutes: 15
+        timeout-minutes: 25
         run: >-
           dotnet test SrvSurvey.slnx
           --configuration Release

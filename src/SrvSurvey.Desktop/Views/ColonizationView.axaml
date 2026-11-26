@@ -939,8 +939,8 @@
                                     Margin="0,0,8,4" />
                           </WrapPanel>
                         </controls:ResponsiveColumnsPanel>
-                        <ScrollViewer x:Name="SystemSitesTableScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                          <StackPanel Spacing="0" MinWidth="960" Width="{Binding #SystemSitesTableScroller.Viewport.Width}">
+                        <controls:ResponsiveScrollViewer x:Name="SystemSitesTableScroller" MinimumContentWidth="960" VerticalScrollBarVisibility="Disabled">
+                          <StackPanel Spacing="0" MinWidth="960">
                             <Grid ColumnSpacing="10" Margin="4,8" x:Name="SystemSitesHeaders">
                               <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*" MinWidth="0" />
@@ -1028,7 +1028,7 @@
                               </ListBox.ItemTemplate>
                             </ListBox>
                           </StackPanel>
-                        </ScrollViewer>
+                        </controls:ResponsiveScrollViewer>
                         <TextBlock Classes="muted"
                                    TextWrapping="Wrap"
                                    IsVisible="{Binding Colonization.SystemEditor.CanEdit}"

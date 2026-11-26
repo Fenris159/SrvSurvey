@@ -13,6 +13,8 @@ public sealed class VrCalibrationNumberInput : NumericUpDown
         decimal
     >(nameof(Step), 1m);
 
+    private double pendingWheelDelta;
+
     public VrCalibrationNumberInput()
     {
         AddHandler(PointerPressedEvent, (_, args) => UpdateIncrement(args.KeyModifiers), RoutingStrategies.Tunnel);
@@ -44,8 +46,19 @@ public sealed class VrCalibrationNumberInput : NumericUpDown
         {
             return;
         }
-        UpdateIncrement(args.KeyModifiers);
-        Value = Math.Clamp((Value ?? 0) + Math.Sign(args.Delta.Y) * Increment, Minimum, Maximum);
+        if (pendingWheelDelta != 0 && Math.Sign(args.Delta.Y) != Math.Sign(pendingWheelDelta))
+        {
+            pendingWheelDelta = 0;
+        }
+        pendingWheelDelta += args.Delta.Y;
+        int steps = (int)Math.Truncate(pendingWheelDelta);
         args.Handled = true;
+        if (steps == 0)
+        {
+            return;
+        }
+        pendingWheelDelta -= steps;
+        UpdateIncrement(args.KeyModifiers);
+        Value = Math.Clamp((Value ?? 0) + steps * Increment, Minimum, Maximum);
     }
 }

@@ -20,12 +20,30 @@ SrvSurvey.Desktop (Avalonia panels -> bounded RGBA frames)
   probing them through SteamVR/OpenVR can crash the active game. SrvSurvey
   blocks SteamVR/OpenVR probing when `xrizer`, `OpenComposite`, `wivrn-server`,
   or `monado-service` is active without `vrserver`.
+- **Deferred attachment while Elite Dangerous is closed:** WiVRn hides its
+  headset lobby whenever any OpenXR client holds an active session, including
+  an `XR_EXTX_overlay` session. SrvSurvey therefore waits until
+  `EliteDangerous64.exe` is running before attaching to WiVRn or Monado, and
+  immediately destroys its overlay session when Elite exits so WiVRn's lobby
+  remains usable before launch and across game restarts without manually
+  toggling VR overlays off and on.
 - **Native OpenXR overlay session:** Both WiVRn and Monado implement Monado's
   `XR_EXTX_overlay` compositor extension. SrvSurvey opens an overlay
   `XrSession` with `XrSessionCreateInfoOverlayEXTX` and a headless Vulkan
   context (`XR_KHR_vulkan_enable2`, with fallback to `XR_KHR_vulkan_enable`),
   submitting each panel as an `XrCompositionLayerQuad` with straight-alpha
   blending.
+- **Controller-pointer interaction:** Because WiVRn and Monado keep
+  `XR_EXTX_overlay` sessions focused alongside the main VR application,
+  `libSrvSurveyLinuxOpenXrOverlay.so` attaches its own OpenXR action set
+  supporting standard OpenXR 1.0 controller profiles (Oculus Touch / Quest,
+  Valve Index, Microsoft Motion, HTC Vive, and KHR Simple Controller). Overlays
+  stay click-through until you toggle **Toggle VR overlay interaction**, at
+  which point a cursor dot appears on aimed panels so you can click, scroll,
+  and use the in-headset **Adjust overlays** calibration panel. Because input is
+  read from a separate overlay session rather than intercepting Elite's session,
+  controller buttons or sticks also bound in Elite are shared and may act in
+  both apps while interaction is enabled.
 - **Zero hard install dependencies:** `libSrvSurveyLinuxOpenXrOverlay.so` loads
   `libopenxr_loader.so.1` and `libvulkan.so.1` dynamically at runtime so
   SrvSurvey runs normally on Linux systems without VR packages installed.
@@ -41,9 +59,15 @@ SrvSurvey.Desktop (Avalonia panels -> bounded RGBA frames)
    OpenXR, experimental)** or **Monado (Linux OpenXR, experimental)**, and
    enable VR overlays.
 4. Use **Adjust overlays**, **Place in front of me**, or **Reset VR
-   orientation** to position cockpit panels. WiVRn and Monado use seated
-   cockpit defaults and store placements separately under `vr/wivrn` and
-   `vr/monado`.
+   orientation** to position cockpit panels. Assign **Toggle VR overlay
+   interaction** to aim and click panels (including the in-headset calibration
+   panel) with your VR controllers: on profiles with full bindings (Oculus
+   Touch, Valve Index, Microsoft Motion, and HTC Vive), trigger clicks, grip
+   right-clicks, thumbstick/trackpad press middle-clicks, and
+   thumbstick/trackpad tilt scrolls. The fallback **KHR Simple Controller**
+   profile binds only aim and primary select unless the runtime supplies
+   additional bindings. WiVRn and Monado use seated cockpit defaults and store
+   placements separately under `vr/wivrn` and `vr/monado`.
 
 ## Building locally
 
@@ -60,18 +84,19 @@ Linux packages bundle `OpenXR/libSrvSurveyLinuxOpenXrOverlay.so` automatically.
 For custom testing, `SRVSURVEY_LINUX_OPENXR_LIBRARY` can override the library
 path.
 
-## Current limits and headset acceptance checks
+## Headset acceptance checks
 
-- Controller-pointer interaction is not yet implemented on Linux OpenXR
-  (overlays remain click-through; calibrate from the desktop VR settings or
-  mirror the window if needed).
-- Automated CTest and xUnit suites exercise the OpenXR/Vulkan state machine and
-  safety guards with mock runtimes; live CachyOS + WiVRn + Proton/xrizer
-  rendering still requires real-headset acceptance testing:
-  - Confirm selecting **SteamVR headset** while WiVRn/xrizer is active refuses
-    to touch OpenVR and does not crash Elite Dangerous.
-  - Switch to **WiVRn (Linux OpenXR, experimental)**, enable overlays, and
-    confirm panels appear cleanly with transparent edges, accurate colors, and
-    proper cockpit placement.
-  - Verify **Place in front of me**, **Reset VR orientation**, hiding/showing
-    panels, and cleanly disconnecting/reconnecting WiVRn.
+- Automated CTest and xUnit suites exercise the OpenXR/Vulkan state machine,
+  controller-pointer raycasting/actions, and safety guards with mock runtimes;
+  live WiVRn and Monado sessions should verify:
+  - Selecting **SteamVR headset** while WiVRn/xrizer is active refuses to touch
+    OpenVR and does not crash Elite Dangerous.
+  - Switching to **WiVRn (Linux OpenXR, experimental)** or **Monado (Linux
+    OpenXR, experimental)** renders panels with transparent edges, accurate
+    colors, and proper cockpit placement.
+  - **Toggle VR overlay interaction** shows the pointer cursor dot on panels,
+    clicks buttons on the in-headset **Adjust overlays** panel, scrolls with the
+    thumbstick/trackpad (on controller profiles with a thumbstick or trackpad
+    binding), and returns overlays to click-through when toggled off.
+  - **Place in front of me**, **Reset VR orientation**, hiding/showing panels,
+    and cleanly disconnecting/reconnecting WiVRn or Monado work reliably.

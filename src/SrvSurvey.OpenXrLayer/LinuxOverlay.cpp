@@ -7,6 +7,9 @@
 #include <cmath>
 #include <dlfcn.h>
 #include <sstream>
+#include <type_traits>
+
+static_assert(std::is_trivially_copyable_v<srvsurvey::PointerEvent>);
 
 namespace srvsurvey::linux_openxr
 {
@@ -15,6 +18,31 @@ namespace
 {
 
 constexpr uint32_t OverlayLayerPlacement = 1;
+constexpr size_t MaxQueuedPointerEvents = 256;
+
+const std::array<uint8_t, 32 * 32 * 4> &GetCursorPixels()
+{
+    static const std::array<uint8_t, 32 * 32 * 4> pixels = []() {
+        std::array<uint8_t, 32 * 32 * 4> data{};
+        for (int y = 0; y < 32; ++y)
+        {
+            for (int x = 0; x < 32; ++x)
+            {
+                float dx = static_cast<float>(x) - 15.5f;
+                float dy = static_cast<float>(y) - 15.5f;
+                float radius = std::sqrt(dx * dx + dy * dy);
+                size_t index = static_cast<size_t>(y * 32 + x) * 4;
+                bool edge = radius > 9.0f;
+                data[index] = edge ? 255 : 32;
+                data[index + 1] = edge ? 255 : 200;
+                data[index + 2] = 255;
+                data[index + 3] = static_cast<uint8_t>(std::clamp(13.5f - radius, 0.0f, 1.0f) * 255.0f);
+            }
+        }
+        return data;
+    }();
+    return pixels;
+}
 
 std::string ToLowerAscii(std::string value)
 {
@@ -699,6 +727,8 @@ ProbeResult OverlaySession::Initialize()
     }
     swapchainIsSrgb = IsSrgbSwapchainFormat(swapchainFormat);
 
+    InitializeInteraction();
+
     SetStatus(OverlayStatus::Ok, 0, 0, "Linux OpenXR overlay session is active.");
     if (startWorkerThread)
     {
@@ -758,7 +788,204 @@ bool OverlaySession::LoadInstanceFunctions()
     BindXr(loader.getInstanceProcAddr, instance, "xrGetVulkanInstanceExtensionsKHR", xr.getVulkanInstanceExtensions);
     BindXr(loader.getInstanceProcAddr, instance, "xrGetVulkanDeviceExtensionsKHR", xr.getVulkanDeviceExtensions);
     BindXr(loader.getInstanceProcAddr, instance, "xrGetVulkanGraphicsDeviceKHR", xr.getVulkanDevice1);
+    BindXr(loader.getInstanceProcAddr, instance, "xrCreateActionSet", xr.createActionSet);
+    BindXr(loader.getInstanceProcAddr, instance, "xrDestroyActionSet", xr.destroyActionSet);
+    BindXr(loader.getInstanceProcAddr, instance, "xrCreateAction", xr.createAction);
+    BindXr(loader.getInstanceProcAddr, instance, "xrStringToPath", xr.stringToPath);
+    BindXr(loader.getInstanceProcAddr, instance, "xrSuggestInteractionProfileBindings",
+           xr.suggestInteractionProfileBindings);
+    BindXr(loader.getInstanceProcAddr, instance, "xrAttachSessionActionSets", xr.attachSessionActionSets);
+    BindXr(loader.getInstanceProcAddr, instance, "xrCreateActionSpace", xr.createActionSpace);
+    BindXr(loader.getInstanceProcAddr, instance, "xrSyncActions", xr.syncActions);
+    BindXr(loader.getInstanceProcAddr, instance, "xrGetActionStateBoolean", xr.getActionStateBoolean);
+    BindXr(loader.getInstanceProcAddr, instance, "xrGetActionStateVector2f", xr.getActionStateVector2f);
+    BindXr(loader.getInstanceProcAddr, instance, "xrGetActionStatePose", xr.getActionStatePose);
     return ok;
+}
+
+void OverlaySession::InitializeInteraction()
+{
+    auto failInput = [&](XrResult xrResult, std::string message) {
+        for (XrSpace &space : aimSpaces)
+        {
+            if (space != XR_NULL_HANDLE && xr.destroySpace)
+                xr.destroySpace(space);
+            space = XR_NULL_HANDLE;
+        }
+        if (actionSet != XR_NULL_HANDLE && xr.destroyActionSet)
+            xr.destroyActionSet(actionSet);
+        actionSet = XR_NULL_HANDLE;
+        aimAction = XR_NULL_HANDLE;
+        selectAction = XR_NULL_HANDLE;
+        secondaryAction = XR_NULL_HANDLE;
+        middleAction = XR_NULL_HANDLE;
+        scrollAction = XR_NULL_HANDLE;
+        handPaths = {XR_NULL_PATH, XR_NULL_PATH};
+
+        std::lock_guard lock(inputMutex);
+        inputReady = false;
+        inputError = static_cast<int32_t>(xrResult);
+        inputErrorMessage = std::move(message);
+    };
+
+    if (!xr.createActionSet || !xr.destroyActionSet || !xr.createAction || !xr.stringToPath ||
+        !xr.suggestInteractionProfileBindings || !xr.attachSessionActionSets || !xr.createActionSpace ||
+        !xr.syncActions || !xr.getActionStateBoolean || !xr.getActionStateVector2f || !xr.getActionStatePose)
+    {
+        failInput(XR_ERROR_FUNCTION_UNSUPPORTED,
+                  "The active OpenXR runtime does not expose controller action entry points.");
+        return;
+    }
+
+    XrActionSetCreateInfo setInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
+    std::snprintf(setInfo.actionSetName, sizeof(setInfo.actionSetName), "%s", "srvsurvey_overlay_input");
+    std::snprintf(setInfo.localizedActionSetName, sizeof(setInfo.localizedActionSetName), "%s",
+                  "SrvSurvey Overlay Input");
+    setInfo.priority = 100;
+    XrResult res = xr.createActionSet(instance, &setInfo, &actionSet);
+    if (XR_FAILED(res))
+    {
+        failInput(res, "Could not create the OpenXR overlay action set (OpenXR error " + std::to_string(res) + ").");
+        return;
+    }
+
+    res = xr.stringToPath(instance, "/user/hand/left", &handPaths[0]);
+    if (XR_SUCCEEDED(res))
+        res = xr.stringToPath(instance, "/user/hand/right", &handPaths[1]);
+    if (XR_FAILED(res))
+    {
+        failInput(res, "Could not resolve OpenXR controller hand paths (OpenXR error " + std::to_string(res) + ").");
+        return;
+    }
+
+    auto createAction = [&](const char *name, const char *label, XrActionType type, XrAction &outAction) -> XrResult {
+        XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
+        std::snprintf(actionInfo.actionName, sizeof(actionInfo.actionName), "%s", name);
+        std::snprintf(actionInfo.localizedActionName, sizeof(actionInfo.localizedActionName), "%s", label);
+        actionInfo.actionType = type;
+        actionInfo.countSubactionPaths = static_cast<uint32_t>(handPaths.size());
+        actionInfo.subactionPaths = handPaths.data();
+        return xr.createAction(actionSet, &actionInfo, &outAction);
+    };
+
+    if (XR_FAILED(res = createAction("aim", "Pointer aim", XR_ACTION_TYPE_POSE_INPUT, aimAction)) ||
+        XR_FAILED(res = createAction("select", "Primary click", XR_ACTION_TYPE_BOOLEAN_INPUT, selectAction)) ||
+        XR_FAILED(res = createAction("secondary", "Secondary click", XR_ACTION_TYPE_BOOLEAN_INPUT, secondaryAction)) ||
+        XR_FAILED(res = createAction("middle", "Middle click", XR_ACTION_TYPE_BOOLEAN_INPUT, middleAction)) ||
+        XR_FAILED(res = createAction("scroll", "Scroll", XR_ACTION_TYPE_VECTOR2F_INPUT, scrollAction)))
+    {
+        failInput(res, "Could not create OpenXR overlay controller actions (OpenXR error " + std::to_string(res) + ").");
+        return;
+    }
+
+    struct ActionBindingSpec
+    {
+        XrAction action;
+        const char *suffix;
+    };
+
+    auto suggestProfile = [&](const char *profileName, std::initializer_list<ActionBindingSpec> specs) -> XrResult {
+        XrPath profilePath = XR_NULL_PATH;
+        XrResult pathRes = xr.stringToPath(instance, profileName, &profilePath);
+        if (XR_FAILED(pathRes))
+            return pathRes;
+
+        std::vector<XrActionSuggestedBinding> bindings;
+        bindings.reserve(specs.size() * 2);
+        for (const char *handPrefix : {"/user/hand/left", "/user/hand/right"})
+        {
+            for (const ActionBindingSpec &spec : specs)
+            {
+                XrPath bindingPath = XR_NULL_PATH;
+                std::string fullPath = std::string(handPrefix) + spec.suffix;
+                pathRes = xr.stringToPath(instance, fullPath.c_str(), &bindingPath);
+                if (XR_FAILED(pathRes))
+                    return pathRes;
+                bindings.push_back({spec.action, bindingPath});
+            }
+        }
+
+        XrInteractionProfileSuggestedBinding suggested{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
+        suggested.interactionProfile = profilePath;
+        suggested.countSuggestedBindings = static_cast<uint32_t>(bindings.size());
+        suggested.suggestedBindings = bindings.data();
+        return xr.suggestInteractionProfileBindings(instance, &suggested);
+    };
+
+    int suggestedProfiles = 0;
+    XrResult lastSuggestError = XR_SUCCESS;
+    auto trySuggest = [&](const char *profileName, std::initializer_list<ActionBindingSpec> specs) {
+        XrResult suggestRes = suggestProfile(profileName, specs);
+        if (XR_SUCCEEDED(suggestRes))
+            ++suggestedProfiles;
+        else
+            lastSuggestError = suggestRes;
+    };
+
+    trySuggest("/interaction_profiles/oculus/touch_controller",
+               {{aimAction, "/input/aim/pose"},
+                {selectAction, "/input/trigger/value"},
+                {secondaryAction, "/input/squeeze/value"},
+                {middleAction, "/input/thumbstick/click"},
+                {scrollAction, "/input/thumbstick"}});
+    trySuggest("/interaction_profiles/valve/index_controller",
+               {{aimAction, "/input/aim/pose"},
+                {selectAction, "/input/trigger/value"},
+                {secondaryAction, "/input/squeeze/value"},
+                {middleAction, "/input/thumbstick/click"},
+                {scrollAction, "/input/thumbstick"}});
+    trySuggest("/interaction_profiles/microsoft/motion_controller",
+               {{aimAction, "/input/aim/pose"},
+                {selectAction, "/input/trigger/value"},
+                {secondaryAction, "/input/squeeze/click"},
+                {middleAction, "/input/thumbstick/click"},
+                {scrollAction, "/input/thumbstick"}});
+    trySuggest("/interaction_profiles/htc/vive_controller",
+               {{aimAction, "/input/aim/pose"},
+                {selectAction, "/input/trigger/value"},
+                {secondaryAction, "/input/squeeze/click"},
+                {middleAction, "/input/trackpad/click"},
+                {scrollAction, "/input/trackpad"}});
+    trySuggest("/interaction_profiles/khr/simple_controller",
+               {{aimAction, "/input/aim/pose"}, {selectAction, "/input/select/click"}});
+
+    if (suggestedProfiles == 0)
+    {
+        failInput(lastSuggestError,
+                  "Could not bind any OpenXR controller profile for overlay interaction (OpenXR error " +
+                      std::to_string(lastSuggestError) + ").");
+        return;
+    }
+
+    XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+    attachInfo.countActionSets = 1;
+    attachInfo.actionSets = &actionSet;
+    res = xr.attachSessionActionSets(session, &attachInfo);
+    if (XR_FAILED(res))
+    {
+        failInput(res, "Could not attach the OpenXR overlay action set (OpenXR error " + std::to_string(res) + ").");
+        return;
+    }
+
+    for (size_t hand = 0; hand < aimSpaces.size(); ++hand)
+    {
+        XrActionSpaceCreateInfo spaceInfo{XR_TYPE_ACTION_SPACE_CREATE_INFO};
+        spaceInfo.action = aimAction;
+        spaceInfo.subactionPath = handPaths[hand];
+        spaceInfo.poseInActionSpace.orientation.w = 1.0f;
+        res = xr.createActionSpace(session, &spaceInfo, &aimSpaces[hand]);
+        if (XR_FAILED(res))
+        {
+            failInput(res,
+                      "Could not create an OpenXR controller aim space (OpenXR error " + std::to_string(res) + ").");
+            return;
+        }
+    }
+
+    std::lock_guard lock(inputMutex);
+    inputReady = true;
+    inputError = 0;
+    inputErrorMessage.clear();
 }
 
 bool OverlaySession::LoadVulkanInstanceFunctions()
@@ -1123,19 +1350,40 @@ void OverlaySession::DestroySwapchains()
             if (texture.handle != XR_NULL_HANDLE && xr.destroySwapchain)
                 xr.destroySwapchain(texture.handle);
         }
+        if (cursorTexture.handle != XR_NULL_HANDLE && xr.destroySwapchain)
+            xr.destroySwapchain(cursorTexture.handle);
     }
     textures.clear();
+    cursorTexture = {};
 }
 
 void OverlaySession::CleanupResources()
 {
     ClearHeadPose();
+    interactionEnabled.store(false, std::memory_order_release);
+    sessionFocused = false;
+    previousHandButtons = {0, 0};
+    (void)pointer.Reset();
+    {
+        std::lock_guard lock(inputMutex);
+        inputReady = false;
+        pointerEvents.clear();
+    }
     if (!WaitForGpuIdle())
     {
         // GPU work completion is unconfirmed (for example VK_ERROR_OUT_OF_HOST_MEMORY while an upload is in flight).
         // Detach without destroying GPU-referenced Vulkan or OpenXR handles to avoid use-after-free teardown.
         textures.clear();
+        cursorTexture = {};
         staging = {};
+        aimSpaces = {XR_NULL_HANDLE, XR_NULL_HANDLE};
+        actionSet = XR_NULL_HANDLE;
+        aimAction = XR_NULL_HANDLE;
+        selectAction = XR_NULL_HANDLE;
+        secondaryAction = XR_NULL_HANDLE;
+        middleAction = XR_NULL_HANDLE;
+        scrollAction = XR_NULL_HANDLE;
+        handPaths = {XR_NULL_PATH, XR_NULL_PATH};
         localSpace = XR_NULL_HANDLE;
         viewSpace = XR_NULL_HANDLE;
         session = XR_NULL_HANDLE;
@@ -1152,6 +1400,12 @@ void OverlaySession::CleanupResources()
     }
     DestroySwapchains();
     DestroyStagingBuffer();
+    for (XrSpace &space : aimSpaces)
+    {
+        if (space != XR_NULL_HANDLE && xr.destroySpace)
+            xr.destroySpace(space);
+        space = XR_NULL_HANDLE;
+    }
     if (localSpace != XR_NULL_HANDLE && xr.destroySpace)
     {
         xr.destroySpace(localSpace);
@@ -1167,6 +1421,17 @@ void OverlaySession::CleanupResources()
         xr.destroySession(session);
         session = XR_NULL_HANDLE;
     }
+    if (actionSet != XR_NULL_HANDLE && xr.destroyActionSet)
+    {
+        xr.destroyActionSet(actionSet);
+        actionSet = XR_NULL_HANDLE;
+    }
+    aimAction = XR_NULL_HANDLE;
+    selectAction = XR_NULL_HANDLE;
+    secondaryAction = XR_NULL_HANDLE;
+    middleAction = XR_NULL_HANDLE;
+    scrollAction = XR_NULL_HANDLE;
+    handPaths = {XR_NULL_PATH, XR_NULL_PATH};
     sessionRunning = false;
     anchored = false;
     gpuWorkInFlight = false;
@@ -1235,6 +1500,297 @@ HeadPose OverlaySession::GetHeadPose(uint32_t expectedOriginRevision) const
     return currentHeadPose;
 }
 
+bool OverlaySession::SetInteractionEnabled(bool enabled, int32_t &outXrError, std::string &outMessage)
+{
+    outXrError = 0;
+    std::lock_guard lock(inputMutex);
+    if (!enabled)
+    {
+        interactionEnabled.store(false, std::memory_order_release);
+        interactionGeneration.fetch_add(1, std::memory_order_acq_rel);
+        pointerEvents.clear();
+        outMessage = "VR overlays are click-through again.";
+        return true;
+    }
+
+    if (!inputReady)
+    {
+        outXrError = inputError;
+        outMessage = inputErrorMessage.empty()
+                         ? "OpenXR controller input is unavailable for this overlay session."
+                         : inputErrorMessage;
+        return false;
+    }
+
+    if (maxLayers <= 1)
+    {
+        outXrError = 0;
+        outMessage =
+            "The active OpenXR runtime supports only 1 composition layer; at least 2 layers are required for controller-pointer interaction.";
+        return false;
+    }
+
+    pointerEvents.clear();
+    interactionEnabled.store(true, std::memory_order_release);
+    interactionGeneration.fetch_add(1, std::memory_order_acq_rel);
+    outMessage = "Controller-pointer interaction is enabled. Point at a panel and use the trigger to click.";
+    return true;
+}
+
+size_t OverlaySession::PollPointerEvents(std::span<PointerEvent> outEvents)
+{
+    if (outEvents.empty())
+        return 0;
+    std::lock_guard lock(inputMutex);
+    size_t count = std::min(outEvents.size(), pointerEvents.size());
+    for (size_t i = 0; i < count; ++i)
+    {
+        outEvents[i] = pointerEvents.front();
+        pointerEvents.pop_front();
+    }
+    return count;
+}
+
+OverlaySession::EnqueueResult OverlaySession::QueuePointerEvents(const std::vector<PointerEvent> &events,
+                                                                 std::optional<uint64_t> expectedGeneration)
+{
+    if (events.empty())
+        return EnqueueResult::Ok;
+    std::lock_guard lock(inputMutex);
+    if (expectedGeneration && interactionGeneration.load(std::memory_order_acquire) != *expectedGeneration)
+        return EnqueueResult::StaleGeneration;
+    for (const PointerEvent &ev : events)
+    {
+        if (ev.kind == PointerKind::Move && !pointerEvents.empty() &&
+            pointerEvents.back().kind == PointerKind::Move && pointerEvents.back().id == ev.id)
+        {
+            pointerEvents.back() = ev;
+            continue;
+        }
+        if (ev.kind == PointerKind::Reset && !pointerEvents.empty() &&
+            pointerEvents.back().kind == PointerKind::Reset)
+        {
+            continue;
+        }
+        if (pointerEvents.size() >= MaxQueuedPointerEvents)
+        {
+            auto oldestMove = std::find_if(pointerEvents.begin(), pointerEvents.end(),
+                                           [](const PointerEvent &queued) { return queued.kind == PointerKind::Move; });
+            if (oldestMove != pointerEvents.end())
+            {
+                pointerEvents.erase(oldestMove);
+            }
+            else
+            {
+                pointerEvents.clear();
+                pointerEvents.push_back({0, PointerKind::Reset});
+                return EnqueueResult::Overflow;
+            }
+        }
+        pointerEvents.push_back(ev);
+    }
+    return EnqueueResult::Ok;
+}
+
+void OverlaySession::ResetInteractionState(bool forceResetEvent)
+{
+    previousHandButtons = {0, 0};
+    PointerUpdate reset = pointer.Reset();
+    if (!reset.events.empty())
+    {
+        (void)QueuePointerEvents(reset.events);
+    }
+    else if (forceResetEvent)
+    {
+        std::vector<PointerEvent> synthetic{{0, PointerKind::Reset}};
+        (void)QueuePointerEvents(synthetic);
+    }
+}
+
+OverlaySession::SampledInteraction OverlaySession::SampleInteraction(std::span<const PointerSurface> surfaces,
+                                                                     XrTime displayTime,
+                                                                     uint64_t frameInteractionGeneration)
+{
+    uint64_t generation = 0;
+    bool enabled = false;
+    bool ready = false;
+    {
+        std::lock_guard lock(inputMutex);
+        generation = interactionGeneration.load(std::memory_order_acquire);
+        enabled = interactionEnabled.load(std::memory_order_acquire);
+        ready = inputReady;
+    }
+
+    if (generation != appliedInteractionGeneration)
+    {
+        appliedInteractionGeneration = generation;
+        previousHandButtons = {0, 0};
+        (void)pointer.Reset();
+    }
+
+    if (generation != frameInteractionGeneration)
+    {
+        // SetInteractionEnabled ran after this frame snapshotted its packet;
+        // skip sampling against potentially replaced surfaces for this frame.
+        return {{}, frameInteractionGeneration, true};
+    }
+
+    if (!enabled || !ready || !sessionFocused || displayTime <= 0)
+    {
+        previousHandButtons = {0, 0};
+        return {pointer.Reset(), generation, true};
+    }
+
+    XrActiveActionSet activeSet{actionSet, XR_NULL_PATH};
+    XrActionsSyncInfo syncInfo{XR_TYPE_ACTIONS_SYNC_INFO};
+    syncInfo.countActiveActionSets = 1;
+    syncInfo.activeActionSets = &activeSet;
+    XrResult syncRes = xr.syncActions(session, &syncInfo);
+    if (syncRes != XR_SUCCESS)
+    {
+        previousHandButtons = {0, 0};
+        return {pointer.Reset(), generation, true};
+    }
+
+    std::array<ControllerSample, 2> hands{};
+    bool actionReadError = false;
+    for (size_t hand = 0; hand < hands.size(); ++hand)
+    {
+        XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
+        getInfo.subactionPath = handPaths[hand];
+        getInfo.action = aimAction;
+        XrActionStatePose poseState{XR_TYPE_ACTION_STATE_POSE};
+        XrResult poseRes = xr.getActionStatePose(session, &getInfo, &poseState);
+        if (XR_FAILED(poseRes))
+        {
+            actionReadError = true;
+            break;
+        }
+        if (!poseState.isActive)
+        {
+            previousHandButtons[hand] = 0;
+            continue;
+        }
+
+        XrSpaceLocation location{XR_TYPE_SPACE_LOCATION};
+        XrResult locRes = xr.locateSpace(aimSpaces[hand], localSpace, displayTime, &location);
+        if (XR_FAILED(locRes))
+        {
+            actionReadError = true;
+            break;
+        }
+        constexpr XrSpaceLocationFlags validBits =
+            XR_SPACE_LOCATION_ORIENTATION_VALID_BIT | XR_SPACE_LOCATION_POSITION_VALID_BIT;
+        if ((location.locationFlags & validBits) != validBits)
+        {
+            previousHandButtons[hand] = 0;
+            continue;
+        }
+
+        bool handReadable = true;
+        uint32_t nextButtons = 0;
+        uint32_t bit = 1;
+        for (XrAction buttonAction : {selectAction, secondaryAction, middleAction})
+        {
+            getInfo.action = buttonAction;
+            XrActionStateBoolean buttonState{XR_TYPE_ACTION_STATE_BOOLEAN};
+            XrResult btnRes = xr.getActionStateBoolean(session, &getInfo, &buttonState);
+            if (XR_FAILED(btnRes))
+            {
+                actionReadError = true;
+                handReadable = false;
+                break;
+            }
+            if (!buttonState.isActive)
+            {
+                // Cancel capture instead of synthesizing a release if a held button becomes inactive.
+                if ((previousHandButtons[hand] & bit) != 0)
+                {
+                    handReadable = false;
+                    break;
+                }
+            }
+            else if (buttonState.currentState == XR_TRUE)
+            {
+                nextButtons |= bit;
+            }
+            bit <<= 1;
+        }
+        if (actionReadError)
+            break;
+        if (!handReadable)
+        {
+            previousHandButtons[hand] = 0;
+            continue;
+        }
+
+        getInfo.action = scrollAction;
+        XrActionStateVector2f scrollState{XR_TYPE_ACTION_STATE_VECTOR2F};
+        XrResult scrollRes = xr.getActionStateVector2f(session, &getInfo, &scrollState);
+        if (XR_FAILED(scrollRes))
+        {
+            actionReadError = true;
+            break;
+        }
+
+        hands[hand].pose = {
+            {location.pose.orientation.x, location.pose.orientation.y, location.pose.orientation.z,
+             location.pose.orientation.w},
+            {location.pose.position.x, location.pose.position.y, location.pose.position.z},
+        };
+        hands[hand].buttons = nextButtons;
+        hands[hand].valid = true;
+        previousHandButtons[hand] = nextButtons;
+        if (scrollState.isActive && std::isfinite(scrollState.currentState.x) &&
+            std::isfinite(scrollState.currentState.y))
+        {
+            hands[hand].scrollX = std::clamp(scrollState.currentState.x, -1.0f, 1.0f);
+            hands[hand].scrollY = std::clamp(scrollState.currentState.y, -1.0f, 1.0f);
+        }
+    }
+
+    if (actionReadError)
+    {
+        previousHandButtons = {0, 0};
+        return {pointer.Reset(), generation, true};
+    }
+
+    return {pointer.Update(true, hands, surfaces, static_cast<double>(displayTime) * 1e-9), generation, false};
+}
+
+std::optional<XrCompositionLayerQuad> OverlaySession::BuildCursorQuad(const PointerHit &hit, int32_t &outXrError,
+                                                                      std::string &outError, bool &outFatal)
+{
+    const auto &pixels = GetCursorPixels();
+    Descriptor descriptor{};
+    descriptor.width = 32;
+    descriptor.height = 32;
+    descriptor.length = static_cast<uint32_t>(pixels.size());
+    descriptor.alpha = 1.0f;
+
+    if (!UploadPanel(cursorTexture, descriptor, 1, pixels.data(), outXrError, outError, outFatal))
+        return std::nullopt;
+    if (!cursorTexture.ready)
+        return std::nullopt;
+
+    auto displacement = Rotate(hit.pose.orientation,
+                               {(hit.x - 0.5f) * hit.width, (0.5f - hit.y) * hit.height, 0.002f});
+    XrCompositionLayerQuad quad{XR_TYPE_COMPOSITION_LAYER_QUAD};
+    quad.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT |
+                      XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT;
+    quad.space = localSpace;
+    quad.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
+    quad.subImage.swapchain = cursorTexture.handle;
+    quad.subImage.imageRect.offset = {0, 0};
+    quad.subImage.imageRect.extent = {32, 32};
+    quad.subImage.imageArrayIndex = 0;
+    quad.pose = {{hit.pose.orientation.x, hit.pose.orientation.y, hit.pose.orientation.z, hit.pose.orientation.w},
+                 {hit.pose.position.x + displacement.x, hit.pose.position.y + displacement.y,
+                  hit.pose.position.z + displacement.z}};
+    quad.size = {0.012f, 0.012f};
+    return quad;
+}
+
 void OverlaySession::SetStatus(OverlayStatus status, int32_t xrError, uint32_t renderedCount, const std::string &message)
 {
     std::lock_guard lock(statusMutex);
@@ -1282,6 +1838,8 @@ bool OverlaySession::PollEvents()
             return true;
         if (XR_FAILED(result))
         {
+            sessionFocused = false;
+            ResetInteractionState();
             ClearHeadPose();
             SetStatus(OverlayStatus::SessionLost, static_cast<int32_t>(result), 0,
                       "The OpenXR overlay event stream failed (OpenXR error " + std::to_string(result) + ").");
@@ -1290,6 +1848,8 @@ bool OverlaySession::PollEvents()
 
         if (event.type == XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING)
         {
+            sessionFocused = false;
+            ResetInteractionState();
             ClearHeadPose();
             SetStatus(OverlayStatus::SessionLost, 0, 0, "The OpenXR runtime disconnected.");
             return false;
@@ -1310,6 +1870,11 @@ bool OverlaySession::PollEvents()
         else if (event.type == XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED)
         {
             const auto *stateChanged = reinterpret_cast<const XrEventDataSessionStateChanged *>(&event);
+            bool nextFocused = stateChanged->state == XR_SESSION_STATE_FOCUSED;
+            if (sessionFocused && !nextFocused)
+                ResetInteractionState();
+            sessionFocused = nextFocused;
+
             if (stateChanged->state == XR_SESSION_STATE_READY)
             {
                 XrSessionBeginInfo beginInfo{XR_TYPE_SESSION_BEGIN_INFO};
@@ -1317,6 +1882,7 @@ bool OverlaySession::PollEvents()
                 XrResult beginRes = xr.beginSession(session, &beginInfo);
                 if (XR_FAILED(beginRes))
                 {
+                    ResetInteractionState();
                     ClearHeadPose();
                     SetStatus(OverlayStatus::Error, static_cast<int32_t>(beginRes), 0,
                               "Could not begin the OpenXR overlay session (OpenXR error " + std::to_string(beginRes) + ").");
@@ -1326,6 +1892,7 @@ bool OverlaySession::PollEvents()
             }
             else if (stateChanged->state == XR_SESSION_STATE_STOPPING)
             {
+                ResetInteractionState();
                 ClearHeadPose();
                 if (sessionRunning)
                 {
@@ -1336,6 +1903,7 @@ bool OverlaySession::PollEvents()
             else if (stateChanged->state == XR_SESSION_STATE_EXITING ||
                      stateChanged->state == XR_SESSION_STATE_LOSS_PENDING)
             {
+                ResetInteractionState();
                 ClearHeadPose();
                 SetStatus(OverlayStatus::SessionLost, 0, 0, "The OpenXR overlay session ended.");
                 return false;
@@ -1611,6 +2179,7 @@ bool OverlaySession::RenderFrame()
     XrResult res = xr.waitFrame(session, &waitInfo, &frameState);
     if (XR_FAILED(res))
     {
+        ResetInteractionState();
         ClearHeadPose();
         SetStatus(OverlayStatus::SessionLost, static_cast<int32_t>(res), 0,
                   "OpenXR waitFrame failed (OpenXR error " + std::to_string(res) + ").");
@@ -1621,11 +2190,17 @@ bool OverlaySession::RenderFrame()
     res = xr.beginFrame(session, &beginInfo);
     if (XR_FAILED(res))
     {
+        ResetInteractionState();
         ClearHeadPose();
         SetStatus(OverlayStatus::SessionLost, static_cast<int32_t>(res), 0,
                   "OpenXR beginFrame failed (OpenXR error " + std::to_string(res) + ").");
         return false;
     }
+
+    // Capture the interaction generation before snapshotting latestPacket so a
+    // replacement sequence (PublishPacket -> SetInteractionEnabled) cannot be paired
+    // with an older packet snapshot and emit stale-surface events under the new generation.
+    uint64_t frameInteractionGeneration = interactionGeneration.load(std::memory_order_acquire);
 
     std::shared_ptr<const std::vector<uint8_t>> packetSnapshot;
     uint32_t packetSequence = 0;
@@ -1693,6 +2268,7 @@ bool OverlaySession::RenderFrame()
     }
 
     std::vector<XrCompositionLayerQuad> quads;
+    std::vector<PointerSurface> surfaces;
     std::vector<const XrCompositionLayerBaseHeader *> layerPtrs;
     std::vector<uint64_t> activeIds;
     bool uploadFailed = false;
@@ -1700,16 +2276,38 @@ bool OverlaySession::RenderFrame()
     int32_t uploadXrError = 0;
     std::string uploadErrorMessage;
 
+    bool interactionWillRun = false;
+    {
+        std::lock_guard lock(inputMutex);
+        interactionWillRun = interactionEnabled.load(std::memory_order_acquire) && inputReady && sessionFocused &&
+                             frameState.predictedDisplayTime > 0;
+    }
+    bool reserveCursorSlot = interactionWillRun && maxLayers > 1;
+    uint32_t maxPanelLayers = reserveCursorSlot ? (maxLayers - 1) : maxLayers;
+
     if (frameState.shouldRender == XR_TRUE && mainSessionVisible && hasPacket && anchored &&
         header.originRevision == originRevision)
     {
-        uint32_t limit = std::min(header.count, maxLayers);
-        quads.reserve(limit);
-        for (uint32_t i = 0; i < limit; ++i)
+        std::vector<Descriptor> visible;
+        visible.reserve(header.count);
+        activeIds.reserve(header.count);
+        for (uint32_t i = 0; i < header.count; ++i)
         {
             Descriptor d{};
             std::memcpy(&d, packetSnapshot->data() + sizeof(Header) + i * sizeof(Descriptor), sizeof(d));
             activeIds.push_back(d.id);
+            if (d.alpha > 0.0f)
+                visible.push_back(d);
+        }
+        // Packet descriptors are ordered lowest-to-highest priority (with calibration controls last),
+        // so trim from the front when the layer budget is tight to preserve topmost controls.
+        size_t firstIncluded = visible.size() > maxPanelLayers ? (visible.size() - maxPanelLayers) : 0u;
+        uint32_t reserveCount = static_cast<uint32_t>(visible.size() - firstIncluded);
+        quads.reserve(reserveCount + 1);
+        surfaces.reserve(reserveCount);
+        for (size_t i = firstIncluded; i < visible.size(); ++i)
+        {
+            const Descriptor &d = visible[i];
             SwapchainTexture &texture = textures[d.id];
             int32_t panelXrError = 0;
             std::string panelError;
@@ -1745,6 +2343,52 @@ bool OverlaySession::RenderFrame()
             quad.pose = Place(anchor, d);
             quad.size = {d.widthMeters, d.heightMeters};
             quads.push_back(quad);
+            surfaces.push_back({d.id,
+                                {{quad.pose.orientation.x, quad.pose.orientation.y, quad.pose.orientation.z,
+                                  quad.pose.orientation.w},
+                                 {quad.pose.position.x, quad.pose.position.y, quad.pose.position.z}},
+                                d.widthMeters, d.heightMeters});
+        }
+    }
+
+    uint32_t panelLayerCount = static_cast<uint32_t>(quads.size());
+
+    SampledInteraction sampled{};
+    bool needsInteractionReset = uploadFatal || (interactionWillRun && maxLayers <= 1);
+    if (!needsInteractionReset)
+    {
+        sampled = SampleInteraction(surfaces, frameState.predictedDisplayTime, frameInteractionGeneration);
+        if (!sampled.resetOnly && sampled.update.cursor)
+        {
+            if (quads.size() < maxLayers)
+            {
+                int32_t cursorXrError = 0;
+                std::string cursorError;
+                bool cursorFatal = false;
+                if (auto cursorQuad = BuildCursorQuad(*sampled.update.cursor, cursorXrError, cursorError, cursorFatal))
+                {
+                    quads.push_back(*cursorQuad);
+                }
+                else if (cursorFatal)
+                {
+                    uploadFailed = true;
+                    uploadFatal = true;
+                    if (uploadErrorMessage.empty())
+                    {
+                        uploadXrError = cursorXrError;
+                        uploadErrorMessage = std::move(cursorError);
+                    }
+                }
+                else
+                {
+                    // Suppress invisible clicks when cursor swapchain creation/upload fails nonfatally.
+                    needsInteractionReset = true;
+                }
+            }
+            else
+            {
+                needsInteractionReset = true;
+            }
         }
     }
 
@@ -1787,6 +2431,7 @@ bool OverlaySession::RenderFrame()
     res = xr.endFrame(session, &endInfo);
     if (XR_FAILED(res))
     {
+        ResetInteractionState(/*forceResetEvent=*/!sampled.update.events.empty());
         ClearHeadPose();
         SetStatus(OverlayStatus::Error, static_cast<int32_t>(res), 0,
                   "OpenXR endFrame failed (OpenXR error " + std::to_string(res) + ").");
@@ -1795,6 +2440,7 @@ bool OverlaySession::RenderFrame()
 
     if (uploadFatal)
     {
+        ResetInteractionState(/*forceResetEvent=*/!sampled.update.events.empty());
         ClearHeadPose();
         SetStatus(OverlayStatus::Error, uploadXrError, 0,
                   uploadErrorMessage.empty() ? "Vulkan overlay upload completion could not be confirmed."
@@ -1802,15 +2448,28 @@ bool OverlaySession::RenderFrame()
         return false;
     }
 
+    if (needsInteractionReset)
+    {
+        ResetInteractionState();
+    }
+    else if (!sampled.update.events.empty())
+    {
+        EnqueueResult enqueued = QueuePointerEvents(sampled.update.events, sampled.generation);
+        if (enqueued == EnqueueResult::Overflow)
+        {
+            previousHandButtons = {0, 0};
+            (void)pointer.Reset();
+        }
+    }
+
     if (uploadFailed)
     {
-        SetStatus(OverlayStatus::Error, uploadXrError, static_cast<uint32_t>(layerPtrs.size()),
+        SetStatus(OverlayStatus::Error, uploadXrError, panelLayerCount,
                   uploadErrorMessage.empty() ? "Could not upload an overlay panel texture." : uploadErrorMessage);
     }
     else
     {
-        SetStatus(OverlayStatus::Ok, 0, static_cast<uint32_t>(layerPtrs.size()),
-                  "Linux OpenXR overlay session is active.");
+        SetStatus(OverlayStatus::Ok, 0, panelLayerCount, "Linux OpenXR overlay session is active.");
     }
     return true;
 }
@@ -1981,6 +2640,60 @@ int32_t srvsurvey_linux_openxr_get_head_pose(void *handle, uint32_t expectedOrig
         if (outYaw)
             *outYaw = pose.yaw;
         return 1;
+    }
+    catch (...)
+    {
+        return 0;
+    }
+}
+
+int32_t srvsurvey_linux_openxr_set_interaction_enabled(void *handle, int32_t enabled, int32_t *outXrError,
+                                                       char *outMessage, int32_t messageCapacity)
+{
+    try
+    {
+        if (!handle)
+        {
+            if (outXrError)
+                *outXrError = 0;
+            CopyMessage("Linux OpenXR overlay session is not active.", outMessage, messageCapacity);
+            return 0;
+        }
+        auto *session = static_cast<OverlaySession *>(handle);
+        int32_t xrError = 0;
+        std::string message;
+        bool ok = session->SetInteractionEnabled(enabled != 0, xrError, message);
+        if (outXrError)
+            *outXrError = xrError;
+        CopyMessage(message, outMessage, messageCapacity);
+        return ok ? 1 : 0;
+    }
+    catch (const std::exception &ex)
+    {
+        if (outXrError)
+            *outXrError = 0;
+        CopyExceptionMessage("Could not update Linux OpenXR controller interaction: ", ex.what(), outMessage,
+                             messageCapacity);
+        return 0;
+    }
+    catch (...)
+    {
+        if (outXrError)
+            *outXrError = 0;
+        CopyMessage("Could not update Linux OpenXR controller interaction.", outMessage, messageCapacity);
+        return 0;
+    }
+}
+
+uint32_t srvsurvey_linux_openxr_poll_pointer_events(void *handle, void *outEvents, uint32_t capacity)
+{
+    try
+    {
+        if (!handle || !outEvents || capacity == 0)
+            return 0;
+        auto *session = static_cast<OverlaySession *>(handle);
+        auto *events = static_cast<srvsurvey::PointerEvent *>(outEvents);
+        return static_cast<uint32_t>(session->PollPointerEvents({events, capacity}));
     }
     catch (...)
     {

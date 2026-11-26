@@ -71,6 +71,14 @@ public sealed partial class JourneyWorkspaceViewModelTests : IDisposable
             viewModel.QuickStatistics,
             statistic => statistic.Label == "Screenshots" && statistic.Value == "1"
         );
+        JourneyStatisticViewModel explorationRewards = Assert.Single(
+            viewModel.QuickStatistics,
+            statistic => statistic.Label == "Exploration rewards"
+        );
+        Assert.DoesNotContain("~", explorationRewards.Value, StringComparison.Ordinal);
+        Assert.EndsWith(" CR", explorationRewards.Value, StringComparison.Ordinal);
+        Assert.Contains("Exploration rewards 0 CR", viewModel.SelectedSystemDetails, StringComparison.Ordinal);
+        Assert.DoesNotContain("Exploration rewards ~", viewModel.SelectedSystemDetails, StringComparison.Ordinal);
 
         await viewModel.ConfirmConcludeAsync();
 

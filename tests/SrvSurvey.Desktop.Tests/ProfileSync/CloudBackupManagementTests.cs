@@ -363,4 +363,33 @@ public sealed class CloudBackupManagementTests
         Assert.Contains("at least", vm.CloudStorageText);
         Assert.Contains("size unavailable for 1", vm.CloudStorageText);
     }
+
+    /// <summary>Detaching ProfileSyncService during an in-flight backup cancels cleanly without throwing ObjectDisposedException.</summary>
+    [AvaloniaFact]
+    public async Task DetachServiceDuringInFlightBackupCancelsWithoutObjectDisposedException()
+    {
+        using var root = new ProfileSyncTestRoot();
+        var uploadEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cloud = new FakeProfileDrive
+        {
+            BeforeUpload = async cancellationToken =>
+            {
+                uploadEntered.TrySetResult();
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            },
+        };
+        using var service = new ProfileSyncService(root.Store, cloud);
+        var vm = new ProfileSyncViewModel(service);
+
+        Task backupTask = vm.BackupAsync();
+        await uploadEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(vm.IsBusy);
+
+        ProfileSyncService detached = vm.DetachService();
+        Assert.Same(service, detached);
+
+        await backupTask.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(vm.IsBusy);
+        Assert.False(cloud.Disposed);
+    }
 }

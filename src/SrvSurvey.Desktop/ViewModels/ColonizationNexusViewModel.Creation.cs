@@ -9,6 +9,14 @@ public sealed partial class ColonizationNexusViewModel
     private Action? createOpener;
     private readonly WorkspaceCommand editCommand;
     private Action? editOpener;
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "Non-owning observation reference to the editor owned and disposed by ColonizationNexusEditorWindow; cleared on editor disposal."
+    )]
+    private ColonizationNexusEditorViewModel? activeEditor;
+    internal bool HasActiveEditorWork => activeEditor is { HasPendingWork: true };
     public ICommand EditNexusCommand => editCommand;
     private bool CanEditSelected =>
         CanLoad
@@ -48,7 +56,7 @@ public sealed partial class ColonizationNexusViewModel
         }
         int version = contextVersion;
         string? editedId = edit ? Detail!.Nexus.Id : null;
-        return new ColonizationNexusEditorViewModel(
+        ColonizationNexusEditorViewModel editor = new(
             writer,
             commander!,
             apiKey!,
@@ -83,6 +91,15 @@ public sealed partial class ColonizationNexusViewModel
                 }
             },
         };
+        activeEditor = editor;
+        editor.Disposed += () =>
+        {
+            if (ReferenceEquals(activeEditor, editor))
+            {
+                activeEditor = null;
+            }
+        };
+        return editor;
     }
 
     private async Task RemoveDeletedAsync(string id)

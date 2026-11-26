@@ -29,6 +29,8 @@ public sealed record LinuxOpenXrSessionStatus(
     string Message
 );
 
+public sealed record LinuxOpenXrInteractionOutcome(bool Succeeded, int XrError, string Message);
+
 public interface ILinuxOpenXrOverlayBackend
 {
     bool IsAvailable { get; }
@@ -43,6 +45,10 @@ public interface ILinuxOpenXrOverlayBackend
 
     bool TryGetHeadPose(nint session, uint expectedOriginRevision, out VrOverlayHeadPose? pose);
 
+    LinuxOpenXrInteractionOutcome SetInteractionEnabled(nint session, bool enabled);
+
+    IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session);
+
     void Destroy(nint session);
 }
 
@@ -51,25 +57,37 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
 {
     private static readonly IReadOnlyDictionary<string, OpenXrOverlayFrame> EmptyFrames =
         new Dictionary<string, OpenXrOverlayFrame>();
+    private static readonly EliteGameProcessDetector DefaultGameDetector = new();
     private readonly string profileId;
     private readonly string expectedRuntime;
     private readonly ILinuxOpenXrOverlayBackend backend;
     private readonly LinuxVrRuntimeInspector inspector;
+    private readonly Func<bool> isGameRunning;
     private readonly Dictionary<string, OpenXrOverlayFrame> frames = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ulong> activeOverlayIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ulong> surfaceRevisions = new(StringComparer.Ordinal);
+    private readonly Dictionary<ulong, string> identities = [];
+    private readonly List<VrOverlayPointerEvent> bufferedEvents = [];
     private nint sessionHandle;
     private uint originRevision;
+    private bool interactionEnabled;
+    private bool pendingInteractionReset;
+    private ulong? activePointerOverlayId;
     private int maximumOverlays = OpenXrFramePacket.MaximumOverlays;
+    private int nextFrameSortOrder;
 
     public LinuxOpenXrOverlayRuntime(
         string profileId,
         ILinuxOpenXrOverlayBackend? backend = null,
-        LinuxVrRuntimeInspector? inspector = null
+        LinuxVrRuntimeInspector? inspector = null,
+        Func<bool>? isGameRunning = null
     )
     {
         this.profileId = profileId;
         expectedRuntime = profileId == VrPlatformProfileCatalog.MonadoOpenXrProfileId ? "monado" : "wivrn";
         this.inspector = inspector ?? LinuxVrRuntimeInspector.Default;
         this.backend = backend ?? new NativeLinuxOpenXrOverlayBackend(this.inspector);
+        this.isGameRunning = isGameRunning ?? DefaultGameDetector.IsRunning;
     }
 
     public bool IsInitialized => sessionHandle != nint.Zero;
@@ -77,7 +95,12 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     public string DisplayName =>
         profileId == VrPlatformProfileCatalog.MonadoOpenXrProfileId ? "Monado / OpenXR" : "WiVRn / OpenXR";
 
-    public int MaximumOverlays => maximumOverlays;
+    public int MaximumOverlays => interactionEnabled && maximumOverlays > 1 ? maximumOverlays - 1 : maximumOverlays;
+
+    private string WaitingForGameMessage =>
+        profileId == VrPlatformProfileCatalog.MonadoOpenXrProfileId
+            ? "Waiting for Elite Dangerous to start. SrvSurvey attaches to Monado once the game is running."
+            : "Waiting for Elite Dangerous to start. SrvSurvey attaches to WiVRn once the game is running so WiVRn's lobby stays usable.";
 
     public VrRuntimeProbe Probe()
     {
@@ -94,6 +117,12 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeProbe.RuntimeUnavailable(
                 "Packaged Linux OpenXR overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable. Reinstall SrvSurvey or verify that the package matches your system architecture."
             );
+        }
+
+        if (!isGameRunning())
+        {
+            Shutdown();
+            return VrRuntimeProbe.HeadsetUnavailable(WaitingForGameMessage);
         }
 
         if (IsInitialized)
@@ -127,6 +156,12 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
     {
         if (IsInitialized)
         {
+            if (!isGameRunning())
+            {
+                Shutdown();
+                return VrRuntimeResult.Failure(WaitingForGameMessage);
+            }
+
             return VrRuntimeResult.Success($"{DisplayName} overlay session is active.");
         }
 
@@ -141,6 +176,11 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeResult.Failure(
                 "Packaged Linux OpenXR overlay support (libSrvSurveyLinuxOpenXrOverlay.so) is unavailable."
             );
+        }
+
+        if (!isGameRunning())
+        {
+            return VrRuntimeResult.Failure(WaitingForGameMessage);
         }
 
         LinuxOpenXrCreateOutcome created = backend.Create(expectedRuntime);
@@ -189,7 +229,25 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             return VrRuntimeResult.Failure($"{DisplayName} overlay session is not active.");
         }
 
-        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha);
+        ulong overlayId;
+        if (
+            frames.TryGetValue(plotterName, out OpenXrOverlayFrame? previous)
+            && HasDifferentPointerBasis(previous.Frame, frame)
+        )
+        {
+            ulong previousId = activeOverlayIds[plotterName];
+            InvalidateOverlayInteraction(plotterName, previousId);
+            identities.Remove(previousId);
+            overlayId = AdvanceOverlayId(plotterName);
+        }
+        else if (!activeOverlayIds.TryGetValue(plotterName, out overlayId))
+        {
+            overlayId = OpenXrFramePacket.GetOverlayId(plotterName, surfaceRevisions.GetValueOrDefault(plotterName));
+            activeOverlayIds[plotterName] = overlayId;
+        }
+
+        identities[overlayId] = plotterName;
+        frames[plotterName] = new OpenXrOverlayFrame(frame, calibration, alpha, nextFrameSortOrder++, overlayId);
         return VrRuntimeResult.Success($"Queued {plotterName} for {DisplayName}.");
     }
 
@@ -213,11 +271,25 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
             _ = backend.Publish(sessionHandle, emptyPacket);
             return VrRuntimeResult.Failure($"Could not encode overlay frames for {DisplayName}: {exception.Message}");
         }
+        finally
+        {
+            nextFrameSortOrder = 0;
+        }
     }
 
     public void RemoveOverlay(string plotterName)
     {
-        frames.Remove(plotterName);
+        bool removedFrame = frames.Remove(plotterName);
+        if (activeOverlayIds.Remove(plotterName, out ulong previousId))
+        {
+            if (removedFrame)
+            {
+                InvalidateOverlayInteraction(plotterName, previousId);
+            }
+
+            identities.Remove(previousId);
+            surfaceRevisions[plotterName] = surfaceRevisions.GetValueOrDefault(plotterName) + 1;
+        }
     }
 
     public VrRuntimeResult ResetOrientation()
@@ -242,25 +314,203 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
 
     public VrRuntimeResult SetInteractionEnabled(bool enabled)
     {
-        return enabled
-            ? VrRuntimeResult.Failure(
-                "Controller-pointer interaction is not yet supported on Linux OpenXR (WiVRn/Monado). Use desktop VR settings or Adjust overlays."
-            )
-            : VrRuntimeResult.Success("VR overlays are click-through.");
+        if (!enabled)
+        {
+            interactionEnabled = false;
+            ClearInteractionBuffers();
+            if (IsInitialized)
+            {
+                _ = backend.SetInteractionEnabled(sessionHandle, false);
+            }
+            return VrRuntimeResult.Success("VR overlays are click-through again.");
+        }
+
+        if (!IsInitialized)
+        {
+            return VrRuntimeResult.Failure($"Connect {DisplayName} before enabling controller interaction.");
+        }
+
+        LinuxOpenXrInteractionOutcome outcome = backend.SetInteractionEnabled(sessionHandle, true);
+        if (!outcome.Succeeded)
+        {
+            interactionEnabled = false;
+            ClearInteractionBuffers();
+            return VrRuntimeResult.Failure(
+                string.IsNullOrWhiteSpace(outcome.Message)
+                    ? $"Controller-pointer interaction is unavailable on {DisplayName} (OpenXR error {outcome.XrError})."
+                    : outcome.Message
+            );
+        }
+
+        interactionEnabled = true;
+        ClearInteractionBuffers();
+        return VrRuntimeResult.Success(
+            string.IsNullOrWhiteSpace(outcome.Message)
+                ? $"{DisplayName} controller interaction is enabled. Point at a panel and use the trigger to click."
+                : outcome.Message
+        );
     }
 
-    public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents() => [];
+    public IReadOnlyList<VrOverlayPointerEvent> PollPointerEvents()
+    {
+        if (!interactionEnabled || !IsInitialized)
+        {
+            return [];
+        }
+
+        IReadOnlyList<OpenXrPointerEvent> events = backend.PollPointerEvents(sessionHandle);
+        bool prependReset = pendingInteractionReset;
+        pendingInteractionReset = false;
+        if (events.Count == 0 && bufferedEvents.Count == 0 && !prependReset)
+        {
+            return [];
+        }
+
+        var result = new List<VrOverlayPointerEvent>(events.Count + bufferedEvents.Count + (prependReset ? 1 : 0));
+        if (prependReset)
+        {
+            result.Add(new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0));
+        }
+
+        if (bufferedEvents.Count > 0)
+        {
+            result.AddRange(bufferedEvents);
+            bufferedEvents.Clear();
+        }
+
+        foreach (OpenXrPointerEvent pointer in events)
+        {
+            AppendPointerEvent(result, pointer);
+        }
+
+        return result;
+    }
+
+    private void AppendPointerEvent(List<VrOverlayPointerEvent> result, OpenXrPointerEvent pointer)
+    {
+        if (
+            pointer.Kind == VrOverlayPointerEventKind.Reset
+            || !identities.TryGetValue(pointer.Id, out string? name)
+            || !frames.TryGetValue(name, out OpenXrOverlayFrame? overlayFrame)
+        )
+        {
+            activePointerOverlayId = null;
+            if (result.Count == 0 || result[^1].Kind != VrOverlayPointerEventKind.Reset)
+            {
+                result.Add(new VrOverlayPointerEvent(string.Empty, VrOverlayPointerEventKind.Reset, 0, 0));
+            }
+            return;
+        }
+
+        activePointerOverlayId = pointer.Id;
+        VrOverlayFrame frame = overlayFrame.Frame;
+        double width = frame.PointerWidth > 0 ? frame.PointerWidth : frame.Width;
+        double height = frame.PointerHeight > 0 ? frame.PointerHeight : frame.Height;
+        result.Add(
+            new VrOverlayPointerEvent(
+                name,
+                pointer.Kind,
+                pointer.X * width,
+                pointer.Y * height,
+                pointer.WheelX,
+                pointer.WheelY
+            )
+        );
+    }
 
     public void Shutdown()
     {
+        interactionEnabled = false;
+        ClearInteractionBuffers();
         if (sessionHandle != nint.Zero)
         {
             backend.Destroy(sessionHandle);
             sessionHandle = nint.Zero;
         }
 
+        identities.Clear();
+        activeOverlayIds.Clear();
+        surfaceRevisions.Clear();
         frames.Clear();
         maximumOverlays = OpenXrFramePacket.MaximumOverlays;
+        nextFrameSortOrder = 0;
+    }
+
+    private ulong AdvanceOverlayId(string plotterName)
+    {
+        ulong nextRevision = surfaceRevisions.GetValueOrDefault(plotterName) + 1;
+        surfaceRevisions[plotterName] = nextRevision;
+        ulong nextId = OpenXrFramePacket.GetOverlayId(plotterName, nextRevision);
+        activeOverlayIds[plotterName] = nextId;
+        return nextId;
+    }
+
+    private void ClearInteractionBuffers()
+    {
+        pendingInteractionReset = false;
+        activePointerOverlayId = null;
+        bufferedEvents.Clear();
+    }
+
+    private void InvalidateOverlayInteraction(string plotterName, ulong overlayId)
+    {
+        if (!interactionEnabled || !IsInitialized)
+        {
+            return;
+        }
+
+        bool hadActiveOverlay = activePointerOverlayId == overlayId;
+        int removedBuffered = bufferedEvents.RemoveAll(ev =>
+            string.Equals(ev.PlotterName, plotterName, StringComparison.Ordinal)
+        );
+        bool sawInvalidatedNativeEvent = false;
+        foreach (OpenXrPointerEvent pointer in backend.PollPointerEvents(sessionHandle))
+        {
+            if (pointer.Id == overlayId)
+            {
+                sawInvalidatedNativeEvent = true;
+                continue;
+            }
+
+            AppendPointerEvent(bufferedEvents, pointer);
+        }
+
+        if (!hadActiveOverlay && removedBuffered == 0 && !sawInvalidatedNativeEvent)
+        {
+            return;
+        }
+
+        if (activePointerOverlayId == overlayId)
+        {
+            activePointerOverlayId = null;
+        }
+
+        if (bufferedEvents.Count > 0)
+        {
+            if (hadActiveOverlay)
+            {
+                pendingInteractionReset = true;
+            }
+
+            return;
+        }
+
+        // The retired ID rejects late input for this surface. A native generation
+        // reset would also discard input still staged for unaffected surfaces.
+        ClearInteractionBuffers();
+        pendingInteractionReset = true;
+    }
+
+    private static bool HasDifferentPointerBasis(VrOverlayFrame previous, VrOverlayFrame current)
+    {
+        double previousWidth = previous.PointerWidth > 0 ? previous.PointerWidth : previous.Width;
+        double previousHeight = previous.PointerHeight > 0 ? previous.PointerHeight : previous.Height;
+        double currentWidth = current.PointerWidth > 0 ? current.PointerWidth : current.Width;
+        double currentHeight = current.PointerHeight > 0 ? current.PointerHeight : current.Height;
+        return previous.Width != current.Width
+            || previous.Height != current.Height
+            || Math.Abs(previousWidth - currentWidth) > 0.001
+            || Math.Abs(previousHeight - currentHeight) > 0.001;
     }
 
     public void Dispose()
@@ -272,6 +522,7 @@ public sealed class LinuxOpenXrOverlayRuntime : IVrOverlayRuntime
 internal sealed class NativeLinuxOpenXrOverlayBackend : ILinuxOpenXrOverlayBackend
 {
     private const int MessageBufferBytes = 512;
+    private const int PointerEventBatchCapacity = 64;
     private readonly LinuxVrRuntimeInspector inspector;
     private readonly Lock loadLock = new();
     private nint libraryHandle;
@@ -280,6 +531,8 @@ internal sealed class NativeLinuxOpenXrOverlayBackend : ILinuxOpenXrOverlayBacke
     private PublishDelegate? publishFn;
     private GetStatusDelegate? getStatusFn;
     private GetHeadPoseDelegate? getHeadPoseFn;
+    private SetInteractionEnabledDelegate? setInteractionEnabledFn;
+    private PollPointerEventsDelegate? pollPointerEventsFn;
     private DestroyDelegate? destroyFn;
 
     public NativeLinuxOpenXrOverlayBackend(LinuxVrRuntimeInspector inspector)
@@ -379,6 +632,79 @@ internal sealed class NativeLinuxOpenXrOverlayBackend : ILinuxOpenXrOverlayBacke
         return true;
     }
 
+    public LinuxOpenXrInteractionOutcome SetInteractionEnabled(nint session, bool enabled)
+    {
+        if (!EnsureLoaded() || session == nint.Zero)
+        {
+            return new(false, 0, "Linux OpenXR overlay session is not active.");
+        }
+
+        if (setInteractionEnabledFn is null)
+        {
+            return new(
+                false,
+                0,
+                "The installed libSrvSurveyLinuxOpenXrOverlay.so does not support controller-pointer interaction. Update or rebuild SrvSurvey."
+            );
+        }
+
+        byte[] buffer = new byte[MessageBufferBytes];
+        bool succeeded = setInteractionEnabledFn(session, enabled ? 1 : 0, out int xrError, buffer, buffer.Length) != 0;
+        return new(succeeded, xrError, DecodeUtf8Z(buffer));
+    }
+
+    public IReadOnlyList<OpenXrPointerEvent> PollPointerEvents(nint session)
+    {
+        if (!EnsureLoaded() || pollPointerEventsFn is null || session == nint.Zero)
+        {
+            return [];
+        }
+
+        var buffer = new NativePointerEvent[PointerEventBatchCapacity];
+        uint count = pollPointerEventsFn(session, buffer, (uint)buffer.Length);
+        return ConvertPointerEvents(buffer.AsSpan(0, (int)Math.Min(count, (uint)buffer.Length)));
+    }
+
+    internal static IReadOnlyList<OpenXrPointerEvent> ConvertPointerEvents(ReadOnlySpan<NativePointerEvent> rawEvents)
+    {
+        if (rawEvents.IsEmpty)
+        {
+            return [];
+        }
+
+        var results = new List<OpenXrPointerEvent>(rawEvents.Length);
+        foreach (NativePointerEvent raw in rawEvents)
+        {
+            if (raw.Kind > (uint)VrOverlayPointerEventKind.Reset)
+            {
+                continue;
+            }
+
+            var kind = (VrOverlayPointerEventKind)raw.Kind;
+            if (kind == VrOverlayPointerEventKind.Reset)
+            {
+                results.Add(new OpenXrPointerEvent(0, VrOverlayPointerEventKind.Reset, 0, 0, 0, 0));
+                continue;
+            }
+
+            if (
+                !IsBounded(raw.X, 10)
+                || !IsBounded(raw.Y, 10)
+                || !IsBounded(raw.WheelX, 8)
+                || !IsBounded(raw.WheelY, 8)
+            )
+            {
+                continue;
+            }
+
+            results.Add(new OpenXrPointerEvent(raw.Id, kind, raw.X, raw.Y, raw.WheelX, raw.WheelY));
+        }
+
+        return results;
+    }
+
+    private static bool IsBounded(float value, float limit) => float.IsFinite(value) && Math.Abs(value) <= limit;
+
     public void Destroy(nint session)
     {
         if (session != nint.Zero && destroyFn is not null)
@@ -414,6 +740,9 @@ internal sealed class NativeLinuxOpenXrOverlayBackend : ILinuxOpenXrOverlayBacke
                 NativeLibrary.Free(handle);
                 return false;
             }
+
+            _ = TryBind(handle, "srvsurvey_linux_openxr_set_interaction_enabled", out setInteractionEnabledFn);
+            _ = TryBind(handle, "srvsurvey_linux_openxr_poll_pointer_events", out pollPointerEventsFn);
 
             libraryHandle = handle;
             return true;
@@ -480,6 +809,30 @@ internal sealed class NativeLinuxOpenXrOverlayBackend : ILinuxOpenXrOverlayBacke
         out float outPosZ,
         out float outYaw
     );
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct NativePointerEvent
+    {
+        public ulong Id;
+        public uint Kind;
+        public uint Reserved;
+        public float X;
+        public float Y;
+        public float WheelX;
+        public float WheelY;
+    }
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int SetInteractionEnabledDelegate(
+        nint handle,
+        int enabled,
+        out int outXrError,
+        [Out] byte[] outMessage,
+        int messageCapacity
+    );
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate uint PollPointerEventsDelegate(nint handle, [Out] NativePointerEvent[] outEvents, uint capacity);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void DestroyDelegate(nint handle);

@@ -3,15 +3,19 @@
 #pragma once
 
 #include "FrameProtocol.h"
+#include "PointerInteraction.h"
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <deque>
 #include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -120,6 +124,8 @@ class OverlaySession
     bool StepOnce();
     RuntimeStatus GetStatus() const;
     HeadPose GetHeadPose(uint32_t expectedOriginRevision) const;
+    bool SetInteractionEnabled(bool enabled, int32_t &outXrError, std::string &outMessage);
+    size_t PollPointerEvents(std::span<PointerEvent> outEvents);
     void Shutdown();
 
   private:
@@ -158,6 +164,17 @@ class OverlaySession
         PFN_xrGetVulkanInstanceExtensionsKHR getVulkanInstanceExtensions = nullptr;
         PFN_xrGetVulkanDeviceExtensionsKHR getVulkanDeviceExtensions = nullptr;
         PFN_xrGetVulkanGraphicsDeviceKHR getVulkanDevice1 = nullptr;
+        PFN_xrCreateActionSet createActionSet = nullptr;
+        PFN_xrDestroyActionSet destroyActionSet = nullptr;
+        PFN_xrCreateAction createAction = nullptr;
+        PFN_xrStringToPath stringToPath = nullptr;
+        PFN_xrSuggestInteractionProfileBindings suggestInteractionProfileBindings = nullptr;
+        PFN_xrAttachSessionActionSets attachSessionActionSets = nullptr;
+        PFN_xrCreateActionSpace createActionSpace = nullptr;
+        PFN_xrSyncActions syncActions = nullptr;
+        PFN_xrGetActionStateBoolean getActionStateBoolean = nullptr;
+        PFN_xrGetActionStateVector2f getActionStateVector2f = nullptr;
+        PFN_xrGetActionStatePose getActionStatePose = nullptr;
     };
 
     struct VkFunctions
@@ -199,6 +216,7 @@ class OverlaySession
     bool LoadVulkanInstanceFunctions();
     bool LoadVulkanDeviceFunctions();
     ProbeResult CreateVulkanContext(bool useVulkanEnable2);
+    void InitializeInteraction();
     uint32_t FindMemoryType(uint32_t typeBits, VkMemoryPropertyFlags required, bool &isHostCoherent) const;
     bool EnsureStagingCapacity(VkDeviceSize requiredBytes);
     void DestroyStagingBuffer();
@@ -208,7 +226,28 @@ class OverlaySession
     void CleanupResources();
     void WorkerLoop();
     bool PollEvents();
+    enum class EnqueueResult
+    {
+        Ok,
+        StaleGeneration,
+        Overflow,
+    };
+
+    struct SampledInteraction
+    {
+        PointerUpdate update{};
+        uint64_t generation = 0;
+        bool resetOnly = false;
+    };
+
     bool RenderFrame();
+    EnqueueResult QueuePointerEvents(const std::vector<PointerEvent> &events,
+                                     std::optional<uint64_t> expectedGeneration = std::nullopt);
+    void ResetInteractionState(bool forceResetEvent = false);
+    SampledInteraction SampleInteraction(std::span<const PointerSurface> surfaces, XrTime displayTime,
+                                         uint64_t frameInteractionGeneration);
+    std::optional<XrCompositionLayerQuad> BuildCursorQuad(const PointerHit &hit, int32_t &outXrError,
+                                                          std::string &outError, bool &outFatal);
     bool EnsureSwapchain(SwapchainTexture &texture, uint32_t width, uint32_t height, int32_t &outXrError,
                          std::string &outError, bool &outFatal);
     bool UploadPanel(SwapchainTexture &texture, const Descriptor &descriptor, uint32_t sequence, const uint8_t *pixels,
@@ -245,13 +284,27 @@ class OverlaySession
     bool gpuWorkInFlight = false;
     uint32_t maxLayers = MaximumOverlays;
     std::map<uint64_t, SwapchainTexture> textures;
+    SwapchainTexture cursorTexture{};
+
+    XrActionSet actionSet = XR_NULL_HANDLE;
+    std::array<XrPath, 2> handPaths{XR_NULL_PATH, XR_NULL_PATH};
+    XrAction aimAction = XR_NULL_HANDLE;
+    XrAction selectAction = XR_NULL_HANDLE;
+    XrAction secondaryAction = XR_NULL_HANDLE;
+    XrAction middleAction = XR_NULL_HANDLE;
+    XrAction scrollAction = XR_NULL_HANDLE;
+    std::array<XrSpace, 2> aimSpaces{XR_NULL_HANDLE, XR_NULL_HANDLE};
 
     bool sessionRunning = false;
+    bool sessionFocused = false;
     bool mainSessionVisible = true;
     bool anchored = false;
     std::vector<XrTime> pendingLocalSpaceChanges;
     uint32_t originRevision = 0;
     XrPosef anchor{{0, 0, 0, 1}, {0, 0, 0}};
+    PointerInteraction pointer{};
+    std::array<uint32_t, 2> previousHandButtons{0, 0};
+    uint64_t appliedInteractionGeneration = 0;
 
     mutable std::mutex packetMutex;
     std::shared_ptr<const std::vector<uint8_t>> latestPacket;
@@ -260,6 +313,14 @@ class OverlaySession
     mutable std::mutex statusMutex;
     RuntimeStatus currentStatus{};
     HeadPose currentHeadPose{};
+
+    mutable std::mutex inputMutex;
+    bool inputReady = false;
+    int32_t inputError = 0;
+    std::string inputErrorMessage;
+    std::deque<PointerEvent> pointerEvents;
+    std::atomic<bool> interactionEnabled{false};
+    std::atomic<uint64_t> interactionGeneration{0};
 
     std::atomic<bool> stopRequested{false};
     std::thread worker;
@@ -283,6 +344,11 @@ extern "C"
 
     int32_t srvsurvey_linux_openxr_get_head_pose(void *handle, uint32_t expectedOriginRevision, float *outPosX,
                                                  float *outPosY, float *outPosZ, float *outYaw);
+
+    int32_t srvsurvey_linux_openxr_set_interaction_enabled(void *handle, int32_t enabled, int32_t *outXrError,
+                                                           char *outMessage, int32_t messageCapacity);
+
+    uint32_t srvsurvey_linux_openxr_poll_pointer_events(void *handle, void *outEvents, uint32_t capacity);
 
     void srvsurvey_linux_openxr_destroy(void *handle);
 }

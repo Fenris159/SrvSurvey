@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Avalonia;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Core.Updates;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Localization;
@@ -24,6 +26,16 @@ internal static class Program
     internal static ApplicationLogService? ApplicationLog { get; private set; }
 
     internal static DesktopStartupContext? StartupContext { get; private set; }
+
+    /// <summary>Updates the active startup paths after an in-process automatic commander switch.</summary>
+    internal static void UpdateStartupContextPaths(AppDataPaths appDataPaths)
+    {
+        ArgumentNullException.ThrowIfNull(appDataPaths);
+        if (StartupContext is { IsDiagnosticReplay: false } current)
+        {
+            StartupContext = current with { AppDataPaths = appDataPaths };
+        }
+    }
 
     [STAThread]
     public static void Main(string[] args)
@@ -69,7 +81,7 @@ internal static class Program
         bool? x11ThreadingInitialized = OperatingSystem.IsLinux() ? X11Native.TryInitializeThreading() : (bool?)null;
         GamescopeOverlaySession.InitializeCurrent(message => applicationLog.Append(message));
         var displayCapabilities = OverlayPlatformCapabilities.DetectCurrent();
-        applicationLog.Append($"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
+        applicationLog.Append($"SrvSurvey {GetStartupVersion(typeof(Program).Assembly)}");
         applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
         applicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");
         if (startupContext.DiagnosticReplay is { } diagnosticReplay)
@@ -163,6 +175,8 @@ internal static class Program
             return false;
         }
     }
+
+    internal static string GetStartupVersion(Assembly assembly) => ReleaseVersion.FromAssembly(assembly).ToString();
 
     internal static string GetStartupFailureMessage(IReadOnlyList<string> arguments, Exception exception)
     {

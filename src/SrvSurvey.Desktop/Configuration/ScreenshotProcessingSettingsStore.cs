@@ -15,6 +15,8 @@ public sealed class ScreenshotProcessingSettingsStore
         documentStore = new UiSettingsDocumentStore(path);
     }
 
+    internal string SettingsPath => documentStore.Path;
+
     public ScreenshotProcessingPreferences Load(string? journalDirectory = null) =>
         LoadWithFolderModes(journalDirectory).Preferences;
 

@@ -39,6 +39,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
     private double surfaceArrivalDistanceLs,
         surfaceLocationRadiusKm = 1;
     private string status = "Save systems and mining rings in your own categories.";
+    private BookmarkEditorDraft baselineDraft = BookmarkEditorDraft.Empty;
 
     public BookmarksViewModel(string directory, Action<Guid>? openSurfaceMiningMap = null)
     {
@@ -71,6 +72,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
             SurfaceSignal = 1;
             SurfaceArrivalDistanceLs = 0;
             SurfaceLocationRadiusKm = 1;
+            baselineDraft = CaptureDraft();
         });
         SaveCommand = new WorkspaceCommand(() =>
             Run(() =>
@@ -116,6 +118,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
                 };
                 catalog!.Save(saved);
                 Selected = catalog.Items.Single(b => b.Id == saved.Id);
+                baselineDraft = CaptureDraft();
                 Status = "Bookmark saved.";
             })
         );
@@ -128,6 +131,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
                     catalog!.Delete(selected.Id);
                 }
                 Selected = null;
+                baselineDraft = CaptureDraft();
                 Status = "Bookmark removed.";
             })
         );
@@ -290,6 +294,69 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         set => Set(ref surfaceLocationRadiusKm, Math.Max(0.01, value));
     }
     public bool IsSurfaceMiningMap => Selected?.SurfaceMiningMap is not null;
+
+    internal bool HasUnsavedChanges => CaptureDraft() != baselineDraft;
+
+    private BookmarkEditorDraft CaptureDraft() =>
+        new(
+            System,
+            Body,
+            Ring,
+            CategorySummary,
+            Notes,
+            Minerals,
+            Overlaps,
+            ResourceExtractionSites,
+            Rating,
+            LastMined,
+            Hotspot,
+            AverageYield,
+            SurfaceSignal,
+            SurfaceBodyType,
+            SurfaceArrivalDistanceLs,
+            SurfaceLocationRadiusKm
+        );
+
+    private sealed record BookmarkEditorDraft(
+        string System,
+        string Body,
+        string Ring,
+        string CategorySummary,
+        string Notes,
+        string Minerals,
+        string Overlaps,
+        string ResourceExtractionSites,
+        int Rating,
+        string LastMined,
+        string Hotspot,
+        string AverageYield,
+        int SurfaceSignal,
+        string SurfaceBodyType,
+        double SurfaceArrivalDistanceLs,
+        double SurfaceLocationRadiusKm
+    )
+    {
+        public static BookmarkEditorDraft Empty { get; } =
+            new(
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                BookmarkCategoryCatalog.Mining,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                0,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                1,
+                string.Empty,
+                0,
+                1
+            );
+    }
+
     public string Status
     {
         get => status;
@@ -332,6 +399,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
                 SurfaceArrivalDistanceLs = map.ArrivalDistanceLs;
                 SurfaceLocationRadiusKm = map.LocationRadiusMeters / 1000;
             }
+            baselineDraft = CaptureDraft();
         }
     }
 
@@ -434,6 +502,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         {
             catalog.Restore(json);
             Selected = null;
+            baselineDraft = CaptureDraft();
             Status = "Shared bookmarks restored; previous catalog retained in bookmarks.json.before-restore.";
             categories = null;
             Changed(nameof(Items));

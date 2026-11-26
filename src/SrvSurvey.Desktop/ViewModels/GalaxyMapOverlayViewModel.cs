@@ -12,15 +12,23 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposable
 {
+    internal static readonly TimeSpan InitialFailureRetryInterval = TimeSpan.FromSeconds(15);
+    internal static readonly TimeSpan MaximumFailureRetryInterval = TimeSpan.FromSeconds(60);
     private const string SelectedLabel = "SELECTED";
     private readonly ISystemSummaryClient summaryClient;
     private readonly GalaxyMapSettingsStore settingsStore;
     private readonly SystemNicknameViewModel systemNicknames;
+    private readonly Action<string>? log;
+    private readonly Func<DateTimeOffset> clock;
     private CancellationTokenSource? loadCancellation;
     private NavRouteSnapshot? navRoute;
     private GalaxyMapTarget? selectedTarget;
     private GalaxyMapTarget? primaryTarget;
     private GalaxyMapTarget? secondaryTarget;
+    private bool hasTargetState;
+    private bool lastLoadHadWarnings;
+    private int consecutiveFailureCount;
+    private DateTimeOffset? nextRetryAt;
     private IReadOnlyList<ExplorationPoiItemViewModel> primaryPois = [];
     private IReadOnlyList<ExplorationPoiItemViewModel> secondaryPois = [];
     private ExplorationPoiCatalog poiCatalog = ExplorationPoiCatalog.Empty;
@@ -102,12 +110,16 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     public GalaxyMapOverlayViewModel(
         ISystemSummaryClient summaryClient,
         GalaxyMapSettingsStore settingsStore,
-        SystemNicknameViewModel systemNicknames
+        SystemNicknameViewModel systemNicknames,
+        Action<string>? log = null,
+        Func<DateTimeOffset>? clock = null
     )
     {
         this.summaryClient = summaryClient ?? throw new ArgumentNullException(nameof(summaryClient));
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.systemNicknames = systemNicknames ?? throw new ArgumentNullException(nameof(systemNicknames));
+        this.log = log;
+        this.clock = clock ?? (static () => DateTimeOffset.UtcNow);
         GalaxyMapPreferences preferences = settingsStore.Load();
         autoShow = preferences.AutoShow;
         showFactions = preferences.ShowFactions;
@@ -368,6 +380,20 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
+    /// <summary>Retries a failed or partial lookup once its backoff deadline passes while the map remains open.</summary>
+    public void Tick()
+    {
+        if (disposed || !ShouldShow || IsLoading || !lastLoadHadWarnings || nextRetryAt is null)
+        {
+            return;
+        }
+
+        if (clock() >= nextRetryAt.Value)
+        {
+            RefreshTargets();
+        }
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -384,21 +410,27 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     {
         (GalaxyMapTarget? Primary, GalaxyMapTarget? Secondary) targets = ResolveTargets();
         SetRouteFooter();
-        if (
-            targets.Primary == primaryTarget
-            && targets.Secondary == secondaryTarget
-            && (targets.Primary is null || PrimarySystem is not null)
-            && (targets.Secondary is null || SecondarySystem is not null)
-        )
+        bool sameTargets = hasTargetState && targets.Primary == primaryTarget && targets.Secondary == secondaryTarget;
+        bool shouldRetry =
+            sameTargets && !IsLoading && lastLoadHadWarnings && nextRetryAt is { } retryAt && clock() >= retryAt;
+        if (sameTargets && !shouldRetry)
         {
             return;
         }
 
         primaryTarget = targets.Primary;
         secondaryTarget = targets.Secondary;
-        PrimarySystem = null;
-        SecondarySystem = null;
-        Factions = [];
+        hasTargetState = true;
+        lastLoadHadWarnings = false;
+        nextRetryAt = null;
+        if (!shouldRetry)
+        {
+            consecutiveFailureCount = 0;
+            PrimarySystem = null;
+            SecondarySystem = null;
+            Factions = [];
+        }
+
         loadCancellation?.Cancel();
         loadCancellation?.Dispose();
         loadCancellation = new CancellationTokenSource();
@@ -475,8 +507,19 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             Task<SystemSummaryLoadResult>? secondaryTask = secondary is null
                 ? null
                 : summaryClient.GetAsync(secondary.Name, secondary.SystemAddress, cancellationToken);
-            SystemSummaryLoadResult primaryResult = await primaryTask;
-            SystemSummaryLoadResult? secondaryResult = secondaryTask is null ? null : await secondaryTask;
+            SystemSummaryLoadResult primaryResult;
+            SystemSummaryLoadResult? secondaryResult;
+            if (secondaryTask is null)
+            {
+                primaryResult = await primaryTask;
+                secondaryResult = null;
+            }
+            else
+            {
+                SystemSummaryLoadResult[] results = await Task.WhenAll(primaryTask, secondaryTask);
+                primaryResult = results[0];
+                secondaryResult = results[1];
+            }
             cancellationToken.ThrowIfCancellationRequested();
 
             PrimarySystem = Project(primary.Label, primaryResult.Summary);
@@ -488,8 +531,16 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
                     faction.State ?? string.Empty
                 ))
                 .ToArray();
+            LogLookupWarnings(primary, primaryResult.Warnings);
+            if (secondary is not null && secondaryResult is not null)
+            {
+                LogLookupWarnings(secondary, secondaryResult.Warnings);
+            }
+
             string[] warnings = primaryResult.Warnings.Concat(secondaryResult?.Warnings ?? []).ToArray();
-            DataStatus = warnings.Length == 0 ? "Data from EDSM and Spansh" : string.Join(" · ", warnings);
+            RecordLookupRetryState(warnings.Length > 0);
+            DataStatus =
+                warnings.Length == 0 ? "Data from EDSM and Spansh" : SystemSummaryWarningFormatter.Format(warnings);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -498,6 +549,13 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         catch (Exception exception)
             when (exception is IOException or HttpRequestException or InvalidDataException or JsonException)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            RecordLookupRetryState(hadFailureOrWarnings: true);
+            LogLookupFailure(primary, exception.ToString());
             PrimarySystem = new GalaxyMapSystemViewModel(
                 primary.Label,
                 ResolveName(primary.Name),
@@ -507,7 +565,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             );
             SecondarySystem = null;
             Factions = [];
-            DataStatus = "Galaxy Map data is unavailable: " + exception.Message;
+            DataStatus = "System data unavailable.";
         }
         finally
         {
@@ -624,10 +682,45 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         return systemNicknames.Resolve(name);
     }
 
+    private void LogLookupWarnings(GalaxyMapTarget target, IReadOnlyList<string> warnings)
+    {
+        foreach (string warning in warnings)
+        {
+            LogLookupFailure(target, warning);
+        }
+    }
+
+    private void LogLookupFailure(GalaxyMapTarget target, string detail) =>
+        log?.Invoke($"Galaxy Map lookup for {target.Name} ({target.SystemAddress}): {detail}");
+
+    private void RecordLookupRetryState(bool hadFailureOrWarnings)
+    {
+        lastLoadHadWarnings = hadFailureOrWarnings;
+        if (!hadFailureOrWarnings)
+        {
+            consecutiveFailureCount = 0;
+            nextRetryAt = null;
+            return;
+        }
+
+        consecutiveFailureCount = Math.Min(consecutiveFailureCount + 1, 3);
+        var delay = TimeSpan.FromTicks(
+            Math.Min(
+                MaximumFailureRetryInterval.Ticks,
+                InitialFailureRetryInterval.Ticks << (consecutiveFailureCount - 1)
+            )
+        );
+        nextRetryAt = clock() + delay;
+    }
+
     private void OnNamesChanged(object? sender, EventArgs eventArgs)
     {
         primaryTarget = null;
         secondaryTarget = null;
+        hasTargetState = false;
+        lastLoadHadWarnings = false;
+        consecutiveFailureCount = 0;
+        nextRetryAt = null;
         if (ShouldShow)
         {
             RefreshTargets();
@@ -636,10 +729,18 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
     private void CancelPendingLoad()
     {
+        bool wasLoading = IsLoading;
         loadCancellation?.Cancel();
         loadCancellation?.Dispose();
         loadCancellation = null;
         IsLoading = false;
+        if (wasLoading || lastLoadHadWarnings)
+        {
+            hasTargetState = false;
+            lastLoadHadWarnings = false;
+            consecutiveFailureCount = 0;
+            nextRetryAt = null;
+        }
     }
 
     private void SavePreferences()

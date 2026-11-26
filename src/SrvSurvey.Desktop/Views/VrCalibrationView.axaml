@@ -5,86 +5,238 @@
              x:Name="CalibrationViewRoot"
              x:Class="SrvSurvey.Desktop.Views.VrCalibrationView"
              x:DataType="vm:VrOverlayViewModel">
-  <StackPanel Spacing="12">
-    <TextBlock Classes="card-title" Text="VR overlay calibration" />
-    <WrapPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8" Width="260">
-        <TextBlock Classes="eyebrow" Text="CALIBRATION TARGET" />
-        <ComboBox IsVisible="{Binding !#CalibrationViewRoot.IsInHeadset}" HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableOverlays}"
-                  SelectedItem="{Binding SelectedOverlayName, Mode=TwoWay}" />
-        <Grid IsVisible="{Binding #CalibrationViewRoot.IsInHeadset}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-          <Button Command="{Binding PreviousOverlayCommand}" Content="←" ToolTip.Tip="Previous panel" />
-          <TextBlock Grid.Column="1" Text="{Binding SelectedOverlayName}" VerticalAlignment="Center" TextWrapping="Wrap" />
-          <Button Grid.Column="2" Command="{Binding NextOverlayCommand}" Content="→" ToolTip.Tip="Next panel" />
-        </Grid>
-      </StackPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8" Width="200">
-        <TextBlock Classes="eyebrow" Text="VEHICLE / GAME MODE" />
-        <ComboBox IsVisible="{Binding !#CalibrationViewRoot.IsInHeadset}" HorizontalAlignment="Stretch" ItemsSource="{Binding AvailableModes}"
-                  SelectedItem="{Binding SelectedMode, Mode=TwoWay}" />
-        <Grid IsVisible="{Binding #CalibrationViewRoot.IsInHeadset}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-          <Button Command="{Binding PreviousModeCommand}" Content="←" ToolTip.Tip="Previous mode" />
-          <TextBlock Grid.Column="1" Text="{Binding SelectedMode}" VerticalAlignment="Center" TextWrapping="Wrap" />
-          <Button Grid.Column="2" Command="{Binding NextModeCommand}" Content="→" ToolTip.Tip="Next mode" />
-        </Grid>
-        <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
-                   Text="{Binding CurrentRuntimeMode, StringFormat='Current: {0}'}" />
-      </StackPanel>
-      <StackPanel Spacing="4" Width="220" Margin="0,0,0,8">
-        <TextBlock Classes="eyebrow" Text="ADJUSTMENT STEP" />
-        <ListBox ItemsSource="{Binding AdjustmentSteps}" SelectedIndex="{Binding AdjustmentStepIndex, Mode=TwoWay}"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-          <ListBox.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ListBox.ItemsPanel>
+  <UserControl.Styles>
+    <Style Selector="Border.vr-panel-bank">
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="12,9" />
+    </Style>
+    <Style Selector="Border.vr-step-readout">
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="MinHeight" Value="32" />
+    </Style>
+    <Style Selector="Button.vr-step-btn">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.vr-action-btn">
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="ListBox.vr-step-segment">
+      <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="2" />
+    </Style>
+    <Style Selector="ListBox.vr-step-segment ListBoxItem">
+      <Setter Property="Padding" Value="10,4" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.vr-field-label">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    </Style>
+    <Style Selector="TextBlock.vr-group-tag">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.vr-drag-toggle">
+      <Setter Property="Background" Value="{DynamicResource RavenSecondaryFillBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+      <Setter Property="Padding" Value="14,7" />
+      <Setter Property="MinHeight" Value="34" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ToggleButton.vr-drag-toggle:pointerover">
+      <Setter Property="Background" Value="{DynamicResource RavenInteractiveHoverBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.vr-drag-toggle:checked, ToggleButton.vr-drag-toggle:checked:pointerover, ToggleButton.vr-drag-toggle:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="ToggleButton.vr-drag-toggle:checked /template/ ContentPresenter, ToggleButton.vr-drag-toggle:checked:pointerover /template/ ContentPresenter, ToggleButton.vr-drag-toggle:checked:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <StackPanel Spacing="10">
+    <!-- Header bar: Title paired with segmented precision step selector -->
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+      <TextBlock Classes="card-title" VerticalAlignment="Center" Text="VR overlay calibration" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <TextBlock Classes="muted" FontSize="11" VerticalAlignment="Center" Text="Step" />
+        <ListBox Classes="vr-step-segment"
+                 ItemsSource="{Binding AdjustmentSteps}"
+                 SelectedIndex="{Binding AdjustmentStepIndex, Mode=TwoWay}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Disabled">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="2" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
         </ListBox>
       </StackPanel>
-    </WrapPanel>
-    <TextBlock Classes="muted" TextWrapping="Wrap"
-               Text="The selected panel shows sample data. Normal steps: 5 cm and 1°. Choose Fine or Coarse in the headset, or hold Shift for fine / Ctrl for coarse. Scroll over a number to adjust it." />
+    </Grid>
+
+    <!-- Selector deck: Category, Target, Mode on one compact row -->
     <WrapPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8">
-        <TextBlock Text="Scale" />
-        <controls:VrCalibrationNumberInput x:Name="ScaleInput" Width="132" Minimum="0.1" Maximum="50"
-              Step="{Binding ScaleIncrement}" FormatString="0.0###" Value="{Binding Scale, Mode=TwoWay}" />
+      <StackPanel Spacing="3" Margin="0,0,10,4" Width="216">
+        <TextBlock Classes="eyebrow" Text="OVERLAY CATEGORY" />
+        <ComboBox x:Name="CategoryComboBox"
+                  IsVisible="{Binding !#CalibrationViewRoot.IsInHeadset}"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding AvailableCategories}"
+                  SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+        <Grid IsVisible="{Binding #CalibrationViewRoot.IsInHeadset}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="4">
+          <Button Classes="secondary vr-step-btn" Command="{Binding PreviousCategoryCommand}" Content="←" ToolTip.Tip="Previous category" />
+          <Border Grid.Column="1" Classes="vr-step-readout">
+            <TextBlock Text="{Binding SelectedCategory}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </Border>
+          <Button Grid.Column="2" Classes="secondary vr-step-btn" Command="{Binding NextCategoryCommand}" Content="→" ToolTip.Tip="Next category" />
+        </Grid>
       </StackPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8">
-        <TextBlock Text="Position X (10 cm units)" />
-        <controls:VrCalibrationNumberInput x:Name="PositionXInput" Width="132" Minimum="-1000" Maximum="1000"
-              Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionX, Mode=TwoWay}" />
+      <StackPanel Spacing="3" Margin="0,0,10,4" Width="228">
+        <TextBlock Classes="eyebrow" Text="CALIBRATION TARGET" />
+        <ComboBox IsVisible="{Binding !#CalibrationViewRoot.IsInHeadset}"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding AvailableOverlays}"
+                  SelectedItem="{Binding SelectedOverlayName, Mode=TwoWay}" />
+        <Grid IsVisible="{Binding #CalibrationViewRoot.IsInHeadset}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="4">
+          <Button Classes="secondary vr-step-btn" Command="{Binding PreviousOverlayCommand}" Content="←" ToolTip.Tip="Previous panel" />
+          <Border Grid.Column="1" Classes="vr-step-readout">
+            <TextBlock Text="{Binding SelectedOverlayName}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </Border>
+          <Button Grid.Column="2" Classes="secondary vr-step-btn" Command="{Binding NextOverlayCommand}" Content="→" ToolTip.Tip="Next panel" />
+        </Grid>
       </StackPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8">
-        <TextBlock Text="Position Y (10 cm units)" />
-        <controls:VrCalibrationNumberInput x:Name="PositionYInput" Width="132" Minimum="-1000" Maximum="1000"
-              Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionY, Mode=TwoWay}" />
-      </StackPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8">
-        <TextBlock Text="Position Z (10 cm units)" />
-        <controls:VrCalibrationNumberInput x:Name="PositionZInput" Width="132" Minimum="-1000" Maximum="1000"
-              Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionZ, Mode=TwoWay}" />
+      <StackPanel Spacing="3" Margin="0,0,0,4" Width="216">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+          <TextBlock Classes="eyebrow" Text="MODE" />
+          <TextBlock Grid.Column="1" Classes="muted" FontSize="11" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis"
+                     Text="{Binding CurrentRuntimeMode}" />
+        </Grid>
+        <ComboBox IsVisible="{Binding !#CalibrationViewRoot.IsInHeadset}"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding AvailableModes}"
+                  SelectedItem="{Binding SelectedMode, Mode=TwoWay}" />
+        <Grid IsVisible="{Binding #CalibrationViewRoot.IsInHeadset}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="4">
+          <Button Classes="secondary vr-step-btn" Command="{Binding PreviousModeCommand}" Content="←" ToolTip.Tip="Previous mode" />
+          <Border Grid.Column="1" Classes="vr-step-readout">
+            <TextBlock Text="{Binding SelectedMode}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </Border>
+          <Button Grid.Column="2" Classes="secondary vr-step-btn" Command="{Binding NextModeCommand}" Content="→" ToolTip.Tip="Next mode" />
+        </Grid>
       </StackPanel>
     </WrapPanel>
-    <WrapPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8">
-        <TextBlock Text="Pitch (degrees)" />
-        <controls:VrCalibrationNumberInput x:Name="PitchInput" Width="132" Minimum="-360" Maximum="360"
-              Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationPitch, Mode=TwoWay}" />
+
+    <!-- Recessed transform instrument bank -->
+    <Border Classes="vr-panel-bank">
+      <StackPanel Spacing="8">
+        <StackPanel Spacing="4">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <TextBlock Classes="vr-group-tag" Text="Scale &amp; Position" />
+            <TextBlock Grid.Column="1" Classes="muted" FontSize="11" Text="10 cm units, scroll to adjust (Shift fine, Ctrl coarse)" TextTrimming="CharacterEllipsis" />
+          </Grid>
+          <WrapPanel>
+            <StackPanel Spacing="2" Margin="0,0,12,2">
+              <TextBlock Classes="vr-field-label" Text="Scale" />
+              <controls:VrCalibrationNumberInput x:Name="ScaleInput" Width="132" Minimum="0.1" Maximum="50"
+                    Step="{Binding ScaleIncrement}" FormatString="0.0###" Value="{Binding Scale, Mode=TwoWay}" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,12,2">
+              <TextBlock Classes="vr-field-label" Text="Pos X" />
+              <controls:VrCalibrationNumberInput x:Name="PositionXInput" Width="132" Minimum="-1000" Maximum="1000"
+                    Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionX, Mode=TwoWay}" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,12,2">
+              <TextBlock Classes="vr-field-label" Text="Pos Y" />
+              <controls:VrCalibrationNumberInput x:Name="PositionYInput" Width="132" Minimum="-1000" Maximum="1000"
+                    Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionY, Mode=TwoWay}" />
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,0,2">
+              <TextBlock Classes="vr-field-label" Text="Pos Z" />
+              <controls:VrCalibrationNumberInput x:Name="PositionZInput" Width="132" Minimum="-1000" Maximum="1000"
+                    Step="{Binding PositionIncrement}" FormatString="0.0###" Value="{Binding PositionZ, Mode=TwoWay}" />
+            </StackPanel>
+          </WrapPanel>
+        </StackPanel>
+
+        <Border Height="1" Background="{DynamicResource RavenBorderBrush}" Opacity="0.45" />
+
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <StackPanel Spacing="4">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+              <TextBlock Classes="vr-group-tag" Text="Rotation" />
+              <TextBlock Grid.Column="1" Classes="muted" FontSize="11" Text="degrees" />
+            </Grid>
+            <WrapPanel>
+              <StackPanel Spacing="2" Margin="0,0,12,2">
+                <TextBlock Classes="vr-field-label" Text="Pitch" />
+                <controls:VrCalibrationNumberInput x:Name="PitchInput" Width="132" Minimum="-360" Maximum="360"
+                      Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationPitch, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Spacing="2" Margin="0,0,12,2">
+                <TextBlock Classes="vr-field-label" Text="Yaw" />
+                <controls:VrCalibrationNumberInput x:Name="YawInput" Width="132" Minimum="-360" Maximum="360"
+                      Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationYaw, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Spacing="2" Margin="0,0,0,2">
+                <TextBlock Classes="vr-field-label" Text="Roll" />
+                <controls:VrCalibrationNumberInput x:Name="RollInput" Width="132" Minimum="-360" Maximum="360"
+                      Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationRoll, Mode=TwoWay}" />
+              </StackPanel>
+            </WrapPanel>
+          </StackPanel>
+
+          <ToggleButton Grid.Column="1"
+                        x:Name="DragModeToggleButton"
+                        Classes="vr-drag-toggle"
+                        MinWidth="172"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,0,2"
+                        IsChecked="{Binding IsDragModeEnabled, Mode=TwoWay}"
+                        IsEnabled="{Binding HasSelection}"
+                        Content="Drag panels in VR"
+                        ToolTip.Tip="Point at any visible preview panel, hold trigger to move it, and tilt the thumbstick for depth." />
+        </Grid>
       </StackPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8">
-        <TextBlock Text="Yaw (degrees)" />
-        <controls:VrCalibrationNumberInput x:Name="YawInput" Width="132" Minimum="-360" Maximum="360"
-              Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationYaw, Mode=TwoWay}" />
+    </Border>
+
+    <!-- Action bar: quick placement on left, Save & Close aligned right under Drag toggle -->
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+      <WrapPanel>
+        <Button Classes="secondary vr-action-btn" Margin="0,0,8,4" Command="{Binding PlaceInFrontCommand}" Content="Place in front" />
+        <Button Classes="secondary vr-action-btn" Margin="0,0,0,4" Command="{Binding ResetCommand}" Content="Reset selected" />
+      </WrapPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+        <Button Classes="primary vr-action-btn" Command="{Binding SaveCommand}" Content="{Binding SaveButtonLabel}" />
+        <Button Classes="secondary vr-action-btn" Command="{Binding CancelCommand}" Content="Close / discard unsaved" />
       </StackPanel>
-      <StackPanel Spacing="4" Margin="0,0,16,8">
-        <TextBlock Text="Roll (degrees)" />
-        <controls:VrCalibrationNumberInput x:Name="RollInput" Width="132" Minimum="-360" Maximum="360"
-              Step="{Binding RotationIncrement}" FormatString="0.0###" Value="{Binding RotationRoll, Mode=TwoWay}" />
-      </StackPanel>
-    </WrapPanel>
-    <WrapPanel>
-      <Button Classes="secondary" Margin="0,0,8,8" Command="{Binding PlaceInFrontCommand}" Content="Place in front of me" />
-      <Button Classes="secondary" Margin="0,0,8,8" Command="{Binding ResetCommand}" Content="Reset selected" />
-      <Button Classes="primary" Margin="0,0,8,8" Command="{Binding SaveCommand}" Content="Save calibration" />
-      <Button Classes="secondary" Margin="0,0,8,8" Command="{Binding CancelCommand}" Content="Close / discard unsaved" />
-    </WrapPanel>
-    <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="12" Text="{Binding StatusMessage}" />
+    </Grid>
+
+    <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="11" Text="{Binding StatusMessage}" />
   </StackPanel>
 </UserControl>

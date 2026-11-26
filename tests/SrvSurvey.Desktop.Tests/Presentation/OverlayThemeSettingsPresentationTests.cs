@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
@@ -257,6 +259,193 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
         finally
         {
             window.Close();
+        }
+    }
+
+    /// <summary>Switching across ThemeView overlay setup tabs and SettingsView categories never triggers Avalonia layout cycles.</summary>
+    [AvaloniaFact]
+    public void OverlaySetupAndSettingsScrollViewersDoNotTriggerLayoutCycles()
+    {
+        var service = new RavenThemeService(
+            Application.Current!,
+            new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
+        string previousTheme = service.Current.Key;
+        using MainWindowViewModel main = CreateMain();
+        var window = new MainWindow(main) { Width = 1174, Height = 816 };
+        ILogSink? previous = Logger.Sink;
+        var log = new LayoutCycleLogSink();
+        Logger.Sink = log;
+        try
+        {
+            service.Select("monochrome-dark");
+            service.ApplyCurrent();
+            window.Show();
+            main.SelectedNavigation = main.NavigationItems.Single(item => item.Key == "theme");
+            window.UpdateLayout();
+
+            ThemeView themeView = Assert.Single(window.GetVisualDescendants().OfType<ThemeView>());
+            TabControl themeSections = themeView.FindControl<TabControl>("ThemeSections")!;
+            themeSections.SelectedIndex = 2;
+            window.UpdateLayout();
+
+            OverlaySettingsView settings = themeView.FindControl<OverlaySettingsView>("GlobalOverlaySettings")!;
+            TabControl sections = settings.FindControl<TabControl>("GlobalOverlaySections")!;
+            for (int index = 0; index < sections.ItemCount; index++)
+            {
+                sections.SelectedIndex = index;
+                foreach (int h in new[] { 580, 600, 640, 700, 760, 816 })
+                {
+                    window.Height = h;
+                    using WriteableBitmap? frame = window.CaptureRenderedFrame();
+                    Assert.NotNull(frame);
+                }
+            }
+
+            // Exercise crossing the 540px/556px horizontal-scroll threshold on VR and Settings.
+            sections.SelectedIndex = 4;
+            foreach (int w in new[] { 860, 820, 780, 860, 1174 })
+            {
+                window.Width = w;
+                window.Height = 600;
+                using WriteableBitmap? frame = window.CaptureRenderedFrame();
+                Assert.NotNull(frame);
+            }
+
+            main.SelectedNavigation = main.NavigationItems.Single(item => item.Key == "settings");
+            foreach (SettingsCategoryViewModel category in main.SettingsWorkspace.Categories)
+            {
+                main.SettingsWorkspace.SelectCategory(category.Key);
+                foreach (int h in new[] { 600, 760 })
+                {
+                    window.Width = 1174;
+                    window.Height = h;
+                    using WriteableBitmap? frame = window.CaptureRenderedFrame();
+                    Assert.NotNull(frame);
+                }
+                window.Width = window.MinWidth;
+                window.Height = window.MinHeight;
+                using WriteableBitmap? minimum = window.CaptureRenderedFrame();
+                Assert.NotNull(minimum);
+            }
+
+            Assert.True(log.Messages.Count == 0, string.Join(Environment.NewLine, log.Messages));
+        }
+        finally
+        {
+            window.Close();
+            Logger.Sink = previous;
+            service.Select(previousTheme);
+            service.ApplyCurrent();
+        }
+    }
+
+    /// <summary>ResponsiveScrollViewer switches cleanly between wide wrapping and narrow horizontal scrolling without cycles.</summary>
+    [AvaloniaFact]
+    public void ResponsiveScrollViewerAdaptsAcrossMinimumContentWidthWithoutCycles()
+    {
+        var content = new StackPanel
+        {
+            MinWidth = 540,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = string.Join(' ', Enumerable.Repeat("Wrapping diagnostic text for viewport width test.", 24)),
+                    TextWrapping = TextWrapping.Wrap,
+                },
+            },
+        };
+        var scroller = new ResponsiveScrollViewer { MinimumContentWidth = 540, Content = content };
+        var host = new Border
+        {
+            Width = 700,
+            Height = 200,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top,
+            Child = scroller,
+        };
+        var window = new Window
+        {
+            Width = 800,
+            Height = 300,
+            Content = host,
+        };
+        ILogSink? previous = Logger.Sink;
+        var log = new LayoutCycleLogSink();
+        Logger.Sink = log;
+        try
+        {
+            window.Show();
+            window.UpdateLayout();
+            Assert.Equal(
+                Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+                scroller.HorizontalScrollBarVisibility
+            );
+            Assert.True(double.IsNaN(content.Width));
+            Assert.True(scroller.Extent.Width <= scroller.Viewport.Width + 1);
+
+            host.Width = 420;
+            window.UpdateLayout();
+            Assert.Equal(Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, scroller.HorizontalScrollBarVisibility);
+            Assert.Equal(540, content.Width);
+            Assert.True(scroller.Extent.Width >= 540);
+            Assert.True(
+                scroller.Extent.Width > scroller.Viewport.Width,
+                $"Expected horizontal overflow at 420px: extent={scroller.Extent}, viewport={scroller.Viewport}, bounds={scroller.Bounds}."
+            );
+
+            // VerticalScrollBarVisibility=Disabled uses zero reserve so exact minWidth fits without horizontal scrolling.
+            scroller.VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled;
+            host.Width = 540;
+            window.UpdateLayout();
+            Assert.Equal(
+                Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+                scroller.HorizontalScrollBarVisibility
+            );
+            Assert.True(double.IsNaN(content.Width));
+
+            // Infinite available width and zero MinimumContentWidth leave settings untouched.
+            scroller.Measure(Size.Infinity);
+            scroller.MinimumContentWidth = 0;
+            scroller.Content = "plain text";
+            scroller.Measure(new Size(400, 200));
+
+            Assert.True(log.Messages.Count == 0, string.Join(Environment.NewLine, log.Messages));
+        }
+        finally
+        {
+            window.Close();
+            Logger.Sink = previous;
+        }
+    }
+
+    private sealed class LayoutCycleLogSink : ILogSink
+    {
+        public List<string> Messages { get; } = [];
+
+        public bool IsEnabled(LogEventLevel level, string area) => level >= LogEventLevel.Warning && area == "Layout";
+
+        public void Log(LogEventLevel level, string area, object? source, string messageTemplate)
+        {
+            if (IsEnabled(level, area))
+            {
+                Messages.Add(messageTemplate);
+            }
+        }
+
+        public void Log(
+            LogEventLevel level,
+            string area,
+            object? source,
+            string messageTemplate,
+            params object?[] propertyValues
+        )
+        {
+            if (IsEnabled(level, area))
+            {
+                Messages.Add(messageTemplate + " " + string.Join(" ", propertyValues));
+            }
         }
     }
 
