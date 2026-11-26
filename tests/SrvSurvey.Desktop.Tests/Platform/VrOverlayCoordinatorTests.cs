@@ -1361,6 +1361,115 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         }
     }
 
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ClickOnUnchangedOverlaySurvivesArrivingDuringReplacementPublication(bool releaseAfterPublication)
+    {
+        string dataDirectory = Path.Combine(temporaryDirectory, "data");
+        Directory.CreateDirectory(dataDirectory);
+        File.WriteAllText(
+            Path.Combine(dataDirectory, "plotters.json"),
+            """
+            { "PlotBioSystem": "center:0, top:8 { s: 4, p: <0, 4, 10>, r: <0, 0, 0>}" }
+            """
+        );
+        var backend = new StubLinuxOpenXrBackend();
+        var inspector = new LinuxVrRuntimeInspector(
+            isLinux: () => true,
+            getEnvironmentVariable: _ => null,
+            readAllText: _ => null,
+            fileExists: _ => false,
+            isProcessRunning: name => name == "wivrn-server"
+        );
+        using var runtime = new LinuxOpenXrOverlayRuntime(
+            VrPlatformProfileCatalog.WivrnOpenXrProfileId,
+            backend,
+            inspector,
+            () => true
+        );
+        VrOverlayViewModel viewModel = CreateViewModel();
+        viewModel.Enabled = true;
+        var registry = new OverlayWindowRegistry();
+        var replacedWindow = new Window
+        {
+            Width = 200,
+            Height = 100,
+            WindowDecorations = WindowDecorations.None,
+            Content = new Border { Background = Brushes.Orange },
+        };
+        var button = new Button
+        {
+            Content = "Activate",
+            ClickMode = ClickMode.Press,
+            Width = 240,
+            Height = 120,
+            Template = new Avalonia.Controls.Templates.FuncControlTemplate<Button>(
+                (_, _) => new Border { Background = Brushes.Blue }
+            ),
+        };
+        int clicks = 0;
+        button.Click += (_, _) => clicks++;
+        var unchangedWindow = new Window
+        {
+            Width = 240,
+            Height = 120,
+            WindowDecorations = WindowDecorations.None,
+            Content = button,
+        };
+        try
+        {
+            registry.Register(replacedWindow, "PlotJumpInfo");
+            registry.Register(unchangedWindow, "PlotBioSystem");
+            replacedWindow.Show();
+            unchangedWindow.Show();
+            registry.SetPresentationVisual(unchangedWindow, button);
+            using var coordinator = new VrOverlayCoordinator(viewModel, registry, runtime);
+            Assert.True(coordinator.ToggleInteraction());
+
+            ulong unchangedId = OpenXrFramePacket.GetOverlayId("PlotBioSystem");
+            viewModel.SelectedOverlayName = "PlotJumpInfo";
+            Assert.Contains(unchangedId, ReadPacketOverlayIds(backend.LastPacket!));
+            backend.OnPublish = () =>
+            {
+                backend.OnPublish = null;
+                backend.PendingPointerEvents =
+                [
+                    new OpenXrPointerEvent(unchangedId, VrOverlayPointerEventKind.LeftButtonDown, 0.5f, 0.5f, 0, 0),
+                ];
+                if (!releaseAfterPublication)
+                {
+                    backend.PendingPointerEvents =
+                    [
+                        .. backend.PendingPointerEvents,
+                        new OpenXrPointerEvent(unchangedId, VrOverlayPointerEventKind.LeftButtonUp, 0.5f, 0.5f, 0, 0),
+                    ];
+                }
+            };
+
+            Assert.True(viewModel.BeginAdjustment());
+            Assert.Contains(unchangedId, ReadPacketOverlayIds(backend.LastPacket!));
+            coordinator.PollInteractionEvents();
+            if (releaseAfterPublication)
+            {
+                Assert.True(button.IsPressed);
+                backend.PendingPointerEvents =
+                [
+                    new OpenXrPointerEvent(unchangedId, VrOverlayPointerEventKind.LeftButtonUp, 0.5f, 0.5f, 0, 0),
+                ];
+                coordinator.PollInteractionEvents();
+            }
+            Assert.Equal(1, clicks);
+            Assert.False(button.IsPressed);
+            Assert.True(coordinator.IsInteractionEnabled);
+        }
+        finally
+        {
+            replacedWindow.Close();
+            unchangedWindow.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void SurfaceReplacementPublishesRotatedOverlayIdBeforeReenablingInteractionAndRejectsStaleEvents()
     {
@@ -1412,7 +1521,10 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             ulong previewId = OpenXrFramePacket.GetOverlayId("PlotJumpInfo", 1);
             Assert.NotEqual(liveId, previewId);
             Assert.NotNull(backend.LastPacket);
-            Assert.Contains(previewId, ReadPacketOverlayIds(backend.LastPacket));
+            Assert.Equal(
+                [previewId, OpenXrFramePacket.GetOverlayId(VrOverlayCalibrationSession.ControlsPlotterName)],
+                ReadPacketOverlayIds(backend.LastPacket)
+            );
             Assert.DoesNotContain(liveId, ReadPacketOverlayIds(backend.LastPacket));
 
             // A stale in-flight press targeting the replaced live surface ID must never start a calibration drag.
@@ -1447,7 +1559,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         for (int index = 0; index < count; index++)
         {
             ids[index] = System.Buffers.Binary.BinaryPrimitives.ReadUInt64LittleEndian(
-                packet.AsSpan(128 + index * 128)
+                packet.AsSpan(OpenXrFramePacket.HeaderBytes + index * OpenXrFramePacket.DescriptorBytes)
             );
         }
 
@@ -1618,6 +1730,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         public List<string> OperationLog { get; } = [];
         public byte[]? LastPacket { get; private set; }
         public IReadOnlyList<OpenXrPointerEvent> PendingPointerEvents { get; set; } = [];
+        public Action? OnPublish { get; set; }
 
         public LinuxOpenXrProbeOutcome Probe(string expectedRuntime) => new(LinuxOpenXrNativeStatus.Ok, 0, "Ready");
 
@@ -1631,6 +1744,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         {
             OperationLog.Add("Publish");
             LastPacket = packet;
+            OnPublish?.Invoke();
             return true;
         }
 
