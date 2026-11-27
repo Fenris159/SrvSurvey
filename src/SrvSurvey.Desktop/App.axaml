@@ -135,6 +135,7 @@
     <x:Double x:Key="RavenOverlayCaptionFontSize">9</x:Double>
     <presentation:FrontierAssetImageConverter
         x:Key="FrontierAssetImageConverter" />
+    <presentation:NavigationIconImageConverter x:Key="NavigationIconImageConverter" />
     <presentation:BundledAssetImageConverter
         x:Key="BundledAssetImageConverter" />
   </Application.Resources>

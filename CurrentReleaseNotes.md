@@ -1,11 +1,9 @@
-# SrvSurvey-XP 2.1.3.0-rc.77.28
+# SrvSurvey-XP 2.1.3.0-rc.77.29
 
-RC77.28 adds Linux OpenXR controller pointer interaction for WiVRn and Monado,
-defers Linux OpenXR attachment until Elite Dangerous is running, switches
-commanders automatically in-process without restarting, and overhauls VR overlay
-calibration with category-wide preview, direct VR panel dragging, 45° snapped
-calibration-window placement, and desktop-aligned default positions across VR
-runtimes.
+RC77.29 keeps the collapsed navigation bar usable with distinct, themed icons
+for every workspace, commander profile, and category group. It also retains
+the Linux OpenXR, commander switching, and VR calibration improvements from
+RC77.28.
 
 ## Before upgrading
 
@@ -16,6 +14,16 @@ automatic exploration value tracking pauses until history recovery or a new
 explicit reset.
 
 ## What's changed
+
+- **Usable compact navigation** adds distinct Elite Dangerous-inspired icons
+  for every workspace, the commander card, and the three category groups.
+  Selecting icons opens the same workspaces, and expanding a category moves
+  its entries in the same order as the full panel. Keyboard navigation skips
+  hidden entries in folded categories.
+- **Slender, smoother sidebar** centers the icons in an evenly spaced compact
+  bar, keeps the commander card clear of the header divider, and uses smooth
+  scaling with theme-matched transparent PNGs, including redrawn Guardian
+  and Fleet Carrier symbols. The expanded panel keeps its text-only layout.
 
 - **Linux OpenXR controller pointer interaction (WiVRn and Monado)** adds
   OpenXR aim, trigger, secondary/middle click, and thumbstick/trackpad scroll

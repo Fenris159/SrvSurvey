@@ -24,33 +24,61 @@
     </MultiBinding>
   </Window.Topmost>
   <Window.Resources>
+    <DataTemplate x:Key="NavigationGroupTemplate" x:DataType="x:String">
+      <Grid Classes="nav-content" ColumnDefinitions="Auto,*">
+        <Image Classes="nav-icon" RenderOptions.BitmapInterpolationMode="HighQuality">
+          <Image.Source>
+            <MultiBinding Converter="{StaticResource NavigationIconImageConverter}">
+              <Binding Path="$parent[Button].Tag" />
+              <Binding Path="$parent[Button].Foreground" />
+              <ReflectionBinding Path="Foreground.Color" RelativeSource="{RelativeSource AncestorType=Button}" />
+              <ReflectionBinding Path="Foreground.Opacity" RelativeSource="{RelativeSource AncestorType=Button}" />
+            </MultiBinding>
+          </Image.Source>
+        </Image>
+        <TextBlock Grid.Column="1" Classes="nav-label" VerticalAlignment="Center" Text="{Binding}" />
+      </Grid>
+    </DataTemplate>
     <DataTemplate x:Key="NavigationRowTemplate"
                   x:DataType="vm:NavigationItemViewModel">
       <Border Classes="nav-row"
               Classes.selected="{Binding IsSelected}">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+        <Grid ColumnDefinitions="*,Auto">
           <Button Classes="nav-item"
                   HorizontalAlignment="Stretch"
-                  HorizontalContentAlignment="Left"
                   CommandParameter="{Binding}"
                   Click="SelectNavigationItem_Click"
+                  AutomationProperties.Name="{Binding Label}"
                   AutomationProperties.HelpText="{Binding Description}">
-            <TextBlock VerticalAlignment="Center"
-                       FontWeight="SemiBold"
-                       Text="{Binding Label}"
-                       TextTrimming="CharacterEllipsis" />
+            <Grid Classes="nav-content" ColumnDefinitions="Auto,*">
+              <Image Classes="nav-icon" RenderOptions.BitmapInterpolationMode="HighQuality">
+                <Image.Source>
+                  <MultiBinding Converter="{StaticResource NavigationIconImageConverter}">
+                    <Binding Path="IconAssetPath" />
+                    <Binding Path="$parent[Button].Foreground" />
+                    <ReflectionBinding Path="Foreground.Color" RelativeSource="{RelativeSource AncestorType=Button}" />
+                    <ReflectionBinding Path="Foreground.Opacity" RelativeSource="{RelativeSource AncestorType=Button}" />
+                  </MultiBinding>
+                </Image.Source>
+              </Image>
+              <TextBlock Grid.Column="1" Classes="nav-label" VerticalAlignment="Center"
+                         FontWeight="SemiBold"
+                         Text="{Binding Label}"
+                         TextTrimming="CharacterEllipsis" />
+            </Grid>
           </Button>
-          <Button Grid.Column="1"
-                  Classes="nav-overlay-settings"
-                  IsVisible="{Binding HasOverlaySettings}"
-                  CommandParameter="{Binding Key}"
-                  Click="OpenCategoryOverlaySettings_Click"
-                  ToolTip.Tip="Open category overlay settings"
-                  AutomationProperties.Name="Open category overlay settings">
-            <PathIcon Width="18"
-                      Height="18"
-                      Data="{StaticResource window_multiple_regular}" />
-          </Button>
+          <Border Grid.Column="1" Classes="nav-overlay-slot" Margin="4,0,0,0">
+            <Button Classes="nav-overlay-settings"
+                    IsVisible="{Binding HasOverlaySettings}"
+                    CommandParameter="{Binding Key}"
+                    Click="OpenCategoryOverlaySettings_Click"
+                    ToolTip.Tip="Open category overlay settings"
+                    AutomationProperties.Name="Open category overlay settings">
+              <PathIcon Width="18"
+                        Height="18"
+                        Data="{StaticResource window_multiple_regular}" />
+            </Button>
+          </Border>
         </Grid>
       </Border>
     </DataTemplate>
@@ -69,23 +97,22 @@
   <LayoutTransformControl x:Name="ApplicationScaleContainer">
   <Grid ColumnDefinitions="Auto,*">
     <Border x:Name="MainSidebar"
+            Classes.compact="{Binding IsSidebarCollapsed}"
             Width="{Binding SidebarWidth}"
             Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
             BorderThickness="0,0,1,0">
       <Grid>
-      <Border Height="90"
+      <Border x:Name="SidebarHeaderBand"
               VerticalAlignment="Top"
               Background="{DynamicResource RavenSurfaceBrush}"
               BorderBrush="{DynamicResource RavenBorderBrush}"
               BorderThickness="0,0,0,1"
               IsHitTestVisible="False" />
       <Grid x:Name="SidebarContent"
-            IsVisible="{Binding !IsSidebarCollapsed}"
-            Margin="16"
-            RowDefinitions="Auto,Auto,Auto,*,Auto"
-            RowSpacing="14">
-        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,0,28,0">
+            RowDefinitions="42,Auto,Auto,*,Auto">
+        <Grid IsVisible="{Binding !IsSidebarCollapsed}"
+              ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,0,28,0">
           <Image Width="42"
                  Height="42"
                  Source="/Assets/logo-remastered-linux-windows-split.png"
@@ -99,6 +126,7 @@
 
         <StackPanel Grid.Row="1" Spacing="6">
           <StackPanel x:Name="ActiveUsersDisplay"
+                      IsVisible="{Binding !IsSidebarCollapsed}"
                       Orientation="Horizontal"
                       Spacing="4"
                       ToolTip.Tip="Unique installations active in the last 7 days. Updated once daily.">
@@ -111,17 +139,31 @@
                   Classes.selected="{Binding IsProfileSelected}"
                   Command="{Binding ShowProfileCommand}"
                   ToolTip.Tip="Open Frontier commander profile"
+                  AutomationProperties.Name="Open Frontier commander profile"
                   AutomationProperties.HelpText="Open Frontier commander profile">
-            <StackPanel Spacing="3">
-              <TextBlock Classes="muted" FontSize="10" Text="ACTIVE COMMANDER" />
-              <TextBlock FontWeight="SemiBold"
-                         TextTrimming="CharacterEllipsis"
-                         Text="{Binding CommanderName}" />
-              <TextBlock Classes="muted"
-                         FontSize="11"
-                         TextTrimming="CharacterEllipsis"
-                         Text="{Binding SystemDescription}" />
-            </StackPanel>
+            <Grid>
+              <Image Classes="nav-icon" IsVisible="{Binding IsSidebarCollapsed}"
+                         RenderOptions.BitmapInterpolationMode="HighQuality">
+                <Image.Source>
+                  <MultiBinding Converter="{StaticResource NavigationIconImageConverter}">
+                    <Binding Source="avares://SrvSurvey.Desktop/Assets/Navigation/profile.png" />
+                    <Binding Path="$parent[Button].Foreground" />
+                    <ReflectionBinding Path="Foreground.Color" RelativeSource="{RelativeSource AncestorType=Button}" />
+                    <ReflectionBinding Path="Foreground.Opacity" RelativeSource="{RelativeSource AncestorType=Button}" />
+                  </MultiBinding>
+                </Image.Source>
+              </Image>
+              <StackPanel IsVisible="{Binding !IsSidebarCollapsed}" Spacing="3">
+                <TextBlock Classes="muted" FontSize="10" Text="ACTIVE COMMANDER" />
+                <TextBlock FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding CommanderName}" />
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding SystemDescription}" />
+              </StackPanel>
+            </Grid>
           </Button>
         </StackPanel>
 
@@ -134,18 +176,19 @@
 
         <ScrollViewer x:Name="NavigationAccordionScroller"
                       Grid.Row="3"
-                      HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto">
+                      HorizontalScrollBarVisibility="Disabled">
           <StackPanel Spacing="4">
             <Button Classes="nav-group-heading"
                     Classes.expanded="{Binding IsSurveyNavigationExpanded}"
                     CommandParameter="survey"
                     Click="ToggleNavigationGroup_Click"
+                    Tag="avares://SrvSurvey.Desktop/Assets/Navigation/group-survey.png"
+                    ContentTemplate="{StaticResource NavigationGroupTemplate}"
                     Content="Survey" />
             <Border Classes="nav-group-container"
                     Classes.expanded="{Binding IsSurveyNavigationExpanded}"
                     Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
-              <ItemsControl Margin="10,0,0,4"
+              <ItemsControl Classes="nav-group-items"
                             ItemsSource="{Binding SurveyNavigationItems}"
                             ItemTemplate="{StaticResource NavigationRowTemplate}" />
             </Border>
@@ -154,11 +197,13 @@
                     Classes.expanded="{Binding IsNavigationNavigationExpanded}"
                     CommandParameter="navigation"
                     Click="ToggleNavigationGroup_Click"
+                    Tag="avares://SrvSurvey.Desktop/Assets/Navigation/group-navigation.png"
+                    ContentTemplate="{StaticResource NavigationGroupTemplate}"
                     Content="Navigation" />
             <Border Classes="nav-group-container"
                     Classes.expanded="{Binding IsNavigationNavigationExpanded}"
                     Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
-              <ItemsControl Margin="10,0,0,4"
+              <ItemsControl Classes="nav-group-items"
                             ItemsSource="{Binding NavigationWorkspaceItems}"
                             ItemTemplate="{StaticResource NavigationRowTemplate}" />
             </Border>
@@ -167,11 +212,13 @@
                     Classes.expanded="{Binding IsActivitiesNavigationExpanded}"
                     CommandParameter="activities"
                     Click="ToggleNavigationGroup_Click"
+                    Tag="avares://SrvSurvey.Desktop/Assets/Navigation/group-activities.png"
+                    ContentTemplate="{StaticResource NavigationGroupTemplate}"
                     Content="Activities" />
             <Border Classes="nav-group-container"
                     Classes.expanded="{Binding IsActivitiesNavigationExpanded}"
                     Classes.reduced-motion="{Binding DesktopBehavior.ReduceMotion}">
-              <ItemsControl Margin="10,0,0,4"
+              <ItemsControl Classes="nav-group-items"
                             ItemsSource="{Binding ActivityNavigationItems}"
                             ItemTemplate="{StaticResource NavigationRowTemplate}" />
             </Border>
@@ -183,7 +230,8 @@
           <ItemsControl x:Name="UtilityNavigationShortcuts"
                         ItemsSource="{Binding UtilityNavigationItems}"
                         ItemTemplate="{StaticResource NavigationRowTemplate}" />
-          <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <WrapPanel IsVisible="{Binding !IsSidebarCollapsed}"
+                     Orientation="Horizontal" VerticalAlignment="Center">
             <TextBlock Classes="muted"
                        Margin="4,0,4,0"
                        FontSize="10"
@@ -205,8 +253,7 @@
       <Button x:Name="SidebarToggleButton"
               Classes="nav-overlay-settings"
               Width="28" Height="28" Padding="4"
-              HorizontalAlignment="Right" VerticalAlignment="Top"
-              Margin="0,16,8,0"
+              VerticalAlignment="Top"
               Click="ToggleSidebar_Click"
               ToolTip.Tip="{Binding SidebarToggleLabel}"
               AutomationProperties.Name="{Binding SidebarToggleLabel}">

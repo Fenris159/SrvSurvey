@@ -1432,7 +1432,7 @@ public sealed partial class CommanderProfileViewModelTests
         Assert.True(SpinWait.SpinUntil(() => !viewModel.IsBusy, TimeSpan.FromSeconds(3)));
     }
 
-    [Fact]
+    [AvaloniaFact]
     public async Task CommanderCardNavigationSelectsProfileOutsideCategoryList()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-navigation-{Guid.NewGuid():N}");
@@ -1543,7 +1543,7 @@ public sealed partial class CommanderProfileViewModelTests
         Assert.Contains("Linked squadron cargo", profile.CarrierCargoSource);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public async Task SlowFrontierRefreshDoesNotBlockLocalJournalStartup()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
@@ -1592,7 +1592,7 @@ public sealed partial class CommanderProfileViewModelTests
     }
 
     /// <summary>Verifies startup loads linked carrier data without opening the card or repeating a completed refresh.</summary>
-    [Fact]
+    [AvaloniaFact]
     public async Task StartupLoadsLinkedCarrierWithoutOpeningCommanderCardAndDoesNotRepeatRefresh()
     {
         string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");

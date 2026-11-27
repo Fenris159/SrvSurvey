@@ -269,6 +269,31 @@
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="Margin" Value="0,1" />
   </Style>
+  <Style Selector="Grid#SidebarContent">
+    <Setter Property="Margin" Value="16" />
+    <Setter Property="RowSpacing" Value="14" />
+  </Style>
+  <Style Selector="Border#SidebarHeaderBand">
+    <Setter Property="Height" Value="90" />
+  </Style>
+  <Style Selector="ScrollViewer#NavigationAccordionScroller">
+    <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+  </Style>
+  <Style Selector="Image.nav-icon">
+    <Setter Property="IsVisible" Value="False" />
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+  </Style>
+  <Style Selector="ItemsControl.nav-group-items">
+    <Setter Property="Margin" Value="10,0,0,4" />
+  </Style>
+  <Style Selector="Button#SidebarToggleButton">
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="Margin" Value="0,16,8,0" />
+  </Style>
   <Style Selector="Border.nav-row:pointerover">
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
   </Style>
@@ -279,7 +304,8 @@
   </Style>
   <Style Selector="Button.nav-item">
     <Setter Property="MinHeight" Value="38" />
-    <Setter Property="Padding" Value="11,8" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="11,7" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="CornerRadius" Value="8" />
@@ -295,9 +321,9 @@
   </Style>
   <Style Selector="Button.nav-group-heading">
     <Setter Property="MinHeight" Value="34" />
-    <Setter Property="Padding" Value="10,7" />
+    <Setter Property="Padding" Value="10,5" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="CornerRadius" Value="7" />
@@ -314,6 +340,7 @@
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
   </Style>
   <Style Selector="Border.nav-group-container">
+    <Setter Property="IsEnabled" Value="False" />
     <Setter Property="ClipToBounds" Value="True" />
     <Setter Property="IsHitTestVisible" Value="False" />
     <Setter Property="MaxHeight" Value="0" />
@@ -326,12 +353,58 @@
     </Setter>
   </Style>
   <Style Selector="Border.nav-group-container.expanded">
+    <Setter Property="IsEnabled" Value="True" />
     <Setter Property="IsHitTestVisible" Value="True" />
     <Setter Property="MaxHeight" Value="260" />
     <Setter Property="Opacity" Value="1" />
   </Style>
   <Style Selector="Border.nav-group-container.reduced-motion">
     <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <!-- Keep one navigation tree so selection, accordion order and keyboard focus
+       survive changing between labeled navigation and the compact icon rail. -->
+  <Style Selector="Border#MainSidebar.compact Grid#SidebarContent">
+    <Setter Property="Margin" Value="4,16,4,8" />
+    <Setter Property="RowSpacing" Value="6" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Border#SidebarHeaderBand">
+    <Setter Property="Height" Value="58" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Image.nav-icon">
+    <Setter Property="IsVisible" Value="True" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact TextBlock.nav-label">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Grid.nav-content">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Border.nav-overlay-slot">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Button.nav-item">
+    <Setter Property="Padding" Value="2,7" />
+    <Setter Property="ToolTip.Tip" Value="{ReflectionBinding Label}" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Button.nav-group-heading">
+    <Setter Property="Padding" Value="2,7" />
+    <Setter Property="ToolTip.Tip" Value="{ReflectionBinding Content, RelativeSource={RelativeSource Self}}" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact ItemsControl.nav-group-items">
+    <Setter Property="Margin" Value="0,0,0,4" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Button.commander-card">
+    <Setter Property="Padding" Value="2,7" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="MinHeight" Value="38" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact ScrollViewer#NavigationAccordionScroller">
+    <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />
+  </Style>
+  <Style Selector="Border#MainSidebar.compact Button#SidebarToggleButton">
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Margin" Value="8,16,0,0" />
   </Style>
   <Style Selector="Button.footer-link">
     <Setter Property="FontSize" Value="10" />
