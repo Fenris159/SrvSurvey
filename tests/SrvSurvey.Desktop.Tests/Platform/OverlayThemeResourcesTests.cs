@@ -565,15 +565,22 @@ public sealed class OverlayThemeResourcesTests
             error: null
         );
 
-        OverlayThemeResources.Apply(window, layout, definition.Name);
+        try
+        {
+            OverlayThemeResources.Apply(window, layout, definition.Name, new OverlayWindowRegistry());
 
-        LayoutTransformControl scaled = Assert.IsType<LayoutTransformControl>(window.Content);
-        Assert.Same(surface, scaled.Child);
-        Assert.Same(presentation, surface.Child);
-        Assert.Equal(new Thickness(0), surface.Padding);
-        Assert.Equal(new CornerRadius(0), surface.CornerRadius);
-        Assert.Null(surface.BorderBrush);
-        Assert.Equal(new Thickness(0), surface.BorderThickness);
+            LayoutTransformControl scaled = Assert.IsType<LayoutTransformControl>(window.Content);
+            Assert.Same(surface, scaled.Child);
+            Assert.Same(presentation, surface.Child);
+            Assert.Equal(new Thickness(0), surface.Padding);
+            Assert.Equal(new CornerRadius(0), surface.CornerRadius);
+            Assert.Null(surface.BorderBrush);
+            Assert.Equal(new Thickness(0), surface.BorderThickness);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [Fact]

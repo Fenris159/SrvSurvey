@@ -58,6 +58,9 @@
     <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
   </Style>
+  <Style Selector="Window.app-window Border#MainSidebar.compact Border.nav-row">
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
   <Style Selector="Window.app-window Button.nav-item">
     <Setter Property="CornerRadius" Value="2" />
   </Style>

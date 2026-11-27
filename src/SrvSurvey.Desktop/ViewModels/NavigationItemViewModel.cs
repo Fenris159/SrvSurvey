@@ -14,6 +14,8 @@ public sealed record NavigationItemViewModel(
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public string IconAssetPath => $"avares://SrvSurvey.Desktop/Assets/Navigation/{Key}.png";
+
     public bool IsSelected
     {
         get => isSelected;

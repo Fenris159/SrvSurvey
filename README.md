@@ -348,6 +348,9 @@ alignment practical before placing and tracking the rig.
   and dark variants. On Windows 11, the main window's native caption and border
   follow the selected theme and use a quieter palette while inactive. In-game
   overlay palettes are configured independently.
+- Collapse the sidebar to use themed workspace, commander and category icons;
+  expand it to restore text labels. See the
+  [navigation icon sheet](docs/images/navigation-icons.png).
 - Provides a visual overlay editor with live previews, category filtering,
   drag-and-drop placement, anchors, global and per-panel opacity, scale and
   visibility controls.
