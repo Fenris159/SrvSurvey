@@ -311,7 +311,7 @@ public sealed class MainSidebarPresentationTests
     [AvaloniaFact]
     public void FractionalApplicationScaleKeepsPngEdgesSmoothWithoutRepeatedPixelSteps()
     {
-        Application application = Assert.IsAssignableFrom<Application>(Application.Current);
+        Application application = Assert.IsType<Application>(Application.Current, exactMatch: false);
         object? original = application.Resources["NavigationIconImageConverter"];
         using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(null, _ => { });
         viewModel.IsSidebarCollapsed = true;
